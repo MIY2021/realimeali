@@ -1,0 +1,186 @@
+
+import { Recipe, User, MealPlan } from "@/types";
+
+export const currentUser: User = {
+  id: "user-1",
+  name: "Jane Smith",
+  email: "jane@example.com",
+  avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=120&h=120&q=80",
+};
+
+export const mockRecipes: Recipe[] = [
+  {
+    id: "recipe-1",
+    title: "Creamy Garlic Pasta",
+    description: "A quick and delicious pasta dish with a creamy garlic sauce.",
+    ingredients: [
+      "8 oz pasta",
+      "4 cloves garlic, minced",
+      "2 tbsp butter",
+      "1 cup heavy cream",
+      "1/2 cup grated parmesan cheese",
+      "Salt and pepper to taste",
+      "Fresh parsley for garnish"
+    ],
+    instructions: [
+      "Cook pasta according to package instructions.",
+      "In a large skillet, melt butter over medium heat.",
+      "Add garlic and sauté until fragrant, about 1 minute.",
+      "Pour in heavy cream and bring to a simmer.",
+      "Add parmesan cheese and stir until melted and sauce is smooth.",
+      "Season with salt and pepper.",
+      "Drain pasta and add to the sauce, tossing to coat.",
+      "Garnish with fresh parsley before serving."
+    ],
+    categories: ["dinner"],
+    prepTime: 10,
+    cookTime: 20,
+    servings: 4,
+    image: "https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    createdBy: "user-1",
+    createdAt: "2023-01-15T12:00:00Z",
+    updatedAt: "2023-01-15T12:00:00Z",
+    isFavorite: true,
+  },
+  {
+    id: "recipe-2",
+    title: "Classic Breakfast Sandwich",
+    description: "A hearty breakfast sandwich with eggs, cheese, and avocado.",
+    ingredients: [
+      "2 slices of bread",
+      "2 eggs",
+      "2 slices of cheddar cheese",
+      "1/2 avocado, sliced",
+      "Salt and pepper to taste",
+      "1 tbsp butter"
+    ],
+    instructions: [
+      "Melt butter in a non-stick pan over medium heat.",
+      "Crack eggs into the pan and cook to your liking.",
+      "Season eggs with salt and pepper.",
+      "Toast bread slices.",
+      "Place cheese on one slice of toast, followed by the cooked eggs.",
+      "Add avocado slices on top of the eggs.",
+      "Close the sandwich with the other slice of toast.",
+      "Cut in half and serve immediately."
+    ],
+    categories: ["breakfast"],
+    prepTime: 5,
+    cookTime: 10,
+    servings: 1,
+    image: "https://images.unsplash.com/photo-1525351484163-7529414344d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    createdBy: "user-1",
+    createdAt: "2023-02-10T08:30:00Z",
+    updatedAt: "2023-02-10T08:30:00Z",
+    isFavorite: false,
+  },
+  {
+    id: "recipe-3",
+    title: "Spicy Vegetable Curry",
+    description: "A flavorful vegetable curry with a kick of spice.",
+    ingredients: [
+      "2 tbsp vegetable oil",
+      "1 onion, diced",
+      "3 cloves garlic, minced",
+      "1 tbsp ginger, grated",
+      "2 tbsp curry powder",
+      "1 tsp cumin",
+      "1 can (14 oz) coconut milk",
+      "2 cups mixed vegetables (carrots, peas, potatoes, cauliflower)",
+      "Salt to taste",
+      "Fresh cilantro for garnish",
+      "Cooked rice for serving"
+    ],
+    instructions: [
+      "Heat oil in a large pot over medium heat.",
+      "Add onion and sauté until translucent.",
+      "Add garlic and ginger, cook for 1 minute until fragrant.",
+      "Stir in curry powder and cumin, cook for 30 seconds.",
+      "Add vegetables and stir to coat with spices.",
+      "Pour in coconut milk and bring to a simmer.",
+      "Cover and cook until vegetables are tender, about 15-20 minutes.",
+      "Season with salt to taste.",
+      "Garnish with fresh cilantro and serve over rice."
+    ],
+    categories: ["dinner", "lunch"],
+    prepTime: 15,
+    cookTime: 25,
+    servings: 4,
+    image: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    createdBy: "user-1",
+    createdAt: "2023-03-05T18:45:00Z",
+    updatedAt: "2023-03-05T18:45:00Z",
+    isFavorite: true,
+  },
+  {
+    id: "recipe-4",
+    title: "Berry Smoothie Bowl",
+    description: "A refreshing and nutritious smoothie bowl topped with fresh fruits and granola.",
+    ingredients: [
+      "1 frozen banana",
+      "1 cup mixed berries (strawberries, blueberries, raspberries)",
+      "1/2 cup Greek yogurt",
+      "1/4 cup almond milk",
+      "1 tbsp honey",
+      "Toppings: sliced banana, fresh berries, granola, chia seeds"
+    ],
+    instructions: [
+      "Add frozen banana, mixed berries, Greek yogurt, almond milk, and honey to a blender.",
+      "Blend until smooth and creamy, adding more almond milk if needed.",
+      "Pour into a bowl.",
+      "Top with sliced banana, fresh berries, granola, and chia seeds.",
+      "Serve immediately."
+    ],
+    categories: ["breakfast", "snack"],
+    prepTime: 10,
+    cookTime: 0,
+    servings: 1,
+    image: "https://images.unsplash.com/photo-1637282532376-28add41d782c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    createdBy: "user-1",
+    createdAt: "2023-04-12T07:15:00Z",
+    updatedAt: "2023-04-12T07:15:00Z",
+    isFavorite: false,
+  }
+];
+
+export const mockMealPlans: MealPlan[] = [
+  {
+    id: "meal-1",
+    date: "2024-04-20T00:00:00Z",
+    mealType: "breakfast",
+    recipeId: "recipe-2",
+    notes: "Add extra cheese",
+    createdBy: "user-1",
+    createdAt: "2024-04-19T18:00:00Z",
+    updatedAt: "2024-04-19T18:00:00Z"
+  },
+  {
+    id: "meal-2",
+    date: "2024-04-20T00:00:00Z",
+    mealType: "dinner",
+    recipeId: "recipe-1",
+    notes: "Make extra for leftovers",
+    createdBy: "user-1",
+    createdAt: "2024-04-19T18:10:00Z",
+    updatedAt: "2024-04-19T18:10:00Z"
+  },
+  {
+    id: "meal-3",
+    date: "2024-04-21T00:00:00Z",
+    mealType: "lunch",
+    recipeId: "recipe-3",
+    createdBy: "user-1",
+    createdAt: "2024-04-19T18:20:00Z",
+    updatedAt: "2024-04-19T18:20:00Z"
+  },
+  {
+    id: "meal-4",
+    date: "2024-04-22T00:00:00Z",
+    mealType: "breakfast",
+    recipeId: "recipe-4",
+    notes: "Use frozen mixed berries",
+    createdBy: "user-1",
+    createdAt: "2024-04-19T18:30:00Z",
+    updatedAt: "2024-04-19T18:30:00Z"
+  }
+];

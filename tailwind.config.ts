@@ -52,6 +52,12 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
+        // Custom colors for Family Food Feed
+        terracotta: '#E07A5F',
+        sage: '#81B29A',
+        butter: '#F2CC8F',
+        cream: '#F4F1DE',
+        navy: '#3D405B',
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',
