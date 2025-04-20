@@ -1,6 +1,6 @@
 
 import { useState, useMemo } from "react";
-import { Recipe, MealType } from "@/types";
+import { Recipe, MealType, RecipeCategory } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -25,25 +25,39 @@ export function AddMealPlanDialog({
   selectedMealType,
 }: AddMealPlanDialogProps) {
   const [searchTerm, setSearchTerm] = useState<string>("");
+  const [selectedCategory, setSelectedCategory] = useState<RecipeCategory | "all">("all");
   const [notes, setNotes] = useState<string>("");
+  
+  const categories = useMemo(() => {
+    const allCategories = new Set<RecipeCategory>();
+    recipes.forEach(recipe => {
+      recipe.categories.forEach(category => {
+        allCategories.add(category);
+      });
+    });
+    return Array.from(allCategories);
+  }, [recipes]);
   
   const filteredRecipes = useMemo(() => {
     const searchLower = searchTerm.toLowerCase();
-    return recipes.filter((recipe) =>
-      recipe.title.toLowerCase().includes(searchLower) &&
-      recipe.categories.some(cat => cat === selectedMealType)
-    );
-  }, [recipes, searchTerm, selectedMealType]);
+    return recipes.filter((recipe) => {
+      const matchesSearch = recipe.title.toLowerCase().includes(searchLower);
+      const matchesCategory = selectedCategory === "all" || recipe.categories.includes(selectedCategory as RecipeCategory);
+      
+      return matchesSearch && matchesCategory;
+    });
+  }, [recipes, searchTerm, selectedCategory]);
   
   const handleSelectRecipe = (recipeId: string) => {
     onAddMealPlan(recipeId, notes);
     setSearchTerm("");
     setNotes("");
+    setSelectedCategory("all");
   };
   
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>
             Add {selectedMealType.charAt(0).toUpperCase() + selectedMealType.slice(1)}
@@ -51,12 +65,27 @@ export function AddMealPlanDialog({
         </DialogHeader>
         
         <div className="space-y-4">
-          <Input
-            placeholder="Search recipes..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full"
-          />
+          <div className="flex gap-2">
+            <Input
+              placeholder="Search recipes..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="flex-1"
+            />
+            
+            <select 
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value as RecipeCategory | "all")}
+              className="px-3 py-2 border rounded-md"
+            >
+              <option value="all">All Categories</option>
+              {categories.map((category) => (
+                <option key={category} value={category}>
+                  {category.charAt(0).toUpperCase() + category.slice(1)}
+                </option>
+              ))}
+            </select>
+          </div>
           
           <ScrollArea className="h-[400px] rounded-md border p-4">
             <div className="space-y-4">

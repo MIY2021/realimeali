@@ -17,7 +17,7 @@ export default function Index() {
           <div className="flex flex-col items-center space-y-4 text-center">
             <div className="space-y-2">
               <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl lg:text-6xl text-navy">
-                Your Family's Meal Planning Hub
+                RealiMeali: Your Family's Meal Planning Hub
               </h1>
               <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl">
                 Save favorite recipes, plan weekly meals, and share with family members.
@@ -106,7 +106,7 @@ export default function Index() {
           <div className="flex flex-col items-center space-y-4 text-center">
             <div className="space-y-2">
               <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl">
-                Ready to Start Planning?
+                Ready to Start Planning with RealiMeali?
               </h2>
               <p className="mx-auto max-w-[600px] text-cream/80 md:text-xl">
                 Create an account today and start organizing your family's meals.

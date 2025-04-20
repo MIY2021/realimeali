@@ -3,7 +3,7 @@ import { useState } from "react";
 import { MealPlan, Recipe, MealType } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Trash2, Utensils } from "lucide-react";
+import { Plus, Trash2, UtensilsCrossed } from "lucide-react";
 import { mockRecipes } from "@/data/mockData";
 
 interface MealPlanCalendarProps {
@@ -38,7 +38,7 @@ export function MealPlanCalendar({
   const renderMealTypeSection = (mealType: MealType) => (
     <div className="space-y-3">
       <div className="flex items-center gap-2">
-        <Utensils className="h-5 w-5 text-terracotta" />
+        <UtensilsCrossed className="h-5 w-5 text-terracotta" />
         <h3 className="text-lg font-semibold text-navy capitalize">{mealType}s</h3>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-5 gap-3">

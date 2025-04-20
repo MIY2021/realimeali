@@ -60,9 +60,9 @@ export default function MealPlanner() {
   return (
     <div className="container py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-navy">Meal Planner</h1>
+        <h1 className="text-3xl font-bold text-navy">RealiMeali Meal Planner</h1>
         <p className="text-muted-foreground mt-1">
-          Plan your weekly meals
+          Plan your weekly meals with ease
         </p>
       </div>
       
