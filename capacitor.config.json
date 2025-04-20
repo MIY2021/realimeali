@@ -1,0 +1,10 @@
+
+{
+  "appId": "app.lovable.realiMeali",
+  "appName": "RealiMeali",
+  "webDir": "dist",
+  "server": {
+    "url": "https://54a3de06-762f-4195-8b16-59a97d0921c3.lovableproject.com?forceHideBadge=true",
+    "cleartext": true
+  }
+}
