@@ -1,4 +1,3 @@
-
 export type User = {
   id: string;
   name: string;
@@ -33,15 +32,16 @@ export type Recipe = {
   isFavorite: boolean;
 };
 
-export type MealType = "breakfast" | "lunch" | "dinner" | "snack";
+export type MealType = "dinner" | "lunch" | "breakfast";
 
 export type MealPlan = {
   id: string;
-  date: string; // ISO date string
+  date: string;
   mealType: MealType;
   recipeId: string;
   notes?: string;
-  createdBy: string; // user id
-  createdAt: string; // ISO date string
-  updatedAt: string; // ISO date string
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+  slotIndex: number;
 };

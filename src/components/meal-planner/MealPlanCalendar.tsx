@@ -3,7 +3,7 @@ import { useState } from "react";
 import { MealPlan, Recipe, MealType } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Trash2, ChefHat } from "lucide-react";
+import { Plus, Trash2, Utensils } from "lucide-react";
 import { mockRecipes } from "@/data/mockData";
 
 interface MealPlanCalendarProps {
@@ -23,19 +23,22 @@ export function MealPlanCalendar({
     );
     
     if (mealPlan) {
+      const recipe = mockRecipes.find((recipe) => recipe.id === mealPlan.recipeId);
       return {
-        recipe: mockRecipes.find((recipe) => recipe.id === mealPlan.recipeId),
+        recipe,
         planId: mealPlan.id
       };
     }
     
     return {};
   };
+
+  const mealTypes: MealType[] = ["dinner", "lunch", "breakfast"];
   
   const renderMealTypeSection = (mealType: MealType) => (
     <div className="space-y-3">
       <div className="flex items-center gap-2">
-        <ChefHat className="h-5 w-5 text-terracotta" />
+        <Utensils className="h-5 w-5 text-terracotta" />
         <h3 className="text-lg font-semibold text-navy capitalize">{mealType}s</h3>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
@@ -46,17 +49,24 @@ export function MealPlanCalendar({
             <Card key={index} className="overflow-hidden border-l-4 border-l-sage">
               <CardHeader className="p-3">
                 <CardTitle className="text-sm text-muted-foreground">
-                  Slot {index + 1}
+                  Meal {index + 1}
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-3 pt-0">
                 {recipe ? (
                   <div className="space-y-2">
+                    {recipe.image && (
+                      <img 
+                        src={recipe.image}
+                        alt={recipe.title}
+                        className="w-full h-24 object-cover rounded-md"
+                      />
+                    )}
                     <div className="text-sm font-medium line-clamp-2">{recipe.title}</div>
                     <div className="flex items-center justify-between">
                       <Button 
                         variant="ghost" 
-                        size="icon" 
+                        size="icon"
                         className="h-6 w-6"
                         onClick={() => planId && onRemoveMealPlan?.(planId)}
                       >
@@ -85,9 +95,7 @@ export function MealPlanCalendar({
 
   return (
     <div className="space-y-8">
-      {renderMealTypeSection("breakfast")}
-      {renderMealTypeSection("lunch")}
-      {renderMealTypeSection("dinner")}
+      {mealTypes.map((mealType) => renderMealTypeSection(mealType))}
     </div>
   );
 }

@@ -1,4 +1,3 @@
-
 import { Recipe, User, MealPlan } from "@/types";
 
 export const currentUser: User = {
@@ -152,7 +151,8 @@ export const mockMealPlans: MealPlan[] = [
     notes: "Add extra cheese",
     createdBy: "user-1",
     createdAt: "2024-04-19T18:00:00Z",
-    updatedAt: "2024-04-19T18:00:00Z"
+    updatedAt: "2024-04-19T18:00:00Z",
+    slotIndex: 0,
   },
   {
     id: "meal-2",
@@ -162,7 +162,8 @@ export const mockMealPlans: MealPlan[] = [
     notes: "Make extra for leftovers",
     createdBy: "user-1",
     createdAt: "2024-04-19T18:10:00Z",
-    updatedAt: "2024-04-19T18:10:00Z"
+    updatedAt: "2024-04-19T18:10:00Z",
+    slotIndex: 0,
   },
   {
     id: "meal-3",
@@ -171,7 +172,8 @@ export const mockMealPlans: MealPlan[] = [
     recipeId: "recipe-3",
     createdBy: "user-1",
     createdAt: "2024-04-19T18:20:00Z",
-    updatedAt: "2024-04-19T18:20:00Z"
+    updatedAt: "2024-04-19T18:20:00Z",
+    slotIndex: 0,
   },
   {
     id: "meal-4",
@@ -181,6 +183,7 @@ export const mockMealPlans: MealPlan[] = [
     notes: "Use frozen mixed berries",
     createdBy: "user-1",
     createdAt: "2024-04-19T18:30:00Z",
-    updatedAt: "2024-04-19T18:30:00Z"
+    updatedAt: "2024-04-19T18:30:00Z",
+    slotIndex: 0,
   }
 ];

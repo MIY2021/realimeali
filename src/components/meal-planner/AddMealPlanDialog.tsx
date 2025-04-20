@@ -1,12 +1,11 @@
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Recipe, MealType } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { format } from "date-fns";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
 
 interface AddMealPlanDialogProps {
   isOpen: boolean;
@@ -25,81 +24,94 @@ export function AddMealPlanDialog({
   selectedDate,
   selectedMealType,
 }: AddMealPlanDialogProps) {
-  const [selectedRecipeId, setSelectedRecipeId] = useState<string>("");
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [notes, setNotes] = useState<string>("");
   
-  const filteredRecipes = recipes.filter((recipe) =>
-    recipe.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredRecipes = useMemo(() => {
+    const searchLower = searchTerm.toLowerCase();
+    return recipes.filter((recipe) =>
+      recipe.title.toLowerCase().includes(searchLower) &&
+      recipe.categories.some(cat => cat === selectedMealType)
+    );
+  }, [recipes, searchTerm, selectedMealType]);
   
-  const handleAddMealPlan = () => {
-    if (selectedRecipeId) {
-      onAddMealPlan(selectedRecipeId, notes);
-      setSelectedRecipeId("");
-      setSearchTerm("");
-      setNotes("");
-    }
+  const handleSelectRecipe = (recipeId: string) => {
+    onAddMealPlan(recipeId, notes);
+    setSearchTerm("");
+    setNotes("");
   };
   
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>
-            Add Meal Plan for {format(selectedDate, "EEEE, MMMM d")}
+            Add {selectedMealType.charAt(0).toUpperCase() + selectedMealType.slice(1)}
           </DialogTitle>
         </DialogHeader>
         
-        <div className="space-y-4 py-4">
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Meal Type</label>
-            <div className="rounded-md border px-3 py-2 text-sm">
-              {selectedMealType.charAt(0).toUpperCase() + selectedMealType.slice(1)}
+        <div className="space-y-4">
+          <Input
+            placeholder="Search recipes..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full"
+          />
+          
+          <ScrollArea className="h-[400px] rounded-md border p-4">
+            <div className="space-y-4">
+              {filteredRecipes.length > 0 ? (
+                <div className="grid grid-cols-1 gap-4">
+                  {filteredRecipes.map((recipe) => (
+                    <button
+                      key={recipe.id}
+                      onClick={() => handleSelectRecipe(recipe.id)}
+                      className="flex items-start gap-4 rounded-lg border p-3 hover:bg-accent transition-colors text-left w-full"
+                    >
+                      <div className="h-20 w-20 flex-shrink-0 overflow-hidden rounded-md">
+                        {recipe.image ? (
+                          <img
+                            src={recipe.image}
+                            alt={recipe.title}
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <div className="h-full w-full bg-muted flex items-center justify-center">
+                            <span className="text-xs text-muted-foreground">No image</span>
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-1 space-y-1">
+                        <h4 className="font-medium leading-none">{recipe.title}</h4>
+                        <p className="text-sm text-muted-foreground line-clamp-2">
+                          {recipe.description}
+                        </p>
+                        <div className="flex flex-wrap gap-1">
+                          {recipe.categories.map((category) => (
+                            <span
+                              key={category}
+                              className="inline-flex items-center rounded-full bg-sage/20 px-2 py-1 text-xs font-medium text-sage"
+                            >
+                              {category}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center text-muted-foreground">
+                  No recipes found
+                </div>
+              )}
             </div>
-          </div>
-          
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Search Recipes</label>
-            <Input
-              placeholder="Search recipes..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Select Recipe</label>
-            <Select value={selectedRecipeId} onValueChange={setSelectedRecipeId}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select a recipe" />
-              </SelectTrigger>
-              <SelectContent>
-                {filteredRecipes.map((recipe) => (
-                  <SelectItem key={recipe.id} value={recipe.id}>
-                    {recipe.title}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Notes (Optional)</label>
-            <Textarea
-              placeholder="Add any special notes..."
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-            />
-          </div>
+          </ScrollArea>
         </div>
         
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>
             Cancel
-          </Button>
-          <Button onClick={handleAddMealPlan} disabled={!selectedRecipeId}>
-            Add to Meal Plan
           </Button>
         </DialogFooter>
       </DialogContent>
