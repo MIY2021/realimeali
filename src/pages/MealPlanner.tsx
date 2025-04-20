@@ -22,24 +22,38 @@ export default function MealPlanner() {
   };
   
   const handleAddMealPlan = (recipeId: string, notes: string) => {
-    // In a real app, this would be an API call
+    const availableSlot = getNextAvailableSlot(selectedMealType);
+    
     const newMealPlan: MealPlan = {
       id: `meal-${Date.now()}`,
       date: selectedDate.toISOString(),
       mealType: selectedMealType,
       recipeId,
       notes: notes || undefined,
-      createdBy: "user-1", // Current user ID
+      createdBy: "user-1",
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
+      slotIndex: availableSlot,
     };
     
     setMealPlans([...mealPlans, newMealPlan]);
     handleCloseAddDialog();
   };
   
+  const getNextAvailableSlot = (mealType: MealType) => {
+    const existingSlots = mealPlans
+      .filter(plan => plan.mealType === mealType)
+      .map(plan => plan.slotIndex || 0);
+    
+    for (let i = 0; i < 5; i++) {
+      if (!existingSlots.includes(i)) {
+        return i;
+      }
+    }
+    return 0;
+  };
+  
   const handleRemoveMealPlan = (mealPlanId: string) => {
-    // In a real app, this would be an API call
     setMealPlans(mealPlans.filter((plan) => plan.id !== mealPlanId));
   };
   
@@ -48,7 +62,7 @@ export default function MealPlanner() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-navy">Meal Planner</h1>
         <p className="text-muted-foreground mt-1">
-          Plan your meals for the week ahead
+          Plan your weekly meals
         </p>
       </div>
       
