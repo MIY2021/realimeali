@@ -1,8 +1,7 @@
-
 import { useState } from "react";
 import { MealPlanCalendar } from "@/components/meal-planner/MealPlanCalendar";
 import { AddMealPlanDialog } from "@/components/meal-planner/AddMealPlanDialog";
-import { mockMealPlans, mockRecipes } from "@/data/mockData";
+import { mockMealPlans, mockRecipes } from "@/data/mealPlans";
 import { MealPlan, MealType, RecipeCategory } from "@/types";
 import { Button } from "@/components/ui/button";
 import { FileSpreadsheet, ListChecks, Share } from "lucide-react";

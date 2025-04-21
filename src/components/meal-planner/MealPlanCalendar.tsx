@@ -3,7 +3,7 @@ import { MealPlan, Recipe, MealType } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, Trash2, UtensilsCrossed } from "lucide-react";
-import { mockRecipes } from "@/data/mockData";
+import { mockRecipes } from "@/data/recipes";
 
 interface MealPlanCalendarProps {
   mealPlans: MealPlan[];

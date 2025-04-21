@@ -1,8 +1,7 @@
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { RecipeDetail as RecipeDetailComponent } from "@/components/recipes/RecipeDetail";
-import { mockRecipes } from "@/data/mockData";
+import { mockRecipes } from "@/data/recipes";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { Recipe } from "@/types";

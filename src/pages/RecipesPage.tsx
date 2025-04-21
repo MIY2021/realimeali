@@ -1,12 +1,11 @@
-
 import { useState } from "react";
 import { RecipeList } from "@/components/recipes/RecipeList";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import { mockRecipes } from "@/data/mockData";
 import Papa from "papaparse";
 import { useToast } from "@/hooks/use-toast";
 import { RecipeCategory, Recipe } from "@/types";
+import { mockRecipes } from "@/data/recipes";
 
 export default function RecipesPage() {
   const [recipes, setRecipes] = useState(mockRecipes);

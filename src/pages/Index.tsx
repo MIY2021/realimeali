@@ -1,8 +1,7 @@
-
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { UtensilsCrossed, Shuffle, ListChecks } from "lucide-react";
-import { mockRecipes } from "@/data/mockData";
+import { mockRecipes } from "@/data/recipes";
 import { RecipeCard } from "@/components/recipes/RecipeCard";
 
 export default function Index() {
