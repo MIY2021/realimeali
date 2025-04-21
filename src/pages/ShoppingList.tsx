@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useMemo } from "react";
 import { mockMealPlans } from "@/data/mealPlans";
 import { mockRecipes } from "@/data/recipes";
@@ -178,46 +177,46 @@ export default function ShoppingList() {
     // Outer container: Remove excessive margins and fix horizontal scroll
     <div className="container max-w-lg py-4 overflow-x-hidden">
       <div className="mb-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-navy flex items-center gap-2">
-              <ListChecks className="h-6 w-6" />
-              Shopping List
-            </h1>
-            <p className="text-muted-foreground text-sm mt-1">
-              {ingredients.length} items • {checkedCount} purchased
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={handleCheckAll}
-              className="text-xs"
-            >
-              <Check className="h-4 w-4 mr-1" />
-              Check All
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={handleUncheckAll}
-              className="text-xs"
-            >
-              Clear All
-            </Button>
-            <Button
-              size="sm"
-              variant="destructive"
-              onClick={handleRemoveAll}
-              className="text-xs"
-            >
-              <Trash2 className="h-4 w-4 mr-1" />
-              Remove All
-            </Button>
-          </div>
+        <div>
+          <h1 className="text-2xl font-bold text-navy flex items-center gap-2">
+            <ListChecks className="h-6 w-6" />
+            Shopping List
+          </h1>
+          <p className="text-muted-foreground text-sm mt-1">
+            {ingredients.length} items • {checkedCount} purchased
+          </p>
+        </div>
+        {/* Move buttons here, below the title */}
+        <div className="flex gap-2 mt-4">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handleCheckAll}
+            className="text-xs"
+          >
+            <Check className="h-4 w-4 mr-1" />
+            Check All
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handleUncheckAll}
+            className="text-xs"
+          >
+            Clear All
+          </Button>
+          <Button
+            size="sm"
+            variant="destructive"
+            onClick={handleRemoveAll}
+            className="text-xs"
+          >
+            <Trash2 className="h-4 w-4 mr-1" />
+            Remove All
+          </Button>
         </div>
       </div>
+      {/* ... keep the rest the same ... */}
       <div className="space-y-4">
         {Object.entries(categorizedIngredients).map(([category, items]) => (
           <Card key={category}>
