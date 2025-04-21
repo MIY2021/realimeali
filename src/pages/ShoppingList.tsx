@@ -3,7 +3,7 @@ import { useState, useEffect, useMemo } from "react";
 import { mockMealPlans } from "@/data/mealPlans";
 import { mockRecipes } from "@/data/recipes";
 import { Recipe } from "@/types";
-import { ListChecks, Check } from "lucide-react";
+import { ListChecks, Check, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -84,6 +84,28 @@ export default function ShoppingList() {
     })));
   };
 
+  // New handler to remove a single item
+  const handleRemoveItem = (index: number) => {
+    const newIngredients = [...ingredients];
+    newIngredients.splice(index, 1);
+    setIngredients(newIngredients);
+    
+    toast({
+      title: "Item removed",
+      description: "Ingredient removed from shopping list",
+    });
+  };
+
+  // New handler to remove all items
+  const handleRemoveAll = () => {
+    setIngredients([]);
+    
+    toast({
+      title: "List cleared",
+      description: "All ingredients removed from shopping list",
+    });
+  };
+
   const getRecipeForIngredient = (recipeId: string): Recipe | undefined => {
     return mockRecipes.find(recipe => recipe.id === recipeId);
   };
@@ -135,7 +157,7 @@ export default function ShoppingList() {
   const checkedCount = ingredients.filter(i => i.checked).length;
 
   return (
-    <div className="container py-6">
+    <div className="container max-w-4xl py-6">
       <div className="mb-6">
         <div className="flex items-center justify-between">
           <div>
@@ -164,6 +186,15 @@ export default function ShoppingList() {
               className="text-xs"
             >
               Clear All
+            </Button>
+            <Button 
+              size="sm" 
+              variant="destructive" 
+              onClick={handleRemoveAll}
+              className="text-xs"
+            >
+              <Trash2 className="h-4 w-4 mr-1" />
+              Remove All
             </Button>
           </div>
         </div>
@@ -197,7 +228,7 @@ export default function ShoppingList() {
                           {ingredient.name}
                         </label>
                         <div className="flex flex-wrap gap-1 mt-1">
-                          {ingredient.recipeIds.slice(0, 3).map(recipeId => {
+                          {ingredient.recipeIds.map(recipeId => {
                             const recipe = getRecipeForIngredient(recipeId);
                             return recipe ? (
                               <Link to={`/recipes/${recipe.id}`} key={recipeId} className="inline-flex items-center rounded-full bg-sage/10 px-2 py-0.5 text-xs text-sage hover:underline">
@@ -205,13 +236,17 @@ export default function ShoppingList() {
                               </Link>
                             ) : null;
                           })}
-                          {ingredient.recipeIds.length > 3 && (
-                            <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
-                              +{ingredient.recipeIds.length - 3} more
-                            </span>
-                          )}
                         </div>
                       </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleRemoveItem(originalIndex)}
+                        className="h-7 w-7 p-0"
+                      >
+                        <Trash2 className="h-4 w-4 text-muted-foreground hover:text-destructive" />
+                        <span className="sr-only">Remove</span>
+                      </Button>
                     </li>
                   );
                 })}

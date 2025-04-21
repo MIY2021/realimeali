@@ -41,7 +41,7 @@ export function RecipeList({ recipes }: RecipeListProps) {
         <div className="w-full sm:w-48">
           <Select
             value={categoryFilter}
-            onValueChange={setCategoryFilter}
+            onValueChange={(value) => setCategoryFilter(value)}
           >
             <SelectTrigger>
               <SelectValue placeholder="Filter by category" />

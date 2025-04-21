@@ -1,7 +1,8 @@
+
 import { useState } from "react";
 import { RecipeList } from "@/components/recipes/RecipeList";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, Book } from "lucide-react";
 import Papa from "papaparse";
 import { useToast } from "@/hooks/use-toast";
 import { RecipeCategory, Recipe } from "@/types";
@@ -90,15 +91,17 @@ export default function RecipesPage() {
   };
 
   return (
-    <div className="container py-8">
+    <div className="container max-w-4xl py-8">
       <div className="flex items-center justify-between mb-8 gap-2 flex-wrap">
         <div>
-          <h1 className="text-3xl font-bold text-navy">Recipes</h1>
+          <h1 className="text-2xl font-bold text-navy flex items-center gap-2">
+            <Book className="h-6 w-6" />
+            Recipes
+          </h1>
           <p className="text-muted-foreground mt-1">
             Browse all your favorite recipes
           </p>
         </div>
-        {/* Remove the bulk import button from here */}
         <div className="flex items-center gap-2">
           <Button className="bg-terracotta hover:bg-terracotta/90">
             <Plus className="h-4 w-4 mr-2" />

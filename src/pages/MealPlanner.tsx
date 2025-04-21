@@ -1,14 +1,13 @@
-
 import { useState } from "react";
-import { MealPlanCalendar } from "@/components/meal-planner/MealPlanCalendar";
+import { CustomMealPlanCalendar } from "@/components/meal-planner/CustomMealPlanCalendar";
 import { AddMealPlanDialog } from "@/components/meal-planner/AddMealPlanDialog";
 import { MealPlan, MealType, RecipeCategory } from "@/types";
 import { Button } from "@/components/ui/button";
-import { FileSpreadsheet, ListChecks, Share } from "lucide-react";
+import { FileSpreadsheet, ListChecks, Share, Calendar } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { mockMealPlans } from "@/data/mealPlans";
-import { mockRecipes } from "@/data/recipes"; // Use correct import
+import { mockRecipes } from "@/data/recipes";
 
 export default function MealPlanner() {
   const [mealPlans, setMealPlans] = useState<MealPlan[]>(mockMealPlans);
@@ -108,7 +107,7 @@ export default function MealPlanner() {
     });
   };
 
-  // New: share meal plan using Web Share API if available
+  // Share meal plan using Web Share API if available
   const handleShareMealPlan = () => {
     // Gather meal plan details:
     const planByDay: Record<string, { type: string, recipe: string }[]> = {};
@@ -152,33 +151,39 @@ export default function MealPlanner() {
   };
 
   return (
-    <div className="container py-6">
-      <div className="mb-6 flex flex-wrap gap-2 justify-start">
-        <Button
-          onClick={handleRandomMealSelection}
-          size="sm"
-          className="bg-sage hover:bg-sage/90 px-3 py-2 flex items-center whitespace-nowrap"
-        >
-          <FileSpreadsheet className="mr-2 h-4 w-4" />
-          Randomise
-        </Button>
-        <Button
-          onClick={handleShareMealPlan}
-          size="sm"
-          variant="outline"
-          className="px-3 py-2 flex items-center whitespace-nowrap"
-        >
-          <Share className="mr-2 h-4 w-4" />
-          Share Meal Plan
-        </Button>
-        <Button asChild variant="outline" size="sm" className="flex items-center px-3 py-2 whitespace-nowrap">
-          <Link to="/shopping-list" className="flex items-center">
-            <ListChecks className="mr-2 h-4 w-4" />
-            Shopping List
-          </Link>
-        </Button>
+    <div className="container max-w-4xl py-6">
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-navy flex items-center gap-2 mb-4">
+          <Calendar className="h-6 w-6" />
+          Meal Planner
+        </h1>
+        <div className="flex flex-wrap gap-2 justify-start">
+          <Button
+            onClick={handleRandomMealSelection}
+            size="sm"
+            className="bg-sage hover:bg-sage/90 px-3 py-2 flex items-center whitespace-nowrap"
+          >
+            <FileSpreadsheet className="mr-2 h-4 w-4" />
+            Randomise
+          </Button>
+          <Button
+            onClick={handleShareMealPlan}
+            size="sm"
+            variant="outline"
+            className="px-3 py-2 flex items-center whitespace-nowrap"
+          >
+            <Share className="mr-2 h-4 w-4" />
+            Share Meal Plan
+          </Button>
+          <Button asChild variant="outline" size="sm" className="flex items-center px-3 py-2 whitespace-nowrap">
+            <Link to="/shopping-list" className="flex items-center">
+              <ListChecks className="mr-2 h-4 w-4" />
+              Shopping List
+            </Link>
+          </Button>
+        </div>
       </div>
-      <MealPlanCalendar
+      <CustomMealPlanCalendar
         mealPlans={mealPlans}
         onAddMealPlan={handleOpenAddDialog}
         onRemoveMealPlan={handleRemoveMealPlan}

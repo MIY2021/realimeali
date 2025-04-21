@@ -34,9 +34,6 @@ const Header = () => {
               <span>Login</span>
             </Link>
           </Button>
-          <Button asChild className="bg-terracotta hover:bg-terracotta/90">
-            <Link to="/signup">Sign Up</Link>
-          </Button>
         </div>
       </div>
     </header>
