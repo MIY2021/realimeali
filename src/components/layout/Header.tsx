@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { User, UtensilsCrossed, CalendarDays, Book } from "lucide-react";
+import { User, UtensilsCrossed, CalendarDays, Book, ListChecks } from "lucide-react";
 
 const Header = () => {
   return (
@@ -20,6 +20,10 @@ const Header = () => {
           <Link to="/meal-planner" className="flex items-center space-x-1 text-navy hover:text-terracotta transition-colors">
             <CalendarDays className="h-4 w-4" />
             <span>Meal Planner</span>
+          </Link>
+          <Link to="/shopping-list" className="flex items-center space-x-1 text-navy hover:text-terracotta transition-colors">
+            <ListChecks className="h-4 w-4" />
+            <span>Shopping List</span>
           </Link>
         </nav>
 
