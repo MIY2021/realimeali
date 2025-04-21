@@ -1,6 +1,6 @@
 
 import { useState, useMemo } from "react";
-import { Recipe, MealType } from "@/types";
+import { Recipe, MealType, RecipeCategory } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -35,13 +35,13 @@ export function AddMealPlanDialog({
 }: AddMealPlanDialogProps) {
   const [notes, setNotes] = useState<string>("");
   const [searchTerm, setSearchTerm] = useState<string>("");
-  const [selectedCategory, setSelectedCategory] = useState<string>("All");
+  const [selectedCategory, setSelectedCategory] = useState<RecipeCategory | "All">("All");
 
   // Get unique categories across all recipes
-  const allCategories = useMemo(() => {
-    const set = new Set<string>();
+  const allCategories: (RecipeCategory | "All")[] = useMemo(() => {
+    const set = new Set<RecipeCategory>();
     recipes.forEach((recipe) =>
-      recipe.categories.forEach((cat) => set.add(cat))
+      recipe.categories.forEach((cat) => set.add(cat as RecipeCategory))
     );
     return ["All", ...Array.from(set).sort()];
   }, [recipes]);
@@ -77,7 +77,7 @@ export function AddMealPlanDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[90vw] h-[90vh] flex flex-col">
+      <DialogContent className="!max-w-[100vw] !w-screen !h-screen flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex justify-between items-center">
             <span>
@@ -103,9 +103,11 @@ export function AddMealPlanDialog({
               onChange={(e) => setSearchTerm(e.target.value)}
               className="flex-shrink-0 sm:w-1/2"
             />
-            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+            <Select value={selectedCategory} onValueChange={(v) => setSelectedCategory(v as RecipeCategory | "All")}>
               <SelectTrigger className="w-full sm:w-[170px]">
-                <SelectValue>{selectedCategory === "All" ? "All Categories" : selectedCategory}</SelectValue>
+                <SelectValue>
+                  {selectedCategory === "All" ? "All Categories" : selectedCategory}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {allCategories.map((cat) => (

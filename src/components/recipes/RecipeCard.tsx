@@ -2,7 +2,7 @@
 import { Recipe } from "@/types";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { Clock, Users, Image as ImageIcon } from "lucide-react";
+import { Clock, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 
@@ -25,11 +25,15 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
               src={image}
               alt={title}
               className="h-full w-full object-cover transition-transform hover:scale-105"
-              onError={() => setImgError(true)}
+              onError={(e) => {
+                setImgError(true);
+                (e.currentTarget as HTMLImageElement).src = "/placeholder.svg";
+              }}
             />
           ) : (
             <div className="absolute inset-0 flex items-center justify-center bg-muted">
-              <ImageIcon className="h-8 w-8 text-muted-foreground" />
+              {/* Instead of Lucide's Image (not available), fallback text */}
+              <span className="text-xs text-muted-foreground">No image</span>
             </div>
           )}
         </div>
