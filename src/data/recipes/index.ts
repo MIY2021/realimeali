@@ -5,13 +5,22 @@ import { easyRecipes } from "./recipes_easy";
 import { specialRecipes } from "./recipes_special";
 import { vegetarianRecipes } from "./recipes_veg";
 
-// Export each group in case you need them individually
 export { bulkRecipes, easyRecipes, specialRecipes, vegetarianRecipes };
 
-// Concatenate all arrays to provide a mockRecipes master list
-export const mockRecipes: Recipe[] = [
+// Remove duplicate recipes by title+first category
+function dedupe(recipes: Recipe[]): Recipe[] {
+  const seen = new Set();
+  return recipes.filter((r) => {
+    const key = r.title.trim().toLowerCase() + "|" + (r.categories[0] || "");
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+export const mockRecipes: Recipe[] = dedupe([
   ...bulkRecipes,
   ...easyRecipes,
   ...specialRecipes,
   ...vegetarianRecipes,
-];
+]);

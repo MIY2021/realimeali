@@ -1,41 +1,60 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { MealPlan, MealType, RecipeCategory } from "@/types";
 import { Button } from "@/components/ui/button";
-import { FileSpreadsheet, ListChecks, Share, Users, Trash2, Plus } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { ListChecks, Plus, Trash2, Users, Share, FileSpreadsheet, CircleX } from "lucide-react";
+import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { mockMealPlans } from "@/data/mealPlans";
 import { mockRecipes } from "@/data/recipes";
+import { AddRecipeToMealModal } from "@/components/meal-planner/AddRecipeToMealModal";
+
+const STORAGE_KEY = "persistedMealPlans_v1";
 
 export default function MealPlanner() {
-  const [mealPlans, setMealPlans] = useState<MealPlan[]>(mockMealPlans);
+  // ----- Load and persist meal plan -----
+  const [mealPlans, setMealPlans] = useState<MealPlan[]>([]);
+  useEffect(() => {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      setMealPlans(JSON.parse(stored));
+    } else {
+      setMealPlans(mockMealPlans);
+    }
+  }, []);
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(mealPlans));
+  }, [mealPlans]);
+
+  const { toast } = useToast();
   const mealTypes: MealType[] = ["dinner", "lunch", "breakfast"];
-  const navigate = useNavigate();
+  const getMealPlansForType = (mealType: MealType) =>
+    mealPlans.filter(plan => plan.mealType === mealType);
+  const getRecipeById = (id: string) => mockRecipes.find(r => r.id === id);
 
-  // Helper: list for mealType
-  const getMealPlansForType = (mealType: MealType) => {
-    return mealPlans.filter((plan) => plan.mealType === mealType);
-  };
+  // ---- AddMeal Modal State ----
+  const [addMealModal, setAddMealModal] = useState<{
+    open: boolean;
+    mealType: MealType | null;
+  }>({ open: false, mealType: null });
 
-  const getRecipeById = (id: string) => {
-    return mockRecipes.find((r) => r.id === id);
-  };
+  // - Helper to get all unique recipe IDs in plan
+  const allUsedIds = new Set(mealPlans.map(mp => mp.recipeId));
 
-  // Helper: choose N unique recipes for each mealType
+  // ---- Ensure unique random recipes ----
   function getUniqueRandomRecipes(
     availableRecipes: typeof mockRecipes,
     categories: RecipeCategory[],
-    count: number
+    count: number,
+    excludeIds: Set<string>
   ) {
-    const pool = availableRecipes.filter((r) =>
-      r.categories.some((cat) => categories.includes(cat as RecipeCategory))
+    const pool = availableRecipes.filter(r =>
+      r.categories.some(cat => categories.includes(cat as RecipeCategory)) &&
+      !excludeIds.has(r.id)
     );
-    // Shuffle
     const shuffled = [...pool].sort(() => Math.random() - 0.5);
-    // Unique by recipe.id
-    const seen = new Set();
     const result = [];
+    const seen = new Set(excludeIds);
     for (let recipe of shuffled) {
       if (!seen.has(recipe.id)) {
         result.push(recipe);
@@ -46,20 +65,25 @@ export default function MealPlanner() {
     return result;
   }
 
-  // Rewritten randomise
+  // ---- Randomise handler with confirmation ----
   const handleRandomMealSelection = () => {
+    if (mealPlans.length > 0) {
+      if (!window.confirm("This will overwrite your current meal list. Continue?"))
+        return;
+    }
     const newMealPlans: MealPlan[] = [];
     const mealTypeToCategories: Record<MealType, RecipeCategory[]> = {
       dinner: ["Bulk", "Pasta", "Fish", "BBQ", "Super Tasty"],
       lunch: ["Easy", "Cheap", "Vegetarian", "Tapas"],
       breakfast: ["Easy", "Healthy", "Vegetarian"],
     };
-
-    mealTypes.forEach((type) => {
+    let allSelectedIds = new Set<string>();
+    mealTypes.forEach(type => {
       const unique = getUniqueRandomRecipes(
         mockRecipes,
         mealTypeToCategories[type],
-        5
+        5,
+        allSelectedIds
       );
       unique.forEach((recipe, i) => {
         newMealPlans.push({
@@ -72,12 +96,14 @@ export default function MealPlanner() {
           updatedAt: new Date().toISOString(),
           slotIndex: i,
         });
+        allSelectedIds.add(recipe.id);
       });
     });
     setMealPlans(newMealPlans);
+    toast({ title: "Meal Plan Randomised", description: "Your meals have been chosen!" });
   };
 
-  // Share only what is displayed (not all historic meals)
+  // ---- Share ----
   const handleShareMealPlan = () => {
     let shareText = "Here's our shared meal plan!\n\n";
     mealTypes.forEach(mealType => {
@@ -89,66 +115,60 @@ export default function MealPlanner() {
       shareText += "\n";
     });
     if (navigator.share) {
-      navigator.share({
-        title: "Meal Plan",
-        text: shareText
-      });
+      navigator.share({ title: "Meal Plan", text: shareText });
     } else {
       navigator.clipboard.writeText(shareText);
     }
+    toast({ title: "Copied Meal Plan", description: "Meal plan copied to clipboard!" });
   };
 
-  // Remove a meal from a plan
+  // ---- Remove a meal ----
   const handleRemoveMeal = (planId: string) => {
     setMealPlans((prev) => prev.filter((mp) => mp.id !== planId));
   };
 
-  // Add meal (dummy: maybe open dialog or just push placeholder meal for demo)
+  // ---- Add meal: Opens modal ----
   const handleAddMeal = (mealType: MealType) => {
-    // Demo: pick first unused recipe from categories
-    const mealTypeToCategories: Record<MealType, RecipeCategory[]> = {
-      dinner: ["Bulk", "Pasta", "Fish", "BBQ", "Super Tasty"],
-      lunch: ["Easy", "Cheap", "Vegetarian", "Tapas"],
-      breakfast: ["Easy", "Healthy", "Vegetarian"],
-    };
-    const usedIds = new Set(
-      mealPlans.filter((mp) => mp.mealType === mealType).map((mp) => mp.recipeId)
-    );
-    const available = mockRecipes.filter(
-      (r) =>
-        r.categories.some((c) =>
-          mealTypeToCategories[mealType].includes(c as RecipeCategory)
-        ) && !usedIds.has(r.id)
-    );
-    const pick = available[0];
-    if (pick) {
-      setMealPlans((prev) => [
-        ...prev,
-        {
-          id: `added-meal-${Date.now()}-${mealType}`,
-          date: new Date().toISOString(),
-          mealType,
-          recipeId: pick.id,
-          createdBy: "user-1",
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          slotIndex: prev.filter(mp => mp.mealType === mealType).length,
-        },
-      ]);
-    }
+    setAddMealModal({ open: true, mealType });
+  };
+  const onAddMealFinish = (mealType: MealType, recipeId: string) => {
+    setMealPlans((prev) => [
+      ...prev,
+      {
+        id: `added-meal-${Date.now()}-${mealType}`,
+        date: new Date().toISOString(),
+        mealType,
+        recipeId,
+        createdBy: "user-1",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        slotIndex: prev.filter(mp => mp.mealType === mealType).length,
+      }
+    ]);
+    setAddMealModal({ open: false, mealType: null });
   };
 
-  // Invite
-  const handleInvite = () => {
-    alert("Feature coming soon: Invite users");
+  // ---- Invite handler ----
+  const handleInvite = () => alert("Feature coming soon: Invite users to meal plan");
+
+  // ---- Clear all ----
+  const handleClearAll = () => {
+    if (mealPlans.length === 0) return;
+    if (!window.confirm("Clear the entire meal plan?")) return;
+    setMealPlans([]);
+    toast({ title: "Meal plan cleared" });
   };
 
   return (
     <div className="container max-w-xl py-8">
       <h1 className="text-2xl font-bold text-navy flex items-center gap-2 mb-2">
         Meal Planner
+        <Button variant="ghost" size="icon" className="ml-2" onClick={handleClearAll} title="Clear all meals">
+          <CircleX className="h-5 w-5 text-terracotta" />
+          <span className="sr-only">Clear All Meals</span>
+        </Button>
       </h1>
-      {/* Randomise button above all lists */}
+      {/* Randomise + share + invite */}
       <div className="flex gap-2 mb-4">
         <Button
           onClick={handleRandomMealSelection}
@@ -225,6 +245,15 @@ export default function MealPlanner() {
           Shopping List
         </Link>
       </Button>
+      {addMealModal.open && addMealModal.mealType && (
+        <AddRecipeToMealModal
+          open={addMealModal.open}
+          onClose={() => setAddMealModal({ open: false, mealType: null })}
+          mealType={addMealModal.mealType}
+          recipes={mockRecipes}
+          onSelectRecipe={(recipeId) => onAddMealFinish(addMealModal.mealType!, recipeId)}
+        />
+      )}
     </div>
   );
 }

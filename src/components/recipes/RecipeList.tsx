@@ -3,7 +3,6 @@ import { Recipe } from "@/types";
 import { RecipeCard } from "./RecipeCard";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
-import { Link } from "react-router-dom";
 
 interface RecipeListProps {
   recipes: Recipe[];
@@ -40,7 +39,6 @@ export function RecipeList({ recipes }: RecipeListProps) {
           />
         </div>
         <div className="w-full sm:w-48">
-          {/* Allow clicking a category to go to category page */}
           <div className="relative">
             <select
               value={categoryFilter}
@@ -52,14 +50,6 @@ export function RecipeList({ recipes }: RecipeListProps) {
                 <option key={category} value={category}>{category.charAt(0).toUpperCase() + category.slice(1)}</option>
               ))}
             </select>
-            {categoryFilter !== "all" && (
-              <Link
-                to={`/category/${encodeURIComponent(categoryFilter)}`}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-blue-700 underline"
-              >
-                View all in {categoryFilter}
-              </Link>
-            )}
           </div>
         </div>
       </div>

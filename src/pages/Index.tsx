@@ -3,18 +3,26 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { mockRecipes } from "@/data/recipes";
 import { RecipeCard } from "@/components/recipes/RecipeCard";
-import { CalendarDays, Book, ListChecks } from "lucide-react";
 
 export default function Index() {
-  // Get the 3 most recent recipes
-  const latestRecipes = mockRecipes
+  // Get the 3 most recent recipes - only unique
+  const uniqueByTitle = (recipes: typeof mockRecipes) => {
+    const seen = new Set();
+    return recipes.filter((r) => {
+      const key = r.title.trim().toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  };
+  const latestRecipes = uniqueByTitle(mockRecipes)
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 3);
 
   return (
     <div className="flex flex-col min-h-screen">
-      {/* Hero Section - buttons now use images */}
-      <section className="py-8 bg-gradient-to-b from-cream to-cream/50">
+      {/* Hero Section - use meal images instead of icons */}
+      <section className="py-8 bg-gradient-to-b from-[#ffe5cb] to-[#fff3e0]">
         <div className="container px-4">
           <div className="flex flex-col items-center space-y-2 text-center">
             <h1 className="text-xl font-bold sm:text-2xl md:text-3xl text-navy">
@@ -28,7 +36,7 @@ export default function Index() {
                 <Link to="/meal-planner" className="flex flex-col items-center w-full">
                   <span className="pb-2">
                     <img
-                      src="https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?auto=format&fit=crop&w=128&q=80"
+                      src="https://images.unsplash.com/photo-1511690743698-d9d85f2fbf38?auto=format&fit=crop&w=128&q=80"
                       className="h-24 w-24 object-cover rounded-full border mb-1"
                       alt="Meal Planner"
                     />
@@ -37,12 +45,11 @@ export default function Index() {
                   <span className="text-xs text-muted-foreground mt-1">Plan weekly meals easily</span>
                 </Link>
               </Button>
-
               <Button asChild size="lg" className="bg-white border shadow hover:bg-sage/10 flex-1 flex flex-col items-center py-5 group transition-all">
                 <Link to="/recipes" className="flex flex-col items-center w-full">
                   <span className="pb-2">
                     <img
-                      src="https://images.unsplash.com/photo-1721322800607-8c38375eef04?auto=format&fit=crop&w=128&q=80"
+                      src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=128&q=80"
                       className="h-24 w-24 object-cover rounded-full border mb-1"
                       alt="Recipes"
                     />
@@ -51,12 +58,11 @@ export default function Index() {
                   <span className="text-xs text-muted-foreground mt-1">Save your favorite recipes</span>
                 </Link>
               </Button>
-
               <Button asChild size="lg" className="bg-white border shadow hover:bg-sage/10 flex-1 flex flex-col items-center py-5 group transition-all">
                 <Link to="/shopping-list" className="flex flex-col items-center w-full">
                   <span className="pb-2">
                     <img
-                      src="https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07?auto=format&fit=crop&w=128&q=80"
+                      src="https://images.unsplash.com/photo-1543353071-873f17a7a088?auto=format&fit=crop&w=128&q=80"
                       className="h-24 w-24 object-cover rounded-full border mb-1"
                       alt="Shopping List"
                     />
@@ -70,15 +76,15 @@ export default function Index() {
         </div>
       </section>
 
-      {/* Latest Recipes - with very dark background */}
-      <section className="py-4 bg-[#f97315]">
+      {/* Latest Recipes - with dark orange background */}
+      <section className="py-4 bg-[#f97316]">
         <div className="container px-4">
           <div className="flex items-center justify-between mb-3">
             <div>
-              <h2 className="text-lg font-bold text-navy text-white">
+              <h2 className="text-lg font-bold text-white">
                 Latest Recipes
               </h2>
-              <p className="text-xs text-muted-foreground text-white/80">
+              <p className="text-xs text-white/80">
                 See what&apos;s new in your recipe collection
               </p>
             </div>
@@ -93,8 +99,6 @@ export default function Index() {
           </div>
         </div>
       </section>
-
-      {/* CTA Section Removed */}
     </div>
   );
 }

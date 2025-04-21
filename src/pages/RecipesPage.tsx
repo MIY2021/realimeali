@@ -20,7 +20,6 @@ export default function RecipesPage() {
     Papa.parse(file, {
       complete: (results) => {
         try {
-          // Header row expected: title,description,ingredients,instructions,categories,prepTime,cookTime,servings,image,isFavorite
           const rows = results.data as string[][];
           const [headers, ...dataRows] = rows;
           const headerMap: Record<string, number> = {};
@@ -92,7 +91,7 @@ export default function RecipesPage() {
 
   const handleAddNewRecipe = () => {
     toast({
-      title: "Feature coming soon",
+      title: "Coming soon!",
       description: "Adding new recipes will be available in a future update.",
     });
   };
