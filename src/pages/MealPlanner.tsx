@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { MealPlan, MealType, RecipeCategory } from "@/types";
 import { Button } from "@/components/ui/button";
-import { ListChecks, Plus, Trash2, Users, Share, FileSpreadsheet, X } from "lucide-react";
+import { ListChecks, Plus, Trash2, Users, Share, FileSpreadsheet } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { mockMealPlans } from "@/data/mealPlans";
@@ -210,7 +210,6 @@ export default function MealPlanner() {
           size="sm"
           variant="outline"
           className="flex items-center whitespace-nowrap bg-transparent active:bg-transparent focus:bg-transparent"
-          // Prevent outlined style from changing bg on click
           style={{ backgroundColor: "transparent" }}
         >
           <Users className="mr-2 h-4 w-4" />

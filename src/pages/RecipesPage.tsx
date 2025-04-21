@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { RecipeList } from "@/components/recipes/RecipeList";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,12 @@ import {
 } from "@/components/ui/dialog";
 
 const MEAL_TYPES: MealType[] = ["dinner", "lunch", "breakfast"];
+const SORTS = [
+  { label: "Title (A-Z)", value: "title-asc" },
+  { label: "Title (Z-A)", value: "title-desc" },
+  { label: "Prep Time (Shortest)", value: "prep-asc" },
+  { label: "Prep Time (Longest)", value: "prep-desc" },
+];
 
 export default function RecipesPage() {
   const [recipes, setRecipes] = useState(mockRecipes);
@@ -21,6 +28,11 @@ export default function RecipesPage() {
 
   // --- Add-to-meal plan state
   const [addToMealRecipe, setAddToMealRecipe] = useState<Recipe | null>(null);
+  const [showMealTypeDialog, setShowMealTypeDialog] = useState(false);
+  const [selectedMealType, setSelectedMealType] = useState<MealType | null>(null);
+
+  // Sorting state
+  const [sortType, setSortType] = useState<string>("title-asc");
 
   const handleBulkImport = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -107,17 +119,23 @@ export default function RecipesPage() {
 
   const handleAddToMealPlan = (recipe: Recipe) => {
     setAddToMealRecipe(recipe);
+    setShowMealTypeDialog(true);
+    setSelectedMealType(null);
   };
 
-  // Simulate adding to meal plan (just toast)
-  const handleAddToMealType = (mealType: MealType) => {
-    toast({
-      title: "Recipe Added",
-      description: `Added ${addToMealRecipe?.title} to your ${mealType} meal plan!`,
-    });
+  const handleSelectMealType = (mealType: MealType) => {
+    if (addToMealRecipe) {
+      toast({
+        title: "Recipe Added",
+        description: `Added ${addToMealRecipe.title} to your ${mealType} meal plan!`,
+      });
+    }
     setAddToMealRecipe(null);
+    setShowMealTypeDialog(false);
+    setSelectedMealType(null);
   };
 
+  // RecipeList already supports sorting if we pass sortType and a handler
   return (
     <div className="container max-w-3xl py-6">
       <div className="flex items-center justify-between mb-8 gap-2 flex-wrap">
@@ -137,9 +155,30 @@ export default function RecipesPage() {
           </Button>
         </div>
       </div>
-      <RecipeList recipes={recipes} onAddToMealPlan={handleAddToMealPlan} />
+      <div className="flex mb-4 items-center gap-4">
+        <label className="font-semibold">Sort by:</label>
+        <select
+          className="border p-2 rounded"
+          value={sortType}
+          onChange={e => setSortType(e.target.value)}
+        >
+          {SORTS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+        </select>
+      </div>
+      <RecipeList
+        recipes={
+          [...recipes].sort((a, b) => {
+            if (sortType === "title-asc") { return a.title.localeCompare(b.title);}
+            if (sortType === "title-desc") { return b.title.localeCompare(a.title);}
+            if (sortType === "prep-asc") { return a.prepTime - b.prepTime;}
+            if (sortType === "prep-desc") { return b.prepTime - a.prepTime;}
+            return 0;
+          })
+        }
+        onAddToMealPlan={handleAddToMealPlan}
+      />
 
-      <Dialog open={!!addToMealRecipe} onOpenChange={open => !open && setAddToMealRecipe(null)}>
+      <Dialog open={showMealTypeDialog && !!addToMealRecipe} onOpenChange={open => !open && setShowMealTypeDialog(false)}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
@@ -152,10 +191,13 @@ export default function RecipesPage() {
           </div>
           <div className="flex flex-col gap-2">
             {MEAL_TYPES.map(type => (
-              <Button key={type} onClick={() => handleAddToMealType(type)}>
+              <Button key={type} onClick={() => handleSelectMealType(type)}>
                 Add to {type.charAt(0).toUpperCase() + type.slice(1)}
               </Button>
             ))}
+            <Button variant="outline" onClick={() => setShowMealTypeDialog(false)}>
+              Cancel
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

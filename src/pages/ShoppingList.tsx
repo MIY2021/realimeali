@@ -3,7 +3,7 @@ import { useState, useEffect, useMemo } from "react";
 import { mockMealPlans } from "@/data/mealPlans";
 import { mockRecipes } from "@/data/recipes";
 import { Recipe } from "@/types";
-import { ListChecks, Check, Trash2, Beef } from "lucide-react"; // replaced Steak with Beef
+import { ListChecks, Check, Trash2 } from "lucide-react"; // fallback to available icon
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -20,7 +20,6 @@ interface Ingredient {
 }
 
 function parseIngredientQty(text: string): { qty: number; unit: string; name: string } {
-  // crude parsing, expects: "2 eggs", "100g flour", etc.
   const match = text.match(/^(\d+(?:\.\d+)?)([a-zA-Z]+)?\s+(.*)$/);
   if (match)
     return {
@@ -28,14 +27,12 @@ function parseIngredientQty(text: string): { qty: number; unit: string; name: st
       unit: match[2] ? match[2].trim() : "",
       name: match[3].toLowerCase(),
     };
-  return { qty: 1, unit: "", name: text.toLowerCase() }; // e.g. "egg"
+  return { qty: 1, unit: "", name: text.toLowerCase() };
 }
 
 export default function ShoppingList() {
-  // --- Week state
   const [week, setWeek] = useState<1 | 2>(1);
 
-  // Only include recipes in the meal plan for active week
   const mealPlanRecipes = useMemo(() => {
     const storage = localStorage.getItem(`persistedMealPlans_v1_week${week}`);
     const selectedPlans = storage ? JSON.parse(storage) : week === 1 ? mockMealPlans : [];
@@ -46,10 +43,8 @@ export default function ShoppingList() {
   const [ingredients, setIngredients] = useState<Ingredient[]>([]);
   const { toast } = useToast();
 
-  // Calculate and aggregate ingredient quantities across all meal plan recipes
   useEffect(() => {
     const ingredientMap = new Map<string, Ingredient>();
-
     mealPlanRecipes.forEach(recipe => {
       recipe.ingredients.forEach(ingredientText => {
         const { qty, unit, name } = parseIngredientQty(ingredientText);
@@ -108,7 +103,6 @@ export default function ShoppingList() {
     })));
   };
 
-  // New handler to remove a single item
   const handleRemoveItem = (index: number) => {
     const newIngredients = [...ingredients];
     newIngredients.splice(index, 1);
@@ -120,10 +114,8 @@ export default function ShoppingList() {
     });
   };
 
-  // New handler to remove all items
   const handleRemoveAll = () => {
     setIngredients([]);
-
     toast({
       title: "List cleared",
       description: "All ingredients removed from shopping list",
@@ -175,11 +167,11 @@ export default function ShoppingList() {
   const checkedCount = ingredients.filter(i => i.checked).length;
 
   return (
-    <div className="container max-w-md py-4 overflow-x-hidden" style={{ marginLeft: "auto", marginRight: "auto" }}>
+    <div className="container max-w-md py-4 px-2 sm:px-6 overflow-x-hidden" style={{ marginLeft: "auto", marginRight: "auto" }}>
       <div className="mb-6">
         <div>
           <h1 className="text-2xl font-bold text-navy flex items-center gap-2">
-            <Beef className="h-6 w-6" /> {/* Replaced Steak with Beef */}
+            <ListChecks className="h-6 w-6" />
             Shopping List
           </h1>
           <div className="flex gap-2 mt-2">
@@ -266,4 +258,3 @@ export default function ShoppingList() {
     </div>
   );
 }
-
