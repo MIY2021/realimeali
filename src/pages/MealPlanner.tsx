@@ -3,7 +3,7 @@ import { CustomMealPlanCalendar } from "@/components/meal-planner/CustomMealPlan
 import { AddMealPlanDialog } from "@/components/meal-planner/AddMealPlanDialog";
 import { MealPlan, MealType, RecipeCategory } from "@/types";
 import { Button } from "@/components/ui/button";
-import { FileSpreadsheet, ListChecks, Share, Calendar } from "lucide-react";
+import { FileSpreadsheet, ListChecks, Share, CalendarDays } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { mockMealPlans } from "@/data/mealPlans";
@@ -154,7 +154,7 @@ export default function MealPlanner() {
     <div className="container max-w-4xl py-6">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-navy flex items-center gap-2 mb-4">
-          <Calendar className="h-6 w-6" />
+          <CalendarDays className="h-6 w-6" />
           Meal Planner
         </h1>
         <div className="flex flex-wrap gap-2 justify-start">

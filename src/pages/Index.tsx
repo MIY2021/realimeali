@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { mockRecipes } from "@/data/recipes";
 import { RecipeCard } from "@/components/recipes/RecipeCard";
-import { Calendar, Book, ListChecks } from "lucide-react";
+import { CalendarDays, Book, ListChecks } from "lucide-react";
 
 export default function Index() {
   // Show the latest recipes (most recently added)
@@ -28,7 +28,7 @@ export default function Index() {
                 <Link to="/meal-planner" className="flex flex-col items-center w-full">
                   <span className="pb-2">
                     <span className="inline-flex items-center justify-center bg-sage/10 rounded-full p-3 mb-1 group-hover:bg-sage/20 transition">
-                      <Calendar className="h-8 w-8 text-sage" />
+                      <CalendarDays className="h-8 w-8 text-sage" />
                     </span>
                   </span>
                   <span className="font-semibold text-navy text-base">Meal Planning</span>
