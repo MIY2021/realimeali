@@ -1,4 +1,4 @@
-import { Recipe, User, MealPlan } from "@/types";
+import { Recipe, User, MealPlan, RecipeCategory } from "@/types";
 
 export const currentUser: User = {
   id: "user-1",
@@ -31,7 +31,7 @@ export const mockRecipes: Recipe[] = [
       "Drain pasta and add to the sauce, tossing to coat.",
       "Garnish with fresh parsley before serving."
     ],
-    categories: ["dinner"],
+    categories: ["Pasta", "Easy"],
     prepTime: 10,
     cookTime: 20,
     servings: 4,
@@ -63,7 +63,7 @@ export const mockRecipes: Recipe[] = [
       "Close the sandwich with the other slice of toast.",
       "Cut in half and serve immediately."
     ],
-    categories: ["breakfast"],
+    categories: ["Cheap", "Easy"],
     prepTime: 5,
     cookTime: 10,
     servings: 1,
@@ -101,7 +101,7 @@ export const mockRecipes: Recipe[] = [
       "Season with salt to taste.",
       "Garnish with fresh cilantro and serve over rice."
     ],
-    categories: ["dinner", "lunch"],
+    categories: ["Vegetarian", "Bulk", "Healthy"],
     prepTime: 15,
     cookTime: 25,
     servings: 4,
@@ -130,7 +130,7 @@ export const mockRecipes: Recipe[] = [
       "Top with sliced banana, fresh berries, granola, and chia seeds.",
       "Serve immediately."
     ],
-    categories: ["breakfast", "snack"],
+    categories: ["Healthy", "Vegetarian", "Easy"],
     prepTime: 10,
     cookTime: 0,
     servings: 1,
@@ -158,7 +158,7 @@ export const mockRecipes: Recipe[] = [
       "Season with salt and pepper.",
       "Serve chilled on lettuce leaves."
     ],
-    categories: ["lunch", "dinner"],
+    categories: ["Cheap", "Fish", "Bulk"],
     prepTime: 5,
     cookTime: 0,
     servings: 2,
@@ -186,7 +186,7 @@ export const mockRecipes: Recipe[] = [
       "Return eggs to the pan, add soy sauce, and mix well.",
       "Top with green onions."
     ],
-    categories: ["lunch", "dinner"],
+    categories: ["Cheap", "Bulk"],
     prepTime: 10,
     cookTime: 10,
     servings: 2,
@@ -212,7 +212,7 @@ export const mockRecipes: Recipe[] = [
       "Mash avocado with lemon juice, salt, and pepper.",
       "Spread avocado on toast and sprinkle chili flakes if desired."
     ],
-    categories: ["breakfast", "snack"],
+    categories: ["Healthy", "Vegetarian", "Easy"],
     prepTime: 5,
     cookTime: 2,
     servings: 1,
@@ -238,7 +238,7 @@ export const mockRecipes: Recipe[] = [
       "Pour into a hot pan, cook until almost set.",
       "Add cheese and herbs, fold, and finish cooking."
     ],
-    categories: ["breakfast"],
+    categories: ["Easy", "Healthy"],
     prepTime: 5,
     cookTime: 5,
     servings: 1,
@@ -266,7 +266,7 @@ export const mockRecipes: Recipe[] = [
       "Grill for 6-8 minutes per side or until cooked through.",
       "Garnish with fresh dill and serve."
     ],
-    categories: ["dinner", "fish"],
+    categories: ["Fish", "Bulk"],
     prepTime: 10,
     cookTime: 15,
     servings: 2,
@@ -298,7 +298,7 @@ export const mockRecipes: Recipe[] = [
       "Simmer for 30 minutes.",
       "Serve hot with rice or bread."
     ],
-    categories: ["dinner", "vegetarian", "cheap", "healthy"],
+    categories: ["Vegetarian", "Cheap", "Healthy", "Bulk"],
     prepTime: 15,
     cookTime: 30,
     servings: 6,
@@ -325,7 +325,7 @@ export const mockRecipes: Recipe[] = [
       "Brush with BBQ sauce and bake for another 10-15 minutes.",
       "Serve hot."
     ],
-    categories: ["dinner", "bbq", "super tasty"],
+    categories: ["BBQ", "Super Tasty"],
     prepTime: 10,
     cookTime: 40,
     servings: 4,
@@ -354,7 +354,7 @@ export const mockRecipes: Recipe[] = [
       "Drain pasta and toss quickly with pancetta and egg mixture.",
       "Season with salt and pepper and serve immediately."
     ],
-    categories: ["dinner", "pasta", "super tasty", "pricey!"],
+    categories: ["Pasta", "Super Tasty", "Pricey!"],
     prepTime: 10,
     cookTime: 15,
     servings: 4,
@@ -363,7 +363,7 @@ export const mockRecipes: Recipe[] = [
     createdAt: "2023-07-18T12:00:00Z",
     updatedAt: "2023-07-18T12:00:00Z",
     isFavorite: true,
-  }
+  },
 ];
 
 export const mockMealPlans: MealPlan[] = [

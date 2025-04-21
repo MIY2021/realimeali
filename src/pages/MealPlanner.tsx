@@ -1,11 +1,10 @@
-
 import { useState } from "react";
 import { MealPlanCalendar } from "@/components/meal-planner/MealPlanCalendar";
 import { AddMealPlanDialog } from "@/components/meal-planner/AddMealPlanDialog";
 import { mockMealPlans, mockRecipes } from "@/data/mockData";
 import { MealPlan, MealType } from "@/types";
 import { Button } from "@/components/ui/button";
-import { Shuffle, ListChecks } from "lucide-react";
+import { FileSpreadsheet, ListChecks } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 
@@ -114,7 +113,7 @@ export default function MealPlanner() {
           size="sm"
           className="bg-sage hover:bg-sage/90 px-3 py-2 flex items-center whitespace-nowrap"
         >
-          <Shuffle className="mr-2 h-4 w-4" />
+          <FileSpreadsheet className="mr-2 h-4 w-4" />
           Randomise
         </Button>
         <Button asChild variant="outline" size="sm" className="flex items-center px-3 py-2 whitespace-nowrap">
@@ -124,7 +123,7 @@ export default function MealPlanner() {
           </Link>
         </Button>
       </div>
-
+      
       <MealPlanCalendar
         mealPlans={mealPlans}
         onAddMealPlan={handleOpenAddDialog}

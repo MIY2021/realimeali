@@ -1,3 +1,4 @@
+
 export type User = {
   id: string;
   name: string;
@@ -5,15 +6,22 @@ export type User = {
   avatar?: string;
 };
 
-export type RecipeCategory = 
-  | "breakfast"
-  | "lunch"
-  | "dinner"
-  | "dessert"
-  | "snack"
-  | "appetizer"
-  | "beverage"
-  | "side";
+// FINAL enforced categories as requested by the user:
+export type RecipeCategory =
+  | "Bulk"
+  | "Easy"
+  | "Cheap"
+  | "Healthy"
+  | "Vegetarian"
+  | "Fish"
+  | "Super Tasty"
+  | "Pasta"
+  | "Tapas"
+  | "Winter"
+  | "BBQ"
+  | "Faffy"
+  | "Pricey!"
+  | "Not Yet Made";
 
 export type Recipe = {
   id: string;
