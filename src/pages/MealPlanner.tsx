@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { MealPlanCalendar } from "@/components/meal-planner/MealPlanCalendar";
 import { AddMealPlanDialog } from "@/components/meal-planner/AddMealPlanDialog";
@@ -118,26 +117,26 @@ export default function MealPlanner() {
       <div className="flex flex-wrap gap-2 mb-6">
         <Button 
           onClick={handleRandomMealSelection}
-          className="bg-sage hover:bg-sage/90"
+          size="sm"
+          className="bg-sage hover:bg-sage/90 px-3 py-2 flex items-center"
         >
           <Shuffle className="mr-2 h-4 w-4" />
-          Random Meal Plan
+          Randomise
         </Button>
-        
-        <Button asChild variant="outline">
+        <Button asChild variant="outline" size="sm" className="flex items-center px-3 py-2">
           <Link to="/shopping-list">
             <ListChecks className="mr-2 h-4 w-4" />
-            View Shopping List
+            Shopping List
           </Link>
         </Button>
       </div>
-      
+
       <MealPlanCalendar 
         mealPlans={mealPlans}
         onAddMealPlan={handleOpenAddDialog}
         onRemoveMealPlan={handleRemoveMealPlan}
       />
-      
+
       <AddMealPlanDialog
         isOpen={isAddDialogOpen}
         onClose={handleCloseAddDialog}

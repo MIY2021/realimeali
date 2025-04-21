@@ -139,6 +139,114 @@ export const mockRecipes: Recipe[] = [
     createdAt: "2023-04-12T07:15:00Z",
     updatedAt: "2023-04-12T07:15:00Z",
     isFavorite: false,
+  },
+  {
+    id: "recipe-5",
+    title: "Quick Tuna Salad",
+    description: "A refreshing tuna salad for lunch or dinner.",
+    ingredients: [
+      "1 can of tuna",
+      "2 tbsp mayonnaise",
+      "1/2 onion, chopped",
+      "1 stalk celery, chopped",
+      "Salt and pepper to taste",
+      "Lettuce leaves"
+    ],
+    instructions: [
+      "Combine tuna, mayonnaise, onion, and celery in a bowl.",
+      "Mix until well combined.",
+      "Season with salt and pepper.",
+      "Serve chilled on lettuce leaves."
+    ],
+    categories: ["lunch", "dinner"],
+    prepTime: 5,
+    cookTime: 0,
+    servings: 2,
+    image: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    createdBy: "user-1",
+    createdAt: "2023-05-10T11:00:00Z",
+    updatedAt: "2023-05-10T11:00:00Z",
+    isFavorite: false,
+  },
+  {
+    id: "recipe-6",
+    title: "Egg Fried Rice",
+    description: "Simple and tasty egg fried rice.",
+    ingredients: [
+      "2 cups cooked rice",
+      "2 eggs",
+      "1/2 cup peas",
+      "2 tbsp soy sauce",
+      "2 green onions, sliced",
+      "2 tbsp oil"
+    ],
+    instructions: [
+      "Heat oil in a pan, scramble the eggs, and set aside.",
+      "Add peas and rice to the pan, stir to heat through.",
+      "Return eggs to the pan, add soy sauce, and mix well.",
+      "Top with green onions."
+    ],
+    categories: ["lunch", "dinner"],
+    prepTime: 10,
+    cookTime: 10,
+    servings: 2,
+    image: "https://images.unsplash.com/photo-1519864600265-abb22218d2d5?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    createdBy: "user-1",
+    createdAt: "2023-05-16T12:00:00Z",
+    updatedAt: "2023-05-16T12:00:00Z",
+    isFavorite: false,
+  },
+  {
+    id: "recipe-7",
+    title: "Avocado Toast",
+    description: "Crunchy toast topped with creamy avocado.",
+    ingredients: [
+      "2 slices bread",
+      "1 ripe avocado",
+      "Salt and pepper to taste",
+      "Lemon juice",
+      "Chili flakes (optional)"
+    ],
+    instructions: [
+      "Toast the bread slices.",
+      "Mash avocado with lemon juice, salt, and pepper.",
+      "Spread avocado on toast and sprinkle chili flakes if desired."
+    ],
+    categories: ["breakfast", "snack"],
+    prepTime: 5,
+    cookTime: 2,
+    servings: 1,
+    image: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    createdBy: "user-1",
+    createdAt: "2023-05-20T08:00:00Z",
+    updatedAt: "2023-05-20T08:00:00Z",
+    isFavorite: false,
+  },
+  {
+    id: "recipe-8",
+    title: "Classic Omelette",
+    description: "Quick omelette with cheese and herbs.",
+    ingredients: [
+      "2 eggs",
+      "2 tbsp milk",
+      "Salt and pepper",
+      "1/4 cup grated cheese",
+      "Chopped herbs"
+    ],
+    instructions: [
+      "Whisk eggs, milk, salt, and pepper.",
+      "Pour into a hot pan, cook until almost set.",
+      "Add cheese and herbs, fold, and finish cooking."
+    ],
+    categories: ["breakfast"],
+    prepTime: 5,
+    cookTime: 5,
+    servings: 1,
+    image: "https://images.unsplash.com/photo-1464306076886-debca5e8a6b0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    createdBy: "user-1",
+    createdAt: "2023-06-01T07:30:00Z",
+    updatedAt: "2023-06-01T07:30:00Z",
+    isFavorite: false,
   }
 ];
 
