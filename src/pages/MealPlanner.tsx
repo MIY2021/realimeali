@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { MealPlan, MealType, RecipeCategory } from "@/types";
 import { Button } from "@/components/ui/button";
@@ -8,6 +7,8 @@ import { useToast } from "@/hooks/use-toast";
 import { mockMealPlans } from "@/data/mealPlans";
 import { mockRecipes } from "@/data/recipes";
 import { AddRecipeToMealModal } from "@/components/meal-planner/AddRecipeToMealModal";
+import MealListSection from "@/components/MealListSection";
+import MealActions from "@/components/MealActions";
 
 const STORAGE_KEY = "persistedMealPlans_v1";
 
@@ -163,12 +164,10 @@ export default function MealPlanner() {
     <div className="container max-w-xl py-8">
       <h1 className="text-2xl font-bold text-navy flex items-center gap-2 mb-2">
         Meal Planner
-        <Button variant="ghost" size="icon" className="ml-2" onClick={handleClearAll} title="Clear all meals">
-          <CircleX className="h-5 w-5 text-terracotta" />
-          <span className="sr-only">Clear All Meals</span>
-        </Button>
+        <MealActions
+          onClearAll={handleClearAll}
+        />
       </h1>
-      {/* Randomise + share + invite */}
       <div className="flex gap-2 mb-4">
         <Button
           onClick={handleRandomMealSelection}
@@ -198,46 +197,14 @@ export default function MealPlanner() {
         </Button>
       </div>
       {mealTypes.map((mealType) => (
-        <div key={mealType}>
-          <div className="flex items-center mb-1">
-            <h2 className="text-lg font-semibold text-navy capitalize flex-1">{mealType}</h2>
-            <Button
-              size="icon"
-              variant="ghost"
-              className="ml-2"
-              onClick={() => handleAddMeal(mealType)}
-              title="Add meal"
-            >
-              <Plus className="h-5 w-5 text-navy" />
-              <span className="sr-only">Add {mealType}</span>
-            </Button>
-          </div>
-          <ul className="space-y-2 mb-6">
-            {getMealPlansForType(mealType).map((plan) => {
-              const recipe = getRecipeById(plan.recipeId);
-              return (
-                <li key={plan.id} className="flex items-center justify-between bg-white rounded p-2 shadow">
-                  <Link
-                    to={`/recipes/${plan.recipeId}`}
-                    className="font-medium flex-1 hover:underline"
-                  >
-                    {recipe ? recipe.title : "Unknown"}
-                  </Link>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-7 w-7 p-0 text-muted-foreground"
-                    onClick={() => handleRemoveMeal(plan.id)}
-                    title="Remove"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                    <span className="sr-only">Remove</span>
-                  </Button>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
+        <MealListSection
+          key={mealType}
+          mealType={mealType}
+          mealPlans={getMealPlansForType(mealType)}
+          getRecipeById={getRecipeById}
+          onAddMeal={handleAddMeal}
+          onRemoveMeal={handleRemoveMeal}
+        />
       ))}
       <Button asChild variant="outline" size="sm" className="mt-6 flex items-center">
         <Link to="/shopping-list" className="flex items-center">

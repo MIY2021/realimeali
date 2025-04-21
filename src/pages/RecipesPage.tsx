@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { RecipeList } from "@/components/recipes/RecipeList";
 import { Button } from "@/components/ui/button";
@@ -12,7 +11,6 @@ export default function RecipesPage() {
   const [recipes, setRecipes] = useState(mockRecipes);
   const { toast } = useToast();
 
-  // Bulk import handler remains but button will be moved elsewhere
   const handleBulkImport = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -90,10 +88,7 @@ export default function RecipesPage() {
   };
 
   const handleAddNewRecipe = () => {
-    toast({
-      title: "Coming soon!",
-      description: "Adding new recipes will be available in a future update.",
-    });
+    toast(); // Call toast without arguments
   };
 
   return (

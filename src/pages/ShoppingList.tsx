@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
+import ShoppingListActions from "@/components/ShoppingListActions";
 
 interface Ingredient {
   name: string;
@@ -173,6 +174,7 @@ export default function ShoppingList() {
   const categorizedIngredients = categorizeIngredients();
   const checkedCount = ingredients.filter(i => i.checked).length;
 
+  // Move all action buttons into ShoppingListActions component!
   return (
     // Outer container: Remove excessive margins and fix horizontal scroll
     <div className="container max-w-lg py-4 overflow-x-hidden">
@@ -186,35 +188,11 @@ export default function ShoppingList() {
             {ingredients.length} items • {checkedCount} purchased
           </p>
         </div>
-        {/* Move buttons here, below the title */}
-        <div className="flex gap-2 mt-4">
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={handleCheckAll}
-            className="text-xs"
-          >
-            <Check className="h-4 w-4 mr-1" />
-            Check All
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={handleUncheckAll}
-            className="text-xs"
-          >
-            Clear All
-          </Button>
-          <Button
-            size="sm"
-            variant="destructive"
-            onClick={handleRemoveAll}
-            className="text-xs"
-          >
-            <Trash2 className="h-4 w-4 mr-1" />
-            Remove All
-          </Button>
-        </div>
+        <ShoppingListActions
+          onCheckAll={handleCheckAll}
+          onUncheckAll={handleUncheckAll}
+          onRemoveAll={handleRemoveAll}
+        />
       </div>
       {/* ... keep the rest the same ... */}
       <div className="space-y-4">

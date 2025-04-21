@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { mockRecipes } from "@/data/recipes";
@@ -15,13 +14,14 @@ export default function Index() {
       return true;
     });
   };
+  // Fix: Move latestRecipes inside the component scope so it's defined
   const latestRecipes = uniqueByTitle(mockRecipes)
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 3);
 
   return (
     <div className="flex flex-col min-h-screen">
-      {/* Hero Section - use meal images instead of icons */}
+      {/* Hero Section - keep as before, with images instead of icons */}
       <section className="py-8 bg-gradient-to-b from-[#ffe5cb] to-[#fff3e0]">
         <div className="container px-4">
           <div className="flex flex-col items-center space-y-2 text-center">
@@ -75,9 +75,8 @@ export default function Index() {
           </div>
         </div>
       </section>
-
-      {/* Latest Recipes - with dark orange background */}
-      <section className="py-4 bg-[#f97316]">
+      {/* Latest Recipes - use a dark orange background */}
+      <section className="py-4 bg-[#b45309]"> {/* Dark orange! */}
         <div className="container px-4">
           <div className="flex items-center justify-between mb-3">
             <div>
@@ -88,9 +87,6 @@ export default function Index() {
                 See what&apos;s new in your recipe collection
               </p>
             </div>
-            <Button asChild variant="outline" size="sm">
-              <Link to="/recipes">View All</Link>
-            </Button>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {latestRecipes.map((recipe) => (
