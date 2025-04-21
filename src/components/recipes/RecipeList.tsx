@@ -12,21 +12,22 @@ interface RecipeListProps {
 export function RecipeList({ recipes }: RecipeListProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
-  
-  const allCategories = Array.from(
-    new Set(recipes.flatMap((recipe) => recipe.categories))
-  );
-  
+
+  // Get all unique categories present in the recipes
+  const allCategoriesSet = new Set<string>();
+  recipes.forEach(recipe => recipe.categories.forEach(cat => allCategoriesSet.add(cat)));
+  const allCategories = Array.from(allCategoriesSet);
+
   const filteredRecipes = recipes.filter((recipe) => {
     const matchesSearch = recipe.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
                          recipe.description.toLowerCase().includes(searchTerm.toLowerCase());
-    
+
     const matchesCategory = categoryFilter === "all" || 
                           recipe.categories.includes(categoryFilter as any);
-    
+
     return matchesSearch && matchesCategory;
   });
-  
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row gap-4">

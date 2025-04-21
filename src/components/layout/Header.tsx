@@ -5,7 +5,7 @@ import { User, UtensilsCrossed, CalendarDays, Book, ListChecks } from "lucide-re
 
 const Header = () => {
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-cream shadow-sm">
+    <header className="sticky top-0 z-50 w-full border-b bg-[#FEC6A1] shadow-sm">
       <div className="container flex h-16 items-center justify-between">
         <Link to="/" className="flex items-center space-x-2">
           <UtensilsCrossed className="h-6 w-6 text-terracotta" />

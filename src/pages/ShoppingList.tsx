@@ -14,6 +14,20 @@ interface Ingredient {
   name: string;
   checked: boolean;
   recipeIds: string[];
+  totalQty?: number;
+  unit?: string;
+}
+
+function parseIngredientQty(text: string): { qty: number; unit: string; name: string } {
+  // crude parsing, expects: "2 eggs", "100g flour", etc.
+  const match = text.match(/^(\d+(?:\.\d+)?)([a-zA-Z]+)?\s+(.*)$/);
+  if (match)
+    return {
+      qty: parseFloat(match[1]),
+      unit: match[2] ? match[2].trim() : "",
+      name: match[3].toLowerCase(),
+    };
+  return { qty: 1, unit: "", name: text.toLowerCase() }; // e.g. "egg"
 }
 
 export default function ShoppingList() {
@@ -26,24 +40,28 @@ export default function ShoppingList() {
     return mockRecipes.filter(recipe => recipeIds.includes(recipe.id));
   }, []);
 
-  // Unique ingredient calculation, for accurate count
+  // Calculate and aggregate ingredient quantities across all meal plan recipes
   useEffect(() => {
     const ingredientMap = new Map<string, Ingredient>();
 
     mealPlanRecipes.forEach(recipe => {
       recipe.ingredients.forEach(ingredientText => {
-        const key = ingredientText.toLowerCase().trim();
+        const { qty, unit, name } = parseIngredientQty(ingredientText);
+        const key = name + (unit && unit !== "" ? `_${unit}` : "");
 
         if (ingredientMap.has(key)) {
           const existing = ingredientMap.get(key)!;
+          existing.totalQty = (existing.totalQty || 0) + qty;
           if (!existing.recipeIds.includes(recipe.id)) {
             existing.recipeIds.push(recipe.id);
           }
         } else {
           ingredientMap.set(key, {
-            name: ingredientText,
+            name: name,
             checked: false,
-            recipeIds: [recipe.id]
+            recipeIds: [recipe.id],
+            totalQty: qty,
+            unit,
           });
         }
       });
@@ -89,7 +107,7 @@ export default function ShoppingList() {
     const newIngredients = [...ingredients];
     newIngredients.splice(index, 1);
     setIngredients(newIngredients);
-    
+
     toast({
       title: "Item removed",
       description: "Ingredient removed from shopping list",
@@ -99,7 +117,7 @@ export default function ShoppingList() {
   // New handler to remove all items
   const handleRemoveAll = () => {
     setIngredients([]);
-    
+
     toast({
       title: "List cleared",
       description: "All ingredients removed from shopping list",
@@ -157,7 +175,8 @@ export default function ShoppingList() {
   const checkedCount = ingredients.filter(i => i.checked).length;
 
   return (
-    <div className="container max-w-4xl py-6">
+    // Outer container: Remove excessive margins and fix horizontal scroll
+    <div className="container max-w-lg py-4 overflow-x-hidden">
       <div className="mb-6">
         <div className="flex items-center justify-between">
           <div>
@@ -170,26 +189,26 @@ export default function ShoppingList() {
             </p>
           </div>
           <div className="flex gap-2">
-            <Button 
-              size="sm" 
-              variant="outline" 
+            <Button
+              size="sm"
+              variant="outline"
               onClick={handleCheckAll}
               className="text-xs"
             >
               <Check className="h-4 w-4 mr-1" />
               Check All
             </Button>
-            <Button 
-              size="sm" 
-              variant="outline" 
+            <Button
+              size="sm"
+              variant="outline"
               onClick={handleUncheckAll}
               className="text-xs"
             >
               Clear All
             </Button>
-            <Button 
-              size="sm" 
-              variant="destructive" 
+            <Button
+              size="sm"
+              variant="destructive"
               onClick={handleRemoveAll}
               className="text-xs"
             >
@@ -208,24 +227,26 @@ export default function ShoppingList() {
             <CardContent>
               <ul className="space-y-2">
                 {items.map((ingredient, idx) => {
-                  const originalIndex = ingredients.findIndex(i => i.name === ingredient.name);
+                  const originalIndex = ingredients.findIndex(i => i.name === ingredient.name && i.unit === ingredient.unit);
                   return (
-                    <li 
-                      key={`${ingredient.name}-${idx}`} 
-                      className={`flex items-start gap-2 p-2 rounded ${ingredient.checked ? 'bg-muted/50' : ''}`}
+                    <li
+                      key={`${ingredient.name}-${ingredient.unit || ""}-${idx}`}
+                      className={`flex items-start gap-2 p-2 rounded ${ingredient.checked ? 'bg-muted/50' : ''} whitespace-nowrap`}
                     >
-                      <Checkbox 
+                      <Checkbox
                         id={`ingredient-${originalIndex}`}
                         checked={ingredient.checked}
                         onCheckedChange={() => handleToggleIngredient(originalIndex)}
                         className="mt-0.5"
                       />
-                      <div className="flex-1">
-                        <label 
+                      <div className="flex-1 min-w-0">
+                        <label
                           htmlFor={`ingredient-${originalIndex}`}
-                          className={`text-sm ${ingredient.checked ? 'line-through text-muted-foreground' : ''}`}
+                          className={`text-sm ${ingredient.checked ? 'line-through text-muted-foreground' : ''} break-words`}
                         >
-                          {ingredient.name}
+                          {ingredient.totalQty && ingredient.unit
+                            ? `${ingredient.totalQty} ${ingredient.unit} ${ingredient.name}`
+                            : ingredient.totalQty ? `${ingredient.totalQty} ${ingredient.name}` : ingredient.name}
                         </label>
                         <div className="flex flex-wrap gap-1 mt-1">
                           {ingredient.recipeIds.map(recipeId => {

@@ -90,8 +90,15 @@ export default function RecipesPage() {
     });
   };
 
+  const handleAddNewRecipe = () => {
+    toast({
+      title: "Feature coming soon",
+      description: "Adding new recipes will be available in a future update.",
+    });
+  };
+
   return (
-    <div className="container max-w-4xl py-8">
+    <div className="container max-w-3xl py-6">
       <div className="flex items-center justify-between mb-8 gap-2 flex-wrap">
         <div>
           <h1 className="text-2xl font-bold text-navy flex items-center gap-2">
@@ -103,7 +110,7 @@ export default function RecipesPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button className="bg-terracotta hover:bg-terracotta/90">
+          <Button className="bg-terracotta hover:bg-terracotta/90" onClick={handleAddNewRecipe}>
             <Plus className="h-4 w-4 mr-2" />
             Add New Recipe
           </Button>

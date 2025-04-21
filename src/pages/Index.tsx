@@ -27,8 +27,9 @@ export default function Index() {
               <Button asChild size="lg" className="bg-white border shadow hover:bg-sage/10 flex-1 flex flex-col items-center py-5 group transition-all">
                 <Link to="/meal-planner" className="flex flex-col items-center w-full">
                   <span className="pb-2">
-                    <span className="inline-flex items-center justify-center bg-sage/10 rounded-full p-3 mb-1 group-hover:bg-sage/20 transition">
-                      <CalendarDays className="h-8 w-8 text-sage" />
+                    <span className="inline-flex items-center justify-center bg-sage/10 rounded-full p-5 mb-1 group-hover:bg-sage/20 transition">
+                      {/* Larger icon: h-16 w-16 */}
+                      <CalendarDays className="h-16 w-16 text-sage" />
                     </span>
                   </span>
                   <span className="font-semibold text-navy text-base">Meal Planning</span>
@@ -39,8 +40,8 @@ export default function Index() {
               <Button asChild size="lg" className="bg-white border shadow hover:bg-sage/10 flex-1 flex flex-col items-center py-5 group transition-all">
                 <Link to="/recipes" className="flex flex-col items-center w-full">
                   <span className="pb-2">
-                    <span className="inline-flex items-center justify-center bg-sage/10 rounded-full p-3 mb-1 group-hover:bg-sage/20 transition">
-                      <Book className="h-8 w-8 text-terracotta" />
+                    <span className="inline-flex items-center justify-center bg-sage/10 rounded-full p-5 mb-1 group-hover:bg-sage/20 transition">
+                      <Book className="h-16 w-16 text-terracotta" />
                     </span>
                   </span>
                   <span className="font-semibold text-navy text-base">Recipe Collection</span>
@@ -51,8 +52,8 @@ export default function Index() {
               <Button asChild size="lg" className="bg-white border shadow hover:bg-sage/10 flex-1 flex flex-col items-center py-5 group transition-all">
                 <Link to="/shopping-list" className="flex flex-col items-center w-full">
                   <span className="pb-2">
-                    <span className="inline-flex items-center justify-center bg-sage/10 rounded-full p-3 mb-1 group-hover:bg-sage/20 transition">
-                      <ListChecks className="h-8 w-8 text-butter" />
+                    <span className="inline-flex items-center justify-center bg-sage/10 rounded-full p-5 mb-1 group-hover:bg-sage/20 transition">
+                      <ListChecks className="h-16 w-16 text-butter" />
                     </span>
                   </span>
                   <span className="font-semibold text-navy text-base">Shopping Lists</span>
@@ -64,15 +65,15 @@ export default function Index() {
         </div>
       </section>
 
-      {/* Latest Recipes - with darker background */}
-      <section className="py-4 bg-navy/10">
+      {/* Latest Recipes - with very dark background */}
+      <section className="py-4 bg-[#222]">
         <div className="container px-4">
           <div className="flex items-center justify-between mb-3">
             <div>
-              <h2 className="text-lg font-bold text-navy">
+              <h2 className="text-lg font-bold text-navy text-white">
                 Latest Recipes
               </h2>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-muted-foreground text-white/80">
                 See what&apos;s new in your recipe collection
               </p>
             </div>
