@@ -167,7 +167,7 @@ export default function ShoppingList() {
 
   return (
     <div
-      className="container max-w-md py-4 px-1 sm:px-4 overflow-x-hidden"
+      className="container max-w-xl py-8"
       style={{ marginLeft: "auto", marginRight: "auto" }}
     >
       <div className="mb-6">

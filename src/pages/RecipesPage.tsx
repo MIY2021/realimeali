@@ -10,15 +10,16 @@ export default function RecipesPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const { toast } = useToast();
 
+  // Updated: expect both mealType and week
   const handleAddToMealPlan = (recipe: Recipe) => {
     setDialogRecipe(recipe);
     setDialogOpen(true);
   };
 
-  const handleMealTypeSelect = (mealType: MealType) => {
+  const handleMealTypeSelect = (mealType: MealType, week: 1 | 2) => {
     toast({
       title: "Recipe added to meal plan!",
-      description: `Added "${dialogRecipe?.title}" to ${mealType}`,
+      description: `Added "${dialogRecipe?.title}" to ${mealType}, week ${week}`,
     });
     // Here add actual logic to persist to meal plan as needed (user-dependent)
     setDialogOpen(false);

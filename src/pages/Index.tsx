@@ -1,5 +1,6 @@
+
 import { Link } from "react-router-dom";
-import { ListChecks, Beef } from "lucide-react";
+import { ListChecks } from "lucide-react";
 import { mockRecipes } from "@/data/recipes";
 import { RecipeList } from "@/components/recipes/RecipeList";
 
@@ -7,7 +8,15 @@ export default function Index() {
   const quickLinks = [
     {
       title: "Shopping List",
-      icon: <Beef className="h-8 w-8" />,
+      // Use a meal/steak image (public/placeholder.svg used as a stand-in)
+      icon: (
+        <img
+          src="/placeholder.svg"
+          alt="Steak"
+          className="h-8 w-8 object-cover rounded-full"
+          style={{ backgroundColor: "#ba7f4a", padding: 2 }}
+        />
+      ),
       href: "/shopping-list",
     },
     {
@@ -46,8 +55,13 @@ export default function Index() {
         ))}
       </div>
 
-      <section className="mt-16 py-8 px-4 rounded-xl" style={{ background: "linear-gradient(135deg, #353019 0%, #f6ad55 100%)" }}>
-        <h2 className="text-xl font-bold text-white mb-6">Latest Recipes</h2>
+      <section
+        className="mt-16 py-8 px-4 rounded-xl"
+        style={{ background: "#353019" }}
+      >
+        <h2 className="text-xl font-bold text-white mb-6">
+          Latest Recipes
+        </h2>
         <div className="max-w-5xl mx-auto">
           <RecipeList recipes={mockRecipes.slice(-6)} />
         </div>
