@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { mockMealPlans } from "@/data/mealPlans";
 import { mockRecipes } from "@/data/recipes";
 import { Recipe } from "@/types";
-import { ListChecks, Check, Trash2 } from "lucide-react";
+import { ListChecks, Check, Trash2, Steak } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -31,14 +31,19 @@ function parseIngredientQty(text: string): { qty: number; unit: string; name: st
 }
 
 export default function ShoppingList() {
+  // --- Week state
+  const [week, setWeek] = useState<1 | 2>(1);
+
+  // Only include recipes in the meal plan for active week
+  const mealPlanRecipes = useMemo(() => {
+    const storage = localStorage.getItem(`persistedMealPlans_v1_week${week}`);
+    const selectedPlans = storage ? JSON.parse(storage) : week === 1 ? mockMealPlans : [];
+    const recipeIds = selectedPlans.map((plan: any) => plan.recipeId);
+    return mockRecipes.filter(recipe => recipeIds.includes(recipe.id));
+  }, [week]);
+
   const [ingredients, setIngredients] = useState<Ingredient[]>([]);
   const { toast } = useToast();
-
-  // Only include recipes in the meal plan
-  const mealPlanRecipes = useMemo(() => {
-    const recipeIds = mockMealPlans.map(plan => plan.recipeId);
-    return mockRecipes.filter(recipe => recipeIds.includes(recipe.id));
-  }, []);
 
   // Calculate and aggregate ingredient quantities across all meal plan recipes
   useEffect(() => {
@@ -138,16 +143,12 @@ export default function ShoppingList() {
       "Frozen",
       "Other"
     ];
-
     const result: Record<string, Ingredient[]> = {};
     categories.forEach(category => {
       result[category] = [];
     });
-
-    // Simple categorization based on common keywords
     ingredients.forEach(ingredient => {
       const name = ingredient.name.toLowerCase();
-
       if (/lettuce|onion|potato|tomato|carrot|spinach|garlic|pepper|broccoli|cucumber|lemon|lime|herbs|vegetable/i.test(name)) {
         result["Produce"].push(ingredient);
       } else if (/chicken|beef|pork|fish|salmon|shrimp|turkey|meat/i.test(name)) {
@@ -164,8 +165,6 @@ export default function ShoppingList() {
         result["Other"].push(ingredient);
       }
     });
-
-    // Filter out empty categories
     return Object.fromEntries(
       Object.entries(result).filter(([_, items]) => items.length > 0)
     );
@@ -174,16 +173,27 @@ export default function ShoppingList() {
   const categorizedIngredients = categorizeIngredients();
   const checkedCount = ingredients.filter(i => i.checked).length;
 
-  // Move all action buttons into ShoppingListActions component!
   return (
-    // Outer container: Remove excessive margins and fix horizontal scroll
-    <div className="container max-w-lg py-4 overflow-x-hidden">
+    <div className="container max-w-md py-4 overflow-x-hidden" style={{ marginLeft: "auto", marginRight: "auto" }}>
       <div className="mb-6">
         <div>
           <h1 className="text-2xl font-bold text-navy flex items-center gap-2">
-            <ListChecks className="h-6 w-6" />
+            <Steak className="h-6 w-6" /> {/* Replaced ListChecks with Steak */}
             Shopping List
           </h1>
+          <div className="flex gap-2 mt-2">
+            {[1, 2].map((val) => (
+              <Button
+                key={val}
+                size="sm"
+                variant={week === val ? "default" : "outline"}
+                className={week === val ? "bg-terracotta text-white" : ""}
+                onClick={() => setWeek(val as 1 | 2)}
+              >
+                Week {val}
+              </Button>
+            ))}
+          </div>
           <p className="text-muted-foreground text-sm mt-1">
             {ingredients.length} items • {checkedCount} purchased
           </p>
@@ -194,7 +204,6 @@ export default function ShoppingList() {
           onRemoveAll={handleRemoveAll}
         />
       </div>
-      
       <div className="space-y-4">
         {Object.entries(categorizedIngredients).map(([category, items]) => (
           <Card key={category}>

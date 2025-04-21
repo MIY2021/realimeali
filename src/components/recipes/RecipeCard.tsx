@@ -1,23 +1,23 @@
 
-import { Recipe } from "@/types";
+import { Recipe, MealType } from "@/types";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { Clock, Users } from "lucide-react";
+import { Clock, Users, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 
 interface RecipeCardProps {
   recipe: Recipe;
+  onAddToMealPlan?: (recipe: Recipe) => void;
 }
 
-export function RecipeCard({ recipe }: RecipeCardProps) {
+export function RecipeCard({ recipe, onAddToMealPlan }: RecipeCardProps) {
   const { id, title, description, prepTime, cookTime, servings, image, categories } = recipe;
-
   const totalTime = prepTime + cookTime;
   const [imgError, setImgError] = useState(false);
 
   return (
-    <Card className="overflow-hidden transition-all hover:shadow-md">
+    <Card className="overflow-hidden transition-all hover:shadow-md relative">
       <Link to={`/recipes/${id}`}>
         <div className="aspect-video w-full overflow-hidden bg-muted relative">
           {!imgError && image ? (
@@ -32,7 +32,6 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
             />
           ) : (
             <div className="absolute inset-0 flex items-center justify-center bg-muted">
-              {/* Instead of Lucide's Image (not available), fallback text */}
               <span className="text-xs text-muted-foreground">No image</span>
             </div>
           )}
@@ -72,14 +71,26 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
             <span>{servings}</span>
           </span>
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="text-xs hover:bg-terracotta hover:text-white"
-          asChild
-        >
-          <Link to={`/recipes/${id}`}>View Recipe</Link>
-        </Button>
+        <div className="flex gap-1">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-xs hover:bg-terracotta hover:text-white"
+            asChild
+          >
+            <Link to={`/recipes/${id}`}>View Recipe</Link>
+          </Button>
+          {onAddToMealPlan && (
+            <Button
+              variant="outline"
+              size="icon"
+              title="Add to Meal Plan"
+              onClick={(e) => { e.preventDefault(); onAddToMealPlan(recipe); }}
+            >
+              <Plus className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
       </CardFooter>
     </Card>
   );

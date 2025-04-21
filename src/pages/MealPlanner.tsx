@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { MealPlan, MealType, RecipeCategory } from "@/types";
 import { Button } from "@/components/ui/button";
@@ -12,21 +11,27 @@ import MealListSection from "@/components/MealListSection";
 import MealActions from "@/components/MealActions";
 
 const STORAGE_KEY = "persistedMealPlans_v1";
+const WEEK_LEN = 7;
 
 export default function MealPlanner() {
-  // ----- Load and persist meal plan -----
+  // --- Week state
+  const [week, setWeek] = useState<1 | 2>(1);
+
+  // ----- Load and persist meal plans for both weeks -----
   const [mealPlans, setMealPlans] = useState<MealPlan[]>([]);
   useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
+    const stored = localStorage.getItem(`${STORAGE_KEY}_week${week}`);
     if (stored) {
       setMealPlans(JSON.parse(stored));
-    } else {
+    } else if (week === 1) {
       setMealPlans(mockMealPlans);
+    } else {
+      setMealPlans([]);
     }
-  }, []);
+  }, [week]);
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(mealPlans));
-  }, [mealPlans]);
+    localStorage.setItem(`${STORAGE_KEY}_week${week}`, JSON.stringify(mealPlans));
+  }, [mealPlans, week]);
 
   const { toast } = useToast();
   const mealTypes: MealType[] = ["dinner", "lunch", "breakfast"];
@@ -169,6 +174,11 @@ export default function MealPlanner() {
     });
   };
 
+  // ---- Week toggle ----
+  const handleToggleWeek = (val: 1 | 2) => {
+    setWeek(val);
+  };
+
   return (
     <div className="container max-w-xl py-8">
       <h1 className="text-2xl font-bold text-navy flex items-center gap-2 mb-2">
@@ -199,11 +209,26 @@ export default function MealPlanner() {
           onClick={handleInvite}
           size="sm"
           variant="outline"
-          className="flex items-center whitespace-nowrap"
+          className="flex items-center whitespace-nowrap bg-transparent active:bg-transparent focus:bg-transparent"
+          // Prevent outlined style from changing bg on click
+          style={{ backgroundColor: "transparent" }}
         >
           <Users className="mr-2 h-4 w-4" />
           Invite
         </Button>
+      </div>
+      <div className="flex gap-2 mb-4">
+        {[1, 2].map((val) => (
+          <Button
+            key={val}
+            size="sm"
+            variant={week === val ? "default" : "outline"}
+            className={week === val ? "bg-terracotta text-white" : ""}
+            onClick={() => handleToggleWeek(val as 1 | 2)}
+          >
+            Week {val}
+          </Button>
+        ))}
       </div>
       {mealTypes.map((mealType) => (
         <MealListSection

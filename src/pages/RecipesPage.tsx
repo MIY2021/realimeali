@@ -1,16 +1,26 @@
-
 import { useState } from "react";
 import { RecipeList } from "@/components/recipes/RecipeList";
 import { Button } from "@/components/ui/button";
 import { Plus, Book } from "lucide-react";
 import Papa from "papaparse";
 import { useToast } from "@/hooks/use-toast";
-import { RecipeCategory, Recipe } from "@/types";
+import { RecipeCategory, Recipe, MealType } from "@/types";
 import { mockRecipes } from "@/data/recipes";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogHeader,
+} from "@/components/ui/dialog";
+
+const MEAL_TYPES: MealType[] = ["dinner", "lunch", "breakfast"];
 
 export default function RecipesPage() {
   const [recipes, setRecipes] = useState(mockRecipes);
   const { toast } = useToast();
+
+  // --- Add-to-meal plan state
+  const [addToMealRecipe, setAddToMealRecipe] = useState<Recipe | null>(null);
 
   const handleBulkImport = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -95,6 +105,19 @@ export default function RecipesPage() {
     });
   };
 
+  const handleAddToMealPlan = (recipe: Recipe) => {
+    setAddToMealRecipe(recipe);
+  };
+
+  // Simulate adding to meal plan (just toast)
+  const handleAddToMealType = (mealType: MealType) => {
+    toast({
+      title: "Recipe Added",
+      description: `Added ${addToMealRecipe?.title} to your ${mealType} meal plan!`,
+    });
+    setAddToMealRecipe(null);
+  };
+
   return (
     <div className="container max-w-3xl py-6">
       <div className="flex items-center justify-between mb-8 gap-2 flex-wrap">
@@ -114,7 +137,28 @@ export default function RecipesPage() {
           </Button>
         </div>
       </div>
-      <RecipeList recipes={recipes} />
+      <RecipeList recipes={recipes} onAddToMealPlan={handleAddToMealPlan} />
+
+      <Dialog open={!!addToMealRecipe} onOpenChange={open => !open && setAddToMealRecipe(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              Add to Meal Plan
+            </DialogTitle>
+          </DialogHeader>
+          <div className="mb-4">
+            <div className="text-lg font-semibold">{addToMealRecipe?.title}</div>
+            <div className="text-sm text-muted-foreground">{addToMealRecipe?.description}</div>
+          </div>
+          <div className="flex flex-col gap-2">
+            {MEAL_TYPES.map(type => (
+              <Button key={type} onClick={() => handleAddToMealType(type)}>
+                Add to {type.charAt(0).toUpperCase() + type.slice(1)}
+              </Button>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
