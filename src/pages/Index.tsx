@@ -8,11 +8,11 @@ export default function Index() {
   const quickLinks = [
     {
       title: "Shopping List",
-      // Use a meal/steak image (public/placeholder.svg used as a stand-in)
+      // Use a meal image
       icon: (
         <img
           src="/placeholder.svg"
-          alt="Steak"
+          alt="Meal"
           className="h-8 w-8 object-cover rounded-full"
           style={{ backgroundColor: "#ba7f4a", padding: 2 }}
         />
@@ -57,7 +57,7 @@ export default function Index() {
 
       <section
         className="mt-16 py-8 px-4 rounded-xl"
-        style={{ background: "#353019" }}
+        style={{ background: "#E07A5F" }} // Solid dark grey-orange color (using terracotta from your theme)
       >
         <h2 className="text-xl font-bold text-white mb-6">
           Latest Recipes

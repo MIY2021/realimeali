@@ -43,7 +43,7 @@ export function AddToMealPlanDialog({ open, onClose, onSelect }: Props) {
               variant="outline"
               className="capitalize"
             >
-              {type}
+              {type} - Week {selectedWeek}
             </Button>
           ))}
         </div>
