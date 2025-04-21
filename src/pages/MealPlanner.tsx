@@ -209,7 +209,7 @@ export default function MealPlanner() {
           onClick={handleInvite}
           size="sm"
           variant="outline"
-          className="flex items-center whitespace-nowrap bg-transparent active:bg-transparent focus:bg-transparent"
+          className="flex items-center whitespace-nowrap"
           style={{ backgroundColor: "transparent" }}
         >
           <Users className="mr-2 h-4 w-4" />

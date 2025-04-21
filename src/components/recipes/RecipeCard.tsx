@@ -1,10 +1,8 @@
 
-import { Recipe, MealType } from "@/types";
-import { Link } from "react-router-dom";
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { Clock, Users, Plus } from "lucide-react";
+import { Recipe } from "@/types";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import React, { useState } from "react";
 
 interface RecipeCardProps {
   recipe: Recipe;
@@ -12,86 +10,37 @@ interface RecipeCardProps {
 }
 
 export function RecipeCard({ recipe, onAddToMealPlan }: RecipeCardProps) {
-  const { id, title, description, prepTime, cookTime, servings, image, categories } = recipe;
-  const totalTime = prepTime + cookTime;
-  const [imgError, setImgError] = useState(false);
-
   return (
-    <Card className="overflow-hidden transition-all hover:shadow-md relative">
-      <Link to={`/recipes/${id}`}>
-        <div className="aspect-video w-full overflow-hidden bg-muted relative">
-          {!imgError && image ? (
-            <img
-              src={image}
-              alt={title}
-              className="h-full w-full object-cover transition-transform hover:scale-105"
-              onError={(e) => {
-                setImgError(true);
-                (e.currentTarget as HTMLImageElement).src = "/placeholder.svg";
-              }}
-            />
-          ) : (
-            <div className="absolute inset-0 flex items-center justify-center bg-muted">
-              <span className="text-xs text-muted-foreground">No image</span>
-            </div>
-          )}
-        </div>
-      </Link>
-      <CardHeader className="p-4 pb-2">
-        <div className="flex justify-between items-start">
-          <Link
-            to={`/recipes/${id}`}
-            className="text-lg font-semibold hover:text-terracotta transition-colors line-clamp-1"
-          >
-            {title}
-          </Link>
-        </div>
-        <div className="flex flex-wrap gap-2 mt-1">
-          {categories.map((category) => (
-            <span
-              key={category}
-              className="inline-flex items-center rounded-full bg-sage/20 px-2 py-1 text-xs font-medium text-sage"
-            >
-              {category.charAt(0).toUpperCase() + category.slice(1)}
+    <Card className="relative group flex flex-col transition-shadow duration-150 hover:shadow-xl">
+      {recipe.image && (
+        <img
+          src={recipe.image}
+          alt={recipe.title}
+          className="h-40 w-full object-cover rounded-t"
+          onError={e => (e.currentTarget as HTMLImageElement).src = "/placeholder.svg"}
+        />
+      )}
+      <div className="p-4 flex-1 flex flex-col">
+        <h2 className="font-semibold text-lg line-clamp-2">{recipe.title}</h2>
+        <p className="text-xs text-muted-foreground mb-1">{recipe.description}</p>
+        <div className="flex flex-wrap gap-1 mt-auto">
+          {recipe.categories.map(cat => (
+            <span key={cat} className="px-2 py-0.5 text-xs bg-accent text-accent-foreground rounded">
+              {cat}
             </span>
           ))}
         </div>
-      </CardHeader>
-      <CardContent className="p-4 pt-2">
-        <p className="text-sm text-muted-foreground line-clamp-2">{description}</p>
-      </CardContent>
-      <CardFooter className="flex items-center justify-between p-4 pt-0 text-sm text-muted-foreground">
-        <div className="flex items-center gap-4">
-          <span className="flex items-center gap-1">
-            <Clock className="h-3.5 w-3.5" />
-            <span>{totalTime} min</span>
-          </span>
-          <span className="flex items-center gap-1">
-            <Users className="h-3.5 w-3.5" />
-            <span>{servings}</span>
-          </span>
-        </div>
-        <div className="flex gap-1">
+        {onAddToMealPlan && (
           <Button
-            variant="ghost"
+            className="mt-2 w-full"
             size="sm"
-            className="text-xs hover:bg-terracotta hover:text-white"
-            asChild
+            variant="outline"
+            onClick={() => onAddToMealPlan(recipe)}
           >
-            <Link to={`/recipes/${id}`}>View Recipe</Link>
+            Add to Meal Plan
           </Button>
-          {onAddToMealPlan && (
-            <Button
-              variant="outline"
-              size="icon"
-              title="Add to Meal Plan"
-              onClick={(e) => { e.preventDefault(); onAddToMealPlan(recipe); }}
-            >
-              <Plus className="h-4 w-4" />
-            </Button>
-          )}
-        </div>
-      </CardFooter>
+        )}
+      </div>
     </Card>
   );
 }
