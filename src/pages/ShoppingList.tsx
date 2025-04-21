@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useMemo } from "react";
 import { mockMealPlans } from "@/data/mealPlans";
 import { mockRecipes } from "@/data/recipes";
@@ -166,10 +167,7 @@ export default function ShoppingList() {
   const checkedCount = ingredients.filter(i => i.checked).length;
 
   return (
-    <div
-      className="container max-w-xl py-8"
-      style={{ marginLeft: "auto", marginRight: "auto" }}
-    >
+    <div className="container max-w-md py-4 px-2 sm:px-6 overflow-x-hidden" style={{ marginLeft: "auto", marginRight: "auto" }}>
       <div className="mb-6">
         <div>
           <h1 className="text-2xl font-bold text-navy flex items-center gap-2">

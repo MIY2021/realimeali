@@ -14,10 +14,6 @@ const SORTS = [
   { label: "Title (Z-A)", value: "title-desc" },
   { label: "Prep Time (Shortest)", value: "prep-asc" },
   { label: "Prep Time (Longest)", value: "prep-desc" },
-  { label: "Cook Time (Shortest)", value: "cook-asc" },
-  { label: "Cook Time (Longest)", value: "cook-desc" },
-  { label: "Servings (Fewest)", value: "servings-asc" },
-  { label: "Servings (Most)", value: "servings-desc" },
 ];
 
 export function RecipeList({ recipes, onAddToMealPlan }: RecipeListProps) {
@@ -31,39 +27,30 @@ export function RecipeList({ recipes, onAddToMealPlan }: RecipeListProps) {
   const allCategories = Array.from(allCategoriesSet);
 
   const filteredRecipes = recipes.filter((recipe) => {
-    const matchesSearch =
-      recipe.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      recipe.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = recipe.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                         recipe.description.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchesCategory =
-      categoryFilter === "all" ||
-      recipe.categories.includes(categoryFilter as any);
+    const matchesCategory = categoryFilter === "all" || 
+                          recipe.categories.includes(categoryFilter as any);
 
     return matchesSearch && matchesCategory;
   });
 
   // Sort recipes
   const sortedRecipes = [...filteredRecipes].sort((a, b) => {
-    switch (sortType) {
-      case "title-asc":
-        return a.title.localeCompare(b.title);
-      case "title-desc":
-        return b.title.localeCompare(a.title);
-      case "prep-asc":
-        return a.prepTime - b.prepTime;
-      case "prep-desc":
-        return b.prepTime - a.prepTime;
-      case "cook-asc":
-        return a.cookTime - b.cookTime;
-      case "cook-desc":
-        return b.cookTime - a.cookTime;
-      case "servings-asc":
-        return a.servings - b.servings;
-      case "servings-desc":
-        return b.servings - a.servings;
-      default:
-        return 0;
+    if (sortType === "title-asc") {
+      return a.title.localeCompare(b.title);
     }
+    if (sortType === "title-desc") {
+      return b.title.localeCompare(a.title);
+    }
+    if (sortType === "prep-asc") {
+      return a.prepTime - b.prepTime;
+    }
+    if (sortType === "prep-desc") {
+      return b.prepTime - a.prepTime;
+    }
+    return 0;
   });
 
   return (
