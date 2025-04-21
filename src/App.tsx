@@ -17,6 +17,7 @@ import ShoppingList from "./pages/ShoppingList";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import NotFound from "./pages/NotFound";
+import CategoryPage from "./pages/CategoryPage";
 
 const queryClient = new QueryClient();
 
@@ -31,6 +32,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/recipes" element={<RecipesPage />} />
             <Route path="/recipes/:id" element={<RecipeDetail />} />
+            <Route path="/category/:category" element={<CategoryPage />} />
             <Route path="/meal-planner" element={<MealPlanner />} />
             <Route path="/shopping-list" element={<ShoppingList />} />
             <Route path="/login" element={<Login />} />

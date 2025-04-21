@@ -6,7 +6,10 @@ import { RecipeCard } from "@/components/recipes/RecipeCard";
 import { CalendarDays, Book, ListChecks } from "lucide-react";
 
 export default function Index() {
-  // ... latestRecipes logic the same ...
+  // Get the 3 most recent recipes
+  const latestRecipes = mockRecipes
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .slice(0, 3);
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -68,7 +71,7 @@ export default function Index() {
       </section>
 
       {/* Latest Recipes - with very dark background */}
-      <section className="py-4 bg-[#222]">
+      <section className="py-4 bg-[#f97315]">
         <div className="container px-4">
           <div className="flex items-center justify-between mb-3">
             <div>
