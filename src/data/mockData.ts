@@ -247,6 +247,122 @@ export const mockRecipes: Recipe[] = [
     createdAt: "2023-06-01T07:30:00Z",
     updatedAt: "2023-06-01T07:30:00Z",
     isFavorite: false,
+  },
+  {
+    id: "recipe-9",
+    title: "Grilled Salmon with Lemon",
+    description: "Delicious salmon fillet grilled to perfection with fresh lemon.",
+    ingredients: [
+      "1 salmon fillet",
+      "2 tbsp olive oil",
+      "1 lemon, sliced",
+      "Salt and pepper",
+      "Fresh dill for garnish"
+    ],
+    instructions: [
+      "Preheat grill to medium-high heat.",
+      "Brush salmon with olive oil and season with salt and pepper.",
+      "Place lemon slices on top of salmon.",
+      "Grill for 6-8 minutes per side or until cooked through.",
+      "Garnish with fresh dill and serve."
+    ],
+    categories: ["dinner", "fish"],
+    prepTime: 10,
+    cookTime: 15,
+    servings: 2,
+    image: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    createdBy: "user-1",
+    createdAt: "2023-07-10T10:00:00Z",
+    updatedAt: "2023-07-10T10:00:00Z",
+    isFavorite: false,
+  },
+  {
+    id: "recipe-10",
+    title: "Vegetarian Chili",
+    description: "Hearty and spicy vegetarian chili with beans and vegetables.",
+    ingredients: [
+      "1 tbsp olive oil",
+      "1 onion, diced",
+      "1 bell pepper, diced",
+      "2 cloves garlic, minced",
+      "2 cans kidney beans",
+      "1 can diced tomatoes",
+      "2 tbsp chili powder",
+      "1 tsp cumin",
+      "Salt and pepper to taste"
+    ],
+    instructions: [
+      "Heat olive oil in a pot over medium heat.",
+      "Add onion, bell pepper, and garlic and sauté until soft.",
+      "Add beans, tomatoes, chili powder, cumin, salt, and pepper.",
+      "Simmer for 30 minutes.",
+      "Serve hot with rice or bread."
+    ],
+    categories: ["dinner", "vegetarian", "cheap", "healthy"],
+    prepTime: 15,
+    cookTime: 30,
+    servings: 6,
+    image: "https://images.unsplash.com/photo-1601050698431-9b3482a9e92e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    createdBy: "user-1",
+    createdAt: "2023-07-12T09:00:00Z",
+    updatedAt: "2023-07-12T09:00:00Z",
+    isFavorite: false,
+  },
+  {
+    id: "recipe-11",
+    title: "BBQ Chicken Wings",
+    description: "Sticky and smoky BBQ chicken wings perfect for a party.",
+    ingredients: [
+      "2 lbs chicken wings",
+      "1 cup BBQ sauce",
+      "Salt and pepper",
+      "1 tsp smoked paprika"
+    ],
+    instructions: [
+      "Preheat oven to 400°F (200°C).",
+      "Season wings with salt, pepper, and smoked paprika.",
+      "Bake for 25 minutes.",
+      "Brush with BBQ sauce and bake for another 10-15 minutes.",
+      "Serve hot."
+    ],
+    categories: ["dinner", "bbq", "super tasty"],
+    prepTime: 10,
+    cookTime: 40,
+    servings: 4,
+    image: "https://images.unsplash.com/photo-1565299543923-bf1216a8f6e1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    createdBy: "user-1",
+    createdAt: "2023-07-15T15:00:00Z",
+    updatedAt: "2023-07-15T15:00:00Z",
+    isFavorite: false,
+  },
+  {
+    id: "recipe-12",
+    title: "Pasta Carbonara",
+    description: "Traditional Italian pasta carbonara with pancetta and parmesan.",
+    ingredients: [
+      "400g spaghetti",
+      "150g pancetta",
+      "2 large eggs",
+      "100g parmesan cheese",
+      "2 cloves garlic",
+      "Salt and pepper"
+    ],
+    instructions: [
+      "Cook spaghetti according to package instructions.",
+      "Fry pancetta with garlic until crispy.",
+      "Beat eggs and mix with grated parmesan.",
+      "Drain pasta and toss quickly with pancetta and egg mixture.",
+      "Season with salt and pepper and serve immediately."
+    ],
+    categories: ["dinner", "pasta", "super tasty", "pricey!"],
+    prepTime: 10,
+    cookTime: 15,
+    servings: 4,
+    image: "https://images.unsplash.com/photo-1589308078059-33ed164f0d59?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    createdBy: "user-1",
+    createdAt: "2023-07-18T12:00:00Z",
+    updatedAt: "2023-07-18T12:00:00Z",
+    isFavorite: true,
   }
 ];
 

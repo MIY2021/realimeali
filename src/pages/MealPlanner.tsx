@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { MealPlanCalendar } from "@/components/meal-planner/MealPlanCalendar";
 import { AddMealPlanDialog } from "@/components/meal-planner/AddMealPlanDialog";
@@ -14,20 +15,20 @@ export default function MealPlanner() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [selectedMealType, setSelectedMealType] = useState<MealType>("breakfast");
   const { toast } = useToast();
-  
+
   const handleOpenAddDialog = (date: Date, mealType: MealType) => {
     setSelectedDate(date);
     setSelectedMealType(mealType);
     setIsAddDialogOpen(true);
   };
-  
+
   const handleCloseAddDialog = () => {
     setIsAddDialogOpen(false);
   };
-  
+
   const handleAddMealPlan = (recipeId: string, notes: string) => {
     const availableSlot = getNextAvailableSlot(selectedMealType);
-    
+
     const newMealPlan: MealPlan = {
       id: `meal-${Date.now()}`,
       date: selectedDate.toISOString(),
@@ -39,16 +40,16 @@ export default function MealPlanner() {
       updatedAt: new Date().toISOString(),
       slotIndex: availableSlot,
     };
-    
+
     setMealPlans([...mealPlans, newMealPlan]);
     handleCloseAddDialog();
   };
-  
+
   const getNextAvailableSlot = (mealType: MealType) => {
     const existingSlots = mealPlans
-      .filter(plan => plan.mealType === mealType)
-      .map(plan => plan.slotIndex || 0);
-    
+      .filter((plan) => plan.mealType === mealType)
+      .map((plan) => plan.slotIndex || 0);
+
     for (let i = 0; i < 5; i++) {
       if (!existingSlots.includes(i)) {
         return i;
@@ -56,34 +57,34 @@ export default function MealPlanner() {
     }
     return 0;
   };
-  
+
   const handleRemoveMealPlan = (mealPlanId: string) => {
     setMealPlans(mealPlans.filter((plan) => plan.id !== mealPlanId));
   };
-  
+
   const handleRandomMealSelection = () => {
     // Clear existing meal plans
     const newMealPlans: MealPlan[] = [];
-    
+
     // Categories for each meal type
     const mealTypeToCategories = {
       dinner: ["dinner"],
       lunch: ["lunch"],
-      breakfast: ["breakfast"]
+      breakfast: ["breakfast"],
     };
-    
+
     // Generate 5 random meals for each meal type
     Object.entries(mealTypeToCategories).forEach(([mealType, categories]) => {
       const typeAsKey = mealType as MealType;
-      const eligibleRecipes = mockRecipes.filter(recipe => 
-        recipe.categories.some(category => categories.includes(category))
+      const eligibleRecipes = mockRecipes.filter((recipe) =>
+        recipe.categories.some((category) => categories.includes(category))
       );
-      
+
       for (let i = 0; i < 5; i++) {
         if (eligibleRecipes.length > 0) {
           const randomIndex = Math.floor(Math.random() * eligibleRecipes.length);
           const recipe = eligibleRecipes[randomIndex];
-          
+
           newMealPlans.push({
             id: `random-meal-${Date.now()}-${mealType}-${i}`,
             date: new Date().toISOString(),
@@ -97,41 +98,34 @@ export default function MealPlanner() {
         }
       }
     });
-    
+
     setMealPlans(newMealPlans);
     toast({
       title: "Meal Plan Generated",
       description: "Random meals have been selected for your plan",
     });
   };
-  
+
   return (
     <div className="container py-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-navy">RealiMeali Meal Planner</h1>
-        <p className="text-muted-foreground text-sm mt-1">
-          Plan your weekly meals with ease
-        </p>
-      </div>
-      
-      <div className="flex flex-wrap gap-2 mb-6">
-        <Button 
+      <div className="mb-6 flex flex-wrap gap-2 justify-start">
+        <Button
           onClick={handleRandomMealSelection}
           size="sm"
-          className="bg-sage hover:bg-sage/90 px-3 py-2 flex items-center"
+          className="bg-sage hover:bg-sage/90 px-3 py-2 flex items-center whitespace-nowrap"
         >
           <Shuffle className="mr-2 h-4 w-4" />
           Randomise
         </Button>
-        <Button asChild variant="outline" size="sm" className="flex items-center px-3 py-2">
-          <Link to="/shopping-list">
+        <Button asChild variant="outline" size="sm" className="flex items-center px-3 py-2 whitespace-nowrap">
+          <Link to="/shopping-list" className="flex items-center">
             <ListChecks className="mr-2 h-4 w-4" />
             Shopping List
           </Link>
         </Button>
       </div>
 
-      <MealPlanCalendar 
+      <MealPlanCalendar
         mealPlans={mealPlans}
         onAddMealPlan={handleOpenAddDialog}
         onRemoveMealPlan={handleRemoveMealPlan}
