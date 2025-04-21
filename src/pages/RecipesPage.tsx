@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { RecipeList } from "@/components/recipes/RecipeList";
 import { Button } from "@/components/ui/button";
@@ -117,25 +116,39 @@ export default function RecipesPage() {
     });
   };
 
+  // --- New: Add-to-meal plan, week selection ---
+  const [addToMealWeek, setAddToMealWeek] = useState<1 | 2 | null>(null);
+
+  // Update: When user opens Add to Meal Plan dialog, reset week
   const handleAddToMealPlan = (recipe: Recipe) => {
     setAddToMealRecipe(recipe);
     setShowMealTypeDialog(true);
     setSelectedMealType(null);
+    setAddToMealWeek(null);
   };
 
+  // Update: When user selects meal type, require week selection first
   const handleSelectMealType = (mealType: MealType) => {
+    if (!addToMealWeek) {
+      toast({
+        title: "Select Week",
+        description: "Please select which week to add this meal to.",
+        variant: "destructive"
+      });
+      return;
+    }
     if (addToMealRecipe) {
       toast({
         title: "Recipe Added",
-        description: `Added ${addToMealRecipe.title} to your ${mealType} meal plan!`,
+        description: `Added ${addToMealRecipe.title} to your ${mealType} meal plan (Week ${addToMealWeek})!`,
       });
     }
     setAddToMealRecipe(null);
     setShowMealTypeDialog(false);
     setSelectedMealType(null);
+    setAddToMealWeek(null);
   };
 
-  // RecipeList already supports sorting if we pass sortType and a handler
   return (
     <div className="container max-w-3xl py-6">
       <div className="flex items-center justify-between mb-8 gap-2 flex-wrap">
@@ -178,6 +191,7 @@ export default function RecipesPage() {
         onAddToMealPlan={handleAddToMealPlan}
       />
 
+      {/* --- Updated dialog with week selection --- */}
       <Dialog open={showMealTypeDialog && !!addToMealRecipe} onOpenChange={open => !open && setShowMealTypeDialog(false)}>
         <DialogContent>
           <DialogHeader>
@@ -188,6 +202,21 @@ export default function RecipesPage() {
           <div className="mb-4">
             <div className="text-lg font-semibold">{addToMealRecipe?.title}</div>
             <div className="text-sm text-muted-foreground">{addToMealRecipe?.description}</div>
+          </div>
+          <div className="flex flex-col gap-2 mb-2">
+            <label className="font-semibold text-sm mb-1">Select Week</label>
+            <div className="flex gap-2">
+              {[1, 2].map((wk) => (
+                <Button
+                  key={wk}
+                  variant={addToMealWeek === wk ? "default" : "outline"}
+                  className={addToMealWeek === wk ? "bg-terracotta text-white" : ""}
+                  onClick={() => setAddToMealWeek(wk as 1 | 2)}
+                >
+                  Week {wk}
+                </Button>
+              ))}
+            </div>
           </div>
           <div className="flex flex-col gap-2">
             {MEAL_TYPES.map(type => (

@@ -1,4 +1,3 @@
-
 import { useState, useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -31,7 +30,7 @@ export function AddRecipeToMealModal({ open, onClose, mealType, recipes, onSelec
     );
   }, [recipes, category, search]);
 
-  const recipePreview = filtered.find(r => r.id === previewId);
+  // Remove recipePreview and preview button logic
 
   return (
     <Dialog open={open} onOpenChange={v => !v && onClose()}>
@@ -56,36 +55,14 @@ export function AddRecipeToMealModal({ open, onClose, mealType, recipes, onSelec
             <div key={r.id} className="flex gap-2 items-center border rounded p-1 hover:bg-accent transition">
               <Button
                 variant="ghost"
-                className="justify-start w-32"
+                className="justify-start w-full"
                 onClick={() => { onSelectRecipe(r.id); onClose(); }}
               >
                 {r.title}
               </Button>
-              <Button variant="outline" size="sm" onClick={() => setPreviewId(r.id)}>
-                Preview
-              </Button>
             </div>
           )) : <div className="text-sm text-muted-foreground p-3">No recipes found.</div>}
         </div>
-        {recipePreview && (
-          <div className="mt-4 border-t pt-2">
-            <div className="flex gap-2 items-center">
-              {recipePreview.image && (
-                <img
-                  src={recipePreview.image}
-                  alt={recipePreview.title}
-                  className="h-16 w-16 object-cover rounded"
-                  onError={e => (e.currentTarget as HTMLImageElement).src = "/placeholder.svg"}
-                />
-              )}
-              <div>
-                <div className="font-semibold">{recipePreview.title}</div>
-                <div className="text-xs text-muted-foreground">{recipePreview.description}</div>
-                <div className="text-xs text-muted-foreground">{recipePreview.prepTime + recipePreview.cookTime} min • {recipePreview.servings} servings</div>
-              </div>
-            </div>
-          </div>
-        )}
       </DialogContent>
     </Dialog>
   );
