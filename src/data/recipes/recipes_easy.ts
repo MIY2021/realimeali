@@ -210,5 +210,35 @@ export const easyRecipes: Recipe[] = [
     createdAt: "2023-08-20T18:30:00Z",
     updatedAt: "2023-08-20T18:30:00Z",
     isFavorite: true,
+  },
+  {
+    id: "recipe-22",
+    title: "Pesto Pasta with Cherry Tomatoes",
+    description: "Quick and flavorful pasta with fresh pesto and roasted cherry tomatoes.",
+    ingredients: [
+      "400g pasta",
+      "1/2 cup pesto",
+      "200g cherry tomatoes, halved",
+      "2 cloves garlic, minced",
+      "2 tbsp olive oil",
+      "Salt and pepper to taste",
+      "Parmesan cheese for garnish"
+    ],
+    instructions: [
+      "Cook pasta according to package instructions.",
+      "Heat olive oil in a pan, add garlic and cherry tomatoes, and cook until softened.",
+      "Drain pasta and add to the pan with pesto and tomatoes.",
+      "Mix well and season with salt and pepper.",
+      "Serve hot with parmesan cheese."
+    ],
+    categories: ["Pasta", "Vegetarian", "Easy"],
+    prepTime: 10,
+    cookTime: 15,
+    servings: 4,
+    image: "https://images.unsplash.com/photo-1473093295043-cdd812d0e601?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    createdBy: "user-1",
+    createdAt: "2023-08-15T13:45:00Z",
+    updatedAt: "2023-08-15T13:45:00Z",
+    isFavorite: false,
   }
 ];
