@@ -9,7 +9,7 @@ const Header = () => {
       <div className="container flex h-16 items-center justify-between">
         <Link to="/" className="flex items-center space-x-2">
           <UtensilsCrossed className="h-6 w-6 text-terracotta" />
-          <span className="text-xl font-bold text-navy">Family Food Feed</span>
+          <span className="text-xl font-bold text-navy">RealiMeali</span>
         </Link>
         
         <nav className="hidden md:flex items-center space-x-6">

@@ -12,28 +12,23 @@ export default function Index() {
   return (
     <div className="flex flex-col min-h-screen">
       {/* Hero Section */}
-      <section className="py-16 md:py-24 bg-gradient-to-b from-cream to-cream/50">
+      <section className="py-8 md:py-12 bg-gradient-to-b from-cream to-cream/50">
         <div className="container px-4 md:px-6">
-          <div className="flex flex-col items-center space-y-4 text-center">
-            <div className="space-y-2">
-              <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl lg:text-6xl text-navy">
+          <div className="flex flex-col items-center space-y-2 text-center">
+            <div className="space-y-1">
+              <h1 className="text-2xl font-bold tracking-tighter sm:text-3xl md:text-4xl lg:text-5xl text-navy">
                 RealiMeali: Your Family's Meal Planning Hub
               </h1>
-              <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl">
-                Save favorite recipes, plan weekly meals, and share with family members.
-                All in one place, always accessible.
+              <p className="mx-auto max-w-[600px] text-muted-foreground md:text-base">
+                Save favorite recipes, plan weekly meals, and share with family.
               </p>
             </div>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Button asChild size="lg" className="bg-terracotta hover:bg-terracotta/90">
-                <Link to="/recipes">
-                  Browse Recipes
-                </Link>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Button asChild size="md" className="bg-terracotta hover:bg-terracotta/90">
+                <Link to="/recipes">Browse Recipes</Link>
               </Button>
-              <Button asChild size="lg" variant="outline">
-                <Link to="/meal-planner">
-                  Start Planning
-                </Link>
+              <Button asChild size="md" variant="outline">
+                <Link to="/meal-planner">Start Planning</Link>
               </Button>
             </div>
           </div>
@@ -41,34 +36,34 @@ export default function Index() {
       </section>
 
       {/* Features Section */}
-      <section className="py-12 md:py-16 bg-muted">
+      <section className="py-6 md:py-8 bg-muted">
         <div className="container px-4 md:px-6">
-          <div className="grid gap-8 md:grid-cols-3">
-            <div className="flex flex-col items-center space-y-4 text-center">
-              <div className="rounded-full bg-terracotta/20 p-4">
-                <Book className="h-6 w-6 text-terracotta" />
+          <div className="grid gap-4 md:grid-cols-3">
+            <div className="flex flex-col items-center space-y-1 text-center">
+              <div className="rounded-full bg-terracotta/20 p-2">
+                <Book className="h-5 w-5 text-terracotta" />
               </div>
-              <h3 className="text-xl font-bold">Recipe Collection</h3>
-              <p className="text-muted-foreground">
-                Save and organize all your favorite family recipes in one place.
+              <h3 className="text-base font-bold">Recipe Collection</h3>
+              <p className="text-xs text-muted-foreground">
+                Save and organize all your favorite family recipes.
               </p>
             </div>
-            <div className="flex flex-col items-center space-y-4 text-center">
-              <div className="rounded-full bg-sage/20 p-4">
-                <CalendarDays className="h-6 w-6 text-sage" />
+            <div className="flex flex-col items-center space-y-1 text-center">
+              <div className="rounded-full bg-sage/20 p-2">
+                <CalendarDays className="h-5 w-5 text-sage" />
               </div>
-              <h3 className="text-xl font-bold">Meal Planning</h3>
-              <p className="text-muted-foreground">
-                Plan your weekly meals and generate shopping lists with ease.
+              <h3 className="text-base font-bold">Meal Planning</h3>
+              <p className="text-xs text-muted-foreground">
+                Plan your weekly meals and generate shopping lists.
               </p>
             </div>
-            <div className="flex flex-col items-center space-y-4 text-center">
-              <div className="rounded-full bg-butter/20 p-4">
-                <UtensilsCrossed className="h-6 w-6 text-butter" />
+            <div className="flex flex-col items-center space-y-1 text-center">
+              <div className="rounded-full bg-butter/20 p-2">
+                <UtensilsCrossed className="h-5 w-5 text-butter" />
               </div>
-              <h3 className="text-xl font-bold">Family Sharing</h3>
-              <p className="text-muted-foreground">
-                Share your meal plans with family members for seamless coordination.
+              <h3 className="text-base font-bold">Family Sharing</h3>
+              <p className="text-xs text-muted-foreground">
+                Share your meal plans for seamless coordination.
               </p>
             </div>
           </div>
@@ -76,23 +71,22 @@ export default function Index() {
       </section>
 
       {/* Featured Recipes */}
-      <section className="py-12 md:py-16">
+      <section className="py-6 md:py-8">
         <div className="container px-4 md:px-6">
-          <div className="flex flex-col items-center justify-between gap-4 md:flex-row mb-8">
+          <div className="flex flex-col items-center md:flex-row md:justify-between gap-3 mb-4">
             <div>
-              <h2 className="text-3xl font-bold tracking-tighter text-navy">
+              <h2 className="text-xl font-bold tracking-tighter text-navy">
                 Featured Recipes
               </h2>
-              <p className="text-muted-foreground">
-                Discover our selection of delicious recipes
+              <p className="text-sm text-muted-foreground">
+                Our selection of delicious recipes
               </p>
             </div>
-            <Button asChild variant="outline">
+            <Button asChild variant="outline" size="sm">
               <Link to="/recipes">View All Recipes</Link>
             </Button>
           </div>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {featuredRecipes.map((recipe) => (
               <RecipeCard key={recipe.id} recipe={recipe} />
             ))}
@@ -101,27 +95,23 @@ export default function Index() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-12 md:py-16 bg-navy text-cream">
+      <section className="py-6 md:py-8 bg-navy text-cream">
         <div className="container px-4 md:px-6">
-          <div className="flex flex-col items-center space-y-4 text-center">
-            <div className="space-y-2">
-              <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl">
+          <div className="flex flex-col items-center space-y-2 text-center">
+            <div className="space-y-1">
+              <h2 className="text-xl font-bold tracking-tighter sm:text-2xl">
                 Ready to Start Planning with RealiMeali?
               </h2>
-              <p className="mx-auto max-w-[600px] text-cream/80 md:text-xl">
+              <p className="mx-auto max-w-[400px] text-cream/80 text-base">
                 Create an account today and start organizing your family's meals.
               </p>
             </div>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Button asChild size="lg" className="bg-terracotta hover:bg-terracotta/90">
-                <Link to="/signup">
-                  Sign Up Now
-                </Link>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Button asChild size="md" className="bg-terracotta hover:bg-terracotta/90">
+                <Link to="/signup">Sign Up Now</Link>
               </Button>
-              <Button asChild size="lg" variant="outline" className="border-cream text-cream hover:bg-cream/10">
-                <Link to="/login">
-                  Sign In
-                </Link>
+              <Button asChild size="md" variant="outline" className="border-cream text-cream hover:bg-cream/10">
+                <Link to="/login">Sign In</Link>
               </Button>
             </div>
           </div>
