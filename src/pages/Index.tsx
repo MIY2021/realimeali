@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { UtensilsCrossed, Shuffle, ListChecks } from "lucide-react";
@@ -5,8 +6,8 @@ import { mockRecipes } from "@/data/recipes";
 import { RecipeCard } from "@/components/recipes/RecipeCard";
 
 export default function Index() {
-  // Show a few featured recipes
-  const featuredRecipes = mockRecipes.slice(0, 3);
+  // Show the latest recipes (most recently added)
+  const latestRecipes = [...mockRecipes].reverse().slice(0, 3);
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -15,7 +16,7 @@ export default function Index() {
         <div className="container px-4">
           <div className="flex flex-col items-center space-y-2 text-center">
             <h1 className="text-xl font-bold sm:text-2xl md:text-3xl text-navy">
-              RealiMeali: Your Family's Meal Planning Hub
+              RealiMeali: Your Family&apos;s Meal Planning Hub
             </h1>
             <p className="mx-auto max-w-[500px] text-sm text-muted-foreground">
               Save recipes, plan meals, and generate shopping lists.
@@ -73,16 +74,16 @@ export default function Index() {
         </div>
       </section>
 
-      {/* Featured Recipes - Compact version */}
+      {/* Latest Recipes - instead of Featured Recipes */}
       <section className="py-4">
         <div className="container px-4">
           <div className="flex items-center justify-between mb-3">
             <div>
               <h2 className="text-lg font-bold text-navy">
-                Featured Recipes
+                Latest Recipes
               </h2>
               <p className="text-xs text-muted-foreground">
-                Our selection of delicious meals
+                See what&apos;s new in your recipe collection
               </p>
             </div>
             <Button asChild variant="outline" size="sm">
@@ -90,7 +91,7 @@ export default function Index() {
             </Button>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {featuredRecipes.map((recipe) => (
+            {latestRecipes.map((recipe) => (
               <RecipeCard key={recipe.id} recipe={recipe} />
             ))}
           </div>
