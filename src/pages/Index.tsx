@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { UtensilsCrossed, Shuffle, ListChecks } from "lucide-react";
@@ -11,22 +10,53 @@ export default function Index() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      {/* Hero Section - Made more compact */}
-      <section className="py-6 bg-gradient-to-b from-cream to-cream/50">
+      {/* Hero Section - Revised with three buttons */}
+      <section className="py-8 bg-gradient-to-b from-cream to-cream/50">
         <div className="container px-4">
           <div className="flex flex-col items-center space-y-2 text-center">
             <h1 className="text-xl font-bold sm:text-2xl md:text-3xl text-navy">
               RealiMeali: Your Family&apos;s Meal Planning Hub
             </h1>
-            <p className="mx-auto max-w-[500px] text-sm text-muted-foreground">
+            <div className="mx-auto max-w-[500px] text-sm text-muted-foreground mb-2">
               Save recipes, plan meals, and generate shopping lists.
-            </p>
-            <div className="flex flex-row gap-2 mt-2">
-              <Button asChild size="sm" className="bg-terracotta hover:bg-terracotta/90">
-                <Link to="/recipes">Browse Recipes</Link>
+            </div>
+            {/* New buttons for Recipe Collection, Meal Planning, and Shopping Lists */}
+            <div className="flex flex-col sm:flex-row gap-4 mt-4 w-full max-w-lg justify-center">
+              <Button asChild size="lg" className="bg-white border shadow hover:bg-sage/10 flex-1 flex flex-col items-center py-5 group transition-all">
+                <Link to="/recipes" className="flex flex-col items-center w-full">
+                  <span className="pb-2">
+                    <span className="inline-flex items-center justify-center bg-sage/10 rounded-full p-2 mb-1 group-hover:bg-sage/20 transition">
+                      {/* Lucide: book */}
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-terracotta" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M2 7v11a2 2 0 0 0 2 2h16M2 7a2 2 0 0 1 2-2h13.5a2 2 0 0 1 2 2v13M2 7h17.5M20 20V7"/></svg>
+                    </span>
+                  </span>
+                  <span className="font-semibold text-navy text-base">Recipe Collection</span>
+                  <span className="text-xs text-muted-foreground mt-1">Save your favorite recipes</span>
+                </Link>
               </Button>
-              <Button asChild size="sm" variant="outline">
-                <Link to="/meal-planner">Start Planning</Link>
+              <Button asChild size="lg" className="bg-white border shadow hover:bg-sage/10 flex-1 flex flex-col items-center py-5 group transition-all">
+                <Link to="/meal-planner" className="flex flex-col items-center w-full">
+                  <span className="pb-2">
+                    <span className="inline-flex items-center justify-center bg-sage/10 rounded-full p-2 mb-1 group-hover:bg-sage/20 transition">
+                      {/* Lucide: calendar */}
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-sage" fill="none" viewBox="0 0 24 24" stroke="currentColor"><rect width="18" height="16" x="3" y="4" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg>
+                    </span>
+                  </span>
+                  <span className="font-semibold text-navy text-base">Meal Planning</span>
+                  <span className="text-xs text-muted-foreground mt-1">Plan weekly meals easily</span>
+                </Link>
+              </Button>
+              <Button asChild size="lg" className="bg-white border shadow hover:bg-sage/10 flex-1 flex flex-col items-center py-5 group transition-all">
+                <Link to="/shopping-list" className="flex flex-col items-center w-full">
+                  <span className="pb-2">
+                    <span className="inline-flex items-center justify-center bg-sage/10 rounded-full p-2 mb-1 group-hover:bg-sage/20 transition">
+                      {/* Lucide: shopping-cart */}
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-butter" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h2l1 5.32m2.26 9.35A2 2 0 0 0 8 19h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H6.42"/><path d="M16 10v6"/><path d="M8 7V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v3"/></svg>
+                    </span>
+                  </span>
+                  <span className="font-semibold text-navy text-base">Shopping Lists</span>
+                  <span className="text-xs text-muted-foreground mt-1">Generate lists from your meal plan</span>
+                </Link>
               </Button>
             </div>
           </div>

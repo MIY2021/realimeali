@@ -5,7 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Plus } from "lucide-react";
+import { Plus, ChevronDown } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface AddMealPlanDialogProps {
   isOpen: boolean;
@@ -28,25 +35,38 @@ export function AddMealPlanDialog({
 }: AddMealPlanDialogProps) {
   const [notes, setNotes] = useState<string>("");
   const [searchTerm, setSearchTerm] = useState<string>("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("All");
 
-  // Group recipes by category, pre-filtered by search and relevant type
+  // Get unique categories across all recipes
+  const allCategories = useMemo(() => {
+    const set = new Set<string>();
+    recipes.forEach((recipe) =>
+      recipe.categories.forEach((cat) => set.add(cat))
+    );
+    return ["All", ...Array.from(set).sort()];
+  }, [recipes]);
+
+  // Group recipes filtered by category and search
   const groupedRecipes = useMemo(() => {
     const byCategory: Record<string, Recipe[]> = {};
     recipes.forEach((recipe) => {
       recipe.categories.forEach((category) => {
-        // Filter by search term if provided
-        if (
+        // Filter by search AND selected category
+        const matchesTerm =
           searchTerm.trim() === "" ||
-          recipe.title.toLowerCase().includes(searchTerm.toLowerCase())
-        ) {
+          recipe.title.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesCategory =
+          selectedCategory === "All" || recipe.categories.includes(selectedCategory);
+
+        if (matchesTerm && matchesCategory) {
           if (!byCategory[category]) byCategory[category] = [];
           byCategory[category].push(recipe);
         }
       });
     });
-    // Sort categories alphabetically
+    // Sort categories
     return Object.entries(byCategory).sort(([a], [b]) => a.localeCompare(b));
-  }, [recipes, searchTerm]);
+  }, [recipes, searchTerm, selectedCategory]);
 
   const handleSelectRecipe = (recipeId: string) => {
     onAddMealPlan(recipeId, notes);
@@ -75,15 +95,30 @@ export function AddMealPlanDialog({
             </Button>
           </DialogTitle>
         </DialogHeader>
-
         <div className="space-y-2 flex-1 overflow-hidden flex flex-col">
-          <Input
-            placeholder="Search meals..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="flex-shrink-0"
-          />
-
+          <div className="flex gap-2 flex-col sm:flex-row">
+            <Input
+              placeholder="Search meals..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="flex-shrink-0 sm:w-1/2"
+            />
+            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+              <SelectTrigger className="w-full sm:w-[170px]">
+                <SelectValue>{selectedCategory === "All" ? "All Categories" : selectedCategory}</SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {allCategories.map((cat) => (
+                  <SelectItem key={cat} value={cat}>
+                    <span className="flex items-center">
+                      {cat === "All" && <ChevronDown className="mr-2 h-4 w-4" />}
+                      {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                    </span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
           <ScrollArea className="flex-1 rounded-md border p-2">
             {groupedRecipes.length > 0 ? (
               <div className="space-y-4">
@@ -100,12 +135,15 @@ export function AddMealPlanDialog({
                           className="flex items-center gap-2 w-full px-2 py-2 rounded hover:bg-accent transition border"
                           type="button"
                         >
-                          <div className="h-16 w-16 flex-shrink-0 rounded overflow-hidden bg-muted flex items-center justify-center">
+                          <div className="h-16 w-16 flex-shrink-0 rounded overflow-hidden bg-muted flex items-center justify-center relative">
                             {recipe.image ? (
                               <img
                                 src={recipe.image}
                                 alt={recipe.title}
                                 className="h-full w-full object-cover"
+                                onError={(e) => {
+                                  (e.currentTarget as HTMLImageElement).src = "/placeholder.svg";
+                                }}
                               />
                             ) : (
                               <span className="text-xs text-muted-foreground">No image</span>
@@ -127,7 +165,6 @@ export function AddMealPlanDialog({
               <div className="text-center text-muted-foreground p-4 text-sm">No meals found</div>
             )}
           </ScrollArea>
-
           <div className="flex-shrink-0">
             <Input
               placeholder="Notes (optional)"
