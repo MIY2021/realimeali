@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { RecipeList } from "@/components/recipes/RecipeList";
 import { Button } from "@/components/ui/button";
@@ -88,7 +89,10 @@ export default function RecipesPage() {
   };
 
   const handleAddNewRecipe = () => {
-    toast(); // Call toast without arguments
+    toast({
+      title: "Coming Soon",
+      description: "Recipe creation will be available in a future update.",
+    });
   };
 
   return (

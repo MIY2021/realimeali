@@ -194,7 +194,7 @@ export default function ShoppingList() {
           onRemoveAll={handleRemoveAll}
         />
       </div>
-      {/* ... keep the rest the same ... */}
+      
       <div className="space-y-4">
         {Object.entries(categorizedIngredients).map(([category, items]) => (
           <Card key={category}>

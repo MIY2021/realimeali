@@ -1,7 +1,8 @@
+
 import { useState, useEffect } from "react";
 import { MealPlan, MealType, RecipeCategory } from "@/types";
 import { Button } from "@/components/ui/button";
-import { ListChecks, Plus, Trash2, Users, Share, FileSpreadsheet, CircleX } from "lucide-react";
+import { ListChecks, Plus, Trash2, Users, Share, FileSpreadsheet, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { mockMealPlans } from "@/data/mealPlans";
@@ -101,7 +102,10 @@ export default function MealPlanner() {
       });
     });
     setMealPlans(newMealPlans);
-    toast({ title: "Meal Plan Randomised", description: "Your meals have been chosen!" });
+    toast({
+      title: "Meal Plan Randomised",
+      description: "Your meals have been chosen!",
+    });
   };
 
   // ---- Share ----
@@ -120,7 +124,10 @@ export default function MealPlanner() {
     } else {
       navigator.clipboard.writeText(shareText);
     }
-    toast({ title: "Copied Meal Plan", description: "Meal plan copied to clipboard!" });
+    toast({
+      title: "Copied Meal Plan",
+      description: "Meal plan copied to clipboard!",
+    });
   };
 
   // ---- Remove a meal ----
@@ -157,7 +164,9 @@ export default function MealPlanner() {
     if (mealPlans.length === 0) return;
     if (!window.confirm("Clear the entire meal plan?")) return;
     setMealPlans([]);
-    toast({ title: "Meal plan cleared" });
+    toast({
+      title: "Meal plan cleared"
+    });
   };
 
   return (
