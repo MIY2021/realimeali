@@ -11,7 +11,7 @@ export default function RecipesPage() {
   const [recipes, setRecipes] = useState(mockRecipes);
   const { toast } = useToast();
 
-  // Bulk import handler
+  // Bulk import handler remains but button will be moved elsewhere
   const handleBulkImport = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -98,28 +98,14 @@ export default function RecipesPage() {
             Browse all your favorite recipes
           </p>
         </div>
+        {/* Remove the bulk import button from here */}
         <div className="flex items-center gap-2">
-          <Button className="bg-green-600 text-white hover:bg-green-700 px-3 relative">
-            <input
-              type="file"
-              accept=".csv"
-              onChange={handleBulkImport}
-              className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
-              title="Bulk import CSV"
-              aria-label="Bulk import CSV"
-            />
-            <span className="flex items-center gap-2">
-              <Plus className="h-4 w-4" />
-              Bulk Import
-            </span>
-          </Button>
           <Button className="bg-terracotta hover:bg-terracotta/90">
             <Plus className="h-4 w-4 mr-2" />
             Add New Recipe
           </Button>
         </div>
       </div>
-
       <RecipeList recipes={recipes} />
     </div>
   );

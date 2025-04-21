@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { MealPlanCalendar } from "@/components/meal-planner/MealPlanCalendar";
 import { AddMealPlanDialog } from "@/components/meal-planner/AddMealPlanDialog";
-import { mockMealPlans, mockRecipes } from "@/data/mealPlans";
 import { MealPlan, MealType, RecipeCategory } from "@/types";
 import { Button } from "@/components/ui/button";
 import { FileSpreadsheet, ListChecks, Share } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { mockMealPlans } from "@/data/mealPlans";
+import { mockRecipes } from "@/data/recipes"; // Use correct import
+
 
 export default function MealPlanner() {
   const [mealPlans, setMealPlans] = useState<MealPlan[]>(mockMealPlans);
@@ -62,23 +64,20 @@ export default function MealPlanner() {
   };
 
   const handleRandomMealSelection = () => {
-    // Clear existing meal plans
     const newMealPlans: MealPlan[] = [];
 
-    // Categories for each meal type
     const mealTypeToCategories: Record<MealType, RecipeCategory[]> = {
       dinner: ["Bulk", "Pasta", "Fish", "BBQ", "Super Tasty"],
       lunch: ["Easy", "Cheap", "Vegetarian", "Tapas"],
-      breakfast: ["Easy", "Healthy", "Vegetarian", "Quick"],
+      breakfast: ["Easy", "Healthy", "Vegetarian"],
     };
 
-    // Generate 5 random meals for each meal type
     Object.entries(mealTypeToCategories).forEach(([mealType, categories]) => {
       const typeAsKey = mealType as MealType;
-      
-      // Filter eligible recipes that have at least one matching category
+
+      // Only include allowed RecipeCategory values. No "Quick"
       const eligibleRecipes = mockRecipes.filter((recipe) =>
-        recipe.categories.some((category) => 
+        recipe.categories.some((category) =>
           categories.includes(category as RecipeCategory)
         )
       );

@@ -1,4 +1,3 @@
-
 import { Recipe } from "@/types";
 
 export const mockRecipes: Recipe[] = [
@@ -512,7 +511,7 @@ export const mockRecipes: Recipe[] = [
       "Top with smoked salmon, red onion, and capers.",
       "Sprinkle with fresh dill, lemon juice, and black pepper."
     ],
-    categories: ["Fish", "Easy", "Quick"],
+    categories: ["Fish", "Easy"],
     prepTime: 5,
     cookTime: 2,
     servings: 1,
@@ -682,13 +681,4 @@ export const mockRecipes: Recipe[] = [
       "Serve hot with parmesan cheese."
     ],
     categories: ["Pasta", "Vegetarian", "Easy"],
-    prepTime: 10,
-    cookTime: 15,
-    servings: 4,
-    image: "https://images.unsplash.com/photo-1473093295043-cdd812d0e601?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-    createdBy: "user-1",
-    createdAt: "2023-06-05T14:30:00Z",
-    updatedAt: "2023-06-05T14:30:00Z",
-    isFavorite: false,
-  }
-];
+    prepTime

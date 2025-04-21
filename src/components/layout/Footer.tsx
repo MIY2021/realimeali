@@ -1,27 +1,92 @@
-
 import { UtensilsCrossed, FileSpreadsheet } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
+import Papa from "papaparse";
+import { mockRecipes } from "@/data/recipes";
+import { RecipeCategory } from "@/types";
 
 const Footer = () => {
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
+  const inputRef = useRef<HTMLInputElement | null>(null);
   const { toast } = useToast();
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
+  // Bulk Import handler matches RecipesPage
+  const handleBulkImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if (!file) return;
 
-    // In a real app, you would process the CSV file here
-    // For this demo, we'll just show a success toast
-    toast({
-      title: "Import Successful",
-      description: `${file.name} has been imported successfully`,
+    Papa.parse(file, {
+      complete: (results) => {
+        try {
+          const rows = results.data as string[][];
+          const [headers, ...dataRows] = rows;
+          const headerMap: Record<string, number> = {};
+          headers.forEach((h, idx) => {
+            headerMap[h.trim()] = idx;
+          });
+          const newRecipes = dataRows
+            .filter(r => r.length > 1 && !!r[headerMap.title])
+            .map((r, i) => {
+              let categories: RecipeCategory[] = [];
+              if (headerMap.categories !== undefined && r[headerMap.categories]) {
+                categories = r[headerMap.categories].split(",").map((c) => c.trim()) as RecipeCategory[];
+              }
+              return {
+                id: `imported-${Date.now()}-${i}`,
+                title: r[headerMap.title] || "Untitled",
+                description: r[headerMap.description] || "",
+                ingredients: (r[headerMap.ingredients] || "").split("|").map(s => s.trim()).filter(Boolean),
+                instructions: (r[headerMap.instructions] || "").split("|").map(s => s.trim()).filter(Boolean),
+                categories: categories.filter((c): c is RecipeCategory => !!c && [
+                  "Bulk",
+                  "Easy",
+                  "Cheap",
+                  "Healthy",
+                  "Vegetarian",
+                  "Fish",
+                  "Super Tasty",
+                  "Pasta",
+                  "Tapas",
+                  "Winter",
+                  "BBQ",
+                  "Faffy",
+                  "Pricey!",
+                  "Not Yet Made"
+                ].includes(c)),
+                prepTime: parseInt(r[headerMap.prepTime] || "0", 10),
+                cookTime: parseInt(r[headerMap.cookTime] || "0", 10),
+                servings: parseInt(r[headerMap.servings] || "1", 10),
+                image: r[headerMap.image],
+                createdBy: "user-1",
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                isFavorite: r[headerMap.isFavorite]?.toLowerCase() === "true",
+              };
+            });
+          toast({
+            title: "Recipes Imported",
+            description: `${newRecipes.length} recipes have been imported from CSV.`,
+          });
+        } catch (error) {
+          toast({
+            title: "Import Error",
+            description: "Failed to parse or import CSV. Please check your file.",
+            variant: "destructive",
+          });
+        }
+      },
+      error: () => {
+        toast({
+          title: "Import Error",
+          description: "An error occurred while reading the file.",
+          variant: "destructive",
+        });
+      },
+      skipEmptyLines: true,
     });
-    
-    setIsImportDialogOpen(false);
   };
 
   return (
@@ -53,9 +118,14 @@ const Footer = () => {
         <div className="mt-6 flex justify-center">
           <Button 
             variant="outline" 
-            size="sm" 
+            size="sm"
             className="flex items-center"
-            onClick={() => setIsImportDialogOpen(true)}
+            onClick={() => {
+              setIsImportDialogOpen(true);
+              if (inputRef.current) {
+                inputRef.current.value = "";
+              }
+            }}
           >
             <FileSpreadsheet className="mr-2 h-4 w-4" />
             Bulk Import Recipes
@@ -79,10 +149,11 @@ const Footer = () => {
                 <span className="text-sm font-medium">Upload CSV File</span>
                 <span className="text-xs text-muted-foreground">Click to browse</span>
                 <input
+                  ref={inputRef}
                   type="file"
                   accept=".csv"
                   className="hidden"
-                  onChange={handleFileUpload}
+                  onChange={handleBulkImport}
                 />
               </label>
             </div>
