@@ -1,8 +1,9 @@
+
 import { useState, useEffect, useMemo } from "react";
 import { mockMealPlans } from "@/data/mealPlans";
 import { mockRecipes } from "@/data/recipes";
 import { Recipe } from "@/types";
-import { ListChecks, Check, Trash2, Steak } from "lucide-react";
+import { ListChecks, Check, Trash2, Beef } from "lucide-react"; // replaced Steak with Beef
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -178,7 +179,7 @@ export default function ShoppingList() {
       <div className="mb-6">
         <div>
           <h1 className="text-2xl font-bold text-navy flex items-center gap-2">
-            <Steak className="h-6 w-6" /> {/* Replaced ListChecks with Steak */}
+            <Beef className="h-6 w-6" /> {/* Replaced Steak with Beef */}
             Shopping List
           </h1>
           <div className="flex gap-2 mt-2">
@@ -265,3 +266,4 @@ export default function ShoppingList() {
     </div>
   );
 }
+
