@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { MealPlanCalendar } from "@/components/meal-planner/MealPlanCalendar";
 import { AddMealPlanDialog } from "@/components/meal-planner/AddMealPlanDialog";
@@ -8,7 +9,6 @@ import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { mockMealPlans } from "@/data/mealPlans";
 import { mockRecipes } from "@/data/recipes"; // Use correct import
-
 
 export default function MealPlanner() {
   const [mealPlans, setMealPlans] = useState<MealPlan[]>(mockMealPlans);
@@ -108,11 +108,47 @@ export default function MealPlanner() {
     });
   };
 
+  // New: share meal plan using Web Share API if available
   const handleShareMealPlan = () => {
-    toast({
-      title: "Meal Plan Shared",
-      description: "Your meal plan has been shared with other users",
+    // Gather meal plan details:
+    const planByDay: Record<string, { type: string, recipe: string }[]> = {};
+
+    mealPlans.forEach(plan => {
+      const recipe = mockRecipes.find(r => r.id === plan.recipeId);
+      const date = new Date(plan.date).toLocaleDateString();
+      if (!planByDay[date]) planByDay[date] = [];
+      planByDay[date].push({
+        type: plan.mealType,
+        recipe: recipe ? recipe.title : "Unknown meal"
+      });
     });
+
+    const sortedDates = Object.keys(planByDay).sort();
+    let shareText = "Here's our shared weekly meal plan!\n\n";
+    sortedDates.forEach(date => {
+      shareText += `${date}:\n`;
+      planByDay[date]
+        .sort((a, b) => a.type.localeCompare(b.type))
+        .forEach(slot => {
+          shareText += `- ${slot.type}: ${slot.recipe}\n`;
+        });
+      shareText += '\n';
+    });
+
+    // Try to use the native phone share dialog
+    if (navigator.share) {
+      navigator.share({
+        title: "Weekly Meal Plan",
+        text: shareText,
+      });
+    } else {
+      // fallback: copy to clipboard and use toast
+      navigator.clipboard.writeText(shareText);
+      toast({
+        title: "Shared to clipboard",
+        description: "Meal plan text copied (share not supported on this device)",
+      });
+    }
   };
 
   return (
@@ -142,13 +178,11 @@ export default function MealPlanner() {
           </Link>
         </Button>
       </div>
-      
       <MealPlanCalendar
         mealPlans={mealPlans}
         onAddMealPlan={handleOpenAddDialog}
         onRemoveMealPlan={handleRemoveMealPlan}
       />
-
       <AddMealPlanDialog
         isOpen={isAddDialogOpen}
         onClose={handleCloseAddDialog}

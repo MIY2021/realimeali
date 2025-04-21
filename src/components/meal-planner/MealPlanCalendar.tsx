@@ -53,12 +53,17 @@ export function MealPlanCalendar({
               <CardContent className="p-2 pt-0">
                 {recipe ? (
                   <div className="space-y-1">
-                    {recipe.image && (
-                      <img 
+                    {recipe.image ? (
+                      <img
                         src={recipe.image}
                         alt={recipe.title}
                         className="w-full h-14 object-cover rounded-sm"
+                        onError={e => { (e.target as HTMLImageElement).src = "/placeholder.svg"; }}
                       />
+                    ) : (
+                      <div className="w-full h-14 flex items-center justify-center bg-muted rounded-sm">
+                        <span className="text-xs text-muted-foreground">No image</span>
+                      </div>
                     )}
                     <div className="text-xs font-medium line-clamp-2">{recipe.title}</div>
                     <div className="flex items-center justify-between">

@@ -1,4 +1,3 @@
-
 import { Recipe } from "@/types";
 import { Button } from "@/components/ui/button";
 import { CalendarDays, Clock, Heart, Share, Users } from "lucide-react";
@@ -30,11 +29,14 @@ export function RecipeDetail({ recipe, onAddToMealPlan, onToggleFavorite }: Reci
       <div className="flex flex-col md:flex-row gap-8">
         <div className="md:w-1/2">
           <div className="aspect-video overflow-hidden rounded-lg">
-            {image ? (
+            {recipe.image ? (
               <img 
-                src={image} 
-                alt={title} 
+                src={recipe.image} 
+                alt={recipe.title}
                 className="h-full w-full object-cover"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = "/placeholder.svg";
+                }}
               />
             ) : (
               <div className="flex h-full w-full items-center justify-center bg-muted">
@@ -43,12 +45,10 @@ export function RecipeDetail({ recipe, onAddToMealPlan, onToggleFavorite }: Reci
             )}
           </div>
         </div>
-        
         <div className="md:w-1/2 space-y-4">
-          <h1 className="text-3xl font-bold text-navy">{title}</h1>
-          
+          <h1 className="text-3xl font-bold text-navy">{recipe.title}</h1>
           <div className="flex flex-wrap gap-2">
-            {categories.map((category) => (
+            {recipe.categories.map((category) => (
               <span 
                 key={category} 
                 className="inline-flex items-center rounded-full bg-sage/20 px-2.5 py-1 text-xs font-medium text-sage"
@@ -57,28 +57,25 @@ export function RecipeDetail({ recipe, onAddToMealPlan, onToggleFavorite }: Reci
               </span>
             ))}
           </div>
-          
-          <p className="text-muted-foreground">{description}</p>
-          
+          <p className="text-muted-foreground">{recipe.description}</p>
           <div className="flex flex-wrap gap-6 text-sm">
             <div className="flex items-center gap-1">
               <Clock className="h-4 w-4 text-terracotta" />
-              <span>Prep: {prepTime} min</span>
+              <span>Prep: {recipe.prepTime} min</span>
             </div>
             <div className="flex items-center gap-1">
               <Clock className="h-4 w-4 text-terracotta" />
-              <span>Cook: {cookTime} min</span>
+              <span>Cook: {recipe.cookTime} min</span>
             </div>
             <div className="flex items-center gap-1">
               <Clock className="h-4 w-4 text-terracotta" />
-              <span>Total: {totalTime} min</span>
+              <span>Total: {recipe.prepTime + recipe.cookTime} min</span>
             </div>
             <div className="flex items-center gap-1">
               <Users className="h-4 w-4 text-terracotta" />
-              <span>Serves: {servings}</span>
+              <span>Serves: {recipe.servings}</span>
             </div>
           </div>
-          
           <div className="flex flex-wrap gap-3 pt-2">
             <Button 
               variant="outline" 
@@ -89,14 +86,15 @@ export function RecipeDetail({ recipe, onAddToMealPlan, onToggleFavorite }: Reci
               <span>Add to Meal Plan</span>
             </Button>
             <Button 
-              variant={isFavorite ? "default" : "outline"}
-              className={`flex items-center gap-1 ${isFavorite ? "bg-terracotta hover:bg-terracotta/90" : ""}`}
+              variant={recipe.isFavorite ? "default" : "outline"}
+              className={`flex items-center gap-1 ${recipe.isFavorite ? "bg-terracotta hover:bg-terracotta/90" : ""}`}
               onClick={() => onToggleFavorite?.(recipe)}
             >
-              <Heart className={`h-4 w-4 ${isFavorite ? "fill-current" : ""}`} />
-              <span>{isFavorite ? "Favorited" : "Add to Favorites"}</span>
+              <Heart className={`h-4 w-4 ${recipe.isFavorite ? "fill-current" : ""}`} />
+              <span>{recipe.isFavorite ? "Favorited" : "Add to Favorites"}</span>
             </Button>
             <Button variant="outline" className="flex items-center gap-1">
+              {/* Ensure share button always says "Share" and uses 'share-2' icon */}
               <Share className="h-4 w-4" />
               <span>Share</span>
             </Button>

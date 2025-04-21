@@ -1,11 +1,14 @@
+
 import { useState, useEffect, useMemo } from "react";
-import { mockMealPlans, mockRecipes } from "@/data/mockData";
+import { mockMealPlans } from "@/data/mealPlans";
+import { mockRecipes } from "@/data/recipes";
 import { Recipe } from "@/types";
 import { ListChecks, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
+import { Link } from "react-router-dom";
 
 interface Ingredient {
   name: string;
@@ -16,21 +19,21 @@ interface Ingredient {
 export default function ShoppingList() {
   const [ingredients, setIngredients] = useState<Ingredient[]>([]);
   const { toast } = useToast();
-  
-  // Get all recipes that are in the meal plan
+
+  // Only include recipes in the meal plan
   const mealPlanRecipes = useMemo(() => {
     const recipeIds = mockMealPlans.map(plan => plan.recipeId);
     return mockRecipes.filter(recipe => recipeIds.includes(recipe.id));
   }, []);
-  
-  // Extract ingredients from recipes
+
+  // Unique ingredient calculation, for accurate count
   useEffect(() => {
     const ingredientMap = new Map<string, Ingredient>();
-    
+
     mealPlanRecipes.forEach(recipe => {
       recipe.ingredients.forEach(ingredientText => {
         const key = ingredientText.toLowerCase().trim();
-        
+
         if (ingredientMap.has(key)) {
           const existing = ingredientMap.get(key)!;
           if (!existing.recipeIds.includes(recipe.id)) {
@@ -45,15 +48,15 @@ export default function ShoppingList() {
         }
       });
     });
-    
+
     setIngredients(Array.from(ingredientMap.values()));
   }, [mealPlanRecipes]);
-  
+
   const handleToggleIngredient = (index: number) => {
     const newIngredients = [...ingredients];
     newIngredients[index].checked = !newIngredients[index].checked;
     setIngredients(newIngredients);
-    
+
     if (newIngredients[index].checked) {
       toast({
         title: "Item checked",
@@ -61,30 +64,30 @@ export default function ShoppingList() {
       });
     }
   };
-  
+
   const handleCheckAll = () => {
     setIngredients(ingredients.map(ingredient => ({
       ...ingredient,
       checked: true
     })));
-    
+
     toast({
       title: "All items checked",
       description: "All ingredients marked as purchased",
     });
   };
-  
+
   const handleUncheckAll = () => {
     setIngredients(ingredients.map(ingredient => ({
       ...ingredient,
       checked: false
     })));
   };
-  
+
   const getRecipeForIngredient = (recipeId: string): Recipe | undefined => {
     return mockRecipes.find(recipe => recipe.id === recipeId);
   };
-  
+
   const categorizeIngredients = () => {
     const categories = [
       "Produce",
@@ -95,16 +98,16 @@ export default function ShoppingList() {
       "Frozen",
       "Other"
     ];
-    
+
     const result: Record<string, Ingredient[]> = {};
     categories.forEach(category => {
       result[category] = [];
     });
-    
+
     // Simple categorization based on common keywords
     ingredients.forEach(ingredient => {
       const name = ingredient.name.toLowerCase();
-      
+
       if (/lettuce|onion|potato|tomato|carrot|spinach|garlic|pepper|broccoli|cucumber|lemon|lime|herbs|vegetable/i.test(name)) {
         result["Produce"].push(ingredient);
       } else if (/chicken|beef|pork|fish|salmon|shrimp|turkey|meat/i.test(name)) {
@@ -121,16 +124,16 @@ export default function ShoppingList() {
         result["Other"].push(ingredient);
       }
     });
-    
+
     // Filter out empty categories
     return Object.fromEntries(
       Object.entries(result).filter(([_, items]) => items.length > 0)
     );
   };
-  
+
   const categorizedIngredients = categorizeIngredients();
   const checkedCount = ingredients.filter(i => i.checked).length;
-  
+
   return (
     <div className="container py-6">
       <div className="mb-6">
@@ -144,7 +147,6 @@ export default function ShoppingList() {
               {ingredients.length} items • {checkedCount} purchased
             </p>
           </div>
-          
           <div className="flex gap-2">
             <Button 
               size="sm" 
@@ -166,7 +168,6 @@ export default function ShoppingList() {
           </div>
         </div>
       </div>
-      
       <div className="space-y-4">
         {Object.entries(categorizedIngredients).map(([category, items]) => (
           <Card key={category}>
@@ -199,9 +200,9 @@ export default function ShoppingList() {
                           {ingredient.recipeIds.slice(0, 3).map(recipeId => {
                             const recipe = getRecipeForIngredient(recipeId);
                             return recipe ? (
-                              <span key={recipeId} className="inline-flex items-center rounded-full bg-sage/10 px-2 py-0.5 text-xs text-sage">
+                              <Link to={`/recipes/${recipe.id}`} key={recipeId} className="inline-flex items-center rounded-full bg-sage/10 px-2 py-0.5 text-xs text-sage hover:underline">
                                 {recipe.title.slice(0, 15)}{recipe.title.length > 15 ? '...' : ''}
-                              </span>
+                              </Link>
                             ) : null;
                           })}
                           {ingredient.recipeIds.length > 3 && (
