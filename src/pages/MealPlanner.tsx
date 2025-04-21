@@ -1,10 +1,11 @@
+
 import { useState } from "react";
 import { MealPlanCalendar } from "@/components/meal-planner/MealPlanCalendar";
 import { AddMealPlanDialog } from "@/components/meal-planner/AddMealPlanDialog";
 import { mockMealPlans, mockRecipes } from "@/data/mockData";
-import { MealPlan, MealType } from "@/types";
+import { MealPlan, MealType, RecipeCategory } from "@/types";
 import { Button } from "@/components/ui/button";
-import { FileSpreadsheet, ListChecks } from "lucide-react";
+import { FileSpreadsheet, ListChecks, Share } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 
@@ -66,17 +67,21 @@ export default function MealPlanner() {
     const newMealPlans: MealPlan[] = [];
 
     // Categories for each meal type
-    const mealTypeToCategories = {
-      dinner: ["dinner"],
-      lunch: ["lunch"],
-      breakfast: ["breakfast"],
+    const mealTypeToCategories: Record<MealType, RecipeCategory[]> = {
+      dinner: ["Bulk", "Pasta", "Fish", "BBQ", "Super Tasty"],
+      lunch: ["Easy", "Cheap", "Vegetarian", "Tapas"],
+      breakfast: ["Easy", "Healthy", "Vegetarian", "Quick"],
     };
 
     // Generate 5 random meals for each meal type
     Object.entries(mealTypeToCategories).forEach(([mealType, categories]) => {
       const typeAsKey = mealType as MealType;
+      
+      // Filter eligible recipes that have at least one matching category
       const eligibleRecipes = mockRecipes.filter((recipe) =>
-        recipe.categories.some((category) => categories.includes(category))
+        recipe.categories.some((category) => 
+          categories.includes(category as RecipeCategory)
+        )
       );
 
       for (let i = 0; i < 5; i++) {
@@ -105,6 +110,13 @@ export default function MealPlanner() {
     });
   };
 
+  const handleShareMealPlan = () => {
+    toast({
+      title: "Meal Plan Shared",
+      description: "Your meal plan has been shared with other users",
+    });
+  };
+
   return (
     <div className="container py-6">
       <div className="mb-6 flex flex-wrap gap-2 justify-start">
@@ -115,6 +127,15 @@ export default function MealPlanner() {
         >
           <FileSpreadsheet className="mr-2 h-4 w-4" />
           Randomise
+        </Button>
+        <Button
+          onClick={handleShareMealPlan}
+          size="sm"
+          variant="outline"
+          className="px-3 py-2 flex items-center whitespace-nowrap"
+        >
+          <Share className="mr-2 h-4 w-4" />
+          Share Meal Plan
         </Button>
         <Button asChild variant="outline" size="sm" className="flex items-center px-3 py-2 whitespace-nowrap">
           <Link to="/shopping-list" className="flex items-center">

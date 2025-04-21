@@ -27,4 +27,7 @@ declare module 'lucide-react' {
   export const PanelLeft: LucideIcon;
   export const GripVertical: LucideIcon;
   export const ArrowRight: LucideIcon;
+  export const FileSpreadsheet: LucideIcon;
+  export const ListChecks: LucideIcon;
+  export const Shuffle: LucideIcon;
 }
