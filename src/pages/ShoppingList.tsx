@@ -246,7 +246,7 @@ export default function ShoppingList() {
                   return (
                     <li
                       key={`${ingredient.name}-${ingredient.unit || ""}-${idx}`}
-                      className={`flex items-start gap-2 p-2 rounded ${ingredient.checked ? 'bg-muted/50' : ''} whitespace-nowrap`}
+                      className={`flex items-start gap-2 p-2 rounded ${ingredient.checked ? 'bg-muted/50' : ''}`}
                     >
                       <Checkbox
                         id={`ingredient-${originalIndex}`}
@@ -267,7 +267,7 @@ export default function ShoppingList() {
                           {ingredient.recipeIds.map(recipeId => {
                             const recipe = getRecipeForIngredient(recipeId);
                             return recipe ? (
-                              <Link to={`/recipes/${recipe.id}`} key={recipeId} className="inline-flex items-center rounded-full bg-sage/10 px-2 py-0.5 text-xs text-sage hover:underline">
+                              <Link to={`/recipes/${recipe.id}`} key={recipeId} className="inline-flex items-center rounded-full bg-sage/10 px-2 py-0.5 text-xs text-sage hover:underline break-all">
                                 {recipe.title.slice(0, 15)}{recipe.title.length > 15 ? '...' : ''}
                               </Link>
                             ) : null;

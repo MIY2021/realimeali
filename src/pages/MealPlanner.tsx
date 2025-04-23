@@ -1,8 +1,7 @@
-
 import { useState, useEffect } from "react";
 import { MealPlan, MealType, RecipeCategory } from "@/types";
 import { Button } from "@/components/ui/button";
-import { ListChecks, Plus, Share, Users, FileSpreadsheet } from "lucide-react";
+import { ListChecks, Plus, Share, Users, FileSpreadsheet, Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { mockMealPlans } from "@/data/mealPlans";
@@ -188,20 +187,20 @@ export default function MealPlanner() {
           onClearAll={handleClearAll}
         />
       </h1>
-      <div className="flex gap-2 mb-4">
+      <div className="flex gap-2 flex-wrap mb-4">
         <Button
           onClick={handleRandomMealSelection}
           size="sm"
-          className="bg-sage hover:bg-sage/90 flex items-center whitespace-nowrap w-1/3"
+          className="bg-sage hover:bg-sage/90 flex items-center whitespace-nowrap flex-1"
         >
           <FileSpreadsheet className="mr-2 h-4 w-4" />
-          Randomise
+          Random
         </Button>
         <Button
           onClick={handleShareMealPlan}
           size="sm"
           variant="outline"
-          className="flex items-center whitespace-nowrap w-1/3"
+          className="flex items-center whitespace-nowrap flex-1"
         >
           <Share className="mr-2 h-4 w-4" />
           Share
@@ -210,10 +209,27 @@ export default function MealPlanner() {
           onClick={handleInvite}
           size="sm"
           variant="outline"
-          className="flex items-center whitespace-nowrap w-1/3"
+          className="flex items-center whitespace-nowrap flex-1"
         >
           <Users className="mr-2 h-4 w-4" />
           Invite
+        </Button>
+      </div>
+      <div className="flex gap-2 items-center mb-4">
+        <Button
+          variant="outline"
+          size="sm"
+          className="text-terracotta border-terracotta hover:bg-terracotta/10 flex-1"
+          onClick={handleClearAll}
+        >
+          <Trash2 className="h-4 w-4 mr-1" />
+          Clear All
+        </Button>
+        <Button asChild variant="outline" size="sm" className="flex items-center flex-1">
+          <Link to="/shopping-list" className="flex items-center">
+            <ListChecks className="mr-2 h-4 w-4" />
+            Shopping List
+          </Link>
         </Button>
       </div>
       <div className="flex gap-2 mb-4">

@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { mockRecipes } from "@/data/recipes";
@@ -21,7 +20,6 @@ export default function Index() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      {/* Hero Section - keep as before, with images instead of icons */}
       <section className="py-8 bg-gradient-to-b from-[#ffe5cb] to-[#fff3e0]">
         <div className="container px-4">
           <div className="flex flex-col items-center space-y-2 text-center">
@@ -49,7 +47,7 @@ export default function Index() {
                 <Link to="/recipes" className="flex flex-col items-center w-full">
                   <span className="pb-2">
                     <img
-                      src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=128&q=80"
+                      src="https://images.unsplash.com/photo-1546039907-7fa05f864c02?auto=format&fit=crop&w=128&q=80"
                       className="h-24 w-24 object-cover rounded-full border mb-1"
                       alt="Recipes"
                     />
@@ -75,8 +73,7 @@ export default function Index() {
           </div>
         </div>
       </section>
-      {/* Latest Recipes - use a solid dark grey orange background */}
-      <section className="py-4" style={{ background: "#a35e18" }}>
+      <section className="py-4" style={{ background: "#006278" }}>
         <div className="container px-4">
           <div className="flex items-center justify-between mb-3">
             <div>
