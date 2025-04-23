@@ -39,7 +39,7 @@ export default function Index() {
                       alt="Meal Planner"
                     />
                   </span>
-                  <span className="font-semibold text-navy text-base">Meal Planning</span>
+                  <span className="font-semibold text-navy text-base">Meal Planner</span>
                   <span className="text-xs text-muted-foreground mt-1">Plan weekly meals easily</span>
                 </Link>
               </Button>
@@ -73,7 +73,7 @@ export default function Index() {
           </div>
         </div>
       </section>
-      <section className="py-4" style={{ background: "#006278" }}>
+      <section className="py-4" style={{ background: "#01414f" }}>
         <div className="container px-4">
           <div className="flex items-center justify-between mb-3">
             <div>

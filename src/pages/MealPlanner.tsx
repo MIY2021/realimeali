@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { MealPlan, MealType, RecipeCategory } from "@/types";
 import { Button } from "@/components/ui/button";
-import { ListChecks, Plus, Share, Users, FileSpreadsheet, Trash2 } from "lucide-react";
+import { ListChecks, Plus, Share, Users, FileSpreadsheet, CalendarDays } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { mockMealPlans } from "@/data/mealPlans";
@@ -181,12 +181,24 @@ export default function MealPlanner() {
 
   return (
     <div className="container max-w-xl py-8">
-      <h1 className="text-2xl font-bold text-navy flex items-center gap-2 mb-2">
-        Meal Planner
-        <MealActions
-          onClearAll={handleClearAll}
-        />
-      </h1>
+      <div className="flex items-center justify-between mb-2">
+        <div>
+          <h1 className="text-2xl font-bold text-navy flex items-center gap-2">
+            <CalendarDays className="h-6 w-6" />
+            Meal Planner
+            <Button
+              onClick={handleInvite}
+              size="sm"
+              variant="ghost"
+              className="ml-2"
+              title="Invite others to meal plan"
+            >
+              <Users className="h-4 w-4" />
+            </Button>
+          </h1>
+          <p className="text-sm text-muted-foreground">Plan and organize your weekly meals</p>
+        </div>
+      </div>
       <div className="flex gap-2 flex-wrap mb-4">
         <Button
           onClick={handleRandomMealSelection}
@@ -255,12 +267,6 @@ export default function MealPlanner() {
           onRemoveMeal={handleRemoveMeal}
         />
       ))}
-      <Button asChild variant="outline" size="sm" className="mt-6 flex items-center">
-        <Link to="/shopping-list" className="flex items-center">
-          <ListChecks className="mr-2 h-4 w-4" />
-          Shopping List
-        </Link>
-      </Button>
       {addMealModal.open && addMealModal.mealType && (
         <AddRecipeToMealModal
           open={addMealModal.open}
