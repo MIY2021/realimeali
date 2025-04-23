@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { mockRecipes } from "@/data/recipes";
@@ -37,18 +38,20 @@ export default function Index() {
                     />
                   </span>
                   <span className="font-semibold text-navy text-base">Meal Planner</span>
+                  <span className="text-xs text-muted-foreground mt-1">Plan your weekly meals</span>
                 </Link>
               </Button>
               <Button asChild size="lg" className="bg-white border shadow hover:bg-sage/10 flex-1 flex flex-col items-center py-5 group transition-all">
                 <Link to="/recipes" className="flex flex-col items-center w-full">
                   <span className="pb-2">
                     <img
-                      src="/lovable-uploads/c929bfd4-6d10-457e-a1e2-7f7c7d9c29c3.png"
+                      src="/lovable-uploads/02d17fd6-6699-46d2-9e0a-6031dfc6c617.png"
                       className="h-24 w-24 object-cover rounded-full border mb-1"
                       alt="Recipes"
                     />
                   </span>
                   <span className="font-semibold text-navy text-base">Recipe Collection</span>
+                  <span className="text-xs text-muted-foreground mt-1">Browse delicious recipes</span>
                 </Link>
               </Button>
               <Button asChild size="lg" className="bg-white border shadow hover:bg-sage/10 flex-1 flex flex-col items-center py-5 group transition-all">
@@ -61,13 +64,14 @@ export default function Index() {
                     />
                   </span>
                   <span className="font-semibold text-navy text-base">Shopping Lists</span>
+                  <span className="text-xs text-muted-foreground mt-1">Generate shopping lists</span>
                 </Link>
               </Button>
             </div>
           </div>
         </div>
       </section>
-      <section className="py-4" style={{ background: "#F97316" }}>
+      <section className="py-4" style={{ background: "#1A1F2C" }}>
         <div className="container px-4">
           <div className="flex items-center justify-between mb-3">
             <div>
