@@ -1,9 +1,8 @@
-
 import { useState, useEffect, useMemo } from "react";
 import { mockMealPlans } from "@/data/mealPlans";
 import { mockRecipes } from "@/data/recipes";
 import { Recipe } from "@/types";
-import { ListChecks, Check, Trash2 } from "lucide-react";
+import { ListChecks, Share, Check, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -151,11 +150,44 @@ export default function ShoppingList() {
   };
 
   const handleRemoveAll = () => {
+    if (!window.confirm("Are you sure you want to remove all items from your shopping list?")) {
+      return;
+    }
+    const storageKey = `${CHECKED_INGREDIENTS_STORAGE_KEY}_week${week}`;
+    localStorage.removeItem(storageKey);
     setIngredients([]);
     toast({
       title: "List cleared",
       description: "All ingredients removed from shopping list",
     });
+  };
+
+  const handleShare = async () => {
+    let shareText = "Shopping List:\n\n";
+    Object.entries(categorizedIngredients).forEach(([category, items]) => {
+      shareText += `${category}:\n`;
+      items.forEach(item => {
+        shareText += `- ${item.totalQty ? `${item.totalQty} ` : ''}${item.unit ? `${item.unit} ` : ''}${item.name}\n`;
+      });
+      shareText += '\n';
+    });
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Shopping List',
+          text: shareText
+        });
+      } catch (error) {
+        console.error('Error sharing:', error);
+      }
+    } else {
+      navigator.clipboard.writeText(shareText);
+      toast({
+        title: "List copied",
+        description: "Shopping list copied to clipboard",
+      });
+    }
   };
 
   const getRecipeForIngredient = (recipeId: string): Recipe | undefined => {
@@ -205,28 +237,42 @@ export default function ShoppingList() {
   return (
     <div className="container max-w-3xl py-8">
       <div className="mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-navy flex items-center gap-2">
-            <ListChecks className="h-6 w-6" />
-            Shopping List
-          </h1>
-          <div className="flex gap-2 mt-2">
-            {[1, 2].map((val) => (
-              <Button
-                key={val}
-                size="sm"
-                variant={week === val ? "default" : "outline"}
-                className={week === val ? "bg-terracotta text-white" : ""}
-                onClick={() => setWeek(val as 1 | 2)}
-              >
-                Week {val}
-              </Button>
-            ))}
+        <div className="flex justify-between items-start">
+          <div>
+            <h1 className="text-2xl font-bold text-navy flex items-center gap-2">
+              <ListChecks className="h-6 w-6" />
+              Shopping Lists
+            </h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              Manage and organize your shopping lists by week
+            </p>
           </div>
-          <p className="text-muted-foreground text-sm mt-1">
-            {ingredients.length} items • {checkedCount} purchased
-          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleShare}
+            className="flex items-center gap-2"
+          >
+            <Share className="h-4 w-4" />
+            Share
+          </Button>
         </div>
+        <div className="flex gap-2 mt-2">
+          {[1, 2].map((val) => (
+            <Button
+              key={val}
+              size="sm"
+              variant={week === val ? "default" : "outline"}
+              className={week === val ? "bg-terracotta text-white" : ""}
+              onClick={() => setWeek(val as 1 | 2)}
+            >
+              Week {val}
+            </Button>
+          ))}
+        </div>
+        <p className="text-muted-foreground text-sm mt-1">
+          {ingredients.length} items • {checkedCount} purchased
+        </p>
         <ShoppingListActions
           onCheckAll={handleCheckAll}
           onUncheckAll={handleUncheckAll}

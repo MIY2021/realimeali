@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { MealPlan, MealType, RecipeCategory } from "@/types";
 import { Button } from "@/components/ui/button";
@@ -207,7 +206,7 @@ export default function MealPlanner() {
           className="bg-sage hover:bg-sage/90 flex items-center whitespace-nowrap flex-1"
         >
           <FileSpreadsheet className="mr-2 h-4 w-4" />
-          Random
+          Randomise
         </Button>
         <Button
           onClick={handleShareMealPlan}
@@ -218,15 +217,7 @@ export default function MealPlanner() {
           <Share className="mr-2 h-4 w-4" />
           Share
         </Button>
-        <Button
-          onClick={handleInvite}
-          size="sm"
-          variant="outline"
-          className="flex items-center whitespace-nowrap flex-1"
-        >
-          <Users className="mr-2 h-4 w-4" />
-          Invite
-        </Button>
+        
       </div>
       <div className="flex gap-2 items-center mb-4">
         <Button
