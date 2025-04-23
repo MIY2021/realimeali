@@ -34,7 +34,7 @@ export default function Index() {
                 <Link to="/meal-planner" className="flex flex-col items-center w-full">
                   <span className="pb-2">
                     <img
-                      src="https://images.unsplash.com/photo-1511690743698-d9d85f2fbf38?auto=format&fit=crop&w=128&q=80"
+                      src="/lovable-uploads/f5e80761-ddc5-48b2-80d2-54be701453a3.png"
                       className="h-24 w-24 object-cover rounded-full border mb-1"
                       alt="Meal Planner"
                     />
@@ -60,7 +60,7 @@ export default function Index() {
                 <Link to="/shopping-list" className="flex flex-col items-center w-full">
                   <span className="pb-2 flex justify-center items-center h-24 w-24">
                     <img
-                      src="https://images.unsplash.com/photo-1604719312566-8912e9227c6a?auto=format&fit=crop&w=128&q=80"
+                      src="/lovable-uploads/440d79e4-31b0-4eb2-a8d6-8437ee4b3c6a.png"
                       className="h-24 w-24 object-cover rounded-full border mb-1"
                       alt="Shopping List"
                     />

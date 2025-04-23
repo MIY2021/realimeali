@@ -237,27 +237,16 @@ export default function ShoppingList() {
   return (
     <div className="container max-w-3xl py-8">
       <div className="mb-6">
-        <div className="flex justify-between items-start">
+        <div className="flex justify-between items-start mb-2">
           <div>
             <h1 className="text-2xl font-bold text-navy flex items-center gap-2">
               <ListChecks className="h-6 w-6" />
               Shopping Lists
             </h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              Manage and organize your shopping lists by week
-            </p>
+            <p className="text-sm text-muted-foreground">Manage and organize your shopping lists by week</p>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleShare}
-            className="flex items-center gap-2"
-          >
-            <Share className="h-4 w-4" />
-            Share
-          </Button>
         </div>
-        <div className="flex gap-2 mt-2">
+        <div className="flex items-center gap-2 mt-2">
           {[1, 2].map((val) => (
             <Button
               key={val}
@@ -269,6 +258,15 @@ export default function ShoppingList() {
               Week {val}
             </Button>
           ))}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleShare}
+            className="px-2"
+            title="Share shopping list"
+          >
+            <Share className="h-4 w-4" />
+          </Button>
         </div>
         <p className="text-muted-foreground text-sm mt-1">
           {ingredients.length} items • {checkedCount} purchased
