@@ -1,7 +1,8 @@
+
 import { useState, useEffect } from "react";
 import { MealPlan, MealType, RecipeCategory } from "@/types";
 import { Button } from "@/components/ui/button";
-import { ListChecks, Plus, Share, Users, FileSpreadsheet, CalendarDays } from "lucide-react";
+import { ListChecks, Plus, Share, Users, FileSpreadsheet, CalendarDays, Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { mockMealPlans } from "@/data/mealPlans";
