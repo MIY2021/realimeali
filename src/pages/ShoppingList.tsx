@@ -1,8 +1,9 @@
+
 import { useState, useEffect, useMemo } from "react";
 import { mockMealPlans } from "@/data/mealPlans";
 import { mockRecipes } from "@/data/recipes";
 import { Recipe } from "@/types";
-import { ListChecks, Check, Trash2 } from "lucide-react"; // fallback to available icon
+import { ListChecks, Check, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -31,7 +32,10 @@ function parseIngredientQty(text: string): { qty: number; unit: string; name: st
 
 export default function ShoppingList() {
   const [week, setWeek] = useState<1 | 2>(1);
-
+  
+  // Persist checked state in localStorage
+  const CHECKED_INGREDIENTS_STORAGE_KEY = "shopping_list_checked_ingredients";
+  
   const mealPlanRecipes = useMemo(() => {
     const storage = localStorage.getItem(`persistedMealPlans_v1_week${week}`);
     const selectedPlans = storage ? JSON.parse(storage) : week === 1 ? mockMealPlans : [];
@@ -41,6 +45,32 @@ export default function ShoppingList() {
 
   const [ingredients, setIngredients] = useState<Ingredient[]>([]);
   const { toast } = useToast();
+  
+  // Load the saved checked state from localStorage
+  const loadCheckedState = (ingredientList: Ingredient[]) => {
+    const storedCheckedState = localStorage.getItem(`${CHECKED_INGREDIENTS_STORAGE_KEY}_week${week}`);
+    if (storedCheckedState) {
+      const checkedMap: Record<string, boolean> = JSON.parse(storedCheckedState);
+      return ingredientList.map(ing => {
+        const key = ing.name + (ing.unit && ing.unit !== "" ? `_${ing.unit}` : "");
+        return {
+          ...ing,
+          checked: checkedMap[key] || false
+        };
+      });
+    }
+    return ingredientList;
+  };
+  
+  // Save the checked state to localStorage
+  const saveCheckedState = (ingredientList: Ingredient[]) => {
+    const checkedMap: Record<string, boolean> = {};
+    ingredientList.forEach(ing => {
+      const key = ing.name + (ing.unit && ing.unit !== "" ? `_${ing.unit}` : "");
+      checkedMap[key] = ing.checked;
+    });
+    localStorage.setItem(`${CHECKED_INGREDIENTS_STORAGE_KEY}_week${week}`, JSON.stringify(checkedMap));
+  };
 
   useEffect(() => {
     const ingredientMap = new Map<string, Ingredient>();
@@ -67,8 +97,15 @@ export default function ShoppingList() {
       });
     });
 
-    setIngredients(Array.from(ingredientMap.values()));
-  }, [mealPlanRecipes]);
+    const newIngredients = Array.from(ingredientMap.values());
+    // Apply saved checked state
+    setIngredients(loadCheckedState(newIngredients));
+  }, [mealPlanRecipes, week]);
+  
+  // Save checked state whenever it changes
+  useEffect(() => {
+    saveCheckedState(ingredients);
+  }, [ingredients, week]);
 
   const handleToggleIngredient = (index: number) => {
     const newIngredients = [...ingredients];
@@ -166,7 +203,7 @@ export default function ShoppingList() {
   const checkedCount = ingredients.filter(i => i.checked).length;
 
   return (
-    <div className="container max-w-3xl py-8 px-4 sm:px-6 overflow-x-hidden" style={{ marginLeft: "auto", marginRight: "auto" }}>
+    <div className="container max-w-3xl py-8">
       <div className="mb-6">
         <div>
           <h1 className="text-2xl font-bold text-navy flex items-center gap-2">

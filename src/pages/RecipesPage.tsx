@@ -11,15 +11,23 @@ import {
   DialogContent,
   DialogTitle,
   DialogHeader,
+  DialogDescription,
+  DialogFooter,
 } from "@/components/ui/dialog";
 
 const MEAL_TYPES: MealType[] = ["dinner", "lunch", "breakfast"];
-const SORTS = [
-  { label: "Title (A-Z)", value: "title-asc" },
-  { label: "Title (Z-A)", value: "title-desc" },
-  { label: "Prep Time (Shortest)", value: "prep-asc" },
-  { label: "Prep Time (Longest)", value: "prep-desc" },
-];
+
+// Implementing a basic new recipe form dialog
+type NewRecipeFormData = {
+  title: string;
+  description: string;
+  prepTime: number;
+  cookTime: number;
+  servings: number;
+  categories: RecipeCategory[];
+  ingredients: string[];
+  instructions: string[];
+};
 
 export default function RecipesPage() {
   const [recipes, setRecipes] = useState(mockRecipes);
@@ -30,8 +38,18 @@ export default function RecipesPage() {
   const [showMealTypeDialog, setShowMealTypeDialog] = useState(false);
   const [selectedMealType, setSelectedMealType] = useState<MealType | null>(null);
 
-  // Sorting state
-  const [sortType, setSortType] = useState<string>("title-asc");
+  // New recipe state
+  const [showNewRecipeDialog, setShowNewRecipeDialog] = useState(false);
+  const [newRecipeForm, setNewRecipeForm] = useState<NewRecipeFormData>({
+    title: "",
+    description: "",
+    prepTime: 15,
+    cookTime: 30,
+    servings: 4,
+    categories: [],
+    ingredients: [""],
+    instructions: [""],
+  });
 
   const handleBulkImport = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -110,9 +128,43 @@ export default function RecipesPage() {
   };
 
   const handleAddNewRecipe = () => {
+    setShowNewRecipeDialog(true);
+  };
+
+  const handleSaveNewRecipe = () => {
+    const newRecipe: Recipe = {
+      id: `new-recipe-${Date.now()}`,
+      title: newRecipeForm.title || "New Recipe",
+      description: newRecipeForm.description,
+      ingredients: newRecipeForm.ingredients.filter(Boolean),
+      instructions: newRecipeForm.instructions.filter(Boolean),
+      categories: newRecipeForm.categories,
+      prepTime: newRecipeForm.prepTime,
+      cookTime: newRecipeForm.cookTime,
+      servings: newRecipeForm.servings,
+      image: "",
+      createdBy: "user-1",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      isFavorite: false,
+    };
+
+    setRecipes(prev => [newRecipe, ...prev]);
+    setShowNewRecipeDialog(false);
+    setNewRecipeForm({
+      title: "",
+      description: "",
+      prepTime: 15,
+      cookTime: 30,
+      servings: 4,
+      categories: [],
+      ingredients: [""],
+      instructions: [""],
+    });
+
     toast({
-      title: "Coming Soon",
-      description: "Recipe creation will be available in a future update.",
+      title: "Recipe Created",
+      description: `${newRecipe.title} has been added to your collection.`
     });
   };
 
@@ -168,26 +220,9 @@ export default function RecipesPage() {
           </Button>
         </div>
       </div>
-      <div className="flex mb-4 items-center gap-4">
-        <label className="font-semibold">Sort by:</label>
-        <select
-          className="border p-2 rounded"
-          value={sortType}
-          onChange={e => setSortType(e.target.value)}
-        >
-          {SORTS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
-        </select>
-      </div>
+
       <RecipeList
-        recipes={
-          [...recipes].sort((a, b) => {
-            if (sortType === "title-asc") { return a.title.localeCompare(b.title);}
-            if (sortType === "title-desc") { return b.title.localeCompare(a.title);}
-            if (sortType === "prep-asc") { return a.prepTime - b.prepTime;}
-            if (sortType === "prep-desc") { return b.prepTime - a.prepTime;}
-            return 0;
-          })
-        }
+        recipes={recipes}
         onAddToMealPlan={handleAddToMealPlan}
       />
 
@@ -228,6 +263,82 @@ export default function RecipesPage() {
               Cancel
             </Button>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* New Recipe Dialog */}
+      <Dialog open={showNewRecipeDialog} onOpenChange={setShowNewRecipeDialog}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Create New Recipe</DialogTitle>
+            <DialogDescription>
+              Add details for your new recipe. You can edit it later.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <label htmlFor="title" className="text-sm font-medium">Recipe Title</label>
+              <input
+                id="title"
+                className="w-full p-2 border rounded"
+                value={newRecipeForm.title}
+                onChange={(e) => setNewRecipeForm(prev => ({ ...prev, title: e.target.value }))}
+                placeholder="Enter recipe title"
+              />
+            </div>
+            <div className="grid gap-2">
+              <label htmlFor="description" className="text-sm font-medium">Description</label>
+              <textarea
+                id="description"
+                className="w-full p-2 border rounded"
+                value={newRecipeForm.description}
+                onChange={(e) => setNewRecipeForm(prev => ({ ...prev, description: e.target.value }))}
+                placeholder="Brief description of the recipe"
+                rows={2}
+              />
+            </div>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="grid gap-2">
+                <label htmlFor="prepTime" className="text-sm font-medium">Prep Time (min)</label>
+                <input
+                  id="prepTime"
+                  type="number"
+                  className="w-full p-2 border rounded"
+                  value={newRecipeForm.prepTime}
+                  onChange={(e) => setNewRecipeForm(prev => ({ ...prev, prepTime: parseInt(e.target.value) || 0 }))}
+                  min="0"
+                />
+              </div>
+              <div className="grid gap-2">
+                <label htmlFor="cookTime" className="text-sm font-medium">Cook Time (min)</label>
+                <input
+                  id="cookTime"
+                  type="number"
+                  className="w-full p-2 border rounded"
+                  value={newRecipeForm.cookTime}
+                  onChange={(e) => setNewRecipeForm(prev => ({ ...prev, cookTime: parseInt(e.target.value) || 0 }))}
+                  min="0"
+                />
+              </div>
+              <div className="grid gap-2">
+                <label htmlFor="servings" className="text-sm font-medium">Servings</label>
+                <input
+                  id="servings"
+                  type="number"
+                  className="w-full p-2 border rounded"
+                  value={newRecipeForm.servings}
+                  onChange={(e) => setNewRecipeForm(prev => ({ ...prev, servings: parseInt(e.target.value) || 1 }))}
+                  min="1"
+                />
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowNewRecipeDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSaveNewRecipe}>Save Recipe</Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

@@ -2,6 +2,7 @@
 import { Recipe } from "@/types";
 import { RecipeCard } from "./RecipeCard";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { useState } from "react";
 
 interface RecipeListProps {
@@ -9,17 +10,11 @@ interface RecipeListProps {
   onAddToMealPlan?: (recipe: Recipe) => void;
 }
 
-const SORTS = [
-  { label: "Title (A-Z)", value: "title-asc" },
-  { label: "Title (Z-A)", value: "title-desc" },
-  { label: "Prep Time (Shortest)", value: "prep-asc" },
-  { label: "Prep Time (Longest)", value: "prep-desc" },
-];
-
 export function RecipeList({ recipes, onAddToMealPlan }: RecipeListProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [sortType, setSortType] = useState<string>("title-asc");
+  const [displayCount, setDisplayCount] = useState(10);
 
   // Get all unique categories present in the recipes
   const allCategoriesSet = new Set<string>();
@@ -53,6 +48,13 @@ export function RecipeList({ recipes, onAddToMealPlan }: RecipeListProps) {
     return 0;
   });
 
+  const handleLoadMore = () => {
+    setDisplayCount(prev => prev + 10);
+  };
+
+  const visibleRecipes = sortedRecipes.slice(0, displayCount);
+  const hasMoreRecipes = displayCount < sortedRecipes.length;
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row gap-4">
@@ -64,23 +66,16 @@ export function RecipeList({ recipes, onAddToMealPlan }: RecipeListProps) {
             className="w-full"
           />
         </div>
-        <div className="w-full sm:w-48 flex gap-2">
+        <div className="w-full sm:w-48">
           <select
             value={categoryFilter}
             onChange={e => setCategoryFilter(e.target.value)}
-            className="w-2/3 border rounded p-2 flex-shrink"
+            className="w-full border rounded p-2"
           >
             <option value="all">All Categories</option>
             {allCategories.map((category) => (
               <option key={category} value={category}>{category.charAt(0).toUpperCase() + category.slice(1)}</option>
             ))}
-          </select>
-          <select
-            value={sortType}
-            onChange={e => setSortType(e.target.value)}
-            className="w-1/3 border rounded p-2 flex-shrink"
-          >
-            {SORTS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
           </select>
         </div>
       </div>
@@ -89,11 +84,21 @@ export function RecipeList({ recipes, onAddToMealPlan }: RecipeListProps) {
           <p className="text-muted-foreground">No recipes found. Try adjusting your search.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {sortedRecipes.map((recipe) => (
-            <RecipeCard key={recipe.id} recipe={recipe} onAddToMealPlan={onAddToMealPlan} />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {visibleRecipes.map((recipe) => (
+              <RecipeCard key={recipe.id} recipe={recipe} onAddToMealPlan={onAddToMealPlan} />
+            ))}
+          </div>
+          
+          {hasMoreRecipes && (
+            <div className="flex justify-center mt-6">
+              <Button onClick={handleLoadMore} variant="outline">
+                Load More Recipes
+              </Button>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

@@ -8,7 +8,7 @@ const CustomFooter = () => {
       <div className="container">
         <div className="flex flex-col md:flex-row justify-between items-center text-sm text-muted-foreground">
           <div className="mb-4 md:mb-0">
-            <p>© 2023 RealiMeali. All rights reserved.</p>
+            <p>© 2025 RealiMeali. All rights reserved.</p>
           </div>
           <nav className="flex gap-6">
             <Link to="/recipes" className="hover:text-terracotta transition-colors">

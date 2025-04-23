@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { mockRecipes } from "@/data/recipes";
@@ -61,7 +62,7 @@ export default function Index() {
                 <Link to="/shopping-list" className="flex flex-col items-center w-full">
                   <span className="pb-2 flex justify-center items-center h-24 w-24">
                     <img
-                      src="https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?auto=format&fit=crop&w=128&q=80"
+                      src="https://images.unsplash.com/photo-1604719312566-8912e9227c6a?auto=format&fit=crop&w=128&q=80"
                       className="h-24 w-24 object-cover rounded-full border mb-1"
                       alt="Shopping List"
                     />
@@ -75,7 +76,7 @@ export default function Index() {
         </div>
       </section>
       {/* Latest Recipes - use a solid dark grey orange background */}
-      <section className="py-4" style={{ background: "#222222" }}>
+      <section className="py-4" style={{ background: "#a35e18" }}>
         <div className="container px-4">
           <div className="flex items-center justify-between mb-3">
             <div>

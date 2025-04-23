@@ -1,7 +1,8 @@
+
 import { useState, useEffect } from "react";
 import { MealPlan, MealType, RecipeCategory } from "@/types";
 import { Button } from "@/components/ui/button";
-import { ListChecks, Plus, Trash2, Users, Share, FileSpreadsheet } from "lucide-react";
+import { ListChecks, Plus, Share, Users, FileSpreadsheet } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { mockMealPlans } from "@/data/mealPlans";
@@ -191,7 +192,7 @@ export default function MealPlanner() {
         <Button
           onClick={handleRandomMealSelection}
           size="sm"
-          className="bg-sage hover:bg-sage/90 flex items-center whitespace-nowrap"
+          className="bg-sage hover:bg-sage/90 flex items-center whitespace-nowrap w-1/3"
         >
           <FileSpreadsheet className="mr-2 h-4 w-4" />
           Randomise
@@ -200,7 +201,7 @@ export default function MealPlanner() {
           onClick={handleShareMealPlan}
           size="sm"
           variant="outline"
-          className="flex items-center whitespace-nowrap"
+          className="flex items-center whitespace-nowrap w-1/3"
         >
           <Share className="mr-2 h-4 w-4" />
           Share
@@ -209,8 +210,7 @@ export default function MealPlanner() {
           onClick={handleInvite}
           size="sm"
           variant="outline"
-          className="flex items-center whitespace-nowrap bg-transparent active:bg-transparent focus:bg-transparent"
-          style={{ backgroundColor: "transparent" }}
+          className="flex items-center whitespace-nowrap w-1/3"
         >
           <Users className="mr-2 h-4 w-4" />
           Invite
