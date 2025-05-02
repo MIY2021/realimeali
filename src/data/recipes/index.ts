@@ -4,8 +4,9 @@ import { bulkRecipes } from "./recipes_bulk";
 import { easyRecipes } from "./recipes_easy";
 import { specialRecipes } from "./recipes_special";
 import { vegetarianRecipes } from "./recipes_veg";
+import { snackRecipes } from "./recipes_snacks";
 
-export { bulkRecipes, easyRecipes, specialRecipes, vegetarianRecipes };
+export { bulkRecipes, easyRecipes, specialRecipes, vegetarianRecipes, snackRecipes };
 
 // Dedupe recipes by title + categories as a stable key
 function dedupe(recipes: Recipe[]): Recipe[] {
@@ -23,4 +24,5 @@ export const mockRecipes: Recipe[] = dedupe([
   ...easyRecipes,
   ...specialRecipes,
   ...vegetarianRecipes,
+  ...snackRecipes,
 ]);

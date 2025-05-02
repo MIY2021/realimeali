@@ -1,3 +1,4 @@
+
 export type User = {
   id: string;
   name: string;
@@ -20,7 +21,8 @@ export type RecipeCategory =
   | "BBQ"
   | "Faffy"
   | "Pricey!"
-  | "Not Yet Made";
+  | "Not Yet Made"
+  | "Snacks";
 
 export type Recipe = {
   id: string;
@@ -52,3 +54,4 @@ export type MealPlan = {
   updatedAt: string;
   slotIndex: number;
 };
+

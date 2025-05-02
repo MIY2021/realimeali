@@ -18,6 +18,7 @@ interface Ingredient {
   totalQty?: number;
   unit?: string;
   isCustom?: boolean;
+  category?: string; // Add category field to fix the TypeScript error
 }
 
 function parseIngredientQty(text: string): { qty: number; unit: string; name: string } {
@@ -366,53 +367,56 @@ export default function ShoppingList() {
           onRemoveAll={handleRemoveAll}
         />
         
-        {/* Add custom item form */}
-        <Card className="mt-4">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">Add Custom Item</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-12 gap-2">
-              <div className="col-span-5">
-                <Input 
-                  placeholder="Item name" 
-                  value={newItem}
-                  onChange={(e) => setNewItem(e.target.value)}
-                />
-              </div>
-              <div className="col-span-2">
-                <Input 
-                  placeholder="Qty" 
-                  type="number"
-                  value={newItemQty}
-                  onChange={(e) => setNewItemQty(e.target.value)}
-                />
-              </div>
-              <div className="col-span-3">
-                <Input 
-                  placeholder="Unit (e.g., kg)" 
-                  value={newItemUnit}
-                  onChange={(e) => setNewItemUnit(e.target.value)}
-                />
-              </div>
-              <div className="col-span-2">
-                <Button 
-                  onClick={handleAddCustomItem} 
-                  className="w-full"
-                  size="sm"
-                >
-                  <Plus className="h-4 w-4 mr-1" /> Add
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Simplified Custom Item Form */}
+        <div className="flex items-center gap-2 mt-4">
+          <Input 
+            placeholder="Item name" 
+            value={newItem}
+            onChange={(e) => setNewItem(e.target.value)}
+            className="flex-grow"
+          />
+          <Input 
+            placeholder="Qty" 
+            type="number"
+            value={newItemQty}
+            onChange={(e) => setNewItemQty(e.target.value)}
+            className="w-16"
+          />
+          <Input 
+            placeholder="Unit" 
+            value={newItemUnit}
+            onChange={(e) => setNewItemUnit(e.target.value)}
+            className="w-20"
+          />
+          <Button 
+            onClick={handleAddCustomItem} 
+            size="icon"
+            className="shrink-0"
+          >
+            <Plus className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
       <div className="space-y-4">
         {Object.entries(categorizedIngredients).map(([category, items]) => (
           <Card key={category}>
-            <CardHeader className="pb-2">
+            <CardHeader className="pb-2 flex flex-row items-center justify-between">
               <CardTitle className="text-base">{category}</CardTitle>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6"
+                onClick={() => {
+                  setSelectedCategory(category);
+                  setNewItem("");
+                  setNewItemQty("");
+                  setNewItemUnit("");
+                  document.getElementById("quick-add-item")?.focus();
+                }}
+                title={`Add to ${category}`}
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
             </CardHeader>
             <CardContent>
               <ul className="space-y-2">
