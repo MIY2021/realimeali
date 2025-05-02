@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { RecipeDetail as RecipeDetailComponent } from "@/components/recipes/RecipeDetail";
@@ -5,11 +6,13 @@ import { mockRecipes } from "@/data/recipes";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { Recipe } from "@/types";
+import { EditRecipeDialog } from "@/components/recipes/EditRecipeDialog";
 
 export default function RecipeDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [recipe, setRecipe] = useState<Recipe | undefined>(undefined);
+  const [showEditDialog, setShowEditDialog] = useState(false);
   
   useEffect(() => {
     // In a real app, this would be an API call
@@ -17,12 +20,13 @@ export default function RecipeDetailPage() {
     setRecipe(foundRecipe);
   }, [id]);
   
-  const handleToggleFavorite = (recipe: Recipe) => {
-    // In a real app, this would be an API call
-    setRecipe(prevRecipe => {
-      if (!prevRecipe) return prevRecipe;
-      return { ...prevRecipe, isFavorite: !prevRecipe.isFavorite };
-    });
+  const handleEdit = (recipe: Recipe) => {
+    setShowEditDialog(true);
+  };
+
+  const handleUpdateRecipe = (updatedRecipe: Recipe) => {
+    setRecipe(updatedRecipe);
+    setShowEditDialog(false);
   };
   
   if (!recipe) {
@@ -49,9 +53,18 @@ export default function RecipeDetailPage() {
       
       <RecipeDetailComponent 
         recipe={recipe} 
-        onToggleFavorite={handleToggleFavorite}
         onAddToMealPlan={() => navigate("/meal-planner")}
+        onEdit={handleEdit}
       />
+
+      {recipe && (
+        <EditRecipeDialog 
+          recipe={recipe} 
+          open={showEditDialog} 
+          onOpenChange={setShowEditDialog}
+          onSave={handleUpdateRecipe}
+        />
+      )}
     </div>
   );
 }

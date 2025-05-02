@@ -1,14 +1,15 @@
+
 import { Recipe } from "@/types";
 import { Button } from "@/components/ui/button";
-import { CalendarDays, Clock, Heart, Share, Users } from "lucide-react";
+import { CalendarDays, Clock, Edit, Share, Users } from "lucide-react";
 
 interface RecipeDetailProps {
   recipe: Recipe;
   onAddToMealPlan?: (recipe: Recipe) => void;
-  onToggleFavorite?: (recipe: Recipe) => void;
+  onEdit?: (recipe: Recipe) => void;
 }
 
-export function RecipeDetail({ recipe, onAddToMealPlan, onToggleFavorite }: RecipeDetailProps) {
+export function RecipeDetail({ recipe, onAddToMealPlan, onEdit }: RecipeDetailProps) {
   const { 
     title, 
     description, 
@@ -18,8 +19,7 @@ export function RecipeDetail({ recipe, onAddToMealPlan, onToggleFavorite }: Reci
     cookTime, 
     servings, 
     image,
-    categories,
-    isFavorite 
+    categories
   } = recipe;
   
   const totalTime = prepTime + cookTime;
@@ -85,16 +85,15 @@ export function RecipeDetail({ recipe, onAddToMealPlan, onToggleFavorite }: Reci
               <CalendarDays className="h-4 w-4" />
               <span>Add to Meal Plan</span>
             </Button>
-            <Button 
-              variant={recipe.isFavorite ? "default" : "outline"}
-              className={`flex items-center gap-1 ${recipe.isFavorite ? "bg-terracotta hover:bg-terracotta/90" : ""}`}
-              onClick={() => onToggleFavorite?.(recipe)}
+            <Button
+              variant="outline"
+              className="flex items-center gap-1"
+              onClick={() => onEdit?.(recipe)}
             >
-              <Heart className={`h-4 w-4 ${recipe.isFavorite ? "fill-current" : ""}`} />
-              <span>{recipe.isFavorite ? "Favorited" : "Add to Favorites"}</span>
+              <Edit className="h-4 w-4" />
+              <span>Edit Recipe</span>
             </Button>
             <Button variant="outline" className="flex items-center gap-1">
-              {/* Ensure share button always says "Share" and uses 'share-2' icon */}
               <Share className="h-4 w-4" />
               <span>Share</span>
             </Button>

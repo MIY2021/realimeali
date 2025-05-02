@@ -71,7 +71,7 @@ export default function Index() {
           </div>
         </div>
       </section>
-      <section className="py-4" style={{ background: "#1A1F2C" }}>
+      <section className="py-4" style={{ background: "#e48568" }}>
         <div className="container px-4">
           <div className="flex items-center justify-between mb-3">
             <div>

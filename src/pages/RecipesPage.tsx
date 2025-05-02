@@ -6,6 +6,7 @@ import Papa from "papaparse";
 import { useToast } from "@/hooks/use-toast";
 import { RecipeCategory, Recipe, MealType } from "@/types";
 import { mockRecipes } from "@/data/recipes";
+import { CreateRecipeDialog } from "@/components/recipes/CreateRecipeDialog";
 import {
   Dialog,
   DialogContent,
@@ -17,18 +18,6 @@ import {
 
 const MEAL_TYPES: MealType[] = ["dinner", "lunch", "breakfast"];
 
-// Implementing a basic new recipe form dialog
-type NewRecipeFormData = {
-  title: string;
-  description: string;
-  prepTime: number;
-  cookTime: number;
-  servings: number;
-  categories: RecipeCategory[];
-  ingredients: string[];
-  instructions: string[];
-};
-
 export default function RecipesPage() {
   const [recipes, setRecipes] = useState(mockRecipes);
   const { toast } = useToast();
@@ -36,20 +25,9 @@ export default function RecipesPage() {
   // --- Add-to-meal plan state
   const [addToMealRecipe, setAddToMealRecipe] = useState<Recipe | null>(null);
   const [showMealTypeDialog, setShowMealTypeDialog] = useState(false);
-  const [selectedMealType, setSelectedMealType] = useState<MealType | null>(null);
 
   // New recipe state
   const [showNewRecipeDialog, setShowNewRecipeDialog] = useState(false);
-  const [newRecipeForm, setNewRecipeForm] = useState<NewRecipeFormData>({
-    title: "",
-    description: "",
-    prepTime: 15,
-    cookTime: 30,
-    servings: 4,
-    categories: [],
-    ingredients: [""],
-    instructions: [""],
-  });
 
   const handleBulkImport = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -131,36 +109,9 @@ export default function RecipesPage() {
     setShowNewRecipeDialog(true);
   };
 
-  const handleSaveNewRecipe = () => {
-    const newRecipe: Recipe = {
-      id: `new-recipe-${Date.now()}`,
-      title: newRecipeForm.title || "New Recipe",
-      description: newRecipeForm.description,
-      ingredients: newRecipeForm.ingredients.filter(Boolean),
-      instructions: newRecipeForm.instructions.filter(Boolean),
-      categories: newRecipeForm.categories,
-      prepTime: newRecipeForm.prepTime,
-      cookTime: newRecipeForm.cookTime,
-      servings: newRecipeForm.servings,
-      image: "",
-      createdBy: "user-1",
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      isFavorite: false,
-    };
-
+  const handleSaveNewRecipe = (newRecipe: Recipe) => {
     setRecipes(prev => [newRecipe, ...prev]);
     setShowNewRecipeDialog(false);
-    setNewRecipeForm({
-      title: "",
-      description: "",
-      prepTime: 15,
-      cookTime: 30,
-      servings: 4,
-      categories: [],
-      ingredients: [""],
-      instructions: [""],
-    });
 
     toast({
       title: "Recipe Created",
@@ -175,7 +126,6 @@ export default function RecipesPage() {
   const handleAddToMealPlan = (recipe: Recipe) => {
     setAddToMealRecipe(recipe);
     setShowMealTypeDialog(true);
-    setSelectedMealType(null);
     setAddToMealWeek(null);
   };
 
@@ -197,7 +147,6 @@ export default function RecipesPage() {
     }
     setAddToMealRecipe(null);
     setShowMealTypeDialog(false);
-    setSelectedMealType(null);
     setAddToMealWeek(null);
   };
 
@@ -266,81 +215,12 @@ export default function RecipesPage() {
         </DialogContent>
       </Dialog>
 
-      {/* New Recipe Dialog */}
-      <Dialog open={showNewRecipeDialog} onOpenChange={setShowNewRecipeDialog}>
-        <DialogContent className="sm:max-w-[600px]">
-          <DialogHeader>
-            <DialogTitle>Create New Recipe</DialogTitle>
-            <DialogDescription>
-              Add details for your new recipe. You can edit it later.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <label htmlFor="title" className="text-sm font-medium">Recipe Title</label>
-              <input
-                id="title"
-                className="w-full p-2 border rounded"
-                value={newRecipeForm.title}
-                onChange={(e) => setNewRecipeForm(prev => ({ ...prev, title: e.target.value }))}
-                placeholder="Enter recipe title"
-              />
-            </div>
-            <div className="grid gap-2">
-              <label htmlFor="description" className="text-sm font-medium">Description</label>
-              <textarea
-                id="description"
-                className="w-full p-2 border rounded"
-                value={newRecipeForm.description}
-                onChange={(e) => setNewRecipeForm(prev => ({ ...prev, description: e.target.value }))}
-                placeholder="Brief description of the recipe"
-                rows={2}
-              />
-            </div>
-            <div className="grid grid-cols-3 gap-4">
-              <div className="grid gap-2">
-                <label htmlFor="prepTime" className="text-sm font-medium">Prep Time (min)</label>
-                <input
-                  id="prepTime"
-                  type="number"
-                  className="w-full p-2 border rounded"
-                  value={newRecipeForm.prepTime}
-                  onChange={(e) => setNewRecipeForm(prev => ({ ...prev, prepTime: parseInt(e.target.value) || 0 }))}
-                  min="0"
-                />
-              </div>
-              <div className="grid gap-2">
-                <label htmlFor="cookTime" className="text-sm font-medium">Cook Time (min)</label>
-                <input
-                  id="cookTime"
-                  type="number"
-                  className="w-full p-2 border rounded"
-                  value={newRecipeForm.cookTime}
-                  onChange={(e) => setNewRecipeForm(prev => ({ ...prev, cookTime: parseInt(e.target.value) || 0 }))}
-                  min="0"
-                />
-              </div>
-              <div className="grid gap-2">
-                <label htmlFor="servings" className="text-sm font-medium">Servings</label>
-                <input
-                  id="servings"
-                  type="number"
-                  className="w-full p-2 border rounded"
-                  value={newRecipeForm.servings}
-                  onChange={(e) => setNewRecipeForm(prev => ({ ...prev, servings: parseInt(e.target.value) || 1 }))}
-                  min="1"
-                />
-              </div>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowNewRecipeDialog(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleSaveNewRecipe}>Save Recipe</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Create Recipe Dialog */}
+      <CreateRecipeDialog
+        open={showNewRecipeDialog}
+        onOpenChange={setShowNewRecipeDialog}
+        onSave={handleSaveNewRecipe}
+      />
     </div>
   );
 }

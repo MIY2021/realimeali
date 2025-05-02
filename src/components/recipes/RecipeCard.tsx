@@ -1,5 +1,5 @@
 
-import { Recipe, MealType } from "@/types";
+import { Recipe } from "@/types";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Clock, Users, Plus } from "lucide-react";
