@@ -1,4 +1,3 @@
-
 export type User = {
   id: string;
   name: string;
@@ -40,7 +39,7 @@ export type Recipe = {
   isFavorite: boolean;
 };
 
-export type MealType = "dinner" | "lunch" | "breakfast";
+export type MealType = "dinner" | "lunch" | "breakfast" | "snacks";
 
 export type MealPlan = {
   id: string;

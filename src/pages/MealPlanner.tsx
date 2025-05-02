@@ -34,7 +34,7 @@ export default function MealPlanner() {
   }, [mealPlans, week]);
 
   const { toast } = useToast();
-  const mealTypes: MealType[] = ["dinner", "lunch", "breakfast"];
+  const mealTypes: MealType[] = ["dinner", "lunch", "breakfast", "snacks"];
   const getMealPlansForType = (mealType: MealType) =>
     mealPlans.filter(plan => plan.mealType === mealType);
   const getRecipeById = (id: string) => mockRecipes.find(r => r.id === id);
@@ -83,6 +83,7 @@ export default function MealPlanner() {
       dinner: ["Bulk", "Pasta", "Fish", "BBQ", "Super Tasty"],
       lunch: ["Easy", "Cheap", "Vegetarian", "Tapas"],
       breakfast: ["Easy", "Healthy", "Vegetarian"],
+      snacks: ["Easy", "Healthy", "Super Tasty", "Cheap"],
     };
     let allSelectedIds = new Set<string>();
     mealTypes.forEach(type => {

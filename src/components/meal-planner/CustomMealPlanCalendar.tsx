@@ -25,6 +25,7 @@ export function CustomMealPlanCalendar({
     { type: "breakfast", label: "Breakfast" },
     { type: "lunch", label: "Lunches" },
     { type: "dinner", label: "Dinner" },
+    { type: "snacks", label: "Snacks" },
   ];
 
   const getMealPlansForDateAndType = (date: Date, mealType: MealType) => {
