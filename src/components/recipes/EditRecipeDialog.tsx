@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Recipe, RecipeCategory } from "@/types";
 import { Button } from "@/components/ui/button";
@@ -12,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Check, X, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -93,10 +94,11 @@ export function EditRecipeDialog({
     "Pricey!",
     "Not Yet Made",
     "Snacks",
+    "Breakfast"
   ];
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-[525px]">
         <DialogHeader>
           <DialogTitle>Edit Recipe</DialogTitle>

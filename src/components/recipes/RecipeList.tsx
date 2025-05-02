@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Recipe } from "@/types";
@@ -12,13 +13,14 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Search, Filter, SortAsc, SortDesc } from "lucide-react";
+import { Search, ArrowDownAZ, ArrowUpAZ } from "lucide-react";
 
 interface RecipeListProps {
   recipes: Recipe[];
+  onAddToMealPlan?: (recipe: Recipe) => void;
 }
 
-const RecipeList: React.FC<RecipeListProps> = ({ recipes }) => {
+const RecipeList: React.FC<RecipeListProps> = ({ recipes, onAddToMealPlan }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
@@ -44,14 +46,14 @@ const RecipeList: React.FC<RecipeListProps> = ({ recipes }) => {
         />
         <div className="flex items-center space-x-2">
           <Button variant="outline" size="sm">
-            <Filter className="mr-2 h-4 w-4" />
+            <Search className="mr-2 h-4 w-4" />
             Filter
           </Button>
           <Button variant="outline" size="sm" onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}>
             {sortOrder === "asc" ? (
-              <SortAsc className="mr-2 h-4 w-4" />
+              <ArrowDownAZ className="mr-2 h-4 w-4" />
             ) : (
-              <SortDesc className="mr-2 h-4 w-4" />
+              <ArrowUpAZ className="mr-2 h-4 w-4" />
             )}
             Sort
           </Button>
