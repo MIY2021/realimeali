@@ -4,6 +4,8 @@ import { RecipeCard } from "./RecipeCard";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { ArrowDownAZ, ArrowUpAZ, Clock } from "lucide-react";
+import { Select } from "@/components/ui/select";
 
 interface RecipeListProps {
   recipes: Recipe[];
@@ -45,6 +47,18 @@ export function RecipeList({ recipes, onAddToMealPlan }: RecipeListProps) {
     if (sortType === "prep-desc") {
       return b.prepTime - a.prepTime;
     }
+    if (sortType === "cook-asc") {
+      return a.cookTime - b.cookTime;
+    }
+    if (sortType === "cook-desc") {
+      return b.cookTime - a.cookTime;
+    }
+    if (sortType === "total-asc") {
+      return (a.prepTime + a.cookTime) - (b.prepTime + b.cookTime);
+    }
+    if (sortType === "total-desc") {
+      return (b.prepTime + b.cookTime) - (a.prepTime + a.cookTime);
+    }
     return 0;
   });
 
@@ -79,6 +93,47 @@ export function RecipeList({ recipes, onAddToMealPlan }: RecipeListProps) {
           </select>
         </div>
       </div>
+      
+      <div className="flex flex-wrap gap-2 items-center justify-end">
+        <span className="text-sm text-muted-foreground mr-2">Sort by:</span>
+        <Button 
+          variant={sortType.startsWith('title') ? 'default' : 'outline'} 
+          size="sm" 
+          onClick={() => setSortType(sortType === 'title-asc' ? 'title-desc' : 'title-asc')}
+          className={sortType.startsWith('title') ? 'bg-terracotta text-white' : ''}
+        >
+          {sortType === 'title-desc' ? <ArrowDownAZ className="h-4 w-4 mr-1" /> : <ArrowUpAZ className="h-4 w-4 mr-1" />}
+          Name
+        </Button>
+        <Button 
+          variant={sortType.startsWith('prep') ? 'default' : 'outline'} 
+          size="sm" 
+          onClick={() => setSortType(sortType === 'prep-asc' ? 'prep-desc' : 'prep-asc')}
+          className={sortType.startsWith('prep') ? 'bg-terracotta text-white' : ''}
+        >
+          <Clock className="h-4 w-4 mr-1" />
+          Prep Time
+        </Button>
+        <Button 
+          variant={sortType.startsWith('cook') ? 'default' : 'outline'} 
+          size="sm" 
+          onClick={() => setSortType(sortType === 'cook-asc' ? 'cook-desc' : 'cook-asc')}
+          className={sortType.startsWith('cook') ? 'bg-terracotta text-white' : ''}
+        >
+          <Clock className="h-4 w-4 mr-1" />
+          Cook Time
+        </Button>
+        <Button 
+          variant={sortType.startsWith('total') ? 'default' : 'outline'} 
+          size="sm" 
+          onClick={() => setSortType(sortType === 'total-asc' ? 'total-desc' : 'total-asc')}
+          className={sortType.startsWith('total') ? 'bg-terracotta text-white' : ''}
+        >
+          <Clock className="h-4 w-4 mr-1" />
+          Total Time
+        </Button>
+      </div>
+      
       {sortedRecipes.length === 0 ? (
         <div className="text-center py-8">
           <p className="text-muted-foreground">No recipes found. Try adjusting your search.</p>
