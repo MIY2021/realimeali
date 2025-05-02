@@ -1,106 +1,105 @@
-
-import { useState } from "react";
-import { Link } from "react-router-dom";
 import { Recipe } from "@/types";
-import { Button } from "@/components/ui/button";
+import { RecipeCard } from "./RecipeCard";
 import { Input } from "@/components/ui/input";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Search, ArrowDownAZ, ArrowUpAZ } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import { Clock, ArrowDownAZ, ArrowUpAZ } from "lucide-react";
 
 interface RecipeListProps {
   recipes: Recipe[];
   onAddToMealPlan?: (recipe: Recipe) => void;
 }
 
-const RecipeList: React.FC<RecipeListProps> = ({ recipes, onAddToMealPlan }) => {
+export function RecipeList({ recipes, onAddToMealPlan }: RecipeListProps) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [sortType, setSortType] = useState<string>("title-asc");
+  const [displayCount, setDisplayCount] = useState(10);
 
-  const filteredRecipes = recipes.filter((recipe) =>
-    recipe.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Get all unique categories present in the recipes
+  const allCategoriesSet = new Set<string>();
+  recipes.forEach(recipe => recipe.categories.forEach(cat => allCategoriesSet.add(cat)));
+  const allCategories = Array.from(allCategoriesSet);
 
-  const sortedRecipes = [...filteredRecipes].sort((a, b) => {
-    const titleA = a.title.toLowerCase();
-    const titleB = b.title.toLowerCase();
-    return sortOrder === "asc" ? titleA.localeCompare(titleB) : titleB.localeCompare(titleA);
+  const filteredRecipes = recipes.filter((recipe) => {
+    const matchesSearch = recipe.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                         recipe.description.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesCategory = categoryFilter === "all" || 
+                          recipe.categories.includes(categoryFilter as any);
+
+    return matchesSearch && matchesCategory;
   });
 
+  // Sort recipes
+  const sortedRecipes = [...filteredRecipes].sort((a, b) => {
+    if (sortType === "title-asc") {
+      return a.title.localeCompare(b.title);
+    }
+    if (sortType === "title-desc") {
+      return b.title.localeCompare(a.title);
+    }
+    if (sortType === "prep-asc") {
+      return a.prepTime - b.prepTime;
+    }
+    if (sortType === "prep-desc") {
+      return b.prepTime - a.prepTime;
+    }
+    return 0;
+  });
+
+  const handleLoadMore = () => {
+    setDisplayCount(prev => prev + 10);
+  };
+
+  const visibleRecipes = sortedRecipes.slice(0, displayCount);
+  const hasMoreRecipes = displayCount < sortedRecipes.length;
+
   return (
-    <div>
-      <div className="flex items-center justify-between mb-4">
-        <Input
-          type="text"
-          placeholder="Search recipes..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="max-w-sm"
-        />
-        <div className="flex items-center space-x-2">
-          <Button variant="outline" size="sm">
-            <Search className="mr-2 h-4 w-4" />
-            Filter
-          </Button>
-          <Button variant="outline" size="sm" onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}>
-            {sortOrder === "asc" ? (
-              <ArrowDownAZ className="mr-2 h-4 w-4" />
-            ) : (
-              <ArrowUpAZ className="mr-2 h-4 w-4" />
-            )}
-            Sort
-          </Button>
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="flex-1">
+          <Input
+            placeholder="Search recipes..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full"
+          />
+        </div>
+        <div className="w-full sm:w-48">
+          <select
+            value={categoryFilter}
+            onChange={e => setCategoryFilter(e.target.value)}
+            className="w-full border rounded p-2"
+          >
+            <option value="all">All Categories</option>
+            {allCategories.map((category) => (
+              <option key={category} value={category}>{category.charAt(0).toUpperCase() + category.slice(1)}</option>
+            ))}
+          </select>
         </div>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {sortedRecipes.map((recipe) => (
-          <Link to={`/recipes/${recipe.id}`} key={recipe.id}>
-            <Card className="bg-white shadow-md rounded-md">
-              <CardHeader>
-                <CardTitle>{recipe.title}</CardTitle>
-                <CardDescription>
-                  {recipe.categories.map((category) => (
-                    <Badge key={category} variant="secondary" className="mr-1">
-                      {category}
-                    </Badge>
-                  ))}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="aspect-w-16 aspect-h-9 mb-3">
-                  {recipe.image ? (
-                    <img
-                      src={recipe.image}
-                      alt={recipe.title}
-                      className="object-cover rounded-md w-full h-full"
-                      onError={(e) => {
-                        (e.currentTarget as HTMLImageElement).src = "/placeholder.svg";
-                      }}
-                    />
-                  ) : (
-                    <div className="bg-gray-100 rounded-md w-full h-full flex items-center justify-center">
-                      No Image
-                    </div>
-                  )}
-                </div>
-                <p className="text-sm text-gray-600 line-clamp-3">{recipe.description}</p>
-              </CardContent>
-              <CardFooter className="text-sm text-gray-500">
-                {recipe.prepTime + recipe.cookTime} min
-              </CardFooter>
-            </Card>
-          </Link>
-        ))}
-      </div>
+      {sortedRecipes.length === 0 ? (
+        <div className="text-center py-8">
+          <p className="text-muted-foreground">No recipes found. Try adjusting your search.</p>
+        </div>
+      ) : (
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {visibleRecipes.map((recipe) => (
+              <RecipeCard key={recipe.id} recipe={recipe} onAddToMealPlan={onAddToMealPlan} />
+            ))}
+          </div>
+          
+          {hasMoreRecipes && (
+            <div className="flex justify-center mt-6">
+              <Button onClick={handleLoadMore} variant="outline">
+                Load More Recipes
+              </Button>
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
-};
-
-export default RecipeList;
+}

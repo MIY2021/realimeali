@@ -1,6 +1,5 @@
-
 import { useState } from "react";
-import RecipeList from "@/components/recipes/RecipeList";
+import { RecipeList } from "@/components/recipes/RecipeList";
 import { Button } from "@/components/ui/button";
 import { Plus, Book } from "lucide-react";
 import Papa from "papaparse";

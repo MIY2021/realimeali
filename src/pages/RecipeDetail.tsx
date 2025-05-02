@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import RecipeDetailComponent from "@/components/recipes/RecipeDetail";
+import { RecipeDetail as RecipeDetailComponent } from "@/components/recipes/RecipeDetail";
 import { mockRecipes } from "@/data/recipes";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
@@ -59,11 +59,10 @@ export default function RecipeDetailPage() {
 
       {recipe && (
         <EditRecipeDialog 
-          isOpen={showEditDialog}
-          onClose={() => setShowEditDialog(false)}
+          recipe={recipe} 
+          open={showEditDialog} 
+          onOpenChange={setShowEditDialog}
           onSave={handleUpdateRecipe}
-          onDelete={() => {}}
-          recipe={recipe}
         />
       )}
     </div>

@@ -1,121 +1,133 @@
-import { useParams, Link, useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
+
 import { Recipe } from "@/types";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Heart, ArrowLeft, Pencil, Clock, Users } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { mockRecipes } from "@/data/recipes";
+import { CalendarDays, Clock, Edit, Share, Users } from "lucide-react";
 
-const RecipeDetail = () => {
-  const { id } = useParams<{ id: string }>();
-  const [recipe, setRecipe] = useState<Recipe | undefined>(undefined);
-  const [isFavorite, setIsFavorite] = useState<boolean>(false);
-  const { toast } = useToast();
-  const navigate = useNavigate();
+interface RecipeDetailProps {
+  recipe: Recipe;
+  onAddToMealPlan?: (recipe: Recipe) => void;
+  onEdit?: (recipe: Recipe) => void;
+}
 
-  useEffect(() => {
-    if (!id) return;
-    const found = mockRecipes.find((r) => r.id === id);
-    setRecipe(found);
-    setIsFavorite(found?.isFavorite || false);
-  }, [id]);
-
-  if (!recipe) {
-    return (
-      <div className="container max-w-2xl py-8">
-        <p>Loading...</p>
-      </div>
-    );
-  }
-
-  const toggleFavorite = () => {
-    setIsFavorite(!isFavorite);
-    toast({
-      title: isFavorite ? "Removed from favorites" : "Added to favorites",
-      description: `Recipe ${isFavorite ? "removed" : "added"} to your favorites.`,
-    });
-  };
-
+export function RecipeDetail({ recipe, onAddToMealPlan, onEdit }: RecipeDetailProps) {
+  const { 
+    title, 
+    description, 
+    ingredients, 
+    instructions, 
+    prepTime, 
+    cookTime, 
+    servings, 
+    image,
+    categories
+  } = recipe;
+  
+  const totalTime = prepTime + cookTime;
+  
   return (
-    <div className="container max-w-2xl py-8">
-      <Button variant="ghost" asChild className="mb-4">
-        <Link to="/recipes" className="flex items-center">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Recipes
-        </Link>
-      </Button>
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-          <CardTitle className="text-2xl font-bold">{recipe.title}</CardTitle>
-          <div className="space-x-2">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={toggleFavorite}
-            >
-              <Heart
-                className={`h-4 w-4 ${isFavorite ? "text-red-500" : ""}`}
-              />
-            </Button>
-            <Button variant="outline" size="icon" asChild>
-              <Link to={`/recipes/${recipe.id}/edit`}>
-                <Pencil className="h-4 w-4" />
-              </Link>
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {recipe.image && (
-            <div className="relative w-full aspect-video rounded-md overflow-hidden bg-muted">
-              <img
-                src={recipe.image}
+    <div className="mx-auto max-w-4xl space-y-8 py-8">
+      <div className="flex flex-col md:flex-row gap-8">
+        <div className="md:w-1/2">
+          <div className="aspect-video overflow-hidden rounded-lg">
+            {recipe.image ? (
+              <img 
+                src={recipe.image} 
                 alt={recipe.title}
-                className="object-cover w-full h-full"
+                className="h-full w-full object-cover"
                 onError={(e) => {
-                  (e.currentTarget as HTMLImageElement).src = "/placeholder.svg";
+                  (e.target as HTMLImageElement).src = "/placeholder.svg";
                 }}
               />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center bg-muted">
+                <span className="text-muted-foreground">No image</span>
+              </div>
+            )}
+          </div>
+        </div>
+        <div className="md:w-1/2 space-y-4">
+          <h1 className="text-3xl font-bold text-navy">{recipe.title}</h1>
+          <div className="flex flex-wrap gap-2">
+            {recipe.categories.map((category) => (
+              <span 
+                key={category} 
+                className="inline-flex items-center rounded-full bg-sage/20 px-2.5 py-1 text-xs font-medium text-sage"
+              >
+                {category.charAt(0).toUpperCase() + category.slice(1)}
+              </span>
+            ))}
+          </div>
+          <p className="text-muted-foreground">{recipe.description}</p>
+          <div className="flex flex-wrap gap-6 text-sm">
+            <div className="flex items-center gap-1">
+              <Clock className="h-4 w-4 text-terracotta" />
+              <span>Prep: {recipe.prepTime} min</span>
             </div>
-          )}
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center text-sm text-muted-foreground">
-              <Clock className="mr-1 h-4 w-4" />
-              {recipe.prepTime + recipe.cookTime} mins
+            <div className="flex items-center gap-1">
+              <Clock className="h-4 w-4 text-terracotta" />
+              <span>Cook: {recipe.cookTime} min</span>
             </div>
-            <div className="flex items-center text-sm text-muted-foreground">
-              <Users className="mr-1 h-4 w-4" />
-              {recipe.servings} servings
+            <div className="flex items-center gap-1">
+              <Clock className="h-4 w-4 text-terracotta" />
+              <span>Total: {recipe.prepTime + recipe.cookTime} min</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <Users className="h-4 w-4 text-terracotta" />
+              <span>Serves: {recipe.servings}</span>
             </div>
           </div>
-          <div className="space-y-2">
-            <h3 className="text-lg font-semibold">Description</h3>
-            <p className="text-sm text-muted-foreground">{recipe.description}</p>
+          <div className="flex flex-wrap gap-3 pt-2">
+            <Button 
+              variant="outline" 
+              className="flex items-center gap-1"
+              onClick={() => onAddToMealPlan?.(recipe)}
+            >
+              <CalendarDays className="h-4 w-4" />
+              <span>Add to Meal Plan</span>
+            </Button>
+            <Button
+              variant="outline"
+              className="flex items-center gap-1"
+              onClick={() => onEdit?.(recipe)}
+            >
+              <Edit className="h-4 w-4" />
+              <span>Edit Recipe</span>
+            </Button>
+            <Button variant="outline" className="flex items-center gap-1">
+              <Share className="h-4 w-4" />
+              <span>Share</span>
+            </Button>
           </div>
-          <div className="space-y-2">
-            <h3 className="text-lg font-semibold">Ingredients</h3>
-            <ul className="list-disc pl-4 space-y-1">
-              {recipe.ingredients.map((ingredient, i) => (
-                <li key={i} className="text-sm">
-                  {ingredient}
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div className="space-y-2">
-            <h3 className="text-lg font-semibold">Instructions</h3>
-            <ol className="list-decimal pl-4 space-y-2">
-              {recipe.instructions.map((instruction, i) => (
-                <li key={i} className="text-sm">
-                  {instruction}
-                </li>
-              ))}
-            </ol>
-          </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="space-y-4">
+          <h2 className="text-xl font-semibold text-navy">Ingredients</h2>
+          <ul className="space-y-2">
+            {ingredients.map((ingredient, index) => (
+              <li key={index} className="flex items-start gap-2">
+                <span className="mt-1 block h-2 w-2 rounded-full bg-terracotta" />
+                <span>{ingredient}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+        
+        <div className="md:col-span-2 space-y-4">
+          <h2 className="text-xl font-semibold text-navy">Instructions</h2>
+          <ol className="space-y-4">
+            {instructions.map((instruction, index) => (
+              <li key={index} className="flex items-start gap-3">
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-sage text-white text-sm font-medium">
+                  {index + 1}
+                </span>
+                <span>{instruction}</span>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </div>
     </div>
   );
-};
-
-export default RecipeDetail;
+}

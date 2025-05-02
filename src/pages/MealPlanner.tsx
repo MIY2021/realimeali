@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { MealPlan, MealType, RecipeCategory } from "@/types";
 import { Button } from "@/components/ui/button";
@@ -12,6 +11,7 @@ import MealListSection from "@/components/MealListSection";
 import MealActions from "@/components/MealActions";
 
 const STORAGE_KEY = "persistedMealPlans_v1";
+const WEEK_LEN = 7;
 
 export default function MealPlanner() {
   // --- Week state
@@ -48,14 +48,6 @@ export default function MealPlanner() {
   // - Helper to get all unique recipe IDs in plan
   const allUsedIds = new Set(mealPlans.map(mp => mp.recipeId));
 
-  // Define appropriate recipe categories for each meal type
-  const mealTypeToCategories: Record<MealType, RecipeCategory[]> = {
-    breakfast: ["Breakfast"], // Only use Breakfast category for breakfast
-    dinner: ["Bulk", "Pasta", "Fish", "BBQ", "Super Tasty"],
-    lunch: ["Easy", "Cheap", "Vegetarian", "Tapas"],
-    snacks: ["Snacks"] // Only use Snacks category for snacks
-  };
-
   // ---- Ensure unique random recipes ----
   function getUniqueRandomRecipes(
     availableRecipes: typeof mockRecipes,
@@ -87,6 +79,12 @@ export default function MealPlanner() {
         return;
     }
     const newMealPlans: MealPlan[] = [];
+    const mealTypeToCategories: Record<MealType, RecipeCategory[]> = {
+      dinner: ["Bulk", "Pasta", "Fish", "BBQ", "Super Tasty"],
+      lunch: ["Easy", "Cheap", "Vegetarian", "Tapas"],
+      breakfast: ["Easy", "Healthy", "Vegetarian"],
+      snacks: ["Easy", "Healthy", "Super Tasty", "Cheap"],
+    };
     let allSelectedIds = new Set<string>();
     mealTypes.forEach(type => {
       const unique = getUniqueRandomRecipes(
@@ -147,15 +145,6 @@ export default function MealPlanner() {
   const handleAddMeal = (mealType: MealType) => {
     setAddMealModal({ open: true, mealType });
   };
-  
-  // Filter recipes by meal type when adding a meal manually
-  const getRecipesForMealType = (mealType: MealType) => {
-    const categories = mealTypeToCategories[mealType];
-    return mockRecipes.filter(recipe =>
-      recipe.categories.some(cat => categories.includes(cat as RecipeCategory))
-    );
-  };
-  
   const onAddMealFinish = (mealType: MealType, recipeId: string) => {
     setMealPlans((prev) => [
       ...prev,
@@ -276,7 +265,7 @@ export default function MealPlanner() {
           open={addMealModal.open}
           onClose={() => setAddMealModal({ open: false, mealType: null })}
           mealType={addMealModal.mealType}
-          recipes={getRecipesForMealType(addMealModal.mealType)}
+          recipes={mockRecipes}
           onSelectRecipe={(recipeId) => onAddMealFinish(addMealModal.mealType!, recipeId)}
         />
       )}

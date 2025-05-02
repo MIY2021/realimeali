@@ -10,7 +10,6 @@ import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
 import ShoppingListActions from "@/components/ShoppingListActions";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface Ingredient {
   name: string;
@@ -19,7 +18,7 @@ interface Ingredient {
   totalQty?: number;
   unit?: string;
   isCustom?: boolean;
-  category?: string;
+  category?: string; // Add category field to fix the TypeScript error
 }
 
 function parseIngredientQty(text: string): { qty: number; unit: string; name: string } {
@@ -48,11 +47,10 @@ export default function ShoppingList() {
   }, [week]);
 
   const [ingredients, setIngredients] = useState<Ingredient[]>([]);
-  const [addItemOpen, setAddItemOpen] = useState(false);
-  const [addItemCategory, setAddItemCategory] = useState("Pantry");
   const [newItem, setNewItem] = useState("");
   const [newItemQty, setNewItemQty] = useState("");
   const [newItemUnit, setNewItemUnit] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("Pantry");
   const { toast } = useToast();
   
   // Load the saved checked state from localStorage
@@ -225,8 +223,7 @@ export default function ShoppingList() {
       recipeIds: [],
       totalQty: qty,
       unit: newItemUnit,
-      isCustom: true,
-      category: addItemCategory
+      isCustom: true
     };
     
     setIngredients(prev => [...prev, newIngredient]);
@@ -240,7 +237,6 @@ export default function ShoppingList() {
     setNewItem("");
     setNewItemQty("");
     setNewItemUnit("");
-    setAddItemOpen(false);
   };
 
   const handleShare = async () => {
@@ -370,6 +366,36 @@ export default function ShoppingList() {
           onUncheckAll={handleUncheckAll}
           onRemoveAll={handleRemoveAll}
         />
+        
+        {/* Simplified Custom Item Form */}
+        <div className="flex items-center gap-2 mt-4">
+          <Input 
+            placeholder="Item name" 
+            value={newItem}
+            onChange={(e) => setNewItem(e.target.value)}
+            className="flex-grow"
+          />
+          <Input 
+            placeholder="Qty" 
+            type="number"
+            value={newItemQty}
+            onChange={(e) => setNewItemQty(e.target.value)}
+            className="w-16"
+          />
+          <Input 
+            placeholder="Unit" 
+            value={newItemUnit}
+            onChange={(e) => setNewItemUnit(e.target.value)}
+            className="w-20"
+          />
+          <Button 
+            onClick={handleAddCustomItem} 
+            size="icon"
+            className="shrink-0"
+          >
+            <Plus className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
       <div className="space-y-4">
         {Object.entries(categorizedIngredients).map(([category, items]) => (
@@ -381,8 +407,11 @@ export default function ShoppingList() {
                 size="icon"
                 className="h-6 w-6"
                 onClick={() => {
-                  setAddItemCategory(category);
-                  setAddItemOpen(true);
+                  setSelectedCategory(category);
+                  setNewItem("");
+                  setNewItemQty("");
+                  setNewItemUnit("");
+                  document.getElementById("quick-add-item")?.focus();
                 }}
                 title={`Add to ${category}`}
               >
@@ -446,38 +475,6 @@ export default function ShoppingList() {
           </Card>
         ))}
       </div>
-
-      {/* Simple add item dialog */}
-      <Dialog open={addItemOpen} onOpenChange={setAddItemOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Add item to {addItemCategory}</DialogTitle>
-          </DialogHeader>
-          <div className="grid gap-4">
-            <div className="grid grid-cols-4 gap-2">
-              <Input 
-                placeholder="Item name" 
-                value={newItem}
-                onChange={(e) => setNewItem(e.target.value)}
-                className="col-span-2"
-                autoFocus
-              />
-              <Input 
-                placeholder="Qty" 
-                type="number"
-                value={newItemQty}
-                onChange={(e) => setNewItemQty(e.target.value)}
-              />
-              <Input 
-                placeholder="Unit" 
-                value={newItemUnit}
-                onChange={(e) => setNewItemUnit(e.target.value)}
-              />
-            </div>
-            <Button onClick={handleAddCustomItem}>Add Item</Button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
