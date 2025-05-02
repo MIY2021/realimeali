@@ -180,7 +180,7 @@ export default function MealPlanner() {
   };
 
   return (
-    <div className="container py-8">
+    <div className="container max-w-xl py-8">
       <div className="flex items-center justify-between mb-2">
         <div>
           <h1 className="text-2xl font-bold text-navy flex items-center gap-2">

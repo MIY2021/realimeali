@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Recipe, RecipeCategory } from "@/types";
 import {
@@ -9,7 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, X } from "lucide-react";
+import { Plus, Trash, X } from "lucide-react";
 
 interface EditRecipeDialogProps {
   recipe: Recipe;
@@ -301,7 +302,7 @@ export function EditRecipeDialog({ recipe, open, onOpenChange, onSave }: EditRec
                       onClick={() => handleRemoveIngredient(index)}
                       className="text-red-500 h-6 w-6"
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash className="h-4 w-4" />
                     </Button>
                   </li>
                 ))}
@@ -341,7 +342,7 @@ export function EditRecipeDialog({ recipe, open, onOpenChange, onSave }: EditRec
                       onClick={() => handleRemoveInstruction(index)}
                       className="text-red-500 h-6 w-6"
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash className="h-4 w-4" />
                     </Button>
                   </li>
                 ))}

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { RecipeList } from "@/components/recipes/RecipeList";
 import { Button } from "@/components/ui/button";
@@ -152,7 +151,7 @@ export default function RecipesPage() {
   };
 
   return (
-    <div className="container py-6">
+    <div className="container max-w-3xl py-6">
       <div className="flex items-center justify-between mb-8 gap-2 flex-wrap">
         <div>
           <h1 className="text-2xl font-bold text-navy flex items-center gap-2">

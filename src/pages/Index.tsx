@@ -28,49 +28,43 @@ export default function Index() {
               RealiMeali: Your Family&apos;s Meal Planning Hub
             </h1>
             <div className="flex flex-col sm:flex-row gap-4 mt-4 w-full max-w-lg justify-center">
-              <Button asChild size="lg" className="bg-white border shadow hover:bg-sage/10 flex-1 flex flex-col items-center py-2 group transition-all h-auto">
+              <Button asChild size="lg" className="bg-white border shadow hover:bg-sage/10 flex-1 flex flex-col items-center py-5 group transition-all">
                 <Link to="/meal-planner" className="flex flex-col items-center w-full">
-                  <div className="w-full overflow-hidden">
+                  <span className="pb-2">
                     <img
                       src="/lovable-uploads/f5e80761-ddc5-48b2-80d2-54be701453a3.png"
-                      className="w-full h-48 object-cover rounded-t-md"
+                      className="h-24 w-24 object-cover rounded-full border mb-1"
                       alt="Meal Planner"
                     />
-                  </div>
-                  <div className="p-4 text-center">
-                    <span className="font-semibold text-navy text-lg mb-1 block">Meal Planner</span>
-                    <span className="text-xs text-muted-foreground">Plan your weekly meals</span>
-                  </div>
+                  </span>
+                  <span className="font-semibold text-navy text-base">Meal Planner</span>
+                  <span className="text-xs text-muted-foreground mt-1">Plan your weekly meals</span>
                 </Link>
               </Button>
-              <Button asChild size="lg" className="bg-white border shadow hover:bg-sage/10 flex-1 flex flex-col items-center py-2 group transition-all h-auto">
+              <Button asChild size="lg" className="bg-white border shadow hover:bg-sage/10 flex-1 flex flex-col items-center py-5 group transition-all">
                 <Link to="/recipes" className="flex flex-col items-center w-full">
-                  <div className="w-full overflow-hidden">
+                  <span className="pb-2">
                     <img
-                      src="/lovable-uploads/Banana-Pancakes-08.png"
-                      className="w-full h-48 object-cover rounded-t-md"
+                      src="/lovable-uploads/02d17fd6-6699-46d2-9e0a-6031dfc6c617.png"
+                      className="h-24 w-24 object-cover rounded-full border mb-1"
                       alt="Recipes"
                     />
-                  </div>
-                  <div className="p-4 text-center">
-                    <span className="font-semibold text-navy text-lg mb-1 block">Recipe Collection</span>
-                    <span className="text-xs text-muted-foreground">Browse delicious recipes</span>
-                  </div>
+                  </span>
+                  <span className="font-semibold text-navy text-base">Recipe Collection</span>
+                  <span className="text-xs text-muted-foreground mt-1">Browse delicious recipes</span>
                 </Link>
               </Button>
-              <Button asChild size="lg" className="bg-white border shadow hover:bg-sage/10 flex-1 flex flex-col items-center py-2 group transition-all h-auto">
+              <Button asChild size="lg" className="bg-white border shadow hover:bg-sage/10 flex-1 flex flex-col items-center py-5 group transition-all">
                 <Link to="/shopping-list" className="flex flex-col items-center w-full">
-                  <div className="w-full overflow-hidden">
+                  <span className="pb-2 flex justify-center items-center h-24 w-24">
                     <img
                       src="/lovable-uploads/440d79e4-31b0-4eb2-a8d6-8437ee4b3c6a.png"
-                      className="w-full h-48 object-cover rounded-t-md"
+                      className="h-24 w-24 object-cover rounded-full border mb-1"
                       alt="Shopping List"
                     />
-                  </div>
-                  <div className="p-4 text-center">
-                    <span className="font-semibold text-navy text-lg mb-1 block">Shopping Lists</span>
-                    <span className="text-xs text-muted-foreground">Generate shopping lists</span>
-                  </div>
+                  </span>
+                  <span className="font-semibold text-navy text-base">Shopping Lists</span>
+                  <span className="text-xs text-muted-foreground mt-1">Generate shopping lists</span>
                 </Link>
               </Button>
             </div>
@@ -81,7 +75,7 @@ export default function Index() {
         <div className="container px-4">
           <div className="flex items-center justify-between mb-3">
             <div>
-              <h2 className="text-lg font-bold text-[#3d405b]">
+              <h2 className="text-lg font-bold text-white">
                 Latest Recipes
               </h2>
             </div>
