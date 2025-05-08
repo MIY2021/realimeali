@@ -17,7 +17,7 @@ export function RecipeCard({ recipe, onAddToMealPlan }: RecipeCardProps) {
   const [imgError, setImgError] = useState(false);
 
   return (
-    <Card className="overflow-hidden transition-all hover:shadow-md relative">
+    <Card className="overflow-hidden transition-all hover:shadow-md relative flex flex-col h-full">
       <Link to={`/recipes/${id}`}>
         <div className="aspect-video w-full overflow-hidden bg-muted relative">
           {!imgError && image ? (
@@ -58,7 +58,7 @@ export function RecipeCard({ recipe, onAddToMealPlan }: RecipeCardProps) {
           ))}
         </div>
       </CardHeader>
-      <CardContent className="p-4 pt-2">
+      <CardContent className="p-4 pt-2 flex-grow">
         <p className="text-sm text-muted-foreground line-clamp-2">{description}</p>
         <div className="mt-3">
           <div className="flex items-center gap-4 mb-2">
@@ -71,30 +71,29 @@ export function RecipeCard({ recipe, onAddToMealPlan }: RecipeCardProps) {
               <span>{servings}</span>
             </span>
           </div>
-          {onAddToMealPlan && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="w-full text-xs hover:bg-terracotta hover:text-white flex items-center justify-center"
-              onClick={(e) => { e.preventDefault(); onAddToMealPlan(recipe); }}
-            >
-              <Plus className="h-4 w-4 mr-1" />
-              <span>Add to Meal Plan</span>
-            </Button>
-          )}
         </div>
       </CardContent>
-      <CardFooter className="flex items-center justify-between p-4 pt-0 text-sm text-muted-foreground">
-        <div className="flex gap-1">
+      <CardFooter className="flex flex-col items-start justify-between p-4 pt-0 text-sm text-muted-foreground space-y-2">
+        <Button
+          variant="outline"
+          size="sm"
+          className="w-full text-xs hover:bg-terracotta hover:text-white"
+          asChild
+        >
+          <Link to={`/recipes/${id}`}>View Recipe</Link>
+        </Button>
+        
+        {onAddToMealPlan && (
           <Button
-            variant="ghost"
+            variant="outline"
             size="sm"
-            className="text-xs hover:bg-terracotta hover:text-white"
-            asChild
+            className="w-full text-xs hover:bg-terracotta hover:text-white flex items-center justify-center"
+            onClick={(e) => { e.preventDefault(); onAddToMealPlan(recipe); }}
           >
-            <Link to={`/recipes/${id}`}>View Recipe</Link>
+            <Plus className="h-4 w-4 mr-1" />
+            <span>Add to Meal Plan</span>
           </Button>
-        </div>
+        )}
       </CardFooter>
     </Card>
   );

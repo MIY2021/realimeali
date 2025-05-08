@@ -10,6 +10,17 @@ import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
 import ShoppingListActions from "@/components/ShoppingListActions";
 import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface Ingredient {
   name: string;
@@ -52,6 +63,10 @@ export default function ShoppingList() {
   const [newItemUnit, setNewItemUnit] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Pantry");
   const { toast } = useToast();
+  
+  // New state for confirmation dialog
+  const [itemToDelete, setItemToDelete] = useState<number | null>(null);
+  
   
   // Load the saved checked state from localStorage
   const loadCheckedState = (ingredientList: Ingredient[]) => {
@@ -177,15 +192,31 @@ export default function ShoppingList() {
     })));
   };
 
+  // Updated to use confirmation dialog
   const handleRemoveItem = (index: number) => {
-    const newIngredients = [...ingredients];
-    newIngredients.splice(index, 1);
-    setIngredients(newIngredients);
-
-    toast({
-      title: "Item removed",
-      description: "Ingredient removed from shopping list",
-    });
+    setItemToDelete(index);
+  };
+  
+  // New function to confirm deletion
+  const confirmRemoveItem = () => {
+    if (itemToDelete !== null) {
+      const newIngredients = [...ingredients];
+      newIngredients.splice(itemToDelete, 1);
+      setIngredients(newIngredients);
+  
+      toast({
+        title: "Item removed",
+        description: "Ingredient removed from shopping list",
+      });
+      
+      // Reset item to delete
+      setItemToDelete(null);
+    }
+  };
+  
+  // Cancel deletion
+  const cancelRemoveItem = () => {
+    setItemToDelete(null);
   };
 
   const handleRemoveAll = () => {
@@ -321,7 +352,7 @@ export default function ShoppingList() {
     }
   }
 
-  // Update: Handle copying just the ingredient name to clipboard
+  // Updated: Handle copying just the ingredient name to clipboard
   const handleCopyIngredient = (ingredient: string) => {
     navigator.clipboard.writeText(ingredient);
     toast({
@@ -467,7 +498,7 @@ export default function ShoppingList() {
                           <div className="text-xs text-muted-foreground mt-1">Custom item</div>
                         )}
                       </div>
-                      <div className="flex gap-1">
+                      <div className="flex gap-1 items-center">
                         <Button
                           variant="ghost"
                           size="sm"
@@ -478,6 +509,7 @@ export default function ShoppingList() {
                           <Copy className="h-4 w-4 text-muted-foreground hover:text-primary" />
                           <span className="sr-only">Copy</span>
                         </Button>
+                        <Separator orientation="vertical" className="h-4" />
                         <Button
                           variant="ghost"
                           size="sm"
@@ -496,6 +528,22 @@ export default function ShoppingList() {
           </Card>
         ))}
       </div>
+      
+      {/* Confirmation Dialog */}
+      <AlertDialog open={itemToDelete !== null} onOpenChange={(open) => !open && setItemToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove Item</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to remove this item from your shopping list?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={cancelRemoveItem}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmRemoveItem}>Remove</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

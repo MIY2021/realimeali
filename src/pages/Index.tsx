@@ -1,88 +1,77 @@
 
-import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { mockRecipes } from "@/data/recipes";
-import { RecipeCard } from "@/components/recipes/RecipeCard";
+import { Button } from "@/components/ui/button";
+import { 
+  UtensilsCrossed, 
+  CalendarDays, 
+  ListChecks,
+} from "lucide-react";
 
 export default function Index() {
-  const uniqueByTitle = (recipes: typeof mockRecipes) => {
-    const seen = new Set();
-    return recipes.filter((r) => {
-      const key = r.title.trim().toLowerCase();
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    });
-  };
-  const latestRecipes = uniqueByTitle(mockRecipes)
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-    .slice(0, 3);
-
   return (
-    <div className="flex flex-col min-h-screen">
-      <section className="py-8 bg-gradient-to-b from-[#ffe5cb] to-[#fff3e0]">
-        <div className="container px-4">
-          <div className="flex flex-col items-center space-y-2 text-center">
-            <h1 className="text-xl font-bold sm:text-2xl md:text-3xl text-navy">
-              RealiMeali: Your Family&apos;s Meal Planning Hub
-            </h1>
-            <div className="flex flex-col sm:flex-row gap-4 mt-4 w-full max-w-lg justify-center">
-              <Button asChild size="lg" className="bg-white border shadow hover:bg-sage/10 flex-1 flex flex-col items-center py-5 group transition-all">
-                <Link to="/meal-planner" className="flex flex-col items-center w-full h-full">
-                  <div className="pb-2 flex justify-center items-center">
-                    <img
-                      src="/lovable-uploads/f5e80761-ddc5-48b2-80d2-54be701453a3.png"
-                      className="h-24 w-24 object-cover rounded-full border mb-1"
-                      alt="Meal Planner"
-                    />
-                  </div>
-                  <span className="font-semibold text-navy text-base">Meal Planner</span>
-                  <span className="text-xs text-muted-foreground mt-1">Plan your weekly meals</span>
-                </Link>
-              </Button>
-              <Button asChild size="lg" className="bg-white border shadow hover:bg-sage/10 flex-1 flex flex-col items-center py-5 group transition-all">
-                <Link to="/recipes" className="flex flex-col items-center w-full h-full">
-                  <div className="pb-2 flex justify-center items-center">
-                    <img
-                      src="/lovable-uploads/02d17fd6-6699-46d2-9e0a-6031dfc6c617.png"
-                      className="h-24 w-24 object-cover rounded-full border mb-1"
-                      alt="Recipes"
-                    />
-                  </div>
-                  <span className="font-semibold text-navy text-base">Recipe Collection</span>
-                  <span className="text-xs text-muted-foreground mt-1">Browse delicious recipes</span>
-                </Link>
-              </Button>
-              <Button asChild size="lg" className="bg-white border shadow hover:bg-sage/10 flex-1 flex flex-col items-center py-5 group transition-all">
-                <Link to="/shopping-list" className="flex flex-col items-center w-full h-full">
-                  <div className="pb-2 flex justify-center items-center">
-                    <img
-                      src="/lovable-uploads/440d79e4-31b0-4eb2-a8d6-8437ee4b3c6a.png"
-                      className="h-24 w-24 object-cover rounded-full border mb-1"
-                      alt="Shopping List"
-                    />
-                  </div>
-                  <span className="font-semibold text-navy text-base">Shopping Lists</span>
-                  <span className="text-xs text-muted-foreground mt-1">Generate shopping lists</span>
-                </Link>
-              </Button>
+    <div className="flex flex-col min-h-[85vh]">
+      <section className="py-12 md:py-24 lg:py-32 bg-white">
+        <div className="container px-4 md:px-6">
+          <div className="flex flex-col items-center space-y-4 text-center">
+            <div className="space-y-2">
+              <h1 className="text-3xl font-bold tracking-tighter text-navy sm:text-4xl md:text-5xl lg:text-6xl">
+                Welcome to FoodHaven
+              </h1>
+              <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl">
+                Your all-in-one meal planning and recipe management system to make cooking easier.
+              </p>
             </div>
           </div>
         </div>
       </section>
-      <section className="py-4" style={{ background: "#e48568" }}>
-        <div className="container px-4">
-          <div className="flex items-center justify-between mb-3">
-            <div>
-              <h2 className="text-lg font-bold text-white">
-                Latest Recipes
-              </h2>
+
+      <section className="py-8 md:py-12 bg-gray-50 flex-grow">
+        <div className="container px-4 md:px-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-10">
+            <div className="group relative overflow-hidden rounded-lg border bg-white p-6 shadow-md transition-all hover:shadow-lg md:min-h-[300px]">
+              <div className="flex flex-col items-center text-center space-y-4">
+                <div className="rounded-full bg-terracotta/10 p-4">
+                  <UtensilsCrossed className="h-10 w-10 text-terracotta" />
+                </div>
+                <h2 className="text-xl font-bold text-navy">Recipes</h2>
+                <p className="text-muted-foreground mb-4">
+                  Browse and manage your favorite recipes all in one place.
+                </p>
+                <Button className="mt-auto" asChild>
+                  <Link to="/recipes">View Recipes</Link>
+                </Button>
+              </div>
             </div>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {latestRecipes.map((recipe) => (
-              <RecipeCard key={recipe.id} recipe={recipe} />
-            ))}
+
+            <div className="group relative overflow-hidden rounded-lg border bg-white p-6 shadow-md transition-all hover:shadow-lg md:min-h-[300px]">
+              <div className="flex flex-col items-center text-center space-y-4">
+                <div className="rounded-full bg-sage/10 p-4">
+                  <CalendarDays className="h-10 w-10 text-sage" />
+                </div>
+                <h2 className="text-xl font-bold text-navy">Meal Planner</h2>
+                <p className="text-muted-foreground mb-4">
+                  Plan your meals for the week and simplify your cooking schedule.
+                </p>
+                <Button className="mt-auto" asChild>
+                  <Link to="/meal-planner">Go to Planner</Link>
+                </Button>
+              </div>
+            </div>
+
+            <div className="group relative overflow-hidden rounded-lg border bg-white p-6 shadow-md transition-all hover:shadow-lg md:min-h-[300px]">
+              <div className="flex flex-col items-center text-center space-y-4">
+                <div className="rounded-full bg-navy/10 p-4">
+                  <ListChecks className="h-10 w-10 text-navy" />
+                </div>
+                <h2 className="text-xl font-bold text-navy">Shopping List</h2>
+                <p className="text-muted-foreground mb-4">
+                  Generate and manage shopping lists based on your meal plans.
+                </p>
+                <Button className="mt-auto" asChild>
+                  <Link to="/shopping-list">View Shopping List</Link>
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
       </section>
