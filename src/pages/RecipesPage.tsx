@@ -16,15 +16,11 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 
-const MEAL_TYPES: MealType[] = ["dinner", "lunch", "breakfast"];
+const MEAL_TYPES: MealType[] = ["dinner", "lunch", "breakfast", "snacks"];
 
 export default function RecipesPage() {
   const [recipes, setRecipes] = useState(mockRecipes);
   const { toast } = useToast();
-
-  // --- Add-to-meal plan state
-  const [addToMealRecipe, setAddToMealRecipe] = useState<Recipe | null>(null);
-  const [showMealTypeDialog, setShowMealTypeDialog] = useState(false);
 
   // New recipe state
   const [showNewRecipeDialog, setShowNewRecipeDialog] = useState(false);
@@ -119,35 +115,12 @@ export default function RecipesPage() {
     });
   };
 
-  // --- New: Add-to-meal plan, week selection ---
-  const [addToMealWeek, setAddToMealWeek] = useState<1 | 2 | null>(null);
-
-  // Update: When user opens Add to Meal Plan dialog, reset week
-  const handleAddToMealPlan = (recipe: Recipe) => {
-    setAddToMealRecipe(recipe);
-    setShowMealTypeDialog(true);
-    setAddToMealWeek(null);
-  };
-
-  // Update: When user selects meal type, require week selection first
-  const handleSelectMealType = (mealType: MealType) => {
-    if (!addToMealWeek) {
-      toast({
-        title: "Select Week",
-        description: "Please select which week to add this meal to.",
-        variant: "destructive"
-      });
-      return;
-    }
-    if (addToMealRecipe) {
-      toast({
-        title: "Recipe Added",
-        description: `Added ${addToMealRecipe.title} to your ${mealType} meal plan (Week ${addToMealWeek})!`,
-      });
-    }
-    setAddToMealRecipe(null);
-    setShowMealTypeDialog(false);
-    setAddToMealWeek(null);
+  // --- Add-to-meal plan handler ---
+  const handleAddToMealPlan = (recipe: Recipe, mealType: MealType, selectedWeek: 1 | 2) => {
+    toast({
+      title: "Recipe Added",
+      description: `Added ${recipe.title} to your ${mealType} meal plan (Week ${selectedWeek})!`,
+    });
   };
 
   return (
@@ -174,46 +147,6 @@ export default function RecipesPage() {
         recipes={recipes}
         onAddToMealPlan={handleAddToMealPlan}
       />
-
-      {/* --- Updated dialog with week selection --- */}
-      <Dialog open={showMealTypeDialog && !!addToMealRecipe} onOpenChange={open => !open && setShowMealTypeDialog(false)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              Add to Meal Plan
-            </DialogTitle>
-          </DialogHeader>
-          <div className="mb-4">
-            <div className="text-lg font-semibold">{addToMealRecipe?.title}</div>
-            <div className="text-sm text-muted-foreground">{addToMealRecipe?.description}</div>
-          </div>
-          <div className="flex flex-col gap-2 mb-2">
-            <label className="font-semibold text-sm mb-1">Select Week</label>
-            <div className="flex gap-2">
-              {[1, 2].map((wk) => (
-                <Button
-                  key={wk}
-                  variant={addToMealWeek === wk ? "default" : "outline"}
-                  className={addToMealWeek === wk ? "bg-terracotta text-white" : ""}
-                  onClick={() => setAddToMealWeek(wk as 1 | 2)}
-                >
-                  Week {wk}
-                </Button>
-              ))}
-            </div>
-          </div>
-          <div className="flex flex-col gap-2">
-            {MEAL_TYPES.map(type => (
-              <Button key={type} onClick={() => handleSelectMealType(type)}>
-                Add to {type.charAt(0).toUpperCase() + type.slice(1)}
-              </Button>
-            ))}
-            <Button variant="outline" onClick={() => setShowMealTypeDialog(false)}>
-              Cancel
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
 
       {/* Create Recipe Dialog */}
       <CreateRecipeDialog

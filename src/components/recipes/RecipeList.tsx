@@ -8,11 +8,10 @@ import { Clock } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { MealType } from "@/types";
 import { useToast } from "@/hooks/use-toast";
-import { useNavigate } from "react-router-dom";
 
 interface RecipeListProps {
   recipes: Recipe[];
-  onAddToMealPlan?: (recipe: Recipe) => void;
+  onAddToMealPlan?: (recipe: Recipe, mealType: MealType, week: 1 | 2) => void;
 }
 
 export function RecipeList({ recipes, onAddToMealPlan }: RecipeListProps) {
@@ -26,7 +25,6 @@ export function RecipeList({ recipes, onAddToMealPlan }: RecipeListProps) {
   const [mealTypeDialogOpen, setMealTypeDialogOpen] = useState(false);
   const [selectedWeek, setSelectedWeek] = useState<1 | 2 | null>(null);
   const { toast } = useToast();
-  const navigate = useNavigate();
 
   // Get all unique categories present in the recipes
   const allCategoriesSet = new Set<string>();
@@ -81,25 +79,20 @@ export function RecipeList({ recipes, onAddToMealPlan }: RecipeListProps) {
       return;
     }
 
-    if (selectedRecipe) {
-      toast({
-        title: "Recipe Added",
-        description: `Added ${selectedRecipe.title} to your ${mealType} meal plan (Week ${selectedWeek})!`,
-      });
+    if (selectedRecipe && onAddToMealPlan) {
+      // Call the parent handler with recipe, meal type and selected week
+      onAddToMealPlan(selectedRecipe, mealType, selectedWeek);
       
       // Close the dialog and reset state
       setMealTypeDialogOpen(false);
       setSelectedRecipe(null);
       setSelectedWeek(null);
-      
-      // Navigate to meal planner page
-      navigate("/meal-planner");
     }
   };
 
   const visibleRecipes = sortedRecipes.slice(0, displayCount);
   const hasMoreRecipes = displayCount < sortedRecipes.length;
-  const mealTypes: MealType[] = ["dinner", "lunch", "breakfast"];
+  const mealTypes: MealType[] = ["dinner", "lunch", "breakfast", "snacks"];
 
   return (
     <div className="space-y-6">
