@@ -10,12 +10,12 @@ import {
 export default function Index() {
   return (
     <div className="flex flex-col min-h-[85vh]">
-      <section className="py-12 md:py-24 lg:py-32 bg-white">
+      <section className="py-8 md:py-16 lg:py-20 bg-white">
         <div className="container px-4 md:px-6">
           <div className="flex flex-col items-center space-y-4 text-center">
             <div className="space-y-2">
               <h1 className="text-3xl font-bold tracking-tighter text-navy sm:text-4xl md:text-5xl lg:text-6xl">
-                Welcome to FoodHaven
+                Welcome to RealiMeali
               </h1>
               <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl">
                 Your all-in-one meal planning and recipe management system to make cooking easier.
