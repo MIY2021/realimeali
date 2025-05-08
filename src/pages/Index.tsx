@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { mockRecipes } from "@/data/recipes";
 import { RecipeCard } from "@/components/recipes/RecipeCard";
-import { ListChecks } from "lucide-react";
 
 export default function Index() {
   const uniqueByTitle = (recipes: typeof mockRecipes) => {
@@ -29,40 +28,40 @@ export default function Index() {
             </h1>
             <div className="flex flex-col sm:flex-row gap-4 mt-4 w-full max-w-lg justify-center">
               <Button asChild size="lg" className="bg-white border shadow hover:bg-sage/10 flex-1 flex flex-col items-center py-5 group transition-all">
-                <Link to="/meal-planner" className="flex flex-col items-center w-full">
-                  <span className="pb-2">
+                <Link to="/meal-planner" className="flex flex-col items-center w-full h-full">
+                  <div className="pb-2 flex justify-center items-center">
                     <img
                       src="/lovable-uploads/f5e80761-ddc5-48b2-80d2-54be701453a3.png"
                       className="h-24 w-24 object-cover rounded-full border mb-1"
                       alt="Meal Planner"
                     />
-                  </span>
+                  </div>
                   <span className="font-semibold text-navy text-base">Meal Planner</span>
                   <span className="text-xs text-muted-foreground mt-1">Plan your weekly meals</span>
                 </Link>
               </Button>
               <Button asChild size="lg" className="bg-white border shadow hover:bg-sage/10 flex-1 flex flex-col items-center py-5 group transition-all">
-                <Link to="/recipes" className="flex flex-col items-center w-full">
-                  <span className="pb-2">
+                <Link to="/recipes" className="flex flex-col items-center w-full h-full">
+                  <div className="pb-2 flex justify-center items-center">
                     <img
                       src="/lovable-uploads/02d17fd6-6699-46d2-9e0a-6031dfc6c617.png"
                       className="h-24 w-24 object-cover rounded-full border mb-1"
                       alt="Recipes"
                     />
-                  </span>
+                  </div>
                   <span className="font-semibold text-navy text-base">Recipe Collection</span>
                   <span className="text-xs text-muted-foreground mt-1">Browse delicious recipes</span>
                 </Link>
               </Button>
               <Button asChild size="lg" className="bg-white border shadow hover:bg-sage/10 flex-1 flex flex-col items-center py-5 group transition-all">
-                <Link to="/shopping-list" className="flex flex-col items-center w-full">
-                  <span className="pb-2 flex justify-center items-center h-24 w-24">
+                <Link to="/shopping-list" className="flex flex-col items-center w-full h-full">
+                  <div className="pb-2 flex justify-center items-center">
                     <img
                       src="/lovable-uploads/440d79e4-31b0-4eb2-a8d6-8437ee4b3c6a.png"
                       className="h-24 w-24 object-cover rounded-full border mb-1"
                       alt="Shopping List"
                     />
-                  </span>
+                  </div>
                   <span className="font-semibold text-navy text-base">Shopping Lists</span>
                   <span className="text-xs text-muted-foreground mt-1">Generate shopping lists</span>
                 </Link>

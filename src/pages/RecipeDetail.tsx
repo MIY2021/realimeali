@@ -54,7 +54,7 @@ export default function RecipeDetailPage() {
       <RecipeDetailComponent 
         recipe={recipe} 
         onAddToMealPlan={() => navigate("/meal-planner")}
-        onEdit={handleEdit}
+        onEdit={() => handleEdit(recipe)}
       />
 
       {recipe && (

@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { mockMealPlans } from "@/data/mealPlans";
 import { mockRecipes } from "@/data/recipes";
 import { Recipe } from "@/types";
-import { ListChecks, Share, Check, Trash2, Plus } from "lucide-react";
+import { ListChecks, Share, Check, Trash2, Plus, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -321,6 +321,15 @@ export default function ShoppingList() {
     }
   }
 
+  // Add function to handle copying ingredient to clipboard
+  const handleCopyIngredient = (ingredient: string) => {
+    navigator.clipboard.writeText(ingredient);
+    toast({
+      title: "Copied",
+      description: `"${ingredient}" copied to clipboard`,
+    });
+  };
+
   const categorizedIngredients = categorizeIngredients();
   const checkedCount = ingredients.filter(i => i.checked).length;
 
@@ -458,15 +467,27 @@ export default function ShoppingList() {
                           <div className="text-xs text-muted-foreground mt-1">Custom item</div>
                         )}
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleRemoveItem(originalIndex)}
-                        className="h-7 w-7 p-0"
-                      >
-                        <Trash2 className="h-4 w-4 text-muted-foreground hover:text-destructive" />
-                        <span className="sr-only">Remove</span>
-                      </Button>
+                      <div className="flex gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleCopyIngredient(ingredient.name)}
+                          className="h-7 w-7 p-0"
+                          title="Copy ingredient name"
+                        >
+                          <Copy className="h-4 w-4 text-muted-foreground hover:text-primary" />
+                          <span className="sr-only">Copy</span>
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleRemoveItem(originalIndex)}
+                          className="h-7 w-7 p-0"
+                        >
+                          <Trash2 className="h-4 w-4 text-muted-foreground hover:text-destructive" />
+                          <span className="sr-only">Remove</span>
+                        </Button>
+                      </div>
                     </li>
                   );
                 })}

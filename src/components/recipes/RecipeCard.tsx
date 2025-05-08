@@ -41,7 +41,8 @@ export function RecipeCard({ recipe, onAddToMealPlan }: RecipeCardProps) {
         <div className="flex justify-between items-start">
           <Link
             to={`/recipes/${id}`}
-            className="text-lg font-semibold hover:text-terracotta transition-colors line-clamp-1"
+            className="text-lg font-semibold hover:text-terracotta transition-colors"
+            title={title}
           >
             {title}
           </Link>
@@ -86,6 +87,7 @@ export function RecipeCard({ recipe, onAddToMealPlan }: RecipeCardProps) {
               size="icon"
               title="Add to Meal Plan"
               onClick={(e) => { e.preventDefault(); onAddToMealPlan(recipe); }}
+              className="flex-shrink-0"
             >
               <Plus className="h-4 w-4" />
             </Button>
