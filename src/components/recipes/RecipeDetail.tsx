@@ -1,7 +1,6 @@
-
 import { Recipe } from "@/types";
 import { Button } from "@/components/ui/button";
-import { CalendarDays, Clock, Edit, Share, Users } from "lucide-react";
+import { CalendarDays, Clock, Pencil, Share, Users } from "lucide-react";
 
 interface RecipeDetailProps {
   recipe: Recipe;
@@ -45,6 +44,7 @@ export function RecipeDetail({ recipe, onAddToMealPlan, onEdit }: RecipeDetailPr
             )}
           </div>
         </div>
+        
         <div className="md:w-1/2 space-y-4">
           <h1 className="text-3xl font-bold text-navy">{recipe.title}</h1>
           <div className="flex flex-wrap gap-2">
@@ -75,22 +75,22 @@ export function RecipeDetail({ recipe, onAddToMealPlan, onEdit }: RecipeDetailPr
               <Users className="h-4 w-4 text-terracotta" />
               <span>Serves: {recipe.servings}</span>
             </div>
-          </div>
-          <div className="flex flex-wrap gap-3 pt-2">
             <Button 
               variant="outline" 
-              className="flex items-center gap-1"
+              className="flex items-center gap-1 w-full md:w-auto"
               onClick={() => onAddToMealPlan?.(recipe)}
             >
               <CalendarDays className="h-4 w-4" />
               <span>Add to Meal Plan</span>
             </Button>
+          </div>
+          <div className="flex flex-wrap gap-3 pt-2">
             <Button
               variant="outline"
               className="flex items-center gap-1"
               onClick={() => onEdit?.(recipe)}
             >
-              <Edit className="h-4 w-4" />
+              <Pencil className="h-4 w-4" />
               <span>Edit Recipe</span>
             </Button>
             <Button variant="outline" className="flex items-center gap-1">

@@ -30,4 +30,6 @@ declare module 'lucide-react' {
   export const FileSpreadsheet: LucideIcon;
   export const ListChecks: LucideIcon;
   export const Shuffle: LucideIcon;
+  export const Copy: LucideIcon;
+  export const Pencil: LucideIcon;
 }

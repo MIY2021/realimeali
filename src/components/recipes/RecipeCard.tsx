@@ -60,18 +60,31 @@ export function RecipeCard({ recipe, onAddToMealPlan }: RecipeCardProps) {
       </CardHeader>
       <CardContent className="p-4 pt-2">
         <p className="text-sm text-muted-foreground line-clamp-2">{description}</p>
+        <div className="mt-3">
+          <div className="flex items-center gap-4 mb-2">
+            <span className="flex items-center gap-1">
+              <Clock className="h-3.5 w-3.5" />
+              <span>{totalTime} min</span>
+            </span>
+            <span className="flex items-center gap-1">
+              <Users className="h-3.5 w-3.5" />
+              <span>{servings}</span>
+            </span>
+          </div>
+          {onAddToMealPlan && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full text-xs hover:bg-terracotta hover:text-white flex items-center justify-center"
+              onClick={(e) => { e.preventDefault(); onAddToMealPlan(recipe); }}
+            >
+              <Plus className="h-4 w-4 mr-1" />
+              <span>Add to Meal Plan</span>
+            </Button>
+          )}
+        </div>
       </CardContent>
       <CardFooter className="flex items-center justify-between p-4 pt-0 text-sm text-muted-foreground">
-        <div className="flex items-center gap-4">
-          <span className="flex items-center gap-1">
-            <Clock className="h-3.5 w-3.5" />
-            <span>{totalTime} min</span>
-          </span>
-          <span className="flex items-center gap-1">
-            <Users className="h-3.5 w-3.5" />
-            <span>{servings}</span>
-          </span>
-        </div>
         <div className="flex gap-1">
           <Button
             variant="ghost"
@@ -81,17 +94,6 @@ export function RecipeCard({ recipe, onAddToMealPlan }: RecipeCardProps) {
           >
             <Link to={`/recipes/${id}`}>View Recipe</Link>
           </Button>
-          {onAddToMealPlan && (
-            <Button
-              variant="outline"
-              size="icon"
-              title="Add to Meal Plan"
-              onClick={(e) => { e.preventDefault(); onAddToMealPlan(recipe); }}
-              className="flex-shrink-0"
-            >
-              <Plus className="h-4 w-4" />
-            </Button>
-          )}
         </div>
       </CardFooter>
     </Card>

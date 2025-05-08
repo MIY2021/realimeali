@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Recipe, RecipeCategory } from "@/types";
 import {
@@ -10,7 +9,8 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash, X } from "lucide-react";
+// Fix the import to use Trash2 instead of Trash
+import { Plus, Trash2, X } from "lucide-react";
 
 interface CreateRecipeDialogProps {
   open: boolean;
@@ -20,45 +20,33 @@ interface CreateRecipeDialogProps {
 
 // List of available categories
 const AVAILABLE_CATEGORIES: RecipeCategory[] = [
-  "Bulk", "Easy", "Cheap", "Healthy", "Vegetarian", "Fish", 
-  "Super Tasty", "Pasta", "Tapas", "Winter", "BBQ", 
+  "Bulk", "Easy", "Cheap", "Healthy", "Vegetarian", "Fish",
+  "Super Tasty", "Pasta", "Tapas", "Winter", "BBQ",
   "Faffy", "Pricey!", "Not Yet Made"
 ];
 
 export function CreateRecipeDialog({ open, onOpenChange, onSave }: CreateRecipeDialogProps) {
   const { toast } = useToast();
-  const [newRecipe, setNewRecipe] = useState<Omit<Recipe, 'id' | 'createdAt' | 'updatedAt' | 'createdBy' | 'isFavorite'>>({
+  const [newRecipe, setNewRecipe] = useState<Recipe>({
+    id: `recipe-${Date.now()}`,
     title: "",
     description: "",
     ingredients: [],
     instructions: [],
     categories: [],
-    prepTime: 15,
-    cookTime: 30,
-    servings: 4,
+    prepTime: 0,
+    cookTime: 0,
+    servings: 1,
+    image: undefined,
+    createdBy: "user-1",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    isFavorite: false,
   });
-  
   const [newCategory, setNewCategory] = useState("");
   const [newIngredient, setNewIngredient] = useState("");
   const [newInstruction, setNewInstruction] = useState("");
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-
-  const resetForm = () => {
-    setNewRecipe({
-      title: "",
-      description: "",
-      ingredients: [],
-      instructions: [],
-      categories: [],
-      prepTime: 15,
-      cookTime: 30,
-      servings: 4,
-    });
-    setNewCategory("");
-    setNewIngredient("");
-    setNewInstruction("");
-    setImagePreview(null);
-  };
 
   const handleSave = () => {
     // Basic validation
@@ -89,19 +77,7 @@ export function CreateRecipeDialog({ open, onOpenChange, onSave }: CreateRecipeD
       return;
     }
 
-    const now = new Date().toISOString();
-    
-    const finalRecipe: Recipe = {
-      ...newRecipe,
-      id: `recipe-${Date.now()}`,
-      createdAt: now,
-      updatedAt: now,
-      createdBy: "user-1",
-      isFavorite: false,
-    };
-
-    onSave(finalRecipe);
-    resetForm();
+    onSave(newRecipe);
   };
 
   const handleAddCategory = () => {
@@ -175,13 +151,7 @@ export function CreateRecipeDialog({ open, onOpenChange, onSave }: CreateRecipeD
   };
 
   return (
-    <Dialog 
-      open={open} 
-      onOpenChange={(newOpen) => {
-        if (!newOpen) resetForm();
-        onOpenChange(newOpen);
-      }}
-    >
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Create New Recipe</DialogTitle>
@@ -196,7 +166,6 @@ export function CreateRecipeDialog({ open, onOpenChange, onSave }: CreateRecipeD
                 value={newRecipe.title}
                 onChange={(e) => setNewRecipe({ ...newRecipe, title: e.target.value })}
                 className="w-full p-2 border rounded"
-                placeholder="Recipe title"
               />
             </div>
 
@@ -207,7 +176,6 @@ export function CreateRecipeDialog({ open, onOpenChange, onSave }: CreateRecipeD
                 onChange={(e) => setNewRecipe({ ...newRecipe, description: e.target.value })}
                 className="w-full p-2 border rounded"
                 rows={3}
-                placeholder="Brief description of the recipe"
               />
             </div>
 
@@ -333,7 +301,7 @@ export function CreateRecipeDialog({ open, onOpenChange, onSave }: CreateRecipeD
                       onClick={() => handleRemoveIngredient(index)}
                       className="text-red-500 h-6 w-6"
                     >
-                      <Trash className="h-4 w-4" />
+                      <Trash2 className="h-4 w-4" />
                     </Button>
                   </li>
                 ))}
@@ -373,7 +341,7 @@ export function CreateRecipeDialog({ open, onOpenChange, onSave }: CreateRecipeD
                       onClick={() => handleRemoveInstruction(index)}
                       className="text-red-500 h-6 w-6"
                     >
-                      <Trash className="h-4 w-4" />
+                      <Trash2 className="h-4 w-4" />
                     </Button>
                   </li>
                 ))}
@@ -382,7 +350,7 @@ export function CreateRecipeDialog({ open, onOpenChange, onSave }: CreateRecipeD
                 <textarea
                   value={newInstruction}
                   onChange={(e) => setNewInstruction(e.target.value)}
-                  placeholder="Add instruction step"
+                  placeholder="Add instruction"
                   className="flex-1 p-2 border rounded"
                   rows={2}
                   onKeyDown={(e) => {
@@ -402,13 +370,10 @@ export function CreateRecipeDialog({ open, onOpenChange, onSave }: CreateRecipeD
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => {
-            resetForm();
-            onOpenChange(false);
-          }}>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={handleSave}>Save Recipe</Button>
+          <Button onClick={handleSave}>Create Recipe</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -321,7 +321,7 @@ export default function ShoppingList() {
     }
   }
 
-  // Add function to handle copying ingredient to clipboard
+  // Update: Handle copying just the ingredient name to clipboard
   const handleCopyIngredient = (ingredient: string) => {
     navigator.clipboard.writeText(ingredient);
     toast({
