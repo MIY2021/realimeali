@@ -22,7 +22,8 @@ export type RecipeCategory =
   | "Faffy"
   | "Pricey!"
   | "Not Yet Made"
-  | "Snacks";
+  | "Snacks"
+  | "Breakfast"; // Added Breakfast category
 
 export type Recipe = {
   id: string;
@@ -54,4 +55,3 @@ export type MealPlan = {
   updatedAt: string;
   slotIndex: number;
 };
-

@@ -48,6 +48,14 @@ export default function MealPlanner() {
   // - Helper to get all unique recipe IDs in plan
   const allUsedIds = new Set(mealPlans.map(mp => mp.recipeId));
 
+  // Mapping each meal type to appropriate recipe categories
+  const mealTypeToCategories: Record<MealType, RecipeCategory[]> = {
+    dinner: ["Bulk", "Pasta", "Fish", "BBQ", "Super Tasty"],
+    lunch: ["Easy", "Cheap", "Vegetarian", "Tapas"],
+    breakfast: ["Breakfast", "Easy", "Healthy"], // Updated to include Breakfast category
+    snacks: ["Snacks"], // Updated to only include Snacks category
+  };
+
   // ---- Ensure unique random recipes ----
   function getUniqueRandomRecipes(
     availableRecipes: typeof mockRecipes,
@@ -79,12 +87,6 @@ export default function MealPlanner() {
         return;
     }
     const newMealPlans: MealPlan[] = [];
-    const mealTypeToCategories: Record<MealType, RecipeCategory[]> = {
-      dinner: ["Bulk", "Pasta", "Fish", "BBQ", "Super Tasty"],
-      lunch: ["Easy", "Cheap", "Vegetarian", "Tapas"],
-      breakfast: ["Easy", "Healthy", "Vegetarian"],
-      snacks: ["Easy", "Healthy", "Super Tasty", "Cheap"],
-    };
     let allSelectedIds = new Set<string>();
     mealTypes.forEach(type => {
       const unique = getUniqueRandomRecipes(
@@ -265,7 +267,11 @@ export default function MealPlanner() {
           open={addMealModal.open}
           onClose={() => setAddMealModal({ open: false, mealType: null })}
           mealType={addMealModal.mealType}
-          recipes={mockRecipes}
+          recipes={mockRecipes.filter(recipe => {
+            // Filter recipes based on meal type categories
+            const categories = mealTypeToCategories[addMealModal.mealType!];
+            return recipe.categories.some(cat => categories.includes(cat as RecipeCategory));
+          })}
           onSelectRecipe={(recipeId) => onAddMealFinish(addMealModal.mealType!, recipeId)}
         />
       )}
