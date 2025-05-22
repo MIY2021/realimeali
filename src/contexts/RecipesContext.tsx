@@ -3,6 +3,7 @@ import { createContext, useContext, useState, useEffect, ReactNode } from "react
 import { Recipe } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { mockRecipes } from "@/data/recipes";
 
 interface RecipesContextType {
   recipes: Recipe[];
@@ -27,10 +28,10 @@ export const RecipesProvider = ({ children }: { children: ReactNode }) => {
       
       // For now, let's load the recipes from the mock data
       // This would be replaced with a Supabase query once we have the recipes table set up
-      const { data: recipesData } = await import("@/data/recipes");
+      
       // We're using a timeout to simulate a network request
       setTimeout(() => {
-        setRecipes(recipesData.mockRecipes);
+        setRecipes(mockRecipes);
         setIsLoading(false);
       }, 500);
       
