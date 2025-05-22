@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { User, UtensilsCrossed, CalendarDays, Book, ListChecks } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const Header = () => {
   const { user, signOut } = useAuth();
@@ -32,14 +33,15 @@ const Header = () => {
 
         <div className="flex items-center space-x-3">
           {user ? (
-            <>
-              <span className="text-sm text-navy hidden md:inline-block">
-                {user.email}
-              </span>
-              <Button variant="ghost" size="sm" onClick={signOut}>
-                <span className="mr-1">Logout</span>
+            <div className="flex items-center space-x-2">
+              <Button variant="ghost" size="sm" onClick={signOut} className="mr-2">
+                Logout
               </Button>
-            </>
+              <Avatar className="h-8 w-8">
+                <AvatarImage src={user.user_metadata?.avatar_url} alt={user.email || "User"} />
+                <AvatarFallback>{user.email?.[0].toUpperCase() || "U"}</AvatarFallback>
+              </Avatar>
+            </div>
           ) : (
             <Button variant="ghost" size="sm" asChild>
               <Link to="/login" className="flex items-center space-x-1">

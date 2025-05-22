@@ -1,33 +1,55 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { RecipeDetail as RecipeDetailComponent } from "@/components/recipes/RecipeDetail";
-import { mockRecipes } from "@/data/recipes";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { Recipe } from "@/types";
 import { EditRecipeDialog } from "@/components/recipes/EditRecipeDialog";
+import { useRecipes } from "@/contexts/RecipesContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 export default function RecipeDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [recipe, setRecipe] = useState<Recipe | undefined>(undefined);
+  const { getRecipeById, isLoading } = useRecipes();
+  const { user } = useAuth();
+  const { toast } = useToast();
   const [showEditDialog, setShowEditDialog] = useState(false);
   
-  useEffect(() => {
-    // In a real app, this would be an API call
-    const foundRecipe = mockRecipes.find(r => r.id === id);
-    setRecipe(foundRecipe);
-  }, [id]);
+  const recipe = id ? getRecipeById(id) : undefined;
   
   const handleEdit = (recipe: Recipe) => {
+    if (!user) {
+      toast({
+        title: "Login Required",
+        description: "You need to log in to edit recipes.",
+        variant: "destructive",
+      });
+      return;
+    }
     setShowEditDialog(true);
   };
 
   const handleUpdateRecipe = (updatedRecipe: Recipe) => {
-    setRecipe(updatedRecipe);
+    // In a real app, we would update this in Supabase
+    // For now, just close the dialog
     setShowEditDialog(false);
+    
+    toast({
+      title: "Recipe Updated",
+      description: `${updatedRecipe.title} has been updated.`
+    });
   };
+  
+  if (isLoading) {
+    return (
+      <div className="container py-8 text-center">
+        <p>Loading recipe...</p>
+      </div>
+    );
+  }
   
   if (!recipe) {
     return (

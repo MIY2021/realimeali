@@ -1,8 +1,8 @@
 
 import { useParams, Link } from "react-router-dom";
-import { mockRecipes } from "@/data/recipes";
 import { RecipeCategory } from "@/types";
 import { RecipeCard } from "@/components/recipes/RecipeCard";
+import { useRecipes } from "@/contexts/RecipesContext";
 
 const isValidCategory = (cat: string): cat is RecipeCategory =>
   [
@@ -13,6 +13,7 @@ const isValidCategory = (cat: string): cat is RecipeCategory =>
 export default function CategoryPage() {
   const { category = "" } = useParams();
   const decoded = decodeURIComponent(category).trim();
+  const { recipes, isLoading } = useRecipes();
 
   if (!isValidCategory(decoded)) {
     return (
@@ -24,16 +25,24 @@ export default function CategoryPage() {
     );
   }
 
-  const recipes = mockRecipes.filter(r => r.categories.includes(decoded as RecipeCategory));
+  const filteredRecipes = recipes.filter(r => r.categories.includes(decoded as RecipeCategory));
+
+  if (isLoading) {
+    return (
+      <div className="container max-w-4xl py-8 text-center">
+        <p>Loading recipes...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="container max-w-4xl py-8">
       <h1 className="text-2xl font-bold text-navy mb-4">Recipes: {decoded}</h1>
-      {recipes.length === 0 ? (
+      {filteredRecipes.length === 0 ? (
         <p className="text-muted-foreground">No recipes found in this category.</p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {recipes.map(recipe => (
+          {filteredRecipes.map(recipe => (
             <RecipeCard key={recipe.id} recipe={recipe} />
           ))}
         </div>

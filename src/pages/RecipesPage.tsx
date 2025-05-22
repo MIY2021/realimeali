@@ -1,25 +1,18 @@
+
 import { useState } from "react";
 import { RecipeList } from "@/components/recipes/RecipeList";
 import { Button } from "@/components/ui/button";
 import { Plus, Book } from "lucide-react";
 import Papa from "papaparse";
 import { useToast } from "@/hooks/use-toast";
-import { RecipeCategory, Recipe, MealType } from "@/types";
-import { mockRecipes } from "@/data/recipes";
+import { MealType, Recipe, RecipeCategory } from "@/types";
 import { CreateRecipeDialog } from "@/components/recipes/CreateRecipeDialog";
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  DialogHeader,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
-
-const MEAL_TYPES: MealType[] = ["dinner", "lunch", "breakfast", "snacks"];
+import { useRecipes } from "@/contexts/RecipesContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function RecipesPage() {
-  const [recipes, setRecipes] = useState(mockRecipes);
+  const { recipes, isLoading, fetchRecipes } = useRecipes();
+  const { user } = useAuth();
   const { toast } = useToast();
 
   // New recipe state
@@ -71,17 +64,21 @@ export default function RecipesPage() {
                 cookTime: parseInt(r[headerMap.cookTime] || "0", 10),
                 servings: parseInt(r[headerMap.servings] || "1", 10),
                 image: r[headerMap.image],
-                createdBy: "user-1",
+                createdBy: user?.id || "anonymous",
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString(),
                 isFavorite: r[headerMap.isFavorite]?.toLowerCase() === "true",
               };
             });
-          setRecipes((prev) => [...prev, ...newRecipes]);
+          
           toast({
             title: "Meals Imported",
             description: `${newRecipes.length} recipes have been imported from CSV.`,
           });
+          
+          // In a real app, we would save these to Supabase
+          // For now, just refresh the recipes to show the mock data
+          fetchRecipes();
         } catch (error) {
           toast({
             title: "Import Error",
@@ -102,11 +99,21 @@ export default function RecipesPage() {
   };
 
   const handleAddNewRecipe = () => {
+    if (!user) {
+      toast({
+        title: "Login Required",
+        description: "You need to log in to create recipes.",
+        variant: "destructive",
+      });
+      return;
+    }
     setShowNewRecipeDialog(true);
   };
 
   const handleSaveNewRecipe = (newRecipe: Recipe) => {
-    setRecipes(prev => [newRecipe, ...prev]);
+    // In a real app, we would save this to Supabase
+    // For now, just refresh the recipes to show the mock data
+    fetchRecipes();
     setShowNewRecipeDialog(false);
 
     toast({
@@ -117,6 +124,15 @@ export default function RecipesPage() {
 
   // --- Add-to-meal plan handler ---
   const handleAddToMealPlan = (recipe: Recipe, mealType: MealType, selectedWeek: 1 | 2) => {
+    if (!user) {
+      toast({
+        title: "Login Required",
+        description: "You need to log in to add recipes to your meal plan.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     toast({
       title: "Recipe Added",
       description: `Added ${recipe.title} to your ${mealType} meal plan (Week ${selectedWeek})!`,
@@ -136,17 +152,26 @@ export default function RecipesPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button className="bg-terracotta hover:bg-terracotta/90" onClick={handleAddNewRecipe}>
+          <Button 
+            className="bg-terracotta hover:bg-terracotta/90" 
+            onClick={handleAddNewRecipe}
+          >
             <Plus className="h-4 w-4 mr-2" />
             Add New Recipe
           </Button>
         </div>
       </div>
 
-      <RecipeList
-        recipes={recipes}
-        onAddToMealPlan={handleAddToMealPlan}
-      />
+      {isLoading ? (
+        <div className="py-10 text-center">
+          <p className="text-muted-foreground">Loading recipes...</p>
+        </div>
+      ) : (
+        <RecipeList
+          recipes={recipes}
+          onAddToMealPlan={handleAddToMealPlan}
+        />
+      )}
 
       {/* Create Recipe Dialog */}
       <CreateRecipeDialog

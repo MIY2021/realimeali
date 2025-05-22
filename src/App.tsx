@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
+import { RecipesProvider } from "./contexts/RecipesContext";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 
 // Layout
@@ -30,26 +31,32 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-          <Routes>
-            {/* Public routes */}
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Login />} /> {/* Redirect signup to login since we're only using Google */}
-            
-            {/* Protected routes */}
-            <Route element={<ProtectedRoute />}>
+          <RecipesProvider>
+            <Routes>
+              {/* Public routes */}
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Login />} /> {/* Redirect signup to login since we're only using Google */}
+              
+              {/* Public routes with layout */}
               <Route element={<Layout />}>
                 <Route path="/" element={<Index />} />
                 <Route path="/recipes" element={<RecipesPage />} />
                 <Route path="/recipes/:id" element={<RecipeDetail />} />
                 <Route path="/category/:category" element={<CategoryPage />} />
-                <Route path="/meal-planner" element={<MealPlanner />} />
-                <Route path="/shopping-list" element={<ShoppingList />} />
               </Route>
-            </Route>
-            
-            {/* Not Found route */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+              
+              {/* Protected routes */}
+              <Route element={<ProtectedRoute />}>
+                <Route element={<Layout />}>
+                  <Route path="/meal-planner" element={<MealPlanner />} />
+                  <Route path="/shopping-list" element={<ShoppingList />} />
+                </Route>
+              </Route>
+              
+              {/* Not Found route */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </RecipesProvider>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
