@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { User, UtensilsCrossed, CalendarDays, Book, ListChecks, LogOut as LogOutIcon } from "lucide-react";
+import { User, UtensilsCrossed, CalendarDays, Book, ListChecks } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 const Header = () => {
@@ -37,8 +37,7 @@ const Header = () => {
                 {user.email}
               </span>
               <Button variant="ghost" size="sm" onClick={signOut}>
-                <LogOutIcon className="h-4 w-4 mr-1" />
-                <span>Logout</span>
+                <span className="mr-1">Logout</span>
               </Button>
             </>
           ) : (
