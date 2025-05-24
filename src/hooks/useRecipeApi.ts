@@ -56,6 +56,7 @@ export const useRecipeApi = () => {
         .single();
 
       if (error) {
+        console.error("Error creating recipe:", error);
         throw error;
       }
 

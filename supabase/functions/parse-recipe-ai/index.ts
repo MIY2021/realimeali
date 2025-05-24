@@ -215,10 +215,22 @@ serve(async (req) => {
       console.log('📝 Text input length:', recipeText.length);
       processedText = recipeText;
     }
-    // Handle image input
+    // Handle image input - IMPROVED OCR handling
     else if (imageUrl) {
-      console.log('🖼️ Image URL provided:', imageUrl.substring(0, 50) + '...');
+      console.log('🖼️ Image provided for OCR extraction');
       isImageInput = true;
+      
+      // Validate image format
+      if (!imageUrl.startsWith('data:image/')) {
+        console.error('❌ Invalid image format - must be base64 data URL');
+        return new Response(JSON.stringify({ 
+          error: 'Invalid image format. Please upload a valid image file.',
+          code: 'INVALID_IMAGE_FORMAT'
+        }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
     }
 
     const messages = [
@@ -241,19 +253,23 @@ serve(async (req) => {
         - Write a 1-2 sentence description
         - Clean up ingredients (remove extra spaces, standardize format)
         - Number instructions as separate array items
-        - Choose from these categories only: "Bulk", "Easy", "Cheap", "Healthy", "Vegetarian", "Fish", "Super Tasty", "Pasta", "Tapas", "Winter", "BBQ", "Faffy", "Pricey!", "Not Yet Made", "Snacks", "Breakfast"
+        - Choose from these categories only: "Bulk", "Easy", "Cheap", "Healthy", "Vegetarian", "Fish", "Super Tasty", "Pasta", "Tapas", "Winter", "BBQ", "Faffy", "Pricey", "Not-Yet-Made", "Snacks", "Breakfast"
         - Estimate prep/cook times in minutes if not provided
         - Estimate servings if not provided
+        - For images: ONLY extract text that is clearly visible in the image. Do not make up or assume recipe information that is not visible.
         - Return valid JSON only, no additional text`
       }
     ];
 
-    // Handle image or text input
+    // Handle image or text input with improved OCR instructions
     if (isImageInput) {
       messages.push({
         role: 'user',
         content: [
-          { type: 'text', text: 'Please extract the recipe information from this image:' },
+          { 
+            type: 'text', 
+            text: 'Please extract ONLY the recipe information that is clearly visible and readable in this image. Do not create or assume any recipe details that are not explicitly shown in the image. If the image does not contain enough recipe information, please indicate that in the response.' 
+          },
           { type: 'image_url', image_url: { url: imageUrl } }
         ]
       });
@@ -278,7 +294,7 @@ serve(async (req) => {
       hasSystemPrompt: messages[0].role === 'system',
       temperature: openAIRequest.temperature,
       maxTokens: openAIRequest.max_tokens,
-      inputType: websiteUrl ? 'website' : (isImageInput ? 'image' : 'text')
+      inputType: websiteUrl ? 'website' : (isImageInput ? 'image_ocr' : 'text')
     });
 
     let response;
@@ -304,7 +320,6 @@ serve(async (req) => {
     }
 
     console.log('🤖 OpenAI response status:', response.status);
-    console.log('📈 Response headers:', Object.fromEntries(response.headers.entries()));
     
     if (!response.ok) {
       let errorText;
@@ -349,13 +364,6 @@ serve(async (req) => {
     try {
       data = await response.json();
       console.log('✅ OpenAI response received successfully');
-      console.log('📊 Response structure:', {
-        hasChoices: !!data.choices,
-        choicesLength: data.choices?.length || 0,
-        hasFirstChoice: !!data.choices?.[0],
-        hasMessage: !!data.choices?.[0]?.message,
-        hasContent: !!data.choices?.[0]?.message?.content
-      });
     } catch (jsonError) {
       console.error('❌ Failed to parse OpenAI JSON response:', jsonError);
       return new Response(JSON.stringify({ 
@@ -380,25 +388,17 @@ serve(async (req) => {
 
     const content = data.choices[0].message.content;
     console.log('📝 AI response content length:', content.length);
-    console.log('🔍 AI response preview:', content.substring(0, 200) + '...');
     
     // Parse the JSON response
     let parsedRecipe;
     try {
       parsedRecipe = JSON.parse(content);
       console.log('✅ Successfully parsed recipe JSON');
-      console.log('📋 Recipe structure:', {
-        hasTitle: !!parsedRecipe.title,
-        hasIngredients: !!parsedRecipe.ingredients,
-        hasInstructions: !!parsedRecipe.instructions,
-        ingredientsCount: parsedRecipe.ingredients?.length || 0,
-        instructionsCount: parsedRecipe.instructions?.length || 0
-      });
     } catch (parseError) {
       console.error('❌ Failed to parse JSON:', parseError);
       console.error('🔍 Content that failed to parse:', content);
       return new Response(JSON.stringify({ 
-        error: 'AI returned invalid format. Please try again with clearer recipe text.',
+        error: 'AI returned invalid format. Please try again with clearer recipe text or image.',
         code: 'INVALID_AI_RESPONSE',
         details: content
       }), {
@@ -410,14 +410,14 @@ serve(async (req) => {
     // Validate required fields
     const requiredFields = ['title', 'ingredients', 'instructions'];
     for (const field of requiredFields) {
-      if (!parsedRecipe[field]) {
-        console.error(`❌ Missing required field: ${field}`);
+      if (!parsedRecipe[field] || (Array.isArray(parsedRecipe[field]) && parsedRecipe[field].length === 0)) {
+        console.error(`❌ Missing or empty required field: ${field}`);
         return new Response(JSON.stringify({ 
-          error: `Missing required field: ${field}`,
-          code: 'MISSING_REQUIRED_FIELD',
+          error: `The image or text does not contain enough ${field} information to create a complete recipe. Please try with a clearer image or more detailed text.`,
+          code: 'INSUFFICIENT_RECIPE_DATA',
           field: field
         }), {
-          status: 500,
+          status: 400,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
