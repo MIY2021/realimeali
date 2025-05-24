@@ -18,11 +18,11 @@ interface CreateRecipeDialogProps {
   onSave: (recipe: Omit<Recipe, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>) => void;
 }
 
-// List of available categories
+// List of available categories - fixed to match exact RecipeCategory type
 const AVAILABLE_CATEGORIES: RecipeCategory[] = [
   "Bulk", "Easy", "Cheap", "Healthy", "Vegetarian", "Fish",
   "Super Tasty", "Pasta", "Tapas", "Winter", "BBQ",
-  "Faffy", "Pricey", "Not-Yet-Made", "Snacks", "Breakfast"
+  "Faffy", "Pricey!", "Not Yet Made", "Snacks", "Breakfast"
 ];
 
 export function CreateRecipeDialog({ open, onOpenChange, onSave }: CreateRecipeDialogProps) {

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Recipe, RecipeCategory } from "@/types";
 import {
@@ -19,11 +20,11 @@ interface EditRecipeDialogProps {
   onSave: (recipe: Recipe) => void;
 }
 
-// List of available categories
+// List of available categories - fixed to match exact RecipeCategory type
 const AVAILABLE_CATEGORIES: RecipeCategory[] = [
   "Bulk", "Easy", "Cheap", "Healthy", "Vegetarian", "Fish", 
   "Super Tasty", "Pasta", "Tapas", "Winter", "BBQ", 
-  "Faffy", "Pricey", "Not-Yet-Made", "Snacks", "Breakfast"
+  "Faffy", "Pricey!", "Not Yet Made", "Snacks", "Breakfast"
 ];
 
 export function EditRecipeDialog({ recipe, open, onOpenChange, onSave }: EditRecipeDialogProps) {
