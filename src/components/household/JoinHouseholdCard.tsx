@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, CheckCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { useToast } from "@/hooks/use-toast";
@@ -17,11 +17,13 @@ export const JoinHouseholdCard = () => {
   const [householdCode, setHouseholdCode] = useState("");
   const [isRequesting, setIsRequesting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   const handleRequestJoin = async () => {
     if (!user) {
       const errorMsg = "Please log in to join a household.";
       setError(errorMsg);
+      setSuccess(null);
       toast({
         title: "Authentication Required", 
         description: errorMsg,
@@ -33,6 +35,7 @@ export const JoinHouseholdCard = () => {
     if (!householdCode.trim()) {
       const errorMsg = "Please enter a household code.";
       setError(errorMsg);
+      setSuccess(null);
       toast({
         title: "Code Required",
         description: errorMsg,
@@ -43,24 +46,34 @@ export const JoinHouseholdCard = () => {
 
     setIsRequesting(true);
     setError(null);
+    setSuccess(null);
     
     try {
       console.log("Attempting to join household with code:", householdCode.trim());
       const success = await requestToJoinHousehold(householdCode.trim());
       
       if (success) {
+        const successMsg = `Join request sent successfully! The household owner will review your request.`;
         setHouseholdCode("");
         setError(null);
+        setSuccess(successMsg);
         console.log("Successfully sent join request");
+        
+        toast({
+          title: "Request Sent!",
+          description: successMsg,
+        });
       } else {
         const errorMsg = "Failed to send join request. Please check the household code and try again.";
         setError(errorMsg);
+        setSuccess(null);
         console.log("Join request failed");
       }
     } catch (err) {
       console.error("Error in handleRequestJoin:", err);
       const errorMsg = "An unexpected error occurred. Please try again later.";
       setError(errorMsg);
+      setSuccess(null);
       toast({
         title: "Error",
         description: errorMsg,
@@ -87,6 +100,13 @@ export const JoinHouseholdCard = () => {
           </Alert>
         )}
         
+        {success && (
+          <Alert className="border-green-200 bg-green-50 text-green-800">
+            <CheckCircle className="h-4 w-4 text-green-600" />
+            <AlertDescription className="text-green-800">{success}</AlertDescription>
+          </Alert>
+        )}
+        
         <div className="space-y-2">
           <Label htmlFor="householdCode">Household Code</Label>
           <Input
@@ -95,6 +115,7 @@ export const JoinHouseholdCard = () => {
             onChange={(e) => {
               setHouseholdCode(e.target.value);
               if (error) setError(null); // Clear error when user starts typing
+              if (success) setSuccess(null); // Clear success when user starts typing
             }}
             placeholder="Enter household code"
             maxLength={6}
