@@ -92,7 +92,7 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setIsLoading(false);
     }
-  }, [user?.id, currentHousehold?.id, toast]);
+  }, [user?.id, currentHousehold?.id]); // Only depend on stable IDs
 
   useEffect(() => {
     fetchMealPlans();
@@ -192,7 +192,7 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
         variant: "destructive",
       });
     }
-  }, [user?.id, currentHousehold?.id, recipes, toast]);
+  }, [user?.id, currentHousehold?.id, recipes]); // Removed toast from dependencies
 
   const removeMealPlan = useCallback(async (id: string) => {
     if (!user || !currentHousehold) return;
@@ -224,7 +224,7 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
         variant: "destructive",
       });
     }
-  }, [user?.id, currentHousehold?.id, toast]);
+  }, [user?.id, currentHousehold?.id]); // Removed toast from dependencies
 
   const clearWeek = useCallback(async (weekNumber: 1 | 2) => {
     if (!user || !currentHousehold) return;
@@ -257,7 +257,7 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
         variant: "destructive",
       });
     }
-  }, [user?.id, currentHousehold?.id, toast]);
+  }, [user?.id, currentHousehold?.id]); // Removed toast from dependencies
 
   return (
     <MealPlanContext.Provider value={{
