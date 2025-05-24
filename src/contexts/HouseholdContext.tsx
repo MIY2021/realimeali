@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -40,7 +41,7 @@ interface HouseholdContextType {
   fetchHouseholds: () => Promise<void>;
   fetchHouseholdMembers: (householdId: string) => Promise<void>;
   requestToJoinHousehold: (householdCode: string) => Promise<boolean>;
-  fetchJoinRequests: () => Promise<void>;
+  fetchJoinRequests: (householdId: string) => Promise<void>;
   approveJoinRequest: (requestId: string) => Promise<boolean>;
   rejectJoinRequest: (requestId: string) => Promise<boolean>;
   leaveHousehold: (householdId: string) => Promise<boolean>;
