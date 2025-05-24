@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, X, Upload, Link, FileText, globe, camera } from "lucide-react";
+import { Plus, X, Upload, Link, FileText, Globe, Camera } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
@@ -407,7 +407,7 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
                     Text
                   </TabsTrigger>
                   <TabsTrigger value="website" className="flex items-center gap-1 text-xs">
-                    <globe className="h-3 w-3" />
+                    <Globe className="h-3 w-3" />
                     Website
                   </TabsTrigger>
                   <TabsTrigger value="url" className="flex items-center gap-1 text-xs">
@@ -419,7 +419,7 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
                     Upload
                   </TabsTrigger>
                   <TabsTrigger value="camera" className="flex items-center gap-1 text-xs">
-                    <camera className="h-3 w-3" />
+                    <Camera className="h-3 w-3" />
                     Camera
                   </TabsTrigger>
                   <TabsTrigger value="generate" className="flex items-center gap-1 text-xs">
