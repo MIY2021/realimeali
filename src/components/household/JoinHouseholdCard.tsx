@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, CheckCircle } from "lucide-react";
+import { AlertCircle, Check } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { useToast } from "@/hooks/use-toast";
@@ -68,6 +68,12 @@ export const JoinHouseholdCard = () => {
         setError(errorMsg);
         setSuccess(null);
         console.log("Join request failed");
+        
+        toast({
+          title: "Request Failed",
+          description: errorMsg,
+          variant: "destructive",
+        });
       }
     } catch (err) {
       console.error("Error in handleRequestJoin:", err);
@@ -102,7 +108,7 @@ export const JoinHouseholdCard = () => {
         
         {success && (
           <Alert className="border-green-200 bg-green-50 text-green-800">
-            <CheckCircle className="h-4 w-4 text-green-600" />
+            <Check className="h-4 w-4 text-green-600" />
             <AlertDescription className="text-green-800">{success}</AlertDescription>
           </Alert>
         )}
