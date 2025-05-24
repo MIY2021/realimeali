@@ -4,24 +4,21 @@ import { useParams, useNavigate } from "react-router-dom";
 import { RecipeDetail as RecipeDetailComponent } from "@/components/recipes/RecipeDetail";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
-import { Recipe, MealType } from "@/types";
+import { Recipe } from "@/types";
 import { EditRecipeDialog } from "@/components/recipes/EditRecipeDialog";
+import { AddToMealPlanDialog } from "@/components/recipes/AddToMealPlanDialog";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { useMealPlan } from "@/contexts/MealPlanContext";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export default function RecipeDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { getRecipeById, isLoading, updateRecipe, deleteRecipe } = useRecipes();
-  const { addMealPlan } = useMealPlan();
   const { user } = useAuth();
   const { toast } = useToast();
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showMealPlanDialog, setShowMealPlanDialog] = useState(false);
-  const [selectedWeek, setSelectedWeek] = useState<1 | 2 | null>(null);
   
   const recipe = id ? getRecipeById(id) : undefined;
 
@@ -94,48 +91,6 @@ export default function RecipeDetailPage() {
     console.log("Opening meal plan dialog for recipe:", recipe.title);
     setShowMealPlanDialog(true);
   };
-
-  const handleSelectMealType = async (mealType: MealType) => {
-    if (!selectedWeek || !recipe) {
-      toast({
-        title: "Select Week",
-        description: "Please select which week to add this meal to.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    try {
-      console.log("Adding recipe to meal plan from detail page:", {
-        recipe: recipe.title,
-        mealType,
-        week: selectedWeek
-      });
-
-      await addMealPlan({
-        date: new Date().toISOString().split('T')[0], // Use today's date as YYYY-MM-DD
-        mealType,
-        recipeId: recipe.id,
-        createdBy: user?.id || "",
-        slotIndex: 0,
-      }, selectedWeek);
-
-      toast({
-        title: "Recipe Added",
-        description: `Added ${recipe.title} to your ${mealType} meal plan (Week ${selectedWeek})!`,
-      });
-
-      setShowMealPlanDialog(false);
-      setSelectedWeek(null);
-    } catch (error) {
-      console.error("Error adding recipe to meal plan:", error);
-      toast({
-        title: "Error",
-        description: "Failed to add recipe to meal plan. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
   
   if (isLoading) {
     return (
@@ -157,7 +112,6 @@ export default function RecipeDetailPage() {
   }
 
   const isOwner = user && recipe.createdBy === user.id;
-  const mealTypes: MealType[] = ["dinner", "lunch", "breakfast", "snacks"];
   
   return (
     <div className="container">
@@ -187,44 +141,11 @@ export default function RecipeDetailPage() {
         />
       )}
 
-      <Dialog open={showMealPlanDialog} onOpenChange={setShowMealPlanDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              Add to Meal Plan
-            </DialogTitle>
-          </DialogHeader>
-          <div className="mb-4">
-            <div className="text-lg font-semibold">{recipe?.title}</div>
-            <div className="text-sm text-muted-foreground">{recipe?.description}</div>
-          </div>
-          <div className="flex flex-col gap-2 mb-2">
-            <label className="font-semibold text-sm mb-1">Select Week</label>
-            <div className="flex gap-2">
-              {[1, 2].map((wk) => (
-                <Button
-                  key={wk}
-                  variant={selectedWeek === wk ? "default" : "outline"}
-                  className={selectedWeek === wk ? "bg-terracotta text-white" : ""}
-                  onClick={() => setSelectedWeek(wk as 1 | 2)}
-                >
-                  Week {wk}
-                </Button>
-              ))}
-            </div>
-          </div>
-          <div className="flex flex-col gap-2">
-            {mealTypes.map(type => (
-              <Button key={type} onClick={() => handleSelectMealType(type)}>
-                Add to {type.charAt(0).toUpperCase() + type.slice(1)}
-              </Button>
-            ))}
-            <Button variant="outline" onClick={() => setShowMealPlanDialog(false)}>
-              Cancel
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <AddToMealPlanDialog
+        recipe={recipe}
+        open={showMealPlanDialog}
+        onOpenChange={setShowMealPlanDialog}
+      />
     </div>
   );
 }
