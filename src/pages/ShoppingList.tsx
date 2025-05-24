@@ -3,9 +3,8 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ListChecks, Share, Trash2, Plus } from "lucide-react";
+import { ListChecks, Share, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useHouseholdShopping } from "@/contexts/HouseholdShoppingContext";
 import { useMealPlan } from "@/contexts/MealPlanContext";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -36,16 +35,6 @@ export default function ShoppingList() {
     1: [],
     2: []
   });
-
-  const {
-    shoppingItems,
-    addCustomShoppingItem,
-    updateShoppingItem,
-    removeShoppingItem,
-    generateShoppingListFromMealPlans,
-    clearShoppingList,
-    isLoading
-  } = useHouseholdShopping();
 
   const { getMealPlansForWeek } = useMealPlan();
   const { recipes } = useRecipes();
@@ -240,11 +229,7 @@ export default function ShoppingList() {
         </Button>
       </div>
 
-      {isLoading ? (
-        <div className="text-center py-8">
-          <p className="text-muted-foreground">Loading shopping list...</p>
-        </div>
-      ) : currentWeekItems.length === 0 ? (
+      {currentWeekItems.length === 0 ? (
         <Card>
           <CardContent className="p-6 text-center">
             <p className="text-muted-foreground">No items in your shopping list for Week {selectedWeek}</p>

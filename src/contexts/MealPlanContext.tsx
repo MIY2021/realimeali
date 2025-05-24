@@ -131,6 +131,8 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
     }
 
     try {
+      console.log("Adding meal plan:", { mealPlanData, weekNumber });
+      
       const { data, error } = await supabase
         .from('household_meal_plans')
         .insert([{
@@ -147,8 +149,11 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
         .single();
 
       if (error) {
+        console.error("Database error:", error);
         throw error;
       }
+
+      console.log("Meal plan added successfully:", data);
 
       // Add to local state
       const newMealPlan: MealPlan = {

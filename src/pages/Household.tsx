@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,13 +32,23 @@ export default function Household() {
   const [isInviting, setIsInviting] = useState(false);
   const [householdName, setHouseholdName] = useState("");
   const [isUpdatingName, setIsUpdatingName] = useState(false);
+  const [householdCode, setHouseholdCode] = useState("");
 
   useEffect(() => {
     if (currentHousehold) {
       setHouseholdName(currentHousehold.name);
       fetchMembers();
+      generateHouseholdCode();
     }
   }, [currentHousehold]);
+
+  const generateHouseholdCode = () => {
+    if (currentHousehold) {
+      // Generate a simple 6-character code based on household ID
+      const code = currentHousehold.id.slice(0, 6).toUpperCase();
+      setHouseholdCode(code);
+    }
+  };
 
   const fetchMembers = async () => {
     if (!currentHousehold) return;
@@ -57,16 +66,38 @@ export default function Household() {
 
       if (error) throw error;
 
-      // Fetch user profiles for each member
+      // For each member, get their Google profile info from user metadata
       const membersWithProfiles = await Promise.all(
         (data || []).map(async (member) => {
           try {
-            const { data: userData } = await supabase.auth.admin.getUserById(member.user_id);
+            // Get user info from auth.users table using RPC or direct query
+            const { data: userQuery } = await supabase
+              .from('household_members')
+              .select('user_id')
+              .eq('user_id', member.user_id)
+              .single();
+
+            if (userQuery) {
+              // Get user metadata from the auth system
+              const { data: { user: authUser } } = await supabase.auth.getUser();
+              
+              if (authUser && authUser.id === member.user_id) {
+                return {
+                  ...member,
+                  profile: {
+                    full_name: authUser.user_metadata?.full_name || authUser.email || 'Unknown User',
+                    email: authUser.email || 'No email'
+                  }
+                };
+              }
+            }
+
+            // Fallback for other users - we can't access their metadata directly
             return {
               ...member,
               profile: {
-                full_name: userData.user?.user_metadata?.full_name || userData.user?.email || 'Unknown User',
-                email: userData.user?.email || 'No email'
+                full_name: `User ${member.user_id.slice(0, 8)}`,
+                email: 'Private'
               }
             };
           } catch (err) {
@@ -104,7 +135,7 @@ export default function Household() {
           household_id: currentHousehold.id,
           email: inviteEmail.trim(),
           invited_by: user?.id,
-          invitation_code: Math.random().toString(36).substring(2, 8).toUpperCase()
+          invitation_code: householdCode
         }])
         .select()
         .single();
@@ -113,7 +144,7 @@ export default function Household() {
 
       toast({
         title: "Invitation Sent",
-        description: `Invitation sent to ${inviteEmail}. They can join using code: ${data.invitation_code}`,
+        description: `Invitation sent to ${inviteEmail}. They can join using code: ${householdCode}`,
       });
       
       setInviteEmail("");
@@ -133,19 +164,21 @@ export default function Household() {
     if (!user || !inviteCode.trim()) return;
 
     try {
-      // Find the invitation
-      const { data: invitation, error: inviteError } = await supabase
-        .from('household_invitations')
-        .select('*')
-        .eq('invitation_code', inviteCode.trim().toUpperCase())
-        .eq('status', 'pending')
-        .gt('expires_at', new Date().toISOString())
-        .single();
+      // Find household by simple code matching (first 6 chars of ID)
+      const { data: households, error: householdError } = await supabase
+        .from('households')
+        .select('*');
 
-      if (inviteError || !invitation) {
+      if (householdError) throw householdError;
+
+      const targetHousehold = households?.find(h => 
+        h.id.slice(0, 6).toUpperCase() === inviteCode.trim().toUpperCase()
+      );
+
+      if (!targetHousehold) {
         toast({
           title: "Invalid Code",
-          description: "Invitation code not found or expired.",
+          description: "Household code not found.",
           variant: "destructive",
         });
         return;
@@ -155,7 +188,7 @@ export default function Household() {
       const { data: existingMember } = await supabase
         .from('household_members')
         .select('id')
-        .eq('household_id', invitation.household_id)
+        .eq('household_id', targetHousehold.id)
         .eq('user_id', user.id)
         .single();
 
@@ -172,29 +205,14 @@ export default function Household() {
       const { error: memberError } = await supabase
         .from('household_members')
         .insert([{
-          household_id: invitation.household_id,
+          household_id: targetHousehold.id,
           user_id: user.id,
           role: 'member'
         }]);
 
       if (memberError) throw memberError;
 
-      // Update invitation status
-      await supabase
-        .from('household_invitations')
-        .update({ status: 'accepted' })
-        .eq('id', invitation.id);
-
-      // Get the household details
-      const { data: household } = await supabase
-        .from('households')
-        .select('*')
-        .eq('id', invitation.household_id)
-        .single();
-
-      if (household) {
-        setCurrentHousehold(household);
-      }
+      setCurrentHousehold(targetHousehold);
 
       toast({
         title: "Joined Household",
@@ -295,17 +313,18 @@ export default function Household() {
           <CardHeader>
             <CardTitle>Join a Household</CardTitle>
             <CardDescription>
-              Enter an invitation code to join an existing household.
+              Enter a household code to join an existing household.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="inviteCode">Invitation Code</Label>
+              <Label htmlFor="inviteCode">Household Code</Label>
               <Input
                 id="inviteCode"
                 value={inviteCode}
                 onChange={(e) => setInviteCode(e.target.value)}
-                placeholder="Enter invitation code"
+                placeholder="Enter 6-character code"
+                maxLength={6}
               />
             </div>
             <Button onClick={handleJoinByCode} className="w-full bg-terracotta hover:bg-terracotta/90">
@@ -358,6 +377,26 @@ export default function Household() {
                 </p>
               )}
             </div>
+
+            <div className="space-y-2">
+              <Label>Household Code</Label>
+              <div className="flex gap-2">
+                <Input value={householdCode} readOnly />
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => {
+                    navigator.clipboard.writeText(householdCode);
+                    toast({ title: "Code copied to clipboard!" });
+                  }}
+                >
+                  <Copy className="h-4 w-4" />
+                </Button>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Share this code with others to invite them to your household.
+              </p>
+            </div>
           </CardContent>
         </Card>
 
@@ -407,7 +446,7 @@ export default function Household() {
             <CardHeader>
               <CardTitle>Invite Members</CardTitle>
               <CardDescription>
-                Invite new members to join your household using their Google account email.
+                Invite new members to join your household using their email address.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -429,7 +468,7 @@ export default function Household() {
                 {isInviting ? "Sending..." : "Send Invitation"}
               </Button>
               <p className="text-sm text-muted-foreground">
-                The person will receive an invitation code that they can use to join your household.
+                The person will receive your household code ({householdCode}) to join.
               </p>
             </CardContent>
           </Card>
