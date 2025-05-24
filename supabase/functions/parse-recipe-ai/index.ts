@@ -15,6 +15,12 @@ serve(async (req) => {
   }
 
   try {
+    console.log('Function called with OpenAI key present:', !!openAIApiKey);
+    
+    if (!openAIApiKey) {
+      throw new Error('OpenAI API key not configured');
+    }
+
     const { recipeText } = await req.json();
     
     console.log('Parsing recipe text:', recipeText.substring(0, 100) + '...');
@@ -58,17 +64,27 @@ serve(async (req) => {
           }
         ],
         temperature: 0.3,
+        max_tokens: 1500,
       }),
     });
 
-    const data = await response.json();
+    console.log('OpenAI response status:', response.status);
     
-    if (!data.choices || !data.choices[0]) {
-      throw new Error('Invalid OpenAI response');
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('OpenAI API error:', errorText);
+      throw new Error(`OpenAI API error: ${response.status} ${errorText}`);
+    }
+
+    const data = await response.json();
+    console.log('OpenAI response received:', JSON.stringify(data, null, 2));
+    
+    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+      throw new Error('Invalid response structure from OpenAI');
     }
 
     const content = data.choices[0].message.content;
-    console.log('OpenAI response:', content);
+    console.log('OpenAI content:', content);
     
     // Parse the JSON response
     let parsedRecipe;
@@ -76,6 +92,7 @@ serve(async (req) => {
       parsedRecipe = JSON.parse(content);
     } catch (parseError) {
       console.error('Failed to parse JSON:', parseError);
+      console.error('Content that failed to parse:', content);
       throw new Error('Failed to parse AI response as JSON');
     }
 
@@ -86,6 +103,8 @@ serve(async (req) => {
         throw new Error(`Missing required field: ${field}`);
       }
     }
+
+    console.log('Successfully parsed recipe:', parsedRecipe.title);
 
     return new Response(JSON.stringify({ parsedRecipe }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

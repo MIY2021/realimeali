@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Recipe, RecipeCategory } from "@/types";
 import {
@@ -29,28 +28,42 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
   const handleParseRecipe = async () => {
     if (!recipeText.trim()) {
       toast({
-        title: "Error",
-        description: "Please enter some recipe text to parse",
+        title: "Oops!",
+        description: "Please paste some recipe text first so I can work my magic! 🪄",
         variant: "destructive",
       });
       return;
     }
 
     setIsLoading(true);
+    console.log('Starting recipe parsing...');
+    
     try {
+      console.log('Calling Supabase function with text:', recipeText.substring(0, 50) + '...');
+      
       const { data, error } = await supabase.functions.invoke('parse-recipe-ai', {
         body: { recipeText: recipeText.trim() }
       });
 
+      console.log('Supabase function response:', { data, error });
+
       if (error) {
+        console.error('Supabase function error:', error);
         throw error;
       }
 
-      if (data.error) {
+      if (data?.error) {
+        console.error('Function returned error:', data.error);
         throw new Error(data.error);
       }
 
+      if (!data?.parsedRecipe) {
+        console.error('No parsed recipe in response:', data);
+        throw new Error('No recipe data received from AI');
+      }
+
       const recipe = data.parsedRecipe;
+      console.log('Parsed recipe:', recipe);
       
       // Ensure all required fields are present
       const formattedRecipe = {
@@ -70,15 +83,17 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
       setShowPreview(true);
 
       toast({
-        title: "Recipe Parsed!",
-        description: "AI has successfully parsed your recipe. Review and edit as needed.",
+        title: "✨ Recipe magic complete!",
+        description: "I've extracted all the good stuff from your recipe. Take a look and make any tweaks you'd like!",
       });
 
     } catch (error) {
       console.error('Error parsing recipe:', error);
       toast({
-        title: "Parsing Failed",
-        description: error.message || "Failed to parse recipe. Please try again.",
+        title: "Hmm, something went wrong",
+        description: error.message?.includes('API key') 
+          ? "It looks like there's an issue with the AI service. Please try again in a moment."
+          : "I had trouble understanding that recipe. Could you try pasting it again or check if it's formatted clearly?",
         variant: "destructive",
       });
     } finally {
@@ -120,7 +135,7 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Plus className="h-5 w-5 text-terracotta" />
-            AI Recipe Parser
+            ✨ AI Recipe Magic
           </DialogTitle>
         </DialogHeader>
 
@@ -128,25 +143,25 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium mb-2">
-                Paste your recipe text below
+                Got a recipe to share? Just paste it here! 📝
               </label>
               <textarea
                 value={recipeText}
                 onChange={(e) => setRecipeText(e.target.value)}
-                placeholder="Paste any recipe text here - from a website, cookbook, handwritten note, etc. The AI will extract the ingredients, instructions, and other details automatically."
+                placeholder="Paste any recipe here - from a website, cookbook, handwritten note, even that crumpled paper from grandma! I'll magically organize it into ingredients, steps, and all the good stuff. ✨"
                 className="w-full h-64 p-3 border rounded-md resize-none"
               />
             </div>
             
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Circle className="h-4 w-4" />
-              <span>The AI will automatically extract title, ingredients, instructions, and suggest categories</span>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground bg-blue-50 p-3 rounded-md">
+              <Circle className="h-4 w-4 text-blue-500" />
+              <span>I'll automatically extract the title, ingredients, cooking steps, and even suggest helpful categories for you!</span>
             </div>
           </div>
         ) : parsedRecipe ? (
           <div className="space-y-4">
-            <div className="bg-sage/10 p-3 rounded-md">
-              <p className="text-sm text-sage-700 font-medium">✨ Recipe parsed successfully! Review and edit as needed:</p>
+            <div className="bg-green-50 p-3 rounded-md">
+              <p className="text-sm text-green-700 font-medium">🎉 Recipe parsed successfully! Everything looks good, but feel free to make any adjustments:</p>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -274,12 +289,12 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
               {isLoading ? (
                 <>
                   <Circle className="h-4 w-4 mr-2 animate-spin" />
-                  Parsing Recipe...
+                  Working my magic...
                 </>
               ) : (
                 <>
                   <Plus className="h-4 w-4 mr-2" />
-                  Parse with AI
+                  ✨ Parse with AI
                 </>
               )}
             </Button>

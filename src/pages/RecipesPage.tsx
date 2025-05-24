@@ -110,7 +110,7 @@ export default function RecipesPage() {
             onClick={handleAIParser}
           >
             <Wand className="h-4 w-4 mr-2" />
-            Parse Recipe with AI
+            ✨ AI Magic
           </Button>
           <Button 
             className="bg-terracotta hover:bg-terracotta/90" 
@@ -136,7 +136,7 @@ export default function RecipesPage() {
           <div className="flex justify-center gap-2">
             <Button onClick={handleAIParser} variant="outline" className="bg-sage hover:bg-sage/90 text-white border-sage">
               <Plus className="h-4 w-4 mr-2" />
-              Parse Recipe with AI
+              ✨ Try AI Magic
             </Button>
             <Button onClick={handleAddNewRecipe} className="bg-terracotta hover:bg-terracotta/90">
               <Plus className="h-4 w-4 mr-2" />
@@ -158,7 +158,6 @@ export default function RecipesPage() {
         onSave={handleSaveNewRecipe}
       />
 
-      {/* AI Recipe Parser Dialog */}
       <AIRecipeParserDialog
         open={showAIParserDialog}
         onOpenChange={setShowAIParserDialog}
