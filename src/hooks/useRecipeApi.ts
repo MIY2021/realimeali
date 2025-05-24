@@ -128,5 +128,5 @@ export const useRecipeApi = () => {
 
       return true;
     },
-  }), [user, toast]);
+  }), [user?.id]); // Only depend on user.id, not the full user object or toast
 };

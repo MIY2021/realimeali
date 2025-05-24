@@ -35,7 +35,7 @@ export const RecipesProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setIsLoading(false);
     }
-  }, [recipeApi, toast]);
+  }, [recipeApi]); // Only depend on recipeApi, which is now stable
 
   const createRecipe = useCallback(async (
     recipeData: Omit<Recipe, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>, 
@@ -56,7 +56,7 @@ export const RecipesProvider = ({ children }: { children: ReactNode }) => {
       });
       return null;
     }
-  }, [recipeApi, toast]);
+  }, [recipeApi]); // Stable dependency
 
   const updateRecipe = useCallback(async (id: string, recipeData: Partial<Recipe>): Promise<Recipe | null> => {
     try {
@@ -76,7 +76,7 @@ export const RecipesProvider = ({ children }: { children: ReactNode }) => {
       });
       return null;
     }
-  }, [recipeApi, toast]);
+  }, [recipeApi]); // Stable dependency
 
   const deleteRecipe = useCallback(async (id: string): Promise<boolean> => {
     try {
@@ -94,7 +94,7 @@ export const RecipesProvider = ({ children }: { children: ReactNode }) => {
       });
       return false;
     }
-  }, [recipeApi, toast]);
+  }, [recipeApi]); // Stable dependency
 
   const getRecipeById = useCallback((id: string) => {
     return recipes.find(recipe => recipe.id === id);
@@ -122,7 +122,7 @@ export const RecipesProvider = ({ children }: { children: ReactNode }) => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user]);
+  }, [user?.id]); // Only depend on user ID
 
   return (
     <RecipesContext.Provider value={{ 

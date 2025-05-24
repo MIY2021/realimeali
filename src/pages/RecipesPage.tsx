@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { RecipeList } from "@/components/recipes/RecipeList";
 import { Button } from "@/components/ui/button";
@@ -20,13 +21,19 @@ export default function RecipesPage() {
   // Dialog state
   const [showAIParserDialog, setShowAIParserDialog] = useState(false);
   const [showCategoryDialog, setShowCategoryDialog] = useState(false);
+  
+  // Local loading state to prevent multiple fetches
+  const [isFetching, setIsFetching] = useState(false);
 
-  // Fetch recipes when household changes
+  // Fetch recipes when household changes - remove fetchRecipes from dependencies
   useEffect(() => {
-    if (user) {
-      fetchRecipes(currentHousehold?.id || null);
+    if (user && !isFetching) {
+      setIsFetching(true);
+      fetchRecipes(currentHousehold?.id || null).finally(() => {
+        setIsFetching(false);
+      });
     }
-  }, [currentHousehold?.id, user, fetchRecipes]);
+  }, [currentHousehold?.id, user?.id]); // Only depend on stable IDs
 
   const handleAIHelper = () => {
     if (!user) {
@@ -117,7 +124,7 @@ export default function RecipesPage() {
             </div>
           </div>
 
-          {isLoading ? (
+          {isLoading || isFetching ? (
             <div className="py-10 text-center">
               <p className="text-muted-foreground">Loading household recipes...</p>
             </div>
