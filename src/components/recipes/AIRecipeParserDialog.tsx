@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Recipe, RecipeCategory } from "@/types";
 import {
@@ -9,7 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Circle, Plus, X, Upload, Link, FileText } from "lucide-react";
+import { Plus, X, Upload, Link, FileText, Globe } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
@@ -25,6 +26,7 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
   const { toast } = useToast();
   const [recipeText, setRecipeText] = useState("");
   const [imageUrl, setImageUrl] = useState("");
+  const [websiteUrl, setWebsiteUrl] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [parsedRecipe, setParsedRecipe] = useState<Omit<Recipe, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'> | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -50,6 +52,15 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
       return;
     }
 
+    if (activeTab === "website" && !websiteUrl.trim()) {
+      toast({
+        title: "Missing Website URL",
+        description: "Please enter a recipe website URL first! 🌐",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (activeTab === "upload" && !imageFile) {
       toast({
         title: "No image selected",
@@ -69,6 +80,8 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
         requestData.recipeText = recipeText.trim();
       } else if (activeTab === "url") {
         requestData.imageUrl = imageUrl.trim();
+      } else if (activeTab === "website") {
+        requestData.websiteUrl = websiteUrl.trim();
       } else if (activeTab === "upload" && imageFile) {
         // Convert file to base64 data URL
         const reader = new FileReader();
@@ -84,6 +97,7 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
       console.log('📊 Request data:', {
         hasRecipeText: !!requestData.recipeText,
         hasImageUrl: !!requestData.imageUrl,
+        hasWebsiteUrl: !!requestData.websiteUrl,
         activeTab
       });
       
@@ -127,6 +141,24 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
             description: "I had trouble understanding that content. Could you try with clearer text or a different image?",
             variant: "destructive",
           });
+        } else if (errorCode === 'WEBSITE_FETCH_ERROR' || errorCode === 'NETWORK_ERROR') {
+          toast({
+            title: "Website access issue",
+            description: data.error || "Could not access the website. Please check the URL and try again.",
+            variant: "destructive",
+          });
+        } else if (errorCode === 'INSUFFICIENT_CONTENT') {
+          toast({
+            title: "Not enough content",
+            description: "Could not extract enough recipe content from the website. Please try a different URL.",
+            variant: "destructive",
+          });
+        } else if (errorCode === 'INVALID_URL') {
+          toast({
+            title: "Invalid URL",
+            description: "Please provide a valid website URL.",
+            variant: "destructive",
+          });
         } else {
           toast({
             title: "Something went wrong",
@@ -141,7 +173,7 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
         console.error('No recipe data in response:', data);
         toast({
           title: "No recipe found",
-          description: "No recipe information was extracted. Please try with clearer text or image.",
+          description: "No recipe information was extracted. Please try with clearer text, image, or website URL.",
           variant: "destructive",
         });
         return;
@@ -196,6 +228,7 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
   const handleClose = () => {
     setRecipeText("");
     setImageUrl("");
+    setWebsiteUrl("");
     setImageFile(null);
     setParsedRecipe(null);
     setShowPreview(false);
@@ -231,15 +264,19 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
           <div className="space-y-4">
             <div>
               <p className="text-sm text-muted-foreground mb-4">
-                Got a recipe to organize? I can help! Just paste some text, share an image URL, or upload a photo. 
+                Got a recipe to organize? I can help! Just paste some text, share an image URL, upload a photo, or paste a recipe website URL. 
                 I'll extract all the ingredients, steps, and details for you! 🍳
               </p>
               
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-3">
+                <TabsList className="grid w-full grid-cols-4">
                   <TabsTrigger value="text" className="flex items-center gap-2">
                     <FileText className="h-4 w-4" />
                     Text
+                  </TabsTrigger>
+                  <TabsTrigger value="website" className="flex items-center gap-2">
+                    <Globe className="h-4 w-4" />
+                    Website
                   </TabsTrigger>
                   <TabsTrigger value="url" className="flex items-center gap-2">
                     <Link className="h-4 w-4" />
@@ -260,6 +297,20 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
                     placeholder="Paste any recipe here! From a website, cookbook, handwritten note, or even that crumpled paper from grandma. I'll organize it beautifully! ✨"
                     className="w-full h-64 p-3 border rounded-md resize-none"
                   />
+                </TabsContent>
+
+                <TabsContent value="website" className="space-y-2">
+                  <Label htmlFor="website-url">Recipe Website URL</Label>
+                  <Input
+                    id="website-url"
+                    type="url"
+                    value={websiteUrl}
+                    onChange={(e) => setWebsiteUrl(e.target.value)}
+                    placeholder="https://www.allrecipes.com/recipe/231506/simple-macaroni-and-cheese/"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    I can extract recipes directly from recipe websites! Just paste the URL from sites like AllRecipes, Food Network, BBC Good Food, etc.
+                  </p>
                 </TabsContent>
                 
                 <TabsContent value="url" className="space-y-2">
@@ -295,7 +346,6 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
             </div>
             
             <div className="flex items-center gap-2 text-sm text-muted-foreground bg-blue-50 p-3 rounded-md">
-              <Circle className="h-4 w-4 text-blue-500" />
               <span>I'll automatically extract the title, ingredients, cooking steps, and even suggest helpful categories!</span>
             </div>
           </div>
@@ -424,12 +474,16 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
           {!showPreview ? (
             <Button 
               onClick={handleExtractRecipe} 
-              disabled={isLoading || (activeTab === "text" && !recipeText.trim()) || (activeTab === "url" && !imageUrl.trim()) || (activeTab === "upload" && !imageFile)}
+              disabled={isLoading || 
+                (activeTab === "text" && !recipeText.trim()) || 
+                (activeTab === "url" && !imageUrl.trim()) || 
+                (activeTab === "website" && !websiteUrl.trim()) ||
+                (activeTab === "upload" && !imageFile)}
               className="bg-terracotta hover:bg-terracotta/90"
             >
               {isLoading ? (
                 <>
-                  <Circle className="h-4 w-4 mr-2 animate-spin" />
+                  <div className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-white border-t-transparent" />
                   Working my magic...
                 </>
               ) : (

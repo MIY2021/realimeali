@@ -9,6 +9,37 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Helper function to extract text content from HTML
+function extractTextFromHTML(html: string): string {
+  // Remove script and style elements
+  let cleanedHtml = html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+  cleanedHtml = cleanedHtml.replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '');
+  
+  // Remove HTML tags and decode entities
+  let text = cleanedHtml.replace(/<[^>]*>/g, ' ');
+  text = text.replace(/&nbsp;/g, ' ');
+  text = text.replace(/&amp;/g, '&');
+  text = text.replace(/&lt;/g, '<');
+  text = text.replace(/&gt;/g, '>');
+  text = text.replace(/&quot;/g, '"');
+  text = text.replace(/&#39;/g, "'");
+  
+  // Clean up whitespace
+  text = text.replace(/\s+/g, ' ').trim();
+  
+  return text;
+}
+
+// Helper function to validate and normalize URLs
+function isValidUrl(string: string): boolean {
+  try {
+    new URL(string);
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -36,8 +67,10 @@ serve(async (req) => {
       console.log('📦 Request body received:', { 
         hasRecipeText: !!requestBody.recipeText, 
         hasImageUrl: !!requestBody.imageUrl,
+        hasWebsiteUrl: !!requestBody.websiteUrl,
         recipeTextLength: requestBody.recipeText?.length || 0,
-        imageUrlLength: requestBody.imageUrl?.length || 0
+        imageUrlLength: requestBody.imageUrl?.length || 0,
+        websiteUrlLength: requestBody.websiteUrl?.length || 0
       });
     } catch (parseError) {
       console.error('❌ Failed to parse request body:', parseError);
@@ -50,12 +83,12 @@ serve(async (req) => {
       });
     }
 
-    const { recipeText, imageUrl } = requestBody;
+    const { recipeText, imageUrl, websiteUrl } = requestBody;
     
-    if (!recipeText && !imageUrl) {
+    if (!recipeText && !imageUrl && !websiteUrl) {
       console.error('❌ No input provided');
       return new Response(JSON.stringify({ 
-        error: 'Please provide either recipe text or an image URL',
+        error: 'Please provide recipe text, an image URL, or a website URL',
         code: 'NO_INPUT'
       }), {
         status: 400,
@@ -64,11 +97,88 @@ serve(async (req) => {
     }
 
     console.log('📄 Processing recipe...');
-    if (recipeText) {
-      console.log('📝 Text input length:', recipeText.length);
+    
+    let processedText = '';
+    let isImageInput = false;
+
+    // Handle website URL
+    if (websiteUrl) {
+      console.log('🌐 Website URL provided:', websiteUrl.substring(0, 50) + '...');
+      
+      if (!isValidUrl(websiteUrl)) {
+        console.error('❌ Invalid website URL format');
+        return new Response(JSON.stringify({ 
+          error: 'Please provide a valid website URL',
+          code: 'INVALID_URL'
+        }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      try {
+        console.log('📡 Fetching website content...');
+        const websiteResponse = await fetch(websiteUrl, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (compatible; RecipeBot/1.0)',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+          },
+        });
+
+        if (!websiteResponse.ok) {
+          console.error('❌ Failed to fetch website:', websiteResponse.status);
+          return new Response(JSON.stringify({ 
+            error: `Could not access the website (${websiteResponse.status}). Please check the URL and try again.`,
+            code: 'WEBSITE_FETCH_ERROR'
+          }), {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+
+        const htmlContent = await websiteResponse.text();
+        processedText = extractTextFromHTML(htmlContent);
+        
+        console.log('✅ Website content extracted, text length:', processedText.length);
+        
+        if (processedText.length < 50) {
+          console.error('❌ Insufficient content extracted from website');
+          return new Response(JSON.stringify({ 
+            error: 'Could not extract enough content from the website. Please try a different URL or use the text input instead.',
+            code: 'INSUFFICIENT_CONTENT'
+          }), {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+
+        // Limit text length to avoid token limits
+        if (processedText.length > 8000) {
+          processedText = processedText.substring(0, 8000) + '...';
+          console.log('⚠️ Text truncated to 8000 characters');
+        }
+
+      } catch (fetchError) {
+        console.error('❌ Error fetching website:', fetchError);
+        return new Response(JSON.stringify({ 
+          error: 'Could not access the website. Please check the URL and try again.',
+          code: 'NETWORK_ERROR',
+          details: fetchError.message
+        }), {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
     }
-    if (imageUrl) {
+    // Handle text input
+    else if (recipeText) {
+      console.log('📝 Text input length:', recipeText.length);
+      processedText = recipeText;
+    }
+    // Handle image input
+    else if (imageUrl) {
       console.log('🖼️ Image URL provided:', imageUrl.substring(0, 50) + '...');
+      isImageInput = true;
     }
 
     const messages = [
@@ -99,7 +209,7 @@ serve(async (req) => {
     ];
 
     // Handle image or text input
-    if (imageUrl) {
+    if (isImageInput) {
       messages.push({
         role: 'user',
         content: [
@@ -110,13 +220,13 @@ serve(async (req) => {
     } else {
       messages.push({
         role: 'user',
-        content: recipeText
+        content: processedText
       });
     }
 
     // Prepare OpenAI request
     const openAIRequest = {
-      model: imageUrl ? 'gpt-4o' : 'gpt-4o-mini',
+      model: isImageInput ? 'gpt-4o' : 'gpt-4o-mini',
       messages,
       temperature: 0.3,
       max_tokens: 1500,
@@ -127,7 +237,8 @@ serve(async (req) => {
       messageCount: messages.length,
       hasSystemPrompt: messages[0].role === 'system',
       temperature: openAIRequest.temperature,
-      maxTokens: openAIRequest.max_tokens
+      maxTokens: openAIRequest.max_tokens,
+      inputType: websiteUrl ? 'website' : (isImageInput ? 'image' : 'text')
     });
 
     let response;
