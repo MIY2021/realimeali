@@ -1,14 +1,17 @@
+
 import { Recipe } from "@/types";
 import { Button } from "@/components/ui/button";
-import { CalendarDays, Clock, Pencil, Share, Users } from "lucide-react";
+import { CalendarDays, Clock, Pencil, Share, Users, Trash2 } from "lucide-react";
 
 interface RecipeDetailProps {
   recipe: Recipe;
   onAddToMealPlan?: (recipe: Recipe) => void;
   onEdit?: (recipe: Recipe) => void;
+  onDelete?: () => void;
+  isOwner?: boolean;
 }
 
-export function RecipeDetail({ recipe, onAddToMealPlan, onEdit }: RecipeDetailProps) {
+export function RecipeDetail({ recipe, onAddToMealPlan, onEdit, onDelete, isOwner }: RecipeDetailProps) {
   const { 
     title, 
     description, 
@@ -85,18 +88,30 @@ export function RecipeDetail({ recipe, onAddToMealPlan, onEdit }: RecipeDetailPr
             </Button>
           </div>
           <div className="flex flex-wrap gap-3 pt-2">
-            <Button
-              variant="outline"
-              className="flex items-center gap-1"
-              onClick={() => onEdit?.(recipe)}
-            >
-              <Pencil className="h-4 w-4" />
-              <span>Edit Recipe</span>
-            </Button>
+            {isOwner && (
+              <Button
+                variant="outline"
+                className="flex items-center gap-1"
+                onClick={() => onEdit?.(recipe)}
+              >
+                <Pencil className="h-4 w-4" />
+                <span>Edit Recipe</span>
+              </Button>
+            )}
             <Button variant="outline" className="flex items-center gap-1">
               <Share className="h-4 w-4" />
               <span>Share</span>
             </Button>
+            {isOwner && onDelete && (
+              <Button
+                variant="outline"
+                className="flex items-center gap-1 text-destructive hover:text-destructive"
+                onClick={onDelete}
+              >
+                <Trash2 className="h-4 w-4" />
+                <span>Delete</span>
+              </Button>
+            )}
           </div>
         </div>
       </div>
