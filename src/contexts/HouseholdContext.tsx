@@ -193,6 +193,7 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
   const requestToJoinHousehold = async (householdCode: string): Promise<boolean> => {
     try {
       if (!user) {
+        console.error("No authenticated user");
         toast({
           title: "Authentication Required",
           description: "Please log in to join a household.",
@@ -211,12 +212,14 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
       if (householdError) {
         console.error("Household lookup error:", householdError);
         toast({
-          title: "Error",
-          description: "Failed to find household. Please try again.",
+          title: "Database Error",
+          description: "Failed to search for household. Please try again.",
           variant: "destructive",
         });
         return false;
       }
+
+      console.log("Found households:", households?.length || 0);
 
       // Find household where the first 6 characters of the ID match the code
       const matchingHousehold = households?.find(h => 
@@ -224,6 +227,7 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
       );
 
       if (!matchingHousehold) {
+        console.log("No matching household found for code:", householdCode);
         toast({
           title: "Invalid Code",
           description: "The household code is invalid. Please check and try again.",
@@ -231,6 +235,8 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
         });
         return false;
       }
+
+      console.log("Found matching household:", matchingHousehold.name);
 
       // Check if user is already a member
       const { data: existingMember, error: memberCheckError } = await supabase
@@ -242,14 +248,15 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
       if (memberCheckError) {
         console.error("Member check error:", memberCheckError);
         toast({
-          title: "Error",
-          description: "Failed to check membership. Please try again.",
+          title: "Database Error",
+          description: "Failed to check membership status. Please try again.",
           variant: "destructive",
         });
         return false;
       }
 
       if (existingMember && existingMember.length > 0) {
+        console.log("User is already a member");
         toast({
           title: "Already a Member",
           description: "You are already a member of this household.",
@@ -269,7 +276,7 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
       if (requestCheckError) {
         console.error("Request check error:", requestCheckError);
         toast({
-          title: "Error",
+          title: "Database Error",
           description: "Failed to check existing requests. Please try again.",
           variant: "destructive",
         });
@@ -277,6 +284,7 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
       }
 
       if (existingRequest && existingRequest.length > 0) {
+        console.log("User already has pending request");
         toast({
           title: "Request Already Sent",
           description: "You already have a pending request for this household.",
@@ -296,9 +304,15 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
 
       if (requestError) {
         console.error("Request insert error:", requestError);
-        throw requestError;
+        toast({
+          title: "Failed to Send Request",
+          description: "Could not create join request. Please try again.",
+          variant: "destructive",
+        });
+        return false;
       }
 
+      console.log("Successfully created join request");
       toast({
         title: "Request Sent Successfully!",
         description: `Your join request for "${matchingHousehold.name}" has been sent. The household owner will review your request.`,
@@ -306,10 +320,10 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
 
       return true;
     } catch (error) {
-      console.error("Error requesting to join household:", error);
+      console.error("Unexpected error requesting to join household:", error);
       toast({
-        title: "Error",
-        description: "Failed to send join request. Please try again.",
+        title: "Unexpected Error",
+        description: "An unexpected error occurred. Please try again later.",
         variant: "destructive",
       });
       return false;
