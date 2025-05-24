@@ -163,6 +163,8 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
 
   const fetchJoinRequests = async (householdId: string) => {
     try {
+      console.log("Fetching join requests for household:", householdId);
+      
       const { data, error } = await supabase
         .from('household_join_requests')
         .select('*')
@@ -171,8 +173,11 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
         .order('created_at', { ascending: false });
 
       if (error) {
+        console.error("Error fetching join requests:", error);
         throw error;
       }
+
+      console.log("Raw join requests data:", data);
 
       // Type the data properly by casting the status field
       const typedRequests: HouseholdJoinRequest[] = (data || []).map(request => ({
@@ -180,6 +185,7 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
         status: request.status as 'pending' | 'approved' | 'rejected'
       }));
 
+      console.log("Typed join requests:", typedRequests);
       setJoinRequests(typedRequests);
     } catch (err) {
       console.error("Error fetching join requests:", err);
@@ -620,8 +626,12 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     if (currentHousehold) {
+      console.log("Current household changed, fetching members and join requests for:", currentHousehold.id);
       fetchHouseholdMembers(currentHousehold.id);
       fetchJoinRequests(currentHousehold.id);
+    } else {
+      console.log("No current household, clearing join requests");
+      setJoinRequests([]);
     }
   }, [currentHousehold]);
 
@@ -655,6 +665,20 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
           fetchHouseholds();
           if (currentHousehold) {
             fetchHouseholdMembers(currentHousehold.id);
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'household_join_requests'
+        },
+        () => {
+          console.log("Join request change detected, refetching...");
+          if (currentHousehold) {
+            fetchJoinRequests(currentHousehold.id);
           }
         }
       )
