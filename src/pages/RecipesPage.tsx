@@ -47,6 +47,24 @@ export default function RecipesPage() {
       return;
     }
     
+    // Store the meal plan selection in localStorage
+    const storageKey = `persistedMealPlans_v1_week${selectedWeek}`;
+    const existingPlans = JSON.parse(localStorage.getItem(storageKey) || '[]');
+    
+    const newMealPlan = {
+      id: `added-meal-${Date.now()}-${mealType}`,
+      date: new Date().toISOString(),
+      mealType,
+      recipeId: recipe.id,
+      createdBy: user.id,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      slotIndex: existingPlans.filter((mp: any) => mp.mealType === mealType).length,
+    };
+
+    const updatedPlans = [...existingPlans, newMealPlan];
+    localStorage.setItem(storageKey, JSON.stringify(updatedPlans));
+    
     toast({
       title: "Recipe Added",
       description: `Added ${recipe.title} to your ${mealType} meal plan (Week ${selectedWeek})!`,
