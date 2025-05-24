@@ -1,123 +1,86 @@
 
-import { Recipe, RecipeCategory } from "@/types";
+import { RecipeCategory } from "@/types";
 
-interface RecipePreviewProps {
-  parsedRecipe: Omit<Recipe, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>;
-  onUpdateRecipe: (field: string, value: any) => void;
+interface ParsedRecipe {
+  title: string;
+  description: string;
+  ingredients: string[];
+  instructions: string[];
+  categories: RecipeCategory[];
+  prepTime: number;
+  cookTime: number;
+  servings: number;
 }
 
-export function RecipePreview({ parsedRecipe, onUpdateRecipe }: RecipePreviewProps) {
+interface RecipePreviewProps {
+  recipe: ParsedRecipe;
+  onUpdateRecipe?: (field: string, value: any) => void;
+}
+
+export function RecipePreview({ recipe, onUpdateRecipe }: RecipePreviewProps) {
   const availableCategories: RecipeCategory[] = [
     "Bulk", "Easy", "Cheap", "Healthy", "Vegetarian", "Fish",
     "Super Tasty", "Pasta", "Tapas", "Winter", "BBQ",
-    "Faffy", "Pricey", "Not-Yet-Made", "Snacks", "Breakfast"
+    "Faffy", "Pricey!", "Not Yet Made", "Snacks", "Breakfast"
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium mb-1">Title</label>
-          <input
-            type="text"
-            value={parsedRecipe.title}
-            onChange={(e) => onUpdateRecipe('title', e.target.value)}
-            className="w-full p-2 border rounded"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-1">Description</label>
-          <textarea
-            value={parsedRecipe.description}
-            onChange={(e) => onUpdateRecipe('description', e.target.value)}
-            className="w-full p-2 border rounded"
-            rows={3}
-          />
-        </div>
-
-        <div className="grid grid-cols-3 gap-2">
+    <div className="space-y-4">
+      <h3 className="text-lg font-semibold">Recipe Preview</h3>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-1">Prep (min)</label>
-            <input
-              type="number"
-              value={parsedRecipe.prepTime}
-              onChange={(e) => onUpdateRecipe('prepTime', Number(e.target.value))}
-              className="w-full p-2 border rounded"
-              min={0}
-            />
+            <h4 className="font-medium text-lg">{recipe.title}</h4>
+            <p className="text-sm text-muted-foreground mt-1">{recipe.description}</p>
           </div>
+
+          <div className="grid grid-cols-3 gap-2 text-sm">
+            <div>
+              <span className="font-medium">Prep:</span> {recipe.prepTime} min
+            </div>
+            <div>
+              <span className="font-medium">Cook:</span> {recipe.cookTime} min
+            </div>
+            <div>
+              <span className="font-medium">Serves:</span> {recipe.servings}
+            </div>
+          </div>
+
           <div>
-            <label className="block text-sm font-medium mb-1">Cook (min)</label>
-            <input
-              type="number"
-              value={parsedRecipe.cookTime}
-              onChange={(e) => onUpdateRecipe('cookTime', Number(e.target.value))}
-              className="w-full p-2 border rounded"
-              min={0}
-            />
+            <span className="font-medium text-sm">Categories:</span>
+            <div className="flex flex-wrap gap-1 mt-1">
+              {recipe.categories.map((category) => (
+                <span
+                  key={category}
+                  className="inline-flex items-center rounded-full bg-sage/20 px-2 py-1 text-xs font-medium text-sage"
+                >
+                  {category}
+                </span>
+              ))}
+            </div>
           </div>
+        </div>
+
+        <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-1">Servings</label>
-            <input
-              type="number"
-              value={parsedRecipe.servings}
-              onChange={(e) => onUpdateRecipe('servings', Number(e.target.value))}
-              className="w-full p-2 border rounded"
-              min={1}
-            />
+            <span className="font-medium text-sm">Ingredients ({recipe.ingredients.length}):</span>
+            <div className="space-y-1 max-h-32 overflow-y-auto border rounded p-2 mt-1">
+              {recipe.ingredients.map((ingredient, index) => (
+                <div key={index} className="text-sm">• {ingredient}</div>
+              ))}
+            </div>
           </div>
-        </div>
 
-        <div>
-          <label className="block text-sm font-medium mb-1">Categories</label>
-          <div className="flex flex-wrap gap-1 mb-2">
-            {parsedRecipe.categories.map((category) => (
-              <span
-                key={category}
-                className="inline-flex items-center gap-1 bg-sage/20 text-sage rounded-full px-2 py-1 text-xs cursor-pointer hover:bg-red-100"
-                onClick={() => onUpdateRecipe('categories', parsedRecipe.categories.filter(c => c !== category))}
-              >
-                {category} ×
-              </span>
-            ))}
-          </div>
-          <select
-            onChange={(e) => {
-              const category = e.target.value as RecipeCategory;
-              if (category && !parsedRecipe.categories.includes(category)) {
-                onUpdateRecipe('categories', [...parsedRecipe.categories, category]);
-              }
-            }}
-            value=""
-            className="w-full p-2 border rounded"
-          >
-            <option value="">Add category...</option>
-            {availableCategories.filter(cat => !parsedRecipe.categories.includes(cat)).map(cat => (
-              <option key={cat} value={cat}>{cat}</option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      <div className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium mb-1">Ingredients ({parsedRecipe.ingredients.length})</label>
-          <div className="space-y-1 max-h-32 overflow-y-auto border rounded p-2">
-            {parsedRecipe.ingredients.map((ingredient, index) => (
-              <div key={index} className="text-sm">• {ingredient}</div>
-            ))}
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-1">Instructions ({parsedRecipe.instructions.length} steps)</label>
-          <div className="space-y-2 max-h-48 overflow-y-auto border rounded p-2">
-            {parsedRecipe.instructions.map((instruction, index) => (
-              <div key={index} className="text-sm">
-                <span className="font-medium text-sage">{index + 1}.</span> {instruction}
-              </div>
-            ))}
+          <div>
+            <span className="font-medium text-sm">Instructions ({recipe.instructions.length} steps):</span>
+            <div className="space-y-2 max-h-48 overflow-y-auto border rounded p-2 mt-1">
+              {recipe.instructions.map((instruction, index) => (
+                <div key={index} className="text-sm">
+                  <span className="font-medium text-sage">{index + 1}.</span> {instruction}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>

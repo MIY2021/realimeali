@@ -189,7 +189,7 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
   const availableCategories: RecipeCategory[] = [
     "Bulk", "Easy", "Cheap", "Healthy", "Vegetarian", "Fish",
     "Super Tasty", "Pasta", "Tapas", "Winter", "BBQ",
-    "Faffy", "Pricey", "Not-Yet-Made", "Snacks", "Breakfast"
+    "Faffy", "Pricey!", "Not Yet Made", "Snacks", "Breakfast"
   ];
 
   return (

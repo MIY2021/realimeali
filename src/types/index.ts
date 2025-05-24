@@ -6,7 +6,7 @@ export type User = {
   avatar?: string;
 };
 
-// FINAL enforced categories as requested by the user:
+// Updated to match the database schema exactly
 export type RecipeCategory =
   | "Bulk"
   | "Easy"
@@ -20,8 +20,8 @@ export type RecipeCategory =
   | "Winter"
   | "BBQ"
   | "Faffy"
-  | "Pricey"
-  | "Not-Yet-Made"
+  | "Pricey!"
+  | "Not Yet Made"
   | "Snacks"
   | "Breakfast";
 
