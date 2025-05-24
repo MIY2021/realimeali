@@ -1,5 +1,5 @@
 
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
 import { MealPlan, Recipe } from "@/types";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRecipes } from "@/contexts/RecipesContext";
@@ -42,7 +42,7 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(false);
 
   // Fetch household meal plans from database
-  const fetchMealPlans = async () => {
+  const fetchMealPlans = useCallback(async () => {
     if (!user || !currentHousehold) {
       console.log("No user or household, clearing meal plans");
       setMealPlans([]);
@@ -92,26 +92,26 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [user, currentHousehold, toast]);
 
   useEffect(() => {
     fetchMealPlans();
-  }, [user, currentHousehold]);
+  }, [fetchMealPlans]);
 
-  const getMealPlansForWeek = (weekNumber: 1 | 2): MealPlan[] => {
+  const getMealPlansForWeek = useCallback((weekNumber: 1 | 2): MealPlan[] => {
     if (!user || !currentHousehold) return [];
     
     // Simply filter by the stored week_number from the database
     const weekPlans = mealPlans.filter(plan => (plan as any).weekNumber === weekNumber);
     console.log(`Getting meal plans for week ${weekNumber}:`, weekPlans);
     return weekPlans;
-  };
+  }, [mealPlans, user, currentHousehold]);
 
-  const getRecipeForMealPlan = (mealPlan: MealPlan): Recipe | undefined => {
+  const getRecipeForMealPlan = useCallback((mealPlan: MealPlan): Recipe | undefined => {
     return recipes.find(recipe => recipe.id === mealPlan.recipeId);
-  };
+  }, [recipes]);
 
-  const addMealPlan = async (mealPlanData: Omit<MealPlan, 'id' | 'createdAt' | 'updatedAt'>, weekNumber: 1 | 2) => {
+  const addMealPlan = useCallback(async (mealPlanData: Omit<MealPlan, 'id' | 'createdAt' | 'updatedAt'>, weekNumber: 1 | 2) => {
     if (!user || !currentHousehold) {
       console.error("User or household not available");
       toast({
@@ -192,9 +192,9 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
         variant: "destructive",
       });
     }
-  };
+  }, [user, currentHousehold, recipes, toast]);
 
-  const removeMealPlan = async (id: string) => {
+  const removeMealPlan = useCallback(async (id: string) => {
     if (!user || !currentHousehold) return;
 
     try {
@@ -224,9 +224,9 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
         variant: "destructive",
       });
     }
-  };
+  }, [user, currentHousehold, toast]);
 
-  const clearWeek = async (weekNumber: 1 | 2) => {
+  const clearWeek = useCallback(async (weekNumber: 1 | 2) => {
     if (!user || !currentHousehold) return;
 
     try {
@@ -257,7 +257,7 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
         variant: "destructive",
       });
     }
-  };
+  }, [user, currentHousehold, toast]);
 
   // Set up real-time subscription for meal plan changes
   useEffect(() => {
@@ -283,7 +283,7 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user, currentHousehold]);
+  }, [user, currentHousehold, fetchMealPlans]);
 
   return (
     <MealPlanContext.Provider value={{
