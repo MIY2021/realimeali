@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { RecipeList } from "@/components/recipes/RecipeList";
 import { Button } from "@/components/ui/button";
-import { Plus, Book, Wand } from "lucide-react";
+import { Plus, Book, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { MealType, Recipe } from "@/types";
 import { CreateRecipeDialog } from "@/components/recipes/CreateRecipeDialog";
@@ -30,11 +30,11 @@ export default function RecipesPage() {
     setShowNewRecipeDialog(true);
   };
 
-  const handleAIParser = () => {
+  const handleAIHelper = () => {
     if (!user) {
       toast({
-        title: "Login Required",
-        description: "You need to log in to use the AI recipe parser.",
+        title: "Login Required", 
+        description: "You need to log in to use the AI recipe helper.",
         variant: "destructive",
       });
       return;
@@ -107,10 +107,10 @@ export default function RecipesPage() {
           <Button 
             variant="outline"
             className="bg-sage hover:bg-sage/90 text-white border-sage" 
-            onClick={handleAIParser}
+            onClick={handleAIHelper}
           >
-            <Wand className="h-4 w-4 mr-2" />
-            ✨ AI Magic
+            <Sparkles className="h-4 w-4 mr-2" />
+            ✨ AI Helper
           </Button>
           <Button 
             className="bg-terracotta hover:bg-terracotta/90" 
@@ -134,9 +134,9 @@ export default function RecipesPage() {
         <div className="py-10 text-center">
           <p className="text-muted-foreground mb-4">You haven't created any recipes yet.</p>
           <div className="flex justify-center gap-2">
-            <Button onClick={handleAIParser} variant="outline" className="bg-sage hover:bg-sage/90 text-white border-sage">
-              <Plus className="h-4 w-4 mr-2" />
-              ✨ Try AI Magic
+            <Button onClick={handleAIHelper} variant="outline" className="bg-sage hover:bg-sage/90 text-white border-sage">
+              <Sparkles className="h-4 w-4 mr-2" />
+              ✨ Try AI Helper
             </Button>
             <Button onClick={handleAddNewRecipe} className="bg-terracotta hover:bg-terracotta/90">
               <Plus className="h-4 w-4 mr-2" />

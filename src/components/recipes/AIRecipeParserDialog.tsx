@@ -9,8 +9,11 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Circle, Plus, X } from "lucide-react";
+import { Circle, Plus, X, Upload, Link, FileText } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 interface AIRecipeParserDialogProps {
   open: boolean;
@@ -21,31 +24,69 @@ interface AIRecipeParserDialogProps {
 export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipeParserDialogProps) {
   const { toast } = useToast();
   const [recipeText, setRecipeText] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [parsedRecipe, setParsedRecipe] = useState<Omit<Recipe, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'> | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+  const [activeTab, setActiveTab] = useState("text");
 
-  const handleParseRecipe = async () => {
-    if (!recipeText.trim()) {
+  const handleExtractRecipe = async () => {
+    if (activeTab === "text" && !recipeText.trim()) {
       toast({
         title: "Oops!",
-        description: "Please paste some recipe text first so I can work my magic! 🪄",
+        description: "Please add some recipe text first so I can work my magic! 🪄",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (activeTab === "url" && !imageUrl.trim()) {
+      toast({
+        title: "Missing URL",
+        description: "Please enter an image URL first! 📸",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (activeTab === "upload" && !imageFile) {
+      toast({
+        title: "No image selected",
+        description: "Please select an image file to upload! 📁",
         variant: "destructive",
       });
       return;
     }
 
     setIsLoading(true);
-    console.log('Starting recipe parsing...');
+    console.log('🚀 Starting recipe extraction...');
     
     try {
-      console.log('Calling Supabase function with text:', recipeText.substring(0, 50) + '...');
+      let requestData: any = {};
+
+      if (activeTab === "text") {
+        requestData.recipeText = recipeText.trim();
+      } else if (activeTab === "url") {
+        requestData.imageUrl = imageUrl.trim();
+      } else if (activeTab === "upload" && imageFile) {
+        // Convert file to base64 data URL
+        const reader = new FileReader();
+        const base64Promise = new Promise<string>((resolve, reject) => {
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(imageFile);
+        });
+        requestData.imageUrl = await base64Promise;
+      }
+
+      console.log('📤 Sending request to AI service...');
       
       const { data, error } = await supabase.functions.invoke('parse-recipe-ai', {
-        body: { recipeText: recipeText.trim() }
+        body: requestData
       });
 
-      console.log('Supabase function response:', { data, error });
+      console.log('📥 Response received:', { data, error });
 
       if (error) {
         console.error('Supabase function error:', error);
@@ -58,12 +99,12 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
       }
 
       if (!data?.parsedRecipe) {
-        console.error('No parsed recipe in response:', data);
-        throw new Error('No recipe data received from AI');
+        console.error('No recipe data in response:', data);
+        throw new Error('No recipe information was extracted. Please try with clearer text or image.');
       }
 
       const recipe = data.parsedRecipe;
-      console.log('Parsed recipe:', recipe);
+      console.log('✅ Recipe extracted successfully:', recipe.title);
       
       // Ensure all required fields are present
       const formattedRecipe = {
@@ -83,19 +124,33 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
       setShowPreview(true);
 
       toast({
-        title: "✨ Recipe magic complete!",
-        description: "I've extracted all the good stuff from your recipe. Take a look and make any tweaks you'd like!",
+        title: "🎉 Recipe magic complete!",
+        description: "I've extracted all the delicious details! Take a look and adjust anything you'd like.",
       });
 
     } catch (error) {
-      console.error('Error parsing recipe:', error);
-      toast({
-        title: "Hmm, something went wrong",
-        description: error.message?.includes('API key') 
-          ? "It looks like there's an issue with the AI service. Please try again in a moment."
-          : "I had trouble understanding that recipe. Could you try pasting it again or check if it's formatted clearly?",
-        variant: "destructive",
-      });
+      console.error('💥 Error extracting recipe:', error);
+      const errorMessage = error.message;
+      
+      if (errorMessage?.includes('API key')) {
+        toast({
+          title: "Setup needed",
+          description: "The AI service needs to be configured. Please check your API settings.",
+          variant: "destructive",
+        });
+      } else if (errorMessage?.includes('Invalid response') || errorMessage?.includes('parse')) {
+        toast({
+          title: "Hmm, that didn't work",
+          description: "I had trouble understanding that content. Could you try with clearer text or a different image?",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Something went wrong",
+          description: errorMessage || "Please try again in a moment!",
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -110,8 +165,11 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
 
   const handleClose = () => {
     setRecipeText("");
+    setImageUrl("");
+    setImageFile(null);
     setParsedRecipe(null);
     setShowPreview(false);
+    setActiveTab("text");
     onOpenChange(false);
   };
 
@@ -142,26 +200,79 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
         {!showPreview ? (
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-2">
-                Got a recipe to share? Just paste it here! 📝
-              </label>
-              <textarea
-                value={recipeText}
-                onChange={(e) => setRecipeText(e.target.value)}
-                placeholder="Paste any recipe here - from a website, cookbook, handwritten note, even that crumpled paper from grandma! I'll magically organize it into ingredients, steps, and all the good stuff. ✨"
-                className="w-full h-64 p-3 border rounded-md resize-none"
-              />
+              <p className="text-sm text-muted-foreground mb-4">
+                Got a recipe to organize? I can help! Just paste some text, share an image URL, or upload a photo. 
+                I'll extract all the ingredients, steps, and details for you! 🍳
+              </p>
+              
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                <TabsList className="grid w-full grid-cols-3">
+                  <TabsTrigger value="text" className="flex items-center gap-2">
+                    <FileText className="h-4 w-4" />
+                    Text
+                  </TabsTrigger>
+                  <TabsTrigger value="url" className="flex items-center gap-2">
+                    <Link className="h-4 w-4" />
+                    Image URL
+                  </TabsTrigger>
+                  <TabsTrigger value="upload" className="flex items-center gap-2">
+                    <Upload className="h-4 w-4" />
+                    Upload
+                  </TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="text" className="space-y-2">
+                  <Label htmlFor="recipe-text">Recipe Text</Label>
+                  <textarea
+                    id="recipe-text"
+                    value={recipeText}
+                    onChange={(e) => setRecipeText(e.target.value)}
+                    placeholder="Paste any recipe here! From a website, cookbook, handwritten note, or even that crumpled paper from grandma. I'll organize it beautifully! ✨"
+                    className="w-full h-64 p-3 border rounded-md resize-none"
+                  />
+                </TabsContent>
+                
+                <TabsContent value="url" className="space-y-2">
+                  <Label htmlFor="image-url">Image URL</Label>
+                  <Input
+                    id="image-url"
+                    type="url"
+                    value={imageUrl}
+                    onChange={(e) => setImageUrl(e.target.value)}
+                    placeholder="https://example.com/recipe-image.jpg"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    I can read recipes from images! Just paste a URL to any recipe photo or screenshot.
+                  </p>
+                </TabsContent>
+                
+                <TabsContent value="upload" className="space-y-2">
+                  <Label htmlFor="image-file">Upload Recipe Image</Label>
+                  <Input
+                    id="image-file"
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+                  />
+                  {imageFile && (
+                    <p className="text-sm text-green-600">📁 {imageFile.name} selected</p>
+                  )}
+                  <p className="text-xs text-muted-foreground">
+                    Upload a photo of a recipe from a cookbook, screen, or handwritten note!
+                  </p>
+                </TabsContent>
+              </Tabs>
             </div>
             
             <div className="flex items-center gap-2 text-sm text-muted-foreground bg-blue-50 p-3 rounded-md">
               <Circle className="h-4 w-4 text-blue-500" />
-              <span>I'll automatically extract the title, ingredients, cooking steps, and even suggest helpful categories for you!</span>
+              <span>I'll automatically extract the title, ingredients, cooking steps, and even suggest helpful categories!</span>
             </div>
           </div>
         ) : parsedRecipe ? (
           <div className="space-y-4">
             <div className="bg-green-50 p-3 rounded-md">
-              <p className="text-sm text-green-700 font-medium">🎉 Recipe parsed successfully! Everything looks good, but feel free to make any adjustments:</p>
+              <p className="text-sm text-green-700 font-medium">🎉 Recipe extracted successfully! Everything looks good, but feel free to make any adjustments:</p>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -282,8 +393,8 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
           
           {!showPreview ? (
             <Button 
-              onClick={handleParseRecipe} 
-              disabled={isLoading || !recipeText.trim()}
+              onClick={handleExtractRecipe} 
+              disabled={isLoading || (activeTab === "text" && !recipeText.trim()) || (activeTab === "url" && !imageUrl.trim()) || (activeTab === "upload" && !imageFile)}
               className="bg-terracotta hover:bg-terracotta/90"
             >
               {isLoading ? (
@@ -294,7 +405,7 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
               ) : (
                 <>
                   <Plus className="h-4 w-4 mr-2" />
-                  ✨ Parse with AI
+                  ✨ Extract Recipe
                 </>
               )}
             </Button>
@@ -304,7 +415,7 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
                 variant="outline" 
                 onClick={() => setShowPreview(false)}
               >
-                ← Edit Text
+                ← Back to Input
               </Button>
               <Button 
                 onClick={handleSave}
