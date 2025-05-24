@@ -173,7 +173,13 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
         throw error;
       }
 
-      setJoinRequests(data || []);
+      // Type the data properly by casting the status field
+      const typedRequests: HouseholdJoinRequest[] = (data || []).map(request => ({
+        ...request,
+        status: request.status as 'pending' | 'approved' | 'rejected'
+      }));
+
+      setJoinRequests(typedRequests);
     } catch (err) {
       console.error("Error fetching join requests:", err);
       toast({

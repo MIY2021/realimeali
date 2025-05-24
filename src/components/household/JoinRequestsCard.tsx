@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { UserPlus, Check, X } from "lucide-react";
+import { User, Check, X } from "lucide-react";
 import { useHousehold } from "@/contexts/HouseholdContext";
 
 interface JoinRequestsCardProps {
@@ -20,7 +20,7 @@ export const JoinRequestsCard = ({ isOwner }: JoinRequestsCardProps) => {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <UserPlus className="h-5 w-5" />
+          <User className="h-5 w-5" />
           Join Requests
         </CardTitle>
         <CardDescription>
@@ -33,7 +33,7 @@ export const JoinRequestsCard = ({ isOwner }: JoinRequestsCardProps) => {
             <div key={request.id} className="flex items-center justify-between p-3 border rounded">
               <div className="flex items-center space-x-3">
                 <div className="h-8 w-8 rounded-full bg-terracotta/20 flex items-center justify-center">
-                  <UserPlus className="h-4 w-4 text-terracotta" />
+                  <User className="h-4 w-4 text-terracotta" />
                 </div>
                 <div>
                   <p className="font-medium">Join Request</p>
