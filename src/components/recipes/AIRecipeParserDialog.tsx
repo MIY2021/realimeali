@@ -81,6 +81,11 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
       }
 
       console.log('📤 Sending request to AI service...');
+      console.log('📊 Request data:', {
+        hasRecipeText: !!requestData.recipeText,
+        hasImageUrl: !!requestData.imageUrl,
+        activeTab
+      });
       
       const { data, error } = await supabase.functions.invoke('parse-recipe-ai', {
         body: requestData
@@ -95,12 +100,51 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
 
       if (data?.error) {
         console.error('Function returned error:', data.error);
-        throw new Error(data.error);
+        const errorCode = data.code || 'UNKNOWN_ERROR';
+        
+        // Handle specific error codes with user-friendly messages
+        if (errorCode === 'NO_API_KEY') {
+          toast({
+            title: "Setup needed",
+            description: "The AI service needs to be configured. Please check your API settings.",
+            variant: "destructive",
+          });
+        } else if (errorCode === 'RATE_LIMIT') {
+          toast({
+            title: "Too many requests",
+            description: "The AI service is busy. Please wait a moment and try again.",
+            variant: "destructive",
+          });
+        } else if (errorCode === 'INVALID_API_KEY') {
+          toast({
+            title: "API Key Issue",
+            description: "There's an issue with the OpenAI API key. Please check the configuration.",
+            variant: "destructive",
+          });
+        } else if (errorCode === 'INVALID_AI_RESPONSE' || errorCode === 'INVALID_JSON_RESPONSE') {
+          toast({
+            title: "Hmm, that didn't work",
+            description: "I had trouble understanding that content. Could you try with clearer text or a different image?",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Something went wrong",
+            description: data.error || "Please try again in a moment!",
+            variant: "destructive",
+          });
+        }
+        return;
       }
 
       if (!data?.parsedRecipe) {
         console.error('No recipe data in response:', data);
-        throw new Error('No recipe information was extracted. Please try with clearer text or image.');
+        toast({
+          title: "No recipe found",
+          description: "No recipe information was extracted. Please try with clearer text or image.",
+          variant: "destructive",
+        });
+        return;
       }
 
       const recipe = data.parsedRecipe;
@@ -132,25 +176,11 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
       console.error('💥 Error extracting recipe:', error);
       const errorMessage = error.message;
       
-      if (errorMessage?.includes('API key')) {
-        toast({
-          title: "Setup needed",
-          description: "The AI service needs to be configured. Please check your API settings.",
-          variant: "destructive",
-        });
-      } else if (errorMessage?.includes('Invalid response') || errorMessage?.includes('parse')) {
-        toast({
-          title: "Hmm, that didn't work",
-          description: "I had trouble understanding that content. Could you try with clearer text or a different image?",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Something went wrong",
-          description: errorMessage || "Please try again in a moment!",
-          variant: "destructive",
-        });
-      }
+      toast({
+        title: "Something went wrong",
+        description: errorMessage || "Please try again in a moment!",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
