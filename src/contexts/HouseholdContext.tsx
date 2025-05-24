@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -293,7 +292,7 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
       console.log("DEBUG: Checking for existing requests...");
       const { data: existingRequest, error: requestCheckError } = await supabase
         .from('household_join_requests')
-        .select('id, status, created_at')
+        .select('*')
         .eq('household_id', matchingHousehold.id)
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
@@ -314,6 +313,7 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
       if (existingRequest && existingRequest.length > 0) {
         const request = existingRequest[0];
         console.log("DEBUG: Found existing request with status:", request.status);
+        console.log("DEBUG: Request ID:", request.id);
         
         if (request.status === 'pending') {
           console.log("DEBUG: Request is already pending");
@@ -333,6 +333,8 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
           return false;
         } else if (request.status === 'rejected') {
           console.log("DEBUG: Updating rejected request to pending");
+          console.log("DEBUG: Attempting to update request ID:", request.id);
+          
           // Update the existing rejected request to pending instead of creating a new one
           const { data: updateData, error: updateError } = await supabase
             .from('household_join_requests')
@@ -341,7 +343,10 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
               updated_at: new Date().toISOString()
             })
             .eq('id', request.id)
-            .select();
+            .select('*');
+
+          console.log("DEBUG: Update response data:", updateData);
+          console.log("DEBUG: Update error:", updateError);
 
           if (updateError) {
             console.error("DEBUG: Request update error:", updateError);
@@ -353,7 +358,28 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
             return false;
           }
 
+          if (!updateData || updateData.length === 0) {
+            console.error("DEBUG: No data returned from update");
+            toast({
+              title: "Failed to Send Request",
+              description: "Could not update join request. Please try again.",
+              variant: "destructive",
+            });
+            return false;
+          }
+
           console.log("DEBUG: Successfully updated request to pending:", updateData);
+          
+          // Verify the update worked by fetching the request again
+          const { data: verifyData, error: verifyError } = await supabase
+            .from('household_join_requests')
+            .select('*')
+            .eq('id', request.id)
+            .single();
+
+          console.log("DEBUG: Verification data:", verifyData);
+          console.log("DEBUG: Verification error:", verifyError);
+
           toast({
             title: "Request Sent Successfully!",
             description: `Your join request for "${matchingHousehold.name}" has been sent. The household owner will review your request.`,
@@ -373,7 +399,10 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
           user_id: user.id,
           status: 'pending'
         }])
-        .select();
+        .select('*');
+
+      console.log("DEBUG: Insert response data:", insertData);
+      console.log("DEBUG: Insert error:", requestError);
 
       if (requestError) {
         console.error("DEBUG: Request insert error:", requestError);
