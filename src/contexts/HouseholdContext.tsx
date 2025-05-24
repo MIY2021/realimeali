@@ -19,14 +19,11 @@ export interface HouseholdMember {
   joined_at: string;
 }
 
-export interface HouseholdInvitation {
+export interface HouseholdJoinRequest {
   id: string;
   household_id: string;
-  invited_by: string;
-  email: string;
-  invitation_code: string;
-  status: 'pending' | 'accepted' | 'declined' | 'expired';
-  expires_at: string;
+  user_id: string;
+  status: 'pending' | 'approved' | 'rejected';
   created_at: string;
   updated_at: string;
 }
@@ -35,13 +32,17 @@ interface HouseholdContextType {
   households: Household[];
   currentHousehold: Household | null;
   householdMembers: HouseholdMember[];
+  joinRequests: HouseholdJoinRequest[];
   isLoading: boolean;
   error: string | null;
   createHousehold: (name: string) => Promise<Household | null>;
   setCurrentHousehold: (household: Household | null) => void;
   fetchHouseholds: () => Promise<void>;
   fetchHouseholdMembers: (householdId: string) => Promise<void>;
-  inviteToHousehold: (email: string) => Promise<string | null>;
+  requestToJoinHousehold: (householdCode: string) => Promise<boolean>;
+  fetchJoinRequests: (householdId: string) => Promise<void>;
+  approveJoinRequest: (requestId: string) => Promise<boolean>;
+  rejectJoinRequest: (requestId: string) => Promise<boolean>;
   leaveHousehold: (householdId: string) => Promise<boolean>;
 }
 
@@ -51,6 +52,7 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
   const [households, setHouseholds] = useState<Household[]>([]);
   const [currentHousehold, setCurrentHousehold] = useState<Household | null>(null);
   const [householdMembers, setHouseholdMembers] = useState<HouseholdMember[]>([]);
+  const [joinRequests, setJoinRequests] = useState<HouseholdJoinRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
@@ -155,6 +157,248 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
         description: "Failed to fetch household members.",
         variant: "destructive",
       });
+    }
+  };
+
+  const fetchJoinRequests = async (householdId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('household_join_requests')
+        .select('*')
+        .eq('household_id', householdId)
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        throw error;
+      }
+
+      setJoinRequests(data || []);
+    } catch (err) {
+      console.error("Error fetching join requests:", err);
+      toast({
+        title: "Error",
+        description: "Failed to fetch join requests.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const requestToJoinHousehold = async (householdCode: string): Promise<boolean> => {
+    try {
+      if (!user) {
+        toast({
+          title: "Authentication Required",
+          description: "Please log in to join a household.",
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      console.log("Attempting to request join with household code:", householdCode);
+      
+      // Get all households and filter by code in JavaScript
+      const { data: households, error: householdError } = await supabase
+        .from('households')
+        .select('*');
+
+      if (householdError) {
+        console.error("Household lookup error:", householdError);
+        toast({
+          title: "Error",
+          description: "Failed to find household. Please try again.",
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      // Find household where the first 6 characters of the ID match the code
+      const matchingHousehold = households?.find(h => 
+        h.id.slice(0, 6).toUpperCase() === householdCode.trim().toUpperCase()
+      );
+
+      if (!matchingHousehold) {
+        toast({
+          title: "Invalid Code",
+          description: "The household code is invalid. Please check and try again.",
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      // Check if user is already a member
+      const { data: existingMember, error: memberCheckError } = await supabase
+        .from('household_members')
+        .select('id')
+        .eq('household_id', matchingHousehold.id)
+        .eq('user_id', user.id);
+
+      if (memberCheckError) {
+        console.error("Member check error:", memberCheckError);
+        toast({
+          title: "Error",
+          description: "Failed to check membership. Please try again.",
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      if (existingMember && existingMember.length > 0) {
+        toast({
+          title: "Already a Member",
+          description: "You are already a member of this household.",
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      // Check if user already has a pending request
+      const { data: existingRequest, error: requestCheckError } = await supabase
+        .from('household_join_requests')
+        .select('id')
+        .eq('household_id', matchingHousehold.id)
+        .eq('user_id', user.id)
+        .eq('status', 'pending');
+
+      if (requestCheckError) {
+        console.error("Request check error:", requestCheckError);
+        toast({
+          title: "Error",
+          description: "Failed to check existing requests. Please try again.",
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      if (existingRequest && existingRequest.length > 0) {
+        toast({
+          title: "Request Already Sent",
+          description: "You already have a pending request for this household.",
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      // Create join request
+      const { error: requestError } = await supabase
+        .from('household_join_requests')
+        .insert([{
+          household_id: matchingHousehold.id,
+          user_id: user.id,
+          status: 'pending'
+        }]);
+
+      if (requestError) {
+        console.error("Request insert error:", requestError);
+        throw requestError;
+      }
+
+      toast({
+        title: "Join Request Sent",
+        description: `Your request to join ${matchingHousehold.name} has been sent and is awaiting approval.`,
+      });
+
+      return true;
+    } catch (error) {
+      console.error("Error requesting to join household:", error);
+      toast({
+        title: "Error",
+        description: "Failed to send join request. Please try again.",
+        variant: "destructive",
+      });
+      return false;
+    }
+  };
+
+  const approveJoinRequest = async (requestId: string): Promise<boolean> => {
+    try {
+      // Get the request details
+      const { data: request, error: fetchError } = await supabase
+        .from('household_join_requests')
+        .select('*')
+        .eq('id', requestId)
+        .single();
+
+      if (fetchError || !request) {
+        throw fetchError || new Error("Request not found");
+      }
+
+      // Add user to household
+      const { error: memberError } = await supabase
+        .from('household_members')
+        .insert([{
+          household_id: request.household_id,
+          user_id: request.user_id,
+          role: 'member'
+        }]);
+
+      if (memberError) {
+        throw memberError;
+      }
+
+      // Update request status
+      const { error: updateError } = await supabase
+        .from('household_join_requests')
+        .update({ status: 'approved' })
+        .eq('id', requestId);
+
+      if (updateError) {
+        throw updateError;
+      }
+
+      // Refresh data
+      if (currentHousehold) {
+        await fetchHouseholdMembers(currentHousehold.id);
+        await fetchJoinRequests(currentHousehold.id);
+      }
+
+      toast({
+        title: "Request Approved",
+        description: "The join request has been approved.",
+      });
+
+      return true;
+    } catch (error) {
+      console.error("Error approving join request:", error);
+      toast({
+        title: "Error",
+        description: "Failed to approve join request. Please try again.",
+        variant: "destructive",
+      });
+      return false;
+    }
+  };
+
+  const rejectJoinRequest = async (requestId: string): Promise<boolean> => {
+    try {
+      const { error } = await supabase
+        .from('household_join_requests')
+        .update({ status: 'rejected' })
+        .eq('id', requestId);
+
+      if (error) {
+        throw error;
+      }
+
+      // Refresh join requests
+      if (currentHousehold) {
+        await fetchJoinRequests(currentHousehold.id);
+      }
+
+      toast({
+        title: "Request Rejected",
+        description: "The join request has been rejected.",
+      });
+
+      return true;
+    } catch (error) {
+      console.error("Error rejecting join request:", error);
+      toast({
+        title: "Error",
+        description: "Failed to reject join request. Please try again.",
+        variant: "destructive",
+      });
+      return false;
     }
   };
 
@@ -309,6 +553,7 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     if (currentHousehold) {
       fetchHouseholdMembers(currentHousehold.id);
+      fetchJoinRequests(currentHousehold.id);
     }
   }, [currentHousehold]);
 
@@ -357,13 +602,17 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
       households,
       currentHousehold,
       householdMembers,
+      joinRequests,
       isLoading,
       error,
       createHousehold,
       setCurrentHousehold,
       fetchHouseholds,
       fetchHouseholdMembers,
-      inviteToHousehold,
+      requestToJoinHousehold,
+      fetchJoinRequests,
+      approveJoinRequest,
+      rejectJoinRequest,
       leaveHousehold
     }}>
       {children}

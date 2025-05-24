@@ -7,6 +7,7 @@ import { JoinHouseholdCard } from "@/components/household/JoinHouseholdCard";
 import { HouseholdDetailsCard } from "@/components/household/HouseholdDetailsCard";
 import { HouseholdMembersCard } from "@/components/household/HouseholdMembersCard";
 import { InviteMembersCard } from "@/components/household/InviteMembersCard";
+import { JoinRequestsCard } from "@/components/household/JoinRequestsCard";
 
 export default function Household() {
   const { user } = useAuth();
@@ -50,6 +51,8 @@ export default function Household() {
           isOwner={!!isOwner}
           onHouseholdUpdate={setCurrentHousehold}
         />
+
+        <JoinRequestsCard isOwner={!!isOwner} />
 
         <HouseholdMembersCard
           members={members}

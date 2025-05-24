@@ -29,41 +29,35 @@ export const HouseholdManagementDialog = ({
   const [inviteEmail, setInviteEmail] = useState("");
   const [joinCode, setJoinCode] = useState("");
   const [isInviting, setIsInviting] = useState(false);
-  const [isJoining, setIsJoining] = useState(false);
-  const { inviteToHousehold, joinHousehold, householdMembers } = useHousehold();
+  const [isRequesting, setIsRequesting] = useState(false);
+  const { requestToJoinHousehold, householdMembers } = useHousehold();
   const { toast } = useToast();
 
   const handleInvite = async () => {
     if (!inviteEmail.trim()) return;
 
     setIsInviting(true);
-    const invitationCode = await inviteToHousehold(inviteEmail.trim());
-    
-    if (invitationCode) {
-      setInviteEmail("");
-      // Copy to clipboard
-      navigator.clipboard.writeText(invitationCode);
-      toast({
-        title: "Invitation Code Copied",
-        description: "The invitation code has been copied to your clipboard.",
-      });
-    }
-    
+    // Note: This would need to be implemented if email invitations are still desired
+    toast({
+      title: "Feature Not Available",
+      description: "Email invitations are not currently available. Share the household code instead.",
+      variant: "destructive",
+    });
     setIsInviting(false);
   };
 
   const handleJoin = async () => {
     if (!joinCode.trim()) return;
 
-    setIsJoining(true);
-    const success = await joinHousehold(joinCode.trim());
+    setIsRequesting(true);
+    const success = await requestToJoinHousehold(joinCode.trim());
     
     if (success) {
       setJoinCode("");
       onOpenChange(false);
     }
     
-    setIsJoining(false);
+    setIsRequesting(false);
   };
 
   return (
@@ -75,19 +69,15 @@ export const HouseholdManagementDialog = ({
             Manage {household.name}
           </DialogTitle>
           <DialogDescription>
-            Invite members or join another household.
+            View members or request to join another household.
           </DialogDescription>
         </DialogHeader>
 
         <Tabs defaultValue="members" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="members" className="flex items-center gap-1">
               <Users className="h-4 w-4" />
               Members ({householdMembers.length})
-            </TabsTrigger>
-            <TabsTrigger value="invite" className="flex items-center gap-1">
-              <User className="h-4 w-4" />
-              Invite
             </TabsTrigger>
             <TabsTrigger value="join" className="flex items-center gap-1">
               <User className="h-4 w-4" />
@@ -117,44 +107,23 @@ export const HouseholdManagementDialog = ({
             </div>
           </TabsContent>
 
-          <TabsContent value="invite" className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="invite-email">Email Address</Label>
-              <Input
-                id="invite-email"
-                type="email"
-                value={inviteEmail}
-                onChange={(e) => setInviteEmail(e.target.value)}
-                placeholder="Enter email to invite"
-                disabled={isInviting}
-              />
-            </div>
-            <Button 
-              onClick={handleInvite} 
-              disabled={!inviteEmail.trim() || isInviting}
-              className="w-full bg-sage hover:bg-sage/90"
-            >
-              {isInviting ? "Sending Invitation..." : "Send Invitation"}
-            </Button>
-          </TabsContent>
-
           <TabsContent value="join" className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="join-code">Invitation Code</Label>
+              <Label htmlFor="join-code">Household Code</Label>
               <Input
                 id="join-code"
                 value={joinCode}
                 onChange={(e) => setJoinCode(e.target.value)}
-                placeholder="Enter invitation code"
-                disabled={isJoining}
+                placeholder="Enter household code"
+                disabled={isRequesting}
               />
             </div>
             <Button 
               onClick={handleJoin} 
-              disabled={!joinCode.trim() || isJoining}
+              disabled={!joinCode.trim() || isRequesting}
               className="w-full bg-terracotta hover:bg-terracotta/90"
             >
-              {isJoining ? "Joining..." : "Join Household"}
+              {isRequesting ? "Sending Request..." : "Send Join Request"}
             </Button>
           </TabsContent>
         </Tabs>
