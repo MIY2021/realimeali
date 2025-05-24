@@ -61,7 +61,7 @@ export const JoinHouseholdCard = () => {
             id="householdCode"
             value={householdCode}
             onChange={(e) => setHouseholdCode(e.target.value)}
-            placeholder="Enter household code (e.g., A040CB)"
+            placeholder="Enter household code"
             maxLength={6}
             disabled={isRequesting}
           />
