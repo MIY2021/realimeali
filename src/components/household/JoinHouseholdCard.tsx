@@ -14,13 +14,13 @@ export const JoinHouseholdCard = () => {
   const { user } = useAuth();
   const { fetchHouseholds, setCurrentHousehold } = useHousehold();
   const { toast } = useToast();
-  const [inviteCode, setInviteCode] = useState("");
+  const [householdCode, setHouseholdCode] = useState("");
   const [isJoining, setIsJoining] = useState(false);
 
   const handleJoinByCode = async () => {
     console.log("=== JOIN HOUSEHOLD DEBUG START ===");
     console.log("User:", user);
-    console.log("Invite code:", inviteCode);
+    console.log("Household code:", householdCode);
     
     if (!user) {
       console.log("ERROR: No user found");
@@ -32,11 +32,11 @@ export const JoinHouseholdCard = () => {
       return;
     }
 
-    if (!inviteCode.trim()) {
-      console.log("ERROR: No invite code provided");
+    if (!householdCode.trim()) {
+      console.log("ERROR: No household code provided");
       toast({
         title: "Code Required",
-        description: "Please enter an invitation code.",
+        description: "Please enter a household code.",
         variant: "destructive",
       });
       return;
@@ -44,76 +44,38 @@ export const JoinHouseholdCard = () => {
 
     setIsJoining(true);
     try {
-      const cleanCode = inviteCode.trim().toUpperCase();
-      console.log("Attempting to join with code:", cleanCode);
+      const cleanCode = householdCode.trim().toUpperCase();
+      console.log("Attempting to join with household code:", cleanCode);
       
-      // First, try to find by invitation code (for email invites)
-      const { data: invitations, error: inviteError } = await supabase
-        .from('household_invitations')
-        .select('*, households(*)')
-        .eq('invitation_code', cleanCode)
-        .eq('status', 'pending')
-        .gt('expires_at', new Date().toISOString());
+      // Get all households and filter by code in JavaScript
+      const { data: households, error: householdError } = await supabase
+        .from('households')
+        .select('*');
 
-      console.log("Invitation code query result:", { invitations, inviteError });
+      console.log("All households query result:", { households, householdError });
 
-      if (inviteError) {
-        console.error("Database error:", inviteError);
+      if (householdError) {
+        console.error("Household lookup error:", householdError);
         toast({
-          title: "Database Error",
-          description: "Failed to check invitation. Please try again.",
+          title: "Error",
+          description: "Failed to find household. Please try again.",
           variant: "destructive",
         });
         return;
       }
 
-      let household = null;
-      let invitation = null;
+      // Find household where the first 6 characters of the ID match the code
+      const matchingHousehold = households?.find(h => 
+        h.id.slice(0, 6).toUpperCase() === cleanCode
+      );
 
-      if (invitations && invitations.length > 0) {
-        // Found by invitation code
-        invitation = invitations[0];
-        household = invitation.households;
-        console.log("Found invitation by invitation code:", invitation);
-      } else {
-        // If not found by invitation code, try household code (first 6 chars of household ID)
-        console.log("No invitation found, trying household code...");
-        
-        const { data: households, error: householdError } = await supabase
-          .from('households')
-          .select('*')
-          .ilike('id', `${cleanCode.toLowerCase()}%`);
+      console.log("Matching household:", matchingHousehold);
 
-        console.log("Household code query result:", { households, householdError });
-
-        if (householdError) {
-          console.error("Household lookup error:", householdError);
-          toast({
-            title: "Error",
-            description: "Failed to find household. Please try again.",
-            variant: "destructive",
-          });
-          return;
-        }
-
-        if (!households || households.length === 0) {
-          console.log("No household found for code:", cleanCode);
-          toast({
-            title: "Invalid Code",
-            description: "The code is invalid. Please check and try again.",
-            variant: "destructive",
-          });
-          return;
-        }
-
-        household = households[0];
-        console.log("Found household by household code:", household);
-      }
-
-      if (!household) {
+      if (!matchingHousehold) {
+        console.log("No household found for code:", cleanCode);
         toast({
-          title: "Error",
-          description: "Could not find household. Please try again.",
+          title: "Invalid Code",
+          description: "The household code is invalid. Please check and try again.",
           variant: "destructive",
         });
         return;
@@ -123,7 +85,7 @@ export const JoinHouseholdCard = () => {
       const { data: existingMember, error: memberCheckError } = await supabase
         .from('household_members')
         .select('id')
-        .eq('household_id', household.id)
+        .eq('household_id', matchingHousehold.id)
         .eq('user_id', user.id);
 
       console.log("Existing member check:", { existingMember, memberCheckError });
@@ -153,7 +115,7 @@ export const JoinHouseholdCard = () => {
       const { error: memberError } = await supabase
         .from('household_members')
         .insert([{
-          household_id: household.id,
+          household_id: matchingHousehold.id,
           user_id: user.id,
           role: 'member'
         }]);
@@ -165,29 +127,17 @@ export const JoinHouseholdCard = () => {
 
       console.log("User successfully added to household");
 
-      // Update invitation status if we used an invitation
-      if (invitation) {
-        const { error: updateError } = await supabase
-          .from('household_invitations')
-          .update({ status: 'accepted' })
-          .eq('id', invitation.id);
-
-        if (updateError) {
-          console.error("Invitation update error:", updateError);
-        }
-      }
-
       console.log("Refreshing households...");
       // Refresh households and set current
       await fetchHouseholds();
-      setCurrentHousehold(household);
+      setCurrentHousehold(matchingHousehold);
 
       toast({
         title: "Joined Household",
-        description: `Successfully joined ${household.name}!`,
+        description: `Successfully joined ${matchingHousehold.name}!`,
       });
       
-      setInviteCode("");
+      setHouseholdCode("");
       console.log("=== JOIN HOUSEHOLD SUCCESS ===");
     } catch (error) {
       console.error("Error joining household:", error);
@@ -207,21 +157,21 @@ export const JoinHouseholdCard = () => {
       <CardHeader>
         <CardTitle>Join a Household</CardTitle>
         <CardDescription>
-          Enter an invitation code or household code to join an existing household.
+          Enter a household code to join an existing household.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="inviteCode">Invitation Code or Household Code</Label>
+          <Label htmlFor="householdCode">Household Code</Label>
           <Input
-            id="inviteCode"
-            value={inviteCode}
+            id="householdCode"
+            value={householdCode}
             onChange={(e) => {
-              console.log("Invite code changed:", e.target.value);
-              setInviteCode(e.target.value);
+              console.log("Household code changed:", e.target.value);
+              setHouseholdCode(e.target.value);
             }}
-            placeholder="Enter invitation code or household code"
-            maxLength={10}
+            placeholder="Enter household code (e.g., A040CB)"
+            maxLength={6}
             disabled={isJoining}
           />
         </div>
@@ -230,7 +180,7 @@ export const JoinHouseholdCard = () => {
             console.log("Join button clicked");
             handleJoinByCode();
           }} 
-          disabled={!inviteCode.trim() || isJoining}
+          disabled={!householdCode.trim() || isJoining}
           className="w-full bg-terracotta hover:bg-terracotta/90"
         >
           {isJoining ? "Joining..." : "Join Household"}

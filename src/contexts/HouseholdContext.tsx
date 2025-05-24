@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -43,7 +42,6 @@ interface HouseholdContextType {
   fetchHouseholds: () => Promise<void>;
   fetchHouseholdMembers: (householdId: string) => Promise<void>;
   inviteToHousehold: (email: string) => Promise<string | null>;
-  joinHousehold: (invitationCode: string) => Promise<boolean>;
   leaveHousehold: (householdId: string) => Promise<boolean>;
 }
 
@@ -267,96 +265,6 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const joinHousehold = async (invitationCode: string): Promise<boolean> => {
-    try {
-      if (!user) {
-        toast({
-          title: "Authentication Required",
-          description: "You must be logged in to join a household.",
-          variant: "destructive",
-        });
-        return false;
-      }
-
-      console.log("Joining household with code:", invitationCode);
-
-      // Find the invitation
-      const { data: invitation, error: inviteError } = await supabase
-        .from('household_invitations')
-        .select('*, households(*)')
-        .eq('invitation_code', invitationCode.toUpperCase())
-        .eq('status', 'pending')
-        .gt('expires_at', new Date().toISOString())
-        .single();
-
-      if (inviteError || !invitation) {
-        console.error("Invitation lookup error:", inviteError);
-        toast({
-          title: "Invalid Invitation",
-          description: "The invitation code is invalid or has expired.",
-          variant: "destructive",
-        });
-        return false;
-      }
-
-      console.log("Found invitation:", invitation);
-
-      // Check if user is already a member
-      const { data: existingMember } = await supabase
-        .from('household_members')
-        .select('id')
-        .eq('household_id', invitation.household_id)
-        .eq('user_id', user.id)
-        .single();
-
-      if (existingMember) {
-        toast({
-          title: "Already a Member",
-          description: "You are already a member of this household.",
-          variant: "destructive",
-        });
-        return false;
-      }
-
-      // Add user to household
-      const { error: memberError } = await supabase
-        .from('household_members')
-        .insert([{
-          household_id: invitation.household_id,
-          user_id: user.id,
-          role: 'member'
-        }]);
-
-      if (memberError) {
-        console.error("Member insert error:", memberError);
-        throw memberError;
-      }
-
-      // Update invitation status
-      await supabase
-        .from('household_invitations')
-        .update({ status: 'accepted' })
-        .eq('id', invitation.id);
-
-      await fetchHouseholds();
-      
-      toast({
-        title: "Joined Household",
-        description: `You've successfully joined ${invitation.households.name}!`,
-      });
-
-      return true;
-    } catch (err) {
-      console.error("Error joining household:", err);
-      toast({
-        title: "Error",
-        description: "Failed to join household. Please try again.",
-        variant: "destructive",
-      });
-      return false;
-    }
-  };
-
   const leaveHousehold = async (householdId: string): Promise<boolean> => {
     try {
       if (!user) return false;
@@ -456,7 +364,6 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
       fetchHouseholds,
       fetchHouseholdMembers,
       inviteToHousehold,
-      joinHousehold,
       leaveHousehold
     }}>
       {children}
