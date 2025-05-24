@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useHousehold, Household } from "@/contexts/HouseholdContext";
-import { Users, UserPlus, Settings } from "lucide-react";
+import { Users, User, Pencil } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface HouseholdManagementDialogProps {
@@ -71,7 +71,7 @@ export const HouseholdManagementDialog = ({
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Settings className="h-5 w-5" />
+            <Pencil className="h-5 w-5" />
             Manage {household.name}
           </DialogTitle>
           <DialogDescription>
@@ -86,11 +86,11 @@ export const HouseholdManagementDialog = ({
               Members ({householdMembers.length})
             </TabsTrigger>
             <TabsTrigger value="invite" className="flex items-center gap-1">
-              <UserPlus className="h-4 w-4" />
+              <User className="h-4 w-4" />
               Invite
             </TabsTrigger>
             <TabsTrigger value="join" className="flex items-center gap-1">
-              <UserPlus className="h-4 w-4" />
+              <User className="h-4 w-4" />
               Join
             </TabsTrigger>
           </TabsList>

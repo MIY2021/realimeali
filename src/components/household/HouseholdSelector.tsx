@@ -9,7 +9,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu";
-import { ChevronDown, Home, Plus } from "lucide-react";
+import { ChevronDown, User, Plus } from "lucide-react";
 import { CreateHouseholdDialog } from "./CreateHouseholdDialog";
 import { HouseholdManagementDialog } from "./HouseholdManagementDialog";
 
@@ -23,7 +23,7 @@ export const HouseholdSelector = () => {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="outline" className="flex items-center gap-2">
-            <Home className="h-4 w-4" />
+            <User className="h-4 w-4" />
             <span className="hidden sm:inline">
               {currentHousehold ? currentHousehold.name : "No Household"}
             </span>
@@ -37,7 +37,7 @@ export const HouseholdSelector = () => {
               onClick={() => setCurrentHousehold(household)}
               className={currentHousehold?.id === household.id ? "bg-accent" : ""}
             >
-              <Home className="h-4 w-4 mr-2" />
+              <User className="h-4 w-4 mr-2" />
               {household.name}
             </DropdownMenuItem>
           ))}
@@ -48,7 +48,7 @@ export const HouseholdSelector = () => {
           </DropdownMenuItem>
           {currentHousehold && (
             <DropdownMenuItem onClick={() => setShowManagementDialog(true)}>
-              <Home className="h-4 w-4 mr-2" />
+              <User className="h-4 w-4 mr-2" />
               Manage Household
             </DropdownMenuItem>
           )}
