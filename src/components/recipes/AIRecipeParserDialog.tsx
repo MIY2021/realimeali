@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Recipe, RecipeCategory } from "@/types";
 import {
@@ -10,7 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, X, Upload, FileText, Globe, Camera } from "lucide-react";
+import { Plus, X, Upload, FileText, Globe, Camera, Edit, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
@@ -37,6 +36,8 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
   const [showImageSelection, setShowImageSelection] = useState(false);
   const [recipeRequest, setRecipeRequest] = useState("");
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+  const [amendmentRequest, setAmendmentRequest] = useState("");
+  const [isAmending, setIsAmending] = useState(false);
 
   const handleGenerateRecipe = async () => {
     if (!recipeRequest.trim()) {
@@ -77,7 +78,6 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
         setParsedRecipe(formattedRecipe);
         setShowPreview(true);
         
-        // Try to generate an image for the recipe
         handleGenerateImage(formattedRecipe.title);
         
         toast({
@@ -93,6 +93,63 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleAmendRecipe = async () => {
+    if (!amendmentRequest.trim() || !parsedRecipe) {
+      toast({
+        title: "Missing amendment",
+        description: "Please tell me what you'd like to change!",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsAmending(true);
+    
+    try {
+      const currentRecipeText = `Current recipe: Title: ${parsedRecipe.title}, Description: ${parsedRecipe.description}, Ingredients: ${parsedRecipe.ingredients.join(', ')}, Instructions: ${parsedRecipe.instructions.join('. ')}, Prep time: ${parsedRecipe.prepTime} min, Cook time: ${parsedRecipe.cookTime} min, Servings: ${parsedRecipe.servings}`;
+      
+      const { data, error } = await supabase.functions.invoke('parse-recipe-ai', {
+        body: {
+          recipeText: `${currentRecipeText}\n\nPlease amend this recipe based on this request: ${amendmentRequest}. Keep the same format with title, description, ingredients list, step-by-step instructions, prep time, cook time, and servings.`
+        }
+      });
+
+      if (error) throw error;
+
+      if (data?.parsedRecipe) {
+        const recipe = data.parsedRecipe;
+        const formattedRecipe = {
+          title: recipe.title || parsedRecipe.title,
+          description: recipe.description || parsedRecipe.description,
+          ingredients: Array.isArray(recipe.ingredients) ? recipe.ingredients : parsedRecipe.ingredients,
+          instructions: Array.isArray(recipe.instructions) ? recipe.instructions : parsedRecipe.instructions,
+          categories: Array.isArray(recipe.categories) ? recipe.categories : parsedRecipe.categories,
+          prepTime: Number(recipe.prepTime) || parsedRecipe.prepTime,
+          cookTime: Number(recipe.cookTime) || parsedRecipe.cookTime,
+          servings: Number(recipe.servings) || parsedRecipe.servings,
+          image: parsedRecipe.image,
+          isFavorite: false,
+        };
+
+        setParsedRecipe(formattedRecipe);
+        setAmendmentRequest("");
+        
+        toast({
+          title: "🎉 Recipe updated!",
+          description: "I've amended your recipe as requested!",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Amendment failed",
+        description: "Could not amend recipe. Please try again!",
+        variant: "destructive",
+      });
+    } finally {
+      setIsAmending(false);
     }
   };
 
@@ -124,6 +181,23 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
       return;
     }
 
+    if (activeTab === "manual") {
+      setShowPreview(true);
+      setParsedRecipe({
+        title: "",
+        description: "",
+        ingredients: [],
+        instructions: [],
+        categories: [],
+        prepTime: 0,
+        cookTime: 0,
+        servings: 1,
+        image: undefined,
+        isFavorite: false,
+      });
+      return;
+    }
+
     if (activeTab === "text" && !recipeText.trim()) {
       toast({
         title: "Oops!",
@@ -142,16 +216,7 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
       return;
     }
 
-    if (activeTab === "upload" && !imageFile) {
-      toast({
-        title: "No image selected",
-        description: "Please select an image file to upload! 📁",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (activeTab === "ingredients" && !cameraFile) {
+    if (activeTab === "ingredient-helper" && !cameraFile) {
       toast({
         title: "No photo taken",
         description: "Please take a photo of your ingredients first! 📷",
@@ -171,15 +236,7 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
       } else if (activeTab === "url") {
         requestData.websiteUrl = websiteUrl.trim();
         requestData.extractImages = true;
-      } else if (activeTab === "upload" && imageFile) {
-        const reader = new FileReader();
-        const base64Promise = new Promise<string>((resolve, reject) => {
-          reader.onload = () => resolve(reader.result as string);
-          reader.onerror = reject;
-          reader.readAsDataURL(imageFile);
-        });
-        requestData.imageUrl = await base64Promise;
-      } else if (activeTab === "ingredients" && cameraFile) {
+      } else if (activeTab === "ingredient-helper" && cameraFile) {
         const reader = new FileReader();
         const base64Promise = new Promise<string>((resolve, reject) => {
           reader.onload = () => resolve(reader.result as string);
@@ -287,19 +344,17 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
 
       setParsedRecipe(formattedRecipe);
 
-      // Handle website images
       if (data.websiteImages && data.websiteImages.length > 0) {
         setWebsiteImages(data.websiteImages);
         setShowPreview(true);
       } else if (activeTab === "text") {
-        // For text input, show image selection after parsing
         setShowImageSelection(true);
         setShowPreview(true);
       } else {
         setShowPreview(true);
       }
 
-      const successMessage = activeTab === "ingredients" 
+      const successMessage = activeTab === "ingredient-helper" 
         ? "🎉 Recipe created from your ingredients! I've suggested a delicious meal you can make."
         : "🎉 Recipe magic complete! I've extracted all the delicious details! Take a look and adjust anything you'd like.";
 
@@ -351,6 +406,8 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
     setShowImageSelection(false);
     setRecipeRequest("");
     setIsGeneratingImage(false);
+    setAmendmentRequest("");
+    setIsAmending(false);
     onOpenChange(false);
   };
 
@@ -373,7 +430,7 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
       <DialogContent className="sm:max-w-4xl h-[90vh] max-h-[90vh] flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Plus className="h-5 w-5 text-terracotta" />
+            <Sparkles className="h-5 w-5 text-terracotta" />
             ✨ AI Recipe Magic
           </DialogTitle>
         </DialogHeader>
@@ -383,30 +440,30 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
             <div className="space-y-4">
               <div>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Got a recipe to organize? I can help! Just paste some text, share a recipe website URL, upload a photo, take a photo of your ingredients, or let me generate a custom recipe for you! 🍳
+                  Got a recipe to organize? I can help! Just paste some text, share a recipe website URL, take a photo of your ingredients, let me generate a custom recipe for you, or enter one manually! 🍳
                 </p>
                 
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                  <TabsList className="grid w-full grid-cols-5">
-                    <TabsTrigger value="text" className="flex items-center gap-1 text-xs">
+                  <TabsList className="grid w-full grid-cols-5 h-auto">
+                    <TabsTrigger value="text" className="flex flex-col items-center gap-1 text-xs p-2 h-auto">
                       <FileText className="h-3 w-3" />
-                      Text
+                      <span className="hidden sm:inline">Text</span>
                     </TabsTrigger>
-                    <TabsTrigger value="url" className="flex items-center gap-1 text-xs">
+                    <TabsTrigger value="url" className="flex flex-col items-center gap-1 text-xs p-2 h-auto">
                       <Globe className="h-3 w-3" />
-                      URL
+                      <span className="hidden sm:inline">URL</span>
                     </TabsTrigger>
-                    <TabsTrigger value="upload" className="flex items-center gap-1 text-xs">
-                      <Upload className="h-3 w-3" />
-                      Upload
-                    </TabsTrigger>
-                    <TabsTrigger value="ingredients" className="flex items-center gap-1 text-xs">
+                    <TabsTrigger value="ingredient-helper" className="flex flex-col items-center gap-1 text-xs p-2 h-auto">
                       <Camera className="h-3 w-3" />
-                      Ingredient Helper
+                      <span className="hidden sm:inline">Ingredient Helper</span>
                     </TabsTrigger>
-                    <TabsTrigger value="generate" className="flex items-center gap-1 text-xs">
-                      <Plus className="h-3 w-3" />
-                      Generate
+                    <TabsTrigger value="generate" className="flex flex-col items-center gap-1 text-xs p-2 h-auto">
+                      <Sparkles className="h-3 w-3" />
+                      <span className="hidden sm:inline">Generate</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="manual" className="flex flex-col items-center gap-1 text-xs p-2 h-auto">
+                      <Edit className="h-3 w-3" />
+                      <span className="hidden sm:inline">Manual</span>
                     </TabsTrigger>
                   </TabsList>
                   
@@ -417,7 +474,7 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
                       value={recipeText}
                       onChange={(e) => setRecipeText(e.target.value)}
                       placeholder="Paste any recipe here! From a website, cookbook, handwritten note, or even that crumpled paper from grandma. I'll organize it beautifully! ✨"
-                      className="w-full h-48 p-3 border rounded-md resize-none"
+                      className="w-full h-32 p-3 border rounded-md resize-none"
                     />
                   </TabsContent>
 
@@ -434,24 +491,8 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
                       I can extract recipes directly from recipe websites and find images too! Just paste the URL from sites like AllRecipes, Food Network, BBC Good Food, etc.
                     </p>
                   </TabsContent>
-                  
-                  <TabsContent value="upload" className="space-y-2">
-                    <Label htmlFor="image-file">Upload Recipe Image</Label>
-                    <Input
-                      id="image-file"
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => setImageFile(e.target.files?.[0] || null)}
-                    />
-                    {imageFile && (
-                      <p className="text-sm text-green-600">📁 {imageFile.name} selected</p>
-                    )}
-                    <p className="text-xs text-muted-foreground">
-                      Upload a photo of a recipe from a cookbook, screen, or handwritten note!
-                    </p>
-                  </TabsContent>
 
-                  <TabsContent value="ingredients" className="space-y-2">
+                  <TabsContent value="ingredient-helper" className="space-y-2">
                     <Label htmlFor="camera-file">Take Photo of Ingredients</Label>
                     <Input
                       id="camera-file"
@@ -481,12 +522,22 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
                       id="recipe-request"
                       value={recipeRequest}
                       onChange={(e) => setRecipeRequest(e.target.value)}
-                      placeholder="Tell me what you're looking for! E.g., 'A quick vegetarian dinner for 4 people using ingredients I might have at home' or 'A fancy dessert for a dinner party' or 'Healthy breakfast ideas with oats'. You can also ask me to reverse engineer recipes from restaurants that you liked!"
+                      placeholder="Tell me what you're looking for! E.g., 'A quick vegetarian dinner for 4 people using ingredients I might have at home' or 'A fancy dessert for a dinner party' or 'Healthy breakfast ideas with oats'."
                       className="w-full h-32 p-3 border rounded-md resize-none"
                     />
                     <p className="text-xs text-muted-foreground">
                       I'll create a custom recipe based on your needs! Be as specific as you want about ingredients, dietary restrictions, cooking time, etc. You can also ask me to reverse engineer recipes from restaurants that you liked!
                     </p>
+                  </TabsContent>
+
+                  <TabsContent value="manual" className="space-y-2">
+                    <div className="text-center py-8">
+                      <Edit className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                      <h3 className="text-lg font-semibold mb-2">Manual Recipe Entry</h3>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Create a recipe from scratch with our easy-to-use form
+                      </p>
+                    </div>
                   </TabsContent>
                 </Tabs>
               </div>
@@ -498,8 +549,42 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
           ) : parsedRecipe ? (
             <div className="space-y-4">
               <div className="bg-green-50 p-3 rounded-md">
-                <p className="text-sm text-green-700 font-medium">🎉 Recipe extracted successfully! Everything looks good, but feel free to make any adjustments:</p>
+                <p className="text-sm text-green-700 font-medium">🎉 Recipe ready! Everything looks good, but feel free to make any adjustments:</p>
               </div>
+
+              {/* Amendment section for generated recipes */}
+              {activeTab === "generate" && (
+                <div className="bg-blue-50 p-3 rounded-md space-y-2">
+                  <Label htmlFor="amendment-request">Want to make changes to this recipe?</Label>
+                  <div className="flex gap-2">
+                    <textarea
+                      id="amendment-request"
+                      value={amendmentRequest}
+                      onChange={(e) => setAmendmentRequest(e.target.value)}
+                      placeholder="E.g., 'Make it spicier', 'Add more vegetables', 'Make it vegan', 'Reduce cooking time'..."
+                      className="flex-1 h-20 p-2 border rounded-md resize-none text-sm"
+                    />
+                    <Button
+                      onClick={handleAmendRecipe}
+                      disabled={isAmending || !amendmentRequest.trim()}
+                      size="sm"
+                      className="bg-blue-600 hover:bg-blue-700"
+                    >
+                      {isAmending ? (
+                        <>
+                          <div className="h-3 w-3 mr-1 animate-spin rounded-full border border-white border-t-transparent" />
+                          Updating...
+                        </>
+                      ) : (
+                        <>
+                          <Edit className="h-3 w-3 mr-1" />
+                          Update
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              )}
 
               {/* Website Images Selection */}
               {websiteImages.length > 0 && (
@@ -547,10 +632,16 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
                 </div>
               )}
 
-              {/* AI Generated Image */}
+              {/* AI Generated Image Placeholder */}
               {isGeneratingImage && (
                 <div className="space-y-2">
-                  <p className="text-sm text-blue-600">🎨 Generating a beautiful image for your recipe...</p>
+                  <div className="w-full h-48 bg-gray-100 rounded border-2 border-dashed border-gray-300 flex items-center justify-center">
+                    <div className="text-center">
+                      <div className="h-8 w-8 mx-auto mb-2 animate-spin rounded-full border-2 border-terracotta border-t-transparent" />
+                      <p className="text-sm text-gray-600">🎨 Generating beautiful image...</p>
+                      <p className="text-xs text-gray-500">This may take a moment</p>
+                    </div>
+                  </div>
                 </div>
               )}
 
@@ -684,20 +775,22 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
               disabled={isLoading || 
                 (activeTab === "text" && !recipeText.trim()) || 
                 (activeTab === "url" && !websiteUrl.trim()) ||
-                (activeTab === "upload" && !imageFile) ||
-                (activeTab === "ingredients" && !cameraFile) ||
+                (activeTab === "ingredient-helper" && !cameraFile) ||
                 (activeTab === "generate" && !recipeRequest.trim())}
               className="bg-terracotta hover:bg-terracotta/90"
             >
               {isLoading ? (
                 <>
                   <div className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                  {activeTab === "generate" ? "Generating..." : activeTab === "ingredients" ? "Analyzing ingredients..." : "Working my magic..."}
+                  {activeTab === "generate" ? "Generating..." : activeTab === "ingredient-helper" ? "Analyzing ingredients..." : "Working my magic..."}
                 </>
               ) : (
                 <>
                   <Plus className="h-4 w-4 mr-2" />
-                  {activeTab === "generate" ? "✨ Generate Recipe" : activeTab === "ingredients" ? "🧑‍🍳 Create Recipe from Ingredients" : "✨ Extract Recipe"}
+                  {activeTab === "generate" ? "✨ Generate Recipe" : 
+                   activeTab === "ingredient-helper" ? "🧑‍🍳 Create Recipe from Ingredients" : 
+                   activeTab === "manual" ? "📝 Create Manual Recipe" : 
+                   "✨ Extract Recipe"}
                 </>
               )}
             </Button>

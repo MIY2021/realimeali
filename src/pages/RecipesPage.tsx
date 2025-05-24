@@ -1,11 +1,9 @@
-
 import { useState } from "react";
 import { RecipeList } from "@/components/recipes/RecipeList";
 import { Button } from "@/components/ui/button";
-import { Plus, Book, Sparkles } from "lucide-react";
+import { Book, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { MealType, Recipe } from "@/types";
-import { CreateRecipeDialog } from "@/components/recipes/CreateRecipeDialog";
 import { AIRecipeParserDialog } from "@/components/recipes/AIRecipeParserDialog";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -15,21 +13,8 @@ export default function RecipesPage() {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  // Dialog states
-  const [showNewRecipeDialog, setShowNewRecipeDialog] = useState(false);
+  // Dialog state
   const [showAIParserDialog, setShowAIParserDialog] = useState(false);
-
-  const handleAddNewRecipe = () => {
-    if (!user) {
-      toast({
-        title: "Login Required",
-        description: "You need to log in to create recipes.",
-        variant: "destructive",
-      });
-      return;
-    }
-    setShowNewRecipeDialog(true);
-  };
 
   const handleAIHelper = () => {
     if (!user) {
@@ -43,13 +28,6 @@ export default function RecipesPage() {
     setShowAIParserDialog(true);
   };
 
-  const handleSaveNewRecipe = async (newRecipeData: Omit<Recipe, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>) => {
-    const newRecipe = await createRecipe(newRecipeData);
-    if (newRecipe) {
-      setShowNewRecipeDialog(false);
-    }
-  };
-
   const handleSaveAIParsedRecipe = async (newRecipeData: Omit<Recipe, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>) => {
     const newRecipe = await createRecipe(newRecipeData);
     if (newRecipe) {
@@ -57,7 +35,6 @@ export default function RecipesPage() {
     }
   };
 
-  // --- Add-to-meal plan handler ---
   const handleAddToMealPlan = (recipe: Recipe, mealType: MealType, selectedWeek: 1 | 2) => {
     if (!user) {
       toast({
@@ -68,7 +45,6 @@ export default function RecipesPage() {
       return;
     }
     
-    // Store the meal plan selection in localStorage with proper recipe data
     const storageKey = `persistedMealPlans_v1_week${selectedWeek}`;
     const existingPlans = JSON.parse(localStorage.getItem(storageKey) || '[]');
     
@@ -81,7 +57,6 @@ export default function RecipesPage() {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       slotIndex: existingPlans.filter((mp: any) => mp.mealType === mealType).length,
-      // Store recipe data for immediate display
       recipe: {
         id: recipe.id,
         title: recipe.title,
@@ -113,19 +88,11 @@ export default function RecipesPage() {
         </div>
         <div className="flex items-center gap-2">
           <Button 
-            variant="outline"
-            className="bg-sage hover:bg-sage/90 text-white border-sage" 
+            className="bg-sage hover:bg-sage/90 text-white" 
             onClick={handleAIHelper}
           >
             <Sparkles className="h-4 w-4 mr-2" />
-            ✨ AI Helper
-          </Button>
-          <Button 
-            className="bg-terracotta hover:bg-terracotta/90" 
-            onClick={handleAddNewRecipe}
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Add New Recipe
+            ✨ AI Recipe Magic
           </Button>
         </div>
       </div>
@@ -141,16 +108,10 @@ export default function RecipesPage() {
       ) : recipes.length === 0 ? (
         <div className="py-10 text-center">
           <p className="text-muted-foreground mb-4">You haven't created any recipes yet.</p>
-          <div className="flex justify-center gap-2">
-            <Button onClick={handleAIHelper} variant="outline" className="bg-sage hover:bg-sage/90 text-white border-sage">
-              <Sparkles className="h-4 w-4 mr-2" />
-              ✨ Try AI Helper
-            </Button>
-            <Button onClick={handleAddNewRecipe} className="bg-terracotta hover:bg-terracotta/90">
-              <Plus className="h-4 w-4 mr-2" />
-              Create Your First Recipe
-            </Button>
-          </div>
+          <Button onClick={handleAIHelper} className="bg-sage hover:bg-sage/90 text-white">
+            <Sparkles className="h-4 w-4 mr-2" />
+            ✨ Create Your First Recipe
+          </Button>
         </div>
       ) : (
         <RecipeList
@@ -158,13 +119,6 @@ export default function RecipesPage() {
           onAddToMealPlan={handleAddToMealPlan}
         />
       )}
-
-      {/* Create Recipe Dialog */}
-      <CreateRecipeDialog
-        open={showNewRecipeDialog}
-        onOpenChange={setShowNewRecipeDialog}
-        onSave={handleSaveNewRecipe}
-      />
 
       <AIRecipeParserDialog
         open={showAIParserDialog}

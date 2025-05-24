@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { RecipeDetail as RecipeDetailComponent } from "@/components/recipes/RecipeDetail";
 import { Button } from "@/components/ui/button";
@@ -22,6 +21,11 @@ export default function RecipeDetailPage() {
   const [selectedWeek, setSelectedWeek] = useState<1 | 2 | null>(null);
   
   const recipe = id ? getRecipeById(id) : undefined;
+
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
   
   const handleEdit = (recipe: Recipe) => {
     if (!user) {
@@ -33,7 +37,6 @@ export default function RecipeDetailPage() {
       return;
     }
 
-    // Check if user owns this recipe
     if (recipe.createdBy !== user.id) {
       toast({
         title: "Permission Denied",
@@ -58,7 +61,6 @@ export default function RecipeDetailPage() {
   const handleDeleteRecipe = async () => {
     if (!recipe || !user) return;
 
-    // Check if user owns this recipe
     if (recipe.createdBy !== user.id) {
       toast({
         title: "Permission Denied",
@@ -99,7 +101,6 @@ export default function RecipeDetailPage() {
       return;
     }
 
-    // Store the meal plan selection in localStorage
     const storageKey = `persistedMealPlans_v1_week${selectedWeek}`;
     const existingPlans = JSON.parse(localStorage.getItem(storageKey) || '[]');
     
@@ -176,7 +177,6 @@ export default function RecipeDetailPage() {
         />
       )}
 
-      {/* Meal Plan Dialog */}
       <Dialog open={showMealPlanDialog} onOpenChange={setShowMealPlanDialog}>
         <DialogContent>
           <DialogHeader>
