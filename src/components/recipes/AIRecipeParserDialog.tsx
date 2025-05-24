@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, X, Upload, FileText, Globe, Camera, Sparkles, PenTool } from "lucide-react";
+import { Plus, X, Upload, FileText, Globe, Camera, Sparkles, Pencil } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
@@ -466,7 +466,7 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
                       <span className="sm:hidden">✨ Gen</span>
                     </TabsTrigger>
                     <TabsTrigger value="manual" className="flex flex-col items-center gap-1 text-xs p-2 h-auto">
-                      <PenTool className="h-3 w-3" />
+                      <Pencil className="h-3 w-3" />
                       <span className="hidden sm:inline">Manual</span>
                       <span className="sm:hidden">Manual</span>
                     </TabsTrigger>
@@ -537,7 +537,7 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
 
                   <TabsContent value="manual" className="space-y-2">
                     <div className="text-center py-8">
-                      <PenTool className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                      <Pencil className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
                       <h3 className="text-lg font-semibold mb-2">Manual Recipe Entry</h3>
                       <p className="text-sm text-muted-foreground mb-4">
                         Create a recipe from scratch with our easy-to-use form
