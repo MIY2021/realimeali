@@ -12,12 +12,12 @@ export default function Index() {
     <div className="flex flex-col min-h-[85vh]">
       <section className="py-8 md:py-12 lg:py-16 bg-white">
         <div className="container px-4 md:px-6">
-          <div className="flex flex-col items-center space-y-4 text-center">
+          <div className="flex flex-col items-center space-y-2 text-center">
             <div className="space-y-2">
               <h1 className="text-3xl font-bold tracking-tighter text-navy sm:text-4xl md:text-5xl lg:text-6xl">
                 Welcome to RealiMeali
               </h1>
-              <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl pb-5">
+              <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl">
                 Your all-in-one meal planning and recipe management system to make cooking easier.
               </p>
             </div>
