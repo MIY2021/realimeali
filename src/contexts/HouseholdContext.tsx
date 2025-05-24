@@ -265,13 +265,12 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
         return false;
       }
 
-      // Check if user already has a pending request
+      // Check if user already has ANY request (pending, approved, or rejected)
       const { data: existingRequest, error: requestCheckError } = await supabase
         .from('household_join_requests')
-        .select('id')
+        .select('id, status')
         .eq('household_id', matchingHousehold.id)
-        .eq('user_id', user.id)
-        .eq('status', 'pending');
+        .eq('user_id', user.id);
 
       if (requestCheckError) {
         console.error("Request check error:", requestCheckError);
@@ -284,12 +283,28 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
       }
 
       if (existingRequest && existingRequest.length > 0) {
-        console.log("User already has pending request");
-        toast({
-          title: "Request Already Sent",
-          description: "You already have a pending request for this household.",
-          variant: "destructive",
-        });
+        const request = existingRequest[0];
+        console.log("User already has a request with status:", request.status);
+        
+        if (request.status === 'pending') {
+          toast({
+            title: "Request Already Sent",
+            description: "You already have a pending request for this household.",
+            variant: "destructive",
+          });
+        } else if (request.status === 'rejected') {
+          toast({
+            title: "Previous Request Rejected",
+            description: "Your previous request to join this household was rejected. Please contact the household owner.",
+            variant: "destructive",
+          });
+        } else if (request.status === 'approved') {
+          toast({
+            title: "Request Already Approved",
+            description: "Your request was already approved. You should be a member of this household.",
+            variant: "destructive",
+          });
+        }
         return false;
       }
 
@@ -304,11 +319,21 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
 
       if (requestError) {
         console.error("Request insert error:", requestError);
-        toast({
-          title: "Failed to Send Request",
-          description: "Could not create join request. Please try again.",
-          variant: "destructive",
-        });
+        
+        // Handle the specific duplicate key error
+        if (requestError.code === '23505') {
+          toast({
+            title: "Request Already Exists",
+            description: "You already have a request for this household. Please check with the household owner.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Failed to Send Request",
+            description: "Could not create join request. Please try again.",
+            variant: "destructive",
+          });
+        }
         return false;
       }
 
