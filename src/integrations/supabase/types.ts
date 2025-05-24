@@ -9,6 +9,163 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      household_invitations: {
+        Row: {
+          created_at: string
+          email: string
+          expires_at: string
+          household_id: string
+          id: string
+          invitation_code: string
+          invited_by: string
+          status: Database["public"]["Enums"]["invitation_status"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          expires_at?: string
+          household_id: string
+          id?: string
+          invitation_code: string
+          invited_by: string
+          status?: Database["public"]["Enums"]["invitation_status"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          expires_at?: string
+          household_id?: string
+          id?: string
+          invitation_code?: string
+          invited_by?: string
+          status?: Database["public"]["Enums"]["invitation_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "household_invitations_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      household_meal_plans: {
+        Row: {
+          created_at: string
+          created_by: string
+          date_scheduled: string
+          household_id: string
+          id: string
+          meal_type: string
+          notes: string | null
+          recipe_id: string
+          slot_index: number
+          updated_at: string
+          week_number: number
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          date_scheduled?: string
+          household_id: string
+          id?: string
+          meal_type: string
+          notes?: string | null
+          recipe_id: string
+          slot_index?: number
+          updated_at?: string
+          week_number: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          date_scheduled?: string
+          household_id?: string
+          id?: string
+          meal_type?: string
+          notes?: string | null
+          recipe_id?: string
+          slot_index?: number
+          updated_at?: string
+          week_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "household_meal_plans_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "household_meal_plans_recipe_id_fkey"
+            columns: ["recipe_id"]
+            isOneToOne: false
+            referencedRelation: "recipes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      household_members: {
+        Row: {
+          household_id: string
+          id: string
+          joined_at: string
+          role: Database["public"]["Enums"]["household_role"]
+          user_id: string
+        }
+        Insert: {
+          household_id: string
+          id?: string
+          joined_at?: string
+          role?: Database["public"]["Enums"]["household_role"]
+          user_id: string
+        }
+        Update: {
+          household_id?: string
+          id?: string
+          joined_at?: string
+          role?: Database["public"]["Enums"]["household_role"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "household_members_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      households: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       recipes: {
         Row: {
           categories: Database["public"]["Enums"]["recipe_category"][] | null
@@ -65,9 +222,26 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      create_household_with_owner: {
+        Args: { household_name: string }
+        Returns: string
+      }
+      generate_invitation_code: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      get_user_households: {
+        Args: { user_id: string }
+        Returns: string[]
+      }
+      is_household_member: {
+        Args: { household_id: string; user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
+      household_role: "owner" | "member"
+      invitation_status: "pending" | "accepted" | "declined" | "expired"
       recipe_category:
         | "Bulk"
         | "Easy"
@@ -200,6 +374,8 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      household_role: ["owner", "member"],
+      invitation_status: ["pending", "accepted", "declined", "expired"],
       recipe_category: [
         "Bulk",
         "Easy",

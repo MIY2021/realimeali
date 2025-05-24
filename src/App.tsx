@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { RecipesProvider } from "@/contexts/RecipesContext";
+import { HouseholdProvider } from "@/contexts/HouseholdContext";
 import { MealPlanProvider } from "@/contexts/MealPlanContext";
 import Layout from "@/components/layout/Layout";
 import Index from "@/pages/Index";
@@ -25,21 +26,23 @@ function App() {
       <Router>
         <AuthProvider>
           <RecipesProvider>
-            <MealPlanProvider>
-              <Layout>
-                <Routes>
-                  <Route path="/" element={<Index />} />
-                  <Route path="/recipes" element={<RecipesPage />} />
-                  <Route path="/recipes/:id" element={<RecipeDetail />} />
-                  <Route path="/category/:category" element={<CategoryPage />} />
-                  <Route path="/meal-planner" element={<MealPlanner />} />
-                  <Route path="/shopping-list" element={<ShoppingList />} />
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/signup" element={<Signup />} />
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </Layout>
-            </MealPlanProvider>
+            <HouseholdProvider>
+              <MealPlanProvider>
+                <Layout>
+                  <Routes>
+                    <Route path="/" element={<Index />} />
+                    <Route path="/recipes" element={<RecipesPage />} />
+                    <Route path="/recipes/:id" element={<RecipeDetail />} />
+                    <Route path="/category/:category" element={<CategoryPage />} />
+                    <Route path="/meal-planner" element={<MealPlanner />} />
+                    <Route path="/shopping-list" element={<ShoppingList />} />
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/signup" element={<Signup />} />
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </Layout>
+              </MealPlanProvider>
+            </HouseholdProvider>
           </RecipesProvider>
         </AuthProvider>
       </Router>

@@ -2,47 +2,38 @@
 import { useState, useEffect } from "react";
 import { MealPlan, MealType, RecipeCategory } from "@/types";
 import { Button } from "@/components/ui/button";
-import { ListChecks, Plus, Share, Users, FileSpreadsheet, CalendarDays, Trash2 } from "lucide-react";
+import { ListChecks, Plus, Share, FileSpreadsheet, CalendarDays, Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { AddRecipeToMealModal } from "@/components/meal-planner/AddRecipeToMealModal";
 import MealListSection from "@/components/MealListSection";
+import { HouseholdSelector } from "@/components/household/HouseholdSelector";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { useAuth } from "@/contexts/AuthContext";
-
-const STORAGE_KEY = "persistedMealPlans_v1";
+import { useHousehold } from "@/contexts/HouseholdContext";
+import { useMealPlan } from "@/contexts/MealPlanContext";
 
 export default function MealPlanner() {
   const { user } = useAuth();
   const { recipes } = useRecipes();
+  const { currentHousehold } = useHousehold();
+  const { 
+    mealPlans, 
+    getMealPlansForWeek, 
+    getRecipeForMealPlan, 
+    addMealPlan, 
+    removeMealPlan, 
+    clearWeek,
+    isLoading 
+  } = useMealPlan();
   const { toast } = useToast();
   
   // --- Week state
   const [week, setWeek] = useState<1 | 2>(1);
 
-  // ----- Load and persist meal plans for both weeks -----
-  const [mealPlans, setMealPlans] = useState<MealPlan[]>([]);
-  
-  useEffect(() => {
-    const stored = localStorage.getItem(`${STORAGE_KEY}_week${week}`);
-    if (stored) {
-      const storedPlans = JSON.parse(stored);
-      // Filter meal plans to only include those with recipes that exist in user's collection
-      const userRecipeIds = new Set(recipes.map(r => r.id));
-      const validPlans = storedPlans.filter((plan: MealPlan) => userRecipeIds.has(plan.recipeId));
-      setMealPlans(validPlans);
-    } else {
-      setMealPlans([]);
-    }
-  }, [week, recipes]);
-  
-  useEffect(() => {
-    localStorage.setItem(`${STORAGE_KEY}_week${week}`, JSON.stringify(mealPlans));
-  }, [mealPlans, week]);
-
   const mealTypes: MealType[] = ["dinner", "lunch", "breakfast", "snacks"];
   const getMealPlansForType = (mealType: MealType) =>
-    mealPlans.filter(plan => plan.mealType === mealType);
+    getMealPlansForWeek(week).filter(plan => plan.mealType === mealType);
   
   // Only get recipes from user's collection
   const getRecipeById = (id: string) => recipes.find(r => r.id === id);
@@ -54,7 +45,7 @@ export default function MealPlanner() {
   }>({ open: false, mealType: null });
 
   // - Helper to get all unique recipe IDs in plan
-  const allUsedIds = new Set(mealPlans.map(mp => mp.recipeId));
+  const allUsedIds = new Set(getMealPlansForWeek(week).map(mp => mp.recipeId));
 
   // Mapping each meal type to appropriate recipe categories
   const mealTypeToCategories: Record<MealType, RecipeCategory[]> = {
@@ -89,11 +80,20 @@ export default function MealPlanner() {
   }
 
   // ---- Randomise handler with confirmation ----
-  const handleRandomMealSelection = () => {
+  const handleRandomMealSelection = async () => {
     if (!user) {
       toast({
         title: "Login Required",
         description: "You need to log in to randomize meals.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!currentHousehold) {
+      toast({
+        title: "No Household Selected",
+        description: "Please select or create a household to manage meal plans.",
         variant: "destructive",
       });
       return;
@@ -108,37 +108,38 @@ export default function MealPlanner() {
       return;
     }
 
-    if (mealPlans.length > 0) {
+    const currentWeekPlans = getMealPlansForWeek(week);
+    if (currentWeekPlans.length > 0) {
       if (!window.confirm("This will overwrite your current meal list. Continue?"))
         return;
     }
     
-    const newMealPlans: MealPlan[] = [];
+    // Clear current week first
+    await clearWeek(week);
+    
+    // Add new random meal plans
     let allSelectedIds = new Set<string>();
     
-    mealTypes.forEach(type => {
+    for (const mealType of mealTypes) {
       const unique = getUniqueRandomRecipes(
         recipes, // Use user's recipes instead of mockRecipes
-        mealTypeToCategories[type],
+        mealTypeToCategories[mealType],
         Math.min(5, recipes.length), // Don't try to select more recipes than available
         allSelectedIds
       );
-      unique.forEach((recipe, i) => {
-        newMealPlans.push({
-          id: `random-meal-${Date.now()}-${type}-${i}`,
+      
+      for (const [i, recipe] of unique.entries()) {
+        await addMealPlan({
           date: new Date().toISOString(),
-          mealType: type,
+          mealType: mealType,
           recipeId: recipe.id,
           createdBy: user.id,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
           slotIndex: i,
-        });
+        }, week);
         allSelectedIds.add(recipe.id);
-      });
-    });
+      }
+    }
     
-    setMealPlans(newMealPlans);
     toast({
       title: "Meal Plan Randomised",
       description: "Your meals have been chosen from your recipe collection!",
@@ -147,7 +148,8 @@ export default function MealPlanner() {
 
   // ---- Share ----
   const handleShareMealPlan = () => {
-    let shareText = "Here's our shared meal plan!\n\n";
+    const currentWeekPlans = getMealPlansForWeek(week);
+    let shareText = `Here's our shared meal plan for Week ${week}!\n\n`;
     mealTypes.forEach(mealType => {
       shareText += `--- ${mealType.toUpperCase()} ---\n`;
       getMealPlansForType(mealType).forEach(plan => {
@@ -168,8 +170,8 @@ export default function MealPlanner() {
   };
 
   // ---- Remove a meal ----
-  const handleRemoveMeal = (planId: string) => {
-    setMealPlans((prev) => prev.filter((mp) => mp.id !== planId));
+  const handleRemoveMeal = async (planId: string) => {
+    await removeMealPlan(planId);
   };
 
   // ---- Add meal: Opens modal ----
@@ -182,36 +184,41 @@ export default function MealPlanner() {
       });
       return;
     }
+
+    if (!currentHousehold) {
+      toast({
+        title: "No Household Selected",
+        description: "Please select or create a household to manage meal plans.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setAddMealModal({ open: true, mealType });
   };
   
-  const onAddMealFinish = (mealType: MealType, recipeId: string) => {
+  const onAddMealFinish = async (mealType: MealType, recipeId: string) => {
     if (!user) return;
     
-    setMealPlans((prev) => [
-      ...prev,
-      {
-        id: `added-meal-${Date.now()}-${mealType}`,
-        date: new Date().toISOString(),
-        mealType,
-        recipeId,
-        createdBy: user.id,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        slotIndex: prev.filter(mp => mp.mealType === mealType).length,
-      }
-    ]);
+    const currentPlansForType = getMealPlansForType(mealType);
+    await addMealPlan({
+      date: new Date().toISOString(),
+      mealType,
+      recipeId,
+      createdBy: user.id,
+      slotIndex: currentPlansForType.length,
+    }, week);
+    
     setAddMealModal({ open: false, mealType: null });
   };
 
-  // ---- Invite handler ----
-  const handleInvite = () => alert("Feature coming soon: Invite users to meal plan");
-
   // ---- Clear all ----
-  const handleClearAll = () => {
-    if (mealPlans.length === 0) return;
+  const handleClearAll = async () => {
+    const currentWeekPlans = getMealPlansForWeek(week);
+    if (currentWeekPlans.length === 0) return;
     if (!window.confirm("Clear the entire meal plan?")) return;
-    setMealPlans([]);
+    
+    await clearWeek(week);
     toast({
       title: "Meal plan cleared"
     });
@@ -229,115 +236,129 @@ export default function MealPlanner() {
           <h1 className="text-2xl font-bold text-navy flex items-center gap-2">
             <CalendarDays className="h-6 w-6" />
             Meal Planner
-            <Button
-              onClick={handleInvite}
-              size="sm"
-              variant="ghost"
-              className="ml-2"
-              title="Invite others to meal plan"
-            >
-              <Users className="h-4 w-4" />
-            </Button>
           </h1>
           <p className="text-sm text-muted-foreground">
-            {user ? "Plan and organize your weekly meals" : "Login to create meal plans"}
+            {user ? "Plan and organize your weekly meals with your household" : "Login to create meal plans"}
           </p>
         </div>
+        {user && <HouseholdSelector />}
       </div>
       
       {!user ? (
         <div className="py-10 text-center">
           <p className="text-muted-foreground mb-4">Please log in to create and manage meal plans.</p>
         </div>
+      ) : !currentHousehold ? (
+        <div className="py-10 text-center">
+          <p className="text-muted-foreground mb-4">Please create or select a household to manage meal plans.</p>
+          <HouseholdSelector />
+        </div>
       ) : (
         <>
-          <div className="flex gap-2 flex-wrap mb-4">
-            <Button
-              onClick={handleRandomMealSelection}
-              size="sm"
-              className="bg-sage hover:bg-sage/90 flex items-center whitespace-nowrap flex-1"
-            >
-              <FileSpreadsheet className="mr-2 h-4 w-4" />
-              Randomise
-            </Button>
-            <Button
-              onClick={handleShareMealPlan}
-              size="sm"
-              variant="outline"
-              className="flex items-center whitespace-nowrap flex-1"
-            >
-              <Share className="mr-2 h-4 w-4" />
-              Share
-            </Button>
+          <div className="mb-4 p-3 bg-sage/10 rounded-lg border border-sage/20">
+            <p className="text-sm text-sage-800">
+              <strong>Current Household:</strong> {currentHousehold.name}
+            </p>
+            <p className="text-xs text-sage-600 mt-1">
+              All household members can view and edit this meal plan
+            </p>
           </div>
-          
-          <div className="flex gap-2 items-center mb-4">
-            <Button
-              variant="outline"
-              size="sm"
-              className="text-terracotta border-terracotta hover:bg-terracotta/10 flex-1"
-              onClick={handleClearAll}
-            >
-              <Trash2 className="h-4 w-4 mr-1" />
-              Clear All
-            </Button>
-            <Button asChild variant="outline" size="sm" className="flex items-center flex-1">
-              <Link to="/shopping-list" className="flex items-center">
-                <ListChecks className="mr-2 h-4 w-4" />
-                Shopping List
-              </Link>
-            </Button>
-          </div>
-          
-          <div className="flex gap-2 mb-4">
-            {[1, 2].map((val) => (
-              <Button
-                key={val}
-                size="sm"
-                variant={week === val ? "default" : "outline"}
-                className={week === val ? "bg-terracotta text-white" : ""}
-                onClick={() => handleToggleWeek(val as 1 | 2)}
-              >
-                Week {val}
-              </Button>
-            ))}
-          </div>
-          
-          {recipes.length === 0 ? (
+
+          {isLoading ? (
             <div className="py-10 text-center">
-              <p className="text-muted-foreground mb-4">You need to create some recipes first before planning meals.</p>
-              <Button asChild className="bg-terracotta hover:bg-terracotta/90">
-                <Link to="/recipes">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create Your First Recipe
-                </Link>
-              </Button>
+              <p className="text-muted-foreground">Loading meal plans...</p>
             </div>
           ) : (
             <>
-              {mealTypes.map((mealType) => (
-                <MealListSection
-                  key={mealType}
-                  mealType={mealType}
-                  mealPlans={getMealPlansForType(mealType)}
-                  getRecipeById={getRecipeById}
-                  onAddMeal={handleAddMeal}
-                  onRemoveMeal={handleRemoveMeal}
-                />
-              ))}
+              <div className="flex gap-2 flex-wrap mb-4">
+                <Button
+                  onClick={handleRandomMealSelection}
+                  size="sm"
+                  className="bg-sage hover:bg-sage/90 flex items-center whitespace-nowrap flex-1"
+                >
+                  <FileSpreadsheet className="mr-2 h-4 w-4" />
+                  Randomise
+                </Button>
+                <Button
+                  onClick={handleShareMealPlan}
+                  size="sm"
+                  variant="outline"
+                  className="flex items-center whitespace-nowrap flex-1"
+                >
+                  <Share className="mr-2 h-4 w-4" />
+                  Share
+                </Button>
+              </div>
               
-              {addMealModal.open && addMealModal.mealType && (
-                <AddRecipeToMealModal
-                  open={addMealModal.open}
-                  onClose={() => setAddMealModal({ open: false, mealType: null })}
-                  mealType={addMealModal.mealType}
-                  recipes={recipes.filter(recipe => {
-                    // Filter recipes based on meal type categories
-                    const categories = mealTypeToCategories[addMealModal.mealType!];
-                    return recipe.categories.some(cat => categories.includes(cat as RecipeCategory));
-                  })}
-                  onSelectRecipe={(recipeId) => onAddMealFinish(addMealModal.mealType!, recipeId)}
-                />
+              <div className="flex gap-2 items-center mb-4">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-terracotta border-terracotta hover:bg-terracotta/10 flex-1"
+                  onClick={handleClearAll}
+                >
+                  <Trash2 className="h-4 w-4 mr-1" />
+                  Clear All
+                </Button>
+                <Button asChild variant="outline" size="sm" className="flex items-center flex-1">
+                  <Link to="/shopping-list" className="flex items-center">
+                    <ListChecks className="mr-2 h-4 w-4" />
+                    Shopping List
+                  </Link>
+                </Button>
+              </div>
+              
+              <div className="flex gap-2 mb-4">
+                {[1, 2].map((val) => (
+                  <Button
+                    key={val}
+                    size="sm"
+                    variant={week === val ? "default" : "outline"}
+                    className={week === val ? "bg-terracotta text-white" : ""}
+                    onClick={() => handleToggleWeek(val as 1 | 2)}
+                  >
+                    Week {val}
+                  </Button>
+                ))}
+              </div>
+              
+              {recipes.length === 0 ? (
+                <div className="py-10 text-center">
+                  <p className="text-muted-foreground mb-4">You need to create some recipes first before planning meals.</p>
+                  <Button asChild className="bg-terracotta hover:bg-terracotta/90">
+                    <Link to="/recipes">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Create Your First Recipe
+                    </Link>
+                  </Button>
+                </div>
+              ) : (
+                <>
+                  {mealTypes.map((mealType) => (
+                    <MealListSection
+                      key={mealType}
+                      mealType={mealType}
+                      mealPlans={getMealPlansForType(mealType)}
+                      getRecipeById={getRecipeById}
+                      onAddMeal={handleAddMeal}
+                      onRemoveMeal={handleRemoveMeal}
+                    />
+                  ))}
+                  
+                  {addMealModal.open && addMealModal.mealType && (
+                    <AddRecipeToMealModal
+                      open={addMealModal.open}
+                      onClose={() => setAddMealModal({ open: false, mealType: null })}
+                      mealType={addMealModal.mealType}
+                      recipes={recipes.filter(recipe => {
+                        // Filter recipes based on meal type categories
+                        const categories = mealTypeToCategories[addMealModal.mealType!];
+                        return recipe.categories.some(cat => categories.includes(cat as RecipeCategory));
+                      })}
+                      onSelectRecipe={(recipeId) => onAddMealFinish(addMealModal.mealType!, recipeId)}
+                    />
+                  )}
+                </>
               )}
             </>
           )}
