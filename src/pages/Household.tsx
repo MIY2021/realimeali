@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,12 +23,13 @@ interface HouseholdMember {
 
 export default function Household() {
   const { user } = useAuth();
-  const { currentHousehold, households, setCurrentHousehold } = useHousehold();
+  const { currentHousehold, households, setCurrentHousehold, fetchHouseholds } = useHousehold();
   const { toast } = useToast();
   const [members, setMembers] = useState<HouseholdMember[]>([]);
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteCode, setInviteCode] = useState("");
   const [isInviting, setIsInviting] = useState(false);
+  const [isJoining, setIsJoining] = useState(false);
   const [householdName, setHouseholdName] = useState("");
   const [isUpdatingName, setIsUpdatingName] = useState(false);
   const [householdCode, setHouseholdCode] = useState("");
@@ -166,6 +166,7 @@ export default function Household() {
   const handleJoinByCode = async () => {
     if (!user || !inviteCode.trim()) return;
 
+    setIsJoining(true);
     try {
       console.log("Attempting to join with code:", inviteCode.trim());
       
@@ -227,7 +228,8 @@ export default function Household() {
         .update({ status: 'accepted' })
         .eq('id', invitation.id);
 
-      // Set this household as current
+      // Refresh households and set current
+      await fetchHouseholds();
       setCurrentHousehold(invitation.households);
 
       toast({
@@ -243,6 +245,8 @@ export default function Household() {
         description: "Failed to join household. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsJoining(false);
     }
   };
 
@@ -341,10 +345,15 @@ export default function Household() {
                 onChange={(e) => setInviteCode(e.target.value)}
                 placeholder="Enter invitation code"
                 maxLength={10}
+                disabled={isJoining}
               />
             </div>
-            <Button onClick={handleJoinByCode} className="w-full bg-terracotta hover:bg-terracotta/90">
-              Join Household
+            <Button 
+              onClick={handleJoinByCode} 
+              disabled={!inviteCode.trim() || isJoining}
+              className="w-full bg-terracotta hover:bg-terracotta/90"
+            >
+              {isJoining ? "Joining..." : "Join Household"}
             </Button>
           </CardContent>
         </Card>
