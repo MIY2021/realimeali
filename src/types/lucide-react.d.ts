@@ -35,4 +35,8 @@ declare module 'lucide-react' {
   export const Loader: LucideIcon;
   export const Wand: LucideIcon;
   export const AlertCircle: LucideIcon;
+  export const Upload: LucideIcon;
+  export const Link: LucideIcon;
+  export const FileText: LucideIcon;
+  export const Sparkles: LucideIcon;
 }
