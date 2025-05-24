@@ -92,7 +92,7 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setIsLoading(false);
     }
-  }, [user, currentHousehold, toast]);
+  }, [user?.id, currentHousehold?.id, toast]);
 
   useEffect(() => {
     fetchMealPlans();
@@ -105,7 +105,7 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
     const weekPlans = mealPlans.filter(plan => (plan as any).weekNumber === weekNumber);
     console.log(`Getting meal plans for week ${weekNumber}:`, weekPlans);
     return weekPlans;
-  }, [mealPlans, user, currentHousehold]);
+  }, [mealPlans, user?.id, currentHousehold?.id]);
 
   const getRecipeForMealPlan = useCallback((mealPlan: MealPlan): Recipe | undefined => {
     return recipes.find(recipe => recipe.id === mealPlan.recipeId);
@@ -192,7 +192,7 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
         variant: "destructive",
       });
     }
-  }, [user, currentHousehold, recipes, toast]);
+  }, [user?.id, currentHousehold?.id, recipes, toast]);
 
   const removeMealPlan = useCallback(async (id: string) => {
     if (!user || !currentHousehold) return;
@@ -224,7 +224,7 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
         variant: "destructive",
       });
     }
-  }, [user, currentHousehold, toast]);
+  }, [user?.id, currentHousehold?.id, toast]);
 
   const clearWeek = useCallback(async (weekNumber: 1 | 2) => {
     if (!user || !currentHousehold) return;
@@ -257,33 +257,7 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
         variant: "destructive",
       });
     }
-  }, [user, currentHousehold, toast]);
-
-  // Set up real-time subscription for meal plan changes
-  useEffect(() => {
-    if (!user || !currentHousehold) return;
-
-    const channel = supabase
-      .channel('meal-plan-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'household_meal_plans',
-          filter: `household_id=eq.${currentHousehold.id}`
-        },
-        () => {
-          console.log("Meal plan change detected, refetching...");
-          fetchMealPlans();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [user, currentHousehold, fetchMealPlans]);
+  }, [user?.id, currentHousehold?.id, toast]);
 
   return (
     <MealPlanContext.Provider value={{
