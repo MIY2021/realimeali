@@ -7,7 +7,6 @@ import { JoinHouseholdCard } from "@/components/household/JoinHouseholdCard";
 import { HouseholdDetailsCard } from "@/components/household/HouseholdDetailsCard";
 import { HouseholdMembersCard } from "@/components/household/HouseholdMembersCard";
 import { InviteMembersCard } from "@/components/household/InviteMembersCard";
-import { CreateTestHouseholdCard } from "@/components/household/CreateTestHouseholdCard";
 
 export default function Household() {
   const { user } = useAuth();
@@ -33,10 +32,7 @@ export default function Household() {
           <h1 className="text-2xl font-bold text-navy">Household Management</h1>
         </div>
 
-        <div className="space-y-6">
-          <JoinHouseholdCard />
-          <CreateTestHouseholdCard />
-        </div>
+        <JoinHouseholdCard />
       </div>
     );
   }

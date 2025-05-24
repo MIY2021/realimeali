@@ -323,6 +323,14 @@ export type Database = {
         Args: { household_id: string; user_id: string }
         Returns: boolean
       }
+      is_household_member_simple: {
+        Args: { household_id: string; user_id: string }
+        Returns: boolean
+      }
+      is_household_owner: {
+        Args: { household_id: string; user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       household_role: "owner" | "member"
