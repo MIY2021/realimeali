@@ -3,17 +3,20 @@ import { useParams, Link } from "react-router-dom";
 import { RecipeCategory } from "@/types";
 import { RecipeCard } from "@/components/recipes/RecipeCard";
 import { useRecipes } from "@/contexts/RecipesContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 const isValidCategory = (cat: string): cat is RecipeCategory =>
   [
     "Bulk", "Easy", "Cheap", "Healthy", "Vegetarian", "Fish", "Super Tasty",
-    "Pasta", "Tapas", "Winter", "BBQ", "Faffy", "Pricey!", "Not Yet Made"
+    "Pasta", "Tapas", "Winter", "BBQ", "Faffy", "Pricey!", "Not Yet Made",
+    "Snacks", "Breakfast"
   ].includes(cat);
 
 export default function CategoryPage() {
   const { category = "" } = useParams();
   const decoded = decodeURIComponent(category).trim();
   const { recipes, isLoading } = useRecipes();
+  const { user } = useAuth();
 
   if (!isValidCategory(decoded)) {
     return (
@@ -27,6 +30,16 @@ export default function CategoryPage() {
 
   const filteredRecipes = recipes.filter(r => r.categories.includes(decoded as RecipeCategory));
 
+  if (!user) {
+    return (
+      <div className="container max-w-4xl py-8">
+        <h1 className="text-2xl font-bold text-navy mb-4">Category: {decoded}</h1>
+        <p className="text-muted-foreground">Please log in to view your recipes in this category.</p>
+        <Link to="/login" className="underline text-terracotta">Login here</Link>
+      </div>
+    );
+  }
+
   if (isLoading) {
     return (
       <div className="container max-w-4xl py-8 text-center">
@@ -37,9 +50,12 @@ export default function CategoryPage() {
 
   return (
     <div className="container max-w-4xl py-8">
-      <h1 className="text-2xl font-bold text-navy mb-4">Recipes: {decoded}</h1>
+      <h1 className="text-2xl font-bold text-navy mb-4">My Recipes: {decoded}</h1>
       {filteredRecipes.length === 0 ? (
-        <p className="text-muted-foreground">No recipes found in this category.</p>
+        <div className="text-center py-8">
+          <p className="text-muted-foreground mb-4">You don't have any recipes in this category yet.</p>
+          <Link to="/recipes" className="underline text-terracotta">Create your first recipe</Link>
+        </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredRecipes.map(recipe => (

@@ -9,26 +9,24 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-// Fix the import to use Trash2 instead of Trash
 import { Plus, Trash2, X } from "lucide-react";
 
 interface CreateRecipeDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSave: (recipe: Recipe) => void;
+  onSave: (recipe: Omit<Recipe, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>) => void;
 }
 
 // List of available categories
 const AVAILABLE_CATEGORIES: RecipeCategory[] = [
   "Bulk", "Easy", "Cheap", "Healthy", "Vegetarian", "Fish",
   "Super Tasty", "Pasta", "Tapas", "Winter", "BBQ",
-  "Faffy", "Pricey!", "Not Yet Made"
+  "Faffy", "Pricey!", "Not Yet Made", "Snacks", "Breakfast"
 ];
 
 export function CreateRecipeDialog({ open, onOpenChange, onSave }: CreateRecipeDialogProps) {
   const { toast } = useToast();
-  const [newRecipe, setNewRecipe] = useState<Recipe>({
-    id: `recipe-${Date.now()}`,
+  const [newRecipe, setNewRecipe] = useState<Omit<Recipe, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>>({
     title: "",
     description: "",
     ingredients: [],
@@ -38,15 +36,31 @@ export function CreateRecipeDialog({ open, onOpenChange, onSave }: CreateRecipeD
     cookTime: 0,
     servings: 1,
     image: undefined,
-    createdBy: "user-1",
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
     isFavorite: false,
   });
   const [newCategory, setNewCategory] = useState("");
   const [newIngredient, setNewIngredient] = useState("");
   const [newInstruction, setNewInstruction] = useState("");
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+  const resetForm = () => {
+    setNewRecipe({
+      title: "",
+      description: "",
+      ingredients: [],
+      instructions: [],
+      categories: [],
+      prepTime: 0,
+      cookTime: 0,
+      servings: 1,
+      image: undefined,
+      isFavorite: false,
+    });
+    setNewCategory("");
+    setNewIngredient("");
+    setNewInstruction("");
+    setImagePreview(null);
+  };
 
   const handleSave = () => {
     // Basic validation
@@ -78,6 +92,12 @@ export function CreateRecipeDialog({ open, onOpenChange, onSave }: CreateRecipeD
     }
 
     onSave(newRecipe);
+    resetForm();
+  };
+
+  const handleCancel = () => {
+    resetForm();
+    onOpenChange(false);
   };
 
   const handleAddCategory = () => {
@@ -370,7 +390,7 @@ export function CreateRecipeDialog({ open, onOpenChange, onSave }: CreateRecipeD
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button variant="outline" onClick={handleCancel}>
             Cancel
           </Button>
           <Button onClick={handleSave}>Create Recipe</Button>

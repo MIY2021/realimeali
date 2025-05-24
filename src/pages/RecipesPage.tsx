@@ -3,100 +3,19 @@ import { useState } from "react";
 import { RecipeList } from "@/components/recipes/RecipeList";
 import { Button } from "@/components/ui/button";
 import { Plus, Book } from "lucide-react";
-import Papa from "papaparse";
 import { useToast } from "@/hooks/use-toast";
-import { MealType, Recipe, RecipeCategory } from "@/types";
+import { MealType, Recipe } from "@/types";
 import { CreateRecipeDialog } from "@/components/recipes/CreateRecipeDialog";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function RecipesPage() {
-  const { recipes, isLoading, fetchRecipes } = useRecipes();
+  const { recipes, isLoading, createRecipe } = useRecipes();
   const { user } = useAuth();
   const { toast } = useToast();
 
   // New recipe state
   const [showNewRecipeDialog, setShowNewRecipeDialog] = useState(false);
-
-  const handleBulkImport = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    Papa.parse(file, {
-      complete: (results) => {
-        try {
-          const rows = results.data as string[][];
-          const [headers, ...dataRows] = rows;
-          const headerMap: Record<string, number> = {};
-          headers.forEach((h, idx) => {
-            headerMap[h.trim()] = idx;
-          });
-          const newRecipes: Recipe[] = dataRows
-            .filter(r => r.length > 1 && !!r[headerMap.title])
-            .map((r, i) => {
-              let categories: RecipeCategory[] = [];
-              if (headerMap.categories !== undefined && r[headerMap.categories]) {
-                categories = r[headerMap.categories].split(",").map((c) => c.trim()) as RecipeCategory[];
-              }
-              return {
-                id: `imported-${Date.now()}-${i}`,
-                title: r[headerMap.title] || "Untitled",
-                description: r[headerMap.description] || "",
-                ingredients: (r[headerMap.ingredients] || "").split("|").map(s => s.trim()).filter(Boolean),
-                instructions: (r[headerMap.instructions] || "").split("|").map(s => s.trim()).filter(Boolean),
-                categories: categories.filter((c): c is RecipeCategory => !!c && [
-                  "Bulk",
-                  "Easy",
-                  "Cheap",
-                  "Healthy",
-                  "Vegetarian",
-                  "Fish",
-                  "Super Tasty",
-                  "Pasta",
-                  "Tapas",
-                  "Winter",
-                  "BBQ",
-                  "Faffy",
-                  "Pricey!",
-                  "Not Yet Made"
-                ].includes(c)),
-                prepTime: parseInt(r[headerMap.prepTime] || "0", 10),
-                cookTime: parseInt(r[headerMap.cookTime] || "0", 10),
-                servings: parseInt(r[headerMap.servings] || "1", 10),
-                image: r[headerMap.image],
-                createdBy: user?.id || "anonymous",
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-                isFavorite: r[headerMap.isFavorite]?.toLowerCase() === "true",
-              };
-            });
-          
-          toast({
-            title: "Meals Imported",
-            description: `${newRecipes.length} recipes have been imported from CSV.`,
-          });
-          
-          // In a real app, we would save these to Supabase
-          // For now, just refresh the recipes to show the mock data
-          fetchRecipes();
-        } catch (error) {
-          toast({
-            title: "Import Error",
-            description: "Failed to parse or import CSV. Please check your file.",
-            variant: "destructive",
-          });
-        }
-      },
-      error: () => {
-        toast({
-          title: "Import Error",
-          description: "An error occurred while reading the file.",
-          variant: "destructive",
-        });
-      },
-      skipEmptyLines: true,
-    });
-  };
 
   const handleAddNewRecipe = () => {
     if (!user) {
@@ -110,16 +29,11 @@ export default function RecipesPage() {
     setShowNewRecipeDialog(true);
   };
 
-  const handleSaveNewRecipe = (newRecipe: Recipe) => {
-    // In a real app, we would save this to Supabase
-    // For now, just refresh the recipes to show the mock data
-    fetchRecipes();
-    setShowNewRecipeDialog(false);
-
-    toast({
-      title: "Recipe Created",
-      description: `${newRecipe.title} has been added to your collection.`
-    });
+  const handleSaveNewRecipe = async (newRecipeData: Omit<Recipe, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>) => {
+    const newRecipe = await createRecipe(newRecipeData);
+    if (newRecipe) {
+      setShowNewRecipeDialog(false);
+    }
   };
 
   // --- Add-to-meal plan handler ---
@@ -145,10 +59,10 @@ export default function RecipesPage() {
         <div>
           <h1 className="text-2xl font-bold text-navy flex items-center gap-2">
             <Book className="h-6 w-6" />
-            Recipes
+            My Recipes
           </h1>
           <p className="text-muted-foreground mt-1">
-            Browse all your favorite recipes
+            {user ? "Manage your personal recipe collection" : "Login to view and create your recipes"}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -162,9 +76,21 @@ export default function RecipesPage() {
         </div>
       </div>
 
-      {isLoading ? (
+      {!user ? (
         <div className="py-10 text-center">
-          <p className="text-muted-foreground">Loading recipes...</p>
+          <p className="text-muted-foreground mb-4">Please log in to view and manage your recipes.</p>
+        </div>
+      ) : isLoading ? (
+        <div className="py-10 text-center">
+          <p className="text-muted-foreground">Loading your recipes...</p>
+        </div>
+      ) : recipes.length === 0 ? (
+        <div className="py-10 text-center">
+          <p className="text-muted-foreground mb-4">You haven't created any recipes yet.</p>
+          <Button onClick={handleAddNewRecipe} className="bg-terracotta hover:bg-terracotta/90">
+            <Plus className="h-4 w-4 mr-2" />
+            Create Your First Recipe
+          </Button>
         </div>
       ) : (
         <RecipeList
