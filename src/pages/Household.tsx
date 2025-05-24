@@ -14,8 +14,14 @@ export default function Household() {
   const { currentHousehold, setCurrentHousehold } = useHousehold();
   const { members, removeMember } = useHouseholdMembers(currentHousehold?.id || null);
 
-  const isOwner = currentHousehold && members.find(m => m.user_id === user?.id)?.role === 'owner';
+  // Fix: Check if user is owner by comparing user ID with household created_by
+  // This is more reliable than waiting for members array to load
+  const isOwner = currentHousehold && user && currentHousehold.created_by === user.id;
   const householdCode = currentHousehold ? currentHousehold.id.slice(0, 6).toUpperCase() : "";
+
+  console.log("Household page - user:", user?.id);
+  console.log("Household page - currentHousehold created_by:", currentHousehold?.created_by);
+  console.log("Household page - isOwner:", isOwner);
 
   if (!user) {
     return (
