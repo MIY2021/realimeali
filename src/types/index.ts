@@ -20,8 +20,8 @@ export type RecipeCategory =
   | "Winter"
   | "BBQ"
   | "Faffy"
-  | "Pricey!"
-  | "Not Yet Made"
+  | "Pricey"
+  | "Not-Yet-Made"
   | "Snacks"
   | "Breakfast"; // Added Breakfast category
 
