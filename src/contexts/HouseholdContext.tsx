@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -265,13 +266,12 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
         return false;
       }
 
-      // Check if user already has a pending or approved request (allow rejected requests to be resubmitted)
+      // Check for any existing request
       const { data: existingRequest, error: requestCheckError } = await supabase
         .from('household_join_requests')
         .select('id, status')
         .eq('household_id', matchingHousehold.id)
-        .eq('user_id', user.id)
-        .in('status', ['pending', 'approved']); // Only check for pending and approved, not rejected
+        .eq('user_id', user.id);
 
       if (requestCheckError) {
         console.error("Request check error:", requestCheckError);
@@ -293,17 +293,45 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
             description: "You already have a pending request for this household.",
             variant: "destructive",
           });
+          return false;
         } else if (request.status === 'approved') {
           toast({
             title: "Request Already Approved",
             description: "Your request was already approved. You should be a member of this household.",
             variant: "destructive",
           });
+          return false;
+        } else if (request.status === 'rejected') {
+          // Update the existing rejected request to pending instead of creating a new one
+          const { error: updateError } = await supabase
+            .from('household_join_requests')
+            .update({ 
+              status: 'pending',
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', request.id);
+
+          if (updateError) {
+            console.error("Request update error:", updateError);
+            toast({
+              title: "Failed to Send Request",
+              description: "Could not update join request. Please try again.",
+              variant: "destructive",
+            });
+            return false;
+          }
+
+          console.log("Successfully updated rejected request to pending");
+          toast({
+            title: "Request Sent Successfully!",
+            description: `Your join request for "${matchingHousehold.name}" has been sent. The household owner will review your request.`,
+          });
+
+          return true;
         }
-        return false;
       }
 
-      // Create join request
+      // Create new join request (only if no existing request found)
       const { error: requestError } = await supabase
         .from('household_join_requests')
         .insert([{
