@@ -17,7 +17,7 @@ export default function Index() {
               <h1 className="text-3xl font-bold tracking-tighter text-navy sm:text-4xl md:text-5xl lg:text-6xl">
                 Welcome to RealiMeali
               </h1>
-              <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl">
+              <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl pb-5">
                 Your all-in-one meal planning and recipe management system to make cooking easier.
               </p>
             </div>
