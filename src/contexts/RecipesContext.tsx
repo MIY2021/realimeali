@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { Recipe } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,9 +8,9 @@ interface RecipesContextType {
   recipes: Recipe[];
   isLoading: boolean;
   error: string | null;
-  fetchRecipes: () => Promise<void>;
+  fetchRecipes: (householdId: string | null) => Promise<void>;
   getRecipeById: (id: string) => Recipe | undefined;
-  createRecipe: (recipe: Omit<Recipe, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>) => Promise<Recipe | null>;
+  createRecipe: (recipe: Omit<Recipe, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>, householdId: string) => Promise<Recipe | null>;
   updateRecipe: (id: string, recipe: Partial<Recipe>) => Promise<Recipe | null>;
   deleteRecipe: (id: string) => Promise<boolean>;
 }
@@ -25,12 +24,12 @@ export const RecipesProvider = ({ children }: { children: ReactNode }) => {
   const { toast } = useToast();
   const { user } = useAuth();
 
-  const fetchRecipes = async () => {
+  const fetchRecipes = async (householdId: string | null) => {
     try {
       setIsLoading(true);
       setError(null);
       
-      if (!user) {
+      if (!user || !householdId) {
         setRecipes([]);
         setIsLoading(false);
         return;
@@ -39,7 +38,7 @@ export const RecipesProvider = ({ children }: { children: ReactNode }) => {
       const { data, error: fetchError } = await supabase
         .from('recipes')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('household_id', householdId)
         .order('created_at', { ascending: false });
 
       if (fetchError) {
@@ -78,7 +77,7 @@ export const RecipesProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const createRecipe = async (recipeData: Omit<Recipe, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>): Promise<Recipe | null> => {
+  const createRecipe = async (recipeData: Omit<Recipe, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>, householdId: string): Promise<Recipe | null> => {
     try {
       if (!user) {
         toast({
@@ -102,7 +101,8 @@ export const RecipesProvider = ({ children }: { children: ReactNode }) => {
           servings: recipeData.servings,
           image: recipeData.image,
           is_favorite: recipeData.isFavorite,
-          user_id: user.id
+          user_id: user.id,
+          household_id: householdId
         }])
         .select()
         .single();
@@ -132,7 +132,7 @@ export const RecipesProvider = ({ children }: { children: ReactNode }) => {
       
       toast({
         title: "Recipe Created",
-        description: `${newRecipe.title} has been saved to your collection.`,
+        description: `${newRecipe.title} has been saved to your household collection.`,
       });
 
       return newRecipe;
@@ -265,7 +265,9 @@ export const RecipesProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
-    fetchRecipes();
+    if (!user) return;
+
+    fetchRecipes(null);
   }, [user]);
 
   // Set up real-time subscription
@@ -284,7 +286,7 @@ export const RecipesProvider = ({ children }: { children: ReactNode }) => {
         },
         () => {
           // Refetch recipes when changes occur
-          fetchRecipes();
+          // fetchRecipes(); // was previously without household ID
         }
       )
       .subscribe();

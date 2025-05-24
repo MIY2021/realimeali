@@ -311,6 +311,7 @@ export type Database = {
           cook_time: number | null
           created_at: string | null
           description: string | null
+          household_id: string
           id: string
           image: string | null
           ingredients: string[]
@@ -327,6 +328,7 @@ export type Database = {
           cook_time?: number | null
           created_at?: string | null
           description?: string | null
+          household_id: string
           id?: string
           image?: string | null
           ingredients?: string[]
@@ -343,6 +345,7 @@ export type Database = {
           cook_time?: number | null
           created_at?: string | null
           description?: string | null
+          household_id?: string
           id?: string
           image?: string | null
           ingredients?: string[]
@@ -354,7 +357,15 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "recipes_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
