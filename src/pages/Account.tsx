@@ -18,7 +18,23 @@ export default function Account() {
 
   useEffect(() => {
     if (user) {
-      setDisplayName(user.user_metadata?.full_name || user.email || "");
+      // Try to fetch from profiles table first, fallback to user metadata
+      const fetchProfile = async () => {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('full_name')
+          .eq('id', user.id)
+          .single();
+        
+        setDisplayName(
+          profile?.full_name || 
+          user.user_metadata?.full_name || 
+          user.email || 
+          ""
+        );
+      };
+      
+      fetchProfile();
     }
   }, [user]);
 
@@ -27,13 +43,22 @@ export default function Account() {
 
     setIsLoading(true);
     try {
-      const { error } = await supabase.auth.updateUser({
+      // Update both the auth metadata and the profiles table
+      const { error: authError } = await supabase.auth.updateUser({
         data: { 
           full_name: displayName 
         }
       });
 
-      if (error) throw error;
+      if (authError) throw authError;
+
+      // Update the profiles table
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({ full_name: displayName })
+        .eq('id', user.id);
+
+      if (profileError) throw profileError;
 
       toast({
         title: "Account Updated",

@@ -2,6 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { User, Trash2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -13,6 +14,7 @@ interface HouseholdMember {
   profile?: {
     full_name: string;
     email: string;
+    avatar_url?: string;
   };
 }
 
@@ -38,12 +40,25 @@ export const HouseholdMembersCard = ({ members, isOwner, onRemoveMember }: House
           {members.map((member) => (
             <div key={member.id} className="flex items-center justify-between p-3 border rounded">
               <div className="flex items-center space-x-3">
-                <div className="h-8 w-8 rounded-full bg-terracotta/20 flex items-center justify-center">
-                  <User className="h-4 w-4 text-terracotta" />
-                </div>
+                <Avatar className="h-8 w-8">
+                  <AvatarImage 
+                    src={member.profile?.avatar_url} 
+                    alt={member.profile?.full_name || 'User'} 
+                  />
+                  <AvatarFallback className="bg-terracotta/20 text-terracotta">
+                    {member.profile?.full_name 
+                      ? member.profile.full_name.charAt(0).toUpperCase()
+                      : <User className="h-4 w-4" />
+                    }
+                  </AvatarFallback>
+                </Avatar>
                 <div>
-                  <p className="font-medium">{member.profile?.full_name}</p>
-                  <p className="text-sm text-muted-foreground">{member.profile?.email}</p>
+                  <p className="font-medium">
+                    {member.profile?.full_name || 'Unknown User'}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {member.profile?.email || 'No email'}
+                  </p>
                 </div>
               </div>
               <div className="flex items-center space-x-2">

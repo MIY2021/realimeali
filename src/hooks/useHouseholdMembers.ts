@@ -12,6 +12,7 @@ interface HouseholdMember {
   profile?: {
     full_name: string;
     email: string;
+    avatar_url?: string;
   };
 }
 
@@ -30,58 +31,29 @@ export const useHouseholdMembers = (householdId: string | null) => {
           id,
           user_id,
           role,
-          joined_at
+          joined_at,
+          profiles!inner(
+            full_name,
+            email,
+            avatar_url
+          )
         `)
         .eq('household_id', householdId);
 
       if (error) throw error;
 
-      // For each member, get their Google profile info from user metadata
-      const membersWithProfiles = await Promise.all(
-        (data || []).map(async (member) => {
-          try {
-            // Get user info from auth.users table using RPC or direct query
-            const { data: userQuery } = await supabase
-              .from('household_members')
-              .select('user_id')
-              .eq('user_id', member.user_id)
-              .single();
-
-            if (userQuery) {
-              // Get user metadata from the auth system
-              const { data: { user: authUser } } = await supabase.auth.getUser();
-              
-              if (authUser && authUser.id === member.user_id) {
-                return {
-                  ...member,
-                  profile: {
-                    full_name: authUser.user_metadata?.full_name || authUser.email || 'Unknown User',
-                    email: authUser.email || 'No email'
-                  }
-                };
-              }
-            }
-
-            // Fallback for other users - we can't access their metadata directly
-            return {
-              ...member,
-              profile: {
-                full_name: `User ${member.user_id.slice(0, 8)}`,
-                email: 'Private'
-              }
-            };
-          } catch (err) {
-            console.error('Error fetching user data:', err);
-            return {
-              ...member,
-              profile: {
-                full_name: 'Unknown User',
-                email: 'No email'
-              }
-            };
-          }
-        })
-      );
+      // Transform the data to match our interface
+      const membersWithProfiles: HouseholdMember[] = (data || []).map((member: any) => ({
+        id: member.id,
+        user_id: member.user_id,
+        role: member.role,
+        joined_at: member.joined_at,
+        profile: {
+          full_name: member.profiles?.full_name || 'Unknown User',
+          email: member.profiles?.email || 'No email',
+          avatar_url: member.profiles?.avatar_url
+        }
+      }));
 
       setMembers(membersWithProfiles);
     } catch (error) {
