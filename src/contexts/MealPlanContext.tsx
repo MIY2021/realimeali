@@ -77,6 +77,7 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
         createdAt: dbPlan.created_at,
         updatedAt: dbPlan.updated_at,
         slotIndex: dbPlan.slot_index,
+        weekNumber: dbPlan.week_number, // Store the actual week number from DB
       }));
 
       console.log("Transformed plans:", transformedPlans);
@@ -100,17 +101,10 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
   const getMealPlansForWeek = (weekNumber: 1 | 2): MealPlan[] => {
     if (!user || !currentHousehold) return [];
     
-    return mealPlans.filter(plan => {
-      // Simple week calculation based on slot_index or date
-      // For now, we'll use a simple approach: odd weeks = 1, even weeks = 2
-      const planDate = new Date(plan.date);
-      const currentDate = new Date();
-      const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-      const daysDiff = Math.floor((planDate.getTime() - startOfMonth.getTime()) / (1000 * 60 * 60 * 24));
-      const calculatedWeek = Math.ceil((daysDiff + 1) / 7);
-      
-      return calculatedWeek === weekNumber;
-    });
+    // Simply filter by the stored week_number from the database
+    const weekPlans = mealPlans.filter(plan => (plan as any).weekNumber === weekNumber);
+    console.log(`Getting meal plans for week ${weekNumber}:`, weekPlans);
+    return weekPlans;
   };
 
   const getRecipeForMealPlan = (mealPlan: MealPlan): Recipe | undefined => {
@@ -169,7 +163,7 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
 
       console.log("Meal plan added successfully:", data);
 
-      // Add to local state
+      // Add to local state with week number
       const newMealPlan: MealPlan = {
         id: data.id,
         date: data.date_scheduled,
@@ -180,7 +174,8 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
         createdAt: data.created_at,
         updatedAt: data.updated_at,
         slotIndex: data.slot_index,
-      };
+        weekNumber: data.week_number, // Include week number in local state
+      } as any;
 
       setMealPlans(prev => [...prev, newMealPlan]);
       
@@ -247,10 +242,8 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
         throw error;
       }
 
-      // Remove from local state
-      const weekPlans = getMealPlansForWeek(weekNumber);
-      const weekPlanIds = weekPlans.map(plan => plan.id);
-      setMealPlans(prev => prev.filter(plan => !weekPlanIds.includes(plan.id)));
+      // Remove from local state using stored week number
+      setMealPlans(prev => prev.filter(plan => (plan as any).weekNumber !== weekNumber));
       
       toast({
         title: "Week Cleared",
