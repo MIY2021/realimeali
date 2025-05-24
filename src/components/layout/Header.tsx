@@ -1,9 +1,16 @@
 
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { User, UtensilsCrossed, CalendarDays, Book, ListChecks } from "lucide-react";
+import { User, UtensilsCrossed, CalendarDays, Book, ListChecks, Settings, Users } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator
+} from "@/components/ui/dropdown-menu";
 
 const Header = () => {
   const { user, signOut } = useAuth();
@@ -33,15 +40,34 @@ const Header = () => {
 
         <div className="flex items-center space-x-3">
           {user ? (
-            <div className="flex items-center space-x-2">
-              <Button variant="ghost" size="sm" onClick={signOut} className="mr-2">
-                Logout
-              </Button>
-              <Avatar className="h-8 w-8">
-                <AvatarImage src={user.user_metadata?.avatar_url} alt={user.email || "User"} />
-                <AvatarFallback>{user.email?.[0].toUpperCase() || "U"}</AvatarFallback>
-              </Avatar>
-            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="flex items-center space-x-2">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={user.user_metadata?.avatar_url} alt={user.user_metadata?.full_name || user.email || "User"} />
+                    <AvatarFallback>{(user.user_metadata?.full_name || user.email)?.[0].toUpperCase() || "U"}</AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuItem asChild>
+                  <Link to="/account" className="flex items-center">
+                    <Settings className="h-4 w-4 mr-2" />
+                    Manage Account
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/household" className="flex items-center">
+                    <Users className="h-4 w-4 mr-2" />
+                    Manage Household
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={signOut}>
+                  Logout
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           ) : (
             <Button variant="ghost" size="sm" asChild>
               <Link to="/login" className="flex items-center space-x-1">

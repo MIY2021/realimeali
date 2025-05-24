@@ -255,15 +255,6 @@ export default function MealPlanner() {
         </div>
       ) : (
         <>
-          <div className="mb-4 p-3 bg-sage/10 rounded-lg border border-sage/20">
-            <p className="text-sm text-sage-800">
-              <strong>Current Household:</strong> {currentHousehold.name}
-            </p>
-            <p className="text-xs text-sage-600 mt-1">
-              All household members can view and edit this meal plan
-            </p>
-          </div>
-
           {isLoading ? (
             <div className="py-10 text-center">
               <p className="text-muted-foreground">Loading meal plans...</p>
