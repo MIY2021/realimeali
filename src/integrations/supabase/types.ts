@@ -142,6 +142,91 @@ export type Database = {
           },
         ]
       }
+      household_recipe_categories: {
+        Row: {
+          created_at: string
+          created_by: string
+          household_id: string
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          household_id: string
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          household_id?: string
+          id?: string
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "household_recipe_categories_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      household_shopping_lists: {
+        Row: {
+          category: string | null
+          created_at: string
+          created_by: string
+          household_id: string
+          id: string
+          is_checked: boolean
+          is_custom: boolean
+          name: string
+          quantity: number | null
+          recipe_ids: string[] | null
+          unit: string | null
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          created_by: string
+          household_id: string
+          id?: string
+          is_checked?: boolean
+          is_custom?: boolean
+          name: string
+          quantity?: number | null
+          recipe_ids?: string[] | null
+          unit?: string | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          created_by?: string
+          household_id?: string
+          id?: string
+          is_checked?: boolean
+          is_custom?: boolean
+          name?: string
+          quantity?: number | null
+          recipe_ids?: string[] | null
+          unit?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "household_shopping_lists_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       households: {
         Row: {
           created_at: string

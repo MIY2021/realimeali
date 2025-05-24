@@ -2,10 +2,11 @@
 import { useState } from "react";
 import { RecipeList } from "@/components/recipes/RecipeList";
 import { Button } from "@/components/ui/button";
-import { Book, Plus } from "lucide-react";
+import { Book, Plus, Settings } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { MealType, Recipe } from "@/types";
 import { AIRecipeParserDialog } from "@/components/recipes/AIRecipeParserDialog";
+import { CategoryManagementDialog } from "@/components/recipes/CategoryManagementDialog";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -16,6 +17,7 @@ export default function RecipesPage() {
 
   // Dialog state
   const [showAIParserDialog, setShowAIParserDialog] = useState(false);
+  const [showCategoryDialog, setShowCategoryDialog] = useState(false);
 
   const handleAIHelper = () => {
     if (!user) {
@@ -88,8 +90,20 @@ export default function RecipesPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          {user && (
+            <Button 
+              variant="outline"
+              size="sm"
+              onClick={() => setShowCategoryDialog(true)}
+              className="flex items-center gap-1"
+            >
+              <Settings className="h-4 w-4" />
+              Categories
+            </Button>
+          )}
           <Button 
-            className="bg-sage hover:bg-sage/90 text-white" 
+            style={{ backgroundColor: '#e38165' }}
+            className="hover:opacity-90 text-white" 
             onClick={handleAIHelper}
           >
             <Plus className="h-4 w-4 mr-2" />
@@ -109,7 +123,11 @@ export default function RecipesPage() {
       ) : recipes.length === 0 ? (
         <div className="py-10 text-center">
           <p className="text-muted-foreground mb-4">You haven't created any recipes yet.</p>
-          <Button onClick={handleAIHelper} className="bg-sage hover:bg-sage/90 text-white">
+          <Button 
+            onClick={handleAIHelper} 
+            style={{ backgroundColor: '#e38165' }}
+            className="hover:opacity-90 text-white"
+          >
             <Plus className="h-4 w-4 mr-2" />
             Create Your First Recipe
           </Button>
@@ -125,6 +143,11 @@ export default function RecipesPage() {
         open={showAIParserDialog}
         onOpenChange={setShowAIParserDialog}
         onSave={handleSaveAIParsedRecipe}
+      />
+
+      <CategoryManagementDialog
+        open={showCategoryDialog}
+        onOpenChange={setShowCategoryDialog}
       />
     </div>
   );

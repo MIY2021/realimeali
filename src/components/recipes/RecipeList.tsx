@@ -4,10 +4,11 @@ import { RecipeCard } from "./RecipeCard";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import { Clock } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { MealType } from "@/types";
 import { useToast } from "@/hooks/use-toast";
+import { useHouseholdShopping } from "@/contexts/HouseholdShoppingContext";
+import { ChevronDown } from "lucide-react";
 
 interface RecipeListProps {
   recipes: Recipe[];
@@ -15,6 +16,7 @@ interface RecipeListProps {
 }
 
 export function RecipeList({ recipes, onAddToMealPlan }: RecipeListProps) {
+  const { recipeCategories } = useHouseholdShopping();
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [sortType, setSortType] = useState<string>("title-asc");
@@ -26,10 +28,8 @@ export function RecipeList({ recipes, onAddToMealPlan }: RecipeListProps) {
   const [selectedWeek, setSelectedWeek] = useState<1 | 2 | null>(null);
   const { toast } = useToast();
 
-  // Get all unique categories present in the recipes
-  const allCategoriesSet = new Set<string>();
-  recipes.forEach(recipe => recipe.categories.forEach(cat => allCategoriesSet.add(cat)));
-  const allCategories = Array.from(allCategoriesSet);
+  // Get categories from household context instead of hardcoded array
+  const allCategories = recipeCategories.map(cat => cat.name);
 
   const filteredRecipes = recipes.filter((recipe) => {
     const matchesSearch = recipe.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -80,10 +80,7 @@ export function RecipeList({ recipes, onAddToMealPlan }: RecipeListProps) {
     }
 
     if (selectedRecipe && onAddToMealPlan) {
-      // Call the parent handler with recipe, meal type and selected week
       onAddToMealPlan(selectedRecipe, mealType, selectedWeek);
-      
-      // Close the dialog and reset state
       setMealTypeDialogOpen(false);
       setSelectedRecipe(null);
       setSelectedWeek(null);
@@ -105,17 +102,18 @@ export function RecipeList({ recipes, onAddToMealPlan }: RecipeListProps) {
             className="w-full"
           />
         </div>
-        <div className="w-full sm:w-48">
+        <div className="w-full sm:w-48 relative">
           <select
             value={categoryFilter}
             onChange={e => setCategoryFilter(e.target.value)}
-            className="w-full border rounded p-2"
+            className="w-full border rounded p-2 pr-8 appearance-none bg-white"
           >
             <option value="all">All Categories</option>
             {allCategories.map((category) => (
-              <option key={category} value={category}>{category.charAt(0).toUpperCase() + category.slice(1)}</option>
+              <option key={category} value={category}>{category}</option>
             ))}
           </select>
+          <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 pointer-events-none text-muted-foreground" />
         </div>
       </div>
       {sortedRecipes.length === 0 ? (
@@ -144,21 +142,21 @@ export function RecipeList({ recipes, onAddToMealPlan }: RecipeListProps) {
         </>
       )}
 
-      {/* Meal Type Dialog */}
+      {/* Meal Type Dialog - Improved mobile layout */}
       <Dialog open={mealTypeDialogOpen} onOpenChange={setMealTypeDialogOpen}>
-        <DialogContent>
+        <DialogContent className="w-[95vw] max-w-md">
           <DialogHeader>
-            <DialogTitle>
+            <DialogTitle className="text-lg">
               Add to Meal Plan
             </DialogTitle>
           </DialogHeader>
           <div className="mb-4">
-            <div className="text-lg font-semibold">{selectedRecipe?.title}</div>
+            <div className="text-base font-semibold mb-1">{selectedRecipe?.title}</div>
             <div className="text-sm text-muted-foreground">{selectedRecipe?.description}</div>
           </div>
-          <div className="flex flex-col gap-2 mb-2">
-            <label className="font-semibold text-sm mb-1">Select Week</label>
-            <div className="flex gap-2">
+          <div className="flex flex-col gap-3 mb-3">
+            <label className="font-semibold text-sm">Select Week</label>
+            <div className="grid grid-cols-2 gap-2">
               {[1, 2].map((wk) => (
                 <Button
                   key={wk}
@@ -171,13 +169,22 @@ export function RecipeList({ recipes, onAddToMealPlan }: RecipeListProps) {
               ))}
             </div>
           </div>
-          <div className="flex flex-col gap-2">
+          <div className="grid grid-cols-2 gap-2">
             {mealTypes.map(type => (
-              <Button key={type} onClick={() => handleSelectMealType(type)}>
-                Add to {type.charAt(0).toUpperCase() + type.slice(1)}
+              <Button 
+                key={type} 
+                onClick={() => handleSelectMealType(type)}
+                className="capitalize"
+                variant="outline"
+              >
+                {type}
               </Button>
             ))}
-            <Button variant="outline" onClick={() => setMealTypeDialogOpen(false)}>
+            <Button 
+              variant="outline" 
+              onClick={() => setMealTypeDialogOpen(false)}
+              className="col-span-2"
+            >
               Cancel
             </Button>
           </div>

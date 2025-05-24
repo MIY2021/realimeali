@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { RecipesProvider } from "@/contexts/RecipesContext";
 import { HouseholdProvider } from "@/contexts/HouseholdContext";
+import { HouseholdShoppingProvider } from "@/contexts/HouseholdShoppingContext";
 import { MealPlanProvider } from "@/contexts/MealPlanContext";
 import Layout from "@/components/layout/Layout";
 import Index from "@/pages/Index";
@@ -27,21 +28,23 @@ function App() {
         <AuthProvider>
           <RecipesProvider>
             <HouseholdProvider>
-              <MealPlanProvider>
-                <Layout>
-                  <Routes>
-                    <Route path="/" element={<Index />} />
-                    <Route path="/recipes" element={<RecipesPage />} />
-                    <Route path="/recipes/:id" element={<RecipeDetail />} />
-                    <Route path="/category/:category" element={<CategoryPage />} />
-                    <Route path="/meal-planner" element={<MealPlanner />} />
-                    <Route path="/shopping-list" element={<ShoppingList />} />
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/signup" element={<Signup />} />
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </Layout>
-              </MealPlanProvider>
+              <HouseholdShoppingProvider>
+                <MealPlanProvider>
+                  <Layout>
+                    <Routes>
+                      <Route path="/" element={<Index />} />
+                      <Route path="/recipes" element={<RecipesPage />} />
+                      <Route path="/recipes/:id" element={<RecipeDetail />} />
+                      <Route path="/category/:category" element={<CategoryPage />} />
+                      <Route path="/meal-planner" element={<MealPlanner />} />
+                      <Route path="/shopping-list" element={<ShoppingList />} />
+                      <Route path="/login" element={<Login />} />
+                      <Route path="/signup" element={<Signup />} />
+                      <Route path="*" element={<NotFound />} />
+                    </Routes>
+                  </Layout>
+                </MealPlanProvider>
+              </HouseholdShoppingProvider>
             </HouseholdProvider>
           </RecipesProvider>
         </AuthProvider>

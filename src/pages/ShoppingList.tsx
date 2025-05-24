@@ -1,16 +1,11 @@
-import { useState, useEffect, useMemo } from "react";
-import { mockMealPlans } from "@/data/mealPlans";
-import { mockRecipes } from "@/data/recipes";
-import { Recipe } from "@/types";
-import { ListChecks, Share, Check, Trash2, Plus, Copy } from "lucide-react";
+
+import { useState, useEffect } from "react";
+import { ListChecks, Share, Plus, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
-import { Link } from "react-router-dom";
-import ShoppingListActions from "@/components/ShoppingListActions";
 import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,222 +16,75 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-
-interface Ingredient {
-  name: string;
-  checked: boolean;
-  recipeIds: string[];
-  totalQty?: number;
-  unit?: string;
-  isCustom?: boolean;
-  category?: string; // Add category field to fix the TypeScript error
-}
-
-function parseIngredientQty(text: string): { qty: number; unit: string; name: string } {
-  const match = text.match(/^(\d+(?:\.\d+)?)([a-zA-Z]+)?\s+(.*)$/);
-  if (match)
-    return {
-      qty: parseFloat(match[1]),
-      unit: match[2] ? match[2].trim() : "",
-      name: match[3].toLowerCase(),
-    };
-  return { qty: 1, unit: "", name: text.toLowerCase() };
-}
+import { useHouseholdShopping } from "@/contexts/HouseholdShoppingContext";
+import { useHousehold } from "@/contexts/HouseholdContext";
+import ShoppingListActions from "@/components/ShoppingListActions";
 
 export default function ShoppingList() {
-  const [week, setWeek] = useState<1 | 2>(1);
+  const { currentHousehold } = useHousehold();
+  const { 
+    shoppingItems, 
+    isLoading, 
+    addShoppingItem, 
+    updateShoppingItem, 
+    deleteShoppingItem,
+    generateShoppingListFromMealPlan 
+  } = useHouseholdShopping();
   
-  // Persist checked state in localStorage
-  const CHECKED_INGREDIENTS_STORAGE_KEY = "shopping_list_checked_ingredients";
-  const CUSTOM_INGREDIENTS_STORAGE_KEY = "shopping_list_custom_ingredients";
-  
-  const mealPlanRecipes = useMemo(() => {
-    const storage = localStorage.getItem(`persistedMealPlans_v1_week${week}`);
-    const selectedPlans = storage ? JSON.parse(storage) : week === 1 ? mockMealPlans : [];
-    const recipeIds = selectedPlans.map((plan: any) => plan.recipeId);
-    return mockRecipes.filter(recipe => recipeIds.includes(recipe.id));
-  }, [week]);
-
-  const [ingredients, setIngredients] = useState<Ingredient[]>([]);
   const [newItem, setNewItem] = useState("");
   const [newItemQty, setNewItemQty] = useState("");
   const [newItemUnit, setNewItemUnit] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("Pantry");
+  const [itemToDelete, setItemToDelete] = useState<string | null>(null);
   const { toast } = useToast();
-  
-  // New state for confirmation dialog
-  const [itemToDelete, setItemToDelete] = useState<number | null>(null);
-  
-  
-  // Load the saved checked state from localStorage
-  const loadCheckedState = (ingredientList: Ingredient[]) => {
-    const storedCheckedState = localStorage.getItem(`${CHECKED_INGREDIENTS_STORAGE_KEY}_week${week}`);
-    if (storedCheckedState) {
-      const checkedMap: Record<string, boolean> = JSON.parse(storedCheckedState);
-      return ingredientList.map(ing => {
-        const key = ing.name + (ing.unit && ing.unit !== "" ? `_${ing.unit}` : "");
-        return {
-          ...ing,
-          checked: checkedMap[key] || false
-        };
-      });
-    }
-    return ingredientList;
-  };
-  
-  // Save the checked state to localStorage
-  const saveCheckedState = (ingredientList: Ingredient[]) => {
-    const checkedMap: Record<string, boolean> = {};
-    ingredientList.forEach(ing => {
-      const key = ing.name + (ing.unit && ing.unit !== "" ? `_${ing.unit}` : "");
-      checkedMap[key] = ing.checked;
-    });
-    localStorage.setItem(`${CHECKED_INGREDIENTS_STORAGE_KEY}_week${week}`, JSON.stringify(checkedMap));
-  };
-  
-  // Load custom ingredients from localStorage
-  const loadCustomIngredients = () => {
-    const storedCustomIngredients = localStorage.getItem(`${CUSTOM_INGREDIENTS_STORAGE_KEY}_week${week}`);
-    if (storedCustomIngredients) {
-      return JSON.parse(storedCustomIngredients);
-    }
-    return [];
-  };
-  
-  // Save custom ingredients to localStorage
-  const saveCustomIngredients = (customIngredients: Ingredient[]) => {
-    localStorage.setItem(`${CUSTOM_INGREDIENTS_STORAGE_KEY}_week${week}`, JSON.stringify(customIngredients));
-  };
 
-  useEffect(() => {
-    const ingredientMap = new Map<string, Ingredient>();
-    mealPlanRecipes.forEach(recipe => {
-      recipe.ingredients.forEach(ingredientText => {
-        const { qty, unit, name } = parseIngredientQty(ingredientText);
-        const key = name + (unit && unit !== "" ? `_${unit}` : "");
-
-        if (ingredientMap.has(key)) {
-          const existing = ingredientMap.get(key)!;
-          existing.totalQty = (existing.totalQty || 0) + qty;
-          if (!existing.recipeIds.includes(recipe.id)) {
-            existing.recipeIds.push(recipe.id);
-          }
-        } else {
-          ingredientMap.set(key, {
-            name: name,
-            checked: false,
-            recipeIds: [recipe.id],
-            totalQty: qty,
-            unit,
-            isCustom: false
-          });
-        }
-      });
-    });
-
-    // Add custom ingredients
-    const customIngredients = loadCustomIngredients();
-    customIngredients.forEach(ingredient => {
-      const key = ingredient.name + (ingredient.unit && ingredient.unit !== "" ? `_${ingredient.unit}` : "");
-      if (!ingredientMap.has(key)) {
-        ingredientMap.set(key, {
-          ...ingredient,
-          isCustom: true
-        });
-      }
-    });
-
-    const newIngredients = Array.from(ingredientMap.values());
-    // Apply saved checked state
-    setIngredients(loadCheckedState(newIngredients));
-  }, [mealPlanRecipes, week]);
-  
-  // Save checked state whenever it changes
-  useEffect(() => {
-    saveCheckedState(ingredients);
+  const handleToggleItem = async (id: string, checked: boolean) => {
+    await updateShoppingItem(id, { is_checked: checked });
     
-    // Save custom ingredients separately
-    const customIngredients = ingredients.filter(ing => ing.isCustom);
-    saveCustomIngredients(customIngredients);
-  }, [ingredients, week]);
-
-  const handleToggleIngredient = (index: number) => {
-    const newIngredients = [...ingredients];
-    newIngredients[index].checked = !newIngredients[index].checked;
-    setIngredients(newIngredients);
-
-    if (newIngredients[index].checked) {
+    if (checked) {
+      const item = shoppingItems.find(i => i.id === id);
       toast({
         title: "Item checked",
-        description: `${newIngredients[index].name} marked as purchased`,
+        description: `${item?.name} marked as purchased`,
       });
     }
   };
 
-  const handleCheckAll = () => {
-    setIngredients(ingredients.map(ingredient => ({
-      ...ingredient,
-      checked: true
-    })));
-
+  const handleCheckAll = async () => {
+    for (const item of shoppingItems) {
+      if (!item.is_checked) {
+        await updateShoppingItem(item.id, { is_checked: true });
+      }
+    }
     toast({
       title: "All items checked",
       description: "All ingredients marked as purchased",
     });
   };
 
-  const handleUncheckAll = () => {
-    setIngredients(ingredients.map(ingredient => ({
-      ...ingredient,
-      checked: false
-    })));
-  };
-
-  // Updated to use confirmation dialog
-  const handleRemoveItem = (index: number) => {
-    setItemToDelete(index);
-  };
-  
-  // New function to confirm deletion
-  const confirmRemoveItem = () => {
-    if (itemToDelete !== null) {
-      const newIngredients = [...ingredients];
-      newIngredients.splice(itemToDelete, 1);
-      setIngredients(newIngredients);
-  
-      toast({
-        title: "Item removed",
-        description: "Ingredient removed from shopping list",
-      });
-      
-      // Reset item to delete
-      setItemToDelete(null);
+  const handleUncheckAll = async () => {
+    for (const item of shoppingItems) {
+      if (item.is_checked) {
+        await updateShoppingItem(item.id, { is_checked: false });
+      }
     }
   };
-  
-  // Cancel deletion
-  const cancelRemoveItem = () => {
-    setItemToDelete(null);
-  };
 
-  const handleRemoveAll = () => {
+  const handleRemoveAll = async () => {
     if (!window.confirm("Are you sure you want to remove all items from your shopping list?")) {
       return;
     }
-    const storageKey = `${CHECKED_INGREDIENTS_STORAGE_KEY}_week${week}`;
-    localStorage.removeItem(storageKey);
     
-    // Only remove recipe-based ingredients, keep custom ones
-    const customIngredients = ingredients.filter(ing => ing.isCustom);
-    setIngredients(customIngredients);
+    for (const item of shoppingItems) {
+      await deleteShoppingItem(item.id);
+    }
     
     toast({
       title: "List cleared",
-      description: "All recipe ingredients removed from shopping list",
+      description: "All shopping list items removed",
     });
   };
-  
-  const handleAddCustomItem = () => {
+
+  const handleAddCustomItem = async () => {
     if (!newItem.trim()) {
       toast({
         title: "Error",
@@ -248,16 +96,15 @@ export default function ShoppingList() {
     
     const qty = newItemQty ? parseFloat(newItemQty) : undefined;
     
-    const newIngredient: Ingredient = {
+    await addShoppingItem({
       name: newItem.toLowerCase(),
-      checked: false,
-      recipeIds: [],
-      totalQty: qty,
+      quantity: qty,
       unit: newItemUnit,
-      isCustom: true
-    };
-    
-    setIngredients(prev => [...prev, newIngredient]);
+      category: categoriseByName(newItem),
+      is_checked: false,
+      is_custom: true,
+      recipe_ids: []
+    });
     
     toast({
       title: "Item added",
@@ -271,11 +118,11 @@ export default function ShoppingList() {
   };
 
   const handleShare = async () => {
-    let shareText = "Shopping List:\n\n";
-    Object.entries(categorizedIngredients).forEach(([category, items]) => {
+    let shareText = `Shopping List for ${currentHousehold?.name}:\n\n`;
+    Object.entries(categorisedItems).forEach(([category, items]) => {
       shareText += `${category}:\n`;
       items.forEach(item => {
-        shareText += `- ${item.totalQty ? `${item.totalQty} ` : ''}${item.unit ? `${item.unit} ` : ''}${item.name}\n`;
+        shareText += `- ${item.quantity ? `${item.quantity} ` : ''}${item.unit ? `${item.unit} ` : ''}${item.name}\n`;
       });
       shareText += '\n';
     });
@@ -298,42 +145,18 @@ export default function ShoppingList() {
     }
   };
 
-  const getRecipeForIngredient = (recipeId: string): Recipe | undefined => {
-    return mockRecipes.find(recipe => recipe.id === recipeId);
+  const confirmRemoveItem = async () => {
+    if (itemToDelete) {
+      await deleteShoppingItem(itemToDelete);
+      toast({
+        title: "Item removed",
+        description: "Ingredient removed from shopping list",
+      });
+      setItemToDelete(null);
+    }
   };
 
-  const categories = [
-    "Produce",
-    "Meat & Seafood",
-    "Dairy & Eggs",
-    "Pantry",
-    "Bakery",
-    "Frozen",
-    "Other"
-  ];
-
-  const categorizeIngredients = () => {
-    const result: Record<string, Ingredient[]> = {};
-    categories.forEach(category => {
-      result[category] = [];
-    });
-    ingredients.forEach(ingredient => {
-      // If it's a custom item, use the selected category
-      if (ingredient.isCustom && ingredient.recipeIds.length === 0) {
-        const category = ingredient.recipeIds.length > 0 ? categorizeByName(ingredient.name) : ingredient.category || "Other";
-        result[category].push(ingredient);
-        return;
-      }
-      
-      const category = categorizeByName(ingredient.name);
-      result[category].push(ingredient);
-    });
-    return Object.fromEntries(
-      Object.entries(result).filter(([_, items]) => items.length > 0)
-    );
-  };
-  
-  const categorizeByName = (name: string): string => {
+  const categoriseByName = (name: string): string => {
     const nameLower = name.toLowerCase();
     if (/lettuce|onion|potato|tomato|carrot|spinach|garlic|pepper|broccoli|cucumber|lemon|lime|herbs|vegetable/i.test(nameLower)) {
       return "Produce";
@@ -350,19 +173,32 @@ export default function ShoppingList() {
     } else {
       return "Other";
     }
-  }
-
-  // Updated: Handle copying just the ingredient name to clipboard
-  const handleCopyIngredient = (ingredient: string) => {
-    navigator.clipboard.writeText(ingredient);
-    toast({
-      title: "Copied",
-      description: `"${ingredient}" copied to clipboard`,
-    });
   };
 
-  const categorizedIngredients = categorizeIngredients();
-  const checkedCount = ingredients.filter(i => i.checked).length;
+  const categorisedItems = () => {
+    const categories = ["Produce", "Meat & Seafood", "Dairy & Eggs", "Pantry", "Bakery", "Frozen", "Other"];
+    const result: Record<string, typeof shoppingItems> = {};
+    
+    categories.forEach(category => {
+      result[category] = shoppingItems.filter(item => item.category === category);
+    });
+    
+    return Object.fromEntries(
+      Object.entries(result).filter(([_, items]) => items.length > 0)
+    );
+  };
+
+  const checkedCount = shoppingItems.filter(i => i.is_checked).length;
+
+  if (!currentHousehold) {
+    return (
+      <div className="container max-w-3xl py-8">
+        <div className="text-center py-10">
+          <p className="text-muted-foreground">Please select a household to view shopping lists.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container max-w-3xl py-8">
@@ -371,35 +207,35 @@ export default function ShoppingList() {
           <div>
             <h1 className="text-2xl font-bold text-navy flex items-center gap-2">
               <ListChecks className="h-6 w-6" />
-              Shopping Lists
+              Shopping List
             </h1>
-            <p className="text-sm text-muted-foreground">Manage and organize your shopping lists by week</p>
+            <p className="text-sm text-muted-foreground">
+              Household shopping list for {currentHousehold.name}
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={generateShoppingListFromMealPlan}
+              className="px-2"
+              title="Generate from meal plan"
+            >
+              <RefreshCw className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleShare}
+              className="px-2"
+              title="Share shopping list"
+            >
+              <Share className="h-4 w-4" />
+            </Button>
           </div>
         </div>
-        <div className="flex items-center gap-2 mt-2">
-          {[1, 2].map((val) => (
-            <Button
-              key={val}
-              size="sm"
-              variant={week === val ? "default" : "outline"}
-              className={week === val ? "bg-terracotta text-white" : ""}
-              onClick={() => setWeek(val as 1 | 2)}
-            >
-              Week {val}
-            </Button>
-          ))}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleShare}
-            className="px-2"
-            title="Share shopping list"
-          >
-            <Share className="h-4 w-4" />
-          </Button>
-        </div>
         <p className="text-muted-foreground text-sm mt-1">
-          {ingredients.length} items • {checkedCount} purchased
+          {shoppingItems.length} items • {checkedCount} purchased
         </p>
         <ShoppingListActions
           onCheckAll={handleCheckAll}
@@ -407,7 +243,7 @@ export default function ShoppingList() {
           onRemoveAll={handleRemoveAll}
         />
         
-        {/* Simplified Custom Item Form */}
+        {/* Add custom item form */}
         <div className="flex items-center gap-2 mt-4">
           <Input 
             placeholder="Item name" 
@@ -437,97 +273,68 @@ export default function ShoppingList() {
           </Button>
         </div>
       </div>
-      <div className="space-y-4">
-        {Object.entries(categorizedIngredients).map(([category, items]) => (
-          <Card key={category}>
-            <CardHeader className="pb-2 flex flex-row items-center justify-between">
-              <CardTitle className="text-base">{category}</CardTitle>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-6 w-6"
-                onClick={() => {
-                  setSelectedCategory(category);
-                  setNewItem("");
-                  setNewItemQty("");
-                  setNewItemUnit("");
-                  document.getElementById("quick-add-item")?.focus();
-                }}
-                title={`Add to ${category}`}
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-2">
-                {items.map((ingredient, idx) => {
-                  const originalIndex = ingredients.findIndex(i => i.name === ingredient.name && i.unit === ingredient.unit);
-                  return (
+
+      {isLoading ? (
+        <div className="text-center py-8">
+          <p className="text-muted-foreground">Loading shopping list...</p>
+        </div>
+      ) : shoppingItems.length === 0 ? (
+        <div className="text-center py-8">
+          <p className="text-muted-foreground mb-4">No items in your shopping list yet.</p>
+          <Button onClick={generateShoppingListFromMealPlan}>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Generate from Meal Plan
+          </Button>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {Object.entries(categorisedItems()).map(([category, items]) => (
+            <Card key={category}>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base">{category}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-2">
+                  {items.map((item) => (
                     <li
-                      key={`${ingredient.name}-${ingredient.unit || ""}-${idx}`}
-                      className={`flex items-start gap-2 p-2 rounded ${ingredient.checked ? 'bg-muted/50' : ''}`}
+                      key={item.id}
+                      className={`flex items-start gap-2 p-2 rounded ${item.is_checked ? 'bg-muted/50' : ''}`}
                     >
                       <Checkbox
-                        id={`ingredient-${originalIndex}`}
-                        checked={ingredient.checked}
-                        onCheckedChange={() => handleToggleIngredient(originalIndex)}
+                        id={`item-${item.id}`}
+                        checked={item.is_checked}
+                        onCheckedChange={(checked) => handleToggleItem(item.id, !!checked)}
                         className="mt-0.5"
                       />
                       <div className="flex-1 min-w-0">
                         <label
-                          htmlFor={`ingredient-${originalIndex}`}
-                          className={`text-sm ${ingredient.checked ? 'line-through text-muted-foreground' : ''} break-words`}
+                          htmlFor={`item-${item.id}`}
+                          className={`text-sm ${item.is_checked ? 'line-through text-muted-foreground' : ''} break-words cursor-pointer`}
                         >
-                          {ingredient.totalQty && ingredient.unit
-                            ? `${ingredient.totalQty} ${ingredient.unit} ${ingredient.name}`
-                            : ingredient.totalQty ? `${ingredient.totalQty} ${ingredient.name}` : ingredient.name}
+                          {item.quantity && item.unit
+                            ? `${item.quantity} ${item.unit} ${item.name}`
+                            : item.quantity ? `${item.quantity} ${item.name}` : item.name}
                         </label>
-                        {!ingredient.isCustom && ingredient.recipeIds.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mt-1">
-                            {ingredient.recipeIds.map(recipeId => {
-                              const recipe = getRecipeForIngredient(recipeId);
-                              return recipe ? (
-                                <Link to={`/recipes/${recipe.id}`} key={recipeId} className="inline-flex items-center rounded-full bg-sage/10 px-2 py-0.5 text-xs text-sage hover:underline break-all">
-                                  {recipe.title.slice(0, 15)}{recipe.title.length > 15 ? '...' : ''}
-                                </Link>
-                              ) : null;
-                            })}
-                          </div>
-                        )}
-                        {ingredient.isCustom && (
+                        {item.is_custom && (
                           <div className="text-xs text-muted-foreground mt-1">Custom item</div>
                         )}
                       </div>
-                      <div className="flex gap-1 items-center">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleCopyIngredient(ingredient.name)}
-                          className="h-7 w-7 p-0"
-                          title="Copy ingredient name"
-                        >
-                          <Copy className="h-4 w-4 text-muted-foreground hover:text-primary" />
-                          <span className="sr-only">Copy</span>
-                        </Button>
-                        <Separator orientation="vertical" className="h-4" />
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleRemoveItem(originalIndex)}
-                          className="h-7 w-7 p-0"
-                        >
-                          <Trash2 className="h-4 w-4 text-muted-foreground hover:text-destructive" />
-                          <span className="sr-only">Remove</span>
-                        </Button>
-                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setItemToDelete(item.id)}
+                        className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
+                      >
+                        ×
+                      </Button>
                     </li>
-                  );
-                })}
-              </ul>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
       
       {/* Confirmation Dialog */}
       <AlertDialog open={itemToDelete !== null} onOpenChange={(open) => !open && setItemToDelete(null)}>
@@ -539,7 +346,7 @@ export default function ShoppingList() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={cancelRemoveItem}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel onClick={() => setItemToDelete(null)}>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={confirmRemoveItem}>Remove</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
