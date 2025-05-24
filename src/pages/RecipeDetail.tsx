@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { RecipeDetail as RecipeDetailComponent } from "@/components/recipes/RecipeDetail";
@@ -8,12 +9,14 @@ import { EditRecipeDialog } from "@/components/recipes/EditRecipeDialog";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { useMealPlan } from "@/contexts/MealPlanContext";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export default function RecipeDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { getRecipeById, isLoading, updateRecipe, deleteRecipe } = useRecipes();
+  const { addMealPlan } = useMealPlan();
   const { user } = useAuth();
   const { toast } = useToast();
   const [showEditDialog, setShowEditDialog] = useState(false);
@@ -88,10 +91,11 @@ export default function RecipeDetailPage() {
       });
       return;
     }
+    console.log("Opening meal plan dialog for recipe:", recipe.title);
     setShowMealPlanDialog(true);
   };
 
-  const handleSelectMealType = (mealType: MealType) => {
+  const handleSelectMealType = async (mealType: MealType) => {
     if (!selectedWeek || !recipe) {
       toast({
         title: "Select Week",
@@ -101,30 +105,36 @@ export default function RecipeDetailPage() {
       return;
     }
 
-    const storageKey = `persistedMealPlans_v1_week${selectedWeek}`;
-    const existingPlans = JSON.parse(localStorage.getItem(storageKey) || '[]');
-    
-    const newMealPlan = {
-      id: `added-meal-${Date.now()}-${mealType}`,
-      date: new Date().toISOString(),
-      mealType,
-      recipeId: recipe.id,
-      createdBy: user?.id || "user-1",
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      slotIndex: existingPlans.filter((mp: any) => mp.mealType === mealType).length,
-    };
+    try {
+      console.log("Adding recipe to meal plan from detail page:", {
+        recipe: recipe.title,
+        mealType,
+        week: selectedWeek
+      });
 
-    const updatedPlans = [...existingPlans, newMealPlan];
-    localStorage.setItem(storageKey, JSON.stringify(updatedPlans));
+      await addMealPlan({
+        date: new Date().toISOString().split('T')[0], // Use today's date as YYYY-MM-DD
+        mealType,
+        recipeId: recipe.id,
+        createdBy: user?.id || "",
+        slotIndex: 0,
+      }, selectedWeek);
 
-    toast({
-      title: "Recipe Added",
-      description: `Added ${recipe.title} to your ${mealType} meal plan (Week ${selectedWeek})!`,
-    });
+      toast({
+        title: "Recipe Added",
+        description: `Added ${recipe.title} to your ${mealType} meal plan (Week ${selectedWeek})!`,
+      });
 
-    setShowMealPlanDialog(false);
-    setSelectedWeek(null);
+      setShowMealPlanDialog(false);
+      setSelectedWeek(null);
+    } catch (error) {
+      console.error("Error adding recipe to meal plan:", error);
+      toast({
+        title: "Error",
+        description: "Failed to add recipe to meal plan. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
   
   if (isLoading) {

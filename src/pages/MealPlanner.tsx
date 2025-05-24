@@ -81,6 +81,8 @@ export default function MealPlanner() {
 
   // ---- Randomise handler with confirmation ----
   const handleRandomMealSelection = async () => {
+    console.log("Starting random meal selection...");
+    
     if (!user) {
       toast({
         title: "Login Required",
@@ -114,36 +116,54 @@ export default function MealPlanner() {
         return;
     }
     
-    // Clear current week first
-    await clearWeek(week);
-    
-    // Add new random meal plans
-    let allSelectedIds = new Set<string>();
-    
-    for (const mealType of mealTypes) {
-      const unique = getUniqueRandomRecipes(
-        recipes, // Use user's recipes instead of mockRecipes
-        mealTypeToCategories[mealType],
-        Math.min(5, recipes.length), // Don't try to select more recipes than available
-        allSelectedIds
-      );
+    try {
+      console.log("Clearing week", week);
+      // Clear current week first
+      await clearWeek(week);
       
-      for (const [i, recipe] of unique.entries()) {
-        await addMealPlan({
-          date: new Date().toISOString(),
-          mealType: mealType,
-          recipeId: recipe.id,
-          createdBy: user.id,
-          slotIndex: i,
-        }, week);
-        allSelectedIds.add(recipe.id);
+      // Add new random meal plans
+      let allSelectedIds = new Set<string>();
+      
+      for (const mealType of mealTypes) {
+        console.log(`Selecting recipes for ${mealType}...`);
+        
+        const unique = getUniqueRandomRecipes(
+          recipes, // Use user's recipes instead of mockRecipes
+          mealTypeToCategories[mealType],
+          Math.min(3, recipes.length), // Select max 3 recipes per meal type
+          allSelectedIds
+        );
+        
+        console.log(`Found ${unique.length} recipes for ${mealType}:`, unique.map(r => r.title));
+        
+        for (const [i, recipe] of unique.entries()) {
+          console.log(`Adding ${recipe.title} to ${mealType} slot ${i}`);
+          
+          await addMealPlan({
+            date: new Date().toISOString().split('T')[0], // Use today's date as YYYY-MM-DD
+            mealType: mealType,
+            recipeId: recipe.id,
+            createdBy: user.id,
+            slotIndex: i,
+          }, week);
+          
+          allSelectedIds.add(recipe.id);
+        }
       }
+      
+      console.log("Random meal selection completed");
+      toast({
+        title: "Meal Plan Randomised",
+        description: "Your meals have been chosen from your recipe collection!",
+      });
+    } catch (error) {
+      console.error("Error during random meal selection:", error);
+      toast({
+        title: "Error",
+        description: "Failed to randomize meal plan. Please try again.",
+        variant: "destructive",
+      });
     }
-    
-    toast({
-      title: "Meal Plan Randomised",
-      description: "Your meals have been chosen from your recipe collection!",
-    });
   };
 
   // ---- Share ----
@@ -171,11 +191,14 @@ export default function MealPlanner() {
 
   // ---- Remove a meal ----
   const handleRemoveMeal = async (planId: string) => {
+    console.log("Removing meal plan:", planId);
     await removeMealPlan(planId);
   };
 
   // ---- Add meal: Opens modal ----
   const handleAddMeal = (mealType: MealType) => {
+    console.log("Opening add meal modal for:", mealType);
+    
     if (!user) {
       toast({
         title: "Login Required",
@@ -200,16 +223,28 @@ export default function MealPlanner() {
   const onAddMealFinish = async (mealType: MealType, recipeId: string) => {
     if (!user) return;
     
-    const currentPlansForType = getMealPlansForType(mealType);
-    await addMealPlan({
-      date: new Date().toISOString(),
-      mealType,
-      recipeId,
-      createdBy: user.id,
-      slotIndex: currentPlansForType.length,
-    }, week);
+    console.log("Adding meal to plan:", { mealType, recipeId, week });
     
-    setAddMealModal({ open: false, mealType: null });
+    const currentPlansForType = getMealPlansForType(mealType);
+    
+    try {
+      await addMealPlan({
+        date: new Date().toISOString().split('T')[0], // Use today's date as YYYY-MM-DD
+        mealType,
+        recipeId,
+        createdBy: user.id,
+        slotIndex: currentPlansForType.length,
+      }, week);
+      
+      setAddMealModal({ open: false, mealType: null });
+    } catch (error) {
+      console.error("Error adding meal:", error);
+      toast({
+        title: "Error",
+        description: "Failed to add meal. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   // ---- Clear all ----
@@ -266,6 +301,7 @@ export default function MealPlanner() {
                   onClick={handleRandomMealSelection}
                   size="sm"
                   className="bg-sage hover:bg-sage/90 flex items-center whitespace-nowrap flex-1"
+                  disabled={isLoading}
                 >
                   <FileSpreadsheet className="mr-2 h-4 w-4" />
                   Randomise

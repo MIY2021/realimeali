@@ -9,14 +9,16 @@ import { MealType } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import { useHouseholdShopping } from "@/contexts/HouseholdShoppingContext";
 import { ChevronDown } from "lucide-react";
+import { useMealPlan } from "@/contexts/MealPlanContext";
 
 interface RecipeListProps {
   recipes: Recipe[];
   onAddToMealPlan?: (recipe: Recipe, mealType: MealType, week: 1 | 2) => void;
 }
 
-export function RecipeList({ recipes, onAddToMealPlan }: RecipeListProps) {
+export function RecipeList({ recipes }: RecipeListProps) {
   const { recipeCategories } = useHouseholdShopping();
+  const { addMealPlan } = useMealPlan();
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [sortType, setSortType] = useState<string>("title-asc");
@@ -64,12 +66,13 @@ export function RecipeList({ recipes, onAddToMealPlan }: RecipeListProps) {
 
   // New handlers for meal plan dialog
   const handleAddToMealPlan = (recipe: Recipe) => {
+    console.log("Opening meal plan dialog for recipe:", recipe.title);
     setSelectedRecipe(recipe);
     setMealTypeDialogOpen(true);
     setSelectedWeek(null);
   };
 
-  const handleSelectMealType = (mealType: MealType) => {
+  const handleSelectMealType = async (mealType: MealType) => {
     if (!selectedWeek) {
       toast({
         title: "Select Week",
@@ -79,11 +82,40 @@ export function RecipeList({ recipes, onAddToMealPlan }: RecipeListProps) {
       return;
     }
 
-    if (selectedRecipe && onAddToMealPlan) {
-      onAddToMealPlan(selectedRecipe, mealType, selectedWeek);
+    if (!selectedRecipe) {
+      toast({
+        title: "Error",
+        description: "No recipe selected.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      console.log("Adding recipe to meal plan:", {
+        recipe: selectedRecipe.title,
+        mealType,
+        week: selectedWeek
+      });
+
+      await addMealPlan({
+        date: new Date().toISOString().split('T')[0], // Use today's date as YYYY-MM-DD
+        mealType,
+        recipeId: selectedRecipe.id,
+        createdBy: "", // This will be set in the context
+        slotIndex: 0,
+      }, selectedWeek);
+
       setMealTypeDialogOpen(false);
       setSelectedRecipe(null);
       setSelectedWeek(null);
+    } catch (error) {
+      console.error("Error adding recipe to meal plan:", error);
+      toast({
+        title: "Error",
+        description: "Failed to add recipe to meal plan. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 

@@ -38,45 +38,6 @@ export default function RecipesPage() {
     }
   };
 
-  const handleAddToMealPlan = (recipe: Recipe, mealType: MealType, selectedWeek: 1 | 2) => {
-    if (!user) {
-      toast({
-        title: "Login Required",
-        description: "You need to log in to add recipes to your meal plan.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    const storageKey = `persistedMealPlans_v1_week${selectedWeek}`;
-    const existingPlans = JSON.parse(localStorage.getItem(storageKey) || '[]');
-    
-    const newMealPlan = {
-      id: `added-meal-${Date.now()}-${mealType}`,
-      date: new Date().toISOString(),
-      mealType,
-      recipeId: recipe.id,
-      createdBy: user.id,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      slotIndex: existingPlans.filter((mp: any) => mp.mealType === mealType).length,
-      recipe: {
-        id: recipe.id,
-        title: recipe.title,
-        description: recipe.description,
-        image: recipe.image
-      }
-    };
-
-    const updatedPlans = [...existingPlans, newMealPlan];
-    localStorage.setItem(storageKey, JSON.stringify(updatedPlans));
-    
-    toast({
-      title: "Recipe Added",
-      description: `Added ${recipe.title} to your ${mealType} meal plan (Week ${selectedWeek})!`,
-    });
-  };
-
   return (
     <div className="container max-w-3xl py-6">
       <div className="flex items-center justify-between mb-8 gap-2 flex-wrap">
@@ -133,10 +94,7 @@ export default function RecipesPage() {
           </Button>
         </div>
       ) : (
-        <RecipeList
-          recipes={recipes}
-          onAddToMealPlan={handleAddToMealPlan}
-        />
+        <RecipeList recipes={recipes} />
       )}
 
       <AIRecipeParserDialog
