@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Recipe, RecipeCategory } from "@/types";
 import {
@@ -146,7 +147,7 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
       return;
     }
 
-    if (activeTab === "camera" && !cameraFile) {
+    if (activeTab === "ingredients" && !cameraFile) {
       toast({
         title: "No photo taken",
         description: "Please take a photo of your ingredients first! 📷",
@@ -176,7 +177,7 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
           reader.readAsDataURL(imageFile);
         });
         requestData.imageUrl = await base64Promise;
-      } else if (activeTab === "camera" && cameraFile) {
+      } else if (activeTab === "ingredients" && cameraFile) {
         const reader = new FileReader();
         const base64Promise = new Promise<string>((resolve, reject) => {
           reader.onload = () => resolve(reader.result as string);
@@ -296,7 +297,7 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
         setShowPreview(true);
       }
 
-      const successMessage = activeTab === "camera" 
+      const successMessage = activeTab === "ingredients" 
         ? "🎉 Recipe created from your ingredients! I've suggested a delicious meal you can make."
         : "🎉 Recipe magic complete! I've extracted all the delicious details! Take a look and adjust anything you'd like.";
 
@@ -369,7 +370,7 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-4xl h-[90vh] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-4xl h-[90vh] max-h-[90vh] flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Plus className="h-5 w-5 text-terracotta" />
@@ -377,320 +378,322 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
           </DialogTitle>
         </DialogHeader>
 
-        {showGeneration ? (
-          <div className="space-y-4 min-h-[400px]">
-            <div className="bg-green-50 p-3 rounded-md">
-              <p className="text-sm text-green-700 font-medium">🎉 Recipe generated! Review and make any changes:</p>
-            </div>
-            
-            <div>
-              <Label htmlFor="generated-recipe">Generated Recipe (JSON)</Label>
-              <textarea
-                id="generated-recipe"
-                value={generatedRecipe}
-                onChange={(e) => setGeneratedRecipe(e.target.value)}
-                className="w-full h-64 p-3 border rounded-md resize-none font-mono text-sm"
-              />
-            </div>
-          </div>
-        ) : !showPreview ? (
-          <div className="space-y-4 min-h-[400px]">
-            <div>
-              <p className="text-sm text-muted-foreground mb-4">
-                Got a recipe to organize? I can help! Just paste some text, share an image URL, upload a photo, paste a recipe website URL, take a photo of your ingredients, or let me generate a custom recipe for you! 🍳
-              </p>
+        <div className="flex-1 overflow-y-auto">
+          {showGeneration ? (
+            <div className="space-y-4">
+              <div className="bg-green-50 p-3 rounded-md">
+                <p className="text-sm text-green-700 font-medium">🎉 Recipe generated! Review and make any changes:</p>
+              </div>
               
-              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-6">
-                  <TabsTrigger value="text" className="flex items-center gap-1 text-xs">
-                    <FileText className="h-3 w-3" />
-                    Text
-                  </TabsTrigger>
-                  <TabsTrigger value="website" className="flex items-center gap-1 text-xs">
-                    <Globe className="h-3 w-3" />
-                    Website
-                  </TabsTrigger>
-                  <TabsTrigger value="url" className="flex items-center gap-1 text-xs">
-                    <Link className="h-3 w-3" />
-                    URL
-                  </TabsTrigger>
-                  <TabsTrigger value="upload" className="flex items-center gap-1 text-xs">
-                    <Upload className="h-3 w-3" />
-                    Upload
-                  </TabsTrigger>
-                  <TabsTrigger value="camera" className="flex items-center gap-1 text-xs">
-                    <Camera className="h-3 w-3" />
-                    Camera
-                  </TabsTrigger>
-                  <TabsTrigger value="generate" className="flex items-center gap-1 text-xs">
-                    <Plus className="h-3 w-3" />
-                    Generate
-                  </TabsTrigger>
-                </TabsList>
+              <div>
+                <Label htmlFor="generated-recipe">Generated Recipe (JSON)</Label>
+                <textarea
+                  id="generated-recipe"
+                  value={generatedRecipe}
+                  onChange={(e) => setGeneratedRecipe(e.target.value)}
+                  className="w-full h-64 p-3 border rounded-md resize-none font-mono text-sm"
+                />
+              </div>
+            </div>
+          ) : !showPreview ? (
+            <div className="space-y-4">
+              <div>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Got a recipe to organize? I can help! Just paste some text, share an image URL, upload a photo, paste a recipe website URL, take a photo of your ingredients, or let me generate a custom recipe for you! 🍳
+                </p>
                 
-                <TabsContent value="text" className="space-y-2">
-                  <Label htmlFor="recipe-text">Recipe Text</Label>
-                  <textarea
-                    id="recipe-text"
-                    value={recipeText}
-                    onChange={(e) => setRecipeText(e.target.value)}
-                    placeholder="Paste any recipe here! From a website, cookbook, handwritten note, or even that crumpled paper from grandma. I'll organize it beautifully! ✨"
-                    className="w-full h-64 p-3 border rounded-md resize-none"
-                  />
-                </TabsContent>
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                  <TabsList className="grid w-full grid-cols-6">
+                    <TabsTrigger value="text" className="flex items-center gap-1 text-xs">
+                      <FileText className="h-3 w-3" />
+                      Text
+                    </TabsTrigger>
+                    <TabsTrigger value="website" className="flex items-center gap-1 text-xs">
+                      <Globe className="h-3 w-3" />
+                      Website
+                    </TabsTrigger>
+                    <TabsTrigger value="url" className="flex items-center gap-1 text-xs">
+                      <Link className="h-3 w-3" />
+                      URL
+                    </TabsTrigger>
+                    <TabsTrigger value="upload" className="flex items-center gap-1 text-xs">
+                      <Upload className="h-3 w-3" />
+                      Upload
+                    </TabsTrigger>
+                    <TabsTrigger value="ingredients" className="flex items-center gap-1 text-xs">
+                      <Camera className="h-3 w-3" />
+                      Ingredient Helper
+                    </TabsTrigger>
+                    <TabsTrigger value="generate" className="flex items-center gap-1 text-xs">
+                      <Plus className="h-3 w-3" />
+                      Generate
+                    </TabsTrigger>
+                  </TabsList>
+                  
+                  <TabsContent value="text" className="space-y-2">
+                    <Label htmlFor="recipe-text">Recipe Text</Label>
+                    <textarea
+                      id="recipe-text"
+                      value={recipeText}
+                      onChange={(e) => setRecipeText(e.target.value)}
+                      placeholder="Paste any recipe here! From a website, cookbook, handwritten note, or even that crumpled paper from grandma. I'll organize it beautifully! ✨"
+                      className="w-full h-48 p-3 border rounded-md resize-none"
+                    />
+                  </TabsContent>
 
-                <TabsContent value="website" className="space-y-2">
-                  <Label htmlFor="website-url">Recipe Website URL</Label>
-                  <Input
-                    id="website-url"
-                    type="url"
-                    value={websiteUrl}
-                    onChange={(e) => setWebsiteUrl(e.target.value)}
-                    placeholder="https://www.allrecipes.com/recipe/231506/simple-macaroni-and-cheese/"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    I can extract recipes directly from recipe websites and find images too! Just paste the URL from sites like AllRecipes, Food Network, BBC Good Food, etc.
-                  </p>
-                </TabsContent>
-                
-                <TabsContent value="url" className="space-y-2">
-                  <Label htmlFor="image-url">Image URL</Label>
-                  <Input
-                    id="image-url"
-                    type="url"
-                    value={imageUrl}
-                    onChange={(e) => setImageUrl(e.target.value)}
-                    placeholder="https://example.com/recipe-image.jpg"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    I can read recipes from images! Just paste a URL to any recipe photo or screenshot.
-                  </p>
-                </TabsContent>
-                
-                <TabsContent value="upload" className="space-y-2">
-                  <Label htmlFor="image-file">Upload Recipe Image</Label>
-                  <Input
-                    id="image-file"
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => setImageFile(e.target.files?.[0] || null)}
-                  />
-                  {imageFile && (
-                    <p className="text-sm text-green-600">📁 {imageFile.name} selected</p>
-                  )}
-                  <p className="text-xs text-muted-foreground">
-                    Upload a photo of a recipe from a cookbook, screen, or handwritten note!
-                  </p>
-                </TabsContent>
+                  <TabsContent value="website" className="space-y-2">
+                    <Label htmlFor="website-url">Recipe Website URL</Label>
+                    <Input
+                      id="website-url"
+                      type="url"
+                      value={websiteUrl}
+                      onChange={(e) => setWebsiteUrl(e.target.value)}
+                      placeholder="https://www.allrecipes.com/recipe/231506/simple-macaroni-and-cheese/"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      I can extract recipes directly from recipe websites and find images too! Just paste the URL from sites like AllRecipes, Food Network, BBC Good Food, etc.
+                    </p>
+                  </TabsContent>
+                  
+                  <TabsContent value="url" className="space-y-2">
+                    <Label htmlFor="image-url">Image URL</Label>
+                    <Input
+                      id="image-url"
+                      type="url"
+                      value={imageUrl}
+                      onChange={(e) => setImageUrl(e.target.value)}
+                      placeholder="https://example.com/recipe-image.jpg"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      I can read recipes from images! Just paste a URL to any recipe photo or screenshot.
+                    </p>
+                  </TabsContent>
+                  
+                  <TabsContent value="upload" className="space-y-2">
+                    <Label htmlFor="image-file">Upload Recipe Image</Label>
+                    <Input
+                      id="image-file"
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+                    />
+                    {imageFile && (
+                      <p className="text-sm text-green-600">📁 {imageFile.name} selected</p>
+                    )}
+                    <p className="text-xs text-muted-foreground">
+                      Upload a photo of a recipe from a cookbook, screen, or handwritten note!
+                    </p>
+                  </TabsContent>
 
-                <TabsContent value="camera" className="space-y-2">
-                  <Label htmlFor="camera-file">Take Photo of Ingredients</Label>
-                  <Input
-                    id="camera-file"
-                    type="file"
-                    accept="image/*"
-                    capture="environment"
-                    onChange={(e) => setCameraFile(e.target.files?.[0] || null)}
-                  />
-                  {cameraFile && (
-                    <div className="space-y-2">
-                      <p className="text-sm text-green-600">📷 Photo captured!</p>
-                      <img 
-                        src={URL.createObjectURL(cameraFile)} 
-                        alt="Captured ingredients" 
-                        className="w-full h-48 object-cover rounded border"
+                  <TabsContent value="ingredients" className="space-y-2">
+                    <Label htmlFor="camera-file">Take Photo of Ingredients</Label>
+                    <Input
+                      id="camera-file"
+                      type="file"
+                      accept="image/*"
+                      capture="environment"
+                      onChange={(e) => setCameraFile(e.target.files?.[0] || null)}
+                    />
+                    {cameraFile && (
+                      <div className="space-y-2">
+                        <p className="text-sm text-green-600">📷 Photo captured!</p>
+                        <img 
+                          src={URL.createObjectURL(cameraFile)} 
+                          alt="Captured ingredients" 
+                          className="w-full h-48 object-cover rounded border"
+                        />
+                      </div>
+                    )}
+                    <p className="text-xs text-muted-foreground">
+                      Take a photo of ingredients in your fridge, pantry, or counter and I'll suggest a recipe you can make with them! 📸🥘
+                    </p>
+                  </TabsContent>
+
+                  <TabsContent value="generate" className="space-y-2">
+                    <Label htmlFor="recipe-request">What recipe do you need?</Label>
+                    <textarea
+                      id="recipe-request"
+                      value={recipeRequest}
+                      onChange={(e) => setRecipeRequest(e.target.value)}
+                      placeholder="Tell me what you're looking for! E.g., 'A quick vegetarian dinner for 4 people using ingredients I might have at home' or 'A fancy dessert for a dinner party' or 'Healthy breakfast ideas with oats'"
+                      className="w-full h-32 p-3 border rounded-md resize-none"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      I'll create a custom recipe based on your needs! Be as specific as you want about ingredients, dietary restrictions, cooking time, etc. You can also ask me to reverse engineer recipes from restaurants that you liked!
+                    </p>
+                  </TabsContent>
+                </Tabs>
+              </div>
+              
+              <div className="flex items-center gap-2 text-sm text-muted-foreground bg-blue-50 p-3 rounded-md">
+                <span>I'll automatically extract the title, ingredients, cooking steps, and even suggest helpful categories!</span>
+              </div>
+            </div>
+          ) : parsedRecipe ? (
+            <div className="space-y-4">
+              <div className="bg-green-50 p-3 rounded-md">
+                <p className="text-sm text-green-700 font-medium">🎉 Recipe extracted successfully! Everything looks good, but feel free to make any adjustments:</p>
+              </div>
+
+              {/* Website Images Selection */}
+              {websiteImages.length > 0 && (
+                <div className="space-y-2">
+                  <Label>Choose an image from the website:</Label>
+                  <div className="grid grid-cols-3 gap-2 max-h-32 overflow-y-auto">
+                    {websiteImages.map((img, index) => (
+                      <img
+                        key={index}
+                        src={img}
+                        alt={`Website image ${index + 1}`}
+                        className="w-full h-20 object-cover rounded cursor-pointer border-2 hover:border-terracotta"
+                        onClick={() => {
+                          setSelectedImage(img);
+                          updateParsedRecipe('image', img);
+                        }}
                       />
+                    ))}
+                  </div>
+                  {selectedImage && (
+                    <p className="text-sm text-green-600">✓ Image selected</p>
+                  )}
+                </div>
+              )}
+
+              {/* Image Upload for Text Input */}
+              {showImageSelection && (
+                <div className="space-y-2">
+                  <Label htmlFor="recipe-image">Add an image to your recipe (optional)</Label>
+                  <Input
+                    id="recipe-image"
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) handleImageUpload(file);
+                    }}
+                  />
+                  {selectedImage && (
+                    <div className="flex items-center gap-2">
+                      <img src={selectedImage} alt="Recipe" className="w-16 h-16 object-cover rounded" />
+                      <p className="text-sm text-green-600">✓ Image added</p>
                     </div>
                   )}
-                  <p className="text-xs text-muted-foreground">
-                    Take a photo of ingredients in your fridge, pantry, or counter and I'll suggest a recipe you can make with them! 📸🥘
-                  </p>
-                </TabsContent>
+                </div>
+              )}
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Title</label>
+                    <input
+                      type="text"
+                      value={parsedRecipe.title}
+                      onChange={(e) => updateParsedRecipe('title', e.target.value)}
+                      className="w-full p-2 border rounded"
+                    />
+                  </div>
 
-                <TabsContent value="generate" className="space-y-2">
-                  <Label htmlFor="recipe-request">What recipe do you need?</Label>
-                  <textarea
-                    id="recipe-request"
-                    value={recipeRequest}
-                    onChange={(e) => setRecipeRequest(e.target.value)}
-                    placeholder="Tell me what you're looking for! E.g., 'A quick vegetarian dinner for 4 people using ingredients I might have at home' or 'A fancy dessert for a dinner party' or 'Healthy breakfast ideas with oats'"
-                    className="w-full h-32 p-3 border rounded-md resize-none"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    I'll create a custom recipe based on your needs! Be as specific as you want about ingredients, dietary restrictions, cooking time, etc.
-                  </p>
-                </TabsContent>
-              </Tabs>
-            </div>
-            
-            <div className="flex items-center gap-2 text-sm text-muted-foreground bg-blue-50 p-3 rounded-md">
-              <span>I'll automatically extract the title, ingredients, cooking steps, and even suggest helpful categories!</span>
-            </div>
-          </div>
-        ) : parsedRecipe ? (
-          <div className="space-y-4 min-h-[400px]">
-            <div className="bg-green-50 p-3 rounded-md">
-              <p className="text-sm text-green-700 font-medium">🎉 Recipe extracted successfully! Everything looks good, but feel free to make any adjustments:</p>
-            </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Description</label>
+                    <textarea
+                      value={parsedRecipe.description}
+                      onChange={(e) => updateParsedRecipe('description', e.target.value)}
+                      className="w-full p-2 border rounded"
+                      rows={3}
+                    />
+                  </div>
 
-            {/* Website Images Selection */}
-            {websiteImages.length > 0 && (
-              <div className="space-y-2">
-                <Label>Choose an image from the website:</Label>
-                <div className="grid grid-cols-3 gap-2 max-h-32 overflow-y-auto">
-                  {websiteImages.map((img, index) => (
-                    <img
-                      key={index}
-                      src={img}
-                      alt={`Website image ${index + 1}`}
-                      className="w-full h-20 object-cover rounded cursor-pointer border-2 hover:border-terracotta"
-                      onClick={() => {
-                        setSelectedImage(img);
-                        updateParsedRecipe('image', img);
+                  <div className="grid grid-cols-3 gap-2">
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Prep (min)</label>
+                      <input
+                        type="number"
+                        value={parsedRecipe.prepTime}
+                        onChange={(e) => updateParsedRecipe('prepTime', Number(e.target.value))}
+                        className="w-full p-2 border rounded"
+                        min={0}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Cook (min)</label>
+                      <input
+                        type="number"
+                        value={parsedRecipe.cookTime}
+                        onChange={(e) => updateParsedRecipe('cookTime', Number(e.target.value))}
+                        className="w-full p-2 border rounded"
+                        min={0}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Servings</label>
+                      <input
+                        type="number"
+                        value={parsedRecipe.servings}
+                        onChange={(e) => updateParsedRecipe('servings', Number(e.target.value))}
+                        className="w-full p-2 border rounded"
+                        min={1}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Categories</label>
+                    <div className="flex flex-wrap gap-1 mb-2">
+                      {parsedRecipe.categories.map((category) => (
+                        <span
+                          key={category}
+                          className="inline-flex items-center gap-1 bg-sage/20 text-sage rounded-full px-2 py-1 text-xs cursor-pointer hover:bg-red-100"
+                          onClick={() => updateParsedRecipe('categories', parsedRecipe.categories.filter(c => c !== category))}
+                        >
+                          {category} ×
+                        </span>
+                      ))}
+                    </div>
+                    <select
+                      onChange={(e) => {
+                        const category = e.target.value as RecipeCategory;
+                        if (category && !parsedRecipe.categories.includes(category)) {
+                          updateParsedRecipe('categories', [...parsedRecipe.categories, category]);
+                        }
                       }}
-                    />
-                  ))}
-                </div>
-                {selectedImage && (
-                  <p className="text-sm text-green-600">✓ Image selected</p>
-                )}
-              </div>
-            )}
-
-            {/* Image Upload for Text Input */}
-            {showImageSelection && (
-              <div className="space-y-2">
-                <Label htmlFor="recipe-image">Add an image to your recipe (optional)</Label>
-                <Input
-                  id="recipe-image"
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) handleImageUpload(file);
-                  }}
-                />
-                {selectedImage && (
-                  <div className="flex items-center gap-2">
-                    <img src={selectedImage} alt="Recipe" className="w-16 h-16 object-cover rounded" />
-                    <p className="text-sm text-green-600">✓ Image added</p>
-                  </div>
-                )}
-              </div>
-            )}
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Title</label>
-                  <input
-                    type="text"
-                    value={parsedRecipe.title}
-                    onChange={(e) => updateParsedRecipe('title', e.target.value)}
-                    className="w-full p-2 border rounded"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1">Description</label>
-                  <textarea
-                    value={parsedRecipe.description}
-                    onChange={(e) => updateParsedRecipe('description', e.target.value)}
-                    className="w-full p-2 border rounded"
-                    rows={3}
-                  />
-                </div>
-
-                <div className="grid grid-cols-3 gap-2">
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Prep (min)</label>
-                    <input
-                      type="number"
-                      value={parsedRecipe.prepTime}
-                      onChange={(e) => updateParsedRecipe('prepTime', Number(e.target.value))}
+                      value=""
                       className="w-full p-2 border rounded"
-                      min={0}
-                    />
+                    >
+                      <option value="">Add category...</option>
+                      {availableCategories.filter(cat => !parsedRecipe.categories.includes(cat)).map(cat => (
+                        <option key={cat} value={cat}>{cat}</option>
+                      ))}
+                    </select>
                   </div>
+                </div>
+
+                <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium mb-1">Cook (min)</label>
-                    <input
-                      type="number"
-                      value={parsedRecipe.cookTime}
-                      onChange={(e) => updateParsedRecipe('cookTime', Number(e.target.value))}
-                      className="w-full p-2 border rounded"
-                      min={0}
-                    />
+                    <label className="block text-sm font-medium mb-1">Ingredients ({parsedRecipe.ingredients.length})</label>
+                    <div className="space-y-1 max-h-32 overflow-y-auto border rounded p-2">
+                      {parsedRecipe.ingredients.map((ingredient, index) => (
+                        <div key={index} className="text-sm">• {ingredient}</div>
+                      ))}
+                    </div>
                   </div>
+
                   <div>
-                    <label className="block text-sm font-medium mb-1">Servings</label>
-                    <input
-                      type="number"
-                      value={parsedRecipe.servings}
-                      onChange={(e) => updateParsedRecipe('servings', Number(e.target.value))}
-                      className="w-full p-2 border rounded"
-                      min={1}
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1">Categories</label>
-                  <div className="flex flex-wrap gap-1 mb-2">
-                    {parsedRecipe.categories.map((category) => (
-                      <span
-                        key={category}
-                        className="inline-flex items-center gap-1 bg-sage/20 text-sage rounded-full px-2 py-1 text-xs cursor-pointer hover:bg-red-100"
-                        onClick={() => updateParsedRecipe('categories', parsedRecipe.categories.filter(c => c !== category))}
-                      >
-                        {category} ×
-                      </span>
-                    ))}
-                  </div>
-                  <select
-                    onChange={(e) => {
-                      const category = e.target.value as RecipeCategory;
-                      if (category && !parsedRecipe.categories.includes(category)) {
-                        updateParsedRecipe('categories', [...parsedRecipe.categories, category]);
-                      }
-                    }}
-                    value=""
-                    className="w-full p-2 border rounded"
-                  >
-                    <option value="">Add category...</option>
-                    {availableCategories.filter(cat => !parsedRecipe.categories.includes(cat)).map(cat => (
-                      <option key={cat} value={cat}>{cat}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Ingredients ({parsedRecipe.ingredients.length})</label>
-                  <div className="space-y-1 max-h-32 overflow-y-auto border rounded p-2">
-                    {parsedRecipe.ingredients.map((ingredient, index) => (
-                      <div key={index} className="text-sm">• {ingredient}</div>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1">Instructions ({parsedRecipe.instructions.length} steps)</label>
-                  <div className="space-y-2 max-h-48 overflow-y-auto border rounded p-2">
-                    {parsedRecipe.instructions.map((instruction, index) => (
-                      <div key={index} className="text-sm">
-                        <span className="font-medium text-sage">{index + 1}.</span> {instruction}
-                      </div>
-                    ))}
+                    <label className="block text-sm font-medium mb-1">Instructions ({parsedRecipe.instructions.length} steps)</label>
+                    <div className="space-y-2 max-h-48 overflow-y-auto border rounded p-2">
+                      {parsedRecipe.instructions.map((instruction, index) => (
+                        <div key={index} className="text-sm">
+                          <span className="font-medium text-sage">{index + 1}.</span> {instruction}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-        ) : null}
+          ) : null}
+        </div>
 
-        <DialogFooter>
+        <DialogFooter className="flex-shrink-0">
           <Button variant="outline" onClick={handleClose}>
             Cancel
           </Button>
@@ -718,19 +721,19 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
                 (activeTab === "url" && !imageUrl.trim()) || 
                 (activeTab === "website" && !websiteUrl.trim()) ||
                 (activeTab === "upload" && !imageFile) ||
-                (activeTab === "camera" && !cameraFile) ||
+                (activeTab === "ingredients" && !cameraFile) ||
                 (activeTab === "generate" && !recipeRequest.trim())}
               className="bg-terracotta hover:bg-terracotta/90"
             >
               {isLoading ? (
                 <>
                   <div className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                  {activeTab === "generate" ? "Generating..." : activeTab === "camera" ? "Analyzing ingredients..." : "Working my magic..."}
+                  {activeTab === "generate" ? "Generating..." : activeTab === "ingredients" ? "Analyzing ingredients..." : "Working my magic..."}
                 </>
               ) : (
                 <>
                   <Plus className="h-4 w-4 mr-2" />
-                  {activeTab === "generate" ? "✨ Generate Recipe" : activeTab === "camera" ? "🧑‍🍳 Create Recipe from Ingredients" : "✨ Extract Recipe"}
+                  {activeTab === "generate" ? "✨ Generate Recipe" : activeTab === "ingredients" ? "🧑‍🍳 Create Recipe from Ingredients" : "✨ Extract Recipe"}
                 </>
               )}
             </Button>

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { RecipeList } from "@/components/recipes/RecipeList";
 import { Button } from "@/components/ui/button";
@@ -67,7 +68,7 @@ export default function RecipesPage() {
       return;
     }
     
-    // Store the meal plan selection in localStorage
+    // Store the meal plan selection in localStorage with proper recipe data
     const storageKey = `persistedMealPlans_v1_week${selectedWeek}`;
     const existingPlans = JSON.parse(localStorage.getItem(storageKey) || '[]');
     
@@ -80,6 +81,13 @@ export default function RecipesPage() {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       slotIndex: existingPlans.filter((mp: any) => mp.mealType === mealType).length,
+      // Store recipe data for immediate display
+      recipe: {
+        id: recipe.id,
+        title: recipe.title,
+        description: recipe.description,
+        image: recipe.image
+      }
     };
 
     const updatedPlans = [...existingPlans, newMealPlan];
