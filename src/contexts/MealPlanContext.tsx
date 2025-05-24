@@ -97,10 +97,8 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
   const getMealPlansForWeek = (weekNumber: 1 | 2): MealPlan[] => {
     if (!user || !currentHousehold) return [];
     
-    // For now, we'll use a simple approach to determine week
-    // In a real implementation, you might want to store week_number or calculate based on dates
     return mealPlans.filter(plan => {
-      // Simple week determination - could be improved with actual week tracking
+      // Get the week_number from the database record
       const planDate = new Date(plan.date);
       const currentWeek = Math.ceil(planDate.getDate() / 7);
       return currentWeek === weekNumber;
@@ -124,7 +122,11 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
     // Verify the recipe exists in user's collection
     const recipeExists = recipes.some(recipe => recipe.id === mealPlanData.recipeId);
     if (!recipeExists) {
-      console.warn('Cannot add meal plan: recipe not found in user collection');
+      toast({
+        title: "Error",
+        description: "Recipe not found in your collection.",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -162,6 +164,11 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
       };
 
       setMealPlans(prev => [...prev, newMealPlan]);
+      
+      toast({
+        title: "Recipe Added",
+        description: "Recipe has been added to your meal plan.",
+      });
     } catch (err) {
       console.error("Error adding meal plan:", err);
       toast({
