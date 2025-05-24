@@ -300,8 +300,8 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
       }
 
       toast({
-        title: "Join Request Sent",
-        description: `Your request to join ${matchingHousehold.name} has been sent and is awaiting approval.`,
+        title: "Request Sent Successfully!",
+        description: `Your join request for "${matchingHousehold.name}" has been sent. The household owner will review your request.`,
       });
 
       return true;
