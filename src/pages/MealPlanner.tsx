@@ -128,9 +128,9 @@ export default function MealPlanner() {
         console.log(`Selecting recipes for ${mealType}...`);
         
         const unique = getUniqueRandomRecipes(
-          recipes, // Use user's recipes instead of mockRecipes
+          recipes,
           mealTypeToCategories[mealType],
-          Math.min(3, recipes.length), // Select max 3 recipes per meal type
+          Math.min(3, recipes.length),
           allSelectedIds
         );
         
@@ -140,7 +140,7 @@ export default function MealPlanner() {
           console.log(`Adding ${recipe.title} to ${mealType} slot ${i}`);
           
           await addMealPlan({
-            date: new Date().toISOString().split('T')[0], // Use today's date as YYYY-MM-DD
+            date: new Date().toISOString().split('T')[0],
             mealType: mealType,
             recipeId: recipe.id,
             createdBy: user.id,
@@ -229,7 +229,7 @@ export default function MealPlanner() {
     
     try {
       await addMealPlan({
-        date: new Date().toISOString().split('T')[0], // Use today's date as YYYY-MM-DD
+        date: new Date().toISOString().split('T')[0],
         mealType,
         recipeId,
         createdBy: user.id,
@@ -254,9 +254,6 @@ export default function MealPlanner() {
     if (!window.confirm("Clear the entire meal plan?")) return;
     
     await clearWeek(week);
-    toast({
-      title: "Meal plan cleared"
-    });
   };
 
   // ---- Week toggle ----

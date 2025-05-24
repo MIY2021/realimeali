@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { MealPlan, Recipe } from "@/types";
 import { useAuth } from "@/contexts/AuthContext";
@@ -43,6 +44,7 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
   // Fetch household meal plans from database
   const fetchMealPlans = async () => {
     if (!user || !currentHousehold) {
+      console.log("No user or household, clearing meal plans");
       setMealPlans([]);
       return;
     }
@@ -77,12 +79,8 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
         slotIndex: dbPlan.slot_index,
       }));
 
-      // Filter to only include meal plans with recipes that exist in household members' collections
-      const userRecipeIds = new Set(recipes.map(r => r.id));
-      const validPlans = transformedPlans.filter(plan => userRecipeIds.has(plan.recipeId));
-      
-      console.log("Transformed and filtered plans:", validPlans);
-      setMealPlans(validPlans);
+      console.log("Transformed plans:", transformedPlans);
+      setMealPlans(transformedPlans);
     } catch (err) {
       console.error("Error fetching meal plans:", err);
       toast({
@@ -97,14 +95,14 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     fetchMealPlans();
-  }, [user, currentHousehold, recipes]);
+  }, [user, currentHousehold]);
 
   const getMealPlansForWeek = (weekNumber: 1 | 2): MealPlan[] => {
     if (!user || !currentHousehold) return [];
     
     return mealPlans.filter(plan => {
-      // Get the week_number from the database record by finding it in the original data
-      // For now, we'll use a simple date calculation
+      // Simple week calculation based on slot_index or date
+      // For now, we'll use a simple approach: odd weeks = 1, even weeks = 2
       const planDate = new Date(plan.date);
       const currentDate = new Date();
       const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
@@ -123,14 +121,14 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
     if (!user || !currentHousehold) {
       console.error("User or household not available");
       toast({
-        title: "Error",
+        title: "Error", 
         description: "You must be logged in and have a current household to add meal plans.",
         variant: "destructive",
       });
       return;
     }
 
-    // Verify the recipe exists in user's collection
+    // Verify the recipe exists in recipes collection
     const recipeExists = recipes.some(recipe => recipe.id === mealPlanData.recipeId);
     if (!recipeExists) {
       console.error("Recipe not found in collection:", mealPlanData.recipeId);
@@ -189,7 +187,7 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
       const recipe = recipes.find(r => r.id === mealPlanData.recipeId);
       toast({
         title: "Recipe Added",
-        description: `${recipe?.title || 'Recipe'} has been added to your meal plan.`,
+        description: `${recipe?.title || 'Recipe'} has been added to your meal plan for Week ${weekNumber}.`,
       });
     } catch (err) {
       console.error("Error adding meal plan:", err);
@@ -205,6 +203,8 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
     if (!user || !currentHousehold) return;
 
     try {
+      console.log("Removing meal plan:", id);
+      
       const { error } = await supabase
         .from('household_meal_plans')
         .delete()
@@ -216,6 +216,11 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
       }
 
       setMealPlans(prev => prev.filter(plan => plan.id !== id));
+      
+      toast({
+        title: "Recipe Removed",
+        description: "Recipe has been removed from your meal plan.",
+      });
     } catch (err) {
       console.error("Error removing meal plan:", err);
       toast({
@@ -230,6 +235,8 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
     if (!user || !currentHousehold) return;
 
     try {
+      console.log("Clearing week:", weekNumber);
+      
       const { error } = await supabase
         .from('household_meal_plans')
         .delete()
@@ -244,6 +251,11 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
       const weekPlans = getMealPlansForWeek(weekNumber);
       const weekPlanIds = weekPlans.map(plan => plan.id);
       setMealPlans(prev => prev.filter(plan => !weekPlanIds.includes(plan.id)));
+      
+      toast({
+        title: "Week Cleared",
+        description: `Week ${weekNumber} meal plan has been cleared.`,
+      });
     } catch (err) {
       console.error("Error clearing week:", err);
       toast({
@@ -269,7 +281,7 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
           filter: `household_id=eq.${currentHousehold.id}`
         },
         () => {
-          // Refetch meal plans when changes occur
+          console.log("Meal plan change detected, refetching...");
           fetchMealPlans();
         }
       )
