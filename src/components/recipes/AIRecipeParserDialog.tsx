@@ -32,8 +32,84 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
   const [isLoading, setIsLoading] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [activeTab, setActiveTab] = useState("text");
+  const [selectedImage, setSelectedImage] = useState<string>("");
+  const [websiteImages, setWebsiteImages] = useState<string[]>([]);
+  const [showImageSelection, setShowImageSelection] = useState(false);
+  const [recipeRequest, setRecipeRequest] = useState("");
+  const [generatedRecipe, setGeneratedRecipe] = useState("");
+  const [showGeneration, setShowGeneration] = useState(false);
+
+  const handleGenerateRecipe = async () => {
+    if (!recipeRequest.trim()) {
+      toast({
+        title: "Missing request",
+        description: "Please tell me what kind of recipe you need!",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('parse-recipe-ai', {
+        body: {
+          recipeText: `Generate a complete recipe for: ${recipeRequest}. Include title, description, ingredients list, step-by-step instructions, prep time, cook time, and servings.`
+        }
+      });
+
+      if (error) throw error;
+
+      if (data?.parsedRecipe) {
+        const recipe = data.parsedRecipe;
+        const formattedRecipe = {
+          title: recipe.title || "Generated Recipe",
+          description: recipe.description || "",
+          ingredients: Array.isArray(recipe.ingredients) ? recipe.ingredients : [],
+          instructions: Array.isArray(recipe.instructions) ? recipe.instructions : [],
+          categories: Array.isArray(recipe.categories) ? recipe.categories : [],
+          prepTime: Number(recipe.prepTime) || 0,
+          cookTime: Number(recipe.cookTime) || 0,
+          servings: Number(recipe.servings) || 1,
+          image: undefined,
+          isFavorite: false,
+        };
+
+        setGeneratedRecipe(JSON.stringify(formattedRecipe, null, 2));
+        setShowGeneration(true);
+      }
+    } catch (error) {
+      toast({
+        title: "Generation failed",
+        description: "Could not generate recipe. Please try again!",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleUseGeneratedRecipe = () => {
+    try {
+      const recipe = JSON.parse(generatedRecipe);
+      setParsedRecipe(recipe);
+      setShowGeneration(false);
+      setShowPreview(true);
+    } catch (error) {
+      toast({
+        title: "Invalid recipe",
+        description: "There was an error with the generated recipe.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const handleExtractRecipe = async () => {
+    if (activeTab === "generate") {
+      await handleGenerateRecipe();
+      return;
+    }
+
     if (activeTab === "text" && !recipeText.trim()) {
       toast({
         title: "Oops!",
@@ -82,8 +158,8 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
         requestData.imageUrl = imageUrl.trim();
       } else if (activeTab === "website") {
         requestData.websiteUrl = websiteUrl.trim();
+        requestData.extractImages = true;
       } else if (activeTab === "upload" && imageFile) {
-        // Convert file to base64 data URL
         const reader = new FileReader();
         const base64Promise = new Promise<string>((resolve, reject) => {
           reader.onload = () => resolve(reader.result as string);
@@ -94,12 +170,6 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
       }
 
       console.log('📤 Sending request to AI service...');
-      console.log('📊 Request data:', {
-        hasRecipeText: !!requestData.recipeText,
-        hasImageUrl: !!requestData.imageUrl,
-        hasWebsiteUrl: !!requestData.websiteUrl,
-        activeTab
-      });
       
       const { data, error } = await supabase.functions.invoke('parse-recipe-ai', {
         body: requestData
@@ -116,7 +186,6 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
         console.error('Function returned error:', data.error);
         const errorCode = data.code || 'UNKNOWN_ERROR';
         
-        // Handle specific error codes with user-friendly messages
         if (errorCode === 'NO_API_KEY') {
           toast({
             title: "Setup needed",
@@ -182,7 +251,6 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
       const recipe = data.parsedRecipe;
       console.log('✅ Recipe extracted successfully:', recipe.title);
       
-      // Ensure all required fields are present
       const formattedRecipe = {
         title: recipe.title || "Untitled Recipe",
         description: recipe.description || "",
@@ -197,7 +265,18 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
       };
 
       setParsedRecipe(formattedRecipe);
-      setShowPreview(true);
+
+      // Handle website images
+      if (data.websiteImages && data.websiteImages.length > 0) {
+        setWebsiteImages(data.websiteImages);
+        setShowPreview(true);
+      } else if (activeTab === "text") {
+        // For text input, show image selection after parsing
+        setShowImageSelection(true);
+        setShowPreview(true);
+      } else {
+        setShowPreview(true);
+      }
 
       toast({
         title: "🎉 Recipe magic complete!",
@@ -218,6 +297,16 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
     }
   };
 
+  const handleImageUpload = async (file: File) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const result = e.target?.result as string;
+      setSelectedImage(result);
+      updateParsedRecipe('image', result);
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleSave = () => {
     if (!parsedRecipe) return;
     
@@ -233,6 +322,12 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
     setParsedRecipe(null);
     setShowPreview(false);
     setActiveTab("text");
+    setSelectedImage("");
+    setWebsiteImages([]);
+    setShowImageSelection(false);
+    setRecipeRequest("");
+    setGeneratedRecipe("");
+    setShowGeneration(false);
     onOpenChange(false);
   };
 
@@ -260,16 +355,31 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
           </DialogTitle>
         </DialogHeader>
 
-        {!showPreview ? (
+        {showGeneration ? (
+          <div className="space-y-4">
+            <div className="bg-green-50 p-3 rounded-md">
+              <p className="text-sm text-green-700 font-medium">🎉 Recipe generated! Review and make any changes:</p>
+            </div>
+            
+            <div>
+              <Label htmlFor="generated-recipe">Generated Recipe (JSON)</Label>
+              <textarea
+                id="generated-recipe"
+                value={generatedRecipe}
+                onChange={(e) => setGeneratedRecipe(e.target.value)}
+                className="w-full h-64 p-3 border rounded-md resize-none font-mono text-sm"
+              />
+            </div>
+          </div>
+        ) : !showPreview ? (
           <div className="space-y-4">
             <div>
               <p className="text-sm text-muted-foreground mb-4">
-                Got a recipe to organize? I can help! Just paste some text, share an image URL, upload a photo, or paste a recipe website URL. 
-                I'll extract all the ingredients, steps, and details for you! 🍳
+                Got a recipe to organize? I can help! Just paste some text, share an image URL, upload a photo, paste a recipe website URL, or let me generate a custom recipe for you! 🍳
               </p>
               
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-4">
+                <TabsList className="grid w-full grid-cols-5">
                   <TabsTrigger value="text" className="flex items-center gap-2">
                     <FileText className="h-4 w-4" />
                     Text
@@ -285,6 +395,10 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
                   <TabsTrigger value="upload" className="flex items-center gap-2">
                     <Upload className="h-4 w-4" />
                     Upload
+                  </TabsTrigger>
+                  <TabsTrigger value="generate" className="flex items-center gap-2">
+                    <Plus className="h-4 w-4" />
+                    Generate
                   </TabsTrigger>
                 </TabsList>
                 
@@ -309,7 +423,7 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
                     placeholder="https://www.allrecipes.com/recipe/231506/simple-macaroni-and-cheese/"
                   />
                   <p className="text-xs text-muted-foreground">
-                    I can extract recipes directly from recipe websites! Just paste the URL from sites like AllRecipes, Food Network, BBC Good Food, etc.
+                    I can extract recipes directly from recipe websites and find images too! Just paste the URL from sites like AllRecipes, Food Network, BBC Good Food, etc.
                   </p>
                 </TabsContent>
                 
@@ -342,6 +456,20 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
                     Upload a photo of a recipe from a cookbook, screen, or handwritten note!
                   </p>
                 </TabsContent>
+
+                <TabsContent value="generate" className="space-y-2">
+                  <Label htmlFor="recipe-request">What recipe do you need?</Label>
+                  <textarea
+                    id="recipe-request"
+                    value={recipeRequest}
+                    onChange={(e) => setRecipeRequest(e.target.value)}
+                    placeholder="Tell me what you're looking for! E.g., 'A quick vegetarian dinner for 4 people using ingredients I might have at home' or 'A fancy dessert for a dinner party' or 'Healthy breakfast ideas with oats'"
+                    className="w-full h-32 p-3 border rounded-md resize-none"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    I'll create a custom recipe based on your needs! Be as specific as you want about ingredients, dietary restrictions, cooking time, etc.
+                  </p>
+                </TabsContent>
               </Tabs>
             </div>
             
@@ -354,6 +482,52 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
             <div className="bg-green-50 p-3 rounded-md">
               <p className="text-sm text-green-700 font-medium">🎉 Recipe extracted successfully! Everything looks good, but feel free to make any adjustments:</p>
             </div>
+
+            {/* Website Images Selection */}
+            {websiteImages.length > 0 && (
+              <div className="space-y-2">
+                <Label>Choose an image from the website:</Label>
+                <div className="grid grid-cols-3 gap-2 max-h-32 overflow-y-auto">
+                  {websiteImages.map((img, index) => (
+                    <img
+                      key={index}
+                      src={img}
+                      alt={`Website image ${index + 1}`}
+                      className="w-full h-20 object-cover rounded cursor-pointer border-2 hover:border-terracotta"
+                      onClick={() => {
+                        setSelectedImage(img);
+                        updateParsedRecipe('image', img);
+                      }}
+                    />
+                  ))}
+                </div>
+                {selectedImage && (
+                  <p className="text-sm text-green-600">✓ Image selected</p>
+                )}
+              </div>
+            )}
+
+            {/* Image Upload for Text Input */}
+            {showImageSelection && (
+              <div className="space-y-2">
+                <Label htmlFor="recipe-image">Add an image to your recipe (optional)</Label>
+                <Input
+                  id="recipe-image"
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleImageUpload(file);
+                  }}
+                />
+                {selectedImage && (
+                  <div className="flex items-center gap-2">
+                    <img src={selectedImage} alt="Recipe" className="w-16 h-16 object-cover rounded" />
+                    <p className="text-sm text-green-600">✓ Image added</p>
+                  </div>
+                )}
+              </div>
+            )}
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-4">
@@ -471,25 +645,41 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
             Cancel
           </Button>
           
-          {!showPreview ? (
+          {showGeneration ? (
+            <>
+              <Button 
+                variant="outline" 
+                onClick={() => setShowGeneration(false)}
+              >
+                ← Back to Generate
+              </Button>
+              <Button 
+                onClick={handleUseGeneratedRecipe}
+                className="bg-terracotta hover:bg-terracotta/90"
+              >
+                Use This Recipe
+              </Button>
+            </>
+          ) : !showPreview ? (
             <Button 
               onClick={handleExtractRecipe} 
               disabled={isLoading || 
                 (activeTab === "text" && !recipeText.trim()) || 
                 (activeTab === "url" && !imageUrl.trim()) || 
                 (activeTab === "website" && !websiteUrl.trim()) ||
-                (activeTab === "upload" && !imageFile)}
+                (activeTab === "upload" && !imageFile) ||
+                (activeTab === "generate" && !recipeRequest.trim())}
               className="bg-terracotta hover:bg-terracotta/90"
             >
               {isLoading ? (
                 <>
                   <div className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                  Working my magic...
+                  {activeTab === "generate" ? "Generating..." : "Working my magic..."}
                 </>
               ) : (
                 <>
                   <Plus className="h-4 w-4 mr-2" />
-                  ✨ Extract Recipe
+                  {activeTab === "generate" ? "✨ Generate Recipe" : "✨ Extract Recipe"}
                 </>
               )}
             </Button>

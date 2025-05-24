@@ -30,6 +30,38 @@ function extractTextFromHTML(html: string): string {
   return text;
 }
 
+// Helper function to extract images from HTML
+function extractImagesFromHTML(html: string, baseUrl: string): string[] {
+  const images: string[] = [];
+  const imgRegex = /<img[^>]+src\s*=\s*["']([^"']+)["'][^>]*>/gi;
+  let match;
+  
+  while ((match = imgRegex.exec(html)) !== null) {
+    let src = match[1];
+    
+    // Convert relative URLs to absolute
+    if (src.startsWith('//')) {
+      src = 'https:' + src;
+    } else if (src.startsWith('/')) {
+      const url = new URL(baseUrl);
+      src = url.origin + src;
+    } else if (!src.startsWith('http')) {
+      const url = new URL(baseUrl);
+      src = new URL(src, url.origin).toString();
+    }
+    
+    // Filter for likely recipe images (avoid icons, logos, etc.)
+    if (src.includes('recipe') || src.includes('food') || 
+        src.includes('dish') || src.includes('cooking') ||
+        src.match(/\.(jpg|jpeg|png|webp)(\?|$)/i)) {
+      images.push(src);
+    }
+  }
+  
+  // Remove duplicates and limit to first 6 images
+  return [...new Set(images)].slice(0, 6);
+}
+
 // Helper function to validate and normalize URLs
 function isValidUrl(string: string): boolean {
   try {
@@ -68,6 +100,7 @@ serve(async (req) => {
         hasRecipeText: !!requestBody.recipeText, 
         hasImageUrl: !!requestBody.imageUrl,
         hasWebsiteUrl: !!requestBody.websiteUrl,
+        extractImages: !!requestBody.extractImages,
         recipeTextLength: requestBody.recipeText?.length || 0,
         imageUrlLength: requestBody.imageUrl?.length || 0,
         websiteUrlLength: requestBody.websiteUrl?.length || 0
@@ -83,7 +116,7 @@ serve(async (req) => {
       });
     }
 
-    const { recipeText, imageUrl, websiteUrl } = requestBody;
+    const { recipeText, imageUrl, websiteUrl, extractImages } = requestBody;
     
     if (!recipeText && !imageUrl && !websiteUrl) {
       console.error('❌ No input provided');
@@ -100,6 +133,7 @@ serve(async (req) => {
     
     let processedText = '';
     let isImageInput = false;
+    let websiteImages: string[] = [];
 
     // Handle website URL
     if (websiteUrl) {
@@ -138,6 +172,12 @@ serve(async (req) => {
 
         const htmlContent = await websiteResponse.text();
         processedText = extractTextFromHTML(htmlContent);
+        
+        // Extract images if requested
+        if (extractImages) {
+          websiteImages = extractImagesFromHTML(htmlContent, websiteUrl);
+          console.log('🖼️ Found images:', websiteImages.length);
+        }
         
         console.log('✅ Website content extracted, text length:', processedText.length);
         
@@ -385,7 +425,16 @@ serve(async (req) => {
 
     console.log('🎉 Successfully processed recipe:', parsedRecipe.title);
 
-    return new Response(JSON.stringify({ parsedRecipe }), {
+    // Build response object
+    const responseData: any = { parsedRecipe };
+    
+    // Include website images if found
+    if (websiteImages.length > 0) {
+      responseData.websiteImages = websiteImages;
+      console.log('🖼️ Including website images in response:', websiteImages.length);
+    }
+
+    return new Response(JSON.stringify(responseData), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
