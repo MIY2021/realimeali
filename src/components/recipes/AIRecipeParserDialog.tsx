@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, X, Upload, Link, FileText, Globe, Camera } from "lucide-react";
+import { Plus, X, Upload, FileText, Globe, Camera } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
@@ -25,7 +25,6 @@ interface AIRecipeParserDialogProps {
 export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipeParserDialogProps) {
   const { toast } = useToast();
   const [recipeText, setRecipeText] = useState("");
-  const [imageUrl, setImageUrl] = useState("");
   const [websiteUrl, setWebsiteUrl] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [cameraFile, setCameraFile] = useState<File | null>(null);
@@ -37,8 +36,7 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
   const [websiteImages, setWebsiteImages] = useState<string[]>([]);
   const [showImageSelection, setShowImageSelection] = useState(false);
   const [recipeRequest, setRecipeRequest] = useState("");
-  const [generatedRecipe, setGeneratedRecipe] = useState("");
-  const [showGeneration, setShowGeneration] = useState(false);
+  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
 
   const handleGenerateRecipe = async () => {
     if (!recipeRequest.trim()) {
@@ -76,8 +74,16 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
           isFavorite: false,
         };
 
-        setGeneratedRecipe(JSON.stringify(formattedRecipe, null, 2));
-        setShowGeneration(true);
+        setParsedRecipe(formattedRecipe);
+        setShowPreview(true);
+        
+        // Try to generate an image for the recipe
+        handleGenerateImage(formattedRecipe.title);
+        
+        toast({
+          title: "🎉 Recipe generated successfully!",
+          description: "I've created a custom recipe for you. Generating an image too!",
+        });
       }
     } catch (error) {
       toast({
@@ -90,18 +96,25 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
     }
   };
 
-  const handleUseGeneratedRecipe = () => {
+  const handleGenerateImage = async (recipeTitle: string) => {
+    setIsGeneratingImage(true);
     try {
-      const recipe = JSON.parse(generatedRecipe);
-      setParsedRecipe(recipe);
-      setShowGeneration(false);
-      setShowPreview(true);
-    } catch (error) {
-      toast({
-        title: "Invalid recipe",
-        description: "There was an error with the generated recipe.",
-        variant: "destructive",
+      const { data, error } = await supabase.functions.invoke('generate-recipe-image', {
+        body: {
+          prompt: `A beautiful, appetizing photo of ${recipeTitle}, professionally styled food photography, natural lighting, high quality`
+        }
       });
+
+      if (error) throw error;
+
+      if (data?.image) {
+        setSelectedImage(data.image);
+        updateParsedRecipe('image', data.image);
+      }
+    } catch (error) {
+      console.log('Image generation failed, but recipe creation succeeded');
+    } finally {
+      setIsGeneratingImage(false);
     }
   };
 
@@ -120,16 +133,7 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
       return;
     }
 
-    if (activeTab === "url" && !imageUrl.trim()) {
-      toast({
-        title: "Missing URL",
-        description: "Please enter an image URL first! 📸",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (activeTab === "website" && !websiteUrl.trim()) {
+    if (activeTab === "url" && !websiteUrl.trim()) {
       toast({
         title: "Missing Website URL",
         description: "Please enter a recipe website URL first! 🌐",
@@ -165,8 +169,6 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
       if (activeTab === "text") {
         requestData.recipeText = recipeText.trim();
       } else if (activeTab === "url") {
-        requestData.imageUrl = imageUrl.trim();
-      } else if (activeTab === "website") {
         requestData.websiteUrl = websiteUrl.trim();
         requestData.extractImages = true;
       } else if (activeTab === "upload" && imageFile) {
@@ -338,7 +340,6 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
 
   const handleClose = () => {
     setRecipeText("");
-    setImageUrl("");
     setWebsiteUrl("");
     setImageFile(null);
     setCameraFile(null);
@@ -349,8 +350,7 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
     setWebsiteImages([]);
     setShowImageSelection(false);
     setRecipeRequest("");
-    setGeneratedRecipe("");
-    setShowGeneration(false);
+    setIsGeneratingImage(false);
     onOpenChange(false);
   };
 
@@ -379,41 +379,21 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
         </DialogHeader>
 
         <div className="flex-1 overflow-y-auto">
-          {showGeneration ? (
-            <div className="space-y-4">
-              <div className="bg-green-50 p-3 rounded-md">
-                <p className="text-sm text-green-700 font-medium">🎉 Recipe generated! Review and make any changes:</p>
-              </div>
-              
-              <div>
-                <Label htmlFor="generated-recipe">Generated Recipe (JSON)</Label>
-                <textarea
-                  id="generated-recipe"
-                  value={generatedRecipe}
-                  onChange={(e) => setGeneratedRecipe(e.target.value)}
-                  className="w-full h-64 p-3 border rounded-md resize-none font-mono text-sm"
-                />
-              </div>
-            </div>
-          ) : !showPreview ? (
+          {!showPreview ? (
             <div className="space-y-4">
               <div>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Got a recipe to organize? I can help! Just paste some text, share an image URL, upload a photo, paste a recipe website URL, take a photo of your ingredients, or let me generate a custom recipe for you! 🍳
+                  Got a recipe to organize? I can help! Just paste some text, share a recipe website URL, upload a photo, take a photo of your ingredients, or let me generate a custom recipe for you! 🍳
                 </p>
                 
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                  <TabsList className="grid w-full grid-cols-6">
+                  <TabsList className="grid w-full grid-cols-5">
                     <TabsTrigger value="text" className="flex items-center gap-1 text-xs">
                       <FileText className="h-3 w-3" />
                       Text
                     </TabsTrigger>
-                    <TabsTrigger value="website" className="flex items-center gap-1 text-xs">
-                      <Globe className="h-3 w-3" />
-                      Website
-                    </TabsTrigger>
                     <TabsTrigger value="url" className="flex items-center gap-1 text-xs">
-                      <Link className="h-3 w-3" />
+                      <Globe className="h-3 w-3" />
                       URL
                     </TabsTrigger>
                     <TabsTrigger value="upload" className="flex items-center gap-1 text-xs">
@@ -441,7 +421,7 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
                     />
                   </TabsContent>
 
-                  <TabsContent value="website" className="space-y-2">
+                  <TabsContent value="url" className="space-y-2">
                     <Label htmlFor="website-url">Recipe Website URL</Label>
                     <Input
                       id="website-url"
@@ -452,20 +432,6 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
                     />
                     <p className="text-xs text-muted-foreground">
                       I can extract recipes directly from recipe websites and find images too! Just paste the URL from sites like AllRecipes, Food Network, BBC Good Food, etc.
-                    </p>
-                  </TabsContent>
-                  
-                  <TabsContent value="url" className="space-y-2">
-                    <Label htmlFor="image-url">Image URL</Label>
-                    <Input
-                      id="image-url"
-                      type="url"
-                      value={imageUrl}
-                      onChange={(e) => setImageUrl(e.target.value)}
-                      placeholder="https://example.com/recipe-image.jpg"
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      I can read recipes from images! Just paste a URL to any recipe photo or screenshot.
                     </p>
                   </TabsContent>
                   
@@ -515,7 +481,7 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
                       id="recipe-request"
                       value={recipeRequest}
                       onChange={(e) => setRecipeRequest(e.target.value)}
-                      placeholder="Tell me what you're looking for! E.g., 'A quick vegetarian dinner for 4 people using ingredients I might have at home' or 'A fancy dessert for a dinner party' or 'Healthy breakfast ideas with oats'"
+                      placeholder="Tell me what you're looking for! E.g., 'A quick vegetarian dinner for 4 people using ingredients I might have at home' or 'A fancy dessert for a dinner party' or 'Healthy breakfast ideas with oats'. You can also ask me to reverse engineer recipes from restaurants that you liked!"
                       className="w-full h-32 p-3 border rounded-md resize-none"
                     />
                     <p className="text-xs text-muted-foreground">
@@ -578,6 +544,20 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
                       <p className="text-sm text-green-600">✓ Image added</p>
                     </div>
                   )}
+                </div>
+              )}
+
+              {/* AI Generated Image */}
+              {isGeneratingImage && (
+                <div className="space-y-2">
+                  <p className="text-sm text-blue-600">🎨 Generating a beautiful image for your recipe...</p>
+                </div>
+              )}
+
+              {selectedImage && !isGeneratingImage && (
+                <div className="space-y-2">
+                  <Label>Recipe Image</Label>
+                  <img src={selectedImage} alt="Recipe" className="w-full h-48 object-cover rounded border" />
                 </div>
               )}
               
@@ -698,28 +678,12 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
             Cancel
           </Button>
           
-          {showGeneration ? (
-            <>
-              <Button 
-                variant="outline" 
-                onClick={() => setShowGeneration(false)}
-              >
-                ← Back to Generate
-              </Button>
-              <Button 
-                onClick={handleUseGeneratedRecipe}
-                className="bg-terracotta hover:bg-terracotta/90"
-              >
-                Use This Recipe
-              </Button>
-            </>
-          ) : !showPreview ? (
+          {!showPreview ? (
             <Button 
               onClick={handleExtractRecipe} 
               disabled={isLoading || 
                 (activeTab === "text" && !recipeText.trim()) || 
-                (activeTab === "url" && !imageUrl.trim()) || 
-                (activeTab === "website" && !websiteUrl.trim()) ||
+                (activeTab === "url" && !websiteUrl.trim()) ||
                 (activeTab === "upload" && !imageFile) ||
                 (activeTab === "ingredients" && !cameraFile) ||
                 (activeTab === "generate" && !recipeRequest.trim())}
