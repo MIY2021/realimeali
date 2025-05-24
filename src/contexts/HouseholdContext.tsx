@@ -332,54 +332,54 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
           });
           return false;
         } else if (request.status === 'rejected') {
-          console.log("DEBUG: Updating rejected request to pending");
-          console.log("DEBUG: Attempting to update request ID:", request.id);
-          
-          // Update the existing rejected request to pending instead of creating a new one
-          const { data: updateData, error: updateError } = await supabase
+          console.log("DEBUG: Deleting rejected request and creating new one");
+          console.log("DEBUG: Attempting to delete request ID:", request.id);
+        
+          // Delete the existing rejected request and create a new one
+          // This avoids any potential RLS issues with updates
+          const { error: deleteError } = await supabase
             .from('household_join_requests')
-            .update({ 
-              status: 'pending',
-              updated_at: new Date().toISOString()
-            })
-            .eq('id', request.id)
+            .delete()
+            .eq('id', request.id);
+
+          console.log("DEBUG: Delete error:", deleteError);
+
+          if (deleteError) {
+            console.error("DEBUG: Request delete error:", deleteError);
+            toast({
+              title: "Failed to Send Request",
+              description: "Could not remove old request. Please try again.",
+              variant: "destructive",
+            });
+            return false;
+          }
+
+          console.log("DEBUG: Successfully deleted old request, now creating new one");
+        
+          // Create new request
+          const { data: insertData, error: insertError } = await supabase
+            .from('household_join_requests')
+            .insert([{
+              household_id: matchingHousehold.id,
+              user_id: user.id,
+              status: 'pending'
+            }])
             .select('*');
 
-          console.log("DEBUG: Update response data:", updateData);
-          console.log("DEBUG: Update error:", updateError);
+          console.log("DEBUG: Insert response data:", insertData);
+          console.log("DEBUG: Insert error:", insertError);
 
-          if (updateError) {
-            console.error("DEBUG: Request update error:", updateError);
+          if (insertError) {
+            console.error("DEBUG: Request insert error:", insertError);
             toast({
               title: "Failed to Send Request",
-              description: "Could not update join request. Please try again.",
+              description: "Could not create join request. Please try again.",
               variant: "destructive",
             });
             return false;
           }
 
-          if (!updateData || updateData.length === 0) {
-            console.error("DEBUG: No data returned from update");
-            toast({
-              title: "Failed to Send Request",
-              description: "Could not update join request. Please try again.",
-              variant: "destructive",
-            });
-            return false;
-          }
-
-          console.log("DEBUG: Successfully updated request to pending:", updateData);
-          
-          // Verify the update worked by fetching the request again
-          const { data: verifyData, error: verifyError } = await supabase
-            .from('household_join_requests')
-            .select('*')
-            .eq('id', request.id)
-            .single();
-
-          console.log("DEBUG: Verification data:", verifyData);
-          console.log("DEBUG: Verification error:", verifyError);
-
+          console.log("DEBUG: Successfully created new request:", insertData);
           toast({
             title: "Request Sent Successfully!",
             description: `Your join request for "${matchingHousehold.name}" has been sent. The household owner will review your request.`,
@@ -391,7 +391,7 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
 
       // Create new join request (only if no existing request found)
       console.log("DEBUG: Creating new join request");
-      
+    
       const { data: insertData, error: requestError } = await supabase
         .from('household_join_requests')
         .insert([{
@@ -406,7 +406,7 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
 
       if (requestError) {
         console.error("DEBUG: Request insert error:", requestError);
-        
+      
         // Handle the specific duplicate key error
         if (requestError.code === '23505') {
           toast({
