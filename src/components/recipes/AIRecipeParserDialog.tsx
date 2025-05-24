@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Loader, Wand, AlertCircle } from "lucide-react";
+import { Circle, Plus, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface AIRecipeParserDialogProps {
@@ -119,7 +119,7 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
       <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Wand className="h-5 w-5 text-terracotta" />
+            <Plus className="h-5 w-5 text-terracotta" />
             AI Recipe Parser
           </DialogTitle>
         </DialogHeader>
@@ -139,7 +139,7 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
             </div>
             
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <AlertCircle className="h-4 w-4" />
+              <Circle className="h-4 w-4" />
               <span>The AI will automatically extract title, ingredients, instructions, and suggest categories</span>
             </div>
           </div>
@@ -273,12 +273,12 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
             >
               {isLoading ? (
                 <>
-                  <Loader className="h-4 w-4 mr-2 animate-spin" />
+                  <Circle className="h-4 w-4 mr-2 animate-spin" />
                   Parsing Recipe...
                 </>
               ) : (
                 <>
-                  <Wand className="h-4 w-4 mr-2" />
+                  <Plus className="h-4 w-4 mr-2" />
                   Parse with AI
                 </>
               )}

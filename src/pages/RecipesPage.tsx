@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { RecipeList } from "@/components/recipes/RecipeList";
 import { Button } from "@/components/ui/button";
@@ -136,7 +135,7 @@ export default function RecipesPage() {
           <p className="text-muted-foreground mb-4">You haven't created any recipes yet.</p>
           <div className="flex justify-center gap-2">
             <Button onClick={handleAIParser} variant="outline" className="bg-sage hover:bg-sage/90 text-white border-sage">
-              <Wand className="h-4 w-4 mr-2" />
+              <Plus className="h-4 w-4 mr-2" />
               Parse Recipe with AI
             </Button>
             <Button onClick={handleAddNewRecipe} className="bg-terracotta hover:bg-terracotta/90">

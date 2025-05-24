@@ -32,4 +32,7 @@ declare module 'lucide-react' {
   export const Shuffle: LucideIcon;
   export const Copy: LucideIcon;
   export const Pencil: LucideIcon;
+  export const Loader: LucideIcon;
+  export const Wand: LucideIcon;
+  export const AlertCircle: LucideIcon;
 }
