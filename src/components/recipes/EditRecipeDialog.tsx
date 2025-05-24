@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Recipe, RecipeCategory } from "@/types";
 import {
@@ -10,7 +9,8 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, X } from "lucide-react";
+import { Plus, Trash2, X, Sparkles } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface EditRecipeDialogProps {
   recipe: Recipe;
@@ -33,6 +33,7 @@ export function EditRecipeDialog({ recipe, open, onOpenChange, onSave }: EditRec
   const [newIngredient, setNewIngredient] = useState("");
   const [newInstruction, setNewInstruction] = useState("");
   const [imagePreview, setImagePreview] = useState<string | null>(recipe.image || null);
+  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -79,6 +80,53 @@ export function EditRecipeDialog({ recipe, open, onOpenChange, onSave }: EditRec
       title: "Success",
       description: "Recipe updated successfully",
     });
+  };
+
+  const handleGenerateImage = async () => {
+    setIsGeneratingImage(true);
+    console.log("🎨 Generating AI image for recipe:", editedRecipe.title);
+
+    try {
+      const prompt = `A delicious, appetizing photo of ${editedRecipe.title}. Professional food photography, well-lit, garnished, restaurant quality presentation.`;
+      
+      console.log("📡 Calling generate-recipe-image function with prompt:", prompt);
+      
+      const { data, error } = await supabase.functions.invoke('generate-recipe-image', {
+        body: { prompt },
+      });
+
+      if (error) {
+        console.error("❌ Error generating image:", error);
+        throw new Error(error.message || 'Failed to generate image');
+      }
+
+      if (!data?.image) {
+        console.error("❌ No image in response:", data);
+        throw new Error('No image received from AI');
+      }
+
+      console.log("✅ Image generated successfully");
+      setImagePreview(data.image);
+      setEditedRecipe({
+        ...editedRecipe,
+        image: data.image,
+      });
+
+      toast({
+        title: "Image Generated!",
+        description: "AI has created a beautiful image for your recipe.",
+      });
+
+    } catch (error) {
+      console.error("💥 Error generating image:", error);
+      toast({
+        title: "Generation Failed",
+        description: error instanceof Error ? error.message : "Failed to generate image. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingImage(false);
+    }
   };
 
   const handleAddCategory = () => {
@@ -245,6 +293,19 @@ export function EditRecipeDialog({ recipe, open, onOpenChange, onSave }: EditRec
                     />
                   </div>
                 )}
+                
+                <div className="flex gap-2 w-full">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleGenerateImage}
+                    disabled={isGeneratingImage}
+                    className="flex-1"
+                  >
+                    <Sparkles className="h-4 w-4 mr-2" />
+                    {isGeneratingImage ? "Generating..." : "Generate AI Image"}
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
