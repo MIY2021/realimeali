@@ -1,4 +1,3 @@
-
 import { Recipe } from "@/types";
 import { RecipeCard } from "./RecipeCard";
 import { Input } from "@/components/ui/input";
@@ -7,6 +6,8 @@ import { useState } from "react";
 import { useHouseholdShopping } from "@/contexts/HouseholdShoppingContext";
 import { ChevronDown } from "lucide-react";
 import { AddToMealPlanDialog } from "./AddToMealPlanDialog";
+import { EditRecipeDialog } from "./EditRecipeDialog";
+import { useRecipes } from "@/contexts/RecipesContext";
 
 interface RecipeListProps {
   recipes: Recipe[];
@@ -14,6 +15,7 @@ interface RecipeListProps {
 
 export function RecipeList({ recipes }: RecipeListProps) {
   const { recipeCategories } = useHouseholdShopping();
+  const { updateRecipe } = useRecipes();
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [sortType, setSortType] = useState<string>("title-asc");
@@ -22,6 +24,10 @@ export function RecipeList({ recipes }: RecipeListProps) {
   // State for meal plan dialog
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const [mealPlanDialogOpen, setMealPlanDialogOpen] = useState(false);
+  
+  // State for edit dialog
+  const [editRecipe, setEditRecipe] = useState<Recipe | null>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
 
   // Get categories from household context instead of hardcoded array
   const allCategories = recipeCategories.map(cat => cat.name);
@@ -63,6 +69,22 @@ export function RecipeList({ recipes }: RecipeListProps) {
     setMealPlanDialogOpen(true);
   };
 
+  const handleEditRecipe = (recipe: Recipe) => {
+    console.log("Opening edit dialog for recipe:", recipe.title);
+    setEditRecipe(recipe);
+    setEditDialogOpen(true);
+  };
+
+  const handleSaveEdit = async (updatedRecipe: Recipe) => {
+    if (!editRecipe) return;
+    
+    const result = await updateRecipe(editRecipe.id, updatedRecipe);
+    if (result) {
+      setEditDialogOpen(false);
+      setEditRecipe(null);
+    }
+  };
+
   const visibleRecipes = sortedRecipes.slice(0, displayCount);
   const hasMoreRecipes = displayCount < sortedRecipes.length;
 
@@ -91,6 +113,7 @@ export function RecipeList({ recipes }: RecipeListProps) {
           <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 pointer-events-none text-muted-foreground" />
         </div>
       </div>
+      
       {sortedRecipes.length === 0 ? (
         <div className="text-center py-8">
           <p className="text-muted-foreground">No recipes found. Try adjusting your search.</p>
@@ -102,7 +125,8 @@ export function RecipeList({ recipes }: RecipeListProps) {
               <RecipeCard 
                 key={recipe.id} 
                 recipe={recipe} 
-                onAddToMealPlan={() => handleAddToMealPlan(recipe)} 
+                onAddToMealPlan={() => handleAddToMealPlan(recipe)}
+                onEdit={() => handleEditRecipe(recipe)}
               />
             ))}
           </div>
@@ -122,6 +146,15 @@ export function RecipeList({ recipes }: RecipeListProps) {
         open={mealPlanDialogOpen}
         onOpenChange={setMealPlanDialogOpen}
       />
+
+      {editRecipe && (
+        <EditRecipeDialog
+          recipe={editRecipe}
+          open={editDialogOpen}
+          onOpenChange={setEditDialogOpen}
+          onSave={handleSaveEdit}
+        />
+      )}
     </div>
   );
 }

@@ -22,6 +22,28 @@ export default function RecipeDetailPage() {
   
   const recipe = id ? getRecipeById(id) : undefined;
 
+  // Redirect to clean URL if recipe is found and URL doesn't match expected format
+  useEffect(() => {
+    if (recipe) {
+      const createSlug = (title: string) => {
+        return title
+          .toLowerCase()
+          .replace(/[^a-z0-9 -]/g, '')
+          .replace(/\s+/g, '-')
+          .replace(/-+/g, '-')
+          .trim();
+      };
+      
+      const expectedSlug = createSlug(recipe.title);
+      const currentPath = window.location.pathname;
+      const expectedPath = `/recipes/${recipe.id}/${expectedSlug}`;
+      
+      if (currentPath !== expectedPath) {
+        navigate(expectedPath, { replace: true });
+      }
+    }
+  }, [recipe, navigate]);
+
   // Scroll to top when component mounts
   useEffect(() => {
     window.scrollTo(0, 0);

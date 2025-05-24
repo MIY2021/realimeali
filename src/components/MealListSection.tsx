@@ -1,98 +1,86 @@
 
+import { MealPlan, MealType, Recipe } from "@/types";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
-import { Trash2, Plus } from "lucide-react";
-import { MealPlan, MealType } from "@/types";
-import { Recipe } from "@/types";
-import { Checkbox } from "@/components/ui/checkbox";
-import { useState, useEffect } from "react";
+import { Plus } from "lucide-react";
+import { MealCard } from "./meal-planner/MealCard";
 
-type Props = {
+interface MealListSectionProps {
   mealType: MealType;
   mealPlans: MealPlan[];
   getRecipeById: (id: string) => Recipe | undefined;
   onAddMeal: (mealType: MealType) => void;
   onRemoveMeal: (planId: string) => void;
-};
+}
 
 export default function MealListSection({
   mealType,
   mealPlans,
   getRecipeById,
   onAddMeal,
-  onRemoveMeal
-}: Props) {
-  const [completedMeals, setCompletedMeals] = useState<Record<string, boolean>>({});
-  
-  // Load completed state from localStorage
-  useEffect(() => {
-    const storedCompletedMeals = localStorage.getItem(`completed_meals_${mealType}`);
-    if (storedCompletedMeals) {
-      setCompletedMeals(JSON.parse(storedCompletedMeals));
-    }
-  }, [mealType]);
-  
-  // Save completed state to localStorage when it changes
-  useEffect(() => {
-    localStorage.setItem(`completed_meals_${mealType}`, JSON.stringify(completedMeals));
-  }, [completedMeals, mealType]);
-  
-  const toggleMealCompleted = (planId: string) => {
-    setCompletedMeals(prev => ({
-      ...prev,
-      [planId]: !prev[planId]
-    }));
+  onRemoveMeal,
+}: MealListSectionProps) {
+  const mealTypeLabels = {
+    dinner: "Dinners",
+    lunch: "Lunches", 
+    breakfast: "Breakfasts",
+    snacks: "Snacks"
   };
 
   return (
-    <div>
-      <div className="flex items-center mb-1">
-        <h2 className="text-lg font-semibold text-navy capitalize flex-1">{mealType}</h2>
+    <div className="space-y-3 mb-6">
+      <div className="flex items-center justify-between">
+        <h3 className="font-semibold text-navy capitalize">
+          {mealTypeLabels[mealType]} ({mealPlans.length})
+        </h3>
         <Button
-          size="icon"
-          variant="ghost"
-          className="ml-2"
           onClick={() => onAddMeal(mealType)}
-          title="Add meal"
+          size="sm"
+          variant="outline"
+          className="h-8 px-3"
         >
-          <Plus className="h-5 w-5 text-navy" />
-          <span className="sr-only">Add {mealType}</span>
+          <Plus className="h-4 w-4 mr-1" />
+          Add
         </Button>
       </div>
-      <ul className="space-y-2 mb-6">
-        {mealPlans.map((plan) => {
-          const recipe = getRecipeById(plan.recipeId);
-          const isCompleted = completedMeals[plan.id] || false;
-          
-          return (
-            <li key={plan.id} className="flex items-center justify-between bg-white rounded p-2 shadow">
-              <div className="flex items-center gap-2">
-                <Checkbox 
-                  id={`meal-${plan.id}`}
-                  checked={isCompleted}
-                  onCheckedChange={() => toggleMealCompleted(plan.id)}
-                />
-                <Link
-                  to={`/recipes/${plan.recipeId}`}
-                  className={`font-medium hover:underline ${isCompleted ? 'line-through text-muted-foreground' : ''}`}
+      
+      <div className="space-y-2">
+        {mealPlans.length > 0 ? (
+          mealPlans.map((plan) => {
+            const recipe = getRecipeById(plan.recipeId);
+            return recipe ? (
+              <MealCard
+                key={plan.id}
+                recipe={recipe}
+                onRemove={() => onRemoveMeal(plan.id)}
+              />
+            ) : (
+              <div key={plan.id} className="p-3 border rounded-lg bg-destructive/10">
+                <span className="text-sm text-muted-foreground">Recipe not found</span>
+                <Button
+                  onClick={() => onRemoveMeal(plan.id)}
+                  size="sm"
+                  variant="outline"
+                  className="ml-2 h-6 px-2 text-xs"
                 >
-                  {recipe ? recipe.title : "Unknown"}
-                </Link>
+                  Remove
+                </Button>
               </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7 p-0 text-muted-foreground"
-                onClick={() => onRemoveMeal(plan.id)}
-                title="Remove"
-              >
-                <Trash2 className="h-4 w-4" />
-                <span className="sr-only">Remove</span>
-              </Button>
-            </li>
-          );
-        })}
-      </ul>
+            );
+          })
+        ) : (
+          <div className="text-center py-4 border-2 border-dashed border-muted rounded-lg">
+            <p className="text-sm text-muted-foreground mb-2">No {mealTypeLabels[mealType].toLowerCase()} planned</p>
+            <Button
+              onClick={() => onAddMeal(mealType)}
+              size="sm"
+              variant="outline"
+            >
+              <Plus className="h-4 w-4 mr-1" />
+              Add {mealType}
+            </Button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

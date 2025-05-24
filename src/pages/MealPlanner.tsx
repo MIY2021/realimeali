@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { MealPlan, MealType, RecipeCategory } from "@/types";
 import { Button } from "@/components/ui/button";
@@ -220,6 +219,7 @@ export default function MealPlanner() {
     setAddMealModal({ open: true, mealType });
   };
   
+  // Remove the restrictive filtering - show all recipes for all meal types
   const onAddMealFinish = async (mealType: MealType, recipeId: string) => {
     if (!user) return;
     
@@ -374,11 +374,7 @@ export default function MealPlanner() {
                       open={addMealModal.open}
                       onClose={() => setAddMealModal({ open: false, mealType: null })}
                       mealType={addMealModal.mealType}
-                      recipes={recipes.filter(recipe => {
-                        // Filter recipes based on meal type categories
-                        const categories = mealTypeToCategories[addMealModal.mealType!];
-                        return recipe.categories.some(cat => categories.includes(cat as RecipeCategory));
-                      })}
+                      recipes={recipes} // Show all recipes, not filtered
                       onSelectRecipe={(recipeId) => onAddMealFinish(addMealModal.mealType!, recipeId)}
                     />
                   )}

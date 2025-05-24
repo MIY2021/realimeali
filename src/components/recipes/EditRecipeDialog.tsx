@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Recipe, RecipeCategory } from "@/types";
 import {
@@ -22,7 +23,7 @@ interface EditRecipeDialogProps {
 const AVAILABLE_CATEGORIES: RecipeCategory[] = [
   "Bulk", "Easy", "Cheap", "Healthy", "Vegetarian", "Fish", 
   "Super Tasty", "Pasta", "Tapas", "Winter", "BBQ", 
-  "Faffy", "Pricey!", "Not Yet Made"
+  "Faffy", "Pricey", "Not-Yet-Made", "Snacks", "Breakfast"
 ];
 
 export function EditRecipeDialog({ recipe, open, onOpenChange, onSave }: EditRecipeDialogProps) {

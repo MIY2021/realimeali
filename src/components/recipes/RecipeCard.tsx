@@ -2,23 +2,40 @@
 import { Recipe } from "@/types";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { Clock, Users, Plus } from "lucide-react";
+import { Clock, Users, Plus, Edit } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface RecipeCardProps {
   recipe: Recipe;
   onAddToMealPlan?: (recipe: Recipe) => void;
+  onEdit?: (recipe: Recipe) => void;
 }
 
-export function RecipeCard({ recipe, onAddToMealPlan }: RecipeCardProps) {
-  const { id, title, description, prepTime, cookTime, servings, image, categories } = recipe;
+export function RecipeCard({ recipe, onAddToMealPlan, onEdit }: RecipeCardProps) {
+  const { user } = useAuth();
+  const { id, title, description, prepTime, cookTime, servings, image, categories, createdBy } = recipe;
   const totalTime = prepTime + cookTime;
   const [imgError, setImgError] = useState(false);
 
+  const isOwner = user && createdBy === user.id;
+
+  // Create URL-friendly slug from recipe title
+  const createSlug = (title: string) => {
+    return title
+      .toLowerCase()
+      .replace(/[^a-z0-9 -]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .trim();
+  };
+
+  const recipeSlug = createSlug(title);
+
   return (
     <Card className="overflow-hidden transition-all hover:shadow-md relative flex flex-col h-full">
-      <Link to={`/recipes/${id}`}>
+      <Link to={`/recipes/${id}/${recipeSlug}`}>
         <div className="aspect-video w-full overflow-hidden bg-muted relative">
           {!imgError && image ? (
             <img
@@ -40,7 +57,7 @@ export function RecipeCard({ recipe, onAddToMealPlan }: RecipeCardProps) {
       <CardHeader className="p-4 pb-2">
         <div className="flex justify-between items-start">
           <Link
-            to={`/recipes/${id}`}
+            to={`/recipes/${id}/${recipeSlug}`}
             className="text-lg font-semibold hover:text-terracotta transition-colors"
             title={title}
           >
@@ -80,20 +97,34 @@ export function RecipeCard({ recipe, onAddToMealPlan }: RecipeCardProps) {
           className="w-full text-xs hover:bg-terracotta hover:text-white"
           asChild
         >
-          <Link to={`/recipes/${id}`}>View Recipe</Link>
+          <Link to={`/recipes/${id}/${recipeSlug}`}>View Recipe</Link>
         </Button>
         
-        {onAddToMealPlan && (
-          <Button
-            variant="outline"
-            size="sm"
-            className="w-full text-xs hover:bg-terracotta hover:text-white flex items-center justify-center"
-            onClick={(e) => { e.preventDefault(); onAddToMealPlan(recipe); }}
-          >
-            <Plus className="h-4 w-4 mr-1" />
-            <span>Add to Meal Plan</span>
-          </Button>
-        )}
+        <div className="flex gap-2 w-full">
+          {onAddToMealPlan && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex-1 text-xs hover:bg-terracotta hover:text-white flex items-center justify-center"
+              onClick={(e) => { e.preventDefault(); onAddToMealPlan(recipe); }}
+            >
+              <Plus className="h-4 w-4 mr-1" />
+              <span>Add to Plan</span>
+            </Button>
+          )}
+          
+          {isOwner && onEdit && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex-1 text-xs hover:bg-sage hover:text-white flex items-center justify-center"
+              onClick={(e) => { e.preventDefault(); onEdit(recipe); }}
+            >
+              <Edit className="h-4 w-4 mr-1" />
+              <span>Edit</span>
+            </Button>
+          )}
+        </div>
       </CardFooter>
     </Card>
   );
