@@ -23,6 +23,22 @@ interface ShoppingItem {
   recipeIds: string[];
 }
 
+const SHOPPING_CATEGORIES = [
+  "Fresh & Chilled Food",
+  "Food Cupboard", 
+  "Bakery",
+  "Frozen Food",
+  "Dietary, Lifestyle & World Foods",
+  "Soft Drinks, Tea & Coffee",
+  "Beer, Wine & Spirits",
+  "Health, Beauty & Personal Care",
+  "Baby, Parent & Kids",
+  "Home Care & Cleaning",
+  "Pets, Home & Garden",
+  "Occasions & Entertaining",
+  "Clothing & Accessories"
+];
+
 export default function ShoppingList() {
   const { user } = useAuth();
   const { currentHousehold } = useHousehold();
@@ -38,6 +54,79 @@ export default function ShoppingList() {
 
   const { getMealPlansForWeek } = useMealPlan();
   const { recipes } = useRecipes();
+
+  // Helper function to categorize ingredients
+  const categorizeIngredient = (ingredient: string): string => {
+    const nameLower = ingredient.toLowerCase();
+    
+    // Fresh & Chilled Food
+    if (/lettuce|spinach|kale|rocket|watercress|cabbage|broccoli|cauliflower|carrot|onion|potato|tomato|cucumber|pepper|courgette|aubergine|mushroom|garlic|ginger|lemon|lime|orange|apple|banana|grapes|strawberry|avocado|herbs|parsley|coriander|basil|thyme|rosemary|fresh|salad|vegetable|fruit|meat|chicken|beef|pork|lamb|fish|salmon|cod|prawns|bacon|ham|sausage|mince|steak|milk|cheese|yogurt|cream|butter|egg|tofu/i.test(nameLower)) {
+      return "Fresh & Chilled Food";
+    }
+    
+    // Food Cupboard
+    if (/flour|sugar|salt|pepper|oil|vinegar|rice|pasta|noodles|quinoa|couscous|bulgur|lentils|beans|chickpeas|tinned|canned|jar|sauce|paste|stock|cube|spice|spices|cumin|paprika|turmeric|cinnamon|vanilla|honey|syrup|nuts|seeds|dried|cereal|oats|biscuits|crackers|tea|coffee|condiment|ketchup|mustard|mayo|mayonnaise|dressing|coconut|tahini|peanut|almond|olive|sunflower|rapeseed|balsamic|soy|worcestershire|tabasco|harissa/i.test(nameLower)) {
+      return "Food Cupboard";
+    }
+    
+    // Bakery
+    if (/bread|bun|roll|bagel|muffin|croissant|pastry|cake|loaf|baguette|pitta|naan|tortilla|wrap|crumpet|scone/i.test(nameLower)) {
+      return "Bakery";
+    }
+    
+    // Frozen Food
+    if (/frozen|ice|sorbet|gelato|peas|chips|pizza|ready meal/i.test(nameLower)) {
+      return "Frozen Food";
+    }
+    
+    // Dietary, Lifestyle & World Foods
+    if (/gluten.free|dairy.free|vegan|organic|free.range|coconut.milk|almond.milk|soy.milk|oat.milk|kimchi|miso|teriyaki|curry|garam.masala|chinese|thai|indian|mexican|mediterranean|kosher|halal/i.test(nameLower)) {
+      return "Dietary, Lifestyle & World Foods";
+    }
+    
+    // Soft Drinks, Tea & Coffee
+    if (/juice|squash|cordial|water|sparkling|cola|lemonade|energy.drink|smoothie|kombucha|green.tea|black.tea|herbal.tea|coffee.beans|instant.coffee|decaf/i.test(nameLower)) {
+      return "Soft Drinks, Tea & Coffee";
+    }
+    
+    // Beer, Wine & Spirits
+    if (/beer|wine|whisky|vodka|gin|rum|brandy|champagne|prosecco|cider|ale|lager|spirits|alcohol/i.test(nameLower)) {
+      return "Beer, Wine & Spirits";
+    }
+    
+    // Health, Beauty & Personal Care
+    if (/shampoo|conditioner|soap|toothpaste|deodorant|moisturiser|sunscreen|vitamins|supplements|paracetamol|ibuprofen|plaster|antiseptic/i.test(nameLower)) {
+      return "Health, Beauty & Personal Care";
+    }
+    
+    // Baby, Parent & Kids
+    if (/nappy|baby.food|formula|dummy|wipes|baby.oil|baby.powder|kids|children|junior/i.test(nameLower)) {
+      return "Baby, Parent & Kids";
+    }
+    
+    // Home Care & Cleaning
+    if (/washing.powder|fabric.softener|bleach|disinfectant|toilet.paper|kitchen.roll|bin.bags|washing.up.liquid|dishwasher|tablets|cleaning|polish|hoover|vacuum/i.test(nameLower)) {
+      return "Home Care & Cleaning";
+    }
+    
+    // Pets, Home & Garden
+    if (/dog.food|cat.food|pet.treats|bird.seed|fish.food|plant.food|compost|seeds|bulbs|garden|pet|animal/i.test(nameLower)) {
+      return "Pets, Home & Garden";
+    }
+    
+    // Occasions & Entertaining
+    if (/candles|balloons|party|celebration|gift|card|wrapping|decorations|entertaining/i.test(nameLower)) {
+      return "Occasions & Entertaining";
+    }
+    
+    // Clothing & Accessories
+    if (/socks|underwear|shirt|dress|jumper|jacket|shoes|hat|gloves|scarf|belt|bag|watch|jewellery/i.test(nameLower)) {
+      return "Clothing & Accessories";
+    }
+    
+    // Default fallback
+    return "Food Cupboard";
+  };
 
   // Generate shopping list for each week
   useEffect(() => {
@@ -72,7 +161,7 @@ export default function ShoppingList() {
                   quantity: 1,
                   unit: '',
                   isChecked: false,
-                  category: 'Other',
+                  category: categorizeIngredient(ingredient),
                   isCustom: false,
                   recipeIds: [recipe.id]
                 });
@@ -92,6 +181,12 @@ export default function ShoppingList() {
   }, [getMealPlansForWeek, recipes, user, currentHousehold]);
 
   const currentWeekItems = weekShoppingItems[selectedWeek];
+
+  // Group items by category
+  const itemsByCategory = SHOPPING_CATEGORIES.reduce((acc, category) => {
+    acc[category] = currentWeekItems.filter(item => item.category === category);
+    return acc;
+  }, {} as Record<string, ShoppingItem[]>);
 
   const handleCheckItem = (itemId: string, checked: boolean) => {
     setWeekShoppingItems(prev => ({
@@ -133,25 +228,27 @@ export default function ShoppingList() {
   };
 
   const handleShare = () => {
-    const checkedItems = currentWeekItems.filter(item => item.isChecked);
-    const uncheckedItems = currentWeekItems.filter(item => !item.isChecked);
-    
     let shareText = `Shopping List - Week ${selectedWeek}\n\n`;
     
-    if (uncheckedItems.length > 0) {
-      shareText += "TO BUY:\n";
-      uncheckedItems.forEach(item => {
-        shareText += `☐ ${item.quantity > 1 ? `${item.quantity}x ` : ''}${item.name}${item.unit ? ` (${item.unit})` : ''}\n`;
-      });
-      shareText += "\n";
-    }
-    
-    if (checkedItems.length > 0) {
-      shareText += "COMPLETED:\n";
-      checkedItems.forEach(item => {
-        shareText += `☑ ${item.quantity > 1 ? `${item.quantity}x ` : ''}${item.name}${item.unit ? ` (${item.unit})` : ''}\n`;
-      });
-    }
+    SHOPPING_CATEGORIES.forEach(category => {
+      const categoryItems = itemsByCategory[category];
+      if (categoryItems.length > 0) {
+        shareText += `${category.toUpperCase()}\n`;
+        
+        const uncheckedItems = categoryItems.filter(item => !item.isChecked);
+        const checkedItems = categoryItems.filter(item => item.isChecked);
+        
+        uncheckedItems.forEach(item => {
+          shareText += `☐ ${item.quantity > 1 ? `${item.quantity}x ` : ''}${item.name}${item.unit ? ` (${item.unit})` : ''}\n`;
+        });
+        
+        checkedItems.forEach(item => {
+          shareText += `☑ ${item.quantity > 1 ? `${item.quantity}x ` : ''}${item.name}${item.unit ? ` (${item.unit})` : ''}\n`;
+        });
+        
+        shareText += "\n";
+      }
+    });
 
     if (navigator.share) {
       navigator.share({ title: `Shopping List - Week ${selectedWeek}`, text: shareText });
@@ -238,35 +335,46 @@ export default function ShoppingList() {
         </Card>
       ) : (
         <>
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Week {selectedWeek} Shopping List</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              {currentWeekItems.map((item) => (
-                <div key={item.id} className="flex items-center space-x-3 p-2 rounded hover:bg-accent">
-                  <Checkbox
-                    checked={item.isChecked}
-                    onCheckedChange={(checked) => handleCheckItem(item.id, checked as boolean)}
-                  />
-                  <div className={`flex-1 ${item.isChecked ? 'line-through text-muted-foreground' : ''}`}>
-                    <span className="font-medium">
-                      {item.quantity > 1 && `${item.quantity}x `}{item.name}
-                    </span>
-                    {item.unit && <span className="text-sm text-muted-foreground ml-1">({item.unit})</span>}
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleRemoveItem(item.id)}
-                    className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
+          <div className="space-y-4">
+            {SHOPPING_CATEGORIES.map(category => {
+              const categoryItems = itemsByCategory[category];
+              if (categoryItems.length === 0) return null;
+
+              return (
+                <Card key={category}>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base font-medium text-terracotta">
+                      {category}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2 pt-0">
+                    {categoryItems.map((item) => (
+                      <div key={item.id} className="flex items-center space-x-3 p-2 rounded hover:bg-accent">
+                        <Checkbox
+                          checked={item.isChecked}
+                          onCheckedChange={(checked) => handleCheckItem(item.id, checked as boolean)}
+                        />
+                        <div className={`flex-1 ${item.isChecked ? 'line-through text-muted-foreground' : ''}`}>
+                          <span className="font-medium">
+                            {item.quantity > 1 && `${item.quantity}x `}{item.name}
+                          </span>
+                          {item.unit && <span className="text-sm text-muted-foreground ml-1">({item.unit})</span>}
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleRemoveItem(item.id)}
+                          className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
 
           <ShoppingListActions
             onCheckAll={handleCheckAll}
