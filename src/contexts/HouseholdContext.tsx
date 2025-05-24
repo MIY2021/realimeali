@@ -64,25 +64,53 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
       setError(null);
       
       if (!user) {
+        console.log("No user, clearing households");
         setHouseholds([]);
         setCurrentHousehold(null);
         setIsLoading(false);
         return;
       }
 
-      const { data, error: fetchError } = await supabase
-        .from('households')
-        .select(`
-          *,
-          household_members!inner(role)
-        `)
-        .order('created_at', { ascending: false });
+      console.log("Fetching households for user:", user.id);
 
-      if (fetchError) {
-        throw fetchError;
+      // First get all household memberships for this user
+      const { data: membershipData, error: membershipError } = await supabase
+        .from('household_members')
+        .select('household_id')
+        .eq('user_id', user.id);
+
+      if (membershipError) {
+        console.error("Error fetching memberships:", membershipError);
+        throw membershipError;
       }
 
-      const transformedHouseholds: Household[] = (data || []).map(item => ({
+      console.log("User memberships:", membershipData);
+
+      if (!membershipData || membershipData.length === 0) {
+        console.log("User is not a member of any households");
+        setHouseholds([]);
+        setCurrentHousehold(null);
+        setIsLoading(false);
+        return;
+      }
+
+      // Get household details for all households user is a member of
+      const householdIds = membershipData.map(m => m.household_id);
+      
+      const { data: householdData, error: householdError } = await supabase
+        .from('households')
+        .select('*')
+        .in('id', householdIds)
+        .order('created_at', { ascending: false });
+
+      if (householdError) {
+        console.error("Error fetching households:", householdError);
+        throw householdError;
+      }
+
+      console.log("Fetched households:", householdData);
+
+      const transformedHouseholds: Household[] = (householdData || []).map(item => ({
         id: item.id,
         name: item.name,
         created_by: item.created_by,
@@ -94,6 +122,7 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
       
       // Set first household as current if none selected
       if (transformedHouseholds.length > 0 && !currentHousehold) {
+        console.log("Setting current household to first available:", transformedHouseholds[0]);
         setCurrentHousehold(transformedHouseholds[0]);
       }
     } catch (err) {
@@ -142,13 +171,18 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
         return null;
       }
 
+      console.log("Creating household with name:", name);
+
       const { data, error } = await supabase.rpc('create_household_with_owner', {
         household_name: name
       });
 
       if (error) {
+        console.error("Error creating household:", error);
         throw error;
       }
+
+      console.log("Household created with ID:", data);
 
       // Fetch the created household
       const { data: householdData, error: fetchError } = await supabase
@@ -158,6 +192,7 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
         .single();
 
       if (fetchError) {
+        console.error("Error fetching created household:", fetchError);
         throw fetchError;
       }
 
@@ -200,7 +235,7 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
         return null;
       }
 
-      const invitationCode = await supabase.rpc('generate_invitation_code');
+      const invitationCode = Math.random().toString(36).substring(2, 8).toUpperCase();
       
       const { error } = await supabase
         .from('household_invitations')
@@ -208,7 +243,7 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
           household_id: currentHousehold.id,
           invited_by: user.id,
           email: email,
-          invitation_code: invitationCode.data
+          invitation_code: invitationCode
         }]);
 
       if (error) {
@@ -217,10 +252,10 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
 
       toast({
         title: "Invitation Sent",
-        description: `Invitation sent to ${email}. Share this code: ${invitationCode.data}`,
+        description: `Invitation sent to ${email}. Share this code: ${invitationCode}`,
       });
 
-      return invitationCode.data;
+      return invitationCode;
     } catch (err) {
       console.error("Error sending invitation:", err);
       toast({
@@ -243,19 +278,41 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
         return false;
       }
 
+      console.log("Joining household with code:", invitationCode);
+
       // Find the invitation
       const { data: invitation, error: inviteError } = await supabase
         .from('household_invitations')
         .select('*, households(*)')
-        .eq('invitation_code', invitationCode)
+        .eq('invitation_code', invitationCode.toUpperCase())
         .eq('status', 'pending')
         .gt('expires_at', new Date().toISOString())
         .single();
 
       if (inviteError || !invitation) {
+        console.error("Invitation lookup error:", inviteError);
         toast({
           title: "Invalid Invitation",
           description: "The invitation code is invalid or has expired.",
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      console.log("Found invitation:", invitation);
+
+      // Check if user is already a member
+      const { data: existingMember } = await supabase
+        .from('household_members')
+        .select('id')
+        .eq('household_id', invitation.household_id)
+        .eq('user_id', user.id)
+        .single();
+
+      if (existingMember) {
+        toast({
+          title: "Already a Member",
+          description: "You are already a member of this household.",
           variant: "destructive",
         });
         return false;
@@ -271,6 +328,7 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
         }]);
 
       if (memberError) {
+        console.error("Member insert error:", memberError);
         throw memberError;
       }
 
@@ -360,6 +418,7 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
           table: 'households'
         },
         () => {
+          console.log("Household change detected, refetching...");
           fetchHouseholds();
         }
       )
@@ -371,6 +430,7 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
           table: 'household_members'
         },
         () => {
+          console.log("Household member change detected, refetching...");
           fetchHouseholds();
           if (currentHousehold) {
             fetchHouseholdMembers(currentHousehold.id);

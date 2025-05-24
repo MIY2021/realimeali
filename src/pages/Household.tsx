@@ -1,10 +1,10 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { User, Copy, Trash2 } from "lucide-react";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -129,13 +129,16 @@ export default function Household() {
 
     setIsInviting(true);
     try {
+      // Generate a unique invitation code
+      const invitationCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+      
       const { data, error } = await supabase
         .from('household_invitations')
         .insert([{
           household_id: currentHousehold.id,
           email: inviteEmail.trim(),
           invited_by: user?.id,
-          invitation_code: householdCode
+          invitation_code: invitationCode
         }])
         .select()
         .single();
@@ -144,7 +147,7 @@ export default function Household() {
 
       toast({
         title: "Invitation Sent",
-        description: `Invitation sent to ${inviteEmail}. They can join using code: ${householdCode}`,
+        description: `Invitation sent to ${inviteEmail}. Share this code: ${invitationCode}`,
       });
       
       setInviteEmail("");
@@ -164,21 +167,24 @@ export default function Household() {
     if (!user || !inviteCode.trim()) return;
 
     try {
-      // Find household by simple code matching (first 6 chars of ID)
-      const { data: households, error: householdError } = await supabase
-        .from('households')
-        .select('*');
+      console.log("Attempting to join with code:", inviteCode.trim());
+      
+      // Find invitation by code
+      const { data: invitation, error: inviteError } = await supabase
+        .from('household_invitations')
+        .select('*, households(*)')
+        .eq('invitation_code', inviteCode.trim().toUpperCase())
+        .eq('status', 'pending')
+        .gt('expires_at', new Date().toISOString())
+        .single();
 
-      if (householdError) throw householdError;
+      console.log("Invitation found:", invitation);
 
-      const targetHousehold = households?.find(h => 
-        h.id.slice(0, 6).toUpperCase() === inviteCode.trim().toUpperCase()
-      );
-
-      if (!targetHousehold) {
+      if (inviteError || !invitation) {
+        console.error("Invitation lookup error:", inviteError);
         toast({
           title: "Invalid Code",
-          description: "Household code not found.",
+          description: "The invitation code is invalid or has expired.",
           variant: "destructive",
         });
         return;
@@ -188,7 +194,7 @@ export default function Household() {
       const { data: existingMember } = await supabase
         .from('household_members')
         .select('id')
-        .eq('household_id', targetHousehold.id)
+        .eq('household_id', invitation.household_id)
         .eq('user_id', user.id)
         .single();
 
@@ -205,18 +211,28 @@ export default function Household() {
       const { error: memberError } = await supabase
         .from('household_members')
         .insert([{
-          household_id: targetHousehold.id,
+          household_id: invitation.household_id,
           user_id: user.id,
           role: 'member'
         }]);
 
-      if (memberError) throw memberError;
+      if (memberError) {
+        console.error("Member insert error:", memberError);
+        throw memberError;
+      }
 
-      setCurrentHousehold(targetHousehold);
+      // Update invitation status
+      await supabase
+        .from('household_invitations')
+        .update({ status: 'accepted' })
+        .eq('id', invitation.id);
+
+      // Set this household as current
+      setCurrentHousehold(invitation.households);
 
       toast({
         title: "Joined Household",
-        description: "Successfully joined the household!",
+        description: `Successfully joined ${invitation.households.name}!`,
       });
       
       setInviteCode("");
@@ -313,18 +329,18 @@ export default function Household() {
           <CardHeader>
             <CardTitle>Join a Household</CardTitle>
             <CardDescription>
-              Enter a household code to join an existing household.
+              Enter an invitation code to join an existing household.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="inviteCode">Household Code</Label>
+              <Label htmlFor="inviteCode">Invitation Code</Label>
               <Input
                 id="inviteCode"
                 value={inviteCode}
                 onChange={(e) => setInviteCode(e.target.value)}
-                placeholder="Enter 6-character code"
-                maxLength={6}
+                placeholder="Enter invitation code"
+                maxLength={10}
               />
             </div>
             <Button onClick={handleJoinByCode} className="w-full bg-terracotta hover:bg-terracotta/90">
