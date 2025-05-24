@@ -39,5 +39,6 @@ declare module 'lucide-react' {
   export const Link: LucideIcon;
   export const FileText: LucideIcon;
   export const Sparkles: LucideIcon;
-  export const Globe: LucideIcon;
+  export const globe: LucideIcon;
+  export const camera: LucideIcon;
 }

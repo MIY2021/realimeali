@@ -1,14 +1,18 @@
 
-import { Outlet } from "react-router-dom";
+import { ReactNode } from "react";
 import Header from "./Header";
 import CustomFooter from "./CustomFooter";
 
-const Layout = () => {
+interface LayoutProps {
+  children: ReactNode;
+}
+
+const Layout = ({ children }: LayoutProps) => {
   return (
     <div className="flex min-h-screen flex-col bg-cream">
       <Header />
       <main className="flex-1">
-        <Outlet />
+        {children}
       </main>
       <CustomFooter />
     </div>
