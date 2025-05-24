@@ -9,6 +9,8 @@ import { ChevronDown } from "lucide-react";
 import { AddToMealPlanDialog } from "./AddToMealPlanDialog";
 import { EditRecipeDialog } from "./EditRecipeDialog";
 import { useRecipes } from "@/contexts/RecipesContext";
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface RecipeListProps {
   recipes: Recipe[];
@@ -23,7 +25,9 @@ const ALL_RECIPE_CATEGORIES: RecipeCategory[] = [
 
 export function RecipeList({ recipes }: RecipeListProps) {
   const { recipeCategories } = useHouseholdShopping();
-  const { updateRecipe } = useRecipes();
+  const { updateRecipe, deleteRecipe } = useRecipes();
+  const { user } = useAuth();
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [sortType, setSortType] = useState<string>("title-asc");
@@ -84,6 +88,45 @@ export function RecipeList({ recipes }: RecipeListProps) {
     setEditDialogOpen(true);
   };
 
+  const handleDeleteRecipe = async (recipe: Recipe) => {
+    if (!user) {
+      toast({
+        title: "Login Required",
+        description: "You need to log in to delete recipes.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const confirmed = window.confirm(`Are you sure you want to delete "${recipe.title}"? This action cannot be undone.`);
+    if (!confirmed) return;
+
+    const success = await deleteRecipe(recipe.id);
+    if (success) {
+      toast({
+        title: "Recipe Deleted",
+        description: `"${recipe.title}" has been deleted successfully.`,
+      });
+    }
+  };
+
+  const handleShareRecipe = (recipe: Recipe) => {
+    // Simple share functionality - copy URL to clipboard
+    const recipeUrl = `${window.location.origin}/recipes/${recipe.id}/${recipe.title.toLowerCase().replace(/[^a-z0-9 -]/g, '').replace(/\s+/g, '-')}`;
+    navigator.clipboard.writeText(recipeUrl).then(() => {
+      toast({
+        title: "Recipe Link Copied",
+        description: "The recipe link has been copied to your clipboard.",
+      });
+    }).catch(() => {
+      toast({
+        title: "Share Failed",
+        description: "Could not copy the recipe link.",
+        variant: "destructive",
+      });
+    });
+  };
+
   const handleSaveEdit = async (updatedRecipe: Recipe) => {
     if (!editRecipe) return;
     
@@ -136,6 +179,8 @@ export function RecipeList({ recipes }: RecipeListProps) {
                 recipe={recipe} 
                 onAddToMealPlan={() => handleAddToMealPlan(recipe)}
                 onEdit={() => handleEditRecipe(recipe)}
+                onDelete={() => handleDeleteRecipe(recipe)}
+                onShare={() => handleShareRecipe(recipe)}
               />
             ))}
           </div>
