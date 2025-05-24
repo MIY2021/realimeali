@@ -35,9 +35,9 @@ export const RecipesProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setIsLoading(false);
     }
-  }, [recipeApi.fetchRecipes, toast]);
+  }, [recipeApi, toast]);
 
-  const createRecipe = async (
+  const createRecipe = useCallback(async (
     recipeData: Omit<Recipe, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>, 
     householdId: string
   ): Promise<Recipe | null> => {
@@ -56,9 +56,9 @@ export const RecipesProvider = ({ children }: { children: ReactNode }) => {
       });
       return null;
     }
-  };
+  }, [recipeApi, toast]);
 
-  const updateRecipe = async (id: string, recipeData: Partial<Recipe>): Promise<Recipe | null> => {
+  const updateRecipe = useCallback(async (id: string, recipeData: Partial<Recipe>): Promise<Recipe | null> => {
     try {
       const updatedRecipe = await recipeApi.updateRecipe(id, recipeData);
       if (updatedRecipe) {
@@ -76,9 +76,9 @@ export const RecipesProvider = ({ children }: { children: ReactNode }) => {
       });
       return null;
     }
-  };
+  }, [recipeApi, toast]);
 
-  const deleteRecipe = async (id: string): Promise<boolean> => {
+  const deleteRecipe = useCallback(async (id: string): Promise<boolean> => {
     try {
       const success = await recipeApi.deleteRecipe(id);
       if (success) {
@@ -94,11 +94,11 @@ export const RecipesProvider = ({ children }: { children: ReactNode }) => {
       });
       return false;
     }
-  };
+  }, [recipeApi, toast]);
 
-  const getRecipeById = (id: string) => {
+  const getRecipeById = useCallback((id: string) => {
     return recipes.find(recipe => recipe.id === id);
-  };
+  }, [recipes]);
 
   // Set up real-time subscription
   useEffect(() => {
