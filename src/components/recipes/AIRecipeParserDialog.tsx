@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Recipe, RecipeCategory } from "@/types";
 import {
@@ -10,7 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, X, Upload, Link, FileText, Globe } from "lucide-react";
+import { Plus, X, Upload, Link, FileText, Globe, Camera } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
@@ -28,6 +27,7 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
   const [imageUrl, setImageUrl] = useState("");
   const [websiteUrl, setWebsiteUrl] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [cameraFile, setCameraFile] = useState<File | null>(null);
   const [parsedRecipe, setParsedRecipe] = useState<Omit<Recipe, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'> | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
@@ -146,6 +146,15 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
       return;
     }
 
+    if (activeTab === "camera" && !cameraFile) {
+      toast({
+        title: "No photo taken",
+        description: "Please take a photo of your ingredients first! 📷",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
     console.log('🚀 Starting recipe extraction...');
     
@@ -167,6 +176,15 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
           reader.readAsDataURL(imageFile);
         });
         requestData.imageUrl = await base64Promise;
+      } else if (activeTab === "camera" && cameraFile) {
+        const reader = new FileReader();
+        const base64Promise = new Promise<string>((resolve, reject) => {
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(cameraFile);
+        });
+        requestData.imageUrl = await base64Promise;
+        requestData.recipeText = "Analyze these ingredients and create a recipe using what's available. Suggest a delicious meal that can be made with these ingredients.";
       }
 
       console.log('📤 Sending request to AI service...');
@@ -278,9 +296,12 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
         setShowPreview(true);
       }
 
+      const successMessage = activeTab === "camera" 
+        ? "🎉 Recipe created from your ingredients! I've suggested a delicious meal you can make."
+        : "🎉 Recipe magic complete! I've extracted all the delicious details! Take a look and adjust anything you'd like.";
+
       toast({
-        title: "🎉 Recipe magic complete!",
-        description: "I've extracted all the delicious details! Take a look and adjust anything you'd like.",
+        title: successMessage,
       });
 
     } catch (error) {
@@ -319,6 +340,7 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
     setImageUrl("");
     setWebsiteUrl("");
     setImageFile(null);
+    setCameraFile(null);
     setParsedRecipe(null);
     setShowPreview(false);
     setActiveTab("text");
@@ -347,7 +369,7 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-4xl h-[90vh] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Plus className="h-5 w-5 text-terracotta" />
@@ -356,7 +378,7 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
         </DialogHeader>
 
         {showGeneration ? (
-          <div className="space-y-4">
+          <div className="space-y-4 min-h-[400px]">
             <div className="bg-green-50 p-3 rounded-md">
               <p className="text-sm text-green-700 font-medium">🎉 Recipe generated! Review and make any changes:</p>
             </div>
@@ -372,32 +394,36 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
             </div>
           </div>
         ) : !showPreview ? (
-          <div className="space-y-4">
+          <div className="space-y-4 min-h-[400px]">
             <div>
               <p className="text-sm text-muted-foreground mb-4">
-                Got a recipe to organize? I can help! Just paste some text, share an image URL, upload a photo, paste a recipe website URL, or let me generate a custom recipe for you! 🍳
+                Got a recipe to organize? I can help! Just paste some text, share an image URL, upload a photo, paste a recipe website URL, take a photo of your ingredients, or let me generate a custom recipe for you! 🍳
               </p>
               
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-5">
-                  <TabsTrigger value="text" className="flex items-center gap-2">
-                    <FileText className="h-4 w-4" />
+                <TabsList className="grid w-full grid-cols-6">
+                  <TabsTrigger value="text" className="flex items-center gap-1 text-xs">
+                    <FileText className="h-3 w-3" />
                     Text
                   </TabsTrigger>
-                  <TabsTrigger value="website" className="flex items-center gap-2">
-                    <Globe className="h-4 w-4" />
+                  <TabsTrigger value="website" className="flex items-center gap-1 text-xs">
+                    <Globe className="h-3 w-3" />
                     Website
                   </TabsTrigger>
-                  <TabsTrigger value="url" className="flex items-center gap-2">
-                    <Link className="h-4 w-4" />
-                    Image URL
+                  <TabsTrigger value="url" className="flex items-center gap-1 text-xs">
+                    <Link className="h-3 w-3" />
+                    URL
                   </TabsTrigger>
-                  <TabsTrigger value="upload" className="flex items-center gap-2">
-                    <Upload className="h-4 w-4" />
+                  <TabsTrigger value="upload" className="flex items-center gap-1 text-xs">
+                    <Upload className="h-3 w-3" />
                     Upload
                   </TabsTrigger>
-                  <TabsTrigger value="generate" className="flex items-center gap-2">
-                    <Plus className="h-4 w-4" />
+                  <TabsTrigger value="camera" className="flex items-center gap-1 text-xs">
+                    <Camera className="h-3 w-3" />
+                    Camera
+                  </TabsTrigger>
+                  <TabsTrigger value="generate" className="flex items-center gap-1 text-xs">
+                    <Plus className="h-3 w-3" />
                     Generate
                   </TabsTrigger>
                 </TabsList>
@@ -457,6 +483,30 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
                   </p>
                 </TabsContent>
 
+                <TabsContent value="camera" className="space-y-2">
+                  <Label htmlFor="camera-file">Take Photo of Ingredients</Label>
+                  <Input
+                    id="camera-file"
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    onChange={(e) => setCameraFile(e.target.files?.[0] || null)}
+                  />
+                  {cameraFile && (
+                    <div className="space-y-2">
+                      <p className="text-sm text-green-600">📷 Photo captured!</p>
+                      <img 
+                        src={URL.createObjectURL(cameraFile)} 
+                        alt="Captured ingredients" 
+                        className="w-full h-48 object-cover rounded border"
+                      />
+                    </div>
+                  )}
+                  <p className="text-xs text-muted-foreground">
+                    Take a photo of ingredients in your fridge, pantry, or counter and I'll suggest a recipe you can make with them! 📸🥘
+                  </p>
+                </TabsContent>
+
                 <TabsContent value="generate" className="space-y-2">
                   <Label htmlFor="recipe-request">What recipe do you need?</Label>
                   <textarea
@@ -478,7 +528,7 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
             </div>
           </div>
         ) : parsedRecipe ? (
-          <div className="space-y-4">
+          <div className="space-y-4 min-h-[400px]">
             <div className="bg-green-50 p-3 rounded-md">
               <p className="text-sm text-green-700 font-medium">🎉 Recipe extracted successfully! Everything looks good, but feel free to make any adjustments:</p>
             </div>
@@ -668,18 +718,19 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
                 (activeTab === "url" && !imageUrl.trim()) || 
                 (activeTab === "website" && !websiteUrl.trim()) ||
                 (activeTab === "upload" && !imageFile) ||
+                (activeTab === "camera" && !cameraFile) ||
                 (activeTab === "generate" && !recipeRequest.trim())}
               className="bg-terracotta hover:bg-terracotta/90"
             >
               {isLoading ? (
                 <>
                   <div className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                  {activeTab === "generate" ? "Generating..." : "Working my magic..."}
+                  {activeTab === "generate" ? "Generating..." : activeTab === "camera" ? "Analyzing ingredients..." : "Working my magic..."}
                 </>
               ) : (
                 <>
                   <Plus className="h-4 w-4 mr-2" />
-                  {activeTab === "generate" ? "✨ Generate Recipe" : "✨ Extract Recipe"}
+                  {activeTab === "generate" ? "✨ Generate Recipe" : activeTab === "camera" ? "🧑‍🍳 Create Recipe from Ingredients" : "✨ Extract Recipe"}
                 </>
               )}
             </Button>
