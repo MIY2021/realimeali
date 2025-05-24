@@ -10,7 +10,7 @@ export function RecipePreview({ parsedRecipe, onUpdateRecipe }: RecipePreviewPro
   const availableCategories: RecipeCategory[] = [
     "Bulk", "Easy", "Cheap", "Healthy", "Vegetarian", "Fish",
     "Super Tasty", "Pasta", "Tapas", "Winter", "BBQ",
-    "Faffy", "Pricey!", "Not Yet Made", "Snacks", "Breakfast"
+    "Faffy", "Pricey", "Not-Yet-Made", "Snacks", "Breakfast"
   ];
 
   return (

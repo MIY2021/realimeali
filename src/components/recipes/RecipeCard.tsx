@@ -2,7 +2,7 @@
 import { Recipe } from "@/types";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { Clock, Users, Plus, Edit } from "lucide-react";
+import { Clock, Users, Plus, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -120,7 +120,7 @@ export function RecipeCard({ recipe, onAddToMealPlan, onEdit }: RecipeCardProps)
               className="flex-1 text-xs hover:bg-sage hover:text-white flex items-center justify-center"
               onClick={(e) => { e.preventDefault(); onEdit(recipe); }}
             >
-              <Edit className="h-4 w-4 mr-1" />
+              <Pencil className="h-4 w-4 mr-1" />
               <span>Edit</span>
             </Button>
           )}

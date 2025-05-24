@@ -23,7 +23,7 @@ export type RecipeCategory =
   | "Pricey"
   | "Not-Yet-Made"
   | "Snacks"
-  | "Breakfast"; // Added Breakfast category
+  | "Breakfast";
 
 export type Recipe = {
   id: string;

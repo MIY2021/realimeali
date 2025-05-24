@@ -47,9 +47,11 @@ export const useRecipeApi = () => {
         return null;
       }
 
+      const insertData = transformRecipeToDbInsert(recipeData, user.id, householdId);
+
       const { data, error } = await supabase
         .from('recipes')
-        .insert([transformRecipeToDbInsert(recipeData, user.id, householdId)])
+        .insert(insertData)
         .select()
         .single();
 

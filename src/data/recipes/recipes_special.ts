@@ -1,3 +1,4 @@
+
 import { Recipe } from "@/types";
 
 export const specialRecipes: Recipe[] = [
@@ -47,7 +48,7 @@ export const specialRecipes: Recipe[] = [
       "Drain pasta and toss quickly with pancetta and egg mixture.",
       "Season with salt and pepper and serve immediately."
     ],
-    categories: ["Pasta", "Super Tasty", "Pricey!"],
+    categories: ["Pasta", "Super Tasty", "Pricey"],
     prepTime: 10,
     cookTime: 15,
     servings: 4,
@@ -78,7 +79,7 @@ export const specialRecipes: Recipe[] = [
       "Toast baguette slices and drizzle with garlic oil.",
       "Serve everything together."
     ],
-    categories: ["Tapas", "Pricey!", "Super Tasty"],
+    categories: ["Tapas", "Pricey", "Super Tasty"],
     prepTime: 20,
     cookTime: 10,
     servings: 4,
@@ -113,7 +114,7 @@ export const specialRecipes: Recipe[] = [
       "Add seafood, cover, and cook for another 5-10 minutes until seafood is cooked.",
       "Garnish with lemon wedges and parsley."
     ],
-    categories: ["Faffy", "Pricey!", "Super Tasty"],
+    categories: ["Faffy", "Pricey", "Super Tasty"],
     prepTime: 20,
     cookTime: 35,
     servings: 4,
@@ -147,7 +148,7 @@ export const specialRecipes: Recipe[] = [
       "Bake at 200°C for 30-35 minutes until golden and beef is medium-rare.",
       "Rest for 10 minutes before slicing."
     ],
-    categories: ["Faffy", "Pricey!", "Not Yet Made"],
+    categories: ["Faffy", "Pricey", "Not-Yet-Made"],
     prepTime: 45,
     cookTime: 35,
     servings: 4,
