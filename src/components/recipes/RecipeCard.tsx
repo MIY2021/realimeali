@@ -6,6 +6,7 @@ import { Clock, Users, Plus, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useHousehold } from "@/contexts/HouseholdContext";
 
 interface RecipeCardProps {
   recipe: Recipe;
@@ -15,11 +16,13 @@ interface RecipeCardProps {
 
 export function RecipeCard({ recipe, onAddToMealPlan, onEdit }: RecipeCardProps) {
   const { user } = useAuth();
+  const { currentHousehold } = useHousehold();
   const { id, title, description, prepTime, cookTime, servings, image, categories, createdBy } = recipe;
   const totalTime = prepTime + cookTime;
   const [imgError, setImgError] = useState(false);
 
-  const isOwner = user && createdBy === user.id;
+  // Allow editing if user is part of the same household (not just recipe owner)
+  const canEdit = user && currentHousehold && onEdit;
 
   // Create URL-friendly slug from recipe title
   const createSlug = (title: string) => {
@@ -54,8 +57,8 @@ export function RecipeCard({ recipe, onAddToMealPlan, onEdit }: RecipeCardProps)
             </div>
           )}
           
-          {/* Edit button overlay for recipe owners */}
-          {isOwner && onEdit && (
+          {/* Edit button overlay for household members */}
+          {canEdit && (
             <Button
               variant="secondary"
               size="sm"

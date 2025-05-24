@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { RecipeList } from "@/components/recipes/RecipeList";
 import { Button } from "@/components/ui/button";
-import { Book, Plus, Pencil, Sparkles } from "lucide-react";
+import { Book, Plus, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { MealType, Recipe } from "@/types";
 import { AIRecipeParserDialog } from "@/components/recipes/AIRecipeParserDialog";
@@ -142,17 +142,6 @@ export default function RecipesPage() {
         <>
           <div className="flex items-center justify-between mb-8 gap-2 flex-wrap">
             <div className="flex items-center gap-2">
-              {user && (
-                <Button 
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowCategoryDialog(true)}
-                  className="flex items-center gap-1"
-                >
-                  <Pencil className="h-4 w-4" />
-                  Categories
-                </Button>
-              )}
               <Button 
                 variant="outline"
                 onClick={handleCreateRecipe}
@@ -170,6 +159,16 @@ export default function RecipesPage() {
                 AI Recipe Helper
               </Button>
             </div>
+            {user && (
+              <Button 
+                variant="outline"
+                size="sm"
+                onClick={() => setShowCategoryDialog(true)}
+                className="flex items-center gap-1"
+              >
+                Manage Categories
+              </Button>
+            )}
           </div>
 
           {isLoading || isFetching ? (

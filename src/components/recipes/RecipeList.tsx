@@ -37,9 +37,9 @@ export function RecipeList({ recipes }: RecipeListProps) {
   const [editRecipe, setEditRecipe] = useState<Recipe | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
 
-  // Combine household categories with all standard categories
+  // Combine household categories with all standard categories, ensuring all are shown
   const householdCategoryNames = recipeCategories.map(cat => cat.name);
-  const allCategories = [...new Set([...ALL_RECIPE_CATEGORIES, ...householdCategoryNames])];
+  const allCategories = [...ALL_RECIPE_CATEGORIES, ...householdCategoryNames.filter(name => !ALL_RECIPE_CATEGORIES.includes(name as RecipeCategory))];
 
   const filteredRecipes = recipes.filter((recipe) => {
     const matchesSearch = recipe.title.toLowerCase().includes(searchTerm.toLowerCase()) || 

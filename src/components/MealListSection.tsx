@@ -3,6 +3,7 @@ import { MealType, MealPlan, Recipe } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Plus, Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useState } from "react";
 
 interface MealListSectionProps {
   mealType: MealType;
@@ -62,13 +63,24 @@ export default function MealListSection({
             return (
               <div
                 key={plan.id}
-                className="flex items-center justify-between p-3 bg-gray-50 rounded-md border"
+                className="flex items-center gap-3 p-3 bg-gray-50 rounded-md border"
               >
+                {/* Recipe thumbnail */}
+                <div className="w-12 h-12 rounded-md overflow-hidden bg-muted flex-shrink-0">
+                  {recipe?.image ? (
+                    <RecipeImage recipe={recipe} />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-muted">
+                      <span className="text-xs text-muted-foreground">No img</span>
+                    </div>
+                  )}
+                </div>
+
                 <div className="flex-1">
                   {recipe ? (
                     <Link 
                       to={getRecipeUrl(recipe)}
-                      className="text-sm font-medium hover:text-terracotta transition-colors"
+                      className="text-sm font-medium hover:text-terracotta transition-colors block"
                     >
                       {recipe.title}
                     </Link>
@@ -88,6 +100,7 @@ export default function MealListSection({
                     </div>
                   )}
                 </div>
+                
                 <Button
                   size="sm"
                   variant="ghost"
@@ -102,5 +115,27 @@ export default function MealListSection({
         </div>
       )}
     </div>
+  );
+}
+
+// Helper component for recipe images with error handling
+function RecipeImage({ recipe }: { recipe: Recipe }) {
+  const [imgError, setImgError] = useState(false);
+
+  if (imgError || !recipe.image) {
+    return (
+      <div className="w-full h-full flex items-center justify-center bg-muted">
+        <span className="text-xs text-muted-foreground">No img</span>
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={recipe.image}
+      alt={recipe.title}
+      className="w-full h-full object-cover"
+      onError={() => setImgError(true)}
+    />
   );
 }
