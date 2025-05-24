@@ -265,12 +265,13 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
         return false;
       }
 
-      // Check if user already has ANY request (pending, approved, or rejected)
+      // Check if user already has a pending or approved request (allow rejected requests to be resubmitted)
       const { data: existingRequest, error: requestCheckError } = await supabase
         .from('household_join_requests')
         .select('id, status')
         .eq('household_id', matchingHousehold.id)
-        .eq('user_id', user.id);
+        .eq('user_id', user.id)
+        .in('status', ['pending', 'approved']); // Only check for pending and approved, not rejected
 
       if (requestCheckError) {
         console.error("Request check error:", requestCheckError);
@@ -290,12 +291,6 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
           toast({
             title: "Request Already Sent",
             description: "You already have a pending request for this household.",
-            variant: "destructive",
-          });
-        } else if (request.status === 'rejected') {
-          toast({
-            title: "Previous Request Rejected",
-            description: "Your previous request to join this household was rejected. Please contact the household owner.",
             variant: "destructive",
           });
         } else if (request.status === 'approved') {
