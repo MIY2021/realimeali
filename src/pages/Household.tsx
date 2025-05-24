@@ -164,11 +164,34 @@ export default function Household() {
   };
 
   const handleJoinByCode = async () => {
-    if (!user || !inviteCode.trim()) return;
+    console.log("=== JOIN HOUSEHOLD DEBUG START ===");
+    console.log("User:", user);
+    console.log("Invite code:", inviteCode);
+    console.log("Is joining:", isJoining);
+    
+    if (!user) {
+      console.log("ERROR: No user found");
+      toast({
+        title: "Authentication Required", 
+        description: "Please log in to join a household.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!inviteCode.trim()) {
+      console.log("ERROR: No invite code provided");
+      toast({
+        title: "Code Required",
+        description: "Please enter an invitation code.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     setIsJoining(true);
     try {
-      console.log("Attempting to join with code:", inviteCode.trim());
+      console.log("Attempting to join with code:", inviteCode.trim().toUpperCase());
       
       // Find invitation by code
       const { data: invitation, error: inviteError } = await supabase
@@ -179,7 +202,7 @@ export default function Household() {
         .gt('expires_at', new Date().toISOString())
         .single();
 
-      console.log("Invitation found:", invitation);
+      console.log("Invitation query result:", { invitation, inviteError });
 
       if (inviteError || !invitation) {
         console.error("Invitation lookup error:", inviteError);
@@ -191,15 +214,20 @@ export default function Household() {
         return;
       }
 
+      console.log("Found valid invitation:", invitation);
+
       // Check if user is already a member
-      const { data: existingMember } = await supabase
+      const { data: existingMember, error: memberCheckError } = await supabase
         .from('household_members')
         .select('id')
         .eq('household_id', invitation.household_id)
         .eq('user_id', user.id)
         .single();
 
+      console.log("Existing member check:", { existingMember, memberCheckError });
+
       if (existingMember) {
+        console.log("User is already a member");
         toast({
           title: "Already a Member",
           description: "You are already a member of this household.",
@@ -208,6 +236,7 @@ export default function Household() {
         return;
       }
 
+      console.log("Adding user to household...");
       // Add user to household
       const { error: memberError } = await supabase
         .from('household_members')
@@ -222,12 +251,19 @@ export default function Household() {
         throw memberError;
       }
 
+      console.log("User successfully added to household");
+
       // Update invitation status
-      await supabase
+      const { error: updateError } = await supabase
         .from('household_invitations')
         .update({ status: 'accepted' })
         .eq('id', invitation.id);
 
+      if (updateError) {
+        console.error("Invitation update error:", updateError);
+      }
+
+      console.log("Refreshing households...");
       // Refresh households and set current
       await fetchHouseholds();
       setCurrentHousehold(invitation.households);
@@ -238,6 +274,7 @@ export default function Household() {
       });
       
       setInviteCode("");
+      console.log("=== JOIN HOUSEHOLD SUCCESS ===");
     } catch (error) {
       console.error("Error joining household:", error);
       toast({
@@ -247,6 +284,7 @@ export default function Household() {
       });
     } finally {
       setIsJoining(false);
+      console.log("=== JOIN HOUSEHOLD DEBUG END ===");
     }
   };
 
@@ -342,14 +380,20 @@ export default function Household() {
               <Input
                 id="inviteCode"
                 value={inviteCode}
-                onChange={(e) => setInviteCode(e.target.value)}
+                onChange={(e) => {
+                  console.log("Invite code changed:", e.target.value);
+                  setInviteCode(e.target.value);
+                }}
                 placeholder="Enter invitation code"
                 maxLength={10}
                 disabled={isJoining}
               />
             </div>
             <Button 
-              onClick={handleJoinByCode} 
+              onClick={() => {
+                console.log("Join button clicked");
+                handleJoinByCode();
+              }} 
               disabled={!inviteCode.trim() || isJoining}
               className="w-full bg-terracotta hover:bg-terracotta/90"
             >
