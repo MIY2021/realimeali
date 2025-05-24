@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, X, Upload, FileText, Globe, Camera, Edit, Sparkles } from "lucide-react";
+import { Plus, X, Upload, FileText, Globe, Camera, Sparkles, PenTool } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
@@ -430,8 +430,8 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
       <DialogContent className="sm:max-w-4xl h-[90vh] max-h-[90vh] flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-terracotta" />
-            ✨ AI Recipe Magic
+            <Plus className="h-5 w-5 text-terracotta" />
+            Add New Recipe
           </DialogTitle>
         </DialogHeader>
 
@@ -447,23 +447,28 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
                   <TabsList className="grid w-full grid-cols-5 h-auto">
                     <TabsTrigger value="text" className="flex flex-col items-center gap-1 text-xs p-2 h-auto">
                       <FileText className="h-3 w-3" />
-                      <span className="hidden sm:inline">Text</span>
+                      <span className="hidden sm:inline">✨ AI Text</span>
+                      <span className="sm:hidden">✨ Text</span>
                     </TabsTrigger>
                     <TabsTrigger value="url" className="flex flex-col items-center gap-1 text-xs p-2 h-auto">
                       <Globe className="h-3 w-3" />
-                      <span className="hidden sm:inline">URL</span>
+                      <span className="hidden sm:inline">✨ AI URL</span>
+                      <span className="sm:hidden">✨ URL</span>
                     </TabsTrigger>
                     <TabsTrigger value="ingredient-helper" className="flex flex-col items-center gap-1 text-xs p-2 h-auto">
                       <Camera className="h-3 w-3" />
-                      <span className="hidden sm:inline">Ingredient Helper</span>
+                      <span className="hidden sm:inline">✨ AI Ingredients</span>
+                      <span className="sm:hidden">✨ Photo</span>
                     </TabsTrigger>
                     <TabsTrigger value="generate" className="flex flex-col items-center gap-1 text-xs p-2 h-auto">
                       <Sparkles className="h-3 w-3" />
-                      <span className="hidden sm:inline">Generate</span>
+                      <span className="hidden sm:inline">✨ AI Generate</span>
+                      <span className="sm:hidden">✨ Gen</span>
                     </TabsTrigger>
                     <TabsTrigger value="manual" className="flex flex-col items-center gap-1 text-xs p-2 h-auto">
-                      <Edit className="h-3 w-3" />
+                      <PenTool className="h-3 w-3" />
                       <span className="hidden sm:inline">Manual</span>
+                      <span className="sm:hidden">Manual</span>
                     </TabsTrigger>
                   </TabsList>
                   
@@ -532,7 +537,7 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
 
                   <TabsContent value="manual" className="space-y-2">
                     <div className="text-center py-8">
-                      <Edit className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                      <PenTool className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
                       <h3 className="text-lg font-semibold mb-2">Manual Recipe Entry</h3>
                       <p className="text-sm text-muted-foreground mb-4">
                         Create a recipe from scratch with our easy-to-use form
@@ -577,7 +582,7 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
                         </>
                       ) : (
                         <>
-                          <Edit className="h-3 w-3 mr-1" />
+                          <Sparkles className="h-3 w-3 mr-1" />
                           Update
                         </>
                       )}

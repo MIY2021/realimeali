@@ -1,7 +1,8 @@
+
 import { useState } from "react";
 import { RecipeList } from "@/components/recipes/RecipeList";
 import { Button } from "@/components/ui/button";
-import { Book, Sparkles } from "lucide-react";
+import { Book, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { MealType, Recipe } from "@/types";
 import { AIRecipeParserDialog } from "@/components/recipes/AIRecipeParserDialog";
@@ -91,8 +92,8 @@ export default function RecipesPage() {
             className="bg-sage hover:bg-sage/90 text-white" 
             onClick={handleAIHelper}
           >
-            <Sparkles className="h-4 w-4 mr-2" />
-            ✨ AI Recipe Magic
+            <Plus className="h-4 w-4 mr-2" />
+            Add New Recipe
           </Button>
         </div>
       </div>
@@ -109,8 +110,8 @@ export default function RecipesPage() {
         <div className="py-10 text-center">
           <p className="text-muted-foreground mb-4">You haven't created any recipes yet.</p>
           <Button onClick={handleAIHelper} className="bg-sage hover:bg-sage/90 text-white">
-            <Sparkles className="h-4 w-4 mr-2" />
-            ✨ Create Your First Recipe
+            <Plus className="h-4 w-4 mr-2" />
+            Create Your First Recipe
           </Button>
         </div>
       ) : (
