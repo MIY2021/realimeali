@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { ListChecks, Share, Plus, RefreshCw } from "lucide-react";
+import { ListChecks, Share, Plus, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -119,7 +119,7 @@ export default function ShoppingList() {
 
   const handleShare = async () => {
     let shareText = `Shopping List for ${currentHousehold?.name}:\n\n`;
-    Object.entries(categorisedItems).forEach(([category, items]) => {
+    Object.entries(categorisedItems()).forEach(([category, items]) => {
       shareText += `${category}:\n`;
       items.forEach(item => {
         shareText += `- ${item.quantity ? `${item.quantity} ` : ''}${item.unit ? `${item.unit} ` : ''}${item.name}\n`;
@@ -221,7 +221,7 @@ export default function ShoppingList() {
               className="px-2"
               title="Generate from meal plan"
             >
-              <RefreshCw className="h-4 w-4" />
+              <Pencil className="h-4 w-4" />
             </Button>
             <Button
               variant="outline"
@@ -282,7 +282,7 @@ export default function ShoppingList() {
         <div className="text-center py-8">
           <p className="text-muted-foreground mb-4">No items in your shopping list yet.</p>
           <Button onClick={generateShoppingListFromMealPlan}>
-            <RefreshCw className="h-4 w-4 mr-2" />
+            <Pencil className="h-4 w-4 mr-2" />
             Generate from Meal Plan
           </Button>
         </div>

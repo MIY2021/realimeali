@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { RecipeList } from "@/components/recipes/RecipeList";
 import { Button } from "@/components/ui/button";
-import { Book, Plus, Settings } from "lucide-react";
+import { Book, Plus, Pencil } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { MealType, Recipe } from "@/types";
 import { AIRecipeParserDialog } from "@/components/recipes/AIRecipeParserDialog";
@@ -97,7 +97,7 @@ export default function RecipesPage() {
               onClick={() => setShowCategoryDialog(true)}
               className="flex items-center gap-1"
             >
-              <Settings className="h-4 w-4" />
+              <Pencil className="h-4 w-4" />
               Categories
             </Button>
           )}
