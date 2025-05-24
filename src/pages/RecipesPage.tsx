@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { RecipeList } from "@/components/recipes/RecipeList";
 import { Button } from "@/components/ui/button";
@@ -24,12 +23,10 @@ export default function RecipesPage() {
 
   // Fetch recipes when household changes
   useEffect(() => {
-    if (currentHousehold) {
-      fetchRecipes(currentHousehold.id);
-    } else {
-      fetchRecipes(null);
+    if (user) {
+      fetchRecipes(currentHousehold?.id || null);
     }
-  }, [currentHousehold, fetchRecipes]);
+  }, [currentHousehold?.id, user, fetchRecipes]);
 
   const handleAIHelper = () => {
     if (!user) {

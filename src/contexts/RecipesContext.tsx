@@ -1,5 +1,5 @@
 
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
 import { Recipe } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -17,7 +17,7 @@ export const RecipesProvider = ({ children }: { children: ReactNode }) => {
   const { user } = useAuth();
   const recipeApi = useRecipeApi();
 
-  const fetchRecipes = async (householdId: string | null) => {
+  const fetchRecipes = useCallback(async (householdId: string | null) => {
     try {
       setIsLoading(true);
       setError(null);
@@ -35,7 +35,7 @@ export const RecipesProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [recipeApi, toast]);
 
   const createRecipe = async (
     recipeData: Omit<Recipe, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>, 
@@ -100,10 +100,8 @@ export const RecipesProvider = ({ children }: { children: ReactNode }) => {
     return recipes.find(recipe => recipe.id === id);
   };
 
-  useEffect(() => {
-    if (!user) return;
-    fetchRecipes(null);
-  }, [user]);
+  // Remove the useEffect that was causing the infinite loop
+  // fetchRecipes will now be called explicitly from the RecipesPage component
 
   // Set up real-time subscription
   useEffect(() => {
@@ -117,10 +115,9 @@ export const RecipesProvider = ({ children }: { children: ReactNode }) => {
           event: '*',
           schema: 'public',
           table: 'recipes',
-          filter: `user_id=eq.${user.id}`
         },
         () => {
-          // Refetch recipes when changes occur
+          // Refetch recipes when changes occur - this will be handled by the page component
         }
       )
       .subscribe();
