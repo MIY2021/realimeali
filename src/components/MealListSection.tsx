@@ -1,8 +1,8 @@
 
-import { MealPlan, MealType, Recipe } from "@/types";
+import { MealType, MealPlan, Recipe } from "@/types";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
-import { MealCard } from "./meal-planner/MealCard";
+import { Plus, Trash2 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 interface MealListSectionProps {
   mealType: MealType;
@@ -19,68 +19,88 @@ export default function MealListSection({
   onAddMeal,
   onRemoveMeal,
 }: MealListSectionProps) {
-  const mealTypeLabels = {
-    dinner: "Dinners",
-    lunch: "Lunches", 
-    breakfast: "Breakfasts",
-    snacks: "Snacks"
+  // Create URL-friendly slug from recipe title
+  const createSlug = (title: string) => {
+    return title
+      .toLowerCase()
+      .replace(/[^a-z0-9 -]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .trim();
+  };
+
+  const getRecipeUrl = (recipe: Recipe) => {
+    const recipeSlug = createSlug(recipe.title);
+    return `/recipes/${recipe.id}/${recipeSlug}`;
   };
 
   return (
-    <div className="space-y-3 mb-6">
-      <div className="flex items-center justify-between">
-        <h3 className="font-semibold text-navy capitalize">
-          {mealTypeLabels[mealType]} ({mealPlans.length})
+    <div className="mb-6">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-lg font-semibold capitalize text-navy">
+          {mealType}
         </h3>
         <Button
-          onClick={() => onAddMeal(mealType)}
           size="sm"
           variant="outline"
-          className="h-8 px-3"
+          onClick={() => onAddMeal(mealType)}
+          className="text-terracotta border-terracotta hover:bg-terracotta/10"
         >
           <Plus className="h-4 w-4 mr-1" />
           Add
         </Button>
       </div>
-      
-      <div className="space-y-2">
-        {mealPlans.length > 0 ? (
-          mealPlans.map((plan) => {
+
+      {mealPlans.length === 0 ? (
+        <div className="border border-dashed border-gray-300 rounded-md p-4 text-center text-muted-foreground">
+          No {mealType} planned yet
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {mealPlans.map((plan) => {
             const recipe = getRecipeById(plan.recipeId);
-            return recipe ? (
-              <MealCard
+            return (
+              <div
                 key={plan.id}
-                recipe={recipe}
-                onRemove={() => onRemoveMeal(plan.id)}
-              />
-            ) : (
-              <div key={plan.id} className="p-3 border rounded-lg bg-destructive/10">
-                <span className="text-sm text-muted-foreground">Recipe not found</span>
+                className="flex items-center justify-between p-3 bg-gray-50 rounded-md border"
+              >
+                <div className="flex-1">
+                  {recipe ? (
+                    <Link 
+                      to={getRecipeUrl(recipe)}
+                      className="text-sm font-medium hover:text-terracotta transition-colors"
+                    >
+                      {recipe.title}
+                    </Link>
+                  ) : (
+                    <span className="text-sm text-muted-foreground">
+                      Recipe not found
+                    </span>
+                  )}
+                  {recipe && (
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-xs text-muted-foreground">
+                        {recipe.prepTime + recipe.cookTime} min
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        • {recipe.servings} servings
+                      </span>
+                    </div>
+                  )}
+                </div>
                 <Button
-                  onClick={() => onRemoveMeal(plan.id)}
                   size="sm"
-                  variant="outline"
-                  className="ml-2 h-6 px-2 text-xs"
+                  variant="ghost"
+                  onClick={() => onRemoveMeal(plan.id)}
+                  className="text-red-500 hover:text-red-700 hover:bg-red-50"
                 >
-                  Remove
+                  <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
             );
-          })
-        ) : (
-          <div className="text-center py-4 border-2 border-dashed border-muted rounded-lg">
-            <p className="text-sm text-muted-foreground mb-2">No {mealTypeLabels[mealType].toLowerCase()} planned</p>
-            <Button
-              onClick={() => onAddMeal(mealType)}
-              size="sm"
-              variant="outline"
-            >
-              <Plus className="h-4 w-4 mr-1" />
-              Add {mealType}
-            </Button>
-          </div>
-        )}
-      </div>
+          })}
+        </div>
+      )}
     </div>
   );
 }

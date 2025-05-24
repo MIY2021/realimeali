@@ -2,11 +2,12 @@
 import { useState, useEffect } from "react";
 import { RecipeList } from "@/components/recipes/RecipeList";
 import { Button } from "@/components/ui/button";
-import { Book, Plus, Pencil } from "lucide-react";
+import { Book, Plus, Pencil, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { MealType, Recipe } from "@/types";
 import { AIRecipeParserDialog } from "@/components/recipes/AIRecipeParserDialog";
 import { CategoryManagementDialog } from "@/components/recipes/CategoryManagementDialog";
+import { CreateRecipeDialog } from "@/components/recipes/CreateRecipeDialog";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
@@ -20,6 +21,7 @@ export default function RecipesPage() {
 
   // Dialog state
   const [showAIParserDialog, setShowAIParserDialog] = useState(false);
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showCategoryDialog, setShowCategoryDialog] = useState(false);
   
   // Local loading state to prevent multiple fetches
@@ -57,6 +59,28 @@ export default function RecipesPage() {
     setShowAIParserDialog(true);
   };
 
+  const handleCreateRecipe = () => {
+    if (!user) {
+      toast({
+        title: "Login Required", 
+        description: "You need to log in to create recipes.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!currentHousehold) {
+      toast({
+        title: "Household Required", 
+        description: "Please select a household to add recipes to.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setShowCreateDialog(true);
+  };
+
   const handleSaveAIParsedRecipe = async (newRecipeData: Omit<Recipe, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>) => {
     if (!currentHousehold) {
       toast({
@@ -70,6 +94,22 @@ export default function RecipesPage() {
     const newRecipe = await createRecipe(newRecipeData, currentHousehold.id);
     if (newRecipe) {
       setShowAIParserDialog(false);
+    }
+  };
+
+  const handleSaveManualRecipe = async (newRecipeData: Omit<Recipe, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>) => {
+    if (!currentHousehold) {
+      toast({
+        title: "Error",
+        description: "No household selected.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    const newRecipe = await createRecipe(newRecipeData, currentHousehold.id);
+    if (newRecipe) {
+      setShowCreateDialog(false);
     }
   };
 
@@ -114,12 +154,20 @@ export default function RecipesPage() {
                 </Button>
               )}
               <Button 
+                variant="outline"
+                onClick={handleCreateRecipe}
+                className="flex items-center gap-1"
+              >
+                <Plus className="h-4 w-4" />
+                Manual Entry
+              </Button>
+              <Button 
                 style={{ backgroundColor: '#e38165' }}
                 className="hover:opacity-90 text-white" 
                 onClick={handleAIHelper}
               >
-                <Plus className="h-4 w-4 mr-2" />
-                Add New Recipe
+                <Sparkles className="h-4 w-4 mr-2" />
+                AI Recipe Helper
               </Button>
             </div>
           </div>
@@ -131,14 +179,23 @@ export default function RecipesPage() {
           ) : recipes.length === 0 ? (
             <div className="py-10 text-center">
               <p className="text-muted-foreground mb-4">Your household hasn't created any recipes yet.</p>
-              <Button 
-                onClick={handleAIHelper} 
-                style={{ backgroundColor: '#e38165' }}
-                className="hover:opacity-90 text-white"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Create Your First Recipe
-              </Button>
+              <div className="flex gap-2 justify-center">
+                <Button 
+                  onClick={handleCreateRecipe} 
+                  variant="outline"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Manual Entry
+                </Button>
+                <Button 
+                  onClick={handleAIHelper} 
+                  style={{ backgroundColor: '#e38165' }}
+                  className="hover:opacity-90 text-white"
+                >
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  AI Recipe Helper
+                </Button>
+              </div>
             </div>
           ) : (
             <RecipeList recipes={recipes} />
@@ -150,6 +207,12 @@ export default function RecipesPage() {
         open={showAIParserDialog}
         onOpenChange={setShowAIParserDialog}
         onSave={handleSaveAIParsedRecipe}
+      />
+
+      <CreateRecipeDialog
+        open={showCreateDialog}
+        onOpenChange={setShowCreateDialog}
+        onSave={handleSaveManualRecipe}
       />
 
       <CategoryManagementDialog

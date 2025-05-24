@@ -1,131 +1,143 @@
 
-import { useState, useMemo } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { useState } from "react";
 import { Recipe, MealType, RecipeCategory } from "@/types";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Clock, Users, ChevronDown } from "lucide-react";
 
-type Props = {
+interface AddRecipeToMealModalProps {
   open: boolean;
   onClose: () => void;
   mealType: MealType;
   recipes: Recipe[];
   onSelectRecipe: (recipeId: string) => void;
-};
+}
 
-export function AddRecipeToMealModal({ open, onClose, mealType, recipes, onSelectRecipe }: Props) {
-  const [search, setSearch] = useState("");
-  const [category, setCategory] = useState<RecipeCategory | "All">("All");
+// All available categories - ensures all categories show even if no recipes exist
+const ALL_RECIPE_CATEGORIES: RecipeCategory[] = [
+  "Bulk", "Easy", "Cheap", "Healthy", "Vegetarian", "Fish", 
+  "Super Tasty", "Pasta", "Tapas", "Winter", "BBQ", 
+  "Faffy", "Pricey!", "Not Yet Made", "Snacks", "Breakfast"
+];
 
-  const allCategories = useMemo(() => {
-    const set = new Set<RecipeCategory>();
-    recipes.forEach(r => r.categories.forEach(c => set.add(c)));
-    return ["All", ...Array.from(set).sort()];
-  }, [recipes]);
+export function AddRecipeToMealModal({
+  open,
+  onClose,
+  mealType,
+  recipes,
+  onSelectRecipe,
+}: AddRecipeToMealModalProps) {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
 
-  const filtered = useMemo(() => {
-    return recipes.filter(r => {
-      const matchesCategory = category === "All" || r.categories.includes(category);
-      const matchesSearch = search.trim() === "" || 
-        r.title.toLowerCase().includes(search.toLowerCase()) ||
-        r.description.toLowerCase().includes(search.toLowerCase());
-      return matchesCategory && matchesSearch;
-    });
-  }, [recipes, category, search]);
+  // Get all categories that exist in recipes plus all standard categories
+  const usedCategories = [...new Set(recipes.flatMap(r => r.categories))];
+  const allCategories = [...new Set([...ALL_RECIPE_CATEGORIES, ...usedCategories])];
 
-  const RecipeItem = ({ recipe }: { recipe: Recipe }) => {
-    const [imgError, setImgError] = useState(false);
-    
-    return (
-      <div className="flex gap-3 items-center border rounded-lg p-3 hover:bg-accent transition-colors">
-        <div className="w-16 h-16 rounded-md overflow-hidden bg-muted flex-shrink-0">
-          {!imgError && recipe.image ? (
-            <img
-              src={recipe.image}
-              alt={recipe.title}
-              className="w-full h-full object-cover"
-              onError={() => setImgError(true)}
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center bg-muted">
-              <span className="text-xs text-muted-foreground">No img</span>
-            </div>
-          )}
-        </div>
-        
-        <div className="flex-1 min-w-0">
-          <h4 className="font-medium leading-tight">{recipe.title}</h4>
-          <p className="text-sm text-muted-foreground line-clamp-2 mt-1">{recipe.description}</p>
-          <div className="flex items-center gap-2 mt-2">
-            <span className="text-xs text-muted-foreground">
-              {recipe.prepTime + recipe.cookTime} min
-            </span>
-            <span className="text-xs text-muted-foreground">•</span>
-            <span className="text-xs text-muted-foreground">
-              {recipe.servings} servings
-            </span>
-          </div>
-          <div className="flex flex-wrap gap-1 mt-2">
-            {recipe.categories.slice(0, 3).map(cat => (
-              <span key={cat} className="inline-flex items-center rounded-full bg-sage/20 px-2 py-0.5 text-xs font-medium text-sage">
-                {cat}
-              </span>
-            ))}
-            {recipe.categories.length > 3 && (
-              <span className="text-xs text-muted-foreground">+{recipe.categories.length - 3}</span>
-            )}
-          </div>
-        </div>
-        
-        <Button
-          size="sm"
-          onClick={() => { onSelectRecipe(recipe.id); onClose(); }}
-          className="bg-terracotta hover:bg-terracotta/90"
-        >
-          Add
-        </Button>
-      </div>
-    );
+  const filteredRecipes = recipes.filter((recipe) => {
+    const matchesSearch = recipe.title.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = categoryFilter === "all" || 
+                          recipe.categories.includes(categoryFilter as RecipeCategory);
+    return matchesSearch && matchesCategory;
+  });
+
+  const handleSelectRecipe = (recipeId: string) => {
+    onSelectRecipe(recipeId);
+    onClose();
   };
 
   return (
-    <Dialog open={open} onOpenChange={v => !v && onClose()}>
-      <DialogContent className="max-w-[100vw] w-[100vw] md:max-w-2xl h-[100vh] md:h-auto max-h-[90vh] flex flex-col">
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
         <DialogHeader>
-          <DialogTitle>Select recipe for {mealType}</DialogTitle>
+          <DialogTitle>Add Recipe to {mealType.charAt(0).toUpperCase() + mealType.slice(1)}</DialogTitle>
         </DialogHeader>
-        
-        <div className="flex flex-col gap-3 mb-4">
-          <Input
-            placeholder="Search recipes..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            className="w-full"
-          />
-          <select 
-            value={category} 
-            onChange={(e) => setCategory(e.target.value as RecipeCategory | "All")} 
-            className="border p-2 rounded w-full"
-          >
-            {allCategories.map(c => (
-              <option value={c} key={c}>{c}</option>
-            ))}
-          </select>
+
+        <div className="flex flex-col sm:flex-row gap-4 mb-4">
+          <div className="flex-1">
+            <Input
+              placeholder="Search recipes..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full"
+            />
+          </div>
+          <div className="w-full sm:w-48 relative">
+            <select
+              value={categoryFilter}
+              onChange={e => setCategoryFilter(e.target.value)}
+              className="w-full border rounded p-2 pr-8 appearance-none bg-white"
+            >
+              <option value="all">All Categories</option>
+              {allCategories.map((category) => (
+                <option key={category} value={category}>{category}</option>
+              ))}
+            </select>
+            <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 pointer-events-none text-muted-foreground" />
+          </div>
         </div>
-        
-        <div className="flex-1 overflow-y-auto space-y-3 min-h-0">
-          {filtered.length > 0 ? (
-            filtered.map(recipe => (
-              <RecipeItem key={recipe.id} recipe={recipe} />
-            ))
-          ) : (
+
+        <div className="flex-1 overflow-y-auto">
+          {filteredRecipes.length === 0 ? (
             <div className="text-center py-8">
-              <p className="text-muted-foreground">No recipes found matching your criteria.</p>
+              <p className="text-muted-foreground">No recipes found. Try adjusting your search.</p>
+            </div>
+          ) : (
+            <div className="grid gap-3">
+              {filteredRecipes.map((recipe) => (
+                <div
+                  key={recipe.id}
+                  className="border rounded-lg p-4 hover:bg-gray-50 cursor-pointer transition-colors"
+                  onClick={() => handleSelectRecipe(recipe.id)}
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <h4 className="font-medium text-navy mb-1">{recipe.title}</h4>
+                      <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
+                        {recipe.description}
+                      </p>
+                      <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          {recipe.prepTime + recipe.cookTime} min
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Users className="h-3 w-3" />
+                          {recipe.servings} servings
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {recipe.categories.slice(0, 3).map((category) => (
+                          <span
+                            key={category}
+                            className="inline-flex items-center rounded-full bg-sage/20 px-2 py-1 text-xs font-medium text-sage"
+                          >
+                            {category}
+                          </span>
+                        ))}
+                        {recipe.categories.length > 3 && (
+                          <span className="text-xs text-muted-foreground">
+                            +{recipe.categories.length - 3} more
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    {recipe.image && (
+                      <img
+                        src={recipe.image}
+                        alt={recipe.title}
+                        className="w-16 h-16 object-cover rounded ml-4"
+                      />
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </div>
-        
-        <div className="flex justify-end pt-4">
+
+        <div className="flex justify-end pt-4 border-t">
           <Button variant="outline" onClick={onClose}>
             Cancel
           </Button>

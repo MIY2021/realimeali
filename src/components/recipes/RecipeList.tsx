@@ -1,4 +1,5 @@
-import { Recipe } from "@/types";
+
+import { Recipe, RecipeCategory } from "@/types";
 import { RecipeCard } from "./RecipeCard";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -12,6 +13,13 @@ import { useRecipes } from "@/contexts/RecipesContext";
 interface RecipeListProps {
   recipes: Recipe[];
 }
+
+// All available categories - ensures all categories show even if no recipes exist
+const ALL_RECIPE_CATEGORIES: RecipeCategory[] = [
+  "Bulk", "Easy", "Cheap", "Healthy", "Vegetarian", "Fish", 
+  "Super Tasty", "Pasta", "Tapas", "Winter", "BBQ", 
+  "Faffy", "Pricey!", "Not Yet Made", "Snacks", "Breakfast"
+];
 
 export function RecipeList({ recipes }: RecipeListProps) {
   const { recipeCategories } = useHouseholdShopping();
@@ -29,8 +37,9 @@ export function RecipeList({ recipes }: RecipeListProps) {
   const [editRecipe, setEditRecipe] = useState<Recipe | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
 
-  // Get categories from household context instead of hardcoded array
-  const allCategories = recipeCategories.map(cat => cat.name);
+  // Combine household categories with all standard categories
+  const householdCategoryNames = recipeCategories.map(cat => cat.name);
+  const allCategories = [...new Set([...ALL_RECIPE_CATEGORIES, ...householdCategoryNames])];
 
   const filteredRecipes = recipes.filter((recipe) => {
     const matchesSearch = recipe.title.toLowerCase().includes(searchTerm.toLowerCase()) || 

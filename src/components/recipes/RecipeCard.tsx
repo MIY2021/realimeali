@@ -53,6 +53,23 @@ export function RecipeCard({ recipe, onAddToMealPlan, onEdit }: RecipeCardProps)
               <span className="text-xs text-muted-foreground">No image</span>
             </div>
           )}
+          
+          {/* Edit button overlay for recipe owners */}
+          {isOwner && onEdit && (
+            <Button
+              variant="secondary"
+              size="sm"
+              className="absolute top-2 right-2 h-8 w-8 p-0 shadow-md hover:bg-sage hover:text-white"
+              onClick={(e) => { 
+                e.preventDefault(); 
+                e.stopPropagation(); 
+                onEdit(recipe); 
+              }}
+              title="Edit recipe"
+            >
+              <Pencil className="h-4 w-4" />
+            </Button>
+          )}
         </div>
       </Link>
       <CardHeader className="p-4 pb-2">
@@ -101,31 +118,17 @@ export function RecipeCard({ recipe, onAddToMealPlan, onEdit }: RecipeCardProps)
           <Link to={recipeUrl}>View Recipe</Link>
         </Button>
         
-        <div className="flex gap-2 w-full">
-          {onAddToMealPlan && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="flex-1 text-xs hover:bg-terracotta hover:text-white flex items-center justify-center"
-              onClick={(e) => { e.preventDefault(); onAddToMealPlan(recipe); }}
-            >
-              <Plus className="h-4 w-4 mr-1" />
-              <span>Add to Plan</span>
-            </Button>
-          )}
-          
-          {isOwner && onEdit && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="flex-1 text-xs hover:bg-sage hover:text-white flex items-center justify-center"
-              onClick={(e) => { e.preventDefault(); onEdit(recipe); }}
-            >
-              <Pencil className="h-4 w-4 mr-1" />
-              <span>Edit</span>
-            </Button>
-          )}
-        </div>
+        {onAddToMealPlan && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full text-xs hover:bg-terracotta hover:text-white flex items-center justify-center"
+            onClick={(e) => { e.preventDefault(); onAddToMealPlan(recipe); }}
+          >
+            <Plus className="h-4 w-4 mr-1" />
+            <span>Add to Meal Plan</span>
+          </Button>
+        )}
       </CardFooter>
     </Card>
   );
