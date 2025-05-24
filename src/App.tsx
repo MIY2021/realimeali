@@ -21,7 +21,7 @@ import Signup from "@/pages/Signup";
 import Account from "@/pages/Account";
 import Household from "@/pages/Household";
 import NotFound from "@/pages/NotFound";
-import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 
 const queryClient = new QueryClient();
 

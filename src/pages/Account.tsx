@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User, Save } from "lucide-react";
+import { User } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -118,7 +118,7 @@ export default function Account() {
             disabled={isLoading}
             className="w-full bg-terracotta hover:bg-terracotta/90"
           >
-            <Save className="h-4 w-4 mr-2" />
+            <User className="h-4 w-4 mr-2" />
             {isLoading ? "Saving..." : "Save Changes"}
           </Button>
         </CardContent>

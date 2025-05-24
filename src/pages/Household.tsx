@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useHousehold } from "@/contexts/HouseholdContext";
-import { Users, UserPlus, Home, Copy } from "lucide-react";
+import { Users, User } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { HouseholdSelector } from "@/components/household/HouseholdSelector";
 import { CreateHouseholdDialog } from "@/components/household/CreateHouseholdDialog";
@@ -74,7 +74,7 @@ export default function Household() {
               onClick={() => setShowCreateDialog(true)}
               className="w-full bg-terracotta hover:bg-terracotta/90"
             >
-              <Home className="h-4 w-4 mr-2" />
+              <User className="h-4 w-4 mr-2" />
               Create New Household
             </Button>
           </CardContent>
@@ -87,7 +87,7 @@ export default function Household() {
               Members ({householdMembers.length})
             </TabsTrigger>
             <TabsTrigger value="invite" className="flex items-center gap-1">
-              <UserPlus className="h-4 w-4" />
+              <User className="h-4 w-4" />
               Invite
             </TabsTrigger>
             <TabsTrigger value="join" className="flex items-center gap-1">
@@ -155,7 +155,7 @@ export default function Household() {
                   disabled={!inviteEmail.trim() || isInviting}
                   className="w-full bg-sage hover:bg-sage/90"
                 >
-                  <Copy className="h-4 w-4 mr-2" />
+                  <User className="h-4 w-4 mr-2" />
                   {isInviting ? "Sending Invitation..." : "Send Invitation"}
                 </Button>
                 <p className="text-sm text-muted-foreground">

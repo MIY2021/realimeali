@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { User, UtensilsCrossed, CalendarDays, Book, ListChecks, Settings, Users } from "lucide-react";
+import { User, UtensilsCrossed, CalendarDays, Book, ListChecks, Users } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -52,7 +52,7 @@ const Header = () => {
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuItem asChild>
                   <Link to="/account" className="flex items-center">
-                    <Settings className="h-4 w-4 mr-2" />
+                    <User className="h-4 w-4 mr-2" />
                     Manage Account
                   </Link>
                 </DropdownMenuItem>
