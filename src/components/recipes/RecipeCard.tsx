@@ -32,10 +32,11 @@ export function RecipeCard({ recipe, onAddToMealPlan, onEdit }: RecipeCardProps)
   };
 
   const recipeSlug = createSlug(title);
+  const recipeUrl = `/recipes/${id}/${recipeSlug}`;
 
   return (
     <Card className="overflow-hidden transition-all hover:shadow-md relative flex flex-col h-full">
-      <Link to={`/recipes/${id}/${recipeSlug}`}>
+      <Link to={recipeUrl}>
         <div className="aspect-video w-full overflow-hidden bg-muted relative">
           {!imgError && image ? (
             <img
@@ -57,7 +58,7 @@ export function RecipeCard({ recipe, onAddToMealPlan, onEdit }: RecipeCardProps)
       <CardHeader className="p-4 pb-2">
         <div className="flex justify-between items-start">
           <Link
-            to={`/recipes/${id}/${recipeSlug}`}
+            to={recipeUrl}
             className="text-lg font-semibold hover:text-terracotta transition-colors"
             title={title}
           >
@@ -97,7 +98,7 @@ export function RecipeCard({ recipe, onAddToMealPlan, onEdit }: RecipeCardProps)
           className="w-full text-xs hover:bg-terracotta hover:text-white"
           asChild
         >
-          <Link to={`/recipes/${id}/${recipeSlug}`}>View Recipe</Link>
+          <Link to={recipeUrl}>View Recipe</Link>
         </Button>
         
         <div className="flex gap-2 w-full">
