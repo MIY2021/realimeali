@@ -22,7 +22,7 @@ interface CreateRecipeDialogProps {
 const AVAILABLE_CATEGORIES: RecipeCategory[] = [
   "Bulk", "Easy", "Cheap", "Healthy", "Vegetarian", "Fish",
   "Super Tasty", "Pasta", "Tapas", "Winter", "BBQ",
-  "Faffy", "Pricey!", "Not Yet Made", "Snacks", "Breakfast"
+  "Faffy", "Pricey", "Not-Yet-Made", "Snacks", "Breakfast"
 ];
 
 export function CreateRecipeDialog({ open, onOpenChange, onSave }: CreateRecipeDialogProps) {
