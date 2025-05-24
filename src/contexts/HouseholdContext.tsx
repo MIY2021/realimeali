@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -164,6 +163,21 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
   const fetchJoinRequests = async (householdId: string) => {
     try {
       console.log("Fetching join requests for household:", householdId);
+      console.log("Current user:", user?.id);
+      
+      // First, let's check if the current user is the owner of this household
+      const { data: membershipData, error: membershipError } = await supabase
+        .from('household_members')
+        .select('role')
+        .eq('household_id', householdId)
+        .eq('user_id', user?.id)
+        .single();
+
+      if (membershipError) {
+        console.error("Error checking membership:", membershipError);
+      } else {
+        console.log("User membership role:", membershipData?.role);
+      }
       
       const { data, error } = await supabase
         .from('household_join_requests')
@@ -210,6 +224,7 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
       }
 
       console.log("Attempting to request join with household code:", householdCode);
+      console.log("Current user ID:", user.id);
       
       // Get all households and filter by code in JavaScript
       const { data: households, error: householdError } = await supabase
@@ -243,7 +258,7 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
         return false;
       }
 
-      console.log("Found matching household:", matchingHousehold.name);
+      console.log("Found matching household:", matchingHousehold.name, "ID:", matchingHousehold.id);
 
       // Check if user is already a member
       const { data: existingMember, error: memberCheckError } = await supabase
@@ -338,13 +353,16 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
       }
 
       // Create new join request (only if no existing request found)
-      const { error: requestError } = await supabase
+      console.log("Creating new join request for household:", matchingHousehold.id, "user:", user.id);
+      
+      const { data: insertData, error: requestError } = await supabase
         .from('household_join_requests')
         .insert([{
           household_id: matchingHousehold.id,
           user_id: user.id,
           status: 'pending'
-        }]);
+        }])
+        .select();
 
       if (requestError) {
         console.error("Request insert error:", requestError);
@@ -366,7 +384,7 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
         return false;
       }
 
-      console.log("Successfully created join request");
+      console.log("Successfully created join request:", insertData);
       toast({
         title: "Request Sent Successfully!",
         description: `Your join request for "${matchingHousehold.name}" has been sent. The household owner will review your request.`,
@@ -437,7 +455,6 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
       toast({
         title: "Error",
         description: "Failed to approve join request. Please try again.",
-        variant: "destructive",
       });
       return false;
     }
@@ -470,7 +487,6 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
       toast({
         title: "Error",
         description: "Failed to reject join request. Please try again.",
-        variant: "destructive",
       });
       return false;
     }
@@ -534,7 +550,6 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
       toast({
         title: "Error",
         description: "Failed to create household. Please try again.",
-        variant: "destructive",
       });
       return null;
     }
@@ -577,7 +592,6 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
       toast({
         title: "Error",
         description: "Failed to send invitation. Please try again.",
-        variant: "destructive",
       });
       return null;
     }
@@ -614,7 +628,6 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
       toast({
         title: "Error",
         description: "Failed to leave household. Please try again.",
-        variant: "destructive",
       });
       return false;
     }
