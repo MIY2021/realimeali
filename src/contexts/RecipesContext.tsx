@@ -35,7 +35,7 @@ export const RecipesProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setIsLoading(false);
     }
-  }, [recipeApi, toast]);
+  }, [recipeApi.fetchRecipes, toast]);
 
   const createRecipe = async (
     recipeData: Omit<Recipe, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>, 
@@ -99,9 +99,6 @@ export const RecipesProvider = ({ children }: { children: ReactNode }) => {
   const getRecipeById = (id: string) => {
     return recipes.find(recipe => recipe.id === id);
   };
-
-  // Remove the useEffect that was causing the infinite loop
-  // fetchRecipes will now be called explicitly from the RecipesPage component
 
   // Set up real-time subscription
   useEffect(() => {

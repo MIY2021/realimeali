@@ -3,6 +3,7 @@ import { Recipe } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCallback } from "react";
 import { 
   transformDbRecipeToRecipe, 
   transformRecipeToDbInsert, 
@@ -13,7 +14,7 @@ export const useRecipeApi = () => {
   const { toast } = useToast();
   const { user } = useAuth();
 
-  const fetchRecipes = async (householdId: string | null): Promise<Recipe[]> => {
+  const fetchRecipes = useCallback(async (householdId: string | null): Promise<Recipe[]> => {
     if (!user || !householdId) {
       return [];
     }
@@ -29,9 +30,9 @@ export const useRecipeApi = () => {
     }
 
     return (data || []).map(transformDbRecipeToRecipe);
-  };
+  }, [user]);
 
-  const createRecipe = async (
+  const createRecipe = useCallback(async (
     recipeData: Omit<Recipe, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>, 
     householdId: string
   ): Promise<Recipe | null> => {
@@ -62,9 +63,9 @@ export const useRecipeApi = () => {
     });
 
     return newRecipe;
-  };
+  }, [user, toast]);
 
-  const updateRecipe = async (id: string, recipeData: Partial<Recipe>): Promise<Recipe | null> => {
+  const updateRecipe = useCallback(async (id: string, recipeData: Partial<Recipe>): Promise<Recipe | null> => {
     if (!user) {
       toast({
         title: "Authentication Required",
@@ -96,9 +97,9 @@ export const useRecipeApi = () => {
     });
 
     return updatedRecipe;
-  };
+  }, [user, toast]);
 
-  const deleteRecipe = async (id: string): Promise<boolean> => {
+  const deleteRecipe = useCallback(async (id: string): Promise<boolean> => {
     if (!user) {
       toast({
         title: "Authentication Required",
@@ -124,7 +125,7 @@ export const useRecipeApi = () => {
     });
 
     return true;
-  };
+  }, [user, toast]);
 
   return {
     fetchRecipes,
