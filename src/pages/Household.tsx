@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -191,21 +192,30 @@ export default function Household() {
 
     setIsJoining(true);
     try {
-      console.log("Attempting to join with code:", inviteCode.trim().toUpperCase());
+      const cleanCode = inviteCode.trim().toUpperCase();
+      console.log("Attempting to join with code:", cleanCode);
       
-      // Find invitation by code
-      const { data: invitation, error: inviteError } = await supabase
+      // First, let's try a simpler query to check if the invitation exists
+      const { data: invitations, error: inviteError } = await supabase
         .from('household_invitations')
-        .select('*, households(*)')
-        .eq('invitation_code', inviteCode.trim().toUpperCase())
-        .eq('status', 'pending')
-        .gt('expires_at', new Date().toISOString())
-        .single();
+        .select('*')
+        .eq('invitation_code', cleanCode)
+        .eq('status', 'pending');
 
-      console.log("Invitation query result:", { invitation, inviteError });
+      console.log("Invitation query result:", { invitations, inviteError });
 
-      if (inviteError || !invitation) {
-        console.error("Invitation lookup error:", inviteError);
+      if (inviteError) {
+        console.error("Database error:", inviteError);
+        toast({
+          title: "Database Error",
+          description: "Failed to check invitation. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (!invitations || invitations.length === 0) {
+        console.log("No invitations found for code:", cleanCode);
         toast({
           title: "Invalid Code",
           description: "The invitation code is invalid or has expired.",
@@ -214,19 +224,62 @@ export default function Household() {
         return;
       }
 
+      // Check if invitation is expired
+      const invitation = invitations[0];
+      const now = new Date();
+      const expiresAt = new Date(invitation.expires_at);
+      
+      if (expiresAt <= now) {
+        console.log("Invitation expired:", { expiresAt, now });
+        toast({
+          title: "Invitation Expired",
+          description: "This invitation has expired. Please request a new one.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       console.log("Found valid invitation:", invitation);
+
+      // Get household details
+      const { data: household, error: householdError } = await supabase
+        .from('households')
+        .select('*')
+        .eq('id', invitation.household_id)
+        .single();
+
+      if (householdError || !household) {
+        console.error("Household lookup error:", householdError);
+        toast({
+          title: "Error",
+          description: "Failed to find the household. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      console.log("Found household:", household);
 
       // Check if user is already a member
       const { data: existingMember, error: memberCheckError } = await supabase
         .from('household_members')
         .select('id')
         .eq('household_id', invitation.household_id)
-        .eq('user_id', user.id)
-        .single();
+        .eq('user_id', user.id);
 
       console.log("Existing member check:", { existingMember, memberCheckError });
 
-      if (existingMember) {
+      if (memberCheckError) {
+        console.error("Member check error:", memberCheckError);
+        toast({
+          title: "Error",
+          description: "Failed to check membership. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (existingMember && existingMember.length > 0) {
         console.log("User is already a member");
         toast({
           title: "Already a Member",
@@ -266,11 +319,11 @@ export default function Household() {
       console.log("Refreshing households...");
       // Refresh households and set current
       await fetchHouseholds();
-      setCurrentHousehold(invitation.households);
+      setCurrentHousehold(household);
 
       toast({
         title: "Joined Household",
-        description: `Successfully joined ${invitation.households.name}!`,
+        description: `Successfully joined ${household.name}!`,
       });
       
       setInviteCode("");
