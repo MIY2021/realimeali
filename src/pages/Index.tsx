@@ -13,7 +13,7 @@ export default function Index() {
       <section className="py-8 md:py-12 lg:py-16 bg-white">
         <div className="container px-4 md:px-6">
           <div className="flex flex-col items-center space-y-2 text-center">
-            <div className="space-y-2">
+            <div className="space-y-1">
               <h1 className="text-3xl font-bold tracking-tighter text-navy sm:text-4xl md:text-5xl lg:text-6xl">
                 Welcome to RealiMeali
               </h1>
