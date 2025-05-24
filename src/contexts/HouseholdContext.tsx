@@ -40,7 +40,7 @@ interface HouseholdContextType {
   fetchHouseholds: () => Promise<void>;
   fetchHouseholdMembers: (householdId: string) => Promise<void>;
   requestToJoinHousehold: (householdCode: string) => Promise<boolean>;
-  fetchJoinRequests: (householdId: string) => Promise<void>;
+  fetchJoinRequests: () => Promise<void>;
   approveJoinRequest: (requestId: string) => Promise<boolean>;
   rejectJoinRequest: (requestId: string) => Promise<boolean>;
   leaveHousehold: (householdId: string) => Promise<boolean>;
@@ -214,7 +214,7 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
   const requestToJoinHousehold = async (householdCode: string): Promise<boolean> => {
     try {
       if (!user) {
-        console.error("No authenticated user");
+        console.error("DEBUG: No authenticated user");
         toast({
           title: "Authentication Required",
           description: "Please log in to join a household.",
@@ -223,8 +223,9 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
         return false;
       }
 
-      console.log("Attempting to request join with household code:", householdCode);
-      console.log("Current user ID:", user.id);
+      console.log("DEBUG: Starting join request process");
+      console.log("DEBUG: Household code:", householdCode);
+      console.log("DEBUG: Current user ID:", user.id);
       
       // Get all households and filter by code in JavaScript
       const { data: households, error: householdError } = await supabase
@@ -232,7 +233,7 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
         .select('*');
 
       if (householdError) {
-        console.error("Household lookup error:", householdError);
+        console.error("DEBUG: Household lookup error:", householdError);
         toast({
           title: "Database Error",
           description: "Failed to search for household. Please try again.",
@@ -241,7 +242,7 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
         return false;
       }
 
-      console.log("Found households:", households?.length || 0);
+      console.log("DEBUG: Found households:", households?.length || 0);
 
       // Find household where the first 6 characters of the ID match the code
       const matchingHousehold = households?.find(h => 
@@ -249,7 +250,7 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
       );
 
       if (!matchingHousehold) {
-        console.log("No matching household found for code:", householdCode);
+        console.log("DEBUG: No matching household found for code:", householdCode);
         toast({
           title: "Invalid Code",
           description: "The household code is invalid. Please check and try again.",
@@ -258,7 +259,7 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
         return false;
       }
 
-      console.log("Found matching household:", matchingHousehold.name, "ID:", matchingHousehold.id);
+      console.log("DEBUG: Found matching household:", matchingHousehold.name, "ID:", matchingHousehold.id);
 
       // Check if user is already a member
       const { data: existingMember, error: memberCheckError } = await supabase
@@ -268,7 +269,7 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
         .eq('user_id', user.id);
 
       if (memberCheckError) {
-        console.error("Member check error:", memberCheckError);
+        console.error("DEBUG: Member check error:", memberCheckError);
         toast({
           title: "Database Error",
           description: "Failed to check membership status. Please try again.",
@@ -278,7 +279,7 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
       }
 
       if (existingMember && existingMember.length > 0) {
-        console.log("User is already a member");
+        console.log("DEBUG: User is already a member");
         toast({
           title: "Already a Member",
           description: "You are already a member of this household.",
@@ -287,15 +288,18 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
         return false;
       }
 
-      // Check for any existing request
+      // Check for any existing request (including rejected ones)
+      console.log("DEBUG: Checking for existing requests...");
       const { data: existingRequest, error: requestCheckError } = await supabase
         .from('household_join_requests')
-        .select('id, status')
+        .select('id, status, created_at')
         .eq('household_id', matchingHousehold.id)
-        .eq('user_id', user.id);
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(1);
 
       if (requestCheckError) {
-        console.error("Request check error:", requestCheckError);
+        console.error("DEBUG: Request check error:", requestCheckError);
         toast({
           title: "Database Error",
           description: "Failed to check existing requests. Please try again.",
@@ -304,11 +308,14 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
         return false;
       }
 
+      console.log("DEBUG: Existing request data:", existingRequest);
+
       if (existingRequest && existingRequest.length > 0) {
         const request = existingRequest[0];
-        console.log("User already has a request with status:", request.status);
+        console.log("DEBUG: Found existing request with status:", request.status);
         
         if (request.status === 'pending') {
+          console.log("DEBUG: Request is already pending");
           toast({
             title: "Request Already Sent",
             description: "You already have a pending request for this household.",
@@ -316,6 +323,7 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
           });
           return false;
         } else if (request.status === 'approved') {
+          console.log("DEBUG: Request was already approved");
           toast({
             title: "Request Already Approved",
             description: "Your request was already approved. You should be a member of this household.",
@@ -323,17 +331,19 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
           });
           return false;
         } else if (request.status === 'rejected') {
+          console.log("DEBUG: Updating rejected request to pending");
           // Update the existing rejected request to pending instead of creating a new one
-          const { error: updateError } = await supabase
+          const { data: updateData, error: updateError } = await supabase
             .from('household_join_requests')
             .update({ 
               status: 'pending',
               updated_at: new Date().toISOString()
             })
-            .eq('id', request.id);
+            .eq('id', request.id)
+            .select();
 
           if (updateError) {
-            console.error("Request update error:", updateError);
+            console.error("DEBUG: Request update error:", updateError);
             toast({
               title: "Failed to Send Request",
               description: "Could not update join request. Please try again.",
@@ -342,7 +352,7 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
             return false;
           }
 
-          console.log("Successfully updated rejected request to pending");
+          console.log("DEBUG: Successfully updated request to pending:", updateData);
           toast({
             title: "Request Sent Successfully!",
             description: `Your join request for "${matchingHousehold.name}" has been sent. The household owner will review your request.`,
@@ -353,7 +363,7 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
       }
 
       // Create new join request (only if no existing request found)
-      console.log("Creating new join request for household:", matchingHousehold.id, "user:", user.id);
+      console.log("DEBUG: Creating new join request");
       
       const { data: insertData, error: requestError } = await supabase
         .from('household_join_requests')
@@ -365,7 +375,7 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
         .select();
 
       if (requestError) {
-        console.error("Request insert error:", requestError);
+        console.error("DEBUG: Request insert error:", requestError);
         
         // Handle the specific duplicate key error
         if (requestError.code === '23505') {
@@ -384,7 +394,7 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
         return false;
       }
 
-      console.log("Successfully created join request:", insertData);
+      console.log("DEBUG: Successfully created join request:", insertData);
       toast({
         title: "Request Sent Successfully!",
         description: `Your join request for "${matchingHousehold.name}" has been sent. The household owner will review your request.`,
@@ -392,7 +402,7 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
 
       return true;
     } catch (error) {
-      console.error("Unexpected error requesting to join household:", error);
+      console.error("DEBUG: Unexpected error requesting to join household:", error);
       toast({
         title: "Unexpected Error",
         description: "An unexpected error occurred. Please try again later.",
@@ -550,48 +560,6 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
       toast({
         title: "Error",
         description: "Failed to create household. Please try again.",
-      });
-      return null;
-    }
-  };
-
-  const inviteToHousehold = async (email: string): Promise<string | null> => {
-    try {
-      if (!user || !currentHousehold) {
-        toast({
-          title: "Error",
-          description: "You must be logged in and have a current household to send invitations.",
-          variant: "destructive",
-        });
-        return null;
-      }
-
-      const invitationCode = Math.random().toString(36).substring(2, 8).toUpperCase();
-      
-      const { error } = await supabase
-        .from('household_invitations')
-        .insert([{
-          household_id: currentHousehold.id,
-          invited_by: user.id,
-          email: email,
-          invitation_code: invitationCode
-        }]);
-
-      if (error) {
-        throw error;
-      }
-
-      toast({
-        title: "Invitation Sent",
-        description: `Invitation sent to ${email}. Share this code: ${invitationCode}`,
-      });
-
-      return invitationCode;
-    } catch (err) {
-      console.error("Error sending invitation:", err);
-      toast({
-        title: "Error",
-        description: "Failed to send invitation. Please try again.",
       });
       return null;
     }
