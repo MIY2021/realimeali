@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Plus, ChefHat } from "lucide-react";
+import { Plus, UtensilsCrossed } from "lucide-react";
 import { Link } from "react-router-dom";
 import { RecipeList } from "@/components/recipes/RecipeList";
 import { useRecipes } from "@/contexts/RecipesContext";
@@ -25,7 +25,7 @@ export default function RecipesPage() {
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-3xl font-bold text-navy flex items-center gap-2">
-            <ChefHat className="h-8 w-8" />
+            <UtensilsCrossed className="h-8 w-8" />
             {currentHousehold ? `${currentHousehold.name} Recipes` : 'Recipes'}
           </h1>
           <p className="text-muted-foreground">
