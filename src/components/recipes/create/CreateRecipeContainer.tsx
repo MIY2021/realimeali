@@ -23,18 +23,11 @@ export function CreateRecipeContainer() {
     setActiveTab
   );
   
-  const onImportFromUrl = () => recipeProcessingHook.handleImportFromUrl(
-    recipeFormHook.setNewRecipe, 
-    recipeFormHook.newRecipe, 
-    setActiveTab,
-    false // Don't download images by default
-  );
-
   const onImportFromUrlWithImages = () => recipeProcessingHook.handleImportFromUrl(
     recipeFormHook.setNewRecipe, 
     recipeFormHook.newRecipe, 
     setActiveTab,
-    true // Download images
+    true // Always download images
   );
   
   const onProcessImage = (file: File) => recipeProcessingHook.handleProcessImage(
@@ -70,7 +63,6 @@ export function CreateRecipeContainer() {
         recipeFormHook={recipeFormHook}
         recipeProcessingHook={recipeProcessingHook}
         onProcessText={onProcessText}
-        onImportFromUrl={onImportFromUrl}
         onImportFromUrlWithImages={onImportFromUrlWithImages}
         onProcessImage={onProcessImage}
         onGenerateRecipe={onGenerateRecipe}

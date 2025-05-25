@@ -1,20 +1,18 @@
 
 import { Button } from "@/components/ui/button";
-import { Download } from "lucide-react";
+import { download } from "lucide-react";
 
 interface RecipeUrlTabProps {
   recipeUrl: string;
   setRecipeUrl: (url: string) => void;
   isProcessing: boolean;
-  onImport: () => void;
-  onImportWithImages?: () => void;
+  onImportWithImages: () => void;
 }
 
 export function RecipeUrlTab({ 
   recipeUrl, 
   setRecipeUrl, 
   isProcessing, 
-  onImport,
   onImportWithImages
 }: RecipeUrlTabProps) {
   return (
@@ -30,31 +28,17 @@ export function RecipeUrlTab({
         />
       </div>
       
-      <div className="space-y-2">
-        <Button 
-          onClick={onImport} 
-          disabled={isProcessing || !recipeUrl.trim()}
-          className="w-full"
-        >
-          {isProcessing ? "Importing..." : "Import Recipe Only"}
-        </Button>
-        
-        {onImportWithImages && (
-          <Button 
-            onClick={onImportWithImages} 
-            disabled={isProcessing || !recipeUrl.trim()}
-            variant="outline"
-            className="w-full flex items-center gap-2"
-          >
-            <Download className="h-4 w-4" />
-            {isProcessing ? "Importing..." : "Import Recipe + Download Images"}
-          </Button>
-        )}
-      </div>
+      <Button 
+        onClick={onImportWithImages} 
+        disabled={isProcessing || !recipeUrl.trim()}
+        className="w-full flex items-center gap-2"
+      >
+        <download className="h-4 w-4" />
+        {isProcessing ? "Importing..." : "Import Recipe"}
+      </Button>
 
       <div className="text-sm text-muted-foreground bg-blue-50 p-3 rounded-lg">
-        <p><strong>Import Recipe Only:</strong> Extracts recipe text and shows image previews</p>
-        <p><strong>Import + Download:</strong> Also saves images to our servers for reliable access</p>
+        <p>This will extract the recipe and download all images for selection</p>
       </div>
     </div>
   );

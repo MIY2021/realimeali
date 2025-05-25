@@ -15,7 +15,6 @@ interface CreateRecipeTabsWrapperProps {
   recipeFormHook: any;
   recipeProcessingHook: any;
   onProcessText: () => void;
-  onImportFromUrl: () => void;
   onImportFromUrlWithImages: () => void;
   onProcessImage: (file: File) => void;
   onGenerateRecipe: () => void;
@@ -29,7 +28,6 @@ export function CreateRecipeTabsWrapper({
   recipeFormHook,
   recipeProcessingHook,
   onProcessText,
-  onImportFromUrl,
   onImportFromUrlWithImages,
   onProcessImage,
   onGenerateRecipe,
@@ -57,7 +55,6 @@ export function CreateRecipeTabsWrapper({
               recipeUrl={recipeProcessingHook.recipeUrl}
               setRecipeUrl={recipeProcessingHook.setRecipeUrl}
               isProcessing={recipeProcessingHook.isProcessing}
-              onImport={onImportFromUrl}
               onImportWithImages={onImportFromUrlWithImages}
             />
             
