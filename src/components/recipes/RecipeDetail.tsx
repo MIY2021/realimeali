@@ -2,6 +2,7 @@
 import { Recipe } from "@/types";
 import { Button } from "@/components/ui/button";
 import { CalendarDays, Clock, Pencil, Share, Users, Trash2 } from "lucide-react";
+import { RecipeImage } from "@/components/ui/recipe-image";
 
 interface RecipeDetailProps {
   recipe: Recipe;
@@ -20,31 +21,15 @@ export function RecipeDetail({ recipe, onAddToMealPlan, onEdit, onDelete, isOwne
     prepTime, 
     cookTime, 
     servings, 
-    image,
     categories
   } = recipe;
-  
-  const totalTime = prepTime + cookTime;
   
   return (
     <div className="mx-auto max-w-4xl space-y-8 py-8">
       <div className="flex flex-col md:flex-row gap-8">
         <div className="md:w-1/2">
           <div className="aspect-video overflow-hidden rounded-lg">
-            {recipe.image ? (
-              <img 
-                src={recipe.image} 
-                alt={recipe.title}
-                className="h-full w-full object-cover"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src = "/placeholder.svg";
-                }}
-              />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center bg-muted">
-                <span className="text-muted-foreground">No image</span>
-              </div>
-            )}
+            <RecipeImage recipe={recipe} className="h-full w-full" iconSize="h-16 w-16" />
           </div>
         </div>
         

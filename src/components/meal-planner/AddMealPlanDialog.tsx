@@ -13,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { RecipeImage } from "@/components/ui/recipe-image";
 
 interface AddMealPlanDialogProps {
   isOpen: boolean;
@@ -139,22 +140,7 @@ export function AddMealPlanDialog({
                           type="button"
                         >
                           <div className="h-16 w-16 flex-shrink-0 rounded overflow-hidden bg-muted flex items-center justify-center relative">
-                            {recipe.image ? (
-                              <img
-                                src={recipe.image}
-                                alt={recipe.title}
-                                className="h-full w-full object-cover"
-                                onError={(e) => {
-                                  (e.currentTarget as HTMLImageElement).src = "https://images.unsplash.com/photo-1621322800607-8c38375eef04?w=400&h=300&fit=crop";
-                                }}
-                              />
-                            ) : (
-                              <img
-                                src="https://images.unsplash.com/photo-1621322800607-8c38375eef04?w=400&h=300&fit=crop"
-                                alt="Recipe placeholder"
-                                className="h-full w-full object-cover"
-                              />
-                            )}
+                            <RecipeImage recipe={recipe} className="h-full w-full" iconSize="h-6 w-6" />
                           </div>
                           <div className="flex-1 text-left">
                             <span className="block font-medium text-sm line-clamp-2">{recipe.title}</span>

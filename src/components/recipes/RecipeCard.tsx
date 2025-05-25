@@ -2,11 +2,11 @@
 import { Recipe } from "@/types";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { Clock, Users, Plus, Pencil, Share, Trash2, UtensilsCrossed } from "lucide-react";
+import { Clock, Users, Plus, Pencil, Share, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
+import { RecipeImage } from "@/components/ui/recipe-image";
 
 interface RecipeCardProps {
   recipe: Recipe;
@@ -20,9 +20,8 @@ interface RecipeCardProps {
 export function RecipeCard({ recipe, onAddToMealPlan, onEdit, onDelete, onShare, showActions = true }: RecipeCardProps) {
   const { user } = useAuth();
   const { currentHousehold } = useHousehold();
-  const { id, title, description, prepTime, cookTime, servings, image, categories } = recipe;
+  const { id, title, description, prepTime, cookTime, servings, categories } = recipe;
   const totalTime = prepTime + cookTime;
-  const [imgError, setImgError] = useState(false);
 
   // Allow editing/deleting if user is part of the same household as the recipe
   const canEdit = user && currentHousehold && recipe.householdId === currentHousehold.id && onEdit && showActions;
@@ -46,20 +45,11 @@ export function RecipeCard({ recipe, onAddToMealPlan, onEdit, onDelete, onShare,
     <Card className="overflow-hidden transition-all hover:shadow-md relative flex flex-col h-full">
       <Link to={recipeUrl}>
         <div className="aspect-video w-full overflow-hidden bg-muted relative">
-          {!imgError && image ? (
-            <img
-              src={image}
-              alt={title}
-              className="h-full w-full object-cover transition-transform hover:scale-105"
-              onError={(e) => {
-                setImgError(true);
-              }}
-            />
-          ) : (
-            <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
-              <UtensilsCrossed className="h-12 w-12 text-gray-400" />
-            </div>
-          )}
+          <RecipeImage 
+            recipe={recipe} 
+            className="h-full w-full transition-transform hover:scale-105" 
+            iconSize="h-12 w-12"
+          />
         </div>
       </Link>
       <CardHeader className="p-4 pb-2">

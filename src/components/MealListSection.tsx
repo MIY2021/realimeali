@@ -3,7 +3,7 @@ import { MealType, MealPlan, Recipe } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Plus, Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { RecipeImage } from "@/components/ui/recipe-image";
 
 interface MealListSectionProps {
   mealType: MealType;
@@ -67,13 +67,7 @@ export default function MealListSection({
               >
                 {/* Recipe thumbnail */}
                 <div className="w-12 h-12 rounded-md overflow-hidden bg-muted flex-shrink-0">
-                  {recipe?.image ? (
-                    <RecipeImage recipe={recipe} />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-muted">
-                      <span className="text-xs text-muted-foreground">No img</span>
-                    </div>
-                  )}
+                  <RecipeImage recipe={recipe} className="w-full h-full" iconSize="h-4 w-4" />
                 </div>
 
                 <div className="flex-1">
@@ -115,27 +109,5 @@ export default function MealListSection({
         </div>
       )}
     </div>
-  );
-}
-
-// Helper component for recipe images with error handling
-function RecipeImage({ recipe }: { recipe: Recipe }) {
-  const [imgError, setImgError] = useState(false);
-
-  if (imgError || !recipe.image) {
-    return (
-      <div className="w-full h-full flex items-center justify-center bg-muted">
-        <span className="text-xs text-muted-foreground">No img</span>
-      </div>
-    );
-  }
-
-  return (
-    <img
-      src={recipe.image}
-      alt={recipe.title}
-      className="w-full h-full object-cover"
-      onError={() => setImgError(true)}
-    />
   );
 }

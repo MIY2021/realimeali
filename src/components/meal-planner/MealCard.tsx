@@ -2,7 +2,7 @@
 import { Recipe } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
-import { useState } from "react";
+import { RecipeImage } from "@/components/ui/recipe-image";
 
 interface MealCardProps {
   recipe: Recipe;
@@ -10,23 +10,10 @@ interface MealCardProps {
 }
 
 export function MealCard({ recipe, onRemove }: MealCardProps) {
-  const [imgError, setImgError] = useState(false);
-
   return (
     <div className="flex items-center gap-3 p-3 border rounded-lg bg-card hover:bg-accent/50 transition-colors">
       <div className="w-12 h-12 rounded-md overflow-hidden bg-muted flex-shrink-0">
-        {!imgError && recipe.image ? (
-          <img
-            src={recipe.image}
-            alt={recipe.title}
-            className="w-full h-full object-cover"
-            onError={() => setImgError(true)}
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center bg-muted">
-            <span className="text-xs text-muted-foreground">No img</span>
-          </div>
-        )}
+        <RecipeImage recipe={recipe} className="w-full h-full" iconSize="h-4 w-4" />
       </div>
       
       <div className="flex-1 min-w-0">
