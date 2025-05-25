@@ -145,107 +145,119 @@ export default function ShoppingList() {
       if (!user || !currentHousehold || recipesLoading) return;
 
       console.log("Generating shopping lists with recipes:", recipes.length);
+      console.log("Current household shopping items:", householdShoppingItems.length);
 
       const week1Plans = getMealPlansForWeek(1);
       const week2Plans = getMealPlansForWeek(2);
+      
+      console.log("Week 1 meal plans:", week1Plans);
+      console.log("Week 2 meal plans:", week2Plans);
 
-      // Convert meal plans to shopping items for each week
-      const week1Items: ShoppingItem[] = [];
-      const week2Items: ShoppingItem[] = [];
+      // Process each week
+      const processWeek = async (weekNumber: 1 | 2, plans: any[]) => {
+        const weekKey = `week${weekNumber}`;
+        console.log(`Processing ${weekKey} with ${plans.length} plans`);
+        
+        // Get existing shopping items for this week from household context
+        const existingWeekItems = householdShoppingItems.filter(item => 
+          item.name.startsWith(weekKey) || item.category.includes(weekKey)
+        );
+        
+        console.log(`Existing ${weekKey} items:`, existingWeekItems);
 
-      [week1Plans, week2Plans].forEach((plans, weekIndex) => {
-        const targetArray = weekIndex === 0 ? week1Items : week2Items;
+        // Generate new items from meal plans
+        const ingredientMap = new Map<string, { quantity: number; recipeIds: string[] }>();
         
         plans.forEach(plan => {
           const recipe = recipes.find(r => r.id === plan.recipeId);
           if (recipe) {
+            console.log(`Processing recipe: ${recipe.title} for ${weekKey}`);
             recipe.ingredients.forEach(ingredient => {
-              const existingItem = targetArray.find(item => 
-                item.name.toLowerCase() === ingredient.toLowerCase()
-              );
-              
-              if (existingItem) {
-                existingItem.quantity += 1;
-                existingItem.recipeIds.push(recipe.id);
+              const key = ingredient.toLowerCase();
+              if (ingredientMap.has(key)) {
+                const existing = ingredientMap.get(key)!;
+                existing.quantity += 1;
+                if (!existing.recipeIds.includes(recipe.id)) {
+                  existing.recipeIds.push(recipe.id);
+                }
               } else {
-                const itemId = `week${weekIndex + 1}-${ingredient}-${recipe.id}`;
-                targetArray.push({
-                  id: itemId,
-                  name: ingredient,
+                ingredientMap.set(key, {
                   quantity: 1,
-                  unit: '',
-                  isChecked: false,
-                  category: categorizeIngredient(ingredient),
-                  isCustom: false,
                   recipeIds: [recipe.id]
                 });
               }
             });
           }
         });
-      });
 
-      // Save to database and merge with existing household shopping items
-      const mergedWeek1 = await mergeWithHouseholdItems(week1Items, 1);
-      const mergedWeek2 = await mergeWithHouseholdItems(week2Items, 2);
+        console.log(`Generated ${ingredientMap.size} unique ingredients for ${weekKey}`);
+
+        // Convert to shopping items and merge with existing
+        const generatedItems: ShoppingItem[] = [];
+        
+        for (const [ingredient, data] of ingredientMap.entries()) {
+          // Check if this item already exists in the database
+          const existingItem = existingWeekItems.find(item => 
+            item.name.toLowerCase().includes(ingredient.toLowerCase())
+          );
+
+          if (existingItem) {
+            // Use existing item (preserves checked state)
+            generatedItems.push({
+              id: existingItem.id,
+              name: existingItem.name,
+              quantity: existingItem.quantity || data.quantity,
+              unit: existingItem.unit || '',
+              isChecked: existingItem.is_checked,
+              category: existingItem.category,
+              isCustom: existingItem.is_custom,
+              recipeIds: existingItem.recipe_ids || data.recipeIds
+            });
+          } else {
+            // Create new item and add to database
+            const itemName = `${weekKey}-${ingredient}`;
+            const newItemData = {
+              name: itemName,
+              quantity: data.quantity,
+              unit: '',
+              category: categorizeIngredient(ingredient),
+              is_checked: false,
+              is_custom: false,
+              recipe_ids: data.recipeIds
+            };
+
+            try {
+              await addShoppingItem(newItemData);
+              generatedItems.push({
+                id: `temp-${Date.now()}-${ingredient}`, // Temporary ID until we get the real one
+                name: itemName,
+                quantity: data.quantity,
+                unit: '',
+                isChecked: false,
+                category: categorizeIngredient(ingredient),
+                isCustom: false,
+                recipeIds: data.recipeIds
+              });
+            } catch (error) {
+              console.error('Error adding shopping item:', error);
+            }
+          }
+        }
+
+        return generatedItems;
+      };
+
+      const week1Items = await processWeek(1, week1Plans);
+      const week2Items = await processWeek(2, week2Plans);
 
       setWeekShoppingItems({
-        1: mergedWeek1,
-        2: mergedWeek2
+        1: week1Items,
+        2: week2Items
       });
     };
 
     generateAndSaveWeekLists();
-  }, [getMealPlansForWeek, recipes, user, currentHousehold, recipesLoading, householdShoppingItems]);
-
-  const mergeWithHouseholdItems = async (generatedItems: ShoppingItem[], week: number): Promise<ShoppingItem[]> => {
-    const weekKey = `week${week}`;
-    const existingWeekItems = householdShoppingItems.filter(item => 
-      item.name.includes(weekKey) || item.category.includes(weekKey)
-    );
-
-    const mergedItems: ShoppingItem[] = [];
-
-    for (const generatedItem of generatedItems) {
-      const existingItem = existingWeekItems.find(existing => 
-        existing.name.toLowerCase() === generatedItem.name.toLowerCase() &&
-        existing.category === generatedItem.category
-      );
-
-      if (existingItem) {
-        // Use existing item from database (preserves checked state)
-        mergedItems.push({
-          id: existingItem.id,
-          name: existingItem.name,
-          quantity: existingItem.quantity || 1,
-          unit: existingItem.unit || '',
-          isChecked: existingItem.is_checked,
-          category: existingItem.category,
-          isCustom: existingItem.is_custom,
-          recipeIds: existingItem.recipe_ids
-        });
-      } else {
-        // Add new item to database
-        try {
-          await addShoppingItem({
-            name: `${weekKey}-${generatedItem.name}`,
-            quantity: generatedItem.quantity,
-            unit: generatedItem.unit,
-            category: generatedItem.category,
-            is_checked: false,
-            is_custom: false,
-            recipe_ids: generatedItem.recipeIds
-          });
-          mergedItems.push(generatedItem);
-        } catch (error) {
-          console.error('Error adding shopping item:', error);
-          mergedItems.push(generatedItem);
-        }
-      }
-    }
-
-    return mergedItems;
-  };
+  }, [getMealPlansForWeek, recipes, user, currentHousehold, recipesLoading, householdShoppingItems, addShoppingItem]);
 
   const currentWeekItems = weekShoppingItems[selectedWeek];
 
