@@ -28,7 +28,7 @@ export function RecipeCard({ recipe, onAddToMealPlan, onEdit, onDelete, onShare,
   const canDelete = user && currentHousehold && recipe.householdId === currentHousehold.id && onDelete && showActions;
   const canShare = onShare && showActions;
 
-  // Create URL-friendly slug from recipe title
+  // Create URL-friendly slug from recipe title - use new format without ID
   const createSlug = (title: string) => {
     return title
       .toLowerCase()
@@ -39,7 +39,7 @@ export function RecipeCard({ recipe, onAddToMealPlan, onEdit, onDelete, onShare,
   };
 
   const recipeSlug = createSlug(title);
-  const recipeUrl = `/recipes/${id}/${recipeSlug}`;
+  const recipeUrl = `/recipes/${recipeSlug}`;
 
   return (
     <Card className="overflow-hidden transition-all hover:shadow-md relative flex flex-col h-full">

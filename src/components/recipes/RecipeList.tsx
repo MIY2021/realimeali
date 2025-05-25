@@ -1,4 +1,3 @@
-
 import { Recipe, RecipeCategory } from "@/types";
 import { RecipeCard } from "./RecipeCard";
 import { Input } from "@/components/ui/input";
