@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { MealPlan, MealType, RecipeCategory } from "@/types";
 import { Button } from "@/components/ui/button";
@@ -11,6 +10,7 @@ import { useRecipes } from "@/contexts/RecipesContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { useMealPlan } from "@/contexts/MealPlanContext";
+import { HouseholdMembersDisplay } from "@/components/household/HouseholdMembersDisplay";
 
 export default function MealPlanner() {
   const { user } = useAuth();
@@ -273,6 +273,9 @@ export default function MealPlanner() {
             {user ? "Plan and organize your weekly meals with your household" : "Login to create meal plans"}
           </p>
         </div>
+        {user && currentHousehold && (
+          <HouseholdMembersDisplay />
+        )}
       </div>
       
       {!user ? (

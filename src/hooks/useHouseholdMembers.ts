@@ -20,11 +20,18 @@ export const useHouseholdMembers = (householdId: string | null) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [members, setMembers] = useState<HouseholdMember[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const fetchMembers = async () => {
-    if (!householdId) return;
+    if (!householdId) {
+      setMembers([]);
+      return;
+    }
 
     try {
+      setIsLoading(true);
+      console.log("Fetching members for household:", householdId);
+      
       const { data, error } = await supabase
         .from('household_members')
         .select(`
@@ -32,7 +39,7 @@ export const useHouseholdMembers = (householdId: string | null) => {
           user_id,
           role,
           joined_at,
-          profiles!inner(
+          profiles(
             full_name,
             email,
             avatar_url
@@ -40,9 +47,14 @@ export const useHouseholdMembers = (householdId: string | null) => {
         `)
         .eq('household_id', householdId);
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching members:", error);
+        throw error;
+      }
 
-      // Transform the data to match our interface
+      console.log("Raw member data:", data);
+
+      // Transform the data to match our interface with better fallbacks
       const membersWithProfiles: HouseholdMember[] = (data || []).map((member: any) => ({
         id: member.id,
         user_id: member.user_id,
@@ -50,11 +62,12 @@ export const useHouseholdMembers = (householdId: string | null) => {
         joined_at: member.joined_at,
         profile: {
           full_name: member.profiles?.full_name || 'Unknown User',
-          email: member.profiles?.email || 'No email',
+          email: member.profiles?.email || 'No email available',
           avatar_url: member.profiles?.avatar_url
         }
       }));
 
+      console.log("Transformed members:", membersWithProfiles);
       setMembers(membersWithProfiles);
     } catch (error) {
       console.error("Error fetching members:", error);
@@ -63,6 +76,8 @@ export const useHouseholdMembers = (householdId: string | null) => {
         description: "Failed to fetch household members.",
         variant: "destructive",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -104,6 +119,7 @@ export const useHouseholdMembers = (householdId: string | null) => {
   return {
     members,
     fetchMembers,
-    removeMember
+    removeMember,
+    isLoading
   };
 };
