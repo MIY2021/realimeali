@@ -54,6 +54,7 @@ export function CreateRecipeDialog({ open, onOpenChange, onSave }: CreateRecipeD
   const [recipeText, setRecipeText] = useState("");
   const [recipeRequest, setRecipeRequest] = useState("");
   const [recipeUrl, setRecipeUrl] = useState("");
+  const [uploadedImageFile, setUploadedImageFile] = useState<File | null>(null);
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
 
   const resetForm = () => {
@@ -77,6 +78,7 @@ export function CreateRecipeDialog({ open, onOpenChange, onSave }: CreateRecipeD
     setRecipeText("");
     setRecipeRequest("");
     setRecipeUrl("");
+    setUploadedImageFile(null);
     setIsGeneratingImage(false);
   };
 
@@ -287,7 +289,7 @@ export function CreateRecipeDialog({ open, onOpenChange, onSave }: CreateRecipeD
               </TabsContent>
 
               <TabsContent value="url" className="space-y-4 h-full flex flex-col m-0">
-                <RecipeUrlTab websiteUrl={recipeUrl} setWebsiteUrl={setWebsiteUrl} />
+                <RecipeUrlTab websiteUrl={recipeUrl} setWebsiteUrl={setRecipeUrl} />
                 <div className={`
                   flex gap-2 mt-auto pt-4 border-t bg-white sticky bottom-0
                   ${isMobile ? 'flex-col' : 'flex-row justify-end'}
