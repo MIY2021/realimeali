@@ -29,14 +29,15 @@ export function RecipeImage({ recipe, alt, className, iconSize = "h-8 w-8" }: Re
     );
   }
 
-  // If recipe image failed, try placeholder.svg
+  // If recipe image failed or doesn't exist, try placeholder.svg
   if (!placeholderError) {
     return (
       <img
         src="/placeholder.svg"
         alt={imageAlt}
-        className={cn("object-cover", className)}
+        className={cn("object-cover bg-muted", className)}
         onError={() => setPlaceholderError(true)}
+        onLoad={() => console.log("Placeholder image loaded successfully")}
       />
     );
   }
