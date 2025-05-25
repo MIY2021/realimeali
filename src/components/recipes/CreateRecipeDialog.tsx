@@ -16,6 +16,7 @@ import { RecipeUrlTab } from "./dialog/RecipeUrlTab";
 import { RecipeUploadTab } from "./dialog/RecipeUploadTab";
 import { RecipeManualTab } from "./dialog/RecipeManualTab";
 import { supabase } from "@/integrations/supabase/client";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface CreateRecipeDialogProps {
   open: boolean;
@@ -32,6 +33,7 @@ const AVAILABLE_CATEGORIES: RecipeCategory[] = [
 
 export function CreateRecipeDialog({ open, onOpenChange, onSave }: CreateRecipeDialogProps) {
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   const [newRecipe, setNewRecipe] = useState<Omit<Recipe, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>>({
     title: "",
     description: "",
@@ -233,158 +235,191 @@ export function CreateRecipeDialog({ open, onOpenChange, onSave }: CreateRecipeD
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-4xl h-[100vh] md:h-[85vh] overflow-hidden flex flex-col w-[100vw] md:w-full">
-        <DialogHeader className="flex-shrink-0">
+      <DialogContent className={`
+        ${isMobile 
+          ? 'w-[100vw] h-[100vh] max-w-none rounded-none p-4' 
+          : 'sm:max-w-4xl h-[85vh] w-full'
+        } 
+        overflow-hidden flex flex-col
+      `}>
+        <DialogHeader className="flex-shrink-0 pb-4">
           <DialogTitle className="text-xl font-bold">✨ Add New Recipe ✨</DialogTitle>
-          <p className="text-muted-foreground">
-            Add recipes to your recipe collection from a variety of sources and methods
+          <p className="text-muted-foreground text-sm">
+            Add recipes to your collection from a variety of sources
           </p>
         </DialogHeader>
 
         <div className="flex-1 overflow-hidden">
           <Tabs defaultValue="text" className="w-full h-full flex flex-col">
-            <TabsList className="grid w-full grid-cols-5 flex-shrink-0 h-auto">
-              <TabsTrigger value="text" className="text-xs p-1 md:text-sm md:p-3">📝 Recipe Text</TabsTrigger>
-              <TabsTrigger value="url" className="text-xs p-1 md:text-sm md:p-3">🔗 From URL</TabsTrigger>
-              <TabsTrigger value="image" className="text-xs p-1 md:text-sm md:p-3">📷 From Image</TabsTrigger>
-              <TabsTrigger value="generate" className="text-xs p-1 md:text-sm md:p-3">🤖 AI Generate</TabsTrigger>
-              <TabsTrigger value="manual" className="text-xs p-1 md:text-sm md:p-3">⭐ Manual Entry</TabsTrigger>
+            <TabsList className={`
+              grid w-full grid-cols-5 flex-shrink-0 mb-4
+              ${isMobile ? 'h-auto text-xs' : 'h-auto text-sm'}
+            `}>
+              <TabsTrigger value="text" className={isMobile ? "px-1 py-2 text-xs" : "px-3 py-2"}>
+                {isMobile ? "📝 Text" : "📝 Recipe Text"}
+              </TabsTrigger>
+              <TabsTrigger value="url" className={isMobile ? "px-1 py-2 text-xs" : "px-3 py-2"}>
+                {isMobile ? "🔗 URL" : "🔗 From URL"}
+              </TabsTrigger>
+              <TabsTrigger value="image" className={isMobile ? "px-1 py-2 text-xs" : "px-3 py-2"}>
+                {isMobile ? "📷 Photo" : "📷 From Image"}
+              </TabsTrigger>
+              <TabsTrigger value="generate" className={isMobile ? "px-1 py-2 text-xs" : "px-3 py-2"}>
+                {isMobile ? "🤖 AI" : "🤖 AI Generate"}
+              </TabsTrigger>
+              <TabsTrigger value="manual" className={isMobile ? "px-1 py-2 text-xs" : "px-3 py-2"}>
+                {isMobile ? "⭐ Manual" : "⭐ Manual Entry"}
+              </TabsTrigger>
             </TabsList>
 
-            <div className="flex-1 overflow-y-auto mt-4">
-              <TabsContent value="text" className="space-y-6 h-full flex flex-col">
+            <div className="flex-1 overflow-y-auto">
+              <TabsContent value="text" className="space-y-4 h-full flex flex-col m-0">
                 <RecipeTextTab recipeText={recipeText} setRecipeText={setRecipeText} />
-                <div className="flex justify-end space-x-2 mt-auto pt-4 border-t bg-white">
-                  <Button variant="outline" onClick={handleCancel}>
+                <div className={`
+                  flex gap-2 mt-auto pt-4 border-t bg-white sticky bottom-0
+                  ${isMobile ? 'flex-col' : 'flex-row justify-end'}
+                `}>
+                  <Button variant="outline" onClick={handleCancel} className={isMobile ? "w-full" : ""}>
                     Cancel
                   </Button>
-                  <Button>Parse Recipe</Button>
+                  <Button className={isMobile ? "w-full" : ""}>Import Recipe</Button>
                 </div>
               </TabsContent>
 
-              <TabsContent value="url" className="space-y-4 h-full flex flex-col">
-                <RecipeUrlTab websiteUrl={recipeUrl} setWebsiteUrl={setRecipeUrl} />
-                <div className="flex justify-end space-x-2 mt-auto pt-4 border-t bg-white">
-                  <Button variant="outline" onClick={handleCancel}>
+              <TabsContent value="url" className="space-y-4 h-full flex flex-col m-0">
+                <RecipeUrlTab websiteUrl={recipeUrl} setWebsiteUrl={setWebsiteUrl} />
+                <div className={`
+                  flex gap-2 mt-auto pt-4 border-t bg-white sticky bottom-0
+                  ${isMobile ? 'flex-col' : 'flex-row justify-end'}
+                `}>
+                  <Button variant="outline" onClick={handleCancel} className={isMobile ? "w-full" : ""}>
                     Cancel
                   </Button>
-                  <Button>Import Recipe</Button>
+                  <Button className={isMobile ? "w-full" : ""}>Import Recipe</Button>
                 </div>
               </TabsContent>
 
-              <TabsContent value="image" className="space-y-4 h-full flex flex-col">
+              <TabsContent value="image" className="space-y-4 h-full flex flex-col m-0">
                 <RecipeUploadTab uploadedImageFile={null} setUploadedImageFile={() => {}} />
-                <div className="flex justify-end space-x-2 mt-auto pt-4 border-t bg-white">
-                  <Button variant="outline" onClick={handleCancel}>
+                <div className={`
+                  flex gap-2 mt-auto pt-4 border-t bg-white sticky bottom-0
+                  ${isMobile ? 'flex-col' : 'flex-row justify-end'}
+                `}>
+                  <Button variant="outline" onClick={handleCancel} className={isMobile ? "w-full" : ""}>
                     Cancel
                   </Button>
-                  <Button>Extract Recipe</Button>
+                  <Button className={isMobile ? "w-full" : ""}>Import Recipe</Button>
                 </div>
               </TabsContent>
 
-              <TabsContent value="generate" className="space-y-4 h-full flex flex-col">
+              <TabsContent value="generate" className="space-y-4 h-full flex flex-col m-0">
                 <RecipeGenerateTab 
                   recipeRequest={recipeRequest} 
                   setRecipeRequest={setRecipeRequest} 
                 />
-                <div className="flex justify-end space-x-2 mt-auto pt-4 border-t bg-white">
-                  <Button variant="outline" onClick={handleCancel}>
+                <div className={`
+                  flex gap-2 mt-auto pt-4 border-t bg-white sticky bottom-0
+                  ${isMobile ? 'flex-col' : 'flex-row justify-end'}
+                `}>
+                  <Button variant="outline" onClick={handleCancel} className={isMobile ? "w-full" : ""}>
                     Cancel
                   </Button>
-                  <Button>Generate Recipe</Button>
+                  <Button className={isMobile ? "w-full" : ""}>Generate Recipe</Button>
                 </div>
               </TabsContent>
 
-              <TabsContent value="manual" className="space-y-6 h-full pb-20">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <TabsContent value="manual" className="space-y-6 h-full pb-20 m-0">
+                <div className={`grid gap-6 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'}`}>
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium mb-1">Title</label>
+                      <label className="block text-sm font-medium mb-2">Recipe Title</label>
                       <input
                         type="text"
                         value={newRecipe.title}
                         onChange={(e) => setNewRecipe({ ...newRecipe, title: e.target.value })}
-                        className="w-full p-2 border rounded"
+                        className={`w-full p-3 border rounded-lg ${isMobile ? 'text-base' : 'text-sm'}`}
+                        placeholder="What's this delicious dish called?"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium mb-1">Description</label>
+                      <label className="block text-sm font-medium mb-2">Description</label>
                       <textarea
                         value={newRecipe.description}
                         onChange={(e) => setNewRecipe({ ...newRecipe, description: e.target.value })}
-                        className="w-full p-2 border rounded"
+                        className={`w-full p-3 border rounded-lg ${isMobile ? 'text-base' : 'text-sm'}`}
                         rows={3}
+                        placeholder="Tell us about this recipe..."
                       />
                     </div>
 
                     <div className="grid grid-cols-3 gap-3">
                       <div>
-                        <label className="block text-sm font-medium mb-1">Prep Time (min)</label>
+                        <label className="block text-sm font-medium mb-2">Prep (min)</label>
                         <input
                           type="number"
                           value={newRecipe.prepTime}
                           onChange={(e) => setNewRecipe({ ...newRecipe, prepTime: Number(e.target.value) })}
-                          className="w-full p-2 border rounded"
+                          className={`w-full p-3 border rounded-lg ${isMobile ? 'text-base' : 'text-sm'}`}
                           min={0}
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium mb-1">Cook Time (min)</label>
+                        <label className="block text-sm font-medium mb-2">Cook (min)</label>
                         <input
                           type="number"
                           value={newRecipe.cookTime}
                           onChange={(e) => setNewRecipe({ ...newRecipe, cookTime: Number(e.target.value) })}
-                          className="w-full p-2 border rounded"
+                          className={`w-full p-3 border rounded-lg ${isMobile ? 'text-base' : 'text-sm'}`}
                           min={0}
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium mb-1">Servings</label>
+                        <label className="block text-sm font-medium mb-2">Serves</label>
                         <input
                           type="number"
                           value={newRecipe.servings}
                           onChange={(e) => setNewRecipe({ ...newRecipe, servings: Number(e.target.value) })}
-                          className="w-full p-2 border rounded"
+                          className={`w-full p-3 border rounded-lg ${isMobile ? 'text-base' : 'text-sm'}`}
                           min={1}
                         />
                       </div>
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium mb-1">Recipe Image</label>
-                      <div className="space-y-2">
+                      <label className="block text-sm font-medium mb-2">Recipe Photo</label>
+                      <div className="space-y-3">
                         <input
                           type="file"
                           accept="image/*"
                           onChange={handleImageChange}
-                          className="w-full p-2 border rounded"
+                          className={`w-full p-3 border rounded-lg ${isMobile ? 'text-base' : 'text-sm'}`}
                         />
                         <Button 
                           type="button"
                           variant="outline" 
                           onClick={handleGenerateImage}
                           disabled={isGeneratingImage || !newRecipe.title.trim()}
-                          className="w-full"
+                          className={`w-full ${isMobile ? 'h-12' : ''}`}
                         >
                           <Camera className="h-4 w-4 mr-2" />
-                          {isGeneratingImage ? "Generating..." : "Generate AI Image"}
+                          {isGeneratingImage ? "Creating image..." : "Generate AI Photo"}
                         </Button>
                         {imagePreview && (
-                          <img src={imagePreview} alt="Recipe preview" className="w-full h-32 object-cover rounded border" />
+                          <img src={imagePreview} alt="Recipe preview" className="w-full h-32 object-cover rounded-lg border" />
                         )}
                       </div>
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium mb-1">Categories</label>
-                      <div className="flex flex-wrap gap-2 mb-2">
+                      <label className="block text-sm font-medium mb-2">Categories</label>
+                      <div className="flex flex-wrap gap-2 mb-3">
                         {newRecipe.categories.map((category) => (
                           <div
                             key={category}
-                            className="inline-flex items-center gap-1 bg-sage/20 text-sage rounded-full px-2 py-1"
+                            className="inline-flex items-center gap-1 bg-sage/20 text-sage rounded-full px-3 py-1"
                           >
-                            <span className="text-xs">{category}</span>
+                            <span className="text-sm">{category}</span>
                             <button
                               type="button"
                               onClick={() => handleRemoveCategory(category)}
@@ -399,9 +434,9 @@ export function CreateRecipeDialog({ open, onOpenChange, onSave }: CreateRecipeD
                         <select
                           value={newCategory}
                           onChange={(e) => setNewCategory(e.target.value)}
-                          className="flex-1 p-2 border rounded"
+                          className={`flex-1 p-3 border rounded-lg ${isMobile ? 'text-base' : 'text-sm'}`}
                         >
-                          <option value="">Select a category</option>
+                          <option value="">Choose a category</option>
                           {AVAILABLE_CATEGORIES.filter(
                             (cat) => !newRecipe.categories.includes(cat)
                           ).map((cat) => (
@@ -410,7 +445,7 @@ export function CreateRecipeDialog({ open, onOpenChange, onSave }: CreateRecipeD
                             </option>
                           ))}
                         </select>
-                        <Button onClick={handleAddCategory} size="sm">
+                        <Button onClick={handleAddCategory} size="sm" className={isMobile ? 'px-4' : ''}>
                           <Plus className="h-4 w-4" />
                         </Button>
                       </div>
@@ -419,16 +454,16 @@ export function CreateRecipeDialog({ open, onOpenChange, onSave }: CreateRecipeD
 
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium mb-1">Ingredients</label>
-                      <ul className="space-y-2 mb-2 max-h-32 overflow-y-auto">
+                      <label className="block text-sm font-medium mb-2">Ingredients</label>
+                      <ul className="space-y-2 mb-3 max-h-32 overflow-y-auto">
                         {newRecipe.ingredients.map((ingredient, index) => (
-                          <li key={index} className="flex items-center justify-between p-2 border rounded">
-                            <span className="text-sm">{ingredient}</span>
+                          <li key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                            <span className="text-sm flex-1">{ingredient}</span>
                             <Button
                               variant="ghost"
                               size="icon"
                               onClick={() => handleRemoveIngredient(index)}
-                              className="text-red-500 h-6 w-6"
+                              className="text-red-500 h-8 w-8 ml-2"
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
@@ -440,8 +475,8 @@ export function CreateRecipeDialog({ open, onOpenChange, onSave }: CreateRecipeD
                           type="text"
                           value={newIngredient}
                           onChange={(e) => setNewIngredient(e.target.value)}
-                          placeholder="Add ingredient"
-                          className="flex-1 p-2 border rounded"
+                          placeholder="Add an ingredient..."
+                          className={`flex-1 p-3 border rounded-lg ${isMobile ? 'text-base' : 'text-sm'}`}
                           onKeyDown={(e) => {
                             if (e.key === 'Enter') {
                               e.preventDefault();
@@ -449,17 +484,17 @@ export function CreateRecipeDialog({ open, onOpenChange, onSave }: CreateRecipeD
                             }
                           }}
                         />
-                        <Button onClick={handleAddIngredient} size="sm">
+                        <Button onClick={handleAddIngredient} size="sm" className={isMobile ? 'px-4' : ''}>
                           <Plus className="h-4 w-4" />
                         </Button>
                       </div>
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium mb-1">Instructions</label>
-                      <ol className="space-y-2 mb-2 max-h-32 overflow-y-auto">
+                      <label className="block text-sm font-medium mb-2">Cooking Steps</label>
+                      <ol className="space-y-2 mb-3 max-h-32 overflow-y-auto">
                         {newRecipe.instructions.map((instruction, index) => (
-                          <li key={index} className="flex items-start gap-2 p-2 border rounded">
+                          <li key={index} className="flex items-start gap-3 p-3 border rounded-lg">
                             <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-sage text-white text-sm font-medium">
                               {index + 1}
                             </span>
@@ -468,7 +503,7 @@ export function CreateRecipeDialog({ open, onOpenChange, onSave }: CreateRecipeD
                               variant="ghost"
                               size="icon"
                               onClick={() => handleRemoveInstruction(index)}
-                              className="text-red-500 h-6 w-6"
+                              className="text-red-500 h-8 w-8"
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
@@ -479,8 +514,8 @@ export function CreateRecipeDialog({ open, onOpenChange, onSave }: CreateRecipeD
                         <textarea
                           value={newInstruction}
                           onChange={(e) => setNewInstruction(e.target.value)}
-                          placeholder="Add instruction"
-                          className="flex-1 p-2 border rounded"
+                          placeholder="Add a cooking step..."
+                          className={`flex-1 p-3 border rounded-lg ${isMobile ? 'text-base' : 'text-sm'}`}
                           rows={2}
                           onKeyDown={(e) => {
                             if (e.key === 'Enter' && e.ctrlKey) {
@@ -493,16 +528,23 @@ export function CreateRecipeDialog({ open, onOpenChange, onSave }: CreateRecipeD
                           <Plus className="h-4 w-4" />
                         </Button>
                       </div>
-                      <p className="text-xs text-muted-foreground mt-1">Press Ctrl+Enter to add instruction</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {isMobile ? "Tap + to add step" : "Press Ctrl+Enter to add step"}
+                      </p>
                     </div>
                   </div>
                 </div>
 
-                <div className="flex justify-end space-x-2 pt-4 border-t sticky bottom-0 bg-white">
-                  <Button variant="outline" onClick={handleCancel}>
+                <div className={`
+                  flex gap-3 pt-4 border-t sticky bottom-0 bg-white
+                  ${isMobile ? 'flex-col' : 'flex-row justify-end'}
+                `}>
+                  <Button variant="outline" onClick={handleCancel} className={isMobile ? "w-full h-12" : ""}>
                     Cancel
                   </Button>
-                  <Button onClick={handleSave}>Create Recipe</Button>
+                  <Button onClick={handleSave} className={isMobile ? "w-full h-12" : ""}>
+                    Create Recipe
+                  </Button>
                 </div>
               </TabsContent>
             </div>

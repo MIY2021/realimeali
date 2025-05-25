@@ -8,17 +8,17 @@ interface RecipeTextTabProps {
 
 export function RecipeTextTab({ recipeText, setRecipeText }: RecipeTextTabProps) {
   return (
-    <div className="space-y-2">
-      <div className="text-sm text-muted-foreground bg-blue-50 p-3 rounded-md mb-3">
-        <span>I'll automatically extract the title, ingredients, cooking steps, and even suggest helpful categories!</span>
+    <div className="space-y-3">
+      <div className="text-sm text-muted-foreground bg-blue-50 p-4 rounded-lg mb-4">
+        <span>✨ I'll automatically organize the title, ingredients, cooking steps, and suggest helpful categories!</span>
       </div>
-      <Label htmlFor="recipe-text">Recipe Text</Label>
+      <Label htmlFor="recipe-text" className="text-base font-medium">Recipe Text</Label>
       <textarea
         id="recipe-text"
         value={recipeText}
         onChange={(e) => setRecipeText(e.target.value)}
-        placeholder="Paste any recipe here! From a website, cookbook, handwritten note, or even that crumpled paper from grandma. I'll organise it beautifully! ✨"
-        className="w-full h-32 p-3 border rounded-md resize-none"
+        placeholder="Paste any recipe here! From a website, cookbook, handwritten note, or even that crumpled paper from grandma. I'll organize it beautifully! ✨"
+        className="w-full h-40 p-4 border rounded-lg resize-none text-base leading-relaxed"
       />
     </div>
   );
