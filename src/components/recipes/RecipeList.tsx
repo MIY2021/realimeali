@@ -10,6 +10,13 @@ import { EditRecipeDialog } from "./EditRecipeDialog";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface RecipeListProps {
   recipes: Recipe[];
@@ -64,11 +71,17 @@ export function RecipeList({
     if (sortType === "prep-desc") {
       return b.prepTime - a.prepTime;
     }
+    if (sortType === "date-newest") {
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    }
+    if (sortType === "date-oldest") {
+      return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+    }
     return 0;
   });
 
   const handleLoadMore = () => {
-    setDisplayCount(prev => prev + 12);
+    setDisplayCount(prev => prev + 8);
   };
 
   const handleAddToMealPlan = (recipe: Recipe) => {
@@ -190,6 +203,21 @@ export function RecipeList({
           </select>
           <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 pointer-events-none text-muted-foreground" />
         </div>
+        <div className="w-full sm:w-48">
+          <Select value={sortType} onValueChange={setSortType}>
+            <SelectTrigger>
+              <SelectValue placeholder="Sort by" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="title-asc">Title A-Z</SelectItem>
+              <SelectItem value="title-desc">Title Z-A</SelectItem>
+              <SelectItem value="prep-asc">Prep Time (Low to High)</SelectItem>
+              <SelectItem value="prep-desc">Prep Time (High to Low)</SelectItem>
+              <SelectItem value="date-newest">Date Added (Newest)</SelectItem>
+              <SelectItem value="date-oldest">Date Added (Oldest)</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
       
       {sortedRecipes.length === 0 ? (
@@ -212,13 +240,16 @@ export function RecipeList({
             ))}
           </div>
           
-          {hasMoreRecipes && (
-            <div className="flex justify-center mt-6">
+          <div className="flex flex-col items-center gap-4 mt-6">
+            {hasMoreRecipes && (
               <Button onClick={handleLoadMore} variant="outline">
                 Load More Recipes
               </Button>
-            </div>
-          )}
+            )}
+            <p className="text-sm text-muted-foreground">
+              Showing {visibleRecipes.length} of {sortedRecipes.length} recipes
+            </p>
+          </div>
         </>
       )}
 

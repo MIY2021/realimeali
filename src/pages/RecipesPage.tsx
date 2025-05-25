@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, ChefHat } from "lucide-react";
 import { Link } from "react-router-dom";
 import { RecipeList } from "@/components/recipes/RecipeList";
 import { useRecipes } from "@/contexts/RecipesContext";
@@ -24,7 +24,8 @@ export default function RecipesPage() {
     <div className="container max-w-7xl py-8">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-navy">
+          <h1 className="text-3xl font-bold text-navy flex items-center gap-2">
+            <ChefHat className="h-8 w-8" />
             {currentHousehold ? `${currentHousehold.name} Recipes` : 'Recipes'}
           </h1>
           <p className="text-muted-foreground">
@@ -35,7 +36,7 @@ export default function RecipesPage() {
           <Button asChild className="bg-terracotta hover:bg-terracotta/90">
             <Link to="/recipes/new">
               <Plus className="h-4 w-4 mr-2" />
-              Create Recipe
+              Add New Recipe
             </Link>
           </Button>
         )}
