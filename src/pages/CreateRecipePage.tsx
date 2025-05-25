@@ -1,11 +1,11 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Recipe, RecipeCategory } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Plus, Trash2, X, Camera } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, X, Camera, Upload, Globe, Sparkles, PenTool } from "lucide-react";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
@@ -27,6 +27,7 @@ export default function CreateRecipePage() {
   const { currentHousehold } = useHousehold();
   const isMobile = useIsMobile();
 
+  const [activeTab, setActiveTab] = useState("text");
   const [newRecipe, setNewRecipe] = useState<Omit<Recipe, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>>({
     title: "",
     description: "",
@@ -51,6 +52,7 @@ export default function CreateRecipePage() {
   const [recipeText, setRecipeText] = useState("");
   const [recipeUrl, setRecipeUrl] = useState("");
   const [aiPrompt, setAiPrompt] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const handleSave = async () => {
     if (!user || !currentHousehold) {
@@ -98,6 +100,109 @@ export default function CreateRecipePage() {
 
   const handleCancel = () => {
     navigate("/recipes");
+  };
+
+  const handleProcessText = async () => {
+    if (!recipeText.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter some recipe text first",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsProcessing(true);
+    try {
+      // TODO: Implement recipe text parsing
+      toast({
+        title: "Coming Soon",
+        description: "Recipe text processing will be implemented soon!",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to process recipe text",
+        variant: "destructive",
+      });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleImportFromUrl = async () => {
+    if (!recipeUrl.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter a website URL first",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsProcessing(true);
+    try {
+      // TODO: Implement URL import
+      toast({
+        title: "Coming Soon",
+        description: "Website import will be implemented soon!",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to import from website",
+        variant: "destructive",
+      });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleProcessImage = async (file: File) => {
+    setIsProcessing(true);
+    try {
+      // TODO: Implement image processing
+      toast({
+        title: "Coming Soon",
+        description: "Recipe image extraction will be implemented soon!",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to extract recipe from image",
+        variant: "destructive",
+      });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleGenerateRecipe = async () => {
+    if (!aiPrompt.trim()) {
+      toast({
+        title: "Error",
+        description: "Please describe what kind of recipe you want",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsProcessing(true);
+    try {
+      // TODO: Implement AI recipe generation
+      toast({
+        title: "Coming Soon",
+        description: "AI recipe generation will be implemented soon!",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to generate recipe",
+        variant: "destructive",
+      });
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const handleAddCategory = () => {
@@ -215,6 +320,14 @@ export default function CreateRecipePage() {
     }
   };
 
+  const tabOptions = [
+    { value: "text", label: "Recipe Text", icon: PenTool },
+    { value: "url", label: "From Website", icon: Globe },
+    { value: "image", label: "From Photo", icon: Upload },
+    { value: "generate", label: "AI Generate", icon: Sparkles },
+    { value: "manual", label: "Manual Entry", icon: Camera },
+  ];
+
   return (
     <div className="min-h-screen bg-cream">
       <div className="container max-w-4xl py-6">
@@ -232,50 +345,63 @@ export default function CreateRecipePage() {
 
         {/* Main Content */}
         <div className="bg-white rounded-lg shadow-sm border p-6">
-          <Tabs defaultValue="manual" className="w-full">
-            <TabsList className={`grid w-full ${isMobile ? 'grid-cols-2 h-auto' : 'grid-cols-5'} mb-6`}>
-              <TabsTrigger value="text" className={isMobile ? "p-3 text-sm" : "p-2"}>
-                {isMobile ? "📝 Text" : "📝 Recipe Text"}
-              </TabsTrigger>
-              <TabsTrigger value="url" className={isMobile ? "p-3 text-sm" : "p-2"}>
-                {isMobile ? "🔗 URL" : "🔗 From URL"}
-              </TabsTrigger>
-              {isMobile && (
-                <>
-                  <TabsTrigger value="image" className="p-3 text-sm">
-                    📷 Photo
-                  </TabsTrigger>
-                  <TabsTrigger value="generate" className="p-3 text-sm">
-                    🤖 AI
-                  </TabsTrigger>
-                </>
-              )}
-              {!isMobile && (
-                <>
-                  <TabsTrigger value="image" className="p-2">
-                    📷 From Image
-                  </TabsTrigger>
-                  <TabsTrigger value="generate" className="p-2">
-                    🤖 AI Generate
-                  </TabsTrigger>
-                </>
-              )}
-              <TabsTrigger value="manual" className={isMobile ? "p-3 text-sm col-span-2" : "p-2"}>
-                {isMobile ? "⭐ Manual Entry" : "⭐ Manual Entry"}
-              </TabsTrigger>
-            </TabsList>
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            {/* Mobile Dropdown */}
+            {isMobile ? (
+              <div className="mb-6">
+                <Select value={activeTab} onValueChange={setActiveTab}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue>
+                      {tabOptions.find(tab => tab.value === activeTab)?.label}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {tabOptions.map((tab) => {
+                      const Icon = tab.icon;
+                      return (
+                        <SelectItem key={tab.value} value={tab.value}>
+                          <div className="flex items-center gap-2">
+                            <Icon className="h-4 w-4" />
+                            {tab.label}
+                          </div>
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectContent>
+                </Select>
+              </div>
+            ) : (
+              /* Desktop Tabs */
+              <TabsList className="grid w-full grid-cols-5 mb-6">
+                {tabOptions.map((tab) => {
+                  const Icon = tab.icon;
+                  return (
+                    <TabsTrigger key={tab.value} value={tab.value} className="p-2">
+                      <Icon className="h-4 w-4 mr-2" />
+                      {tab.label}
+                    </TabsTrigger>
+                  );
+                })}
+              </TabsList>
+            )}
 
             <TabsContent value="text" className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-2">Paste Recipe Text</label>
+                <label className="block text-sm font-medium mb-2">Paste Your Recipe</label>
                 <textarea
                   value={recipeText}
                   onChange={(e) => setRecipeText(e.target.value)}
-                  placeholder="Paste your recipe text here and we'll parse it for you..."
+                  placeholder="Paste your recipe text here and we'll extract the ingredients and instructions for you..."
                   className="w-full h-64 p-4 border rounded-lg resize-none"
                 />
               </div>
-              <Button className="w-full">Parse Recipe Text</Button>
+              <Button 
+                onClick={handleProcessText} 
+                disabled={isProcessing || !recipeText.trim()}
+                className="w-full"
+              >
+                {isProcessing ? "Processing..." : "Extract Recipe Details"}
+              </Button>
             </TabsContent>
 
             <TabsContent value="url" className="space-y-4">
@@ -289,7 +415,13 @@ export default function CreateRecipePage() {
                   className="w-full p-4 border rounded-lg"
                 />
               </div>
-              <Button className="w-full">Import from Website</Button>
+              <Button 
+                onClick={handleImportFromUrl} 
+                disabled={isProcessing || !recipeUrl.trim()}
+                className="w-full"
+              >
+                {isProcessing ? "Importing..." : "Import from Website"}
+              </Button>
             </TabsContent>
 
             <TabsContent value="image" className="space-y-4">
@@ -298,10 +430,21 @@ export default function CreateRecipePage() {
                 <input
                   type="file"
                   accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      handleProcessImage(file);
+                    }
+                  }}
                   className="w-full p-4 border rounded-lg"
                 />
               </div>
-              <Button className="w-full">Extract Recipe from Image</Button>
+              <Button 
+                disabled={isProcessing}
+                className="w-full"
+              >
+                {isProcessing ? "Extracting..." : "Choose Photo to Extract Recipe"}
+              </Button>
             </TabsContent>
 
             <TabsContent value="generate" className="space-y-4">
@@ -310,11 +453,17 @@ export default function CreateRecipePage() {
                 <textarea
                   value={aiPrompt}
                   onChange={(e) => setAiPrompt(e.target.value)}
-                  placeholder="Describe what kind of recipe you want to create..."
+                  placeholder="Tell us what kind of recipe you want to create - ingredients you have, cuisine type, dietary requirements, etc..."
                   className="w-full h-32 p-4 border rounded-lg resize-none"
                 />
               </div>
-              <Button className="w-full">Generate Recipe with AI</Button>
+              <Button 
+                onClick={handleGenerateRecipe} 
+                disabled={isProcessing || !aiPrompt.trim()}
+                className="w-full"
+              >
+                {isProcessing ? "Generating..." : "Create Recipe with AI"}
+              </Button>
             </TabsContent>
 
             <TabsContent value="manual" className="space-y-6">
