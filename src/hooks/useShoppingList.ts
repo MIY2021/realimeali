@@ -25,9 +25,11 @@ export function useShoppingList() {
   const [selectedWeek, setSelectedWeek] = useState<1 | 2>(1);
   const [copiedItemId, setCopiedItemId] = useState<string | null>(null);
   
-  // Use ref instead of state to prevent re-renders
-  const generationTracker = useRef<{
-    [key: string]: boolean;
+  // Use a more specific generation tracker
+  const generationState = useRef<{
+    [householdId: string]: {
+      [week: number]: boolean;
+    }
   }>({});
 
   const { getMealPlansForWeek } = useMealPlan();
@@ -40,7 +42,7 @@ export function useShoppingList() {
     isLoading: shoppingLoading 
   } = useHouseholdShopping();
 
-  // Helper function to categorize ingredients - memoized to prevent recreating
+  // Helper function to categorize ingredients
   const categorizeIngredient = useCallback((ingredient: string): string => {
     const nameLower = ingredient.toLowerCase();
     
@@ -113,7 +115,7 @@ export function useShoppingList() {
     return "Food Cupboard";
   }, []);
 
-  // Get shopping items for a specific week - memoized to prevent recreating
+  // Get shopping items for a specific week
   const getWeekShoppingItems = useCallback((weekNumber: 1 | 2): ShoppingItem[] => {
     if (!user || !currentHousehold) return [];
     
@@ -137,119 +139,122 @@ export function useShoppingList() {
   // Reset generation tracker when household changes
   useEffect(() => {
     if (currentHousehold?.id) {
-      generationTracker.current = {};
+      console.log("Household changed, resetting generation tracker");
+      generationState.current = {};
     }
   }, [currentHousehold?.id]);
 
-  // Generate shopping list - COMPLETELY REWRITTEN to prevent infinite loop
+  // Generate shopping list with strict controls
   useEffect(() => {
-    if (!user || !currentHousehold || recipesLoading) return;
-    
-    // Create a unique key for this generation attempt
-    const generationKey = `${currentHousehold.id}-${recipes.length}`;
-    
-    // Skip if already generated for this combination
-    if (generationTracker.current[generationKey]) {
+    if (!user || !currentHousehold || recipesLoading || recipes.length === 0) {
       return;
     }
 
-    console.log("Starting shopping list generation for key:", generationKey);
+    // Create generation keys for both weeks
+    const week1Key = `${currentHousehold.id}-week1`;
+    const week2Key = `${currentHousehold.id}-week2`;
+    
+    // Initialize household state if needed
+    if (!generationState.current[currentHousehold.id]) {
+      generationState.current[currentHousehold.id] = {};
+    }
 
-    const generateShoppingList = async () => {
-      try {
-        const week1Plans = getMealPlansForWeek(1);
-        const week2Plans = getMealPlansForWeek(2);
-        
-        console.log("Week 1 meal plans:", week1Plans.length);
-        console.log("Week 2 meal plans:", week2Plans.length);
+    const householdState = generationState.current[currentHousehold.id];
+    
+    // Check if both weeks have been generated
+    if (householdState[1] && householdState[2]) {
+      return;
+    }
 
-        // Only generate if there are meal plans
-        if (week1Plans.length === 0 && week2Plans.length === 0) {
-          generationTracker.current[generationKey] = true;
-          return;
-        }
+    console.log("Starting controlled shopping list generation");
 
-        // Process both weeks
-        for (const [weekNumber, plans] of [[1, week1Plans], [2, week2Plans]] as const) {
-          if (plans.length === 0) continue;
+    const generateForWeek = async (weekNumber: 1 | 2) => {
+      if (householdState[weekNumber]) {
+        return; // Already generated
+      }
 
-          const weekKey = `week${weekNumber}`;
-          console.log(`Processing ${weekKey} with ${plans.length} plans`);
-          
-          // Get existing shopping items for this week
-          const existingWeekItems = householdShoppingItems.filter(item => 
-            item.name.startsWith(`${weekKey}-`)
-          );
-          
-          // Generate ingredient map
-          const ingredientMap = new Map<string, { quantity: number; recipeIds: string[] }>();
-          
-          plans.forEach(plan => {
-            const recipe = recipes.find(r => r.id === plan.recipeId);
-            if (recipe && recipe.ingredients) {
-              recipe.ingredients.forEach(ingredient => {
-                const key = ingredient.toLowerCase();
-                if (ingredientMap.has(key)) {
-                  const existing = ingredientMap.get(key)!;
-                  existing.quantity += 1;
-                  if (!existing.recipeIds.includes(recipe.id)) {
-                    existing.recipeIds.push(recipe.id);
-                  }
-                } else {
-                  ingredientMap.set(key, {
-                    quantity: 1,
-                    recipeIds: [recipe.id]
-                  });
-                }
+      const mealPlans = getMealPlansForWeek(weekNumber);
+      console.log(`Week ${weekNumber} meal plans:`, mealPlans.length);
+
+      if (mealPlans.length === 0) {
+        householdState[weekNumber] = true;
+        return;
+      }
+
+      // Get existing items for this week
+      const weekPrefix = `week${weekNumber}-`;
+      const existingItems = householdShoppingItems.filter(item => 
+        item.name.startsWith(weekPrefix)
+      );
+
+      // Generate ingredient map
+      const ingredientMap = new Map<string, { quantity: number; recipeIds: string[] }>();
+      
+      mealPlans.forEach(plan => {
+        const recipe = recipes.find(r => r.id === plan.recipeId);
+        if (recipe && recipe.ingredients) {
+          recipe.ingredients.forEach(ingredient => {
+            const key = ingredient.toLowerCase();
+            if (ingredientMap.has(key)) {
+              const existing = ingredientMap.get(key)!;
+              existing.quantity += 1;
+              if (!existing.recipeIds.includes(recipe.id)) {
+                existing.recipeIds.push(recipe.id);
+              }
+            } else {
+              ingredientMap.set(key, {
+                quantity: 1,
+                recipeIds: [recipe.id]
               });
             }
           });
+        }
+      });
 
-          console.log(`Generated ${ingredientMap.size} unique ingredients for ${weekKey}`);
+      console.log(`Week ${weekNumber}: Generated ${ingredientMap.size} unique ingredients`);
 
-          // Add new items that don't already exist
-          for (const [ingredient, data] of ingredientMap.entries()) {
-            const itemName = `${weekKey}-${ingredient}`;
-            
-            // Check if this exact item already exists
-            const existingItem = existingWeekItems.find(item => 
-              item.name === itemName
-            );
-
-            if (!existingItem) {
-              // Create new item and add to database
-              const newItemData = {
-                name: itemName,
-                quantity: data.quantity,
-                unit: '',
-                category: categorizeIngredient(ingredient),
-                is_checked: false,
-                is_custom: false,
-                recipe_ids: data.recipeIds
-              };
-
-              try {
-                console.log(`Adding new shopping item: ${itemName}`);
-                await addShoppingItem(newItemData);
-              } catch (error) {
-                console.error('Error adding shopping item:', error);
-              }
-            }
+      // Add only new items that don't exist
+      for (const [ingredient, data] of ingredientMap.entries()) {
+        const itemName = `${weekPrefix}${ingredient}`;
+        
+        const existingItem = existingItems.find(item => item.name === itemName);
+        if (!existingItem) {
+          try {
+            await addShoppingItem({
+              name: itemName,
+              quantity: data.quantity,
+              unit: '',
+              category: categorizeIngredient(ingredient),
+              is_checked: false,
+              is_custom: false,
+              recipe_ids: data.recipeIds
+            });
+            console.log(`Added: ${itemName}`);
+          } catch (error) {
+            console.error('Error adding shopping item:', error);
           }
         }
-        
-        // Mark as generated to prevent re-running
-        generationTracker.current[generationKey] = true;
-        console.log("Shopping list generation completed for key:", generationKey);
+      }
+
+      // Mark as generated
+      householdState[weekNumber] = true;
+    };
+
+    // Generate for both weeks sequentially
+    const generateBothWeeks = async () => {
+      try {
+        await generateForWeek(1);
+        await generateForWeek(2);
+        console.log("Shopping list generation completed for both weeks");
       } catch (error) {
-        console.error('Error generating shopping list:', error);
+        console.error('Error in shopping list generation:', error);
       }
     };
 
-    generateShoppingList();
-  }, [user?.id, currentHousehold?.id, recipes.length, recipesLoading]); // Only stable dependencies
+    generateBothWeeks();
+  }, [user?.id, currentHousehold?.id, recipes.length, recipesLoading]);
 
-  // Get current week items using the helper function
+  // Get current week items
   const weekShoppingItems = {
     1: getWeekShoppingItems(1),
     2: getWeekShoppingItems(2)
@@ -272,11 +277,9 @@ export function useShoppingList() {
   };
 
   const handleCopyItem = (itemName: string, itemId: string) => {
-    // Extract just the name without week prefix
     const cleanName = itemName.replace(/^week\d+-/, '');
     navigator.clipboard.writeText(cleanName);
     
-    // Show visual feedback
     setCopiedItemId(itemId);
     setTimeout(() => setCopiedItemId(null), 2000);
     
@@ -297,7 +300,6 @@ export function useShoppingList() {
   const handleCheckAll = async () => {
     const currentWeekItems = weekShoppingItems[selectedWeek];
     
-    // Update all items in database
     for (const item of currentWeekItems) {
       try {
         await updateShoppingItem(item.id, { is_checked: true });
@@ -310,7 +312,6 @@ export function useShoppingList() {
   const handleUncheckAll = async () => {
     const currentWeekItems = weekShoppingItems[selectedWeek];
     
-    // Update all items in database
     for (const item of currentWeekItems) {
       try {
         await updateShoppingItem(item.id, { is_checked: false });
@@ -323,7 +324,6 @@ export function useShoppingList() {
   const handleRemoveAll = async () => {
     const currentWeekItems = weekShoppingItems[selectedWeek];
     if (window.confirm("Are you sure you want to remove all items from this week's shopping list?")) {
-      // Remove all items from database
       for (const item of currentWeekItems) {
         try {
           await deleteShoppingItem(item.id);
@@ -331,8 +331,10 @@ export function useShoppingList() {
           console.error('Error deleting shopping item:', error);
         }
       }
-      // Reset generation tracker to allow regeneration
-      generationTracker.current = {};
+      // Reset generation for this household
+      if (currentHousehold?.id) {
+        generationState.current[currentHousehold.id] = {};
+      }
     }
   };
 
