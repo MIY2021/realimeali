@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Recipe, RecipeCategory } from "@/types";
+import { supabase } from "@/integrations/supabase/client";
 
 export function useRecipeProcessing() {
   const { toast } = useToast();
@@ -26,18 +27,24 @@ export function useRecipeProcessing() {
 
     setIsProcessing(true);
     try {
-      const extractedRecipe = {
-        title: "Extracted Recipe from Text",
-        description: "This recipe was extracted from your text input",
-        ingredients: ["Ingredient 1", "Ingredient 2", "Ingredient 3"],
-        instructions: ["Step 1: Prepare ingredients", "Step 2: Cook", "Step 3: Serve"],
-        categories: ["Easy"] as RecipeCategory[],
-        prepTime: 15,
-        cookTime: 30,
-        servings: 4,
-      };
+      console.log('Processing recipe text:', recipeText.substring(0, 100) + '...');
       
-      setNewRecipe({ ...currentRecipe, ...extractedRecipe });
+      const { data, error } = await supabase.functions.invoke('parse-recipe-ai', {
+        body: { recipeText: recipeText.trim() }
+      });
+
+      if (error) {
+        console.error('Error calling parse-recipe-ai function:', error);
+        throw new Error(error.message || 'Failed to process recipe text');
+      }
+
+      if (!data?.parsedRecipe) {
+        throw new Error('No recipe data received from AI');
+      }
+
+      console.log('Received parsed recipe:', data.parsedRecipe);
+      
+      setNewRecipe({ ...currentRecipe, ...data.parsedRecipe });
       setActiveTab("manual");
       
       toast({
@@ -45,9 +52,10 @@ export function useRecipeProcessing() {
         description: "Review and edit your recipe in the Manual Entry tab",
       });
     } catch (error) {
+      console.error('Error processing recipe text:', error);
       toast({
         title: "Error",
-        description: "Failed to process recipe text",
+        description: error.message || "Failed to process recipe text. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -71,18 +79,34 @@ export function useRecipeProcessing() {
 
     setIsProcessing(true);
     try {
-      const importedRecipe = {
-        title: "Imported Recipe from Website",
-        description: "This recipe was imported from the website URL",
-        ingredients: ["Imported ingredient 1", "Imported ingredient 2", "Imported ingredient 3"],
-        instructions: ["Step 1: Imported instruction", "Step 2: Mix well", "Step 3: Enjoy"],
-        categories: ["Healthy"] as RecipeCategory[],
-        prepTime: 20,
-        cookTime: 25,
-        servings: 6,
-      };
+      console.log('Importing recipe from URL:', recipeUrl);
       
-      setNewRecipe({ ...currentRecipe, ...importedRecipe });
+      const { data, error } = await supabase.functions.invoke('parse-recipe-ai', {
+        body: { 
+          websiteUrl: recipeUrl.trim(),
+          extractImages: true
+        }
+      });
+
+      if (error) {
+        console.error('Error calling parse-recipe-ai function:', error);
+        throw new Error(error.message || 'Failed to import from website');
+      }
+
+      if (!data?.parsedRecipe) {
+        throw new Error('No recipe data received from website');
+      }
+
+      console.log('Received imported recipe:', data.parsedRecipe);
+      
+      const recipeData = { ...currentRecipe, ...data.parsedRecipe };
+      
+      // If website images were found, use the first one
+      if (data.websiteImages && data.websiteImages.length > 0) {
+        recipeData.image = data.websiteImages[0];
+      }
+      
+      setNewRecipe(recipeData);
       setActiveTab("manual");
       
       toast({
@@ -90,9 +114,10 @@ export function useRecipeProcessing() {
         description: "Review and edit your imported recipe in the Manual Entry tab",
       });
     } catch (error) {
+      console.error('Error importing from website:', error);
       toast({
         title: "Error",
-        description: "Failed to import from website",
+        description: error.message || "Failed to import from website. Please check the URL and try again.",
         variant: "destructive",
       });
     } finally {
@@ -108,18 +133,34 @@ export function useRecipeProcessing() {
   ) => {
     setIsProcessing(true);
     try {
-      const extractedRecipe = {
-        title: "Recipe from Photo",
-        description: "This recipe was extracted from your uploaded photo",
-        ingredients: ["Photo ingredient 1", "Photo ingredient 2", "Photo ingredient 3"],
-        instructions: ["Step 1: From photo", "Step 2: Follow image", "Step 3: Complete"],
-        categories: ["Super Tasty"] as RecipeCategory[],
-        prepTime: 10,
-        cookTime: 20,
-        servings: 2,
-      };
+      console.log('Processing image file:', file.name, file.type);
       
-      setNewRecipe({ ...currentRecipe, ...extractedRecipe });
+      // Convert image to base64
+      const reader = new FileReader();
+      const imageDataUrl = await new Promise<string>((resolve, reject) => {
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      console.log('Image converted to base64, calling AI...');
+      
+      const { data, error } = await supabase.functions.invoke('parse-recipe-ai', {
+        body: { imageUrl: imageDataUrl }
+      });
+
+      if (error) {
+        console.error('Error calling parse-recipe-ai function:', error);
+        throw new Error(error.message || 'Failed to extract recipe from image');
+      }
+
+      if (!data?.parsedRecipe) {
+        throw new Error('No recipe data could be extracted from the image');
+      }
+
+      console.log('Received recipe from image:', data.parsedRecipe);
+      
+      setNewRecipe({ ...currentRecipe, ...data.parsedRecipe });
       setActiveTab("manual");
       
       toast({
@@ -127,9 +168,10 @@ export function useRecipeProcessing() {
         description: "Review your recipe extracted from the photo",
       });
     } catch (error) {
+      console.error('Error processing image:', error);
       toast({
         title: "Error",
-        description: "Failed to extract recipe from image",
+        description: error.message || "Failed to extract recipe from image. Please try with a clearer image.",
         variant: "destructive",
       });
     } finally {
@@ -153,18 +195,24 @@ export function useRecipeProcessing() {
 
     setIsProcessing(true);
     try {
-      const generatedRecipe = {
-        title: "AI Generated Recipe",
-        description: `A delicious recipe generated based on: ${aiPrompt}`,
-        ingredients: ["AI ingredient 1", "AI ingredient 2", "AI ingredient 3", "AI ingredient 4"],
-        instructions: ["Step 1: AI generated step", "Step 2: Continue cooking", "Step 3: Finish and serve"],
-        categories: ["Easy", "Healthy"] as RecipeCategory[],
-        prepTime: 15,
-        cookTime: 30,
-        servings: 4,
-      };
+      console.log('Generating recipe with AI prompt:', aiPrompt);
       
-      setNewRecipe({ ...currentRecipe, ...generatedRecipe });
+      const { data, error } = await supabase.functions.invoke('parse-recipe-ai', {
+        body: { recipeText: `Generate a complete recipe based on this request: ${aiPrompt.trim()}` }
+      });
+
+      if (error) {
+        console.error('Error calling parse-recipe-ai function:', error);
+        throw new Error(error.message || 'Failed to generate recipe');
+      }
+
+      if (!data?.parsedRecipe) {
+        throw new Error('No recipe was generated from your request');
+      }
+
+      console.log('Received generated recipe:', data.parsedRecipe);
+      
+      setNewRecipe({ ...currentRecipe, ...data.parsedRecipe });
       setActiveTab("manual");
       
       toast({
@@ -172,9 +220,10 @@ export function useRecipeProcessing() {
         description: "Your AI-generated recipe is ready for review",
       });
     } catch (error) {
+      console.error('Error generating recipe:', error);
       toast({
         title: "Error",
-        description: "Failed to generate recipe",
+        description: error.message || "Failed to generate recipe. Please try again with a different prompt.",
         variant: "destructive",
       });
     } finally {
