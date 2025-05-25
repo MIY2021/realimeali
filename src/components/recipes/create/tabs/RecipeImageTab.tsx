@@ -8,7 +8,7 @@ interface RecipeImageTabProps {
 
 export function RecipeImageTab({ isProcessing, onProcessImage }: RecipeImageTabProps) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 sm:space-y-4">
       <div>
         <label className="block text-sm font-medium mb-2">Upload Recipe Photo</label>
         <input
@@ -20,12 +20,12 @@ export function RecipeImageTab({ isProcessing, onProcessImage }: RecipeImageTabP
               onProcessImage(file);
             }
           }}
-          className="w-full p-4 border rounded-lg"
+          className="w-full p-3 sm:p-4 border rounded-lg text-sm sm:text-base"
         />
       </div>
       <Button 
         disabled={isProcessing}
-        className="w-full"
+        className="w-full h-11 sm:h-10"
       >
         {isProcessing ? "Extracting..." : "Choose Photo to Extract Recipe"}
       </Button>

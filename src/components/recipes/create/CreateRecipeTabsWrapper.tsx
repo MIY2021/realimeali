@@ -34,7 +34,7 @@ export function CreateRecipeTabsWrapper({
   onGenerateImage,
 }: CreateRecipeTabsWrapperProps) {
   return (
-    <div className="bg-white rounded-lg shadow-sm border p-6">
+    <div className="bg-white rounded-none sm:rounded-lg shadow-none sm:shadow-sm border-0 sm:border p-4 sm:p-6">
       <CreateRecipeTabNavigation 
         isMobile={isMobile}
         activeTab={activeTab}
@@ -75,7 +75,7 @@ export function CreateRecipeTabsWrapper({
         </TabsContent>
 
         <TabsContent value="manual">
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {/* Show image selection if images are available from website import */}
             {(recipeProcessingHook.websiteImages.length > 0 || recipeProcessingHook.storedImages.length > 0) && (
               <EnhancedImageSelection

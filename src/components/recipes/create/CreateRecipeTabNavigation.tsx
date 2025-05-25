@@ -34,7 +34,7 @@ export function CreateRecipeTabNavigation({
     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
       {/* Mobile Dropdown */}
       {isMobile ? (
-        <div className="mb-6">
+        <div className="mb-4">
           <Select value={activeTab} onValueChange={setActiveTab}>
             <SelectTrigger className="w-full">
               <SelectValue>
@@ -58,7 +58,7 @@ export function CreateRecipeTabNavigation({
         </div>
       ) : (
         /* Desktop Tabs */
-        <TabsList className="grid w-full grid-cols-5 mb-6">
+        <TabsList className="grid w-full grid-cols-5 mb-4 sm:mb-6">
           {tabOptions.map((tab) => {
             const Icon = tab.icon;
             return (

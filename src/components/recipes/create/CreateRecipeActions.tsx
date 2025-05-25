@@ -9,7 +9,7 @@ interface CreateRecipeActionsProps {
 
 export function CreateRecipeActions({ isMobile, onCancel, onSave }: CreateRecipeActionsProps) {
   return (
-    <div className={`flex gap-3 mt-6 ${isMobile ? 'flex-col' : 'justify-end'}`}>
+    <div className={`flex gap-3 mt-4 sm:mt-6 ${isMobile ? 'flex-col px-4' : 'justify-end'}`}>
       <Button variant="outline" onClick={onCancel} className={isMobile ? "w-full" : ""}>
         Cancel
       </Button>
