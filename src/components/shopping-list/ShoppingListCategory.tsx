@@ -5,7 +5,7 @@ import ShoppingListItem from "./ShoppingListItem";
 interface ShoppingItem {
   id: string;
   name: string;
-  quantity: number;
+  quantity?: number; // Made optional to match ShoppingListItem
   unit?: string;
   isChecked: boolean;
   category: string;
@@ -47,7 +47,7 @@ export default function ShoppingListCategory({
             key={item.id}
             id={item.id}
             name={item.name}
-            quantity={item.quantity}
+            quantity={item.quantity || 1} // Provide default value
             unit={item.unit}
             isChecked={item.isChecked}
             recipeIds={item.recipeIds}

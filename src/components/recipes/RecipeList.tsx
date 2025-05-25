@@ -15,16 +15,12 @@ import { useAuth } from "@/contexts/AuthContext";
 interface RecipeListProps {
   recipes: Recipe[];
   showActions?: boolean;
-  searchTerm?: string;
-  onSearchChange?: (searchTerm: string) => void;
   isLoading?: boolean;
 }
 
 export function RecipeList({ 
   recipes, 
   showActions = true, 
-  searchTerm: externalSearchTerm = "", 
-  onSearchChange,
   isLoading = false 
 }: RecipeListProps) {
   const { recipeCategories } = useHouseholdShopping();
@@ -32,11 +28,7 @@ export function RecipeList({
   const { user } = useAuth();
   const { toast } = useToast();
   
-  // Use internal state if no external search control is provided
-  const [internalSearchTerm, setInternalSearchTerm] = useState("");
-  const searchTerm = onSearchChange ? externalSearchTerm : internalSearchTerm;
-  const setSearchTerm = onSearchChange || setInternalSearchTerm;
-  
+  const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [sortType, setSortType] = useState<string>("title-asc");
   const [displayCount, setDisplayCount] = useState(10);
@@ -123,7 +115,6 @@ export function RecipeList({
   };
 
   const handleShareRecipe = (recipe: Recipe) => {
-    // Simple share functionality - copy URL to clipboard
     const recipeSlug = recipe.title
       .toLowerCase()
       .replace(/[^a-z0-9 -]/g, '')
@@ -149,11 +140,13 @@ export function RecipeList({
     if (!editRecipe) return;
     
     try {
-      const result = await updateRecipe(editRecipe.id, updatedRecipe);
-      if (result) {
-        setEditDialogOpen(false);
-        setEditRecipe(null);
-      }
+      await updateRecipe(editRecipe.id, updatedRecipe);
+      setEditDialogOpen(false);
+      setEditRecipe(null);
+      toast({
+        title: "Recipe Updated",
+        description: "Recipe has been updated successfully.",
+      });
     } catch (error) {
       toast({
         title: "Error",

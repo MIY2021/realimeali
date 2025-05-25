@@ -10,6 +10,7 @@ import { AddToMealPlanDialog } from "@/components/recipes/AddToMealPlanDialog";
 import { EditRecipeDialog } from "@/components/recipes/EditRecipeDialog";
 import { useToast } from "@/hooks/use-toast";
 import { Recipe } from "@/types";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 
 const isValidCategory = (cat: string): cat is RecipeCategory =>
   [
@@ -25,6 +26,8 @@ export default function CategoryPage() {
   const { user } = useAuth();
   const { currentHousehold } = useHousehold();
   const { toast } = useToast();
+  
+  useDocumentTitle(`${decoded} Recipes | RealiMeali`);
   
   // State for dialogs
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
@@ -120,11 +123,13 @@ export default function CategoryPage() {
     if (!editRecipe) return;
     
     try {
-      const result = await updateRecipe(editRecipe.id, updatedRecipe);
-      if (result) {
-        setEditDialogOpen(false);
-        setEditRecipe(null);
-      }
+      await updateRecipe(editRecipe.id, updatedRecipe);
+      setEditDialogOpen(false);
+      setEditRecipe(null);
+      toast({
+        title: "Recipe Updated",
+        description: "Recipe has been updated successfully.",
+      });
     } catch (error) {
       toast({
         title: "Error",
