@@ -56,6 +56,7 @@ export function CreateRecipeTabsWrapper({
               setRecipeUrl={recipeProcessingHook.setRecipeUrl}
               isProcessing={recipeProcessingHook.isProcessing}
               onImportWithImages={onImportFromUrlWithImages}
+              importedRecipe={recipeFormHook.newRecipe}
             />
             
             {/* Show image selection if images are available */}
