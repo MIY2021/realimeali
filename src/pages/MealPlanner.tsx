@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { MealPlan, MealType, RecipeCategory } from "@/types";
 import { Button } from "@/components/ui/button";
@@ -6,7 +7,6 @@ import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { AddRecipeToMealModal } from "@/components/meal-planner/AddRecipeToMealModal";
 import MealListSection from "@/components/MealListSection";
-import { HouseholdSelector } from "@/components/household/HouseholdSelector";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
@@ -273,7 +273,6 @@ export default function MealPlanner() {
             {user ? "Plan and organize your weekly meals with your household" : "Login to create meal plans"}
           </p>
         </div>
-        {user && <HouseholdSelector />}
       </div>
       
       {!user ? (
@@ -283,7 +282,6 @@ export default function MealPlanner() {
       ) : !currentHousehold ? (
         <div className="py-10 text-center">
           <p className="text-muted-foreground mb-4">Please create or select a household to manage meal plans.</p>
-          <HouseholdSelector />
         </div>
       ) : (
         <>

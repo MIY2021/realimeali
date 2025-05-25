@@ -102,6 +102,7 @@ export function AddMealPlanDialog({
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="flex-shrink-0 sm:w-1/2"
+              autoFocus={false}
             />
             <Select value={selectedCategory} onValueChange={(v) => setSelectedCategory(v as RecipeCategory | "All")}>
               <SelectTrigger className="w-full sm:w-[170px]">
@@ -144,11 +145,15 @@ export function AddMealPlanDialog({
                                 alt={recipe.title}
                                 className="h-full w-full object-cover"
                                 onError={(e) => {
-                                  (e.currentTarget as HTMLImageElement).src = "/placeholder.svg";
+                                  (e.currentTarget as HTMLImageElement).src = "https://images.unsplash.com/photo-1621322800607-8c38375eef04?w=400&h=300&fit=crop";
                                 }}
                               />
                             ) : (
-                              <span className="text-xs text-muted-foreground">No image</span>
+                              <img
+                                src="https://images.unsplash.com/photo-1621322800607-8c38375eef04?w=400&h=300&fit=crop"
+                                alt="Recipe placeholder"
+                                className="h-full w-full object-cover"
+                              />
                             )}
                           </div>
                           <div className="flex-1 text-left">

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Recipe, RecipeCategory } from "@/types";
 import {
@@ -9,8 +10,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, X } from "lucide-react";
+import { Plus, Trash2, X, ImageIcon } from "lucide-react";
 import { RecipeGenerateTab } from "./dialog/RecipeGenerateTab";
+import { supabase } from "@/integrations/supabase/client";
 
 interface CreateRecipeDialogProps {
   open: boolean;
@@ -38,7 +40,7 @@ export function CreateRecipeDialog({ open, onOpenChange, onSave }: CreateRecipeD
     servings: 1,
     image: undefined,
     isFavorite: false,
-    householdId: "", // This will be set by the parent component
+    householdId: "",
   });
   const [newCategory, setNewCategory] = useState("");
   const [newIngredient, setNewIngredient] = useState("");
@@ -47,6 +49,7 @@ export function CreateRecipeDialog({ open, onOpenChange, onSave }: CreateRecipeD
   const [recipeText, setRecipeText] = useState("");
   const [recipeRequest, setRecipeRequest] = useState("");
   const [recipeUrl, setRecipeUrl] = useState("");
+  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
 
   const resetForm = () => {
     setNewRecipe({
@@ -60,7 +63,7 @@ export function CreateRecipeDialog({ open, onOpenChange, onSave }: CreateRecipeD
       servings: 1,
       image: undefined,
       isFavorite: false,
-      householdId: "", // This will be set by the parent component
+      householdId: "",
     });
     setNewCategory("");
     setNewIngredient("");
@@ -69,6 +72,7 @@ export function CreateRecipeDialog({ open, onOpenChange, onSave }: CreateRecipeD
     setRecipeText("");
     setRecipeRequest("");
     setRecipeUrl("");
+    setIsGeneratingImage(false);
   };
 
   const handleSave = () => {
@@ -179,9 +183,54 @@ export function CreateRecipeDialog({ open, onOpenChange, onSave }: CreateRecipeD
     }
   };
 
+  const handleGenerateImage = async () => {
+    if (!newRecipe.title.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter a recipe title first",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsGeneratingImage(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-recipe-image', {
+        body: { 
+          prompt: `A delicious ${newRecipe.title}, food photography, professional lighting, appetizing presentation` 
+        },
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      if (data?.imageUrl) {
+        setImagePreview(data.imageUrl);
+        setNewRecipe({
+          ...newRecipe,
+          image: data.imageUrl,
+        });
+        toast({
+          title: "Image Generated",
+          description: "Recipe image has been generated successfully!",
+        });
+      }
+    } catch (error) {
+      console.error("Error generating image:", error);
+      toast({
+        title: "Error",
+        description: "Failed to generate image. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingImage(false);
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-4xl h-[85vh] overflow-hidden flex flex-col">
+      <DialogContent className="sm:max-w-4xl h-[95vh] md:h-[85vh] overflow-hidden flex flex-col w-[95vw] md:w-full">
         <DialogHeader className="flex-shrink-0">
           <DialogTitle className="text-xl font-bold">✨ Add New Recipe ✨</DialogTitle>
           <p className="text-muted-foreground">
@@ -190,17 +239,105 @@ export function CreateRecipeDialog({ open, onOpenChange, onSave }: CreateRecipeD
         </DialogHeader>
 
         <div className="flex-1 overflow-hidden">
-          <Tabs defaultValue="manual" className="w-full h-full flex flex-col">
-            <TabsList className="grid w-full grid-cols-5 flex-shrink-0">
-              <TabsTrigger value="manual">⭐ Manual Entry</TabsTrigger>
-              <TabsTrigger value="text">📝 Recipe Text</TabsTrigger>
-              <TabsTrigger value="url">🔗 From URL</TabsTrigger>
-              <TabsTrigger value="image">📷 From Image</TabsTrigger>
-              <TabsTrigger value="generate">🤖 AI Generate</TabsTrigger>
+          <Tabs defaultValue="text" className="w-full h-full flex flex-col">
+            <TabsList className="grid w-full grid-cols-5 flex-shrink-0 h-auto">
+              <TabsTrigger value="text" className="text-xs p-2 md:text-sm md:p-3">📝 Recipe Text</TabsTrigger>
+              <TabsTrigger value="url" className="text-xs p-2 md:text-sm md:p-3">🔗 From URL</TabsTrigger>
+              <TabsTrigger value="image" className="text-xs p-2 md:text-sm md:p-3">📷 From Image</TabsTrigger>
+              <TabsTrigger value="generate" className="text-xs p-2 md:text-sm md:p-3">🤖 AI Generate</TabsTrigger>
+              <TabsTrigger value="manual" className="text-xs p-2 md:text-sm md:p-3">⭐ Manual Entry</TabsTrigger>
             </TabsList>
 
             <div className="flex-1 overflow-y-auto mt-4">
-              <TabsContent value="manual" className="space-y-6 h-full">
+              <TabsContent value="text" className="space-y-6 h-full">
+                <div>
+                  <h3 className="text-lg font-semibold mb-2">📝 Recipe Text</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Paste or type a recipe and our AI will extract the ingredients and instructions
+                  </p>
+                </div>
+                <textarea
+                  value={recipeText}
+                  onChange={(e) => setRecipeText(e.target.value)}
+                  placeholder="Paste your recipe text here..."
+                  className="w-full p-3 border rounded-md h-96"
+                />
+                <div className="flex justify-end space-x-2 sticky bottom-0 bg-white pt-4 border-t">
+                  <Button variant="outline" onClick={handleCancel}>
+                    Cancel
+                  </Button>
+                  <Button>Parse Recipe</Button>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="url" className="space-y-4 h-full">
+                <div>
+                  <h3 className="text-lg font-semibold mb-2">🔗 From URL</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Enter a URL from a recipe website and we'll extract the recipe information
+                  </p>
+                </div>
+                <input
+                  type="url"
+                  value={recipeUrl}
+                  onChange={(e) => setRecipeUrl(e.target.value)}
+                  placeholder="https://example.com/recipe"
+                  className="w-full p-3 border rounded-md"
+                />
+                <div className="flex justify-end space-x-2 sticky bottom-0 bg-white pt-4 border-t">
+                  <Button variant="outline" onClick={handleCancel}>
+                    Cancel
+                  </Button>
+                  <Button>Import Recipe</Button>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="image" className="space-y-4 h-full">
+                <div>
+                  <h3 className="text-lg font-semibold mb-2">📷 From Image</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Upload an image of a recipe and our AI will extract the text and ingredients
+                  </p>
+                </div>
+                <div className="border-2 border-dashed border-gray-300 rounded-md p-6 text-center">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    className="block w-full"
+                  />
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Click to upload or drag and drop
+                  </p>
+                  {imagePreview && (
+                    <img src={imagePreview} alt="Preview" className="mt-4 max-h-64 mx-auto rounded" />
+                  )}
+                </div>
+                <div className="flex justify-end space-x-2 sticky bottom-0 bg-white pt-4 border-t">
+                  <Button variant="outline" onClick={handleCancel}>
+                    Cancel
+                  </Button>
+                  <Button>Extract Recipe</Button>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="generate" className="space-y-4 h-full">
+                <div>
+                  <h3 className="text-lg font-semibold mb-2">🤖 AI Generate</h3>
+                  <RecipeGenerateTab 
+                    recipeRequest={recipeRequest} 
+                    setRecipeRequest={setRecipeRequest} 
+                  />
+                </div>
+                <div className="flex justify-end space-x-2 sticky bottom-0 bg-white pt-4 border-t">
+                  <Button variant="outline" onClick={handleCancel}>
+                    Cancel
+                  </Button>
+                  <Button>Generate Recipe</Button>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="manual" className="space-y-6 h-full pb-20">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-4">
                     <div>
@@ -253,6 +390,31 @@ export function CreateRecipeDialog({ open, onOpenChange, onSave }: CreateRecipeD
                           className="w-full p-2 border rounded"
                           min={1}
                         />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Recipe Image</label>
+                      <div className="space-y-2">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageChange}
+                          className="w-full p-2 border rounded"
+                        />
+                        <Button 
+                          type="button"
+                          variant="outline" 
+                          onClick={handleGenerateImage}
+                          disabled={isGeneratingImage || !newRecipe.title.trim()}
+                          className="w-full"
+                        >
+                          <ImageIcon className="h-4 w-4 mr-2" />
+                          {isGeneratingImage ? "Generating..." : "Generate AI Image"}
+                        </Button>
+                        {imagePreview && (
+                          <img src={imagePreview} alt="Recipe preview" className="w-full h-32 object-cover rounded border" />
+                        )}
                       </div>
                     </div>
 
@@ -378,99 +540,11 @@ export function CreateRecipeDialog({ open, onOpenChange, onSave }: CreateRecipeD
                   </div>
                 </div>
 
-                <div className="flex justify-end space-x-2 pt-4 border-t">
+                <div className="flex justify-end space-x-2 pt-4 border-t sticky bottom-0 bg-white">
                   <Button variant="outline" onClick={handleCancel}>
                     Cancel
                   </Button>
                   <Button onClick={handleSave}>Create Recipe</Button>
-                </div>
-              </TabsContent>
-
-              <TabsContent value="text" className="space-y-4 h-full">
-                <div>
-                  <h3 className="text-lg font-semibold mb-2">📝 Recipe Text</h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Paste or type a recipe and our AI will extract the ingredients and instructions
-                  </p>
-                </div>
-                <textarea
-                  value={recipeText}
-                  onChange={(e) => setRecipeText(e.target.value)}
-                  placeholder="Paste your recipe text here..."
-                  className="w-full p-3 border rounded-md h-96"
-                />
-                <div className="flex justify-end space-x-2">
-                  <Button variant="outline" onClick={handleCancel}>
-                    Cancel
-                  </Button>
-                  <Button>Parse Recipe</Button>
-                </div>
-              </TabsContent>
-
-              <TabsContent value="url" className="space-y-4 h-full">
-                <div>
-                  <h3 className="text-lg font-semibold mb-2">🔗 From URL</h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Enter a URL from a recipe website and we'll extract the recipe information
-                  </p>
-                </div>
-                <input
-                  type="url"
-                  value={recipeUrl}
-                  onChange={(e) => setRecipeUrl(e.target.value)}
-                  placeholder="https://example.com/recipe"
-                  className="w-full p-3 border rounded-md"
-                />
-                <div className="flex justify-end space-x-2">
-                  <Button variant="outline" onClick={handleCancel}>
-                    Cancel
-                  </Button>
-                  <Button>Import Recipe</Button>
-                </div>
-              </TabsContent>
-
-              <TabsContent value="image" className="space-y-4 h-full">
-                <div>
-                  <h3 className="text-lg font-semibold mb-2">📷 From Image</h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Upload an image of a recipe and our AI will extract the text and ingredients
-                  </p>
-                </div>
-                <div className="border-2 border-dashed border-gray-300 rounded-md p-6 text-center">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                    className="block w-full"
-                  />
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    Click to upload or drag and drop
-                  </p>
-                  {imagePreview && (
-                    <img src={imagePreview} alt="Preview" className="mt-4 max-h-64 mx-auto rounded" />
-                  )}
-                </div>
-                <div className="flex justify-end space-x-2">
-                  <Button variant="outline" onClick={handleCancel}>
-                    Cancel
-                  </Button>
-                  <Button>Extract Recipe</Button>
-                </div>
-              </TabsContent>
-
-              <TabsContent value="generate" className="space-y-4 h-full">
-                <div>
-                  <h3 className="text-lg font-semibold mb-2">🤖 AI Generate</h3>
-                  <RecipeGenerateTab 
-                    recipeRequest={recipeRequest} 
-                    setRecipeRequest={setRecipeRequest} 
-                  />
-                </div>
-                <div className="flex justify-end space-x-2">
-                  <Button variant="outline" onClick={handleCancel}>
-                    Cancel
-                  </Button>
-                  <Button>Generate Recipe</Button>
                 </div>
               </TabsContent>
             </div>
