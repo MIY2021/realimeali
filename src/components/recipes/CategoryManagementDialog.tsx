@@ -10,7 +10,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useHouseholdShopping } from "@/contexts/HouseholdShoppingContext";
-import { Trash2, Plus, Pencil, Loader } from "lucide-react";
+import { Trash2, Plus, Pencil, Loader, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface CategoryManagementDialogProps {
@@ -19,10 +19,11 @@ interface CategoryManagementDialogProps {
 }
 
 export const CategoryManagementDialog = ({ open, onOpenChange }: CategoryManagementDialogProps) => {
-  const { recipeCategories, addRecipeCategory, updateRecipeCategory, deleteRecipeCategory, fetchRecipeCategories, isLoading } = useHouseholdShopping();
+  const { recipeCategories, addRecipeCategory, updateRecipeCategory, deleteRecipeCategory, fetchRecipeCategories, seedDefaultCategories, isLoading } = useHouseholdShopping();
   const [newCategoryName, setNewCategoryName] = useState("");
   const [editingCategory, setEditingCategory] = useState<{ id: string; name: string } | null>(null);
   const [isAddingCategory, setIsAddingCategory] = useState(false);
+  const [isSeedingCategories, setIsSeedingCategories] = useState(false);
   const { toast } = useToast();
 
   // Fetch categories when dialog opens
@@ -80,6 +81,17 @@ export const CategoryManagementDialog = ({ open, onOpenChange }: CategoryManagem
       });
     } finally {
       setIsAddingCategory(false);
+    }
+  };
+
+  const handleSeedCategories = async () => {
+    try {
+      setIsSeedingCategories(true);
+      await seedDefaultCategories();
+    } catch (error) {
+      console.error("Error seeding categories:", error);
+    } finally {
+      setIsSeedingCategories(false);
     }
   };
 
@@ -180,7 +192,25 @@ export const CategoryManagementDialog = ({ open, onOpenChange }: CategoryManagem
 
           {/* Existing categories */}
           <div className="space-y-3">
-            <Label className="text-sm font-medium">Existing Categories</Label>
+            <div className="flex items-center justify-between">
+              <Label className="text-sm font-medium">Existing Categories</Label>
+              {recipeCategories.length === 0 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleSeedCategories}
+                  disabled={isSeedingCategories}
+                  className="flex items-center gap-1"
+                >
+                  {isSeedingCategories ? (
+                    <Loader className="h-3 w-3 animate-spin" />
+                  ) : (
+                    <Sparkles className="h-3 w-3" />
+                  )}
+                  Add Common Categories
+                </Button>
+              )}
+            </div>
             
             {isLoading ? (
               <div className="flex items-center justify-center py-8">
@@ -191,7 +221,7 @@ export const CategoryManagementDialog = ({ open, onOpenChange }: CategoryManagem
               <div className="text-center py-8 border border-dashed rounded-lg">
                 <div className="text-muted-foreground">
                   <p className="text-sm mb-2">No categories created yet</p>
-                  <p className="text-xs">Add your first category above to get started!</p>
+                  <p className="text-xs">Add your first category above or use common categories!</p>
                 </div>
               </div>
             ) : (

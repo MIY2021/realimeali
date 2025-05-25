@@ -39,8 +39,16 @@ interface HouseholdShoppingContextType {
   addRecipeCategory: (name: string) => Promise<void>;
   updateRecipeCategory: (id: string, name: string) => Promise<void>;
   deleteRecipeCategory: (id: string) => Promise<void>;
+  seedDefaultCategories: () => Promise<void>;
   generateShoppingListFromMealPlan: () => Promise<void>;
 }
+
+// Default recipe categories that should be available for all households
+const DEFAULT_RECIPE_CATEGORIES = [
+  "Bulk", "Easy", "Cheap", "Healthy", "Vegetarian", "Fish", 
+  "Super Tasty", "Pasta", "Tapas", "Winter", "BBQ", 
+  "Faffy", "Pricey!", "Not Yet Made", "Snacks", "Breakfast"
+];
 
 const HouseholdShoppingContext = createContext<HouseholdShoppingContextType | undefined>(undefined);
 
@@ -94,6 +102,52 @@ export const HouseholdShoppingProvider = ({ children }: { children: ReactNode })
       toast({
         title: "Error",
         description: "Failed to fetch recipe categories",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const seedDefaultCategories = async () => {
+    if (!currentHousehold || !user) return;
+
+    try {
+      // Check if household already has categories
+      const { data: existingCategories, error: checkError } = await supabase
+        .from('household_recipe_categories')
+        .select('id')
+        .eq('household_id', currentHousehold.id);
+
+      if (checkError) throw checkError;
+
+      // Only seed if no categories exist
+      if (existingCategories && existingCategories.length === 0) {
+        console.log('Seeding default categories for household:', currentHousehold.id);
+        
+        const categoriesToInsert = DEFAULT_RECIPE_CATEGORIES.map(name => ({
+          household_id: currentHousehold.id,
+          name,
+          created_by: user.id
+        }));
+
+        const { error } = await supabase
+          .from('household_recipe_categories')
+          .insert(categoriesToInsert);
+
+        if (error) throw error;
+
+        // Refresh categories after seeding
+        await fetchRecipeCategories();
+        
+        toast({
+          title: "Categories Added",
+          description: "Default recipe categories have been added to your household",
+        });
+      }
+    } catch (error) {
+      console.error('Error seeding default categories:', error);
+      toast({
+        title: "Error",
+        description: "Failed to add default categories",
         variant: "destructive",
       });
     }
@@ -421,6 +475,7 @@ export const HouseholdShoppingProvider = ({ children }: { children: ReactNode })
       addRecipeCategory,
       updateRecipeCategory,
       deleteRecipeCategory,
+      seedDefaultCategories,
       generateShoppingListFromMealPlan
     }}>
       {children}

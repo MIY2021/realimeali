@@ -1,4 +1,3 @@
-
 import { Recipe, RecipeCategory } from "@/types";
 import { RecipeCard } from "./RecipeCard";
 import { Input } from "@/components/ui/input";
@@ -17,13 +16,6 @@ interface RecipeListProps {
   showActions?: boolean;
 }
 
-// All available categories - ensures all categories show even if no recipes exist
-const ALL_RECIPE_CATEGORIES: RecipeCategory[] = [
-  "Bulk", "Easy", "Cheap", "Healthy", "Vegetarian", "Fish", 
-  "Super Tasty", "Pasta", "Tapas", "Winter", "BBQ", 
-  "Faffy", "Pricey!", "Not Yet Made", "Snacks", "Breakfast"
-];
-
 export function RecipeList({ recipes, showActions = true }: RecipeListProps) {
   const { recipeCategories } = useHouseholdShopping();
   const { updateRecipe, deleteRecipe } = useRecipes();
@@ -41,10 +33,6 @@ export function RecipeList({ recipes, showActions = true }: RecipeListProps) {
   // State for edit dialog
   const [editRecipe, setEditRecipe] = useState<Recipe | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
-
-  // Combine household categories with all standard categories, ensuring all are shown
-  const householdCategoryNames = recipeCategories.map(cat => cat.name);
-  const allCategories = [...ALL_RECIPE_CATEGORIES, ...householdCategoryNames.filter(name => !ALL_RECIPE_CATEGORIES.includes(name as RecipeCategory))];
 
   const filteredRecipes = recipes.filter((recipe) => {
     const matchesSearch = recipe.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -159,8 +147,8 @@ export function RecipeList({ recipes, showActions = true }: RecipeListProps) {
             className="w-full border rounded p-2 pr-8 appearance-none bg-white"
           >
             <option value="all">All Categories</option>
-            {allCategories.map((category) => (
-              <option key={category} value={category}>{category}</option>
+            {recipeCategories.map((category) => (
+              <option key={category.id} value={category.name}>{category.name}</option>
             ))}
           </select>
           <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 pointer-events-none text-muted-foreground" />
