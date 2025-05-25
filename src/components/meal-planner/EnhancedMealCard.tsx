@@ -119,10 +119,11 @@ export function EnhancedMealCard({
                 variant="ghost"
                 size="sm"
                 onClick={() => onCreateLeftover(mealPlan, displayRecipe)}
-                className="text-orange-600 hover:text-orange-700 hover:bg-orange-50"
+                className="text-orange-600 hover:text-orange-700 hover:bg-orange-50 flex items-center gap-1"
                 title="Create lunch leftovers"
               >
                 <UtensilsCrossed className="h-4 w-4" />
+                <span className="text-xs">Lunch</span>
               </Button>
             )}
             
