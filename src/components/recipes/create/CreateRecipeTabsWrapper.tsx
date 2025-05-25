@@ -6,6 +6,7 @@ import { RecipeUrlTab } from "./tabs/RecipeUrlTab";
 import { RecipeImageTab } from "./tabs/RecipeImageTab";
 import { RecipeGenerateTab } from "./tabs/RecipeGenerateTab";
 import { RecipeManualTab } from "./tabs/RecipeManualTab";
+import { EnhancedImageSelection } from "../dialog/EnhancedImageSelection";
 
 interface CreateRecipeTabsWrapperProps {
   isMobile: boolean;
@@ -15,6 +16,7 @@ interface CreateRecipeTabsWrapperProps {
   recipeProcessingHook: any;
   onProcessText: () => void;
   onImportFromUrl: () => void;
+  onImportFromUrlWithImages: () => void;
   onProcessImage: (file: File) => void;
   onGenerateRecipe: () => void;
   onGenerateImage: () => void;
@@ -28,6 +30,7 @@ export function CreateRecipeTabsWrapper({
   recipeProcessingHook,
   onProcessText,
   onImportFromUrl,
+  onImportFromUrlWithImages,
   onProcessImage,
   onGenerateRecipe,
   onGenerateImage,
@@ -49,12 +52,30 @@ export function CreateRecipeTabsWrapper({
         </TabsContent>
 
         <TabsContent value="url">
-          <RecipeUrlTab
-            recipeUrl={recipeProcessingHook.recipeUrl}
-            setRecipeUrl={recipeProcessingHook.setRecipeUrl}
-            isProcessing={recipeProcessingHook.isProcessing}
-            onImport={onImportFromUrl}
-          />
+          <div className="space-y-6">
+            <RecipeUrlTab
+              recipeUrl={recipeProcessingHook.recipeUrl}
+              setRecipeUrl={recipeProcessingHook.setRecipeUrl}
+              isProcessing={recipeProcessingHook.isProcessing}
+              onImport={onImportFromUrl}
+              onImportWithImages={onImportFromUrlWithImages}
+            />
+            
+            {/* Show image selection if images are available */}
+            {(recipeProcessingHook.websiteImages.length > 0 || recipeProcessingHook.storedImages.length > 0) && (
+              <EnhancedImageSelection
+                images={recipeProcessingHook.websiteImages}
+                storedImages={recipeProcessingHook.storedImages}
+                selectedImage={recipeFormHook.newRecipe.image || ""}
+                onImageSelect={(url) => recipeFormHook.setNewRecipe({ 
+                  ...recipeFormHook.newRecipe, 
+                  image: url 
+                })}
+                onDownloadImages={recipeProcessingHook.handleDownloadImages}
+                isDownloading={recipeProcessingHook.isDownloadingImages}
+              />
+            )}
+          </div>
         </TabsContent>
 
         <TabsContent value="image">

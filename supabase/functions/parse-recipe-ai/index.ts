@@ -1,8 +1,10 @@
-
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.8'
 
 const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+const supabaseUrl = Deno.env.get('SUPABASE_URL');
+const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -39,7 +41,6 @@ function extractImagesFromHTML(html: string, baseUrl: string): string[] {
   while ((match = imgRegex.exec(html)) !== null) {
     let src = match[1];
     
-    // Convert relative URLs to absolute
     if (src.startsWith('//')) {
       src = 'https:' + src;
     } else if (src.startsWith('/')) {
@@ -50,7 +51,6 @@ function extractImagesFromHTML(html: string, baseUrl: string): string[] {
       src = new URL(src, url.origin).toString();
     }
     
-    // Filter for likely recipe images (avoid icons, logos, etc.)
     if (src.includes('recipe') || src.includes('food') || 
         src.includes('dish') || src.includes('cooking') ||
         src.match(/\.(jpg|jpeg|png|webp)(\?|$)/i)) {
@@ -58,8 +58,70 @@ function extractImagesFromHTML(html: string, baseUrl: string): string[] {
     }
   }
   
-  // Remove duplicates and limit to first 6 images
   return [...new Set(images)].slice(0, 6);
+}
+
+// Helper function to download and store image
+async function downloadAndStoreImage(imageUrl: string, filename: string): Promise<string | null> {
+  if (!supabaseUrl || !supabaseServiceKey) {
+    console.error('❌ Supabase credentials not configured');
+    return null;
+  }
+
+  try {
+    console.log('📥 Downloading image:', imageUrl.substring(0, 50) + '...');
+    
+    const response = await fetch(imageUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; RecipeBot/1.0)',
+      },
+    });
+
+    if (!response.ok) {
+      console.error('❌ Failed to download image:', response.status);
+      return null;
+    }
+
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.startsWith('image/')) {
+      console.error('❌ Invalid content type:', contentType);
+      return null;
+    }
+
+    const arrayBuffer = await response.arrayBuffer();
+    const fileSize = arrayBuffer.byteLength;
+    
+    // Skip images that are too small (likely icons) or too large
+    if (fileSize < 5000 || fileSize > 5000000) {
+      console.log('⚠️ Skipping image due to size:', fileSize);
+      return null;
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    
+    const { data, error } = await supabase.storage
+      .from('recipe-images')
+      .upload(filename, arrayBuffer, {
+        contentType: contentType,
+        upsert: true
+      });
+
+    if (error) {
+      console.error('❌ Error uploading to storage:', error);
+      return null;
+    }
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('recipe-images')
+      .getPublicUrl(filename);
+
+    console.log('✅ Image stored successfully:', filename);
+    return publicUrl;
+
+  } catch (error) {
+    console.error('❌ Error downloading/storing image:', error);
+    return null;
+  }
 }
 
 // Helper function to validate and normalize URLs
@@ -92,7 +154,6 @@ serve(async (req) => {
       });
     }
 
-    // Parse and validate request body
     let requestBody;
     try {
       requestBody = await req.json();
@@ -101,6 +162,7 @@ serve(async (req) => {
         hasImageUrl: !!requestBody.imageUrl,
         hasWebsiteUrl: !!requestBody.websiteUrl,
         extractImages: !!requestBody.extractImages,
+        downloadImages: !!requestBody.downloadImages,
         recipeTextLength: requestBody.recipeText?.length || 0,
         imageUrlLength: requestBody.imageUrl?.length || 0,
         websiteUrlLength: requestBody.websiteUrl?.length || 0
@@ -116,7 +178,7 @@ serve(async (req) => {
       });
     }
 
-    const { recipeText, imageUrl, websiteUrl, extractImages } = requestBody;
+    const { recipeText, imageUrl, websiteUrl, extractImages, downloadImages } = requestBody;
     
     if (!recipeText && !imageUrl && !websiteUrl) {
       console.error('❌ No input provided');
@@ -134,6 +196,7 @@ serve(async (req) => {
     let processedText = '';
     let isImageInput = false;
     let websiteImages: string[] = [];
+    let storedImages: { originalUrl: string; storedUrl: string; filename: string }[] = [];
 
     // Handle website URL
     if (websiteUrl) {
@@ -177,6 +240,31 @@ serve(async (req) => {
         if (extractImages) {
           websiteImages = extractImagesFromHTML(htmlContent, websiteUrl);
           console.log('🖼️ Found images:', websiteImages.length);
+
+          // Download and store images if requested
+          if (downloadImages && websiteImages.length > 0) {
+            console.log('📥 Starting image downloads...');
+            
+            for (let i = 0; i < websiteImages.length; i++) {
+              const imageUrl = websiteImages[i];
+              const timestamp = Date.now();
+              const imageIndex = i + 1;
+              const extension = imageUrl.split('.').pop()?.split('?')[0] || 'jpg';
+              const filename = `website-${timestamp}-${imageIndex}.${extension}`;
+              
+              const storedUrl = await downloadAndStoreImage(imageUrl, filename);
+              
+              if (storedUrl) {
+                storedImages.push({
+                  originalUrl: imageUrl,
+                  storedUrl: storedUrl,
+                  filename: filename
+                });
+              }
+            }
+            
+            console.log('✅ Downloaded and stored images:', storedImages.length);
+          }
         }
         
         console.log('✅ Website content extracted, text length:', processedText.length);
@@ -192,7 +280,6 @@ serve(async (req) => {
           });
         }
 
-        // Limit text length to avoid token limits
         if (processedText.length > 8000) {
           processedText = processedText.substring(0, 8000) + '...';
           console.log('⚠️ Text truncated to 8000 characters');
@@ -215,12 +302,11 @@ serve(async (req) => {
       console.log('📝 Text input length:', recipeText.length);
       processedText = recipeText;
     }
-    // Handle image input - IMPROVED OCR handling
+    // Handle image input
     else if (imageUrl) {
       console.log('🖼️ Image provided for OCR extraction');
       isImageInput = true;
       
-      // Validate image format
       if (!imageUrl.startsWith('data:image/')) {
         console.error('❌ Invalid image format - must be base64 data URL');
         return new Response(JSON.stringify({ 
@@ -261,7 +347,6 @@ serve(async (req) => {
       }
     ];
 
-    // Handle image or text input with improved OCR instructions
     if (isImageInput) {
       messages.push({
         role: 'user',
@@ -280,7 +365,6 @@ serve(async (req) => {
       });
     }
 
-    // Prepare OpenAI request
     const openAIRequest = {
       model: isImageInput ? 'gpt-4o' : 'gpt-4o-mini',
       messages,
@@ -289,13 +373,6 @@ serve(async (req) => {
     };
 
     console.log('🤖 Calling OpenAI API with model:', openAIRequest.model);
-    console.log('📊 Request details:', {
-      messageCount: messages.length,
-      hasSystemPrompt: messages[0].role === 'system',
-      temperature: openAIRequest.temperature,
-      maxTokens: openAIRequest.max_tokens,
-      inputType: websiteUrl ? 'website' : (isImageInput ? 'image_ocr' : 'text')
-    });
 
     let response;
     try {
@@ -331,7 +408,6 @@ serve(async (req) => {
         errorText = 'Could not read error response';
       }
 
-      // Handle specific OpenAI error cases
       if (response.status === 429) {
         return new Response(JSON.stringify({ 
           error: 'OpenAI API rate limit exceeded. Please try again in a moment.',
@@ -389,7 +465,6 @@ serve(async (req) => {
     const content = data.choices[0].message.content;
     console.log('📝 AI response content length:', content.length);
     
-    // Parse the JSON response
     let parsedRecipe;
     try {
       parsedRecipe = JSON.parse(content);
@@ -407,7 +482,6 @@ serve(async (req) => {
       });
     }
 
-    // Validate required fields
     const requiredFields = ['title', 'ingredients', 'instructions'];
     for (const field of requiredFields) {
       if (!parsedRecipe[field] || (Array.isArray(parsedRecipe[field]) && parsedRecipe[field].length === 0)) {
@@ -425,13 +499,16 @@ serve(async (req) => {
 
     console.log('🎉 Successfully processed recipe:', parsedRecipe.title);
 
-    // Build response object
     const responseData: any = { parsedRecipe };
     
-    // Include website images if found
     if (websiteImages.length > 0) {
       responseData.websiteImages = websiteImages;
       console.log('🖼️ Including website images in response:', websiteImages.length);
+    }
+
+    if (storedImages.length > 0) {
+      responseData.storedImages = storedImages;
+      console.log('💾 Including stored images in response:', storedImages.length);
     }
 
     return new Response(JSON.stringify(responseData), {

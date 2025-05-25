@@ -12,13 +12,11 @@ export function CreateRecipeContainer() {
   const isMobile = useIsMobile();
   const [activeTab, setActiveTab] = useState("text");
 
-  // Custom hooks
   const recipeFormHook = useRecipeForm();
   const recipeProcessingHook = useRecipeProcessing();
   const { handleSave, handleCancel } = useRecipeSave();
   const { handleGenerateImage } = useImageGeneration();
 
-  // Wrapper functions to pass the correct parameters
   const onProcessText = () => recipeProcessingHook.handleProcessText(
     recipeFormHook.setNewRecipe, 
     recipeFormHook.newRecipe, 
@@ -28,7 +26,15 @@ export function CreateRecipeContainer() {
   const onImportFromUrl = () => recipeProcessingHook.handleImportFromUrl(
     recipeFormHook.setNewRecipe, 
     recipeFormHook.newRecipe, 
-    setActiveTab
+    setActiveTab,
+    false // Don't download images by default
+  );
+
+  const onImportFromUrlWithImages = () => recipeProcessingHook.handleImportFromUrl(
+    recipeFormHook.setNewRecipe, 
+    recipeFormHook.newRecipe, 
+    setActiveTab,
+    true // Download images
   );
   
   const onProcessImage = (file: File) => recipeProcessingHook.handleProcessImage(
@@ -65,12 +71,12 @@ export function CreateRecipeContainer() {
         recipeProcessingHook={recipeProcessingHook}
         onProcessText={onProcessText}
         onImportFromUrl={onImportFromUrl}
+        onImportFromUrlWithImages={onImportFromUrlWithImages}
         onProcessImage={onProcessImage}
         onGenerateRecipe={onGenerateRecipe}
         onGenerateImage={onGenerateImage}
       />
 
-      {/* Only show Create Recipe actions on Manual Entry tab */}
       {activeTab === "manual" && (
         <CreateRecipeActions 
           isMobile={isMobile}

@@ -1,8 +1,13 @@
-
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Recipe, RecipeCategory } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
+
+interface StoredImage {
+  originalUrl: string;
+  storedUrl: string;
+  filename: string;
+}
 
 export function useRecipeProcessing() {
   const { toast } = useToast();
@@ -10,6 +15,9 @@ export function useRecipeProcessing() {
   const [recipeUrl, setRecipeUrl] = useState("");
   const [aiPrompt, setAiPrompt] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [websiteImages, setWebsiteImages] = useState<string[]>([]);
+  const [storedImages, setStoredImages] = useState<StoredImage[]>([]);
+  const [isDownloadingImages, setIsDownloadingImages] = useState(false);
 
   const handleProcessText = async (
     setNewRecipe: (recipe: Omit<Recipe, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>) => void,
@@ -66,7 +74,8 @@ export function useRecipeProcessing() {
   const handleImportFromUrl = async (
     setNewRecipe: (recipe: Omit<Recipe, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>) => void,
     currentRecipe: Omit<Recipe, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>,
-    setActiveTab: (tab: string) => void
+    setActiveTab: (tab: string) => void,
+    downloadImages = false
   ) => {
     if (!recipeUrl.trim()) {
       toast({
@@ -78,13 +87,17 @@ export function useRecipeProcessing() {
     }
 
     setIsProcessing(true);
+    setWebsiteImages([]);
+    setStoredImages([]);
+    
     try {
       console.log('Importing recipe from URL:', recipeUrl);
       
       const { data, error } = await supabase.functions.invoke('parse-recipe-ai', {
         body: { 
           websiteUrl: recipeUrl.trim(),
-          extractImages: true
+          extractImages: true,
+          downloadImages: downloadImages
         }
       });
 
@@ -101,17 +114,33 @@ export function useRecipeProcessing() {
       
       const recipeData = { ...currentRecipe, ...data.parsedRecipe };
       
-      // If website images were found, use the first one
+      // Store website images for selection
       if (data.websiteImages && data.websiteImages.length > 0) {
+        setWebsiteImages(data.websiteImages);
+      }
+
+      // Store downloaded images if available
+      if (data.storedImages && data.storedImages.length > 0) {
+        setStoredImages(data.storedImages);
+        // Use the first stored image as default
+        recipeData.image = data.storedImages[0].storedUrl;
+      } else if (data.websiteImages && data.websiteImages.length > 0) {
+        // Fallback to first website image if no stored images
         recipeData.image = data.websiteImages[0];
       }
       
       setNewRecipe(recipeData);
       setActiveTab("manual");
       
+      const imageMessage = downloadImages && data.storedImages?.length > 0 
+        ? ` ${data.storedImages.length} images downloaded and stored.`
+        : data.websiteImages?.length > 0 
+        ? ` ${data.websiteImages.length} images found for selection.`
+        : '';
+      
       toast({
         title: "Recipe Imported!",
-        description: "Review and edit your imported recipe in the Manual Entry tab",
+        description: `Review and edit your imported recipe in the Manual Entry tab.${imageMessage}`,
       });
     } catch (error) {
       console.error('Error importing from website:', error);
@@ -122,6 +151,57 @@ export function useRecipeProcessing() {
       });
     } finally {
       setIsProcessing(false);
+    }
+  };
+
+  const handleDownloadImages = async () => {
+    if (websiteImages.length === 0 || !recipeUrl.trim()) {
+      toast({
+        title: "Error",
+        description: "No images available to download",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsDownloadingImages(true);
+    try {
+      console.log('Downloading images from website...');
+      
+      const { data, error } = await supabase.functions.invoke('parse-recipe-ai', {
+        body: { 
+          websiteUrl: recipeUrl.trim(),
+          extractImages: true,
+          downloadImages: true
+        }
+      });
+
+      if (error) {
+        throw new Error(error.message || 'Failed to download images');
+      }
+
+      if (data.storedImages && data.storedImages.length > 0) {
+        setStoredImages(data.storedImages);
+        toast({
+          title: "Images Downloaded",
+          description: `${data.storedImages.length} images saved successfully`,
+        });
+      } else {
+        toast({
+          title: "No Images Downloaded",
+          description: "Unable to download images from this website",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Error downloading images:', error);
+      toast({
+        title: "Download Failed",
+        description: error.message || "Failed to download images",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDownloadingImages(false);
     }
   };
 
@@ -239,9 +319,13 @@ export function useRecipeProcessing() {
     aiPrompt,
     setAiPrompt,
     isProcessing,
+    websiteImages,
+    storedImages,
+    isDownloadingImages,
     handleProcessText,
     handleImportFromUrl,
     handleProcessImage,
     handleGenerateRecipe,
+    handleDownloadImages,
   };
 }
