@@ -77,17 +77,31 @@ export default function CategoryPage() {
     const confirmed = window.confirm(`Are you sure you want to delete "${recipe.title}"? This action cannot be undone.`);
     if (!confirmed) return;
 
-    const success = await deleteRecipe(recipe.id);
-    if (success) {
+    try {
+      const success = await deleteRecipe(recipe.id);
+      if (success) {
+        toast({
+          title: "Recipe Deleted",
+          description: `"${recipe.title}" has been deleted successfully.`,
+        });
+      }
+    } catch (error) {
       toast({
-        title: "Recipe Deleted",
-        description: `"${recipe.title}" has been deleted successfully.`,
+        title: "Error",
+        description: "Failed to delete recipe. Please try again.",
+        variant: "destructive",
       });
     }
   };
 
   const handleShareRecipe = (recipe: Recipe) => {
-    const recipeUrl = `${window.location.origin}/recipes/${recipe.id}/${recipe.title.toLowerCase().replace(/[^a-z0-9 -]/g, '').replace(/\s+/g, '-')}`;
+    const recipeSlug = recipe.title
+      .toLowerCase()
+      .replace(/[^a-z0-9 -]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .trim();
+    const recipeUrl = `${window.location.origin}/recipes/${recipeSlug}`;
     navigator.clipboard.writeText(recipeUrl).then(() => {
       toast({
         title: "Recipe Link Copied",
@@ -105,10 +119,18 @@ export default function CategoryPage() {
   const handleSaveEdit = async (updatedRecipe: Recipe) => {
     if (!editRecipe) return;
     
-    const result = await updateRecipe(editRecipe.id, updatedRecipe);
-    if (result) {
-      setEditDialogOpen(false);
-      setEditRecipe(null);
+    try {
+      const result = await updateRecipe(editRecipe.id, updatedRecipe);
+      if (result) {
+        setEditDialogOpen(false);
+        setEditRecipe(null);
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update recipe. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 

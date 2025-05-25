@@ -1,6 +1,7 @@
 
 import { createContext, useContext, useState, ReactNode, useCallback, useMemo } from 'react';
 import { Recipe } from '@/types';
+import { useRecipeApi } from '@/hooks/useRecipeApi';
 
 interface RecipesContextType {
   recipes: Recipe[];
@@ -12,6 +13,10 @@ interface RecipesContextType {
   getRecipeBySlug: (slug: string) => Recipe | undefined;
   isLoading: boolean;
   setIsLoading: (loading: boolean) => void;
+  // Add missing methods
+  fetchRecipes: (householdId: string | null) => Promise<void>;
+  createRecipe: (recipe: Omit<Recipe, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>, householdId: string) => Promise<Recipe | null>;
+  deleteRecipe: (id: string) => Promise<boolean>;
 }
 
 const RecipesContext = createContext<RecipesContextType | undefined>(undefined);
@@ -31,6 +36,7 @@ interface RecipesProviderProps {
 export const RecipesProvider = ({ children }: RecipesProviderProps) => {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const recipeApi = useRecipeApi();
 
   const addRecipe = useCallback((recipe: Recipe) => {
     setRecipes(prev => [recipe, ...prev]);
@@ -63,6 +69,50 @@ export const RecipesProvider = ({ children }: RecipesProviderProps) => {
     return recipes.find(recipe => createSlug(recipe.title) === slug);
   }, [recipes, createSlug]);
 
+  // Add missing methods using the API
+  const fetchRecipes = useCallback(async (householdId: string | null) => {
+    if (!householdId) return;
+    
+    setIsLoading(true);
+    try {
+      const fetchedRecipes = await recipeApi.fetchRecipes(householdId);
+      setRecipes(fetchedRecipes);
+    } catch (error) {
+      console.error('Error fetching recipes:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [recipeApi]);
+
+  const createRecipe = useCallback(async (
+    recipeData: Omit<Recipe, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>, 
+    householdId: string
+  ) => {
+    try {
+      const newRecipe = await recipeApi.createRecipe(recipeData, householdId);
+      if (newRecipe) {
+        addRecipe(newRecipe);
+      }
+      return newRecipe;
+    } catch (error) {
+      console.error('Error creating recipe:', error);
+      return null;
+    }
+  }, [recipeApi, addRecipe]);
+
+  const deleteRecipe = useCallback(async (id: string) => {
+    try {
+      const success = await recipeApi.deleteRecipe(id);
+      if (success) {
+        removeRecipe(id);
+      }
+      return success;
+    } catch (error) {
+      console.error('Error deleting recipe:', error);
+      return false;
+    }
+  }, [recipeApi, removeRecipe]);
+
   const value = useMemo(() => ({
     recipes,
     setRecipes,
@@ -73,7 +123,10 @@ export const RecipesProvider = ({ children }: RecipesProviderProps) => {
     getRecipeBySlug,
     isLoading,
     setIsLoading,
-  }), [recipes, addRecipe, updateRecipe, removeRecipe, getRecipeById, getRecipeBySlug, isLoading]);
+    fetchRecipes,
+    createRecipe,
+    deleteRecipe,
+  }), [recipes, addRecipe, updateRecipe, removeRecipe, getRecipeById, getRecipeBySlug, isLoading, fetchRecipes, createRecipe, deleteRecipe]);
 
   return (
     <RecipesContext.Provider value={value}>

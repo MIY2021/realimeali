@@ -1,8 +1,8 @@
 
 import { useState } from "react";
-import { ShoppingListHeader } from "@/components/shopping-list/ShoppingListHeader";
-import { ShoppingListWeekSelector } from "@/components/shopping-list/ShoppingListWeekSelector";
-import { ShoppingListCategory } from "@/components/shopping-list/ShoppingListCategory";
+import ShoppingListHeader from "@/components/shopping-list/ShoppingListHeader";
+import ShoppingListWeekSelector from "@/components/shopping-list/ShoppingListWeekSelector";
+import ShoppingListCategory from "@/components/shopping-list/ShoppingListCategory";
 import { useShoppingList } from "@/hooks/useShoppingList";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
@@ -36,14 +36,30 @@ export default function ShoppingList() {
     clearAll,
   } = useShoppingList(weekNumber);
 
+  const handleShare = () => {
+    // Simple share functionality
+    const listText = Object.entries(shoppingList)
+      .filter(([, items]) => items.length > 0)
+      .map(([category, items]) => {
+        const itemsList = items.map(item => `• ${item.name}${item.quantity > 1 ? ` (${item.quantity}${item.unit ? ` ${item.unit}` : ''})` : ''}`).join('\n');
+        return `${category}:\n${itemsList}`;
+      })
+      .join('\n\n');
+
+    if (navigator.share) {
+      navigator.share({
+        title: 'Shopping List',
+        text: listText,
+      });
+    } else {
+      navigator.clipboard.writeText(listText);
+    }
+  };
+
   return (
     <div className="container max-w-2xl py-8">
       <ShoppingListHeader
-        user={user}
-        currentHousehold={currentHousehold}
-        onGenerate={generateFromMealPlans}
-        onClearAll={clearAll}
-        isLoading={isLoading}
+        onShare={handleShare}
       />
 
       {!user ? (
@@ -57,8 +73,8 @@ export default function ShoppingList() {
       ) : (
         <>
           <ShoppingListWeekSelector 
-            week={weekNumber} 
-            onWeekChange={setWeekNumber} 
+            selectedWeek={weekNumber} 
+            onWeekSelect={setWeekNumber} 
           />
 
           {isLoading ? (
@@ -72,9 +88,13 @@ export default function ShoppingList() {
                   key={category}
                   category={category}
                   items={shoppingList[category] || []}
-                  onToggleItem={(itemId) => toggleItemChecked(itemId, category)}
-                  onAddItem={(name) => addCustomItem(name, category)}
+                  copiedItemId={null}
+                  onCheckItem={(itemId, checked) => toggleItemChecked(itemId, category)}
+                  onCopyItem={(name, itemId) => {
+                    navigator.clipboard.writeText(name);
+                  }}
                   onRemoveItem={(itemId) => removeItem(itemId, category)}
+                  getRecipeNames={(recipeIds) => recipeIds.join(', ')}
                 />
               ))}
             </div>

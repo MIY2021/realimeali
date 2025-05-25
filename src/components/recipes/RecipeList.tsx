@@ -1,3 +1,4 @@
+
 import { Recipe, RecipeCategory } from "@/types";
 import { RecipeCard } from "./RecipeCard";
 import { Input } from "@/components/ui/input";
@@ -14,14 +15,28 @@ import { useAuth } from "@/contexts/AuthContext";
 interface RecipeListProps {
   recipes: Recipe[];
   showActions?: boolean;
+  searchTerm?: string;
+  onSearchChange?: (searchTerm: string) => void;
+  isLoading?: boolean;
 }
 
-export function RecipeList({ recipes, showActions = true }: RecipeListProps) {
+export function RecipeList({ 
+  recipes, 
+  showActions = true, 
+  searchTerm: externalSearchTerm = "", 
+  onSearchChange,
+  isLoading = false 
+}: RecipeListProps) {
   const { recipeCategories } = useHouseholdShopping();
   const { updateRecipe, deleteRecipe } = useRecipes();
   const { user } = useAuth();
   const { toast } = useToast();
-  const [searchTerm, setSearchTerm] = useState("");
+  
+  // Use internal state if no external search control is provided
+  const [internalSearchTerm, setInternalSearchTerm] = useState("");
+  const searchTerm = onSearchChange ? externalSearchTerm : internalSearchTerm;
+  const setSearchTerm = onSearchChange || setInternalSearchTerm;
+  
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [sortType, setSortType] = useState<string>("title-asc");
   const [displayCount, setDisplayCount] = useState(10);
@@ -90,18 +105,32 @@ export function RecipeList({ recipes, showActions = true }: RecipeListProps) {
     const confirmed = window.confirm(`Are you sure you want to delete "${recipe.title}"? This action cannot be undone.`);
     if (!confirmed) return;
 
-    const success = await deleteRecipe(recipe.id);
-    if (success) {
+    try {
+      const success = await deleteRecipe(recipe.id);
+      if (success) {
+        toast({
+          title: "Recipe Deleted",
+          description: `"${recipe.title}" has been deleted successfully.`,
+        });
+      }
+    } catch (error) {
       toast({
-        title: "Recipe Deleted",
-        description: `"${recipe.title}" has been deleted successfully.`,
+        title: "Error",
+        description: "Failed to delete recipe. Please try again.",
+        variant: "destructive",
       });
     }
   };
 
   const handleShareRecipe = (recipe: Recipe) => {
     // Simple share functionality - copy URL to clipboard
-    const recipeUrl = `${window.location.origin}/recipes/${recipe.id}/${recipe.title.toLowerCase().replace(/[^a-z0-9 -]/g, '').replace(/\s+/g, '-')}`;
+    const recipeSlug = recipe.title
+      .toLowerCase()
+      .replace(/[^a-z0-9 -]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .trim();
+    const recipeUrl = `${window.location.origin}/recipes/${recipeSlug}`;
     navigator.clipboard.writeText(recipeUrl).then(() => {
       toast({
         title: "Recipe Link Copied",
@@ -119,15 +148,31 @@ export function RecipeList({ recipes, showActions = true }: RecipeListProps) {
   const handleSaveEdit = async (updatedRecipe: Recipe) => {
     if (!editRecipe) return;
     
-    const result = await updateRecipe(editRecipe.id, updatedRecipe);
-    if (result) {
-      setEditDialogOpen(false);
-      setEditRecipe(null);
+    try {
+      const result = await updateRecipe(editRecipe.id, updatedRecipe);
+      if (result) {
+        setEditDialogOpen(false);
+        setEditRecipe(null);
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update recipe. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
   const visibleRecipes = sortedRecipes.slice(0, displayCount);
   const hasMoreRecipes = displayCount < sortedRecipes.length;
+
+  if (isLoading) {
+    return (
+      <div className="py-10 text-center">
+        <p className="text-muted-foreground">Loading recipes...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
