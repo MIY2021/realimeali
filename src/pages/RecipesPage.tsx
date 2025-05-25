@@ -21,7 +21,7 @@ export default function RecipesPage() {
   useRecipesLoader();
 
   return (
-    <div className="container py-8">
+    <div className="container max-w-7xl py-8">
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-3xl font-bold text-navy">

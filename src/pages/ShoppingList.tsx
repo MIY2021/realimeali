@@ -3,9 +3,12 @@ import { useState } from "react";
 import ShoppingListHeader from "@/components/shopping-list/ShoppingListHeader";
 import ShoppingListWeekSelector from "@/components/shopping-list/ShoppingListWeekSelector";
 import ShoppingListCategory from "@/components/shopping-list/ShoppingListCategory";
+import { Button } from "@/components/ui/button";
+import { RefreshCw } from "lucide-react";
 import { useShoppingList } from "@/hooks/useShoppingList";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
+import { useRecipes } from "@/contexts/RecipesContext";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 
 const SHOPPING_CATEGORIES = [
@@ -24,6 +27,7 @@ export default function ShoppingList() {
   
   const { user } = useAuth();
   const { currentHousehold } = useHousehold();
+  const { recipes } = useRecipes();
   const [weekNumber, setWeekNumber] = useState<1 | 2>(1);
   
   const {
@@ -36,12 +40,23 @@ export default function ShoppingList() {
     clearAll,
   } = useShoppingList(weekNumber);
 
+  const getRecipeNames = (recipeIds: string[]): string => {
+    const recipeNames = recipeIds
+      .map(id => {
+        const recipe = recipes.find(r => r.id === id);
+        return recipe ? recipe.title : `Recipe ${id.substring(0, 8)}`;
+      })
+      .filter(Boolean);
+    
+    return recipeNames.length > 0 ? recipeNames.join(', ') : 'Unknown Recipe';
+  };
+
   const handleShare = () => {
     // Simple share functionality
     const listText = Object.entries(shoppingList)
       .filter(([, items]) => items.length > 0)
       .map(([category, items]) => {
-        const itemsList = items.map(item => `• ${item.name}${item.quantity > 1 ? ` (${item.quantity}${item.unit ? ` ${item.unit}` : ''})` : ''}`).join('\n');
+        const itemsList = items.map(item => `• ${item.name}${item.quantity && item.quantity > 1 ? ` (${item.quantity}${item.unit ? ` ${item.unit}` : ''})` : ''}`).join('\n');
         return `${category}:\n${itemsList}`;
       })
       .join('\n\n');
@@ -77,6 +92,19 @@ export default function ShoppingList() {
             onWeekSelect={setWeekNumber} 
           />
 
+          <div className="flex gap-2 mb-6">
+            <Button 
+              onClick={generateFromMealPlans} 
+              variant="outline" 
+              size="sm" 
+              className="flex-1"
+              disabled={isLoading}
+            >
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Generate from Meal Plans
+            </Button>
+          </div>
+
           {isLoading ? (
             <div className="py-10 text-center">
               <p className="text-muted-foreground">Loading shopping list...</p>
@@ -94,7 +122,7 @@ export default function ShoppingList() {
                     navigator.clipboard.writeText(name);
                   }}
                   onRemoveItem={(itemId) => removeItem(itemId, category)}
-                  getRecipeNames={(recipeIds) => recipeIds.join(', ')}
+                  getRecipeNames={getRecipeNames}
                 />
               ))}
             </div>

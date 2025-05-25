@@ -1,4 +1,3 @@
-
 import { Recipe, RecipeCategory } from "@/types";
 import { RecipeCard } from "./RecipeCard";
 import { Input } from "@/components/ui/input";
@@ -31,7 +30,7 @@ export function RecipeList({
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [sortType, setSortType] = useState<string>("title-asc");
-  const [displayCount, setDisplayCount] = useState(10);
+  const [displayCount, setDisplayCount] = useState(12);
   
   // State for meal plan dialog
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
@@ -69,7 +68,7 @@ export function RecipeList({
   });
 
   const handleLoadMore = () => {
-    setDisplayCount(prev => prev + 10);
+    setDisplayCount(prev => prev + 12);
   };
 
   const handleAddToMealPlan = (recipe: Recipe) => {
@@ -199,7 +198,7 @@ export function RecipeList({
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {visibleRecipes.map((recipe) => (
               <RecipeCard 
                 key={recipe.id} 
