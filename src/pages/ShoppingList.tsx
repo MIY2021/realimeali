@@ -42,7 +42,8 @@ export default function ShoppingList() {
     handleCheckAll,
     handleUncheckAll,
     handleRemoveAll,
-    handleShare
+    handleShare,
+    generateShoppingList
   } = useShoppingList();
 
   // Load recipes automatically
@@ -86,9 +87,17 @@ export default function ShoppingList() {
 
   const isLoading = recipesLoading || shoppingLoading || isGenerating;
 
+  const handleGenerateShoppingList = () => {
+    generateShoppingList(selectedWeek);
+  };
+
   return (
     <div className="container max-w-xl py-8">
-      <ShoppingListHeader onShare={handleShare} />
+      <ShoppingListHeader 
+        onShare={handleShare} 
+        onGenerate={handleGenerateShoppingList}
+        isGenerating={isGenerating}
+      />
 
       <ShoppingListWeekSelector 
         selectedWeek={selectedWeek}
