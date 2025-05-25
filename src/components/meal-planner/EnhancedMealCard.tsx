@@ -35,7 +35,7 @@ export function EnhancedMealCard({
 
   const getRecipeUrl = (recipe: Recipe) => {
     const recipeSlug = createSlug(recipe.title);
-    return `/recipes/${recipe.id}/${recipeSlug}`;
+    return `/recipes/${recipeSlug}`;
   };
 
   if (!displayRecipe) {

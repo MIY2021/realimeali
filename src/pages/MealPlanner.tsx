@@ -16,8 +16,11 @@ import { useRandomMealSelection } from "@/hooks/useRandomMealSelection";
 import { MealPlannerHeader } from "@/components/meal-planner/MealPlannerHeader";
 import { WeekSelector } from "@/components/meal-planner/WeekSelector";
 import { MealPlannerActions } from "@/components/meal-planner/MealPlannerActions";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 
 export default function MealPlanner() {
+  useDocumentTitle("Meal Planner | RealiMeali");
+  
   const { user } = useAuth();
   const { recipes, isLoading: recipesLoading } = useRecipes();
   const { currentHousehold } = useHousehold();

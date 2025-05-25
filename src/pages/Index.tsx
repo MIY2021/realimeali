@@ -1,3 +1,4 @@
+
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { 
@@ -5,8 +6,11 @@ import {
   CalendarDays, 
   ListChecks,
 } from "lucide-react";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 
 export default function Index() {
+  useDocumentTitle("RealiMeali | All-in-one meal planning");
+
   return (
     <div className="flex flex-col min-h-[85vh]">
       <section className="py-8 md:py-12 lg:py-16 bg-white">

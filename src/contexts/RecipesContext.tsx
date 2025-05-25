@@ -1,177 +1,83 @@
 
-import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
-import { Recipe } from "@/types";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/contexts/AuthContext";
-import { useRecipeApi } from "@/hooks/useRecipeApi";
-import { RecipesContextType } from "@/types/recipe";
+import { createContext, useContext, useState, ReactNode, useCallback, useMemo } from 'react';
+import { Recipe } from '@/types';
+
+interface RecipesContextType {
+  recipes: Recipe[];
+  setRecipes: (recipes: Recipe[]) => void;
+  addRecipe: (recipe: Recipe) => void;
+  updateRecipe: (id: string, recipe: Recipe) => void;
+  removeRecipe: (id: string) => void;
+  getRecipeById: (id: string) => Recipe | undefined;
+  getRecipeBySlug: (slug: string) => Recipe | undefined;
+  isLoading: boolean;
+  setIsLoading: (loading: boolean) => void;
+}
 
 const RecipesContext = createContext<RecipesContextType | undefined>(undefined);
 
-export const RecipesProvider = ({ children }: { children: ReactNode }) => {
+export const useRecipes = () => {
+  const context = useContext(RecipesContext);
+  if (!context) {
+    throw new Error('useRecipes must be used within a RecipesProvider');
+  }
+  return context;
+};
+
+interface RecipesProviderProps {
+  children: ReactNode;
+}
+
+export const RecipesProvider = ({ children }: RecipesProviderProps) => {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const { toast } = useToast();
-  const { user } = useAuth();
-  const recipeApi = useRecipeApi();
+  const [isLoading, setIsLoading] = useState(false);
 
-  const fetchRecipes = useCallback(async (householdId: string | null) => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      
-      const fetchedRecipes = await recipeApi.fetchRecipes(householdId);
-      setRecipes(fetchedRecipes);
-    } catch (err) {
-      console.error("Error fetching recipes:", err);
-      setError("Failed to fetch recipes. Please try again later.");
-      toast({
-        title: "Error",
-        description: "Failed to fetch recipes. Please try again later.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  }, [recipeApi]); // Only depend on recipeApi, which is now stable
+  const addRecipe = useCallback((recipe: Recipe) => {
+    setRecipes(prev => [recipe, ...prev]);
+  }, []);
 
-  // Auto-fetch recipes when context initializes and when household changes
-  useEffect(() => {
-    let isMounted = true;
-    
-    const initializeFetch = async () => {
-      if (user) {
-        // Import household context to get current household
-        const { useHousehold } = await import("@/contexts/HouseholdContext");
-        const householdContext = useHousehold();
-        
-        if (isMounted) {
-          await fetchRecipes(householdContext.currentHousehold?.id || null);
-        }
-      } else {
-        if (isMounted) {
-          setRecipes([]);
-          setIsLoading(false);
-        }
-      }
-    };
+  const updateRecipe = useCallback((id: string, updatedRecipe: Recipe) => {
+    setRecipes(prev => prev.map(recipe => 
+      recipe.id === id ? updatedRecipe : recipe
+    ));
+  }, []);
 
-    initializeFetch();
-    
-    return () => {
-      isMounted = false;
-    };
-  }, [user?.id, fetchRecipes]);
-
-  const createRecipe = useCallback(async (
-    recipeData: Omit<Recipe, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>, 
-    householdId: string
-  ): Promise<Recipe | null> => {
-    try {
-      const newRecipe = await recipeApi.createRecipe(recipeData, householdId);
-      if (newRecipe) {
-        setRecipes(prev => [newRecipe, ...prev]);
-      }
-      return newRecipe;
-    } catch (err) {
-      console.error("Error creating recipe:", err);
-      toast({
-        title: "Error",
-        description: "Failed to create recipe. Please try again.",
-        variant: "destructive",
-      });
-      return null;
-    }
-  }, [recipeApi]);
-
-  const updateRecipe = useCallback(async (id: string, recipeData: Partial<Recipe>): Promise<Recipe | null> => {
-    try {
-      const updatedRecipe = await recipeApi.updateRecipe(id, recipeData);
-      if (updatedRecipe) {
-        setRecipes(prev => prev.map(recipe => 
-          recipe.id === id ? updatedRecipe : recipe
-        ));
-      }
-      return updatedRecipe;
-    } catch (err) {
-      console.error("Error updating recipe:", err);
-      toast({
-        title: "Error",
-        description: "Failed to update recipe. Please try again.",
-        variant: "destructive",
-      });
-      return null;
-    }
-  }, [recipeApi]);
-
-  const deleteRecipe = useCallback(async (id: string): Promise<boolean> => {
-    try {
-      const success = await recipeApi.deleteRecipe(id);
-      if (success) {
-        setRecipes(prev => prev.filter(recipe => recipe.id !== id));
-      }
-      return success;
-    } catch (err) {
-      console.error("Error deleting recipe:", err);
-      toast({
-        title: "Error",
-        description: "Failed to delete recipe. Please try again.",
-        variant: "destructive",
-      });
-      return false;
-    }
-  }, [recipeApi]);
+  const removeRecipe = useCallback((id: string) => {
+    setRecipes(prev => prev.filter(recipe => recipe.id !== id));
+  }, []);
 
   const getRecipeById = useCallback((id: string) => {
     return recipes.find(recipe => recipe.id === id);
   }, [recipes]);
 
-  // Set up real-time subscription
-  useEffect(() => {
-    if (!user) return;
+  const createSlug = useCallback((title: string) => {
+    return title
+      .toLowerCase()
+      .replace(/[^a-z0-9 -]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .trim();
+  }, []);
 
-    const channel = supabase
-      .channel('recipes-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'recipes',
-        },
-        () => {
-          // Refetch recipes when changes occur - this will be handled by the page component
-        }
-      )
-      .subscribe();
+  const getRecipeBySlug = useCallback((slug: string) => {
+    return recipes.find(recipe => createSlug(recipe.title) === slug);
+  }, [recipes, createSlug]);
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [user?.id]); // Only depend on user ID
+  const value = useMemo(() => ({
+    recipes,
+    setRecipes,
+    addRecipe,
+    updateRecipe,
+    removeRecipe,
+    getRecipeById,
+    getRecipeBySlug,
+    isLoading,
+    setIsLoading,
+  }), [recipes, addRecipe, updateRecipe, removeRecipe, getRecipeById, getRecipeBySlug, isLoading]);
 
   return (
-    <RecipesContext.Provider value={{ 
-      recipes, 
-      isLoading, 
-      error, 
-      fetchRecipes, 
-      getRecipeById,
-      createRecipe,
-      updateRecipe,
-      deleteRecipe
-    }}>
+    <RecipesContext.Provider value={value}>
       {children}
     </RecipesContext.Provider>
   );
-};
-
-export const useRecipes = () => {
-  const context = useContext(RecipesContext);
-  if (context === undefined) {
-    throw new Error("useRecipes must be used within a RecipesProvider");
-  }
-  return context;
 };

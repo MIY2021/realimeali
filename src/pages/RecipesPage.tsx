@@ -1,63 +1,51 @@
 
-import { useState, useEffect } from "react";
-import { RecipeList } from "@/components/recipes/RecipeList";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Book, Plus } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { useNavigate } from "react-router-dom";
-import { CategoryManagementDialog } from "@/components/recipes/CategoryManagementDialog";
+import { Plus } from "lucide-react";
+import { Link } from "react-router-dom";
+import { RecipeList } from "@/components/recipes/RecipeList";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { useRecipesLoader } from "@/hooks/useRecipesLoader";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 
 export default function RecipesPage() {
-  const { recipes, isLoading } = useRecipes();
+  useDocumentTitle("Recipes | RealiMeali");
+  
   const { user } = useAuth();
   const { currentHousehold } = useHousehold();
-  const { toast } = useToast();
-  const navigate = useNavigate();
+  const { recipes, isLoading } = useRecipes();
+  const [searchTerm, setSearchTerm] = useState("");
 
-  // Dialog state
-  const [showCategoryDialog, setShowCategoryDialog] = useState(false);
-  
   // Load recipes automatically
   useRecipesLoader();
 
-  const handleCreateRecipe = () => {
-    if (!user) {
-      toast({
-        title: "Login Required", 
-        description: "You need to log in to create recipes.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    if (!currentHousehold) {
-      toast({
-        title: "Household Required", 
-        description: "Please select a household to add recipes to.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    navigate("/recipes/new");
-  };
+  const filteredRecipes = recipes.filter(recipe => 
+    recipe.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    recipe.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    recipe.categories.some(cat => cat.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
 
   return (
-    <div className="container max-w-3xl py-6">
-      <div className="flex items-center justify-between mb-6 gap-2 flex-wrap">
+    <div className="container py-8">
+      <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-navy flex items-center gap-2">
-            <Book className="h-6 w-6" />
-            Household Recipes
+          <h1 className="text-3xl font-bold text-navy">
+            {currentHousehold ? `${currentHousehold.name} Recipes` : 'Recipes'}
           </h1>
-          <p className="text-muted-foreground mt-1">
-            {user ? "Manage your household's recipe collection" : "Login to view and create household recipes"}
+          <p className="text-muted-foreground">
+            Discover and manage your recipe collection
           </p>
         </div>
+        {user && currentHousehold && (
+          <Button asChild className="bg-terracotta hover:bg-terracotta/90">
+            <Link to="/recipes/new">
+              <Plus className="h-4 w-4 mr-2" />
+              Create Recipe
+            </Link>
+          </Button>
+        )}
       </div>
 
       {!user ? (
@@ -66,59 +54,16 @@ export default function RecipesPage() {
         </div>
       ) : !currentHousehold ? (
         <div className="py-10 text-center">
-          <p className="text-muted-foreground mb-4">Please select or create a household to view recipes.</p>
+          <p className="text-muted-foreground mb-4">Please create or select a household to view recipes.</p>
         </div>
       ) : (
-        <>
-          <div className="flex items-center justify-between mb-8 gap-2 flex-wrap">
-            <div className="flex items-center gap-2">
-              <Button 
-                onClick={handleCreateRecipe}
-                className="flex items-center gap-1"
-                style={{ backgroundColor: '#e38165' }}
-              >
-                <Plus className="h-4 w-4" />
-                Add New Recipe
-              </Button>
-            </div>
-            {user && (
-              <Button 
-                variant="outline"
-                size="sm"
-                onClick={() => setShowCategoryDialog(true)}
-                className="flex items-center gap-1"
-              >
-                Manage Categories
-              </Button>
-            )}
-          </div>
-
-          {isLoading ? (
-            <div className="py-10 text-center">
-              <p className="text-muted-foreground">Loading household recipes...</p>
-            </div>
-          ) : recipes.length === 0 ? (
-            <div className="py-10 text-center">
-              <p className="text-muted-foreground mb-4">Your household hasn't created any recipes yet.</p>
-              <Button 
-                onClick={handleCreateRecipe} 
-                style={{ backgroundColor: '#e38165' }}
-                className="hover:opacity-90 text-white"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Add New Recipe
-              </Button>
-            </div>
-          ) : (
-            <RecipeList recipes={recipes} showActions={false} />
-          )}
-        </>
+        <RecipeList 
+          recipes={filteredRecipes}
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          isLoading={isLoading}
+        />
       )}
-
-      <CategoryManagementDialog
-        open={showCategoryDialog}
-        onOpenChange={setShowCategoryDialog}
-      />
     </div>
   );
 }
