@@ -29,11 +29,11 @@ export function RecipeImage({ recipe, alt, className, iconSize = "h-8 w-8" }: Re
     );
   }
 
-  // If recipe image failed or doesn't exist, try placeholder.svg
+  // If recipe image failed or doesn't exist, try the uploaded placeholder
   if (!placeholderError) {
     return (
       <img
-        src="/placeholder.svg"
+        src="/lovable-uploads/b0590044-8153-4ef8-a6e2-573ed439032f.png"
         alt={imageAlt}
         className={cn("object-cover bg-muted", className)}
         onError={() => setPlaceholderError(true)}
