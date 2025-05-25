@@ -3,8 +3,6 @@ import { useState } from "react";
 import ShoppingListHeader from "@/components/shopping-list/ShoppingListHeader";
 import ShoppingListWeekSelector from "@/components/shopping-list/ShoppingListWeekSelector";
 import ShoppingListCategory from "@/components/shopping-list/ShoppingListCategory";
-import { Button } from "@/components/ui/button";
-import { Shuffle } from "lucide-react";
 import { useShoppingList } from "@/hooks/useShoppingList";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
@@ -23,7 +21,6 @@ export default function ShoppingList() {
   const {
     shoppingList,
     isLoading,
-    generateFromMealPlans,
     toggleItemChecked,
     addCustomItem,
     removeItem,
@@ -81,19 +78,6 @@ export default function ShoppingList() {
             selectedWeek={weekNumber} 
             onWeekSelect={setWeekNumber} 
           />
-
-          <div className="flex gap-2 mb-6">
-            <Button 
-              onClick={generateFromMealPlans} 
-              variant="outline" 
-              size="sm" 
-              className="flex-1"
-              disabled={isLoading}
-            >
-              <Shuffle className="h-4 w-4 mr-2" />
-              Generate from Meal Plans
-            </Button>
-          </div>
 
           {isLoading ? (
             <div className="py-10 text-center">

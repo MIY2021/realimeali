@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
+import { useMealPlan } from "@/contexts/MealPlanContext";
 import { useToast } from "@/hooks/use-toast";
 import { ShoppingListCategory, SHOPPING_CATEGORIES } from "@/types/shoppingList";
 import { ShoppingListService } from "@/services/shoppingListService";
@@ -10,36 +11,33 @@ import { useShoppingListGenerator } from "@/hooks/useShoppingListGenerator";
 export const useShoppingList = (weekNumber: 1 | 2) => {
   const { user } = useAuth();
   const { currentHousehold } = useHousehold();
+  const { getMealPlansForWeek } = useMealPlan();
   const { toast } = useToast();
   const { generateFromMealPlans: generateItems } = useShoppingListGenerator();
   
   const [shoppingList, setShoppingList] = useState<ShoppingListCategory>({});
   const [isLoading, setIsLoading] = useState(false);
-  const [hasInitialized, setHasInitialized] = useState(false);
 
-  const initializeShoppingList = useCallback(async () => {
-    if (!user || !currentHousehold || hasInitialized) return;
+  // Auto-generate shopping list from meal plans
+  const autoGenerateFromMealPlans = useCallback(async () => {
+    if (!user || !currentHousehold) return;
 
     setIsLoading(true);
     try {
-      // Always try to generate from meal plans for auto-generation
-      const generatedItems = generateItems(weekNumber);
+      // Get current meal plans for the week
+      const mealPlans = getMealPlansForWeek(weekNumber);
       
-      // Check if we have any meal plan items
-      const hasMealPlanItems = Object.values(generatedItems || {}).some(items => items.length > 0);
-      
-      if (hasMealPlanItems) {
-        // If we have meal plan items, use them
+      if (mealPlans.length > 0) {
+        // Generate from meal plans if available
+        const generatedItems = generateItems(weekNumber);
         setShoppingList(generatedItems);
       } else {
-        // If no meal plan items, load existing items
+        // Load existing items if no meal plans
         const existingItems = await ShoppingListService.loadExistingShoppingList(currentHousehold.id);
         setShoppingList(existingItems || {});
       }
-      
-      setHasInitialized(true);
     } catch (error) {
-      console.error("Error initializing shopping list:", error);
+      console.error("Error auto-generating shopping list:", error);
       toast({
         title: "Error",
         description: "Failed to load shopping list",
@@ -48,31 +46,12 @@ export const useShoppingList = (weekNumber: 1 | 2) => {
     } finally {
       setIsLoading(false);
     }
-  }, [user, currentHousehold, hasInitialized, generateItems, weekNumber, toast]);
+  }, [user, currentHousehold, getMealPlansForWeek, weekNumber, generateItems, toast]);
 
-  const generateFromMealPlans = useCallback(async () => {
-    if (!user || !currentHousehold) return;
-
-    setIsLoading(true);
-    try {
-      const generatedItems = generateItems(weekNumber);
-      setShoppingList(generatedItems);
-      
-      toast({
-        title: "Shopping list generated",
-        description: `Generated from week ${weekNumber} meal plans`,
-      });
-    } catch (error) {
-      console.error("Error generating shopping list:", error);
-      toast({
-        title: "Error",
-        description: "Failed to generate shopping list",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  }, [user, currentHousehold, generateItems, weekNumber, toast]);
+  // Auto-generate whenever dependencies change
+  useEffect(() => {
+    autoGenerateFromMealPlans();
+  }, [autoGenerateFromMealPlans]);
 
   const toggleItemChecked = useCallback(async (itemId: string, category: string) => {
     if (!user || !currentHousehold) return;
@@ -165,7 +144,6 @@ export const useShoppingList = (weekNumber: 1 | 2) => {
         });
         
         setShoppingList(emptyCategories);
-        setHasInitialized(false);
 
         toast({
           title: "Shopping list cleared",
@@ -190,15 +168,9 @@ export const useShoppingList = (weekNumber: 1 | 2) => {
     }
   }, [user, currentHousehold, toast]);
 
-  // Initialize shopping list once when component mounts
-  useEffect(() => {
-    initializeShoppingList();
-  }, [initializeShoppingList]);
-
   return {
     shoppingList,
     isLoading,
-    generateFromMealPlans,
     toggleItemChecked,
     addCustomItem,
     removeItem,
