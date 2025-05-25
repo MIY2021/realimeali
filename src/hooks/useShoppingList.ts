@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useMealPlan } from "@/contexts/MealPlanContext";
@@ -23,7 +24,7 @@ export function useShoppingList() {
   const { toast } = useToast();
   const [selectedWeek, setSelectedWeek] = useState<1 | 2>(1);
   const [copiedItemId, setCopiedItemId] = useState<string | null>(null);
-  const [weekShoppingItems, setWeekShoppingItems<{
+  const [weekShoppingItems, setWeekShoppingItems] = useState<{
     1: ShoppingItem[];
     2: ShoppingItem[];
   }>({
