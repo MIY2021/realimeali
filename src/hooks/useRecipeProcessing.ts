@@ -131,13 +131,13 @@ export function useRecipeProcessing() {
       
       setNewRecipe(recipeData);
       
-      // Don't automatically switch tabs - keep user on URL tab to select images
-      // setActiveTab("manual"); // Remove this line
+      // Auto-switch to manual tab like other import methods
+      setActiveTab("manual");
       
       const imageMessage = downloadImages && data.storedImages?.length > 0 
-        ? ` ${data.storedImages.length} images downloaded and stored. Select your preferred image below.`
+        ? ` ${data.storedImages.length} images downloaded and stored.`
         : data.websiteImages?.length > 0 
-        ? ` ${data.websiteImages.length} images found. Select your preferred image below, then switch to Manual Entry tab.`
+        ? ` ${data.websiteImages.length} images found for selection.`
         : '';
       
       toast({
