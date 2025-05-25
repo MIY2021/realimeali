@@ -12,14 +12,19 @@ import { useRecipes } from "@/contexts/RecipesContext";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 
 const SHOPPING_CATEGORIES = [
-  "Produce",
-  "Meat & Seafood", 
-  "Dairy & Eggs",
-  "Pantry & Dry Goods",
-  "Frozen",
+  "Fresh & Chilled Food",
+  "Food Cupboard", 
   "Bakery",
-  "Beverages",
-  "Other"
+  "Frozen Food",
+  "Dietary, Lifestyle & World Foods",
+  "Soft Drinks, Tea & Coffee",
+  "Beer, Wine & Spirits",
+  "Health, Beauty & Personal Care",
+  "Baby, Parent & Kids",
+  "Home Care & Cleaning",
+  "Pets, Home & Garden",
+  "Occasions & Entertaining",
+  "Clothing & Accessories"
 ];
 
 export default function ShoppingList() {

@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -23,14 +22,19 @@ interface ShoppingListCategory {
 }
 
 const SHOPPING_CATEGORIES = [
-  "Produce",
-  "Meat & Seafood", 
-  "Dairy & Eggs",
-  "Pantry & Dry Goods",
-  "Frozen",
+  "Fresh & Chilled Food",
+  "Food Cupboard", 
   "Bakery",
-  "Beverages",
-  "Other"
+  "Frozen Food",
+  "Dietary, Lifestyle & World Foods",
+  "Soft Drinks, Tea & Coffee",
+  "Beer, Wine & Spirits",
+  "Health, Beauty & Personal Care",
+  "Baby, Parent & Kids",
+  "Home Care & Cleaning",
+  "Pets, Home & Garden",
+  "Occasions & Entertaining",
+  "Clothing & Accessories"
 ];
 
 export const useShoppingList = (weekNumber: 1 | 2) => {
@@ -47,41 +51,152 @@ export const useShoppingList = (weekNumber: 1 | 2) => {
   const categorizeIngredient = useCallback((ingredient: string): string => {
     const lower = ingredient.toLowerCase();
     
-    if (lower.includes('chicken') || lower.includes('beef') || lower.includes('pork') || 
-        lower.includes('fish') || lower.includes('salmon') || lower.includes('tuna') ||
-        lower.includes('shrimp') || lower.includes('meat')) {
-      return "Meat & Seafood";
-    }
-    if (lower.includes('milk') || lower.includes('cheese') || lower.includes('yogurt') || 
-        lower.includes('butter') || lower.includes('egg') || lower.includes('cream')) {
-      return "Dairy & Eggs";
-    }
-    if (lower.includes('onion') || lower.includes('garlic') || lower.includes('tomato') ||
-        lower.includes('potato') || lower.includes('carrot') || lower.includes('pepper') ||
-        lower.includes('lettuce') || lower.includes('spinach') || lower.includes('apple') ||
-        lower.includes('banana') || lower.includes('lemon') || lower.includes('herbs') ||
-        lower.includes('mushroom') || lower.includes('broccoli') || lower.includes('cucumber')) {
-      return "Produce";
-    }
-    if (lower.includes('rice') || lower.includes('pasta') || lower.includes('flour') || 
-        lower.includes('oil') || lower.includes('salt') || lower.includes('pepper') ||
-        lower.includes('sauce') || lower.includes('vinegar') || lower.includes('spice') ||
-        lower.includes('bean') || lower.includes('lentil') || lower.includes('quinoa')) {
-      return "Pantry & Dry Goods";
-    }
-    if (lower.includes('frozen') || lower.includes('ice cream')) {
-      return "Frozen";
-    }
-    if (lower.includes('bread') || lower.includes('bagel') || lower.includes('muffin')) {
-      return "Bakery";
-    }
-    if (lower.includes('juice') || lower.includes('soda') || lower.includes('water') ||
-        lower.includes('coffee') || lower.includes('tea') || lower.includes('wine') ||
-        lower.includes('beer')) {
-      return "Beverages";
+    // Fresh & Chilled Food
+    if (lower.includes('lettuce') || lower.includes('spinach') || lower.includes('kale') || 
+        lower.includes('rocket') || lower.includes('watercress') || lower.includes('cabbage') || 
+        lower.includes('broccoli') || lower.includes('cauliflower') || lower.includes('carrot') || 
+        lower.includes('onion') || lower.includes('potato') || lower.includes('tomato') || 
+        lower.includes('cucumber') || lower.includes('pepper') || lower.includes('courgette') || 
+        lower.includes('aubergine') || lower.includes('mushroom') || lower.includes('garlic') || 
+        lower.includes('ginger') || lower.includes('lemon') || lower.includes('lime') || 
+        lower.includes('orange') || lower.includes('apple') || lower.includes('banana') || 
+        lower.includes('grapes') || lower.includes('strawberry') || lower.includes('avocado') || 
+        lower.includes('herbs') || lower.includes('parsley') || lower.includes('coriander') || 
+        lower.includes('basil') || lower.includes('thyme') || lower.includes('rosemary') || 
+        lower.includes('fresh') || lower.includes('salad') || lower.includes('vegetable') || 
+        lower.includes('fruit') || lower.includes('meat') || lower.includes('chicken') || 
+        lower.includes('beef') || lower.includes('pork') || lower.includes('lamb') || 
+        lower.includes('fish') || lower.includes('salmon') || lower.includes('cod') || 
+        lower.includes('prawns') || lower.includes('bacon') || lower.includes('ham') || 
+        lower.includes('sausage') || lower.includes('mince') || lower.includes('steak') || 
+        lower.includes('milk') || lower.includes('cheese') || lower.includes('yogurt') || 
+        lower.includes('cream') || lower.includes('butter') || lower.includes('egg') || 
+        lower.includes('tofu')) {
+      return "Fresh & Chilled Food";
     }
     
-    return "Other";
+    // Food Cupboard
+    if (lower.includes('flour') || lower.includes('sugar') || lower.includes('salt') || 
+        lower.includes('pepper') || lower.includes('oil') || lower.includes('vinegar') || 
+        lower.includes('rice') || lower.includes('pasta') || lower.includes('noodles') || 
+        lower.includes('quinoa') || lower.includes('couscous') || lower.includes('bulgur') || 
+        lower.includes('lentils') || lower.includes('beans') || lower.includes('chickpeas') || 
+        lower.includes('tinned') || lower.includes('canned') || lower.includes('jar') || 
+        lower.includes('sauce') || lower.includes('paste') || lower.includes('stock') || 
+        lower.includes('cube') || lower.includes('spice') || lower.includes('spices') || 
+        lower.includes('cumin') || lower.includes('paprika') || lower.includes('turmeric') || 
+        lower.includes('cinnamon') || lower.includes('vanilla') || lower.includes('honey') || 
+        lower.includes('syrup') || lower.includes('nuts') || lower.includes('seeds') || 
+        lower.includes('dried') || lower.includes('cereal') || lower.includes('oats') || 
+        lower.includes('biscuits') || lower.includes('crackers') || lower.includes('tea') || 
+        lower.includes('coffee') || lower.includes('condiment') || lower.includes('ketchup') || 
+        lower.includes('mustard') || lower.includes('mayo') || lower.includes('mayonnaise') || 
+        lower.includes('dressing') || lower.includes('coconut') || lower.includes('tahini') || 
+        lower.includes('peanut') || lower.includes('almond') || lower.includes('olive') || 
+        lower.includes('sunflower') || lower.includes('rapeseed') || lower.includes('balsamic') || 
+        lower.includes('soy') || lower.includes('worcestershire') || lower.includes('tabasco') || 
+        lower.includes('harissa')) {
+      return "Food Cupboard";
+    }
+    
+    // Bakery
+    if (lower.includes('bread') || lower.includes('bun') || lower.includes('roll') || 
+        lower.includes('bagel') || lower.includes('muffin') || lower.includes('croissant') || 
+        lower.includes('pastry') || lower.includes('cake') || lower.includes('loaf') || 
+        lower.includes('baguette') || lower.includes('pitta') || lower.includes('naan') || 
+        lower.includes('tortilla') || lower.includes('wrap') || lower.includes('crumpet') || 
+        lower.includes('scone')) {
+      return "Bakery";
+    }
+    
+    // Frozen Food
+    if (lower.includes('frozen') || lower.includes('ice') || lower.includes('sorbet') || 
+        lower.includes('gelato') || lower.includes('peas') || lower.includes('chips') || 
+        lower.includes('pizza') || lower.includes('ready meal')) {
+      return "Frozen Food";
+    }
+    
+    // Dietary, Lifestyle & World Foods
+    if (lower.includes('gluten') || lower.includes('dairy') || lower.includes('vegan') || 
+        lower.includes('organic') || lower.includes('free') || lower.includes('range') || 
+        lower.includes('almond milk') || lower.includes('soy milk') || lower.includes('oat milk') || 
+        lower.includes('kimchi') || lower.includes('miso') || lower.includes('teriyaki') || 
+        lower.includes('curry') || lower.includes('garam') || lower.includes('chinese') || 
+        lower.includes('thai') || lower.includes('indian') || lower.includes('mexican') || 
+        lower.includes('mediterranean') || lower.includes('kosher') || lower.includes('halal')) {
+      return "Dietary, Lifestyle & World Foods";
+    }
+    
+    // Soft Drinks, Tea & Coffee
+    if (lower.includes('juice') || lower.includes('squash') || lower.includes('cordial') || 
+        lower.includes('water') || lower.includes('sparkling') || lower.includes('cola') || 
+        lower.includes('lemonade') || lower.includes('energy') || lower.includes('smoothie') || 
+        lower.includes('kombucha') || lower.includes('green tea') || lower.includes('black tea') || 
+        lower.includes('herbal') || lower.includes('coffee beans') || lower.includes('instant coffee') || 
+        lower.includes('decaf')) {
+      return "Soft Drinks, Tea & Coffee";
+    }
+    
+    // Beer, Wine & Spirits
+    if (lower.includes('beer') || lower.includes('wine') || lower.includes('whisky') || 
+        lower.includes('vodka') || lower.includes('gin') || lower.includes('rum') || 
+        lower.includes('brandy') || lower.includes('champagne') || lower.includes('prosecco') || 
+        lower.includes('cider') || lower.includes('ale') || lower.includes('lager') || 
+        lower.includes('spirits') || lower.includes('alcohol')) {
+      return "Beer, Wine & Spirits";
+    }
+    
+    // Health, Beauty & Personal Care
+    if (lower.includes('shampoo') || lower.includes('conditioner') || lower.includes('soap') || 
+        lower.includes('toothpaste') || lower.includes('deodorant') || lower.includes('moisturiser') || 
+        lower.includes('sunscreen') || lower.includes('vitamins') || lower.includes('supplements') || 
+        lower.includes('paracetamol') || lower.includes('ibuprofen') || lower.includes('plaster') || 
+        lower.includes('antiseptic')) {
+      return "Health, Beauty & Personal Care";
+    }
+    
+    // Baby, Parent & Kids
+    if (lower.includes('nappy') || lower.includes('baby') || lower.includes('formula') || 
+        lower.includes('dummy') || lower.includes('wipes') || lower.includes('kids') || 
+        lower.includes('children') || lower.includes('junior')) {
+      return "Baby, Parent & Kids";
+    }
+    
+    // Home Care & Cleaning
+    if (lower.includes('washing') || lower.includes('fabric') || lower.includes('bleach') || 
+        lower.includes('disinfectant') || lower.includes('toilet paper') || lower.includes('kitchen roll') || 
+        lower.includes('bin bags') || lower.includes('dishwasher') || lower.includes('tablets') || 
+        lower.includes('cleaning') || lower.includes('polish') || lower.includes('hoover') || 
+        lower.includes('vacuum')) {
+      return "Home Care & Cleaning";
+    }
+    
+    // Pets, Home & Garden
+    if (lower.includes('dog') || lower.includes('cat') || lower.includes('pet') || 
+        lower.includes('bird') || lower.includes('fish food') || lower.includes('plant') || 
+        lower.includes('compost') || lower.includes('seeds') || lower.includes('bulbs') || 
+        lower.includes('garden') || lower.includes('animal')) {
+      return "Pets, Home & Garden";
+    }
+    
+    // Occasions & Entertaining
+    if (lower.includes('candles') || lower.includes('balloons') || lower.includes('party') || 
+        lower.includes('celebration') || lower.includes('gift') || lower.includes('card') || 
+        lower.includes('wrapping') || lower.includes('decorations') || lower.includes('entertaining')) {
+      return "Occasions & Entertaining";
+    }
+    
+    // Clothing & Accessories
+    if (lower.includes('socks') || lower.includes('underwear') || lower.includes('shirt') || 
+        lower.includes('dress') || lower.includes('jumper') || lower.includes('jacket') || 
+        lower.includes('shoes') || lower.includes('hat') || lower.includes('gloves') || 
+        lower.includes('scarf') || lower.includes('belt') || lower.includes('bag') || 
+        lower.includes('watch') || lower.includes('jewellery')) {
+      return "Clothing & Accessories";
+    }
+    
+    // Default fallback to Food Cupboard for food items
+    return "Food Cupboard";
   }, []);
 
   const loadExistingShoppingList = useCallback(async () => {
@@ -101,7 +216,7 @@ export const useShoppingList = (weekNumber: 1 | 2) => {
       });
 
       (data || []).forEach((item: any) => {
-        const category = item.category || "Other";
+        const category = item.category || "Food Cupboard";
         if (!categorizedItems[category]) {
           categorizedItems[category] = [];
         }
@@ -188,19 +303,19 @@ export const useShoppingList = (weekNumber: 1 | 2) => {
 
     setIsLoading(true);
     try {
-      // Load existing items first
-      const existingItems = await loadExistingShoppingList();
+      // Always try to generate from meal plans for auto-generation
+      const generatedItems = await generateShoppingListFromMealPlans();
       
-      // Check if we have any existing items
-      const hasExistingItems = Object.values(existingItems || {}).some(items => items.length > 0);
+      // Check if we have any meal plan items
+      const hasMealPlanItems = Object.values(generatedItems || {}).some(items => items.length > 0);
       
-      if (hasExistingItems) {
-        // If we have existing items, use them
-        setShoppingList(existingItems || {});
-      } else {
-        // If no existing items, generate from meal plans
-        const generatedItems = await generateShoppingListFromMealPlans();
+      if (hasMealPlanItems) {
+        // If we have meal plan items, use them
         setShoppingList(generatedItems);
+      } else {
+        // If no meal plan items, load existing items
+        const existingItems = await loadExistingShoppingList();
+        setShoppingList(existingItems || {});
       }
       
       setHasInitialized(true);
@@ -214,7 +329,7 @@ export const useShoppingList = (weekNumber: 1 | 2) => {
     } finally {
       setIsLoading(false);
     }
-  }, [user, currentHousehold, hasInitialized, loadExistingShoppingList, generateShoppingListFromMealPlans, toast]);
+  }, [user, currentHousehold, hasInitialized, generateShoppingListFromMealPlans, loadExistingShoppingList, toast]);
 
   const generateFromMealPlans = useCallback(async () => {
     if (!user || !currentHousehold) return;
