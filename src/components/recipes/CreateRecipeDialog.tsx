@@ -34,6 +34,7 @@ const AVAILABLE_CATEGORIES: RecipeCategory[] = [
 export function CreateRecipeDialog({ open, onOpenChange, onSave }: CreateRecipeDialogProps) {
   const { toast } = useToast();
   const isMobile = useIsMobile();
+  
   const [newRecipe, setNewRecipe] = useState<Omit<Recipe, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>>({
     title: "",
     description: "",
@@ -240,9 +241,9 @@ export function CreateRecipeDialog({ open, onOpenChange, onSave }: CreateRecipeD
       <DialogContent className={`
         ${isMobile 
           ? 'w-[100vw] h-[100vh] max-w-none rounded-none p-4' 
-          : 'sm:max-w-4xl h-[85vh] w-full'
+          : 'sm:max-w-4xl max-h-[80vh] w-full'
         } 
-        overflow-hidden flex flex-col
+        flex flex-col
       `}>
         <DialogHeader className="flex-shrink-0 pb-4">
           <DialogTitle className="text-xl font-bold">✨ Add New Recipe ✨</DialogTitle>
@@ -251,28 +252,50 @@ export function CreateRecipeDialog({ open, onOpenChange, onSave }: CreateRecipeD
           </p>
         </DialogHeader>
 
-        <div className="flex-1 overflow-hidden">
+        <div className="flex-1 min-h-0">
           <Tabs defaultValue="text" className="w-full h-full flex flex-col">
-            <TabsList className={`
-              grid w-full grid-cols-5 flex-shrink-0 mb-4
-              ${isMobile ? 'h-auto text-xs' : 'h-auto text-sm'}
-            `}>
-              <TabsTrigger value="text" className={isMobile ? "px-1 py-2 text-xs" : "px-3 py-2"}>
-                {isMobile ? "📝 Text" : "📝 Recipe Text"}
-              </TabsTrigger>
-              <TabsTrigger value="url" className={isMobile ? "px-1 py-2 text-xs" : "px-3 py-2"}>
-                {isMobile ? "🔗 URL" : "🔗 From URL"}
-              </TabsTrigger>
-              <TabsTrigger value="image" className={isMobile ? "px-1 py-2 text-xs" : "px-3 py-2"}>
-                {isMobile ? "📷 Photo" : "📷 From Image"}
-              </TabsTrigger>
-              <TabsTrigger value="generate" className={isMobile ? "px-1 py-2 text-xs" : "px-3 py-2"}>
-                {isMobile ? "🤖 AI" : "🤖 AI Generate"}
-              </TabsTrigger>
-              <TabsTrigger value="manual" className={isMobile ? "px-1 py-2 text-xs" : "px-3 py-2"}>
-                {isMobile ? "⭐ Manual" : "⭐ Manual Entry"}
-              </TabsTrigger>
-            </TabsList>
+            {/* Two-row mobile tabs */}
+            {isMobile ? (
+              <div className="flex-shrink-0 mb-4 space-y-2">
+                <div className="grid grid-cols-3 gap-2">
+                  <TabsTrigger value="text" className="px-2 py-3 text-xs font-medium">
+                    📝<br />Recipe Text
+                  </TabsTrigger>
+                  <TabsTrigger value="url" className="px-2 py-3 text-xs font-medium">
+                    🔗<br />From URL
+                  </TabsTrigger>
+                  <TabsTrigger value="image" className="px-2 py-3 text-xs font-medium">
+                    📷<br />From Photo
+                  </TabsTrigger>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <TabsTrigger value="generate" className="px-2 py-3 text-xs font-medium">
+                    🤖<br />AI Generate
+                  </TabsTrigger>
+                  <TabsTrigger value="manual" className="px-2 py-3 text-xs font-medium">
+                    ⭐<br />Manual Entry
+                  </TabsTrigger>
+                </div>
+              </div>
+            ) : (
+              <TabsList className="grid w-full grid-cols-5 flex-shrink-0 mb-4 h-auto text-sm">
+                <TabsTrigger value="text" className="px-3 py-2">
+                  📝 Recipe Text
+                </TabsTrigger>
+                <TabsTrigger value="url" className="px-3 py-2">
+                  🔗 From URL
+                </TabsTrigger>
+                <TabsTrigger value="image" className="px-3 py-2">
+                  📷 From Image
+                </TabsTrigger>
+                <TabsTrigger value="generate" className="px-3 py-2">
+                  🤖 AI Generate
+                </TabsTrigger>
+                <TabsTrigger value="manual" className="px-3 py-2">
+                  ⭐ Manual Entry
+                </TabsTrigger>
+              </TabsList>
+            )}
 
             <div className="flex-1 overflow-y-auto">
               <TabsContent value="text" className="space-y-4 h-full flex flex-col m-0">
@@ -302,7 +325,7 @@ export function CreateRecipeDialog({ open, onOpenChange, onSave }: CreateRecipeD
               </TabsContent>
 
               <TabsContent value="image" className="space-y-4 h-full flex flex-col m-0">
-                <RecipeUploadTab uploadedImageFile={null} setUploadedImageFile={() => {}} />
+                <RecipeUploadTab uploadedImageFile={uploadedImageFile} setUploadedImageFile={setUploadedImageFile} />
                 <div className={`
                   flex gap-2 mt-auto pt-4 border-t bg-white sticky bottom-0
                   ${isMobile ? 'flex-col' : 'flex-row justify-end'}
@@ -330,7 +353,7 @@ export function CreateRecipeDialog({ open, onOpenChange, onSave }: CreateRecipeD
                 </div>
               </TabsContent>
 
-              <TabsContent value="manual" className="space-y-6 h-full pb-20 m-0">
+              <TabsContent value="manual" className="space-y-6 m-0">
                 <div className={`grid gap-6 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'}`}>
                   <div className="space-y-4">
                     <div>
@@ -457,7 +480,7 @@ export function CreateRecipeDialog({ open, onOpenChange, onSave }: CreateRecipeD
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium mb-2">Ingredients</label>
-                      <ul className="space-y-2 mb-3 max-h-32 overflow-y-auto">
+                      <ul className="space-y-2 mb-3 max-h-48 overflow-y-auto">
                         {newRecipe.ingredients.map((ingredient, index) => (
                           <li key={index} className="flex items-center justify-between p-3 border rounded-lg">
                             <span className="text-sm flex-1">{ingredient}</span>
@@ -494,7 +517,7 @@ export function CreateRecipeDialog({ open, onOpenChange, onSave }: CreateRecipeD
 
                     <div>
                       <label className="block text-sm font-medium mb-2">Cooking Steps</label>
-                      <ol className="space-y-2 mb-3 max-h-32 overflow-y-auto">
+                      <ol className="space-y-2 mb-3 max-h-48 overflow-y-auto">
                         {newRecipe.instructions.map((instruction, index) => (
                           <li key={index} className="flex items-start gap-3 p-3 border rounded-lg">
                             <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-sage text-white text-sm font-medium">
