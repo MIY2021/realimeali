@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { Download } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 interface RecipeUrlTabProps {
   recipeUrl: string;
@@ -33,7 +33,7 @@ export function RecipeUrlTab({
         disabled={isProcessing || !recipeUrl.trim()}
         className="w-full flex items-center gap-2"
       >
-        <Download className="h-4 w-4" />
+        <ArrowRight className="h-4 w-4" />
         {isProcessing ? "Importing..." : "Import Recipe"}
       </Button>
 

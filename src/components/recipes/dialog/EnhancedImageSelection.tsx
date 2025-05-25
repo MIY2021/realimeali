@@ -1,7 +1,8 @@
+
 import { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Download, ExternalLink, CheckCircle } from "lucide-react";
+import { ArrowRight, Globe, Check } from "lucide-react";
 
 interface StoredImage {
   originalUrl: string;
@@ -59,7 +60,7 @@ export function EnhancedImageSelection({
             disabled={isDownloading}
             className="flex items-center gap-2"
           >
-            <Download className="h-4 w-4" />
+            <ArrowRight className="h-4 w-4" />
             {isDownloading ? 'Downloading...' : 'Download Images'}
           </Button>
         )}
@@ -99,11 +100,11 @@ export function EnhancedImageSelection({
               <div className="absolute top-1 right-1 flex gap-1">
                 {imageIsStored ? (
                   <div className="bg-green-500 text-white rounded-full p-1" title="Stored locally">
-                    <CheckCircle className="h-3 w-3" />
+                    <Check className="h-3 w-3" />
                   </div>
                 ) : (
                   <div className="bg-blue-500 text-white rounded-full p-1" title="External link">
-                    <ExternalLink className="h-3 w-3" />
+                    <Globe className="h-3 w-3" />
                   </div>
                 )}
               </div>
@@ -130,7 +131,7 @@ export function EnhancedImageSelection({
 
       {storedImages.length > 0 && (
         <div className="text-xs text-green-600 flex items-center gap-1">
-          <CheckCircle className="h-3 w-3" />
+          <Check className="h-3 w-3" />
           {storedImages.length} image{storedImages.length !== 1 ? 's' : ''} saved locally
         </div>
       )}
