@@ -2,12 +2,13 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ListChecks, Share, Trash2, Copy } from "lucide-react";
+import { ListChecks, Share, Trash2, Copy, Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useMealPlan } from "@/contexts/MealPlanContext";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
+import { useHouseholdShopping } from "@/contexts/HouseholdShoppingContext";
 import { useRecipesLoader } from "@/hooks/useRecipesLoader";
 import ShoppingListActions from "@/components/ShoppingListActions";
 
@@ -43,6 +44,7 @@ export default function ShoppingList() {
   const { currentHousehold } = useHousehold();
   const { toast } = useToast();
   const [selectedWeek, setSelectedWeek] = useState<1 | 2>(1);
+  const [copiedItemId, setCopiedItemId] = useState<string | null>(null);
   const [weekShoppingItems, setWeekShoppingItems] = useState<{
     1: ShoppingItem[];
     2: ShoppingItem[];
@@ -53,6 +55,13 @@ export default function ShoppingList() {
 
   const { getMealPlansForWeek } = useMealPlan();
   const { recipes, isLoading: recipesLoading } = useRecipes();
+  const { 
+    shoppingItems: householdShoppingItems, 
+    updateShoppingItem, 
+    addShoppingItem,
+    deleteShoppingItem,
+    isLoading: shoppingLoading 
+  } = useHouseholdShopping();
   
   // Load recipes automatically
   useRecipesLoader();
@@ -130,9 +139,9 @@ export default function ShoppingList() {
     return "Food Cupboard";
   };
 
-  // Generate shopping list for each week
+  // Generate shopping list for each week and save to database
   useEffect(() => {
-    const generateWeekLists = async () => {
+    const generateAndSaveWeekLists = async () => {
       if (!user || !currentHousehold || recipesLoading) return;
 
       console.log("Generating shopping lists with recipes:", recipes.length);
@@ -159,8 +168,9 @@ export default function ShoppingList() {
                 existingItem.quantity += 1;
                 existingItem.recipeIds.push(recipe.id);
               } else {
+                const itemId = `week${weekIndex + 1}-${ingredient}-${recipe.id}`;
                 targetArray.push({
-                  id: `${recipe.id}-${ingredient}-week${weekIndex + 1}`,
+                  id: itemId,
                   name: ingredient,
                   quantity: 1,
                   unit: '',
@@ -175,14 +185,67 @@ export default function ShoppingList() {
         });
       });
 
+      // Save to database and merge with existing household shopping items
+      const mergedWeek1 = await mergeWithHouseholdItems(week1Items, 1);
+      const mergedWeek2 = await mergeWithHouseholdItems(week2Items, 2);
+
       setWeekShoppingItems({
-        1: week1Items,
-        2: week2Items
+        1: mergedWeek1,
+        2: mergedWeek2
       });
     };
 
-    generateWeekLists();
-  }, [getMealPlansForWeek, recipes, user, currentHousehold, recipesLoading]);
+    generateAndSaveWeekLists();
+  }, [getMealPlansForWeek, recipes, user, currentHousehold, recipesLoading, householdShoppingItems]);
+
+  const mergeWithHouseholdItems = async (generatedItems: ShoppingItem[], week: number): Promise<ShoppingItem[]> => {
+    const weekKey = `week${week}`;
+    const existingWeekItems = householdShoppingItems.filter(item => 
+      item.name.includes(weekKey) || item.category.includes(weekKey)
+    );
+
+    const mergedItems: ShoppingItem[] = [];
+
+    for (const generatedItem of generatedItems) {
+      const existingItem = existingWeekItems.find(existing => 
+        existing.name.toLowerCase() === generatedItem.name.toLowerCase() &&
+        existing.category === generatedItem.category
+      );
+
+      if (existingItem) {
+        // Use existing item from database (preserves checked state)
+        mergedItems.push({
+          id: existingItem.id,
+          name: existingItem.name,
+          quantity: existingItem.quantity || 1,
+          unit: existingItem.unit || '',
+          isChecked: existingItem.is_checked,
+          category: existingItem.category,
+          isCustom: existingItem.is_custom,
+          recipeIds: existingItem.recipe_ids
+        });
+      } else {
+        // Add new item to database
+        try {
+          await addShoppingItem({
+            name: `${weekKey}-${generatedItem.name}`,
+            quantity: generatedItem.quantity,
+            unit: generatedItem.unit,
+            category: generatedItem.category,
+            is_checked: false,
+            is_custom: false,
+            recipe_ids: generatedItem.recipeIds
+          });
+          mergedItems.push(generatedItem);
+        } catch (error) {
+          console.error('Error adding shopping item:', error);
+          mergedItems.push(generatedItem);
+        }
+      }
+    }
+
+    return mergedItems;
+  };
 
   const currentWeekItems = weekShoppingItems[selectedWeek];
 
@@ -192,27 +255,57 @@ export default function ShoppingList() {
     return acc;
   }, {} as Record<string, ShoppingItem[]>);
 
-  const handleCheckItem = (itemId: string, checked: boolean) => {
+  const handleCheckItem = async (itemId: string, checked: boolean) => {
+    // Update local state immediately for responsiveness
     setWeekShoppingItems(prev => ({
       ...prev,
       [selectedWeek]: prev[selectedWeek].map(item =>
         item.id === itemId ? { ...item, isChecked: checked } : item
       )
     }));
+
+    // Update in database
+    try {
+      await updateShoppingItem(itemId, { is_checked: checked });
+    } catch (error) {
+      console.error('Error updating shopping item:', error);
+      // Revert local state if database update fails
+      setWeekShoppingItems(prev => ({
+        ...prev,
+        [selectedWeek]: prev[selectedWeek].map(item =>
+          item.id === itemId ? { ...item, isChecked: !checked } : item
+        )
+      }));
+    }
   };
 
-  const handleRemoveItem = (itemId: string) => {
+  const handleRemoveItem = async (itemId: string) => {
+    // Update local state immediately
     setWeekShoppingItems(prev => ({
       ...prev,
       [selectedWeek]: prev[selectedWeek].filter(item => item.id !== itemId)
     }));
+
+    // Remove from database
+    try {
+      await deleteShoppingItem(itemId);
+    } catch (error) {
+      console.error('Error deleting shopping item:', error);
+    }
   };
 
-  const handleCopyItem = (itemName: string) => {
-    navigator.clipboard.writeText(itemName);
+  const handleCopyItem = (itemName: string, itemId: string) => {
+    // Extract just the name without week prefix
+    const cleanName = itemName.replace(/^week\d+-/, '');
+    navigator.clipboard.writeText(cleanName);
+    
+    // Show visual feedback
+    setCopiedItemId(itemId);
+    setTimeout(() => setCopiedItemId(null), 2000);
+    
     toast({
       title: "Copied to clipboard",
-      description: `"${itemName}" copied to clipboard!`,
+      description: `"${cleanName}" copied to clipboard!`,
     });
   };
 
@@ -224,22 +317,53 @@ export default function ShoppingList() {
     return recipeNames;
   };
 
-  const handleCheckAll = () => {
+  const handleCheckAll = async () => {
+    const updates = currentWeekItems.map(item => ({ id: item.id, is_checked: true }));
+    
     setWeekShoppingItems(prev => ({
       ...prev,
       [selectedWeek]: prev[selectedWeek].map(item => ({ ...item, isChecked: true }))
     }));
+
+    // Update all items in database
+    for (const update of updates) {
+      try {
+        await updateShoppingItem(update.id, { is_checked: update.is_checked });
+      } catch (error) {
+        console.error('Error updating shopping item:', error);
+      }
+    }
   };
 
-  const handleUncheckAll = () => {
+  const handleUncheckAll = async () => {
+    const updates = currentWeekItems.map(item => ({ id: item.id, is_checked: false }));
+    
     setWeekShoppingItems(prev => ({
       ...prev,
       [selectedWeek]: prev[selectedWeek].map(item => ({ ...item, isChecked: false }))
     }));
+
+    // Update all items in database
+    for (const update of updates) {
+      try {
+        await updateShoppingItem(update.id, { is_checked: update.is_checked });
+      } catch (error) {
+        console.error('Error updating shopping item:', error);
+      }
+    }
   };
 
-  const handleRemoveAll = () => {
+  const handleRemoveAll = async () => {
     if (window.confirm("Are you sure you want to remove all items from this week's shopping list?")) {
+      // Remove all items from database
+      for (const item of currentWeekItems) {
+        try {
+          await deleteShoppingItem(item.id);
+        } catch (error) {
+          console.error('Error deleting shopping item:', error);
+        }
+      }
+
       setWeekShoppingItems(prev => ({
         ...prev,
         [selectedWeek]: []
@@ -259,11 +383,13 @@ export default function ShoppingList() {
         const checkedItems = categoryItems.filter(item => item.isChecked);
         
         uncheckedItems.forEach(item => {
-          shareText += `☐ ${item.quantity > 1 ? `${item.quantity}x ` : ''}${item.name}${item.unit ? ` (${item.unit})` : ''}\n`;
+          const cleanName = item.name.replace(/^week\d+-/, '');
+          shareText += `☐ ${item.quantity > 1 ? `${item.quantity}x ` : ''}${cleanName}${item.unit ? ` (${item.unit})` : ''}\n`;
         });
         
         checkedItems.forEach(item => {
-          shareText += `☑ ${item.quantity > 1 ? `${item.quantity}x ` : ''}${item.name}${item.unit ? ` (${item.unit})` : ''}\n`;
+          const cleanName = item.name.replace(/^week\d+-/, '');
+          shareText += `☑ ${item.quantity > 1 ? `${item.quantity}x ` : ''}${cleanName}${item.unit ? ` (${item.unit})` : ''}\n`;
         });
         
         shareText += "\n";
@@ -344,7 +470,7 @@ export default function ShoppingList() {
         </Button>
       </div>
 
-      {recipesLoading ? (
+      {recipesLoading || shoppingLoading ? (
         <div className="py-10 text-center">
           <p className="text-muted-foreground">Loading recipes and generating shopping list...</p>
         </div>
@@ -380,7 +506,8 @@ export default function ShoppingList() {
                         <div className="flex-1">
                           <div className={`${item.isChecked ? 'line-through text-muted-foreground' : ''}`}>
                             <span className="font-medium">
-                              {item.quantity > 1 && `${item.quantity}x `}{item.name}
+                              {item.quantity > 1 && `${item.quantity}x `}
+                              {item.name.replace(/^week\d+-/, '')}
                             </span>
                             {item.unit && <span className="text-sm text-muted-foreground ml-1">({item.unit})</span>}
                           </div>
@@ -394,10 +521,14 @@ export default function ShoppingList() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => handleCopyItem(item.name)}
+                            onClick={() => handleCopyItem(item.name, item.id)}
                             className="h-8 w-8 text-muted-foreground hover:text-primary"
                           >
-                            <Copy className="h-4 w-4" />
+                            {copiedItemId === item.id ? (
+                              <Check className="h-4 w-4 text-green-600" />
+                            ) : (
+                              <Copy className="h-4 w-4" />
+                            )}
                           </Button>
                           <Button
                             variant="ghost"
