@@ -1,5 +1,4 @@
 
-
 // This file adds missing icons to the lucide-react type definitions
 declare module 'lucide-react' {
   import { LucideIcon } from 'lucide-react';
@@ -43,4 +42,3 @@ declare module 'lucide-react' {
   export const Globe: LucideIcon;
   export const Camera: LucideIcon;
 }
-

@@ -1,7 +1,7 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Globe, Upload, Sparkles, Edit3, Camera } from "lucide-react";
+import { Globe, Upload, Sparkles, Pencil, Camera } from "lucide-react";
 
 interface TabOption {
   value: string;
@@ -17,7 +17,7 @@ interface CreateRecipeTabNavigationProps {
 }
 
 const tabOptions: TabOption[] = [
-  { value: "text", label: "Recipe Text", icon: Edit3 },
+  { value: "text", label: "Recipe Text", icon: Pencil },
   { value: "url", label: "From Website", icon: Globe },
   { value: "image", label: "From Photo", icon: Upload },
   { value: "generate", label: "AI Generate", icon: Sparkles },
