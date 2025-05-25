@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useMealPlan } from "@/contexts/MealPlanContext";
@@ -24,6 +23,7 @@ export function useShoppingList() {
   const { toast } = useToast();
   const [selectedWeek, setSelectedWeek] = useState<1 | 2>(1);
   const [copiedItemId, setCopiedItemId] = useState<string | null>(null);
+  const [hasGenerated, setHasGenerated] = useState(false);
 
   const { getMealPlansForWeek } = useMealPlan();
   const { recipes, isLoading: recipesLoading } = useRecipes();
@@ -130,10 +130,10 @@ export function useShoppingList() {
     return weekItems;
   }, [householdShoppingItems, user, currentHousehold]);
 
-  // Generate shopping list for each week and save to database
+  // Generate shopping list for each week and save to database - FIXED to prevent infinite loop
   useEffect(() => {
     const generateAndSaveWeekLists = async () => {
-      if (!user || !currentHousehold || recipesLoading) return;
+      if (!user || !currentHousehold || recipesLoading || hasGenerated) return;
 
       console.log("Generating shopping lists with recipes:", recipes.length);
       console.log("Current household shopping items:", householdShoppingItems.length);
@@ -143,6 +143,12 @@ export function useShoppingList() {
       
       console.log("Week 1 meal plans:", week1Plans);
       console.log("Week 2 meal plans:", week2Plans);
+
+      // Only generate if there are meal plans
+      if (week1Plans.length === 0 && week2Plans.length === 0) {
+        setHasGenerated(true);
+        return;
+      }
 
       // Process each week
       const processWeek = async (weekNumber: 1 | 2, plans: any[]) => {
@@ -183,11 +189,11 @@ export function useShoppingList() {
 
         console.log(`Generated ${ingredientMap.size} unique ingredients for ${weekKey}`);
 
-        // Add new items that don't already exist
+        // Add new items that don't already exist - IMPROVED duplicate detection
         for (const [ingredient, data] of ingredientMap.entries()) {
           const itemName = `${weekKey}-${ingredient}`;
           
-          // Check if this exact item already exists
+          // Check if this exact item already exists using exact name match
           const existingItem = existingWeekItems.find(item => 
             item.name === itemName
           );
@@ -218,10 +224,18 @@ export function useShoppingList() {
 
       await processWeek(1, week1Plans);
       await processWeek(2, week2Plans);
+      
+      // Mark as generated to prevent re-running
+      setHasGenerated(true);
     };
 
     generateAndSaveWeekLists();
-  }, [getMealPlansForWeek, recipes, user, currentHousehold, recipesLoading, householdShoppingItems, addShoppingItem, categorizeIngredient]);
+  }, [getMealPlansForWeek, recipes, user, currentHousehold, recipesLoading, addShoppingItem, categorizeIngredient, hasGenerated]);
+
+  // Reset generation flag when household changes
+  useEffect(() => {
+    setHasGenerated(false);
+  }, [currentHousehold?.id]);
 
   // Get current week items using the helper function
   const weekShoppingItems = {
@@ -305,6 +319,8 @@ export function useShoppingList() {
           console.error('Error deleting shopping item:', error);
         }
       }
+      // Reset generation flag to allow regeneration
+      setHasGenerated(false);
     }
   };
 
