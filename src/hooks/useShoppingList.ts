@@ -1,5 +1,5 @@
 
-import { useState, useCallback, useMemo, useRef } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useMealPlan } from "@/contexts/MealPlanContext";
 import { useRecipes } from "@/contexts/RecipesContext";
@@ -26,11 +26,6 @@ export function useShoppingList() {
   const [copiedItemId, setCopiedItemId] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
 
-  // Use refs to prevent excessive re-renders
-  const getMealPlansRef = useRef<Function>();
-  const recipesRef = useRef<any[]>([]);
-  const householdShoppingItemsRef = useRef<any[]>([]);
-
   const { getMealPlansForWeek } = useMealPlan();
   const { recipes, isLoading: recipesLoading } = useRecipes();
   const { 
@@ -40,11 +35,6 @@ export function useShoppingList() {
     deleteShoppingItem,
     isLoading: shoppingLoading 
   } = useHouseholdShopping();
-
-  // Update refs when data changes
-  getMealPlansRef.current = getMealPlansForWeek;
-  recipesRef.current = recipes;
-  householdShoppingItemsRef.current = householdShoppingItems;
 
   // Helper function to categorize ingredients
   const categorizeIngredient = useCallback((ingredient: string): string => {
@@ -318,15 +308,15 @@ export function useShoppingList() {
 
     try {
       const mealPlans = getMealPlansForWeek(weekNumber);
+      console.log(`Generating shopping list for week ${weekNumber}, found ${mealPlans.length} meal plans`);
+      
       if (mealPlans.length === 0) {
         toast({
           title: "No Meal Plans",
-          description: `No meal plans found for week ${weekNumber}`,
+          description: `No meal plans found for week ${weekNumber}. Please add some meals to your meal planner first.`,
         });
         return;
       }
-
-      console.log(`Generating shopping list for week ${weekNumber} with ${mealPlans.length} meal plans`);
 
       // Clear existing items for this week
       const weekPrefix = `week${weekNumber}-`;
@@ -334,6 +324,7 @@ export function useShoppingList() {
         item.name.startsWith(weekPrefix)
       );
 
+      console.log(`Clearing ${existingItems.length} existing items for week ${weekNumber}`);
       for (const item of existingItems) {
         await deleteShoppingItem(item.id);
       }
@@ -343,6 +334,8 @@ export function useShoppingList() {
       
       mealPlans.forEach(plan => {
         const recipe = recipes.find(r => r.id === plan.recipeId);
+        console.log(`Processing meal plan for recipe: ${recipe?.title}`);
+        
         if (recipe && recipe.ingredients) {
           recipe.ingredients.forEach(ingredient => {
             const normalizedName = normalizeIngredientName(ingredient);

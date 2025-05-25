@@ -92,7 +92,7 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setIsLoading(false);
     }
-  }, [user?.id, currentHousehold?.id]);
+  }, [user?.id, currentHousehold?.id, toast]);
 
   useEffect(() => {
     fetchMealPlans();
@@ -101,7 +101,6 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
   const getMealPlansForWeek = useCallback((weekNumber: 1 | 2): MealPlan[] => {
     if (!user || !currentHousehold) return [];
     
-    // Filter by the stored week_number from the database
     const weekPlans = mealPlans.filter(plan => {
       const planWeekNumber = (plan as any).weekNumber;
       console.log(`Plan ${plan.id}: weekNumber=${planWeekNumber}, filtering for week=${weekNumber}`);
@@ -196,7 +195,7 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
         variant: "destructive",
       });
     }
-  }, [user?.id, currentHousehold?.id, recipes]);
+  }, [user?.id, currentHousehold?.id, recipes, toast]);
 
   const removeMealPlan = useCallback(async (id: string) => {
     if (!user || !currentHousehold) return;
@@ -228,7 +227,7 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
         variant: "destructive",
       });
     }
-  }, [user?.id, currentHousehold?.id]);
+  }, [user?.id, currentHousehold?.id, toast]);
 
   const clearWeek = useCallback(async (weekNumber: 1 | 2) => {
     if (!user || !currentHousehold) return;
@@ -261,7 +260,7 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
         variant: "destructive",
       });
     }
-  }, [user?.id, currentHousehold?.id]);
+  }, [user?.id, currentHousehold?.id, toast]);
 
   return (
     <MealPlanContext.Provider value={{
