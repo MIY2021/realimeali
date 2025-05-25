@@ -1,3 +1,4 @@
+
 import { Recipe, RecipeCategory } from "@/types";
 import { RecipeCard } from "./RecipeCard";
 import { Input } from "@/components/ui/input";
@@ -180,8 +181,8 @@ export function RecipeList({
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row gap-4">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
         <div className="flex-1">
           <Input
             placeholder="Search recipes..."
@@ -194,7 +195,7 @@ export function RecipeList({
           <select
             value={categoryFilter}
             onChange={e => setCategoryFilter(e.target.value)}
-            className="w-full border rounded p-2 pr-8 appearance-none bg-white"
+            className="w-full border rounded p-2 pr-8 appearance-none bg-white text-sm sm:text-base"
           >
             <option value="all">All Categories</option>
             {recipeCategories.map((category) => (
@@ -205,7 +206,7 @@ export function RecipeList({
         </div>
         <div className="w-full sm:w-48">
           <Select value={sortType} onValueChange={setSortType}>
-            <SelectTrigger>
+            <SelectTrigger className="text-sm sm:text-base">
               <SelectValue placeholder="Sort by" />
             </SelectTrigger>
             <SelectContent>
@@ -221,12 +222,12 @@ export function RecipeList({
       </div>
       
       {sortedRecipes.length === 0 ? (
-        <div className="text-center py-8">
+        <div className="text-center py-8 px-4">
           <p className="text-muted-foreground">No recipes found. Try adjusting your search.</p>
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
             {visibleRecipes.map((recipe) => (
               <RecipeCard 
                 key={recipe.id} 
@@ -240,13 +241,13 @@ export function RecipeList({
             ))}
           </div>
           
-          <div className="flex flex-col items-center gap-4 mt-6">
+          <div className="flex flex-col items-center gap-4 mt-6 px-4">
             {hasMoreRecipes && (
-              <Button onClick={handleLoadMore} variant="outline">
+              <Button onClick={handleLoadMore} variant="outline" className="w-full sm:w-auto">
                 Load More Recipes
               </Button>
             )}
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground text-center">
               Showing {visibleRecipes.length} of {sortedRecipes.length} recipes
             </p>
           </div>
