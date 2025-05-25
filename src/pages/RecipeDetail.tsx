@@ -1,4 +1,3 @@
-
 import { useParams, Navigate } from "react-router-dom";
 import { RecipeDetail as RecipeDetailComponent } from "@/components/recipes/RecipeDetail";
 import { useRecipes } from "@/contexts/RecipesContext";
@@ -9,12 +8,15 @@ import { useState } from "react";
 import { AddToMealPlanDialog } from "@/components/recipes/AddToMealPlanDialog";
 import { EditRecipeDialog } from "@/components/recipes/EditRecipeDialog";
 import { Recipe } from "@/types";
+import { useRecipesLoader } from "@/hooks/useRecipesLoader";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function RecipeDetail() {
   const { id, slug } = useParams();
   const { getRecipeById, getRecipeBySlug, updateRecipe, deleteRecipe } = useRecipes();
   const { user } = useAuth();
   const { toast } = useToast();
+  const { isLoading } = useRecipesLoader();
   
   // State for meal plan dialog
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
@@ -98,6 +100,64 @@ export default function RecipeDetail() {
     }
   };
 
+  // Show loading state while recipes are being fetched
+  if (isLoading) {
+    return (
+      <div className="container max-w-4xl mx-auto px-4 py-4 sm:px-6 sm:py-8">
+        <div className="space-y-6 sm:space-y-8">
+          <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
+            <div className="lg:w-1/2">
+              <Skeleton className="aspect-video w-full rounded-lg" />
+            </div>
+            <div className="lg:w-1/2 space-y-4">
+              <Skeleton className="h-8 w-3/4" />
+              <div className="flex flex-wrap gap-2">
+                <Skeleton className="h-6 w-16 rounded-full" />
+                <Skeleton className="h-6 w-20 rounded-full" />
+              </div>
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-2/3" />
+              <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-4 sm:gap-6">
+                <Skeleton className="h-4 w-20" />
+                <Skeleton className="h-4 w-20" />
+                <Skeleton className="h-4 w-20" />
+                <Skeleton className="h-4 w-20" />
+              </div>
+              <div className="space-y-3 pt-2">
+                <Skeleton className="h-10 w-full sm:w-40" />
+                <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                  <Skeleton className="h-10 w-full sm:w-32" />
+                  <Skeleton className="h-10 w-full sm:w-24" />
+                  <Skeleton className="h-10 w-full sm:w-28" />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+            <div className="space-y-4">
+              <Skeleton className="h-6 w-32" />
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-5/6" />
+                <Skeleton className="h-4 w-4/5" />
+                <Skeleton className="h-4 w-full" />
+              </div>
+            </div>
+            <div className="lg:col-span-2 space-y-4">
+              <Skeleton className="h-6 w-32" />
+              <div className="space-y-4">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-3/4" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show "Recipe Not Found" only after loading is complete and recipe still not found
   if (!recipe) {
     return (
       <div className="container max-w-4xl py-8 px-4 sm:px-6">
