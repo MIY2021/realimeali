@@ -1,6 +1,7 @@
+
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { User, UtensilsCrossed, CalendarDays, Book, ListChecks, Users, MoreHorizontal } from "lucide-react";
+import { User, UtensilsCrossed, CalendarDays, Book, ListChecks, Users, Menu } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -33,7 +34,7 @@ const Header = () => {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-[#FEC6A1] shadow-sm">
-      <div className="container flex h-16 items-center justify-between">
+      <div className="container flex h-16 items-center justify-between px-4 sm:px-6">
         <Link to="/" className="flex items-center space-x-2">
           <UtensilsCrossed className="h-6 w-6 text-terracotta" />
           <span className="text-xl font-bold text-navy">RealiMeali</span>
@@ -58,15 +59,16 @@ const Header = () => {
           {user && currentHousehold && (
             <div className="hidden sm:flex items-center text-navy text-sm font-medium">
               <Users className="h-4 w-4 mr-1" />
-              {currentHousehold.name}
+              <span className="truncate max-w-32">{currentHousehold.name}</span>
             </div>
           )}
 
           {/* Mobile Menu */}
           <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="sm" className="md:hidden">
-                <MoreHorizontal className="h-5 w-5" />
+              <Button variant="ghost" size="sm" className="md:hidden p-2">
+                <Menu className="h-5 w-5" />
+                <span className="sr-only">Open menu</span>
               </Button>
             </SheetTrigger>
             <SheetContent side="right" className="w-64">
@@ -123,7 +125,7 @@ const Header = () => {
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="flex items-center space-x-2">
+                <Button variant="ghost" size="sm" className="flex items-center space-x-2 p-1">
                   <Avatar className="h-8 w-8">
                     <AvatarImage src={user.user_metadata?.avatar_url} alt={user.user_metadata?.full_name || user.email || "User"} />
                     <AvatarFallback>{(user.user_metadata?.full_name || user.email)?.[0].toUpperCase() || "U"}</AvatarFallback>
@@ -153,7 +155,7 @@ const Header = () => {
             <Button variant="ghost" size="sm" asChild>
               <Link to="/login" className="flex items-center space-x-1">
                 <User className="h-4 w-4" />
-                <span>Login</span>
+                <span className="hidden sm:inline">Login</span>
               </Link>
             </Button>
           )}
