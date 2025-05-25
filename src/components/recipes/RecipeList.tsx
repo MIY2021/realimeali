@@ -1,3 +1,4 @@
+
 import { Recipe, RecipeCategory } from "@/types";
 import { RecipeCard } from "./RecipeCard";
 import { Input } from "@/components/ui/input";
@@ -6,10 +7,6 @@ import { useState } from "react";
 import { useHouseholdShopping } from "@/contexts/HouseholdShoppingContext";
 import { ChevronDown } from "lucide-react";
 import { AddToMealPlanDialog } from "./AddToMealPlanDialog";
-import { EditRecipeDialog } from "./EditRecipeDialog";
-import { useRecipes } from "@/contexts/RecipesContext";
-import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/contexts/AuthContext";
 import {
   Select,
   SelectContent,
@@ -30,9 +27,6 @@ export function RecipeList({
   isLoading = false 
 }: RecipeListProps) {
   const { recipeCategories } = useHouseholdShopping();
-  const { updateRecipe, deleteRecipe } = useRecipes();
-  const { user } = useAuth();
-  const { toast } = useToast();
   
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
@@ -42,10 +36,6 @@ export function RecipeList({
   // State for meal plan dialog
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const [mealPlanDialogOpen, setMealPlanDialogOpen] = useState(false);
-  
-  // State for edit dialog
-  const [editRecipe, setEditRecipe] = useState<Recipe | null>(null);
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
 
   const filteredRecipes = recipes.filter((recipe) => {
     const matchesSearch = recipe.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -153,10 +143,7 @@ export function RecipeList({
                 key={recipe.id} 
                 recipe={recipe} 
                 onAddToMealPlan={() => handleAddToMealPlan(recipe)}
-                onEdit={showActions ? () => handleEditRecipe(recipe) : undefined}
-                onDelete={showActions ? () => handleDeleteRecipe(recipe) : undefined}
-                onShare={showActions ? () => handleShareRecipe(recipe) : undefined}
-                showActions={showActions}
+                showActions={false}
               />
             ))}
           </div>
@@ -179,15 +166,6 @@ export function RecipeList({
         open={mealPlanDialogOpen}
         onOpenChange={setMealPlanDialogOpen}
       />
-
-      {editRecipe && (
-        <EditRecipeDialog
-          recipe={editRecipe}
-          open={editDialogOpen}
-          onOpenChange={setEditDialogOpen}
-          onSave={handleSaveEdit}
-        />
-      )}
     </div>
   );
 }
