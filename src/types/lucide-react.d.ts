@@ -41,4 +41,5 @@ declare module 'lucide-react' {
   export const Sparkles: LucideIcon;
   export const Globe: LucideIcon;
   export const Camera: LucideIcon;
+  export const AlignJustify: LucideIcon;
 }
