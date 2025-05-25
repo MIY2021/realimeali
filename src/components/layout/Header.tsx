@@ -1,7 +1,6 @@
-
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { User, UtensilsCrossed, CalendarDays, Book, ListChecks, Users, Menu } from "lucide-react";
+import { User, UtensilsCrossed, CalendarDays, Book, ListChecks, Users, MoreHorizontal } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -67,7 +66,7 @@ const Header = () => {
           <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="sm" className="md:hidden">
-                <Menu className="h-5 w-5" />
+                <MoreHorizontal className="h-5 w-5" />
               </Button>
             </SheetTrigger>
             <SheetContent side="right" className="w-64">

@@ -40,6 +40,7 @@ export type Recipe = {
   createdAt: string; // ISO date string
   updatedAt: string; // ISO date string
   isFavorite: boolean;
+  householdId: string; // household id
 };
 
 export type MealType = "dinner" | "lunch" | "breakfast" | "snacks";
