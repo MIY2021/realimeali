@@ -34,7 +34,6 @@ export default function ShoppingList() {
     weekShoppingItems,
     recipesLoading,
     shoppingLoading,
-    isGenerating,
     handleCheckItem,
     handleRemoveItem,
     handleCopyItem,
@@ -42,8 +41,7 @@ export default function ShoppingList() {
     handleCheckAll,
     handleUncheckAll,
     handleRemoveAll,
-    handleShare,
-    generateShoppingList
+    handleShare
   } = useShoppingList();
 
   // Load recipes automatically
@@ -85,30 +83,18 @@ export default function ShoppingList() {
     );
   }
 
-  const isLoading = recipesLoading || shoppingLoading || isGenerating;
-
-  const handleGenerateShoppingList = () => {
-    generateShoppingList(selectedWeek);
-  };
-
   return (
     <div className="container max-w-xl py-8">
-      <ShoppingListHeader 
-        onShare={handleShare} 
-        onGenerate={handleGenerateShoppingList}
-        isGenerating={isGenerating}
-      />
+      <ShoppingListHeader onShare={handleShare} />
 
       <ShoppingListWeekSelector 
         selectedWeek={selectedWeek}
         onWeekSelect={setSelectedWeek}
       />
 
-      {isLoading ? (
+      {recipesLoading || shoppingLoading ? (
         <div className="py-10 text-center">
-          <p className="text-muted-foreground">
-            {isGenerating ? 'Generating shopping list...' : 'Loading recipes and shopping list...'}
-          </p>
+          <p className="text-muted-foreground">Loading recipes and generating shopping list...</p>
         </div>
       ) : currentWeekItems.length === 0 ? (
         <Card>
@@ -138,7 +124,6 @@ export default function ShoppingList() {
             onCheckAll={handleCheckAll}
             onUncheckAll={handleUncheckAll}
             onRemoveAll={handleRemoveAll}
-            disabled={isLoading}
           />
         </>
       )}

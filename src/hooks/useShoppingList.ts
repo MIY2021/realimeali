@@ -1,5 +1,5 @@
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useMealPlan } from "@/contexts/MealPlanContext";
 import { useRecipes } from "@/contexts/RecipesContext";
@@ -24,7 +24,13 @@ export function useShoppingList() {
   const { toast } = useToast();
   const [selectedWeek, setSelectedWeek] = useState<1 | 2>(1);
   const [copiedItemId, setCopiedItemId] = useState<string | null>(null);
-  const [isGenerating, setIsGenerating] = useState(false);
+  const [weekShoppingItems, setWeekShoppingItems] = useState<{
+    1: ShoppingItem[];
+    2: ShoppingItem[];
+  }>({
+    1: [],
+    2: []
+  });
 
   const { getMealPlansForWeek } = useMealPlan();
   const { recipes, isLoading: recipesLoading } = useRecipes();
@@ -60,89 +66,220 @@ export function useShoppingList() {
       return "Frozen Food";
     }
     
+    // Dietary, Lifestyle & World Foods
+    if (/gluten.free|dairy.free|vegan|organic|free.range|coconut.milk|almond.milk|soy.milk|oat.milk|kimchi|miso|teriyaki|curry|garam.masala|chinese|thai|indian|mexican|mediterranean|kosher|halal/i.test(nameLower)) {
+      return "Dietary, Lifestyle & World Foods";
+    }
+    
+    // Soft Drinks, Tea & Coffee
+    if (/juice|squash|cordial|water|sparkling|cola|lemonade|energy.drink|smoothie|kombucha|green.tea|black.tea|herbal.tea|coffee.beans|instant.coffee|decaf/i.test(nameLower)) {
+      return "Soft Drinks, Tea & Coffee";
+    }
+    
+    // Beer, Wine & Spirits
+    if (/beer|wine|whisky|vodka|gin|rum|brandy|champagne|prosecco|cider|ale|lager|spirits|alcohol/i.test(nameLower)) {
+      return "Beer, Wine & Spirits";
+    }
+    
+    // Health, Beauty & Personal Care
+    if (/shampoo|conditioner|soap|toothpaste|deodorant|moisturiser|sunscreen|vitamins|supplements|paracetamol|ibuprofen|plaster|antiseptic/i.test(nameLower)) {
+      return "Health, Beauty & Personal Care";
+    }
+    
+    // Baby, Parent & Kids
+    if (/nappy|baby.food|formula|dummy|wipes|baby.oil|baby.powder|kids|children|junior/i.test(nameLower)) {
+      return "Baby, Parent & Kids";
+    }
+    
+    // Home Care & Cleaning
+    if (/washing.powder|fabric.softener|bleach|disinfectant|toilet.paper|kitchen.roll|bin.bags|washing.up.liquid|dishwasher|tablets|cleaning|polish|hoover|vacuum/i.test(nameLower)) {
+      return "Home Care & Cleaning";
+    }
+    
+    // Pets, Home & Garden
+    if (/dog.food|cat.food|pet.treats|bird.seed|fish.food|plant.food|compost|seeds|bulbs|garden|pet|animal/i.test(nameLower)) {
+      return "Pets, Home & Garden";
+    }
+    
+    // Occasions & Entertaining
+    if (/candles|balloons|party|celebration|gift|card|wrapping|decorations|entertaining/i.test(nameLower)) {
+      return "Occasions & Entertaining";
+    }
+    
+    // Clothing & Accessories
+    if (/socks|underwear|shirt|dress|jumper|jacket|shoes|hat|gloves|scarf|belt|bag|watch|jewellery/i.test(nameLower)) {
+      return "Clothing & Accessories";
+    }
+    
     // Default fallback
     return "Food Cupboard";
   }, []);
 
-  // Helper function to normalize ingredient names for deduplication
-  const normalizeIngredientName = useCallback((ingredient: string): string => {
-    return ingredient
-      .toLowerCase()
-      .replace(/^(\d+\.?\d*)\s*(tbsp|tsp|cup|cups|g|kg|ml|l|oz|lb|pounds?|tablespoons?|teaspoons?|cloves?)\s*/, '') // Remove quantities and units
-      .replace(/,.*$/, '') // Remove everything after comma
-      .replace(/\(.*?\)/g, '') // Remove parenthetical content
-      .replace(/\s+/g, ' ') // Normalize whitespace
-      .trim();
-  }, []);
+  // Generate shopping list for each week and save to database
+  useEffect(() => {
+    const generateAndSaveWeekLists = async () => {
+      if (!user || !currentHousehold || recipesLoading) return;
 
-  // Memoize the shopping items to prevent excessive re-calculations
-  const weekShoppingItems = useMemo(() => {
-    if (!user || !currentHousehold) {
-      return { 1: [], 2: [] };
-    }
-    
-    const week1Items = householdShoppingItems
-      .filter(item => item.name.startsWith('week1-'))
-      .map(item => ({
-        id: item.id,
-        name: item.name,
-        quantity: item.quantity || 1,
-        unit: item.unit || '',
-        isChecked: item.is_checked,
-        category: item.category,
-        isCustom: item.is_custom,
-        recipeIds: item.recipe_ids || []
-      }));
+      console.log("Generating shopping lists with recipes:", recipes.length);
+      console.log("Current household shopping items:", householdShoppingItems.length);
 
-    const week2Items = householdShoppingItems
-      .filter(item => item.name.startsWith('week2-'))
-      .map(item => ({
-        id: item.id,
-        name: item.name,
-        quantity: item.quantity || 1,
-        unit: item.unit || '',
-        isChecked: item.is_checked,
-        category: item.category,
-        isCustom: item.is_custom,
-        recipeIds: item.recipe_ids || []
-      }));
+      const week1Plans = getMealPlansForWeek(1);
+      const week2Plans = getMealPlansForWeek(2);
+      
+      console.log("Week 1 meal plans:", week1Plans);
+      console.log("Week 2 meal plans:", week2Plans);
 
-    return {
-      1: week1Items,
-      2: week2Items
+      // Process each week
+      const processWeek = async (weekNumber: 1 | 2, plans: any[]) => {
+        const weekKey = `week${weekNumber}`;
+        console.log(`Processing ${weekKey} with ${plans.length} plans`);
+        
+        // Get existing shopping items for this week from household context
+        const existingWeekItems = householdShoppingItems.filter(item => 
+          item.name.startsWith(weekKey) || item.category.includes(weekKey)
+        );
+        
+        console.log(`Existing ${weekKey} items:`, existingWeekItems);
+
+        // Generate new items from meal plans
+        const ingredientMap = new Map<string, { quantity: number; recipeIds: string[] }>();
+        
+        plans.forEach(plan => {
+          const recipe = recipes.find(r => r.id === plan.recipeId);
+          if (recipe && recipe.ingredients) {
+            console.log(`Processing recipe: ${recipe.title} for ${weekKey}`);
+            recipe.ingredients.forEach(ingredient => {
+              const key = ingredient.toLowerCase();
+              if (ingredientMap.has(key)) {
+                const existing = ingredientMap.get(key)!;
+                existing.quantity += 1;
+                if (!existing.recipeIds.includes(recipe.id)) {
+                  existing.recipeIds.push(recipe.id);
+                }
+              } else {
+                ingredientMap.set(key, {
+                  quantity: 1,
+                  recipeIds: [recipe.id]
+                });
+              }
+            });
+          }
+        });
+
+        console.log(`Generated ${ingredientMap.size} unique ingredients for ${weekKey}`);
+
+        // Convert to shopping items and merge with existing
+        const generatedItems: ShoppingItem[] = [];
+        
+        for (const [ingredient, data] of ingredientMap.entries()) {
+          // Check if this item already exists in the database
+          const existingItem = existingWeekItems.find(item => 
+            item.name.toLowerCase().includes(ingredient.toLowerCase())
+          );
+
+          if (existingItem) {
+            // Use existing item (preserves checked state)
+            generatedItems.push({
+              id: existingItem.id,
+              name: existingItem.name,
+              quantity: existingItem.quantity || data.quantity,
+              unit: existingItem.unit || '',
+              isChecked: existingItem.is_checked,
+              category: existingItem.category,
+              isCustom: existingItem.is_custom,
+              recipeIds: existingItem.recipe_ids || data.recipeIds
+            });
+          } else {
+            // Create new item and add to database
+            const itemName = `${weekKey}-${ingredient}`;
+            const newItemData = {
+              name: itemName,
+              quantity: data.quantity,
+              unit: '',
+              category: categorizeIngredient(ingredient),
+              is_checked: false,
+              is_custom: false,
+              recipe_ids: data.recipeIds
+            };
+
+            try {
+              await addShoppingItem(newItemData);
+              generatedItems.push({
+                id: `temp-${Date.now()}-${ingredient}`,
+                name: itemName,
+                quantity: data.quantity,
+                unit: '',
+                isChecked: false,
+                category: categorizeIngredient(ingredient),
+                isCustom: false,
+                recipeIds: data.recipeIds
+              });
+            } catch (error) {
+              console.error('Error adding shopping item:', error);
+            }
+          }
+        }
+
+        return generatedItems;
+      };
+
+      const week1Items = await processWeek(1, week1Plans);
+      const week2Items = await processWeek(2, week2Plans);
+
+      setWeekShoppingItems({
+        1: week1Items,
+        2: week2Items
+      });
     };
-  }, [householdShoppingItems, user, currentHousehold]);
 
-  const handleCheckItem = useCallback(async (itemId: string, checked: boolean) => {
+    generateAndSaveWeekLists();
+  }, [getMealPlansForWeek, recipes, user, currentHousehold, recipesLoading, householdShoppingItems, addShoppingItem, categorizeIngredient]);
+
+  const handleCheckItem = async (itemId: string, checked: boolean) => {
+    // Update local state immediately for responsiveness
+    setWeekShoppingItems(prev => ({
+      ...prev,
+      [selectedWeek]: prev[selectedWeek].map(item =>
+        item.id === itemId ? { ...item, isChecked: checked } : item
+      )
+    }));
+
+    // Update in database
     try {
       await updateShoppingItem(itemId, { is_checked: checked });
     } catch (error) {
       console.error('Error updating shopping item:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update item",
-        variant: "destructive",
-      });
+      // Revert local state if database update fails
+      setWeekShoppingItems(prev => ({
+        ...prev,
+        [selectedWeek]: prev[selectedWeek].map(item =>
+          item.id === itemId ? { ...item, isChecked: !checked } : item
+        )
+      }));
     }
-  }, [updateShoppingItem, toast]);
+  };
 
-  const handleRemoveItem = useCallback(async (itemId: string) => {
+  const handleRemoveItem = async (itemId: string) => {
+    // Update local state immediately
+    setWeekShoppingItems(prev => ({
+      ...prev,
+      [selectedWeek]: prev[selectedWeek].filter(item => item.id !== itemId)
+    }));
+
+    // Remove from database
     try {
       await deleteShoppingItem(itemId);
     } catch (error) {
       console.error('Error deleting shopping item:', error);
-      toast({
-        title: "Error",
-        description: "Failed to remove item",
-        variant: "destructive",
-      });
     }
-  }, [deleteShoppingItem, toast]);
+  };
 
-  const handleCopyItem = useCallback((itemName: string, itemId: string) => {
+  const handleCopyItem = (itemName: string, itemId: string) => {
+    // Extract just the name without week prefix
     const cleanName = itemName.replace(/^week\d+-/, '');
     navigator.clipboard.writeText(cleanName);
     
+    // Show visual feedback
     setCopiedItemId(itemId);
     setTimeout(() => setCopiedItemId(null), 2000);
     
@@ -150,7 +287,7 @@ export function useShoppingList() {
       title: "Copied to clipboard",
       description: `"${cleanName}" copied to clipboard!`,
     });
-  }, [toast]);
+  };
 
   const getRecipeNames = useCallback((recipeIds: string[]): string => {
     const recipeNames = recipeIds
@@ -160,86 +297,64 @@ export function useShoppingList() {
     return recipeNames;
   }, [recipes]);
 
-  const handleCheckAll = useCallback(async () => {
+  const handleCheckAll = async () => {
     const currentWeekItems = weekShoppingItems[selectedWeek];
+    const updates = currentWeekItems.map(item => ({ id: item.id, is_checked: true }));
     
-    try {
-      await Promise.all(
-        currentWeekItems.map(item => 
-          updateShoppingItem(item.id, { is_checked: true })
-        )
-      );
-      toast({
-        title: "All items checked",
-        description: `Checked all items for week ${selectedWeek}`,
-      });
-    } catch (error) {
-      console.error('Error checking all items:', error);
-      toast({
-        title: "Error",
-        description: "Failed to check all items",
-        variant: "destructive",
-      });
-    }
-  }, [weekShoppingItems, selectedWeek, updateShoppingItem, toast]);
+    setWeekShoppingItems(prev => ({
+      ...prev,
+      [selectedWeek]: prev[selectedWeek].map(item => ({ ...item, isChecked: true }))
+    }));
 
-  const handleUncheckAll = useCallback(async () => {
+    // Update all items in database
+    for (const update of updates) {
+      try {
+        await updateShoppingItem(update.id, { is_checked: update.is_checked });
+      } catch (error) {
+        console.error('Error updating shopping item:', error);
+      }
+    }
+  };
+
+  const handleUncheckAll = async () => {
     const currentWeekItems = weekShoppingItems[selectedWeek];
+    const updates = currentWeekItems.map(item => ({ id: item.id, is_checked: false }));
     
-    try {
-      await Promise.all(
-        currentWeekItems.map(item => 
-          updateShoppingItem(item.id, { is_checked: false })
-        )
-      );
-      toast({
-        title: "All items unchecked",
-        description: `Unchecked all items for week ${selectedWeek}`,
-      });
-    } catch (error) {
-      console.error('Error unchecking all items:', error);
-      toast({
-        title: "Error",
-        description: "Failed to uncheck all items",
-        variant: "destructive",
-      });
-    }
-  }, [weekShoppingItems, selectedWeek, updateShoppingItem, toast]);
+    setWeekShoppingItems(prev => ({
+      ...prev,
+      [selectedWeek]: prev[selectedWeek].map(item => ({ ...item, isChecked: false }))
+    }));
 
-  const handleRemoveAll = useCallback(async () => {
+    // Update all items in database
+    for (const update of updates) {
+      try {
+        await updateShoppingItem(update.id, { is_checked: update.is_checked });
+      } catch (error) {
+        console.error('Error updating shopping item:', error);
+      }
+    }
+  };
+
+  const handleRemoveAll = async () => {
     const currentWeekItems = weekShoppingItems[selectedWeek];
-    
-    if (currentWeekItems.length === 0) {
-      toast({
-        title: "No items to remove",
-        description: `No items found for week ${selectedWeek}`,
-      });
-      return;
-    }
+    if (window.confirm("Are you sure you want to remove all items from this week's shopping list?")) {
+      // Remove all items from database
+      for (const item of currentWeekItems) {
+        try {
+          await deleteShoppingItem(item.id);
+        } catch (error) {
+          console.error('Error deleting shopping item:', error);
+        }
+      }
 
-    if (!window.confirm(`Are you sure you want to remove all ${currentWeekItems.length} items from week ${selectedWeek}'s shopping list?`)) {
-      return;
+      setWeekShoppingItems(prev => ({
+        ...prev,
+        [selectedWeek]: []
+      }));
     }
-    
-    try {
-      await Promise.all(
-        currentWeekItems.map(item => deleteShoppingItem(item.id))
-      );
-      toast({
-        title: "All items removed",
-        description: `Removed all items from week ${selectedWeek}`,
-      });
-    } catch (error) {
-      console.error('Error removing all items:', error);
-      toast({
-        title: "Error",
-        description: "Failed to remove all items",
-        variant: "destructive",
-      });
-    }
-  }, [weekShoppingItems, selectedWeek, deleteShoppingItem, toast]);
+  };
 
-  const handleShare = useCallback(() => {
+  const handleShare = () => {
     const currentWeekItems = weekShoppingItems[selectedWeek];
     const SHOPPING_CATEGORIES = [
       "Fresh & Chilled Food",
@@ -296,103 +411,7 @@ export function useShoppingList() {
         description: "Shopping list copied to clipboard!",
       });
     }
-  }, [weekShoppingItems, selectedWeek, toast]);
-
-  // Manual generation function
-  const generateShoppingList = useCallback(async (weekNumber: 1 | 2) => {
-    if (!user || !currentHousehold || recipesLoading || recipes.length === 0 || isGenerating) {
-      return;
-    }
-
-    setIsGenerating(true);
-
-    try {
-      const mealPlans = getMealPlansForWeek(weekNumber);
-      console.log(`Generating shopping list for week ${weekNumber}, found ${mealPlans.length} meal plans`);
-      
-      if (mealPlans.length === 0) {
-        toast({
-          title: "No Meal Plans",
-          description: `No meal plans found for week ${weekNumber}. Please add some meals to your meal planner first.`,
-        });
-        return;
-      }
-
-      // Clear existing items for this week
-      const weekPrefix = `week${weekNumber}-`;
-      const existingItems = householdShoppingItems.filter(item => 
-        item.name.startsWith(weekPrefix)
-      );
-
-      console.log(`Clearing ${existingItems.length} existing items for week ${weekNumber}`);
-      for (const item of existingItems) {
-        await deleteShoppingItem(item.id);
-      }
-
-      // Generate ingredient map with proper deduplication
-      const ingredientMap = new Map<string, { quantity: number; recipeIds: string[]; originalName: string }>();
-      
-      mealPlans.forEach(plan => {
-        const recipe = recipes.find(r => r.id === plan.recipeId);
-        console.log(`Processing meal plan for recipe: ${recipe?.title}`);
-        
-        if (recipe && recipe.ingredients) {
-          recipe.ingredients.forEach(ingredient => {
-            const normalizedName = normalizeIngredientName(ingredient);
-            
-            if (normalizedName.length > 0) {
-              if (ingredientMap.has(normalizedName)) {
-                const existing = ingredientMap.get(normalizedName)!;
-                existing.quantity += 1;
-                if (!existing.recipeIds.includes(recipe.id)) {
-                  existing.recipeIds.push(recipe.id);
-                }
-              } else {
-                ingredientMap.set(normalizedName, {
-                  quantity: 1,
-                  recipeIds: [recipe.id],
-                  originalName: ingredient
-                });
-              }
-            }
-          });
-        }
-      });
-
-      console.log(`Generated ${ingredientMap.size} unique ingredients`);
-
-      // Add new items
-      for (const [normalizedName, data] of ingredientMap.entries()) {
-        try {
-          await addShoppingItem({
-            name: `${weekPrefix}${normalizedName}`,
-            quantity: data.quantity,
-            unit: '',
-            category: categorizeIngredient(normalizedName),
-            is_checked: false,
-            is_custom: false,
-            recipe_ids: data.recipeIds
-          });
-        } catch (error) {
-          console.error('Error adding shopping item:', error);
-        }
-      }
-
-      toast({
-        title: "Shopping List Generated",
-        description: `Generated shopping list for week ${weekNumber} with ${ingredientMap.size} items`,
-      });
-    } catch (error) {
-      console.error('Error generating shopping list:', error);
-      toast({
-        title: "Error",
-        description: "Failed to generate shopping list",
-        variant: "destructive",
-      });
-    } finally {
-      setIsGenerating(false);
-    }
-  }, [user, currentHousehold, recipes, recipesLoading, getMealPlansForWeek, householdShoppingItems, addShoppingItem, deleteShoppingItem, categorizeIngredient, normalizeIngredientName, toast, isGenerating]);
+  };
 
   return {
     user,
@@ -403,7 +422,6 @@ export function useShoppingList() {
     weekShoppingItems,
     recipesLoading,
     shoppingLoading,
-    isGenerating,
     handleCheckItem,
     handleRemoveItem,
     handleCopyItem,
@@ -411,7 +429,6 @@ export function useShoppingList() {
     handleCheckAll,
     handleUncheckAll,
     handleRemoveAll,
-    handleShare,
-    generateShoppingList
+    handleShare
   };
 }

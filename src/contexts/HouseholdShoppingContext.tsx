@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -41,6 +40,7 @@ interface HouseholdShoppingContextType {
   updateRecipeCategory: (id: string, name: string) => Promise<void>;
   deleteRecipeCategory: (id: string) => Promise<void>;
   seedDefaultCategories: () => Promise<void>;
+  generateShoppingListFromMealPlan: () => Promise<void>;
 }
 
 // Default recipe categories that should be available for all households
@@ -171,7 +171,11 @@ export const HouseholdShoppingProvider = ({ children }: { children: ReactNode })
       setShoppingItems(prev => [data, ...prev]);
     } catch (error) {
       console.error('Error adding shopping item:', error);
-      throw error;
+      toast({
+        title: "Error",
+        description: "Failed to add shopping item",
+        variant: "destructive",
+      });
     }
   };
 
@@ -188,7 +192,11 @@ export const HouseholdShoppingProvider = ({ children }: { children: ReactNode })
       setShoppingItems(prev => prev.map(item => item.id === id ? data : item));
     } catch (error) {
       console.error('Error updating shopping item:', error);
-      throw error;
+      toast({
+        title: "Error",
+        description: "Failed to update shopping item",
+        variant: "destructive",
+      });
     }
   };
 
@@ -203,7 +211,11 @@ export const HouseholdShoppingProvider = ({ children }: { children: ReactNode })
       setShoppingItems(prev => prev.filter(item => item.id !== id));
     } catch (error) {
       console.error('Error deleting shopping item:', error);
-      throw error;
+      toast({
+        title: "Error",
+        description: "Failed to delete shopping item",
+        variant: "destructive",
+      });
     }
   };
 
@@ -285,6 +297,164 @@ export const HouseholdShoppingProvider = ({ children }: { children: ReactNode })
     }
   };
 
+  const generateShoppingListFromMealPlan = async () => {
+    if (!currentHousehold || !user) return;
+
+    try {
+      // Get current household meal plans
+      const { data: mealPlans, error: mealError } = await supabase
+        .from('household_meal_plans')
+        .select(`
+          *,
+          recipes(*)
+        `)
+        .eq('household_id', currentHousehold.id);
+
+      if (mealError) throw mealError;
+
+      // Extract ingredients from recipes
+      const ingredientMap = new Map<string, { quantity: number; unit: string; recipe_ids: string[] }>();
+      
+      mealPlans?.forEach(plan => {
+        if (plan.recipes?.ingredients) {
+          plan.recipes.ingredients.forEach((ingredient: string) => {
+            const { qty, unit, name } = parseIngredientQty(ingredient);
+            const key = `${name}_${unit}`;
+            
+            if (ingredientMap.has(key)) {
+              const existing = ingredientMap.get(key)!;
+              existing.quantity += qty;
+              if (!existing.recipe_ids.includes(plan.recipe_id)) {
+                existing.recipe_ids.push(plan.recipe_id);
+              }
+            } else {
+              ingredientMap.set(key, {
+                quantity: qty,
+                unit,
+                recipe_ids: [plan.recipe_id]
+              });
+            }
+          });
+        }
+      });
+
+      // Add to shopping list
+      const itemsToAdd = Array.from(ingredientMap.entries()).map(([key, data]) => {
+        const name = key.replace(`_${data.unit}`, '');
+        return {
+          name,
+          quantity: data.quantity,
+          unit: data.unit,
+          category: categoriseByName(name),
+          is_checked: false,
+          is_custom: false,
+          recipe_ids: data.recipe_ids
+        };
+      });
+
+      for (const item of itemsToAdd) {
+        await addShoppingItem(item);
+      }
+
+      toast({
+        title: "Shopping List Generated",
+        description: `Added ${itemsToAdd.length} items from your meal plan`,
+      });
+    } catch (error) {
+      console.error('Error generating shopping list:', error);
+      toast({
+        title: "Error",
+        description: "Failed to generate shopping list from meal plan",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Helper functions
+  const parseIngredientQty = (text: string): { qty: number; unit: string; name: string } => {
+    const match = text.match(/^(\d+(?:\.\d+)?)([a-zA-Z]+)?\s+(.*)$/);
+    if (match) {
+      return {
+        qty: parseFloat(match[1]),
+        unit: match[2] ? match[2].trim() : "",
+        name: match[3].toLowerCase(),
+      };
+    }
+    return { qty: 1, unit: "", name: text.toLowerCase() };
+  };
+
+  const categoriseByName = (name: string): string => {
+    const nameLower = name.toLowerCase();
+    
+    // Fresh & Chilled Food
+    if (/lettuce|spinach|kale|rocket|watercress|cabbage|broccoli|cauliflower|carrot|onion|potato|tomato|cucumber|pepper|courgette|aubergine|mushroom|garlic|ginger|lemon|lime|orange|apple|banana|grapes|strawberry|avocado|herbs|parsley|coriander|basil|thyme|rosemary|fresh|salad|vegetable|fruit|meat|chicken|beef|pork|lamb|fish|salmon|cod|prawns|bacon|ham|sausage|mince|steak|milk|cheese|yogurt|cream|butter|egg|tofu/i.test(nameLower)) {
+      return "Fresh & Chilled Food";
+    }
+    
+    // Food Cupboard
+    if (/flour|sugar|salt|pepper|oil|vinegar|rice|pasta|noodles|quinoa|couscous|bulgur|lentils|beans|chickpeas|tinned|canned|jar|sauce|paste|stock|cube|spice|spices|cumin|paprika|turmeric|cinnamon|vanilla|honey|syrup|nuts|seeds|dried|cereal|oats|biscuits|crackers|tea|coffee|condiment|ketchup|mustard|mayo|mayonnaise|dressing|coconut|tahini|peanut|almond|olive|sunflower|rapeseed|balsamic|soy|worcestershire|tabasco|harissa/i.test(nameLower)) {
+      return "Food Cupboard";
+    }
+    
+    // Bakery
+    if (/bread|bun|roll|bagel|muffin|croissant|pastry|cake|loaf|baguette|pitta|naan|tortilla|wrap|crumpet|scone/i.test(nameLower)) {
+      return "Bakery";
+    }
+    
+    // Frozen Food
+    if (/frozen|ice|sorbet|gelato|peas|chips|pizza|ready meal/i.test(nameLower)) {
+      return "Frozen Food";
+    }
+    
+    // Dietary, Lifestyle & World Foods
+    if (/gluten.free|dairy.free|vegan|organic|free.range|coconut.milk|almond.milk|soy.milk|oat.milk|kimchi|miso|teriyaki|curry|garam.masala|chinese|thai|indian|mexican|mediterranean|kosher|halal/i.test(nameLower)) {
+      return "Dietary, Lifestyle & World Foods";
+    }
+    
+    // Soft Drinks, Tea & Coffee
+    if (/juice|squash|cordial|water|sparkling|cola|lemonade|energy.drink|smoothie|kombucha|green.tea|black.tea|herbal.tea|coffee.beans|instant.coffee|decaf/i.test(nameLower)) {
+      return "Soft Drinks, Tea & Coffee";
+    }
+    
+    // Beer, Wine & Spirits
+    if (/beer|wine|whisky|vodka|gin|rum|brandy|champagne|prosecco|cider|ale|lager|spirits|alcohol/i.test(nameLower)) {
+      return "Beer, Wine & Spirits";
+    }
+    
+    // Health, Beauty & Personal Care
+    if (/shampoo|conditioner|soap|toothpaste|deodorant|moisturiser|sunscreen|vitamins|supplements|paracetamol|ibuprofen|plaster|antiseptic/i.test(nameLower)) {
+      return "Health, Beauty & Personal Care";
+    }
+    
+    // Baby, Parent & Kids
+    if (/nappy|baby.food|formula|dummy|wipes|baby.oil|baby.powder|kids|children|junior/i.test(nameLower)) {
+      return "Baby, Parent & Kids";
+    }
+    
+    // Home Care & Cleaning
+    if (/washing.powder|fabric.softener|bleach|disinfectant|toilet.paper|kitchen.roll|bin.bags|washing.up.liquid|dishwasher|tablets|cleaning|polish|hoover|vacuum/i.test(nameLower)) {
+      return "Home Care & Cleaning";
+    }
+    
+    // Pets, Home & Garden
+    if (/dog.food|cat.food|pet.treats|bird.seed|fish.food|plant.food|compost|seeds|bulbs|garden|pet|animal/i.test(nameLower)) {
+      return "Pets, Home & Garden";
+    }
+    
+    // Occasions & Entertaining
+    if (/candles|balloons|party|celebration|gift|card|wrapping|decorations|entertaining/i.test(nameLower)) {
+      return "Occasions & Entertaining";
+    }
+    
+    // Clothing & Accessories
+    if (/socks|underwear|shirt|dress|jumper|jacket|shoes|hat|gloves|scarf|belt|bag|watch|jewellery/i.test(nameLower)) {
+      return "Clothing & Accessories";
+    }
+    
+    // Default fallback
+    return "Food Cupboard";
+  };
+
   useEffect(() => {
     if (currentHousehold) {
       fetchShoppingItems();
@@ -305,7 +475,8 @@ export const HouseholdShoppingProvider = ({ children }: { children: ReactNode })
       addRecipeCategory,
       updateRecipeCategory,
       deleteRecipeCategory,
-      seedDefaultCategories
+      seedDefaultCategories,
+      generateShoppingListFromMealPlan
     }}>
       {children}
     </HouseholdShoppingContext.Provider>
