@@ -24,13 +24,6 @@ export function useShoppingList() {
   const { toast } = useToast();
   const [selectedWeek, setSelectedWeek] = useState<1 | 2>(1);
   const [copiedItemId, setCopiedItemId] = useState<string | null>(null);
-  const [weekShoppingItems, setWeekShoppingItems] = useState<{
-    1: ShoppingItem[];
-    2: ShoppingItem[];
-  }>({
-    1: [],
-    2: []
-  });
 
   const { getMealPlansForWeek } = useMealPlan();
   const { recipes, isLoading: recipesLoading } = useRecipes();
@@ -115,6 +108,28 @@ export function useShoppingList() {
     return "Food Cupboard";
   }, []);
 
+  // Get shopping items for a specific week - filter by name prefix
+  const getWeekShoppingItems = useCallback((weekNumber: 1 | 2): ShoppingItem[] => {
+    if (!user || !currentHousehold) return [];
+    
+    const weekPrefix = `week${weekNumber}-`;
+    const weekItems = householdShoppingItems
+      .filter(item => item.name.startsWith(weekPrefix))
+      .map(item => ({
+        id: item.id,
+        name: item.name,
+        quantity: item.quantity || 1,
+        unit: item.unit || '',
+        isChecked: item.is_checked,
+        category: item.category,
+        isCustom: item.is_custom,
+        recipeIds: item.recipe_ids || []
+      }));
+    
+    console.log(`Shopping items for week ${weekNumber}:`, weekItems);
+    return weekItems;
+  }, [householdShoppingItems, user, currentHousehold]);
+
   // Generate shopping list for each week and save to database
   useEffect(() => {
     const generateAndSaveWeekLists = async () => {
@@ -136,7 +151,7 @@ export function useShoppingList() {
         
         // Get existing shopping items for this week from household context
         const existingWeekItems = householdShoppingItems.filter(item => 
-          item.name.startsWith(weekKey) || item.category.includes(weekKey)
+          item.name.startsWith(`${weekKey}-`)
         );
         
         console.log(`Existing ${weekKey} items:`, existingWeekItems);
@@ -168,30 +183,17 @@ export function useShoppingList() {
 
         console.log(`Generated ${ingredientMap.size} unique ingredients for ${weekKey}`);
 
-        // Convert to shopping items and merge with existing
-        const generatedItems: ShoppingItem[] = [];
-        
+        // Add new items that don't already exist
         for (const [ingredient, data] of ingredientMap.entries()) {
-          // Check if this item already exists in the database
+          const itemName = `${weekKey}-${ingredient}`;
+          
+          // Check if this exact item already exists
           const existingItem = existingWeekItems.find(item => 
-            item.name.toLowerCase().includes(ingredient.toLowerCase())
+            item.name === itemName
           );
 
-          if (existingItem) {
-            // Use existing item (preserves checked state)
-            generatedItems.push({
-              id: existingItem.id,
-              name: existingItem.name,
-              quantity: existingItem.quantity || data.quantity,
-              unit: existingItem.unit || '',
-              isChecked: existingItem.is_checked,
-              category: existingItem.category,
-              isCustom: existingItem.is_custom,
-              recipeIds: existingItem.recipe_ids || data.recipeIds
-            });
-          } else {
+          if (!existingItem) {
             // Create new item and add to database
-            const itemName = `${weekKey}-${ingredient}`;
             const newItemData = {
               name: itemName,
               quantity: data.quantity,
@@ -203,70 +205,39 @@ export function useShoppingList() {
             };
 
             try {
+              console.log(`Adding new shopping item: ${itemName}`);
               await addShoppingItem(newItemData);
-              generatedItems.push({
-                id: `temp-${Date.now()}-${ingredient}`,
-                name: itemName,
-                quantity: data.quantity,
-                unit: '',
-                isChecked: false,
-                category: categorizeIngredient(ingredient),
-                isCustom: false,
-                recipeIds: data.recipeIds
-              });
             } catch (error) {
               console.error('Error adding shopping item:', error);
             }
+          } else {
+            console.log(`Item already exists: ${itemName}`);
           }
         }
-
-        return generatedItems;
       };
 
-      const week1Items = await processWeek(1, week1Plans);
-      const week2Items = await processWeek(2, week2Plans);
-
-      setWeekShoppingItems({
-        1: week1Items,
-        2: week2Items
-      });
+      await processWeek(1, week1Plans);
+      await processWeek(2, week2Plans);
     };
 
     generateAndSaveWeekLists();
   }, [getMealPlansForWeek, recipes, user, currentHousehold, recipesLoading, householdShoppingItems, addShoppingItem, categorizeIngredient]);
 
-  const handleCheckItem = async (itemId: string, checked: boolean) => {
-    // Update local state immediately for responsiveness
-    setWeekShoppingItems(prev => ({
-      ...prev,
-      [selectedWeek]: prev[selectedWeek].map(item =>
-        item.id === itemId ? { ...item, isChecked: checked } : item
-      )
-    }));
+  // Get current week items using the helper function
+  const weekShoppingItems = {
+    1: getWeekShoppingItems(1),
+    2: getWeekShoppingItems(2)
+  };
 
-    // Update in database
+  const handleCheckItem = async (itemId: string, checked: boolean) => {
     try {
       await updateShoppingItem(itemId, { is_checked: checked });
     } catch (error) {
       console.error('Error updating shopping item:', error);
-      // Revert local state if database update fails
-      setWeekShoppingItems(prev => ({
-        ...prev,
-        [selectedWeek]: prev[selectedWeek].map(item =>
-          item.id === itemId ? { ...item, isChecked: !checked } : item
-        )
-      }));
     }
   };
 
   const handleRemoveItem = async (itemId: string) => {
-    // Update local state immediately
-    setWeekShoppingItems(prev => ({
-      ...prev,
-      [selectedWeek]: prev[selectedWeek].filter(item => item.id !== itemId)
-    }));
-
-    // Remove from database
     try {
       await deleteShoppingItem(itemId);
     } catch (error) {
@@ -299,17 +270,11 @@ export function useShoppingList() {
 
   const handleCheckAll = async () => {
     const currentWeekItems = weekShoppingItems[selectedWeek];
-    const updates = currentWeekItems.map(item => ({ id: item.id, is_checked: true }));
     
-    setWeekShoppingItems(prev => ({
-      ...prev,
-      [selectedWeek]: prev[selectedWeek].map(item => ({ ...item, isChecked: true }))
-    }));
-
     // Update all items in database
-    for (const update of updates) {
+    for (const item of currentWeekItems) {
       try {
-        await updateShoppingItem(update.id, { is_checked: update.is_checked });
+        await updateShoppingItem(item.id, { is_checked: true });
       } catch (error) {
         console.error('Error updating shopping item:', error);
       }
@@ -318,17 +283,11 @@ export function useShoppingList() {
 
   const handleUncheckAll = async () => {
     const currentWeekItems = weekShoppingItems[selectedWeek];
-    const updates = currentWeekItems.map(item => ({ id: item.id, is_checked: false }));
     
-    setWeekShoppingItems(prev => ({
-      ...prev,
-      [selectedWeek]: prev[selectedWeek].map(item => ({ ...item, isChecked: false }))
-    }));
-
     // Update all items in database
-    for (const update of updates) {
+    for (const item of currentWeekItems) {
       try {
-        await updateShoppingItem(update.id, { is_checked: update.is_checked });
+        await updateShoppingItem(item.id, { is_checked: false });
       } catch (error) {
         console.error('Error updating shopping item:', error);
       }
@@ -346,11 +305,6 @@ export function useShoppingList() {
           console.error('Error deleting shopping item:', error);
         }
       }
-
-      setWeekShoppingItems(prev => ({
-        ...prev,
-        [selectedWeek]: []
-      }));
     }
   };
 
