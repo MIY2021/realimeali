@@ -10,11 +10,12 @@ import { useRecipes } from "@/contexts/RecipesContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { useMealPlan } from "@/contexts/MealPlanContext";
+import { useRecipesLoader } from "@/hooks/useRecipesLoader";
 import { HouseholdMembersDisplay } from "@/components/household/HouseholdMembersDisplay";
 
 export default function MealPlanner() {
   const { user } = useAuth();
-  const { recipes } = useRecipes();
+  const { recipes, isLoading: recipesLoading } = useRecipes();
   const { currentHousehold } = useHousehold();
   const { 
     mealPlans, 
@@ -23,12 +24,17 @@ export default function MealPlanner() {
     addMealPlan, 
     removeMealPlan, 
     clearWeek,
-    isLoading 
+    isLoading: mealPlansLoading 
   } = useMealPlan();
   const { toast } = useToast();
   
+  // Load recipes automatically
+  useRecipesLoader();
+  
   // --- Week state
   const [week, setWeek] = useState<1 | 2>(1);
+
+  const isLoading = recipesLoading || mealPlansLoading;
 
   const mealTypes: MealType[] = ["dinner", "lunch", "breakfast", "snacks"];
   const getMealPlansForType = (mealType: MealType) =>
@@ -290,7 +296,7 @@ export default function MealPlanner() {
         <>
           {isLoading ? (
             <div className="py-10 text-center">
-              <p className="text-muted-foreground">Loading meal plans...</p>
+              <p className="text-muted-foreground">Loading meal plans and recipes...</p>
             </div>
           ) : (
             <>

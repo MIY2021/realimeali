@@ -9,9 +9,10 @@ import { CategoryManagementDialog } from "@/components/recipes/CategoryManagemen
 import { useRecipes } from "@/contexts/RecipesContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
+import { useRecipesLoader } from "@/hooks/useRecipesLoader";
 
 export default function RecipesPage() {
-  const { recipes, isLoading, fetchRecipes } = useRecipes();
+  const { recipes, isLoading } = useRecipes();
   const { user } = useAuth();
   const { currentHousehold } = useHousehold();
   const { toast } = useToast();
@@ -20,18 +21,8 @@ export default function RecipesPage() {
   // Dialog state
   const [showCategoryDialog, setShowCategoryDialog] = useState(false);
   
-  // Local loading state to prevent multiple fetches
-  const [isFetching, setIsFetching] = useState(false);
-
-  // Fetch recipes when household changes - remove fetchRecipes from dependencies
-  useEffect(() => {
-    if (user && !isFetching) {
-      setIsFetching(true);
-      fetchRecipes(currentHousehold?.id || null).finally(() => {
-        setIsFetching(false);
-      });
-    }
-  }, [currentHousehold?.id, user?.id]); // Only depend on stable IDs
+  // Load recipes automatically
+  useRecipesLoader();
 
   const handleCreateRecipe = () => {
     if (!user) {
@@ -102,7 +93,7 @@ export default function RecipesPage() {
             )}
           </div>
 
-          {isLoading || isFetching ? (
+          {isLoading ? (
             <div className="py-10 text-center">
               <p className="text-muted-foreground">Loading household recipes...</p>
             </div>

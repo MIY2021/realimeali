@@ -37,6 +37,34 @@ export const RecipesProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [recipeApi]); // Only depend on recipeApi, which is now stable
 
+  // Auto-fetch recipes when context initializes and when household changes
+  useEffect(() => {
+    let isMounted = true;
+    
+    const initializeFetch = async () => {
+      if (user) {
+        // Import household context to get current household
+        const { useHousehold } = await import("@/contexts/HouseholdContext");
+        const householdContext = useHousehold();
+        
+        if (isMounted) {
+          await fetchRecipes(householdContext.currentHousehold?.id || null);
+        }
+      } else {
+        if (isMounted) {
+          setRecipes([]);
+          setIsLoading(false);
+        }
+      }
+    };
+
+    initializeFetch();
+    
+    return () => {
+      isMounted = false;
+    };
+  }, [user?.id, fetchRecipes]);
+
   const createRecipe = useCallback(async (
     recipeData: Omit<Recipe, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>, 
     householdId: string
@@ -56,7 +84,7 @@ export const RecipesProvider = ({ children }: { children: ReactNode }) => {
       });
       return null;
     }
-  }, [recipeApi]); // Stable dependency
+  }, [recipeApi]);
 
   const updateRecipe = useCallback(async (id: string, recipeData: Partial<Recipe>): Promise<Recipe | null> => {
     try {
@@ -76,7 +104,7 @@ export const RecipesProvider = ({ children }: { children: ReactNode }) => {
       });
       return null;
     }
-  }, [recipeApi]); // Stable dependency
+  }, [recipeApi]);
 
   const deleteRecipe = useCallback(async (id: string): Promise<boolean> => {
     try {
@@ -94,7 +122,7 @@ export const RecipesProvider = ({ children }: { children: ReactNode }) => {
       });
       return false;
     }
-  }, [recipeApi]); // Stable dependency
+  }, [recipeApi]);
 
   const getRecipeById = useCallback((id: string) => {
     return recipes.find(recipe => recipe.id === id);

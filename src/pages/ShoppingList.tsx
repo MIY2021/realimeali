@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,6 +8,7 @@ import { useMealPlan } from "@/contexts/MealPlanContext";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
+import { useRecipesLoader } from "@/hooks/useRecipesLoader";
 import ShoppingListActions from "@/components/ShoppingListActions";
 import { HouseholdSelector } from "@/components/household/HouseholdSelector";
 
@@ -53,7 +53,10 @@ export default function ShoppingList() {
   });
 
   const { getMealPlansForWeek } = useMealPlan();
-  const { recipes } = useRecipes();
+  const { recipes, isLoading: recipesLoading } = useRecipes();
+  
+  // Load recipes automatically
+  useRecipesLoader();
 
   // Helper function to categorize ingredients
   const categorizeIngredient = (ingredient: string): string => {
@@ -131,7 +134,9 @@ export default function ShoppingList() {
   // Generate shopping list for each week
   useEffect(() => {
     const generateWeekLists = async () => {
-      if (!user || !currentHousehold) return;
+      if (!user || !currentHousehold || recipesLoading) return;
+
+      console.log("Generating shopping lists with recipes:", recipes.length);
 
       const week1Plans = getMealPlansForWeek(1);
       const week2Plans = getMealPlansForWeek(2);
@@ -178,7 +183,7 @@ export default function ShoppingList() {
     };
 
     generateWeekLists();
-  }, [getMealPlansForWeek, recipes, user, currentHousehold]);
+  }, [getMealPlansForWeek, recipes, user, currentHousehold, recipesLoading]);
 
   const currentWeekItems = weekShoppingItems[selectedWeek];
 
@@ -326,7 +331,11 @@ export default function ShoppingList() {
         </Button>
       </div>
 
-      {currentWeekItems.length === 0 ? (
+      {recipesLoading ? (
+        <div className="py-10 text-center">
+          <p className="text-muted-foreground">Loading recipes and generating shopping list...</p>
+        </div>
+      ) : currentWeekItems.length === 0 ? (
         <Card>
           <CardContent className="p-6 text-center">
             <p className="text-muted-foreground">No items in your shopping list for Week {selectedWeek}</p>
