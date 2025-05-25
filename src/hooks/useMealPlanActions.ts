@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MealType, RecipeCategory } from "@/types";
+import { MealType, RecipeCategory, MealPlan, Recipe } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
@@ -23,6 +23,12 @@ export const useMealPlanActions = (week: 1 | 2) => {
     open: boolean;
     mealType: MealType | null;
   }>({ open: false, mealType: null });
+
+  const [leftoverModal, setLeftoverModal] = useState<{
+    open: boolean;
+    mealPlan: MealPlan | null;
+    recipe: Recipe | null;
+  }>({ open: false, mealPlan: null, recipe: null });
 
   const mealTypes: MealType[] = ["dinner", "lunch", "breakfast", "snacks"];
   
@@ -63,6 +69,57 @@ export const useMealPlanActions = (week: 1 | 2) => {
     }
     
     setAddMealModal({ open: true, mealType });
+  };
+
+  const handleCreateLeftover = (mealPlan: MealPlan, recipe: Recipe) => {
+    if (!user || !currentHousehold) {
+      toast({
+        title: "Login Required",
+        description: "You need to log in to create leftovers.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLeftoverModal({ open: true, mealPlan, recipe });
+  };
+
+  const onLeftoverConfirm = async (servings: number) => {
+    if (!user || !currentHousehold || !leftoverModal.mealPlan || !leftoverModal.recipe) return;
+    
+    const { mealPlan, recipe } = leftoverModal;
+    
+    try {
+      const currentLunchPlans = getMealPlansForType('lunch');
+      
+      // Create leftover lunch meal plan
+      await addMealPlan({
+        date: mealPlan.date,
+        mealType: 'lunch',
+        recipeId: mealPlan.recipeId,
+        createdBy: user.id,
+        slotIndex: currentLunchPlans.length,
+        parentMealPlanId: mealPlan.id,
+        isLeftover: true,
+        leftoverServings: servings,
+        originalServings: recipe.servings,
+        householdId: currentHousehold.id,
+      }, week);
+
+      toast({
+        title: "Leftover Lunch Added",
+        description: `${servings} servings of ${recipe.title} scheduled for lunch leftovers.`,
+      });
+
+      setLeftoverModal({ open: false, mealPlan: null, recipe: null });
+    } catch (error) {
+      console.error("Error creating leftover:", error);
+      toast({
+        title: "Error",
+        description: "Failed to create leftover. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const onAddMealFinish = async (mealType: MealType, recipeId: string, leftoverServings?: number) => {
@@ -139,9 +196,13 @@ export const useMealPlanActions = (week: 1 | 2) => {
     mealTypeToCategories,
     addMealModal,
     setAddMealModal,
+    leftoverModal,
+    setLeftoverModal,
     getMealPlansForType,
     handleRemoveMeal,
     handleAddMeal,
+    handleCreateLeftover,
+    onLeftoverConfirm,
     onAddMealFinish,
     handleClearAll,
     handleShareMealPlan,

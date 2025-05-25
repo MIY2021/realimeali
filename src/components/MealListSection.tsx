@@ -10,6 +10,7 @@ interface MealListSectionProps {
   getRecipeById: (id: string) => Recipe | undefined;
   onAddMeal: (mealType: MealType) => void;
   onRemoveMeal: (planId: string) => void;
+  onCreateLeftover?: (mealPlan: MealPlan, recipe: Recipe) => void;
 }
 
 export default function MealListSection({
@@ -18,6 +19,7 @@ export default function MealListSection({
   getRecipeById,
   onAddMeal,
   onRemoveMeal,
+  onCreateLeftover,
 }: MealListSectionProps) {
   return (
     <div className="mb-6">
@@ -56,6 +58,7 @@ export default function MealListSection({
                 mealPlan={plan}
                 recipe={recipe}
                 onRemove={onRemoveMeal}
+                onCreateLeftover={onCreateLeftover}
                 parentRecipe={parentRecipe}
               />
             );

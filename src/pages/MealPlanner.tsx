@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { Link } from "react-router-dom";
 import { AddMealWithLeftoversDialog } from "@/components/meal-planner/AddMealWithLeftoversDialog";
+import { LeftoverServingsDialog } from "@/components/meal-planner/LeftoverServingsDialog";
 import MealListSection from "@/components/MealListSection";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -32,9 +33,13 @@ export default function MealPlanner() {
     mealTypeToCategories,
     addMealModal,
     setAddMealModal,
+    leftoverModal,
+    setLeftoverModal,
     getMealPlansForType,
     handleRemoveMeal,
     handleAddMeal,
+    handleCreateLeftover,
+    onLeftoverConfirm,
     onAddMealFinish,
     handleClearAll,
     handleShareMealPlan,
@@ -98,6 +103,7 @@ export default function MealPlanner() {
                       getRecipeById={getRecipeById}
                       onAddMeal={handleAddMeal}
                       onRemoveMeal={handleRemoveMeal}
+                      onCreateLeftover={handleCreateLeftover}
                     />
                   ))}
                   
@@ -107,11 +113,19 @@ export default function MealPlanner() {
                       onClose={() => setAddMealModal({ open: false, mealType: null })}
                       mealType={addMealModal.mealType}
                       recipes={recipes}
-                      onSelectRecipe={(recipeId, leftoverServings) => 
-                        onAddMealFinish(addMealModal.mealType!, recipeId, leftoverServings)
+                      onSelectRecipe={(recipeId) => 
+                        onAddMealFinish(addMealModal.mealType!, recipeId)
                       }
                     />
                   )}
+
+                  <LeftoverServingsDialog
+                    open={leftoverModal.open}
+                    onClose={() => setLeftoverModal({ open: false, mealPlan: null, recipe: null })}
+                    mealPlan={leftoverModal.mealPlan}
+                    recipe={leftoverModal.recipe}
+                    onConfirm={onLeftoverConfirm}
+                  />
                 </>
               )}
             </>
