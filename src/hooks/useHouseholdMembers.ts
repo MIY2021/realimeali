@@ -24,6 +24,13 @@ export const useHouseholdMembers = (householdId: string | null) => {
 
   const fetchMembers = async () => {
     if (!householdId) {
+      console.log("No household ID provided");
+      setMembers([]);
+      return;
+    }
+
+    if (!user) {
+      console.log("No user authenticated");
       setMembers([]);
       return;
     }
@@ -31,51 +38,74 @@ export const useHouseholdMembers = (householdId: string | null) => {
     try {
       setIsLoading(true);
       console.log("Fetching members for household:", householdId);
+      console.log("Current user:", user.id);
       
-      const { data, error } = await supabase
+      // First, get household members
+      const { data: memberData, error: memberError } = await supabase
         .from('household_members')
-        .select(`
-          id,
-          user_id,
-          role,
-          joined_at,
-          profiles(
-            full_name,
-            email,
-            avatar_url
-          )
-        `)
+        .select('id, user_id, role, joined_at')
         .eq('household_id', householdId);
 
-      if (error) {
-        console.error("Error fetching members:", error);
-        throw error;
+      if (memberError) {
+        console.error("Error fetching household members:", memberError);
+        throw memberError;
       }
 
-      console.log("Raw member data:", data);
+      console.log("Raw member data:", memberData);
 
-      // Transform the data to match our interface with better fallbacks
-      const membersWithProfiles: HouseholdMember[] = (data || []).map((member: any) => ({
-        id: member.id,
-        user_id: member.user_id,
-        role: member.role,
-        joined_at: member.joined_at,
-        profile: {
-          full_name: member.profiles?.full_name || 'Unknown User',
-          email: member.profiles?.email || 'No email available',
-          avatar_url: member.profiles?.avatar_url
-        }
-      }));
+      if (!memberData || memberData.length === 0) {
+        console.log("No members found for household");
+        setMembers([]);
+        return;
+      }
 
-      console.log("Transformed members:", membersWithProfiles);
+      // Then, get profiles for each member
+      const userIds = memberData.map(member => member.user_id);
+      console.log("Fetching profiles for user IDs:", userIds);
+
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('id, full_name, email, avatar_url')
+        .in('id', userIds);
+
+      if (profileError) {
+        console.error("Error fetching profiles:", profileError);
+        // Don't throw here, continue with member data but no profiles
+      }
+
+      console.log("Profile data:", profileData);
+
+      // Combine member data with profiles
+      const membersWithProfiles: HouseholdMember[] = memberData.map((member: any) => {
+        const profile = profileData?.find(p => p.id === member.user_id);
+        
+        return {
+          id: member.id,
+          user_id: member.user_id,
+          role: member.role,
+          joined_at: member.joined_at,
+          profile: profile ? {
+            full_name: profile.full_name || 'Unknown User',
+            email: profile.email || 'No email available',
+            avatar_url: profile.avatar_url
+          } : {
+            full_name: 'Unknown User',
+            email: 'No email available',
+            avatar_url: undefined
+          }
+        };
+      });
+
+      console.log("Final members with profiles:", membersWithProfiles);
       setMembers(membersWithProfiles);
     } catch (error) {
-      console.error("Error fetching members:", error);
+      console.error("Error in fetchMembers:", error);
       toast({
         title: "Error",
-        description: "Failed to fetch household members.",
+        description: "Failed to fetch household members. Please try refreshing the page.",
         variant: "destructive",
       });
+      setMembers([]);
     } finally {
       setIsLoading(false);
     }
@@ -114,7 +144,7 @@ export const useHouseholdMembers = (householdId: string | null) => {
 
   useEffect(() => {
     fetchMembers();
-  }, [householdId]);
+  }, [householdId, user?.id]);
 
   return {
     members,
