@@ -1,5 +1,7 @@
 import { Recipe } from "@/types";
 
+const baseHouseholdId = "household-1";
+
 export const bulkRecipes: Recipe[] = [
   {
     id: "recipe-3",
@@ -38,6 +40,7 @@ export const bulkRecipes: Recipe[] = [
     createdAt: "2023-03-05T18:45:00Z",
     updatedAt: "2023-03-05T18:45:00Z",
     isFavorite: true,
+    householdId: baseHouseholdId,
   },
   {
     id: "recipe-5",
@@ -66,6 +69,7 @@ export const bulkRecipes: Recipe[] = [
     createdAt: "2023-05-10T11:00:00Z",
     updatedAt: "2023-05-10T11:00:00Z",
     isFavorite: false,
+    householdId: baseHouseholdId,
   },
   {
     id: "recipe-6",
@@ -94,6 +98,7 @@ export const bulkRecipes: Recipe[] = [
     createdAt: "2023-05-16T12:00:00Z",
     updatedAt: "2023-05-16T12:00:00Z",
     isFavorite: false,
+    householdId: baseHouseholdId,
   },
   {
     id: "recipe-9",
@@ -122,6 +127,7 @@ export const bulkRecipes: Recipe[] = [
     createdAt: "2023-07-10T10:00:00Z",
     updatedAt: "2023-07-10T10:00:00Z",
     isFavorite: false,
+    householdId: baseHouseholdId,
   },
   {
     id: "recipe-10",
@@ -154,6 +160,7 @@ export const bulkRecipes: Recipe[] = [
     createdAt: "2023-07-12T09:00:00Z",
     updatedAt: "2023-07-12T09:00:00Z",
     isFavorite: false,
+    householdId: baseHouseholdId,
   },
   {
     id: "recipe-13",
@@ -188,6 +195,7 @@ export const bulkRecipes: Recipe[] = [
     createdAt: "2023-11-25T14:30:00Z",
     updatedAt: "2023-11-25T14:30:00Z",
     isFavorite: false,
+    householdId: baseHouseholdId,
   },
   {
     id: "recipe-16",
@@ -220,6 +228,7 @@ export const bulkRecipes: Recipe[] = [
     createdAt: "2023-07-04T12:00:00Z",
     updatedAt: "2023-07-04T12:00:00Z",
     isFavorite: true,
+    householdId: baseHouseholdId,
   },
   {
     id: "recipe-20",
@@ -260,6 +269,7 @@ export const bulkRecipes: Recipe[] = [
     createdAt: "2023-11-10T15:30:00Z",
     updatedAt: "2023-11-10T15:30:00Z",
     isFavorite: true,
+    householdId: baseHouseholdId,
   },
   {
     id: "recipe-21",
@@ -291,5 +301,6 @@ export const bulkRecipes: Recipe[] = [
     createdAt: "2023-06-10T11:00:00Z",
     updatedAt: "2023-06-10T11:00:00Z",
     isFavorite: false,
+    householdId: baseHouseholdId,
   }
 ];

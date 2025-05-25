@@ -2,6 +2,7 @@
 import { Recipe } from "@/types";
 
 const baseUserId = "user-1";
+const baseHouseholdId = "household-1";
 const now = new Date().toISOString();
 
 export const snackRecipes: Recipe[] = [
@@ -32,7 +33,8 @@ export const snackRecipes: Recipe[] = [
     createdBy: baseUserId,
     createdAt: now,
     updatedAt: now,
-    isFavorite: false
+    isFavorite: false,
+    householdId: baseHouseholdId
   },
   {
     id: "snack-002",
@@ -58,7 +60,8 @@ export const snackRecipes: Recipe[] = [
     createdBy: baseUserId,
     createdAt: now,
     updatedAt: now,
-    isFavorite: false
+    isFavorite: false,
+    householdId: baseHouseholdId
   },
   {
     id: "snack-003",
@@ -87,7 +90,8 @@ export const snackRecipes: Recipe[] = [
     createdBy: baseUserId,
     createdAt: now,
     updatedAt: now,
-    isFavorite: false
+    isFavorite: false,
+    householdId: baseHouseholdId
   },
   {
     id: "snack-004",
@@ -113,6 +117,7 @@ export const snackRecipes: Recipe[] = [
     createdBy: baseUserId,
     createdAt: now,
     updatedAt: now,
-    isFavorite: false
+    isFavorite: false,
+    householdId: baseHouseholdId
   }
 ];

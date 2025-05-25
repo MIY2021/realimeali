@@ -1,6 +1,8 @@
 
 import { Recipe } from "@/types";
 
+const baseHouseholdId = "household-1";
+
 export const specialRecipes: Recipe[] = [
   {
     id: "recipe-11",
@@ -28,6 +30,7 @@ export const specialRecipes: Recipe[] = [
     createdAt: "2023-07-15T15:00:00Z",
     updatedAt: "2023-07-15T15:00:00Z",
     isFavorite: false,
+    householdId: baseHouseholdId,
   },
   {
     id: "recipe-12",
@@ -57,6 +60,7 @@ export const specialRecipes: Recipe[] = [
     createdAt: "2023-07-18T12:00:00Z",
     updatedAt: "2023-07-18T12:00:00Z",
     isFavorite: true,
+    householdId: baseHouseholdId,
   },
   {
     id: "recipe-14",
@@ -88,6 +92,7 @@ export const specialRecipes: Recipe[] = [
     createdAt: "2023-06-15T18:00:00Z",
     updatedAt: "2023-06-15T18:00:00Z",
     isFavorite: false,
+    householdId: baseHouseholdId,
   },
   {
     id: "recipe-15",
@@ -123,6 +128,7 @@ export const specialRecipes: Recipe[] = [
     createdAt: "2023-08-10T19:15:00Z",
     updatedAt: "2023-08-10T19:15:00Z",
     isFavorite: false,
+    householdId: baseHouseholdId,
   },
   {
     id: "recipe-19",
@@ -157,5 +163,6 @@ export const specialRecipes: Recipe[] = [
     createdAt: "2023-12-20T16:00:00Z",
     updatedAt: "2023-12-20T16:00:00Z",
     isFavorite: false,
+    householdId: baseHouseholdId,
   }
 ];

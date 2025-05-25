@@ -1,4 +1,7 @@
+
 import { Recipe } from "@/types";
+
+const baseHouseholdId = "household-1";
 
 export const vegetarianRecipes: Recipe[] = [
   {
@@ -26,6 +29,7 @@ export const vegetarianRecipes: Recipe[] = [
     createdAt: "2023-05-20T08:00:00Z",
     updatedAt: "2023-05-20T08:00:00Z",
     isFavorite: false,
+    householdId: baseHouseholdId,
   },
   {
     id: "recipe-10",
@@ -58,6 +62,7 @@ export const vegetarianRecipes: Recipe[] = [
     createdAt: "2023-07-12T09:00:00Z",
     updatedAt: "2023-07-12T09:00:00Z",
     isFavorite: false,
+    householdId: baseHouseholdId,
   },
   {
     id: "recipe-13",
@@ -92,6 +97,7 @@ export const vegetarianRecipes: Recipe[] = [
     createdAt: "2023-11-25T14:30:00Z",
     updatedAt: "2023-11-25T14:30:00Z",
     isFavorite: false,
+    householdId: baseHouseholdId,
   },
   {
     id: "recipe-21",
@@ -123,6 +129,7 @@ export const vegetarianRecipes: Recipe[] = [
     createdAt: "2023-06-10T11:00:00Z",
     updatedAt: "2023-06-10T11:00:00Z",
     isFavorite: false,
+    householdId: baseHouseholdId,
   }
   // More vegetarian recipes can be added here
 ];

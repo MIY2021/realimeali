@@ -172,6 +172,7 @@ export function AIRecipeParserDialog({ open, onOpenChange, onSave }: AIRecipePar
       servings: parsedRecipe.servings,
       image: selectedImage || undefined,
       isFavorite: false,
+      householdId: "", // This will be set by the parent component
     };
 
     console.log("📋 Final recipe object:", recipeToSave);

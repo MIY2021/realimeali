@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Recipe, RecipeCategory } from "@/types";
 import {
@@ -39,6 +38,7 @@ export function CreateRecipeDialog({ open, onOpenChange, onSave }: CreateRecipeD
     servings: 1,
     image: undefined,
     isFavorite: false,
+    householdId: "", // This will be set by the parent component
   });
   const [newCategory, setNewCategory] = useState("");
   const [newIngredient, setNewIngredient] = useState("");
@@ -60,6 +60,7 @@ export function CreateRecipeDialog({ open, onOpenChange, onSave }: CreateRecipeD
       servings: 1,
       image: undefined,
       isFavorite: false,
+      householdId: "", // This will be set by the parent component
     });
     setNewCategory("");
     setNewIngredient("");

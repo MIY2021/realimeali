@@ -1,5 +1,7 @@
 import { Recipe } from "@/types";
 
+const baseHouseholdId = "household-1";
+
 export const easyRecipes: Recipe[] = [
   {
     id: "recipe-1",
@@ -33,6 +35,7 @@ export const easyRecipes: Recipe[] = [
     createdAt: "2023-01-15T12:00:00Z",
     updatedAt: "2023-01-15T12:00:00Z",
     isFavorite: true,
+    householdId: baseHouseholdId,
   },
   {
     id: "recipe-2",
@@ -65,6 +68,7 @@ export const easyRecipes: Recipe[] = [
     createdAt: "2023-02-10T08:30:00Z",
     updatedAt: "2023-02-10T08:30:00Z",
     isFavorite: false,
+    householdId: baseHouseholdId,
   },
   {
     id: "recipe-4",
@@ -94,6 +98,7 @@ export const easyRecipes: Recipe[] = [
     createdAt: "2023-04-12T07:15:00Z",
     updatedAt: "2023-04-12T07:15:00Z",
     isFavorite: false,
+    householdId: baseHouseholdId,
   },
   {
     id: "recipe-7",
@@ -120,6 +125,7 @@ export const easyRecipes: Recipe[] = [
     createdAt: "2023-05-20T08:00:00Z",
     updatedAt: "2023-05-20T08:00:00Z",
     isFavorite: false,
+    householdId: baseHouseholdId,
   },
   {
     id: "recipe-8",
@@ -146,6 +152,7 @@ export const easyRecipes: Recipe[] = [
     createdAt: "2023-06-01T07:30:00Z",
     updatedAt: "2023-06-01T07:30:00Z",
     isFavorite: false,
+    householdId: baseHouseholdId,
   },
   {
     id: "recipe-17",
@@ -176,6 +183,7 @@ export const easyRecipes: Recipe[] = [
     createdAt: "2023-09-05T08:30:00Z",
     updatedAt: "2023-09-05T08:30:00Z",
     isFavorite: false,
+    householdId: baseHouseholdId,
   },
   {
     id: "recipe-18",
@@ -210,6 +218,7 @@ export const easyRecipes: Recipe[] = [
     createdAt: "2023-08-20T18:30:00Z",
     updatedAt: "2023-08-20T18:30:00Z",
     isFavorite: true,
+    householdId: baseHouseholdId,
   },
   {
     id: "recipe-22",
@@ -240,5 +249,6 @@ export const easyRecipes: Recipe[] = [
     createdAt: "2023-08-15T13:45:00Z",
     updatedAt: "2023-08-15T13:45:00Z",
     isFavorite: false,
+    householdId: baseHouseholdId,
   }
 ];
