@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { MealType, RecipeCategory } from "@/types";
 import { useToast } from "@/hooks/use-toast";
@@ -67,7 +66,7 @@ export const useMealPlanActions = (week: 1 | 2) => {
   };
 
   const onAddMealFinish = async (mealType: MealType, recipeId: string, leftoverServings?: number) => {
-    if (!user) return;
+    if (!user || !currentHousehold) return;
     
     console.log("Adding meal to plan:", { mealType, recipeId, week, leftoverServings });
     
@@ -81,6 +80,7 @@ export const useMealPlanActions = (week: 1 | 2) => {
         createdBy: user.id,
         slotIndex: currentPlansForType.length,
         isLeftover: false,
+        householdId: currentHousehold.id,
       };
 
       if (mealType === 'dinner' && leftoverServings) {

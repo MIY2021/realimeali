@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
 import { MealPlan, Recipe } from "@/types";
 import { useAuth } from "@/contexts/AuthContext";
@@ -87,6 +86,7 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
         isLeftover: dbPlan.is_leftover,
         leftoverServings: dbPlan.leftover_servings,
         originalServings: dbPlan.original_servings,
+        householdId: dbPlan.household_id,
       }));
 
       console.log("Transformed plans:", transformedPlans);
@@ -189,6 +189,7 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
         isLeftover: data.is_leftover,
         leftoverServings: data.leftover_servings,
         originalServings: data.original_servings,
+        householdId: data.household_id,
       } as any;
 
       setMealPlans(prev => [...prev, newMealPlan]);
@@ -224,6 +225,7 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
         ...mealPlanData,
         originalServings: recipe.servings,
         isLeftover: false,
+        householdId: currentHousehold.id,
       }, weekNumber);
 
       // If leftover servings specified, add leftover lunch for next day
@@ -243,6 +245,7 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
             isLeftover: true,
             leftoverServings: leftoverServings,
             originalServings: recipe.servings,
+            householdId: currentHousehold.id,
           }, weekNumber);
 
           toast({
