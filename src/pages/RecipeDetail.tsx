@@ -9,6 +9,7 @@ import { EditRecipeDialog } from "@/components/recipes/EditRecipeDialog";
 import { AddToMealPlanDialog } from "@/components/recipes/AddToMealPlanDialog";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { useHousehold } from "@/contexts/HouseholdContext";
 import { useToast } from "@/hooks/use-toast";
 
 export default function RecipeDetailPage() {
@@ -16,6 +17,7 @@ export default function RecipeDetailPage() {
   const navigate = useNavigate();
   const { getRecipeById, isLoading, updateRecipe, deleteRecipe } = useRecipes();
   const { user } = useAuth();
+  const { currentHousehold } = useHousehold();
   const { toast } = useToast();
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showMealPlanDialog, setShowMealPlanDialog] = useState(false);
@@ -50,19 +52,20 @@ export default function RecipeDetailPage() {
   }, []);
   
   const handleEdit = (recipe: Recipe) => {
-    if (!user) {
+    if (!user || !currentHousehold) {
       toast({
-        title: "Login Required",
-        description: "You need to log in to edit recipes.",
+        title: "Access Required",
+        description: "You need to be logged in and part of a household to edit recipes.",
         variant: "destructive",
       });
       return;
     }
 
-    if (recipe.createdBy !== user.id) {
+    // Allow editing if user is part of the same household as the recipe
+    if (recipe.householdId !== currentHousehold.id) {
       toast({
         title: "Permission Denied",
-        description: "You can only edit your own recipes.",
+        description: "You can only edit recipes from your current household.",
         variant: "destructive",
       });
       return;
@@ -81,12 +84,13 @@ export default function RecipeDetailPage() {
   };
 
   const handleDeleteRecipe = async () => {
-    if (!recipe || !user) return;
+    if (!recipe || !user || !currentHousehold) return;
 
-    if (recipe.createdBy !== user.id) {
+    // Allow deletion if user is part of the same household as the recipe
+    if (recipe.householdId !== currentHousehold.id) {
       toast({
         title: "Permission Denied",
-        description: "You can only delete your own recipes.",
+        description: "You can only delete recipes from your current household.",
         variant: "destructive",
       });
       return;
@@ -133,7 +137,8 @@ export default function RecipeDetailPage() {
     );
   }
 
-  const isOwner = user && recipe.createdBy === user.id;
+  // Check if user can edit/delete - allow if they're part of the same household
+  const canEditDelete = user && currentHousehold && recipe.householdId === currentHousehold.id;
   
   return (
     <div className="container">
@@ -150,8 +155,8 @@ export default function RecipeDetailPage() {
         recipe={recipe} 
         onAddToMealPlan={() => handleAddToMealPlan(recipe)}
         onEdit={() => handleEdit(recipe)}
-        onDelete={isOwner ? handleDeleteRecipe : undefined}
-        isOwner={isOwner}
+        onDelete={canEditDelete ? handleDeleteRecipe : undefined}
+        isOwner={canEditDelete}
       />
 
       {recipe && (

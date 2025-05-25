@@ -24,9 +24,9 @@ export function RecipeCard({ recipe, onAddToMealPlan, onEdit, onDelete, onShare,
   const totalTime = prepTime + cookTime;
   const [imgError, setImgError] = useState(false);
 
-  // Allow editing/deleting if user is part of the same household
-  const canEdit = user && currentHousehold && onEdit && showActions;
-  const canDelete = user && currentHousehold && onDelete && showActions;
+  // Allow editing/deleting if user is part of the same household as the recipe
+  const canEdit = user && currentHousehold && recipe.householdId === currentHousehold.id && onEdit && showActions;
+  const canDelete = user && currentHousehold && recipe.householdId === currentHousehold.id && onDelete && showActions;
   const canShare = onShare && showActions;
 
   // Create URL-friendly slug from recipe title

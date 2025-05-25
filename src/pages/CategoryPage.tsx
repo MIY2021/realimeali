@@ -4,6 +4,7 @@ import { RecipeCategory } from "@/types";
 import { RecipeCard } from "@/components/recipes/RecipeCard";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { useHousehold } from "@/contexts/HouseholdContext";
 import { useState } from "react";
 import { AddToMealPlanDialog } from "@/components/recipes/AddToMealPlanDialog";
 import { EditRecipeDialog } from "@/components/recipes/EditRecipeDialog";
@@ -22,6 +23,7 @@ export default function CategoryPage() {
   const decoded = decodeURIComponent(category).trim();
   const { recipes, isLoading, updateRecipe, deleteRecipe } = useRecipes();
   const { user } = useAuth();
+  const { currentHousehold } = useHousehold();
   const { toast } = useToast();
   
   // State for dialogs
@@ -53,10 +55,20 @@ export default function CategoryPage() {
   };
 
   const handleDeleteRecipe = async (recipe: Recipe) => {
-    if (!user) {
+    if (!user || !currentHousehold) {
       toast({
-        title: "Login Required",
-        description: "You need to log in to delete recipes.",
+        title: "Access Required",
+        description: "You need to be logged in and part of a household to delete recipes.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Allow deletion if user is part of the same household as the recipe
+    if (recipe.householdId !== currentHousehold.id) {
+      toast({
+        title: "Permission Denied",
+        description: "You can only delete recipes from your current household.",
         variant: "destructive",
       });
       return;
