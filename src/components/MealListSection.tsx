@@ -1,9 +1,8 @@
 
 import { MealType, MealPlan, Recipe } from "@/types";
 import { Button } from "@/components/ui/button";
-import { Plus, Trash2 } from "lucide-react";
-import { Link } from "react-router-dom";
-import { RecipeImage } from "@/components/ui/recipe-image";
+import { Plus } from "lucide-react";
+import { EnhancedMealCard } from "@/components/meal-planner/EnhancedMealCard";
 
 interface MealListSectionProps {
   mealType: MealType;
@@ -20,21 +19,6 @@ export default function MealListSection({
   onAddMeal,
   onRemoveMeal,
 }: MealListSectionProps) {
-  // Create URL-friendly slug from recipe title
-  const createSlug = (title: string) => {
-    return title
-      .toLowerCase()
-      .replace(/[^a-z0-9 -]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-')
-      .trim();
-  };
-
-  const getRecipeUrl = (recipe: Recipe) => {
-    const recipeSlug = createSlug(recipe.title);
-    return `/recipes/${recipe.id}/${recipeSlug}`;
-  };
-
   return (
     <div className="mb-6">
       <div className="flex items-center justify-between mb-3">
@@ -60,50 +44,20 @@ export default function MealListSection({
         <div className="space-y-2">
           {mealPlans.map((plan) => {
             const recipe = getRecipeById(plan.recipeId);
-            return (
-              <div
-                key={plan.id}
-                className="flex items-center gap-3 p-3 bg-gray-50 rounded-md border"
-              >
-                {/* Recipe thumbnail */}
-                <div className="w-12 h-12 rounded-md overflow-hidden bg-muted flex-shrink-0">
-                  <RecipeImage recipe={recipe} className="w-full h-full" iconSize="h-4 w-4" />
-                </div>
+            
+            // For leftover meals, get the parent recipe if the current recipe is not found
+            const parentRecipe = plan.isLeftover && plan.parentMealPlanId 
+              ? getRecipeById(plan.recipeId) 
+              : undefined;
 
-                <div className="flex-1">
-                  {recipe ? (
-                    <Link 
-                      to={getRecipeUrl(recipe)}
-                      className="text-sm font-medium hover:text-terracotta transition-colors block"
-                    >
-                      {recipe.title}
-                    </Link>
-                  ) : (
-                    <span className="text-sm text-muted-foreground">
-                      Recipe not found
-                    </span>
-                  )}
-                  {recipe && (
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="text-xs text-muted-foreground">
-                        {recipe.prepTime + recipe.cookTime} min
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        • {recipe.servings} servings
-                      </span>
-                    </div>
-                  )}
-                </div>
-                
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => onRemoveMeal(plan.id)}
-                  className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
+            return (
+              <EnhancedMealCard
+                key={plan.id}
+                mealPlan={plan}
+                recipe={recipe}
+                onRemove={onRemoveMeal}
+                parentRecipe={parentRecipe}
+              />
             );
           })}
         </div>
