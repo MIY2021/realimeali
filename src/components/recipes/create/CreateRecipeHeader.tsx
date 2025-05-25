@@ -1,5 +1,6 @@
+
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ChefHat } from "lucide-react";
 
 interface CreateRecipeHeaderProps {
   onCancel: () => void;
@@ -15,7 +16,10 @@ export function CreateRecipeHeader({ onCancel }: CreateRecipeHeaderProps) {
           Back to Recipes
         </Button>
         <div>
-          <h1 className="text-2xl font-bold text-navy">Add New Recipe</h1>
+          <h1 className="text-2xl font-bold text-navy flex items-center gap-2">
+            <ChefHat className="h-6 w-6" />
+            Add New Recipe
+          </h1>
           <p className="text-muted-foreground">Create a new recipe for your household</p>
         </div>
       </div>
@@ -27,7 +31,10 @@ export function CreateRecipeHeader({ onCancel }: CreateRecipeHeaderProps) {
           Back to Recipes
         </Button>
         <div>
-          <h1 className="text-2xl font-bold text-navy">Add New Recipe</h1>
+          <h1 className="text-2xl font-bold text-navy flex items-center gap-2">
+            <ChefHat className="h-6 w-6" />
+            Add New Recipe
+          </h1>
           <p className="text-muted-foreground">Create a new recipe for your household</p>
         </div>
       </div>

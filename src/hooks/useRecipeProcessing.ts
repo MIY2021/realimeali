@@ -130,17 +130,19 @@ export function useRecipeProcessing() {
       }
       
       setNewRecipe(recipeData);
-      setActiveTab("manual");
+      
+      // Don't automatically switch tabs - keep user on URL tab to select images
+      // setActiveTab("manual"); // Remove this line
       
       const imageMessage = downloadImages && data.storedImages?.length > 0 
-        ? ` ${data.storedImages.length} images downloaded and stored.`
+        ? ` ${data.storedImages.length} images downloaded and stored. Select your preferred image below.`
         : data.websiteImages?.length > 0 
-        ? ` ${data.websiteImages.length} images found for selection.`
+        ? ` ${data.websiteImages.length} images found. Select your preferred image below, then switch to Manual Entry tab.`
         : '';
       
       toast({
         title: "Recipe Imported!",
-        description: `Review and edit your imported recipe in the Manual Entry tab.${imageMessage}`,
+        description: `Recipe details extracted successfully.${imageMessage}`,
       });
     } catch (error) {
       console.error('Error importing from website:', error);
