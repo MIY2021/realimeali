@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
+
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useMealPlan } from "@/contexts/MealPlanContext";
 import { useRecipes } from "@/contexts/RecipesContext";
@@ -23,7 +24,11 @@ export function useShoppingList() {
   const { toast } = useToast();
   const [selectedWeek, setSelectedWeek] = useState<1 | 2>(1);
   const [copiedItemId, setCopiedItemId] = useState<string | null>(null);
-  const [hasGenerated, setHasGenerated] = useState(false);
+  
+  // Use ref instead of state to prevent re-renders
+  const generationTracker = useRef<{
+    [key: string]: boolean;
+  }>({});
 
   const { getMealPlansForWeek } = useMealPlan();
   const { recipes, isLoading: recipesLoading } = useRecipes();
@@ -35,7 +40,7 @@ export function useShoppingList() {
     isLoading: shoppingLoading 
   } = useHouseholdShopping();
 
-  // Helper function to categorize ingredients
+  // Helper function to categorize ingredients - memoized to prevent recreating
   const categorizeIngredient = useCallback((ingredient: string): string => {
     const nameLower = ingredient.toLowerCase();
     
@@ -108,7 +113,7 @@ export function useShoppingList() {
     return "Food Cupboard";
   }, []);
 
-  // Get shopping items for a specific week - filter by name prefix
+  // Get shopping items for a specific week - memoized to prevent recreating
   const getWeekShoppingItems = useCallback((weekNumber: 1 | 2): ShoppingItem[] => {
     if (!user || !currentHousehold) return [];
     
@@ -126,116 +131,123 @@ export function useShoppingList() {
         recipeIds: item.recipe_ids || []
       }));
     
-    console.log(`Shopping items for week ${weekNumber}:`, weekItems);
     return weekItems;
   }, [householdShoppingItems, user, currentHousehold]);
 
-  // Generate shopping list for each week and save to database - FIXED to prevent infinite loop
+  // Reset generation tracker when household changes
   useEffect(() => {
-    const generateAndSaveWeekLists = async () => {
-      if (!user || !currentHousehold || recipesLoading || hasGenerated) return;
+    if (currentHousehold?.id) {
+      generationTracker.current = {};
+    }
+  }, [currentHousehold?.id]);
 
-      console.log("Generating shopping lists with recipes:", recipes.length);
-      console.log("Current household shopping items:", householdShoppingItems.length);
+  // Generate shopping list - COMPLETELY REWRITTEN to prevent infinite loop
+  useEffect(() => {
+    if (!user || !currentHousehold || recipesLoading) return;
+    
+    // Create a unique key for this generation attempt
+    const generationKey = `${currentHousehold.id}-${recipes.length}`;
+    
+    // Skip if already generated for this combination
+    if (generationTracker.current[generationKey]) {
+      return;
+    }
 
-      const week1Plans = getMealPlansForWeek(1);
-      const week2Plans = getMealPlansForWeek(2);
-      
-      console.log("Week 1 meal plans:", week1Plans);
-      console.log("Week 2 meal plans:", week2Plans);
+    console.log("Starting shopping list generation for key:", generationKey);
 
-      // Only generate if there are meal plans
-      if (week1Plans.length === 0 && week2Plans.length === 0) {
-        setHasGenerated(true);
-        return;
-      }
-
-      // Process each week
-      const processWeek = async (weekNumber: 1 | 2, plans: any[]) => {
-        const weekKey = `week${weekNumber}`;
-        console.log(`Processing ${weekKey} with ${plans.length} plans`);
+    const generateShoppingList = async () => {
+      try {
+        const week1Plans = getMealPlansForWeek(1);
+        const week2Plans = getMealPlansForWeek(2);
         
-        // Get existing shopping items for this week from household context
-        const existingWeekItems = householdShoppingItems.filter(item => 
-          item.name.startsWith(`${weekKey}-`)
-        );
-        
-        console.log(`Existing ${weekKey} items:`, existingWeekItems);
+        console.log("Week 1 meal plans:", week1Plans.length);
+        console.log("Week 2 meal plans:", week2Plans.length);
 
-        // Generate new items from meal plans
-        const ingredientMap = new Map<string, { quantity: number; recipeIds: string[] }>();
-        
-        plans.forEach(plan => {
-          const recipe = recipes.find(r => r.id === plan.recipeId);
-          if (recipe && recipe.ingredients) {
-            console.log(`Processing recipe: ${recipe.title} for ${weekKey}`);
-            recipe.ingredients.forEach(ingredient => {
-              const key = ingredient.toLowerCase();
-              if (ingredientMap.has(key)) {
-                const existing = ingredientMap.get(key)!;
-                existing.quantity += 1;
-                if (!existing.recipeIds.includes(recipe.id)) {
-                  existing.recipeIds.push(recipe.id);
-                }
-              } else {
-                ingredientMap.set(key, {
-                  quantity: 1,
-                  recipeIds: [recipe.id]
-                });
-              }
-            });
-          }
-        });
+        // Only generate if there are meal plans
+        if (week1Plans.length === 0 && week2Plans.length === 0) {
+          generationTracker.current[generationKey] = true;
+          return;
+        }
 
-        console.log(`Generated ${ingredientMap.size} unique ingredients for ${weekKey}`);
+        // Process both weeks
+        for (const [weekNumber, plans] of [[1, week1Plans], [2, week2Plans]] as const) {
+          if (plans.length === 0) continue;
 
-        // Add new items that don't already exist - IMPROVED duplicate detection
-        for (const [ingredient, data] of ingredientMap.entries()) {
-          const itemName = `${weekKey}-${ingredient}`;
+          const weekKey = `week${weekNumber}`;
+          console.log(`Processing ${weekKey} with ${plans.length} plans`);
           
-          // Check if this exact item already exists using exact name match
-          const existingItem = existingWeekItems.find(item => 
-            item.name === itemName
+          // Get existing shopping items for this week
+          const existingWeekItems = householdShoppingItems.filter(item => 
+            item.name.startsWith(`${weekKey}-`)
           );
-
-          if (!existingItem) {
-            // Create new item and add to database
-            const newItemData = {
-              name: itemName,
-              quantity: data.quantity,
-              unit: '',
-              category: categorizeIngredient(ingredient),
-              is_checked: false,
-              is_custom: false,
-              recipe_ids: data.recipeIds
-            };
-
-            try {
-              console.log(`Adding new shopping item: ${itemName}`);
-              await addShoppingItem(newItemData);
-            } catch (error) {
-              console.error('Error adding shopping item:', error);
+          
+          // Generate ingredient map
+          const ingredientMap = new Map<string, { quantity: number; recipeIds: string[] }>();
+          
+          plans.forEach(plan => {
+            const recipe = recipes.find(r => r.id === plan.recipeId);
+            if (recipe && recipe.ingredients) {
+              recipe.ingredients.forEach(ingredient => {
+                const key = ingredient.toLowerCase();
+                if (ingredientMap.has(key)) {
+                  const existing = ingredientMap.get(key)!;
+                  existing.quantity += 1;
+                  if (!existing.recipeIds.includes(recipe.id)) {
+                    existing.recipeIds.push(recipe.id);
+                  }
+                } else {
+                  ingredientMap.set(key, {
+                    quantity: 1,
+                    recipeIds: [recipe.id]
+                  });
+                }
+              });
             }
-          } else {
-            console.log(`Item already exists: ${itemName}`);
+          });
+
+          console.log(`Generated ${ingredientMap.size} unique ingredients for ${weekKey}`);
+
+          // Add new items that don't already exist
+          for (const [ingredient, data] of ingredientMap.entries()) {
+            const itemName = `${weekKey}-${ingredient}`;
+            
+            // Check if this exact item already exists
+            const existingItem = existingWeekItems.find(item => 
+              item.name === itemName
+            );
+
+            if (!existingItem) {
+              // Create new item and add to database
+              const newItemData = {
+                name: itemName,
+                quantity: data.quantity,
+                unit: '',
+                category: categorizeIngredient(ingredient),
+                is_checked: false,
+                is_custom: false,
+                recipe_ids: data.recipeIds
+              };
+
+              try {
+                console.log(`Adding new shopping item: ${itemName}`);
+                await addShoppingItem(newItemData);
+              } catch (error) {
+                console.error('Error adding shopping item:', error);
+              }
+            }
           }
         }
-      };
-
-      await processWeek(1, week1Plans);
-      await processWeek(2, week2Plans);
-      
-      // Mark as generated to prevent re-running
-      setHasGenerated(true);
+        
+        // Mark as generated to prevent re-running
+        generationTracker.current[generationKey] = true;
+        console.log("Shopping list generation completed for key:", generationKey);
+      } catch (error) {
+        console.error('Error generating shopping list:', error);
+      }
     };
 
-    generateAndSaveWeekLists();
-  }, [getMealPlansForWeek, recipes, user, currentHousehold, recipesLoading, addShoppingItem, categorizeIngredient, hasGenerated]);
-
-  // Reset generation flag when household changes
-  useEffect(() => {
-    setHasGenerated(false);
-  }, [currentHousehold?.id]);
+    generateShoppingList();
+  }, [user?.id, currentHousehold?.id, recipes.length, recipesLoading]); // Only stable dependencies
 
   // Get current week items using the helper function
   const weekShoppingItems = {
@@ -319,8 +331,8 @@ export function useShoppingList() {
           console.error('Error deleting shopping item:', error);
         }
       }
-      // Reset generation flag to allow regeneration
-      setHasGenerated(false);
+      // Reset generation tracker to allow regeneration
+      generationTracker.current = {};
     }
   };
 
