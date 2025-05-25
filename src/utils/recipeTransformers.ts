@@ -1,4 +1,3 @@
-
 import { Recipe } from "@/types";
 
 export const transformDbRecipeToRecipe = (dbRecipe: any): Recipe => ({
@@ -15,7 +14,8 @@ export const transformDbRecipeToRecipe = (dbRecipe: any): Recipe => ({
   isFavorite: dbRecipe.is_favorite || false,
   createdBy: dbRecipe.user_id,
   createdAt: dbRecipe.created_at,
-  updatedAt: dbRecipe.updated_at
+  updatedAt: dbRecipe.updated_at,
+  householdId: dbRecipe.household_id
 });
 
 export const transformRecipeToDbInsert = (
