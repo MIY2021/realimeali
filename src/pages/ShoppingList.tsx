@@ -4,7 +4,7 @@ import ShoppingListHeader from "@/components/shopping-list/ShoppingListHeader";
 import ShoppingListWeekSelector from "@/components/shopping-list/ShoppingListWeekSelector";
 import ShoppingListCategory from "@/components/shopping-list/ShoppingListCategory";
 import { Button } from "@/components/ui/button";
-import { RotateCcw } from "lucide-react";
+import { Shuffle } from "lucide-react";
 import { useShoppingList } from "@/hooks/useShoppingList";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
@@ -100,7 +100,7 @@ export default function ShoppingList() {
               className="flex-1"
               disabled={isLoading}
             >
-              <RotateCcw className="h-4 w-4 mr-2" />
+              <Shuffle className="h-4 w-4 mr-2" />
               Generate from Meal Plans
             </Button>
           </div>
