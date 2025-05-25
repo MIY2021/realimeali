@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ListChecks, Share, Trash2 } from "lucide-react";
+import { ListChecks, Share, Trash2, Copy } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useMealPlan } from "@/contexts/MealPlanContext";
 import { useRecipes } from "@/contexts/RecipesContext";
@@ -10,7 +10,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { useRecipesLoader } from "@/hooks/useRecipesLoader";
 import ShoppingListActions from "@/components/ShoppingListActions";
-import { HouseholdSelector } from "@/components/household/HouseholdSelector";
 
 interface ShoppingItem {
   id: string;
@@ -209,6 +208,22 @@ export default function ShoppingList() {
     }));
   };
 
+  const handleCopyItem = (itemName: string) => {
+    navigator.clipboard.writeText(itemName);
+    toast({
+      title: "Copied to clipboard",
+      description: `"${itemName}" copied to clipboard!`,
+    });
+  };
+
+  const getRecipeNames = (recipeIds: string[]): string => {
+    const recipeNames = recipeIds
+      .map(id => recipes.find(recipe => recipe.id === id)?.title)
+      .filter(Boolean)
+      .join(", ");
+    return recipeNames;
+  };
+
   const handleCheckAll = () => {
     setWeekShoppingItems(prev => ({
       ...prev,
@@ -289,7 +304,6 @@ export default function ShoppingList() {
             Shopping List
           </h1>
           <p className="text-muted-foreground mb-4">Please select or create a household to view shopping lists.</p>
-          <HouseholdSelector />
         </div>
       </div>
     );
@@ -307,7 +321,6 @@ export default function ShoppingList() {
             Generated from your weekly meal plans
           </p>
         </div>
-        <HouseholdSelector />
       </div>
 
       <div className="flex gap-2 mb-4">
@@ -358,25 +371,43 @@ export default function ShoppingList() {
                   </CardHeader>
                   <CardContent className="space-y-2 pt-0">
                     {categoryItems.map((item) => (
-                      <div key={item.id} className="flex items-center space-x-3 p-2 rounded hover:bg-accent">
+                      <div key={item.id} className="flex items-start space-x-3 p-2 rounded hover:bg-accent">
                         <Checkbox
                           checked={item.isChecked}
                           onCheckedChange={(checked) => handleCheckItem(item.id, checked as boolean)}
+                          className="mt-1"
                         />
-                        <div className={`flex-1 ${item.isChecked ? 'line-through text-muted-foreground' : ''}`}>
-                          <span className="font-medium">
-                            {item.quantity > 1 && `${item.quantity}x `}{item.name}
-                          </span>
-                          {item.unit && <span className="text-sm text-muted-foreground ml-1">({item.unit})</span>}
+                        <div className="flex-1">
+                          <div className={`${item.isChecked ? 'line-through text-muted-foreground' : ''}`}>
+                            <span className="font-medium">
+                              {item.quantity > 1 && `${item.quantity}x `}{item.name}
+                            </span>
+                            {item.unit && <span className="text-sm text-muted-foreground ml-1">({item.unit})</span>}
+                          </div>
+                          {item.recipeIds.length > 0 && (
+                            <div className="text-xs text-green-600 mt-1">
+                              From: {getRecipeNames(item.recipeIds)}
+                            </div>
+                          )}
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleRemoveItem(item.id)}
-                          className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        <div className="flex gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleCopyItem(item.name)}
+                            className="h-8 w-8 text-muted-foreground hover:text-primary"
+                          >
+                            <Copy className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleRemoveItem(item.id)}
+                            className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
                     ))}
                   </CardContent>
