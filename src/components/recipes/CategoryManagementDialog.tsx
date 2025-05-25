@@ -10,7 +10,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useHouseholdShopping } from "@/contexts/HouseholdShoppingContext";
-import { Trash2, Plus, Pencil, Loader2 } from "lucide-react";
+import { Trash2, Plus, Pencil, Loader } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface CategoryManagementDialogProps {
@@ -170,7 +170,7 @@ export const CategoryManagementDialog = ({ open, onOpenChange }: CategoryManagem
                 className="shrink-0"
               >
                 {isAddingCategory ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <Loader className="h-4 w-4 animate-spin" />
                 ) : (
                   <Plus className="h-4 w-4" />
                 )}
@@ -184,7 +184,7 @@ export const CategoryManagementDialog = ({ open, onOpenChange }: CategoryManagem
             
             {isLoading ? (
               <div className="flex items-center justify-center py-8">
-                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                <Loader className="h-6 w-6 animate-spin text-muted-foreground" />
                 <span className="ml-2 text-sm text-muted-foreground">Loading categories...</span>
               </div>
             ) : recipeCategories.length === 0 ? (
