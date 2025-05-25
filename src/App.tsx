@@ -12,6 +12,7 @@ import { HouseholdShoppingProvider } from "@/contexts/HouseholdShoppingContext";
 import Layout from "@/components/layout/Layout";
 import Index from "@/pages/Index";
 import RecipesPage from "@/pages/RecipesPage";
+import CreateRecipePage from "@/pages/CreateRecipePage";
 import RecipeDetail from "@/pages/RecipeDetail";
 import MealPlanner from "@/pages/MealPlanner";
 import ShoppingList from "@/pages/ShoppingList";
@@ -44,6 +45,14 @@ const App = () => (
                         element={
                           <ProtectedRoute>
                             <RecipesPage />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/recipes/new"
+                        element={
+                          <ProtectedRoute>
+                            <CreateRecipePage />
                           </ProtectedRoute>
                         }
                       />

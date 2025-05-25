@@ -4,21 +4,20 @@ import { RecipeList } from "@/components/recipes/RecipeList";
 import { Button } from "@/components/ui/button";
 import { Book, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { Recipe } from "@/types";
+import { useNavigate } from "react-router-dom";
 import { CategoryManagementDialog } from "@/components/recipes/CategoryManagementDialog";
-import { CreateRecipeDialog } from "@/components/recipes/CreateRecipeDialog";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
 
 export default function RecipesPage() {
-  const { recipes, isLoading, createRecipe, fetchRecipes } = useRecipes();
+  const { recipes, isLoading, fetchRecipes } = useRecipes();
   const { user } = useAuth();
   const { currentHousehold } = useHousehold();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   // Dialog state
-  const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showCategoryDialog, setShowCategoryDialog] = useState(false);
   
   // Local loading state to prevent multiple fetches
@@ -53,23 +52,7 @@ export default function RecipesPage() {
       return;
     }
     
-    setShowCreateDialog(true);
-  };
-
-  const handleSaveRecipe = async (newRecipeData: Omit<Recipe, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>) => {
-    if (!currentHousehold) {
-      toast({
-        title: "Error",
-        description: "No household selected.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    const newRecipe = await createRecipe(newRecipeData, currentHousehold.id);
-    if (newRecipe) {
-      setShowCreateDialog(false);
-    }
+    navigate("/recipes/new");
   };
 
   return (
@@ -140,12 +123,6 @@ export default function RecipesPage() {
           )}
         </>
       )}
-
-      <CreateRecipeDialog
-        open={showCreateDialog}
-        onOpenChange={setShowCreateDialog}
-        onSave={handleSaveRecipe}
-      />
 
       <CategoryManagementDialog
         open={showCategoryDialog}
