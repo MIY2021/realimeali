@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { ListChecks, Share, ShoppingCart } from "lucide-react";
+import { ListChecks, Share, Plus } from "lucide-react";
 
 interface ShoppingListHeaderProps {
   onShare: () => void;
@@ -32,7 +32,7 @@ export default function ShoppingListHeader({ onShare, onGenerate, isGenerating }
             className="flex-1 bg-terracotta hover:bg-terracotta/90"
             disabled={isGenerating}
           >
-            <ShoppingCart className="h-4 w-4 mr-2" />
+            <Plus className="h-4 w-4 mr-2" />
             {isGenerating ? 'Generating...' : 'Generate Shopping List'}
           </Button>
         )}
