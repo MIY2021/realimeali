@@ -5,6 +5,7 @@ import { Trash2, UtensilsCrossed } from "lucide-react";
 import { Link } from "react-router-dom";
 import { MealPlan, Recipe } from "@/types";
 import { RecipeImage } from "@/components/ui/recipe-image";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface EnhancedMealCardProps {
   mealPlan: MealPlan;
@@ -21,6 +22,7 @@ export function EnhancedMealCard({
   onCreateLeftover,
   parentRecipe 
 }: EnhancedMealCardProps) {
+  const isMobile = useIsMobile();
   const displayRecipe = recipe || parentRecipe;
   
   // Create URL-friendly slug from recipe title
@@ -40,16 +42,17 @@ export function EnhancedMealCard({
 
   if (!displayRecipe) {
     return (
-      <Card className="mb-2">
-        <CardContent className="p-3">
+      <Card className={`mb-${isMobile ? '1.5' : '2'}`}>
+        <CardContent className={`${isMobile ? 'p-2.5' : 'p-3'}`}>
           <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-500">Unknown recipe</span>
+            <span className={`${isMobile ? 'text-xs' : 'text-sm'} text-gray-500`}>Unknown recipe</span>
             <Button
               variant="ghost"
-              size="sm"
+              size={isMobile ? "sm" : "sm"}
               onClick={() => onRemove(mealPlan.id)}
+              className={isMobile ? 'h-8 w-8' : ''}
             >
-              <Trash2 className="h-4 w-4" />
+              <Trash2 className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
             </Button>
           </div>
         </CardContent>
@@ -60,47 +63,47 @@ export function EnhancedMealCard({
   const showLeftoverButton = mealPlan.mealType === 'dinner' && !mealPlan.isLeftover && onCreateLeftover;
 
   return (
-    <Card className={`mb-2 ${mealPlan.isLeftover ? 'bg-orange-50 border-orange-200' : ''}`}>
-      <CardContent className="p-3">
-        <div className="flex items-center gap-3">
+    <Card className={`mb-${isMobile ? '1.5' : '2'} ${mealPlan.isLeftover ? 'bg-orange-50 border-orange-200' : ''}`}>
+      <CardContent className={`${isMobile ? 'p-2.5' : 'p-3'}`}>
+        <div className={`flex items-center gap-${isMobile ? '2' : '3'}`}>
           {/* Recipe thumbnail */}
-          <div className="w-12 h-12 rounded-md overflow-hidden bg-muted flex-shrink-0">
-            <RecipeImage recipe={displayRecipe} className="w-full h-full" iconSize="h-4 w-4" />
+          <div className={`${isMobile ? 'w-10 h-10' : 'w-12 h-12'} rounded-md overflow-hidden bg-muted flex-shrink-0`}>
+            <RecipeImage recipe={displayRecipe} className="w-full h-full" iconSize={isMobile ? "h-3 w-3" : "h-4 w-4"} />
           </div>
 
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             {mealPlan.isLeftover ? (
-              <div className="space-y-1">
-                <div className="flex items-center gap-2 text-sm">
+              <div className={`space-y-${isMobile ? '0.5' : '1'}`}>
+                <div className={`flex items-center gap-${isMobile ? '1.5' : '2'} ${isMobile ? 'text-xs' : 'text-sm'}`}>
                   <span className="text-orange-600">🍽️</span>
                   <Link 
                     to={getRecipeUrl(displayRecipe)}
-                    className="font-medium text-orange-800 hover:text-orange-900 transition-colors"
+                    className="font-medium text-orange-800 hover:text-orange-900 transition-colors truncate"
                   >
                     Leftover: {displayRecipe.title}
                   </Link>
                 </div>
-                <div className="text-xs text-orange-600">
+                <div className={`${isMobile ? 'text-xs' : 'text-xs'} text-orange-600`}>
                   {mealPlan.leftoverServings} servings from dinner
                 </div>
               </div>
             ) : (
-              <div className="space-y-1">
+              <div className={`space-y-${isMobile ? '0.5' : '1'}`}>
                 <Link 
                   to={getRecipeUrl(displayRecipe)}
-                  className="text-sm font-medium hover:text-terracotta transition-colors block"
+                  className={`${isMobile ? 'text-xs' : 'text-sm'} font-medium hover:text-terracotta transition-colors block truncate`}
                 >
                   {displayRecipe.title}
                 </Link>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground">
+                <div className={`flex items-center gap-${isMobile ? '1.5' : '2'} flex-wrap`}>
+                  <span className={`${isMobile ? 'text-xs' : 'text-xs'} text-muted-foreground`}>
                     {displayRecipe.prepTime + displayRecipe.cookTime} min
                   </span>
-                  <span className="text-xs text-muted-foreground">
+                  <span className={`${isMobile ? 'text-xs' : 'text-xs'} text-muted-foreground`}>
                     • {mealPlan.originalServings || displayRecipe.servings} servings
                   </span>
                   {mealPlan.originalServings && mealPlan.originalServings !== displayRecipe.servings && (
-                    <span className="text-xs text-orange-600">
+                    <span className={`${isMobile ? 'text-xs' : 'text-xs'} text-orange-600`}>
                       (some saved for leftovers)
                     </span>
                   )}
@@ -109,31 +112,31 @@ export function EnhancedMealCard({
             )}
             
             {mealPlan.notes && (
-              <div className="text-xs text-gray-500 mt-1">{mealPlan.notes}</div>
+              <div className={`${isMobile ? 'text-xs' : 'text-xs'} text-gray-500 mt-1 truncate`}>{mealPlan.notes}</div>
             )}
           </div>
           
-          <div className="flex items-center gap-1">
+          <div className={`flex items-center gap-${isMobile ? '0.5' : '1'} flex-shrink-0`}>
             {showLeftoverButton && (
               <Button
                 variant="ghost"
-                size="sm"
+                size={isMobile ? "sm" : "sm"}
                 onClick={() => onCreateLeftover(mealPlan, displayRecipe)}
-                className="text-orange-600 hover:text-orange-700 hover:bg-orange-50 flex items-center gap-1"
+                className={`text-orange-600 hover:text-orange-700 hover:bg-orange-50 flex items-center gap-1 ${isMobile ? 'h-8 px-1.5' : ''}`}
                 title="Create lunch leftovers"
               >
-                <UtensilsCrossed className="h-4 w-4" />
-                <span className="text-xs">Lunch</span>
+                <UtensilsCrossed className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
+                {!isMobile && <span className="text-xs">Lunch</span>}
               </Button>
             )}
             
             <Button
               variant="ghost"
-              size="sm"
+              size={isMobile ? "sm" : "sm"}
               onClick={() => onRemove(mealPlan.id)}
-              className="text-red-500 hover:text-red-700 hover:bg-red-50"
+              className={`text-red-500 hover:text-red-700 hover:bg-red-50 ${isMobile ? 'h-8 w-8' : ''}`}
             >
-              <Trash2 className="h-4 w-4" />
+              <Trash2 className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
             </Button>
           </div>
         </div>

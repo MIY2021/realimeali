@@ -9,6 +9,7 @@ import { useHousehold } from "@/contexts/HouseholdContext";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { SHOPPING_CATEGORIES } from "@/types/shoppingList";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function ShoppingList() {
   useDocumentTitle("Shopping List | RealiMeali");
@@ -16,6 +17,7 @@ export default function ShoppingList() {
   const { user } = useAuth();
   const { currentHousehold } = useHousehold();
   const { recipes } = useRecipes();
+  const isMobile = useIsMobile();
   const [weekNumber, setWeekNumber] = useState<1 | 2>(1);
   
   const {
@@ -59,7 +61,7 @@ export default function ShoppingList() {
   };
 
   return (
-    <div className="container max-w-2xl py-8">
+    <div className={`w-full mx-auto px-4 sm:px-6 lg:px-8 ${isMobile ? 'py-4' : 'py-8'} ${!isMobile ? 'max-w-4xl' : ''}`}>
       <ShoppingListHeader
         onShare={handleShare}
       />
@@ -84,7 +86,7 @@ export default function ShoppingList() {
               <p className="text-muted-foreground">Loading shopping list...</p>
             </div>
           ) : (
-            <div className="space-y-6">
+            <div className={`space-y-${isMobile ? '4' : '6'}`}>
               {SHOPPING_CATEGORIES.map((category) => (
                 <ShoppingListCategory
                   key={category}

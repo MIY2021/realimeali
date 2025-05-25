@@ -17,6 +17,7 @@ import { MealPlannerHeader } from "@/components/meal-planner/MealPlannerHeader";
 import { WeekSelector } from "@/components/meal-planner/WeekSelector";
 import { MealPlannerActions } from "@/components/meal-planner/MealPlannerActions";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function MealPlanner() {
   useDocumentTitle("Meal Planner | RealiMeali");
@@ -25,6 +26,7 @@ export default function MealPlanner() {
   const { recipes, isLoading: recipesLoading } = useRecipes();
   const { currentHousehold } = useHousehold();
   const { isLoading: mealPlansLoading } = useMealPlan();
+  const isMobile = useIsMobile();
   
   const [week, setWeek] = useState<1 | 2>(1);
   
@@ -58,7 +60,7 @@ export default function MealPlanner() {
   const getRecipeById = (id: string) => recipes.find(r => r.id === id);
 
   return (
-    <div className="container max-w-xl py-8">
+    <div className={`w-full mx-auto px-4 sm:px-6 lg:px-8 ${isMobile ? 'py-4' : 'py-8'} ${!isMobile ? 'max-w-2xl' : ''}`}>
       <MealPlannerHeader user={user} currentHousehold={currentHousehold} />
       
       {!user ? (

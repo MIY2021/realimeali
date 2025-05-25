@@ -1,6 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import ShoppingListItem from "./ShoppingListItem";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ShoppingItem {
   id: string;
@@ -32,16 +33,18 @@ export default function ShoppingListCategory({
   onRemoveItem,
   getRecipeNames
 }: ShoppingListCategoryProps) {
+  const isMobile = useIsMobile();
+
   if (items.length === 0) return null;
 
   return (
-    <Card>
-      <CardHeader className="pb-3">
-        <CardTitle className="text-base font-medium text-terracotta">
+    <Card className="w-full">
+      <CardHeader className={`${isMobile ? 'pb-2 px-3 pt-3' : 'pb-3'}`}>
+        <CardTitle className={`${isMobile ? 'text-sm' : 'text-base'} font-medium text-terracotta`}>
           {category}
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-2 pt-0">
+      <CardContent className={`space-y-${isMobile ? '1.5' : '2'} ${isMobile ? 'pt-0 px-3 pb-3' : 'pt-0'}`}>
         {items.map((item) => (
           <ShoppingListItem
             key={item.id}
