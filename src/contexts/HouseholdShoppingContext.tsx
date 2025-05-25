@@ -141,4 +141,4 @@ export const useHouseholdShopping = () => {
   return context;
 };
 
-export { HouseholdShoppingItem, HouseholdRecipeCategory };
+export type { HouseholdShoppingItem, HouseholdRecipeCategory };
