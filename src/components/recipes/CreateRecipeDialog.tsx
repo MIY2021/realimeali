@@ -9,7 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, X, Image } from "lucide-react";
+import { Plus, Trash2, X, image } from "lucide-react";
 import { RecipeGenerateTab } from "./dialog/RecipeGenerateTab";
 import { RecipeTextTab } from "./dialog/RecipeTextTab";
 import { RecipeUrlTab } from "./dialog/RecipeUrlTab";
@@ -367,7 +367,7 @@ export function CreateRecipeDialog({ open, onOpenChange, onSave }: CreateRecipeD
                           disabled={isGeneratingImage || !newRecipe.title.trim()}
                           className="w-full"
                         >
-                          <Image className="h-4 w-4 mr-2" />
+                          <image className="h-4 w-4 mr-2" />
                           {isGeneratingImage ? "Generating..." : "Generate AI Image"}
                         </Button>
                         {imagePreview && (
