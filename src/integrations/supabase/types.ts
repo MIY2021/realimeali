@@ -87,8 +87,12 @@ export type Database = {
           date_scheduled: string
           household_id: string
           id: string
+          is_leftover: boolean
+          leftover_servings: number | null
           meal_type: string
           notes: string | null
+          original_servings: number | null
+          parent_meal_plan_id: string | null
           recipe_id: string
           slot_index: number
           updated_at: string
@@ -100,8 +104,12 @@ export type Database = {
           date_scheduled?: string
           household_id: string
           id?: string
+          is_leftover?: boolean
+          leftover_servings?: number | null
           meal_type: string
           notes?: string | null
+          original_servings?: number | null
+          parent_meal_plan_id?: string | null
           recipe_id: string
           slot_index?: number
           updated_at?: string
@@ -113,8 +121,12 @@ export type Database = {
           date_scheduled?: string
           household_id?: string
           id?: string
+          is_leftover?: boolean
+          leftover_servings?: number | null
           meal_type?: string
           notes?: string | null
+          original_servings?: number | null
+          parent_meal_plan_id?: string | null
           recipe_id?: string
           slot_index?: number
           updated_at?: string
@@ -126,6 +138,13 @@ export type Database = {
             columns: ["household_id"]
             isOneToOne: false
             referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "household_meal_plans_parent_meal_plan_id_fkey"
+            columns: ["parent_meal_plan_id"]
+            isOneToOne: false
+            referencedRelation: "household_meal_plans"
             referencedColumns: ["id"]
           },
           {

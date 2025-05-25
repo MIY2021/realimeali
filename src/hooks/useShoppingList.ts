@@ -147,10 +147,13 @@ export function useShoppingList() {
       item.name.startsWith(weekKey)
     );
 
-    // Generate ingredient map from meal plans
+    // Generate ingredient map from meal plans, accounting for leftovers
     const ingredientMap = new Map<string, { quantity: number; recipeIds: string[] }>();
     
     plans.forEach(plan => {
+      // Skip leftover meals - their ingredients are already counted in the parent meal
+      if (plan.isLeftover) return;
+      
       const recipe = recipes.find(r => r.id === plan.recipeId);
       if (recipe && recipe.ingredients) {
         recipe.ingredients.forEach(ingredient => {

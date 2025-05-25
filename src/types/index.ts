@@ -55,4 +55,8 @@ export type MealPlan = {
   createdAt: string;
   updatedAt: string;
   slotIndex: number;
+  parentMealPlanId?: string; // Links to the original dinner
+  isLeftover: boolean;
+  leftoverServings?: number; // How many servings from original meal
+  originalServings?: number; // Total servings from original recipe
 };

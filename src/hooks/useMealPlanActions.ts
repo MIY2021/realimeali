@@ -14,6 +14,7 @@ export const useMealPlanActions = (week: 1 | 2) => {
   const { 
     getMealPlansForWeek, 
     addMealPlan, 
+    addMealPlanWithLeftovers,
     removeMealPlan, 
     clearWeek 
   } = useMealPlan();
@@ -65,21 +66,28 @@ export const useMealPlanActions = (week: 1 | 2) => {
     setAddMealModal({ open: true, mealType });
   };
 
-  const onAddMealFinish = async (mealType: MealType, recipeId: string) => {
+  const onAddMealFinish = async (mealType: MealType, recipeId: string, leftoverServings?: number) => {
     if (!user) return;
     
-    console.log("Adding meal to plan:", { mealType, recipeId, week });
+    console.log("Adding meal to plan:", { mealType, recipeId, week, leftoverServings });
     
     const currentPlansForType = getMealPlansForType(mealType);
     
     try {
-      await addMealPlan({
+      const mealPlanData = {
         date: new Date().toISOString().split('T')[0],
         mealType,
         recipeId,
         createdBy: user.id,
         slotIndex: currentPlansForType.length,
-      }, week);
+        isLeftover: false,
+      };
+
+      if (mealType === 'dinner' && leftoverServings) {
+        await addMealPlanWithLeftovers(mealPlanData, week, leftoverServings);
+      } else {
+        await addMealPlan(mealPlanData, week);
+      }
       
       setAddMealModal({ open: false, mealType: null });
     } catch (error) {
@@ -107,7 +115,11 @@ export const useMealPlanActions = (week: 1 | 2) => {
       shareText += `--- ${mealType.toUpperCase()} ---\n`;
       getMealPlansForType(mealType).forEach(plan => {
         const recipe = recipes.find(r => r.id === plan.recipeId);
-        shareText += `- ${recipe ? recipe.title : "Unknown"}\n`;
+        const servingInfo = plan.isLeftover 
+          ? ` (${plan.leftoverServings} leftover servings)`
+          : ` (${plan.originalServings || recipe?.servings || 1} servings)`;
+        const leftoverPrefix = plan.isLeftover ? "🍽️ " : "";
+        shareText += `- ${leftoverPrefix}${recipe ? recipe.title : "Unknown"}${servingInfo}\n`;
       });
       shareText += "\n";
     });

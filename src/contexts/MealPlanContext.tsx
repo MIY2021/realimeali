@@ -19,6 +19,10 @@ export interface HouseholdMealPlan {
   created_by: string;
   created_at: string;
   updated_at: string;
+  parent_meal_plan_id?: string;
+  is_leftover: boolean;
+  leftover_servings?: number;
+  original_servings?: number;
 }
 
 interface MealPlanContextType {
@@ -26,6 +30,7 @@ interface MealPlanContextType {
   getMealPlansForWeek: (weekNumber: 1 | 2) => MealPlan[];
   getRecipeForMealPlan: (mealPlan: MealPlan) => Recipe | undefined;
   addMealPlan: (mealPlan: Omit<MealPlan, 'id' | 'createdAt' | 'updatedAt'>, weekNumber: 1 | 2) => Promise<void>;
+  addMealPlanWithLeftovers: (mealPlan: Omit<MealPlan, 'id' | 'createdAt' | 'updatedAt'>, weekNumber: 1 | 2, leftoverServings?: number) => Promise<void>;
   removeMealPlan: (id: string) => Promise<void>;
   clearWeek: (weekNumber: 1 | 2) => Promise<void>;
   isLoading: boolean;
@@ -77,7 +82,11 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
         createdAt: dbPlan.created_at,
         updatedAt: dbPlan.updated_at,
         slotIndex: dbPlan.slot_index,
-        weekNumber: dbPlan.week_number, // Store the actual week number from DB
+        weekNumber: dbPlan.week_number,
+        parentMealPlanId: dbPlan.parent_meal_plan_id,
+        isLeftover: dbPlan.is_leftover,
+        leftoverServings: dbPlan.leftover_servings,
+        originalServings: dbPlan.original_servings,
       }));
 
       console.log("Transformed plans:", transformedPlans);
@@ -92,7 +101,7 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setIsLoading(false);
     }
-  }, [user?.id, currentHousehold?.id]); // Only depend on stable IDs
+  }, [user?.id, currentHousehold?.id]);
 
   useEffect(() => {
     fetchMealPlans();
@@ -101,7 +110,6 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
   const getMealPlansForWeek = useCallback((weekNumber: 1 | 2): MealPlan[] => {
     if (!user || !currentHousehold) return [];
     
-    // Simply filter by the stored week_number from the database
     const weekPlans = mealPlans.filter(plan => (plan as any).weekNumber === weekNumber);
     console.log(`Getting meal plans for week ${weekNumber}:`, weekPlans);
     return weekPlans;
@@ -122,7 +130,6 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
 
-    // Verify the recipe exists in recipes collection
     const recipeExists = recipes.some(recipe => recipe.id === mealPlanData.recipeId);
     if (!recipeExists) {
       console.error("Recipe not found in collection:", mealPlanData.recipeId);
@@ -145,7 +152,11 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
         slot_index: mealPlanData.slotIndex || 0,
         notes: mealPlanData.notes || null,
         date_scheduled: mealPlanData.date,
-        created_by: user.id
+        created_by: user.id,
+        parent_meal_plan_id: mealPlanData.parentMealPlanId || null,
+        is_leftover: mealPlanData.isLeftover || false,
+        leftover_servings: mealPlanData.leftoverServings || null,
+        original_servings: mealPlanData.originalServings || null,
       };
 
       console.log("Insert data:", insertData);
@@ -163,7 +174,6 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
 
       console.log("Meal plan added successfully:", data);
 
-      // Add to local state with week number
       const newMealPlan: MealPlan = {
         id: data.id,
         date: data.date_scheduled,
@@ -174,7 +184,11 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
         createdAt: data.created_at,
         updatedAt: data.updated_at,
         slotIndex: data.slot_index,
-        weekNumber: data.week_number, // Include week number in local state
+        weekNumber: data.week_number,
+        parentMealPlanId: data.parent_meal_plan_id,
+        isLeftover: data.is_leftover,
+        leftoverServings: data.leftover_servings,
+        originalServings: data.original_servings,
       } as any;
 
       setMealPlans(prev => [...prev, newMealPlan]);
@@ -192,13 +206,81 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
         variant: "destructive",
       });
     }
-  }, [user?.id, currentHousehold?.id, recipes]); // Removed toast from dependencies
+  }, [user?.id, currentHousehold?.id, recipes]);
+
+  const addMealPlanWithLeftovers = useCallback(async (
+    mealPlanData: Omit<MealPlan, 'id' | 'createdAt' | 'updatedAt'>, 
+    weekNumber: 1 | 2, 
+    leftoverServings?: number
+  ) => {
+    if (!user || !currentHousehold) return;
+
+    const recipe = recipes.find(r => r.id === mealPlanData.recipeId);
+    if (!recipe) return;
+
+    try {
+      // Add the main dinner meal plan
+      await addMealPlan({
+        ...mealPlanData,
+        originalServings: recipe.servings,
+        isLeftover: false,
+      }, weekNumber);
+
+      // If leftover servings specified, add leftover lunch for next day
+      if (leftoverServings && leftoverServings > 0) {
+        const currentPlans = getMealPlansForWeek(weekNumber);
+        const justAddedPlan = currentPlans[currentPlans.length - 1];
+        
+        if (justAddedPlan) {
+          // Add leftover lunch meal plan
+          await addMealPlan({
+            date: mealPlanData.date,
+            mealType: 'lunch',
+            recipeId: mealPlanData.recipeId,
+            createdBy: user.id,
+            slotIndex: 0,
+            parentMealPlanId: justAddedPlan.id,
+            isLeftover: true,
+            leftoverServings: leftoverServings,
+            originalServings: recipe.servings,
+          }, weekNumber);
+
+          toast({
+            title: "Leftover Lunch Added",
+            description: `${leftoverServings} servings of ${recipe.title} scheduled for lunch leftovers.`,
+          });
+        }
+      }
+    } catch (err) {
+      console.error("Error adding meal plan with leftovers:", err);
+    }
+  }, [user?.id, currentHousehold?.id, recipes, addMealPlan, getMealPlansForWeek]);
 
   const removeMealPlan = useCallback(async (id: string) => {
     if (!user || !currentHousehold) return;
 
     try {
       console.log("Removing meal plan:", id);
+      
+      // Check if this meal plan has leftover children
+      const childLeftovers = mealPlans.filter(plan => plan.parentMealPlanId === id);
+      
+      if (childLeftovers.length > 0) {
+        const shouldRemoveLeftovers = window.confirm(
+          "This meal has leftover portions planned. Remove leftovers too?"
+        );
+        
+        if (shouldRemoveLeftovers) {
+          // Remove child leftovers first
+          for (const leftover of childLeftovers) {
+            await supabase
+              .from('household_meal_plans')
+              .delete()
+              .eq('id', leftover.id)
+              .eq('household_id', currentHousehold.id);
+          }
+        }
+      }
       
       const { error } = await supabase
         .from('household_meal_plans')
@@ -210,7 +292,9 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
         throw error;
       }
 
-      setMealPlans(prev => prev.filter(plan => plan.id !== id));
+      setMealPlans(prev => prev.filter(plan => 
+        plan.id !== id && plan.parentMealPlanId !== id
+      ));
       
       toast({
         title: "Recipe Removed",
@@ -224,7 +308,7 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
         variant: "destructive",
       });
     }
-  }, [user?.id, currentHousehold?.id]); // Removed toast from dependencies
+  }, [user?.id, currentHousehold?.id, mealPlans]);
 
   const clearWeek = useCallback(async (weekNumber: 1 | 2) => {
     if (!user || !currentHousehold) return;
@@ -242,7 +326,6 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
         throw error;
       }
 
-      // Remove from local state using stored week number
       setMealPlans(prev => prev.filter(plan => (plan as any).weekNumber !== weekNumber));
       
       toast({
@@ -257,7 +340,7 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
         variant: "destructive",
       });
     }
-  }, [user?.id, currentHousehold?.id]); // Removed toast from dependencies
+  }, [user?.id, currentHousehold?.id]);
 
   return (
     <MealPlanContext.Provider value={{
@@ -265,6 +348,7 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
       getMealPlansForWeek,
       getRecipeForMealPlan,
       addMealPlan,
+      addMealPlanWithLeftovers,
       removeMealPlan,
       clearWeek,
       isLoading

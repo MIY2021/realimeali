@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { Link } from "react-router-dom";
-import { AddRecipeToMealModal } from "@/components/meal-planner/AddRecipeToMealModal";
+import { AddMealWithLeftoversDialog } from "@/components/meal-planner/AddMealWithLeftoversDialog";
 import MealListSection from "@/components/MealListSection";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -102,12 +102,14 @@ export default function MealPlanner() {
                   ))}
                   
                   {addMealModal.open && addMealModal.mealType && (
-                    <AddRecipeToMealModal
+                    <AddMealWithLeftoversDialog
                       open={addMealModal.open}
                       onClose={() => setAddMealModal({ open: false, mealType: null })}
                       mealType={addMealModal.mealType}
                       recipes={recipes}
-                      onSelectRecipe={(recipeId) => onAddMealFinish(addMealModal.mealType!, recipeId)}
+                      onSelectRecipe={(recipeId, leftoverServings) => 
+                        onAddMealFinish(addMealModal.mealType!, recipeId, leftoverServings)
+                      }
                     />
                   )}
                 </>
