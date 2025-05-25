@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useMealPlan } from "@/contexts/MealPlanContext";
 import { useRecipes } from "@/contexts/RecipesContext";
@@ -59,53 +59,19 @@ export function useShoppingList() {
       return "Frozen Food";
     }
     
-    // Dietary, Lifestyle & World Foods
-    if (/gluten.free|dairy.free|vegan|organic|free.range|coconut.milk|almond.milk|soy.milk|oat.milk|kimchi|miso|teriyaki|curry|garam.masala|chinese|thai|indian|mexican|mediterranean|kosher|halal/i.test(nameLower)) {
-      return "Dietary, Lifestyle & World Foods";
-    }
-    
-    // Soft Drinks, Tea & Coffee
-    if (/juice|squash|cordial|water|sparkling|cola|lemonade|energy.drink|smoothie|kombucha|green.tea|black.tea|herbal.tea|coffee.beans|instant.coffee|decaf/i.test(nameLower)) {
-      return "Soft Drinks, Tea & Coffee";
-    }
-    
-    // Beer, Wine & Spirits
-    if (/beer|wine|whisky|vodka|gin|rum|brandy|champagne|prosecco|cider|ale|lager|spirits|alcohol/i.test(nameLower)) {
-      return "Beer, Wine & Spirits";
-    }
-    
-    // Health, Beauty & Personal Care
-    if (/shampoo|conditioner|soap|toothpaste|deodorant|moisturiser|sunscreen|vitamins|supplements|paracetamol|ibuprofen|plaster|antiseptic/i.test(nameLower)) {
-      return "Health, Beauty & Personal Care";
-    }
-    
-    // Baby, Parent & Kids
-    if (/nappy|baby.food|formula|dummy|wipes|baby.oil|baby.powder|kids|children|junior/i.test(nameLower)) {
-      return "Baby, Parent & Kids";
-    }
-    
-    // Home Care & Cleaning
-    if (/washing.powder|fabric.softener|bleach|disinfectant|toilet.paper|kitchen.roll|bin.bags|washing.up.liquid|dishwasher|tablets|cleaning|polish|hoover|vacuum/i.test(nameLower)) {
-      return "Home Care & Cleaning";
-    }
-    
-    // Pets, Home & Garden
-    if (/dog.food|cat.food|pet.treats|bird.seed|fish.food|plant.food|compost|seeds|bulbs|garden|pet|animal/i.test(nameLower)) {
-      return "Pets, Home & Garden";
-    }
-    
-    // Occasions & Entertaining
-    if (/candles|balloons|party|celebration|gift|card|wrapping|decorations|entertaining/i.test(nameLower)) {
-      return "Occasions & Entertaining";
-    }
-    
-    // Clothing & Accessories
-    if (/socks|underwear|shirt|dress|jumper|jacket|shoes|hat|gloves|scarf|belt|bag|watch|jewellery/i.test(nameLower)) {
-      return "Clothing & Accessories";
-    }
-    
     // Default fallback
     return "Food Cupboard";
+  }, []);
+
+  // Helper function to normalize ingredient names for deduplication
+  const normalizeIngredientName = useCallback((ingredient: string): string => {
+    return ingredient
+      .toLowerCase()
+      .replace(/^(\d+\.?\d*)\s*(tbsp|tsp|cup|cups|g|kg|ml|l|oz|lb|pounds?|tablespoons?|teaspoons?|cloves?)\s*/, '') // Remove quantities and units
+      .replace(/,.*$/, '') // Remove everything after comma
+      .replace(/\(.*?\)/g, '') // Remove parenthetical content
+      .replace(/\s+/g, ' ') // Normalize whitespace
+      .trim();
   }, []);
 
   // Get shopping items for a specific week
@@ -128,9 +94,6 @@ export function useShoppingList() {
     
     return weekItems;
   }, [householdShoppingItems, user, currentHousehold]);
-
-  // DISABLED: Remove automatic shopping list generation to prevent infinite loop
-  // Manual generation can be added later as a user-triggered action
 
   // Get current week items
   const weekShoppingItems = {
@@ -271,7 +234,7 @@ export function useShoppingList() {
     }
   };
 
-  // Manual generation function for future use
+  // Manual generation function - fixed to handle duplicates properly
   const generateShoppingList = useCallback(async (weekNumber: 1 | 2) => {
     if (!user || !currentHousehold || recipesLoading || recipes.length === 0) {
       return;
@@ -286,6 +249,8 @@ export function useShoppingList() {
       return;
     }
 
+    console.log(`Generating shopping list for week ${weekNumber} with ${mealPlans.length} meal plans`);
+
     // Clear existing items for this week
     const weekPrefix = `week${weekNumber}-`;
     const existingItems = householdShoppingItems.filter(item => 
@@ -296,38 +261,46 @@ export function useShoppingList() {
       await deleteShoppingItem(item.id);
     }
 
-    // Generate ingredient map
-    const ingredientMap = new Map<string, { quantity: number; recipeIds: string[] }>();
+    // Generate ingredient map with proper deduplication
+    const ingredientMap = new Map<string, { quantity: number; recipeIds: string[]; originalName: string }>();
     
     mealPlans.forEach(plan => {
       const recipe = recipes.find(r => r.id === plan.recipeId);
       if (recipe && recipe.ingredients) {
+        console.log(`Processing recipe: ${recipe.title} with ${recipe.ingredients.length} ingredients`);
+        
         recipe.ingredients.forEach(ingredient => {
-          const key = ingredient.toLowerCase();
-          if (ingredientMap.has(key)) {
-            const existing = ingredientMap.get(key)!;
-            existing.quantity += 1;
-            if (!existing.recipeIds.includes(recipe.id)) {
-              existing.recipeIds.push(recipe.id);
+          const normalizedName = normalizeIngredientName(ingredient);
+          
+          if (normalizedName.length > 0) { // Only add non-empty ingredients
+            if (ingredientMap.has(normalizedName)) {
+              const existing = ingredientMap.get(normalizedName)!;
+              existing.quantity += 1;
+              if (!existing.recipeIds.includes(recipe.id)) {
+                existing.recipeIds.push(recipe.id);
+              }
+            } else {
+              ingredientMap.set(normalizedName, {
+                quantity: 1,
+                recipeIds: [recipe.id],
+                originalName: ingredient
+              });
             }
-          } else {
-            ingredientMap.set(key, {
-              quantity: 1,
-              recipeIds: [recipe.id]
-            });
           }
         });
       }
     });
 
+    console.log(`Generated ${ingredientMap.size} unique ingredients`);
+
     // Add new items
-    for (const [ingredient, data] of ingredientMap.entries()) {
+    for (const [normalizedName, data] of ingredientMap.entries()) {
       try {
         await addShoppingItem({
-          name: `${weekPrefix}${ingredient}`,
+          name: `${weekPrefix}${normalizedName}`,
           quantity: data.quantity,
           unit: '',
-          category: categorizeIngredient(ingredient),
+          category: categorizeIngredient(normalizedName),
           is_checked: false,
           is_custom: false,
           recipe_ids: data.recipeIds
@@ -341,7 +314,7 @@ export function useShoppingList() {
       title: "Shopping List Generated",
       description: `Generated shopping list for week ${weekNumber} with ${ingredientMap.size} items`,
     });
-  }, [user, currentHousehold, recipes, recipesLoading, getMealPlansForWeek, householdShoppingItems, addShoppingItem, deleteShoppingItem, categorizeIngredient, toast]);
+  }, [user, currentHousehold, recipes, recipesLoading, getMealPlansForWeek, householdShoppingItems, addShoppingItem, deleteShoppingItem, categorizeIngredient, normalizeIngredientName, toast]);
 
   return {
     user,
