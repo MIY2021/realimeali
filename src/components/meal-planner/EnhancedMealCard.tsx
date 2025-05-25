@@ -1,7 +1,7 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Trash2, ArrowRight, Utensils } from "lucide-react";
+import { Trash2, ArrowRight } from "lucide-react";
 import { MealPlan, Recipe } from "@/types";
 
 interface EnhancedMealCardProps {
@@ -46,7 +46,7 @@ export function EnhancedMealCard({
             {mealPlan.isLeftover ? (
               <div className="space-y-1">
                 <div className="flex items-center gap-2 text-sm">
-                  <Utensils className="h-4 w-4 text-orange-600" />
+                  <span className="text-orange-600">🍽️</span>
                   <span className="font-medium text-orange-800">
                     Leftover: {displayRecipe.title}
                   </span>

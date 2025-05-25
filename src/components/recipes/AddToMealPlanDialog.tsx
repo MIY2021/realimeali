@@ -59,6 +59,8 @@ export function AddToMealPlanDialog({ recipe, open, onOpenChange }: AddToMealPla
         recipeId: recipe.id,
         createdBy: user.id,
         slotIndex: 0,
+        isLeftover: false,
+        householdId: recipe.householdId,
       }, selectedWeek);
 
       // Show confirmation

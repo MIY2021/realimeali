@@ -1,3 +1,4 @@
+
 import { MealPlan } from "@/types";
 
 // If you had mockMealPlans in mockData.ts, move them here
@@ -12,6 +13,8 @@ export const mockMealPlans: MealPlan[] = [
     createdAt: "2023-11-25T12:00:00Z",
     updatedAt: "2023-11-25T12:00:00Z",
     slotIndex: 0,
+    isLeftover: false,
+    householdId: "household-1",
   },
   {
     id: "meal-2",
@@ -23,6 +26,8 @@ export const mockMealPlans: MealPlan[] = [
     createdAt: "2023-11-25T12:00:00Z",
     updatedAt: "2023-11-25T12:00:00Z",
     slotIndex: 0,
+    isLeftover: false,
+    householdId: "household-1",
   },
   {
     id: "meal-3",
@@ -34,6 +39,8 @@ export const mockMealPlans: MealPlan[] = [
     createdAt: "2023-11-25T12:00:00Z",
     updatedAt: "2023-11-25T12:00:00Z",
     slotIndex: 0,
+    isLeftover: false,
+    householdId: "household-1",
   },
   {
     id: "meal-4",
@@ -45,6 +52,8 @@ export const mockMealPlans: MealPlan[] = [
     createdAt: "2023-11-25T12:00:00Z",
     updatedAt: "2023-11-25T12:00:00Z",
     slotIndex: 0,
+    isLeftover: false,
+    householdId: "household-1",
   },
   {
     id: "meal-5",
@@ -56,6 +65,8 @@ export const mockMealPlans: MealPlan[] = [
     createdAt: "2023-11-25T12:00:00Z",
     updatedAt: "2023-11-25T12:00:00Z",
     slotIndex: 0,
+    isLeftover: false,
+    householdId: "household-1",
   },
   {
     id: "meal-6",
@@ -67,6 +78,8 @@ export const mockMealPlans: MealPlan[] = [
     createdAt: "2023-11-25T12:00:00Z",
     updatedAt: "2023-11-25T12:00:00Z",
     slotIndex: 0,
+    isLeftover: false,
+    householdId: "household-1",
   },
   {
     id: "meal-7",
@@ -78,6 +91,8 @@ export const mockMealPlans: MealPlan[] = [
     createdAt: "2023-11-25T12:00:00Z",
     updatedAt: "2023-11-25T12:00:00Z",
     slotIndex: 0,
+    isLeftover: false,
+    householdId: "household-1",
   },
   {
     id: "meal-8",
@@ -89,6 +104,8 @@ export const mockMealPlans: MealPlan[] = [
     createdAt: "2023-11-25T12:00:00Z",
     updatedAt: "2023-11-25T12:00:00Z",
     slotIndex: 0,
+    isLeftover: false,
+    householdId: "household-1",
   },
   {
     id: "meal-9",
@@ -100,5 +117,7 @@ export const mockMealPlans: MealPlan[] = [
     createdAt: "2023-11-25T12:00:00Z",
     updatedAt: "2023-11-25T12:00:00Z",
     slotIndex: 0,
+    isLeftover: false,
+    householdId: "household-1",
   },
 ];

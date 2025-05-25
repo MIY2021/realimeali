@@ -103,6 +103,8 @@ export const useRandomMealSelection = (
             recipeId: recipe.id,
             createdBy: user.id,
             slotIndex: i,
+            isLeftover: false,
+            householdId: currentHousehold.id,
           }, week);
           
           allSelectedIds.add(recipe.id);
