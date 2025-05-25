@@ -10,22 +10,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
-
-const SHOPPING_CATEGORIES = [
-  "Fresh & Chilled Food",
-  "Food Cupboard", 
-  "Bakery",
-  "Frozen Food",
-  "Dietary, Lifestyle & World Foods",
-  "Soft Drinks, Tea & Coffee",
-  "Beer, Wine & Spirits",
-  "Health, Beauty & Personal Care",
-  "Baby, Parent & Kids",
-  "Home Care & Cleaning",
-  "Pets, Home & Garden",
-  "Occasions & Entertaining",
-  "Clothing & Accessories"
-];
+import { SHOPPING_CATEGORIES } from "@/types/shoppingList";
 
 export default function ShoppingList() {
   useDocumentTitle("Shopping List | RealiMeali");
