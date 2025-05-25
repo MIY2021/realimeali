@@ -29,12 +29,12 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <BrowserRouter>
-      <AuthProvider>
-        <HouseholdProvider>
-          <RecipesProvider>
-            <MealPlanProvider>
-              <HouseholdShoppingProvider>
-                <TooltipProvider>
+      <TooltipProvider>
+        <AuthProvider>
+          <HouseholdProvider>
+            <RecipesProvider>
+              <MealPlanProvider>
+                <HouseholdShoppingProvider>
                   <Layout>
                     <Routes>
                       <Route path="/" element={<Index />} />
@@ -117,12 +117,12 @@ const App = () => (
                   </Layout>
                   <Toaster />
                   <Sonner />
-                </TooltipProvider>
-              </HouseholdShoppingProvider>
-            </MealPlanProvider>
-          </RecipesProvider>
-        </HouseholdProvider>
-      </AuthProvider>
+                </HouseholdShoppingProvider>
+              </MealPlanProvider>
+            </RecipesProvider>
+          </HouseholdProvider>
+        </AuthProvider>
+      </TooltipProvider>
     </BrowserRouter>
   </QueryClientProvider>
 );

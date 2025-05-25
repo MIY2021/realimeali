@@ -35,7 +35,7 @@ export const RecipesProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setIsLoading(false);
     }
-  }, [recipeApi]); // Only depend on recipeApi, which is now stable
+  }, [recipeApi, toast]);
 
   // Auto-fetch recipes when context initializes and when household changes
   useEffect(() => {
@@ -43,12 +43,20 @@ export const RecipesProvider = ({ children }: { children: ReactNode }) => {
     
     const initializeFetch = async () => {
       if (user) {
-        // Import household context to get current household
-        const { useHousehold } = await import("@/contexts/HouseholdContext");
-        const householdContext = useHousehold();
-        
-        if (isMounted) {
-          await fetchRecipes(householdContext.currentHousehold?.id || null);
+        try {
+          // Import household context to get current household
+          const { useHousehold } = await import("@/contexts/HouseholdContext");
+          const householdContext = useHousehold();
+          
+          if (isMounted) {
+            await fetchRecipes(householdContext.currentHousehold?.id || null);
+          }
+        } catch (error) {
+          console.error("Error initializing recipes fetch:", error);
+          if (isMounted) {
+            setRecipes([]);
+            setIsLoading(false);
+          }
         }
       } else {
         if (isMounted) {
@@ -84,7 +92,7 @@ export const RecipesProvider = ({ children }: { children: ReactNode }) => {
       });
       return null;
     }
-  }, [recipeApi]);
+  }, [recipeApi, toast]);
 
   const updateRecipe = useCallback(async (id: string, recipeData: Partial<Recipe>): Promise<Recipe | null> => {
     try {
@@ -104,7 +112,7 @@ export const RecipesProvider = ({ children }: { children: ReactNode }) => {
       });
       return null;
     }
-  }, [recipeApi]);
+  }, [recipeApi, toast]);
 
   const deleteRecipe = useCallback(async (id: string): Promise<boolean> => {
     try {
@@ -122,7 +130,7 @@ export const RecipesProvider = ({ children }: { children: ReactNode }) => {
       });
       return false;
     }
-  }, [recipeApi]);
+  }, [recipeApi, toast]);
 
   const getRecipeById = useCallback((id: string) => {
     return recipes.find(recipe => recipe.id === id);
@@ -150,7 +158,7 @@ export const RecipesProvider = ({ children }: { children: ReactNode }) => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user?.id]); // Only depend on user ID
+  }, [user?.id]);
 
   return (
     <RecipesContext.Provider value={{ 

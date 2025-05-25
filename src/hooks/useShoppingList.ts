@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useMealPlan } from "@/contexts/MealPlanContext";
@@ -24,7 +23,7 @@ export function useShoppingList() {
   const { toast } = useToast();
   const [selectedWeek, setSelectedWeek] = useState<1 | 2>(1);
   const [copiedItemId, setCopiedItemId] = useState<string | null>(null);
-  const [weekShoppingItems, setWeekShoppingItems] = useState<{
+  const [weekShoppingItems, setWeekShoppingItems<{
     1: ShoppingItem[];
     2: ShoppingItem[];
   }>({
@@ -142,6 +141,12 @@ export function useShoppingList() {
     
     console.log(`Generating shopping list for ${weekKey} with ${plans.length} plans`);
 
+    // Validate that recipes are loaded and available
+    if (recipes.length === 0) {
+      console.log('No recipes loaded yet, skipping generation');
+      return;
+    }
+
     // Get existing items for this week from database (without triggering re-renders)
     const existingWeekItems = householdShoppingItems.filter(item => 
       item.name.startsWith(weekKey)
@@ -153,6 +158,7 @@ export function useShoppingList() {
     plans.forEach(plan => {
       const recipe = recipes.find(r => r.id === plan.recipeId);
       if (recipe && recipe.ingredients) {
+        console.log(`Processing recipe: ${recipe.title} with ${recipe.ingredients.length} ingredients`);
         recipe.ingredients.forEach(ingredient => {
           const key = ingredient.toLowerCase();
           if (ingredientMap.has(key)) {
@@ -168,6 +174,8 @@ export function useShoppingList() {
             });
           }
         });
+      } else {
+        console.warn(`Recipe not found for meal plan: ${plan.recipeId}`);
       }
     });
 
@@ -231,7 +239,7 @@ export function useShoppingList() {
 
   // Generate shopping lists with debouncing and duplicate prevention
   useEffect(() => {
-    if (!user || !currentHousehold || recipesLoading) return;
+    if (!user || !currentHousehold || recipesLoading || recipes.length === 0) return;
 
     // Clear any existing timeout
     if (generationTimeoutRef.current) {
