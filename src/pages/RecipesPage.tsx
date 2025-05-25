@@ -16,16 +16,9 @@ export default function RecipesPage() {
   const { user } = useAuth();
   const { currentHousehold } = useHousehold();
   const { recipes, isLoading } = useRecipes();
-  const [searchTerm, setSearchTerm] = useState("");
 
   // Load recipes automatically
   useRecipesLoader();
-
-  const filteredRecipes = recipes.filter(recipe => 
-    recipe.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    recipe.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    recipe.categories.some(cat => cat.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
 
   return (
     <div className="container py-8">
@@ -58,9 +51,7 @@ export default function RecipesPage() {
         </div>
       ) : (
         <RecipeList 
-          recipes={filteredRecipes}
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
+          recipes={recipes}
           isLoading={isLoading}
         />
       )}
