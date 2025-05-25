@@ -1,10 +1,11 @@
-
 import { Recipe } from "@/types";
 import { Button } from "@/components/ui/button";
 import { CalendarDays, Clock, Pencil, Share, Users, Trash2 } from "lucide-react";
 import { RecipeImage } from "@/components/ui/recipe-image";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { useUserProfile } from "@/hooks/useUserProfile";
+import { format } from "date-fns";
 
 interface RecipeDetailProps {
   recipe: Recipe;
@@ -17,6 +18,7 @@ interface RecipeDetailProps {
 export function RecipeDetail({ recipe, onAddToMealPlan, onEdit, onDelete, isOwner }: RecipeDetailProps) {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { profile } = useUserProfile(recipe.createdBy);
   
   const { 
     title, 
@@ -26,7 +28,8 @@ export function RecipeDetail({ recipe, onAddToMealPlan, onEdit, onDelete, isOwne
     prepTime, 
     cookTime, 
     servings, 
-    categories
+    categories,
+    createdAt
   } = recipe;
 
   const handleEdit = () => {
@@ -187,6 +190,16 @@ export function RecipeDetail({ recipe, onAddToMealPlan, onEdit, onDelete, isOwne
                 </li>
               ))}
             </ol>
+          </div>
+        </div>
+
+        {/* Recipe Attribution Footer */}
+        <div className="border-t pt-6 mt-8">
+          <div className="text-sm text-muted-foreground">
+            <p>
+              Recipe added by {profile?.full_name || 'Unknown user'} on{' '}
+              {format(new Date(createdAt), 'MMMM d, yyyy')}
+            </p>
           </div>
         </div>
       </div>

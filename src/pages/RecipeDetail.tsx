@@ -4,7 +4,7 @@ import { useRecipes } from "@/contexts/RecipesContext";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AddToMealPlanDialog } from "@/components/recipes/AddToMealPlanDialog";
 import { EditRecipeDialog } from "@/components/recipes/EditRecipeDialog";
 import { Recipe } from "@/types";
@@ -45,6 +45,13 @@ export default function RecipeDetail() {
       return <Navigate to={`/recipes/${newSlug}`} replace />;
     }
   }
+
+  // Scroll to top when recipe loads or changes
+  useEffect(() => {
+    if (recipe) {
+      window.scrollTo(0, 0);
+    }
+  }, [recipe?.id]);
 
   useDocumentTitle(recipe ? `${recipe.title} | RealiMeali` : "Recipe | RealiMeali");
 
@@ -100,7 +107,6 @@ export default function RecipeDetail() {
     }
   };
 
-  // Show loading state while recipes are being fetched
   if (isLoading) {
     return (
       <div className="container max-w-4xl mx-auto px-4 py-4 sm:px-6 sm:py-8">
