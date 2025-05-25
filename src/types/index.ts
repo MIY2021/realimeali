@@ -59,4 +59,5 @@ export type MealPlan = {
   isLeftover: boolean;
   leftoverServings?: number; // How many servings from original meal
   originalServings?: number; // Total servings from original recipe
+  householdId: string; // household id
 };
