@@ -10,7 +10,6 @@ import { CreateRecipeDialog } from "@/components/recipes/CreateRecipeDialog";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
-import { HouseholdSelector } from "@/components/household/HouseholdSelector";
 
 export default function RecipesPage() {
   const { recipes, isLoading, createRecipe, fetchRecipes } = useRecipes();
@@ -85,9 +84,6 @@ export default function RecipesPage() {
             {user ? "Manage your household's recipe collection" : "Login to view and create household recipes"}
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          {user && <HouseholdSelector />}
-        </div>
       </div>
 
       {!user ? (
@@ -140,7 +136,7 @@ export default function RecipesPage() {
               </Button>
             </div>
           ) : (
-            <RecipeList recipes={recipes} />
+            <RecipeList recipes={recipes} showActions={false} />
           )}
         </>
       )}

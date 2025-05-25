@@ -14,6 +14,7 @@ import { useAuth } from "@/contexts/AuthContext";
 
 interface RecipeListProps {
   recipes: Recipe[];
+  showActions?: boolean;
 }
 
 // All available categories - ensures all categories show even if no recipes exist
@@ -23,7 +24,7 @@ const ALL_RECIPE_CATEGORIES: RecipeCategory[] = [
   "Faffy", "Pricey!", "Not Yet Made", "Snacks", "Breakfast"
 ];
 
-export function RecipeList({ recipes }: RecipeListProps) {
+export function RecipeList({ recipes, showActions = true }: RecipeListProps) {
   const { recipeCategories } = useHouseholdShopping();
   const { updateRecipe, deleteRecipe } = useRecipes();
   const { user } = useAuth();
@@ -178,9 +179,10 @@ export function RecipeList({ recipes }: RecipeListProps) {
                 key={recipe.id} 
                 recipe={recipe} 
                 onAddToMealPlan={() => handleAddToMealPlan(recipe)}
-                onEdit={() => handleEditRecipe(recipe)}
-                onDelete={() => handleDeleteRecipe(recipe)}
-                onShare={() => handleShareRecipe(recipe)}
+                onEdit={showActions ? () => handleEditRecipe(recipe) : undefined}
+                onDelete={showActions ? () => handleDeleteRecipe(recipe) : undefined}
+                onShare={showActions ? () => handleShareRecipe(recipe) : undefined}
+                showActions={showActions}
               />
             ))}
           </div>

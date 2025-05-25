@@ -136,6 +136,7 @@ export default function CategoryPage() {
               onEdit={() => handleEditRecipe(recipe)}
               onDelete={() => handleDeleteRecipe(recipe)}
               onShare={() => handleShareRecipe(recipe)}
+              showActions={true}
             />
           ))}
         </div>

@@ -2,7 +2,7 @@
 import { Recipe } from "@/types";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { Clock, Users, Plus, Pencil, Share, Trash2 } from "lucide-react";
+import { Clock, Users, Plus, Pencil, Share, Trash2, UtensilsCrossed } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -14,9 +14,10 @@ interface RecipeCardProps {
   onEdit?: (recipe: Recipe) => void;
   onDelete?: (recipe: Recipe) => void;
   onShare?: (recipe: Recipe) => void;
+  showActions?: boolean;
 }
 
-export function RecipeCard({ recipe, onAddToMealPlan, onEdit, onDelete, onShare }: RecipeCardProps) {
+export function RecipeCard({ recipe, onAddToMealPlan, onEdit, onDelete, onShare, showActions = true }: RecipeCardProps) {
   const { user } = useAuth();
   const { currentHousehold } = useHousehold();
   const { id, title, description, prepTime, cookTime, servings, image, categories } = recipe;
@@ -24,9 +25,9 @@ export function RecipeCard({ recipe, onAddToMealPlan, onEdit, onDelete, onShare 
   const [imgError, setImgError] = useState(false);
 
   // Allow editing/deleting if user is part of the same household
-  const canEdit = user && currentHousehold && onEdit;
-  const canDelete = user && currentHousehold && onDelete;
-  const canShare = onShare;
+  const canEdit = user && currentHousehold && onEdit && showActions;
+  const canDelete = user && currentHousehold && onDelete && showActions;
+  const canShare = onShare && showActions;
 
   // Create URL-friendly slug from recipe title
   const createSlug = (title: string) => {
@@ -52,12 +53,11 @@ export function RecipeCard({ recipe, onAddToMealPlan, onEdit, onDelete, onShare 
               className="h-full w-full object-cover transition-transform hover:scale-105"
               onError={(e) => {
                 setImgError(true);
-                (e.currentTarget as HTMLImageElement).src = "/placeholder.svg";
               }}
             />
           ) : (
-            <div className="absolute inset-0 flex items-center justify-center bg-muted">
-              <span className="text-xs text-muted-foreground">No image</span>
+            <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+              <UtensilsCrossed className="h-12 w-12 text-gray-400" />
             </div>
           )}
         </div>
@@ -121,55 +121,57 @@ export function RecipeCard({ recipe, onAddToMealPlan, onEdit, onDelete, onShare 
         )}
 
         {/* Action buttons for edit, share, delete */}
-        <div className="flex w-full gap-1">
-          {canEdit && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="flex-1 text-xs hover:bg-sage hover:text-white flex items-center justify-center"
-              onClick={(e) => { 
-                e.preventDefault(); 
-                e.stopPropagation(); 
-                onEdit(recipe); 
-              }}
-              title="Edit recipe"
-            >
-              <Pencil className="h-3 w-3" />
-            </Button>
-          )}
-          
-          {canShare && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="flex-1 text-xs hover:bg-blue-500 hover:text-white flex items-center justify-center"
-              onClick={(e) => { 
-                e.preventDefault(); 
-                e.stopPropagation(); 
-                onShare(recipe); 
-              }}
-              title="Share recipe"
-            >
-              <Share className="h-3 w-3" />
-            </Button>
-          )}
-          
-          {canDelete && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="flex-1 text-xs hover:bg-red-500 hover:text-white flex items-center justify-center"
-              onClick={(e) => { 
-                e.preventDefault(); 
-                e.stopPropagation(); 
-                onDelete(recipe); 
-              }}
-              title="Delete recipe"
-            >
-              <Trash2 className="h-3 w-3" />
-            </Button>
-          )}
-        </div>
+        {showActions && (canEdit || canShare || canDelete) && (
+          <div className="flex w-full gap-1">
+            {canEdit && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex-1 text-xs hover:bg-sage hover:text-white flex items-center justify-center"
+                onClick={(e) => { 
+                  e.preventDefault(); 
+                  e.stopPropagation(); 
+                  onEdit(recipe); 
+                }}
+                title="Edit recipe"
+              >
+                <Pencil className="h-3 w-3" />
+              </Button>
+            )}
+            
+            {canShare && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex-1 text-xs hover:bg-blue-500 hover:text-white flex items-center justify-center"
+                onClick={(e) => { 
+                  e.preventDefault(); 
+                  e.stopPropagation(); 
+                  onShare(recipe); 
+                }}
+                title="Share recipe"
+              >
+                <Share className="h-3 w-3" />
+              </Button>
+            )}
+            
+            {canDelete && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex-1 text-xs hover:bg-red-500 hover:text-white flex items-center justify-center"
+                onClick={(e) => { 
+                  e.preventDefault(); 
+                  e.stopPropagation(); 
+                  onDelete(recipe); 
+                }}
+                title="Delete recipe"
+              >
+                <Trash2 className="h-3 w-3" />
+              </Button>
+            )}
+          </div>
+        )}
       </CardFooter>
     </Card>
   );
