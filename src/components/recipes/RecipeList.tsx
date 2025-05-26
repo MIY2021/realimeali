@@ -1,14 +1,12 @@
-
 import { Recipe, RecipeCategory } from "@/types";
 import { RecipeCard } from "./RecipeCard";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useHouseholdShopping } from "@/contexts/HouseholdShoppingContext";
-import { ChevronDown, Grid3X3 } from "lucide-react";
+import { ChevronDown, Columns } from "lucide-react";
 import { AddToMealPlanDialog } from "./AddToMealPlanDialog";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
   Select,
   SelectContent,
@@ -133,33 +131,17 @@ export function RecipeList({
             className="flex-1"
           />
           
-          {/* Mobile Layout Toggle - now inline and subtle */}
+          {/* Mobile Layout Dropdown - compact design */}
           {isMobile && (
-            <div className="flex items-center gap-1 px-2 py-1 border rounded-md bg-background">
-              <Grid3X3 className="h-3 w-3 text-muted-foreground" />
-              <ToggleGroup 
-                type="single" 
-                value={currentMobileLayout} 
-                onValueChange={handleMobileLayoutChange}
-                className="h-auto"
-                size="sm"
-              >
-                <ToggleGroupItem 
-                  value="1" 
-                  aria-label="Single column" 
-                  className="h-6 w-6 p-0 text-xs"
-                >
-                  1
-                </ToggleGroupItem>
-                <ToggleGroupItem 
-                  value="2" 
-                  aria-label="Two columns" 
-                  className="h-6 w-6 p-0 text-xs"
-                >
-                  2
-                </ToggleGroupItem>
-              </ToggleGroup>
-            </div>
+            <Select value={currentMobileLayout} onValueChange={handleMobileLayoutChange}>
+              <SelectTrigger className="w-[60px] h-10 px-2">
+                <Columns className="h-4 w-4" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="1">Single Column</SelectItem>
+                <SelectItem value="2">Two Columns</SelectItem>
+              </SelectContent>
+            </Select>
           )}
         </div>
         

@@ -19,8 +19,8 @@ export default function RecipesPage() {
   const { user } = useAuth();
   const { currentHousehold } = useHousehold();
   const { recipes, isLoading } = useRecipes();
-  const { restoreScrollPosition, setScrollKey } = useScrollPosition();
-  const { navigationState } = useNavigationState();
+  const { restoreScrollPosition, setScrollKey, clearScrollPosition } = useScrollPosition();
+  const { navigationState, clearNavigationState } = useNavigationState();
   const isMobile = useIsMobile();
 
   // Mobile layout state
@@ -31,35 +31,41 @@ export default function RecipesPage() {
   // Load recipes automatically
   useRecipesLoader();
 
-  // Set up scroll position tracking for this page
+  // Set up scroll position tracking for this page with enhanced restoration
   useEffect(() => {
     setScrollKey('recipes');
     
     // Check if we should restore scroll position
-    if (navigationState.shouldRestoreScroll || sessionStorage.getItem('restoreRecipesScroll') === 'true') {
+    if (navigationState.shouldRestoreScroll || 
+        sessionStorage.getItem('restoreRecipesScroll') === 'true') {
       console.log('Restoring scroll position on recipes page');
       
-      // Wait for recipes to load before restoring scroll
-      const attemptRestore = () => {
-        if (!isLoading && recipes.length > 0) {
-          restoreScrollPosition('recipes');
-          sessionStorage.removeItem('restoreRecipesScroll');
-          sessionStorage.removeItem('navigatedFromRecipes');
-        } else if (!isLoading) {
-          // Even if no recipes, still try to restore
-          restoreScrollPosition('recipes');
-          sessionStorage.removeItem('restoreRecipesScroll');
-          sessionStorage.removeItem('navigatedFromRecipes');
-        } else {
-          // Wait a bit more for loading to complete
-          setTimeout(attemptRestore, 100);
-        }
-      };
-      
-      // Give a small delay to ensure DOM is ready
-      setTimeout(attemptRestore, 50);
+      // Wait for recipes to load before attempting scroll restoration
+      if (!isLoading && recipes.length > 0) {
+        const currentLayout = localStorage.getItem('mobileRecipeLayout') || '1';
+        restoreScrollPosition('recipes', currentLayout);
+        
+        // Clean up session storage
+        sessionStorage.removeItem('restoreRecipesScroll');
+        sessionStorage.removeItem('navigatedFromRecipes');
+        clearNavigationState();
+      }
     }
-  }, [setScrollKey, restoreScrollPosition, navigationState.shouldRestoreScroll, isLoading, recipes.length]);
+  }, [setScrollKey, restoreScrollPosition, navigationState.shouldRestoreScroll, isLoading, recipes.length, clearNavigationState]);
+
+  // Clear scroll position when layout changes
+  useEffect(() => {
+    const handleLayoutChange = () => {
+      console.log('Layout changed, clearing scroll position');
+      clearScrollPosition('recipes');
+    };
+
+    // Only clear if layout actually changed
+    const savedLayout = localStorage.getItem('mobileRecipeLayout') || '1';
+    if (savedLayout !== mobileLayout) {
+      handleLayoutChange();
+    }
+  }, [mobileLayout, clearScrollPosition]);
 
   return (
     <div className="container max-w-7xl py-4 px-4 sm:py-8 sm:px-6">

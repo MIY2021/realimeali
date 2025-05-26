@@ -1,4 +1,3 @@
-
 import { Recipe } from "@/types";
 import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
@@ -51,14 +50,25 @@ export function RecipeCard({ recipe, onAddToMealPlan, onEdit, onDelete, showActi
     e.preventDefault();
     console.log('Recipe card clicked, tracking navigation from recipes');
     
+    // Get current layout for layout-aware scroll saving
+    const currentLayout = localStorage.getItem('mobileRecipeLayout') || '1';
+    
+    // Save current scroll position with layout information
+    saveScrollPosition('recipes', currentLayout);
+    
     // Mark that we're navigating from recipes page
     markCameFromRecipes();
     
-    // Save scroll position immediately
-    saveScrollPosition('recipes');
+    // Set session storage flags for reliable tracking
+    sessionStorage.setItem('restoreRecipesScroll', 'true');
     
     // Navigate with state to indicate scroll should be restored
-    navigate(recipeUrl, { state: { restoreScroll: true } });
+    navigate(recipeUrl, { 
+      state: { 
+        restoreScroll: true,
+        fromRecipes: true 
+      } 
+    });
   };
 
   const handleShare = async (e: React.MouseEvent) => {
