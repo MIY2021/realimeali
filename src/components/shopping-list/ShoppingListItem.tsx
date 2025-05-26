@@ -156,6 +156,11 @@ export default function ShoppingListItem({
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseLeave}
     >
+      <Checkbox
+        checked={isChecked}
+        onCheckedChange={handleCheckboxChange}
+        className={`${isMobile ? 'mt-0.5' : 'mt-1'} ${isMobile ? 'h-4 w-4' : ''}`}
+      />
       <div className="flex-1 min-w-0">
         <div className={`${isChecked ? 'line-through text-muted-foreground' : ''}`}>
           <span className={`font-medium ${isMobile ? 'text-sm' : ''}`}>
@@ -187,12 +192,7 @@ export default function ShoppingListItem({
           </div>
         )}
       </div>
-      <div className="flex items-center space-x-3 flex-shrink-0">
-        <Checkbox
-          checked={isChecked}
-          onCheckedChange={handleCheckboxChange}
-          className={`${isMobile ? 'h-4 w-4' : ''}`}
-        />
+      <div className="flex-shrink-0">
         <Button
           variant="ghost"
           size="icon"
