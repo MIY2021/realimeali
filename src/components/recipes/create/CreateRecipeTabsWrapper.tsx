@@ -103,6 +103,7 @@ export function CreateRecipeTabsWrapper({
               setNewInstruction={recipeFormHook.setNewInstruction}
               imagePreview={recipeFormHook.imagePreview}
               isGeneratingImage={recipeFormHook.isGeneratingImage}
+              generationProgress={recipeFormHook.generationProgress}
               onImageChange={recipeFormHook.handleImageChange}
               onGenerateImage={onGenerateImage}
               onAddCategory={recipeFormHook.handleAddCategory}

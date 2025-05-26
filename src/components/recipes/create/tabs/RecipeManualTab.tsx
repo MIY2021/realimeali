@@ -1,7 +1,8 @@
-
 import { Recipe, RecipeCategory } from "@/types";
 import { Button } from "@/components/ui/button";
-import { Plus, Trash2, X, Camera } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Plus, Trash2, X, Camera, Loader2 } from "lucide-react";
 
 const AVAILABLE_CATEGORIES: RecipeCategory[] = [
   "Bulk", "Easy", "Cheap", "Healthy", "Vegetarian", "Fish",
@@ -21,6 +22,7 @@ interface RecipeManualTabProps {
   setNewInstruction: (instruction: string) => void;
   imagePreview: string | null;
   isGeneratingImage: boolean;
+  generationProgress?: string;
   onImageChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onGenerateImage: () => void;
   onAddCategory: () => void;
@@ -43,6 +45,7 @@ export function RecipeManualTab({
   setNewInstruction,
   imagePreview,
   isGeneratingImage,
+  generationProgress,
   onImageChange,
   onGenerateImage,
   onAddCategory,
@@ -120,6 +123,7 @@ export function RecipeManualTab({
                 accept="image/*"
                 onChange={onImageChange}
                 className="w-full p-3 border rounded-lg"
+                disabled={isGeneratingImage}
               />
               <Button 
                 type="button"
@@ -128,12 +132,37 @@ export function RecipeManualTab({
                 disabled={isGeneratingImage || !newRecipe.title.trim()}
                 className="w-full"
               >
-                <Camera className="h-4 w-4 mr-2" />
-                {isGeneratingImage ? "Creating image..." : "Generate AI Photo"}
+                {isGeneratingImage ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <Camera className="h-4 w-4 mr-2" />
+                    Generate AI Photo
+                  </>
+                )}
               </Button>
-              {imagePreview && (
-                <img src={imagePreview} alt="Recipe preview" className="w-full h-48 object-cover rounded-lg border" />
+              
+              {/* Progress indicator */}
+              {isGeneratingImage && (
+                <div className="space-y-2">
+                  <Progress value={undefined} className="w-full" />
+                  {generationProgress && (
+                    <p className="text-sm text-muted-foreground text-center">
+                      {generationProgress}
+                    </p>
+                  )}
+                </div>
               )}
+              
+              {/* Image preview or loading skeleton */}
+              {isGeneratingImage && !imagePreview ? (
+                <Skeleton className="w-full h-48 rounded-lg" />
+              ) : imagePreview ? (
+                <img src={imagePreview} alt="Recipe preview" className="w-full h-48 object-cover rounded-lg border" />
+              ) : null}
             </div>
           </div>
 

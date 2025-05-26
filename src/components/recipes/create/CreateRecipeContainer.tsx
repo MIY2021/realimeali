@@ -48,7 +48,8 @@ export function CreateRecipeContainer() {
       recipeFormHook.newRecipe.title,
       recipeFormHook.setImagePreview,
       (url) => recipeFormHook.setNewRecipe({ ...recipeFormHook.newRecipe, image: url }),
-      recipeFormHook.setIsGeneratingImage
+      recipeFormHook.setIsGeneratingImage,
+      recipeFormHook.setGenerationProgress
     );
   };
 
