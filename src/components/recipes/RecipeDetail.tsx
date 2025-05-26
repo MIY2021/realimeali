@@ -47,13 +47,21 @@ export function RecipeDetail({ recipe, onAddToMealPlan, onEdit, onDelete, isOwne
     
     // Check if user came from shopping list
     const fromShoppingList = location.state?.fromShoppingList === true;
+    const returnToShoppingList = sessionStorage.getItem('returnToShoppingList') === 'true';
     const previousRoute = sessionStorage.getItem('previousRoute');
     
-    if (fromShoppingList || previousRoute === '/shopping-list') {
+    if (fromShoppingList || returnToShoppingList || previousRoute === '/shopping-list') {
       // User came from shopping list, restore their scroll position
       console.log('Navigating back to shopping list with scroll restoration');
       sessionStorage.setItem('restoreShoppingListScroll', 'true');
-      navigate('/shopping-list', { state: { restoreScroll: true } });
+      sessionStorage.removeItem('returnToShoppingList');
+      sessionStorage.removeItem('previousRoute');
+      navigate('/shopping-list', { 
+        state: { 
+          restoreScroll: true,
+          scrollPosition: location.state?.scrollPosition 
+        } 
+      });
     } else if (navigationState.cameFromRecipes || navigationState.shouldRestoreScroll) {
       // User came from recipes page, restore their scroll position
       console.log('Navigating back with scroll restoration');
@@ -144,7 +152,7 @@ export function RecipeDetail({ recipe, onAddToMealPlan, onEdit, onDelete, isOwne
             className="flex items-center gap-2"
           >
             <ArrowLeft className="h-4 w-4" />
-            <span>Back to {location.state?.fromShoppingList ? 'Shopping List' : 'Recipes'}</span>
+            <span>Back to {location.state?.fromShoppingList || sessionStorage.getItem('returnToShoppingList') === 'true' ? 'Shopping List' : 'Recipes'}</span>
           </Button>
         </div>
 

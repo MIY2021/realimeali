@@ -39,7 +39,7 @@ export default function ShoppingListItem({
   const longPressTimer = useRef<NodeJS.Timeout | null>(null);
   const isLongPressing = useRef(false);
   const lastTapTime = useRef(0);
-  const doubleTapDelay = 300; // 300ms for double tap detection
+  const doubleTapDelay = 300;
 
   const createSlug = (title: string) => {
     return title
@@ -62,18 +62,20 @@ export default function ShoppingListItem({
       const weekNumber = weekMatch ? weekMatch[1] : '1';
       const scrollKey = `shopping-list-week-${weekNumber}`;
       
-      console.log('Saving shopping list scroll position before navigating to recipe');
+      console.log('Saving shopping list scroll position before navigating to recipe:', window.scrollY);
       saveScrollPosition(scrollKey);
       
-      // Set flag to restore scroll when returning
+      // Set flags for proper restoration
       sessionStorage.setItem('restoreShoppingListScroll', 'true');
       sessionStorage.setItem('previousRoute', '/shopping-list');
+      sessionStorage.setItem('returnToShoppingList', 'true');
       
       const slug = createSlug(recipe.title);
       navigate(`/recipes/${slug}`, { 
         state: { 
           fromShoppingList: true,
-          restoreScroll: true 
+          restoreScroll: true,
+          scrollPosition: window.scrollY
         } 
       });
     }

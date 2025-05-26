@@ -28,33 +28,58 @@ export const useScrollPosition = () => {
 
   const waitForContent = (): Promise<boolean> => {
     return new Promise((resolve) => {
-      const checkContent = () => {
-        // Check for recipe list container
+      const checkShoppingListContent = () => {
+        const shoppingListContainer = document.querySelector('[data-shopping-list-container]');
+        const shoppingListItems = document.querySelectorAll('[data-shopping-list-item]');
+        const hasItems = shoppingListItems.length > 0;
+        
+        if (shoppingListContainer && hasItems) {
+          console.log('Shopping list content ready - found container with items');
+          return true;
+        }
+        return false;
+      };
+
+      const checkRecipeContent = () => {
         const recipeList = document.querySelector('[data-testid="recipe-list"]');
         const recipeCards = document.querySelectorAll('[data-recipe-card]');
         const hasCards = recipeCards.length > 0;
         
-        // Check if images are loaded or loading
         const images = document.querySelectorAll('[data-recipe-card] img');
         const imagesReady = images.length === 0 || Array.from(images).some(img => 
           (img as HTMLImageElement).complete || (img as HTMLImageElement).naturalHeight > 0
         );
 
         if (recipeList && hasCards && imagesReady) {
-          console.log('Content ready - found recipe list with cards and images');
-          resolve(true);
+          console.log('Recipe content ready - found recipe list with cards and images');
           return true;
         }
         return false;
       };
 
-      // Try immediate check first
-      if (checkContent()) return;
+      const checkContent = () => {
+        // Determine page type and use appropriate content checker
+        const currentPath = window.location.pathname;
+        if (currentPath.includes('/shopping-list')) {
+          return checkShoppingListContent();
+        } else if (currentPath.includes('/recipes')) {
+          return checkRecipeContent();
+        }
+        
+        // Fallback for other pages
+        return document.readyState === 'complete';
+      };
 
-      // Set up intersection observer for recipe cards
+      // Try immediate check first
+      if (checkContent()) {
+        resolve(true);
+        return;
+      }
+
+      // Set up intersection observer
       observerRef.current = new IntersectionObserver((entries) => {
-        const visibleCards = entries.filter(entry => entry.isIntersecting);
-        if (visibleCards.length > 0 && checkContent()) {
+        const visibleItems = entries.filter(entry => entry.isIntersecting);
+        if (visibleItems.length > 0 && checkContent()) {
           resolve(true);
         }
       });
@@ -73,23 +98,23 @@ export const useScrollPosition = () => {
         subtree: true,
       });
 
-      // Observe recipe cards when they appear
-      const checkForCards = () => {
-        const cards = document.querySelectorAll('[data-recipe-card]');
-        cards.forEach(card => {
+      // Observe items when they appear
+      const checkForItems = () => {
+        const items = document.querySelectorAll('[data-shopping-list-item], [data-recipe-card]');
+        items.forEach(item => {
           if (observerRef.current) {
-            observerRef.current.observe(card);
+            observerRef.current.observe(item);
           }
         });
       };
 
-      checkForCards();
+      checkForItems();
       
-      // Fallback timeout
+      // Reduced timeout for faster response
       setTimeout(() => {
         console.log('Content wait timeout, proceeding anyway');
         resolve(true);
-      }, 2000);
+      }, 1500);
     });
   };
 
@@ -119,22 +144,22 @@ export const useScrollPosition = () => {
         await waitForContent();
 
         // Additional small delay for layout stabilization
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise(resolve => setTimeout(resolve, 150));
 
-        console.log('Content ready, restoring scroll position');
+        console.log('Content ready, restoring scroll position to:', position.y);
         
-        // Restore scroll position with smooth behavior
+        // Restore scroll position immediately
         window.scrollTo({
           left: position.x,
           top: position.y,
           behavior: 'auto'
         });
 
-        // Verify scroll was successful after a brief delay
+        // Verify and retry if needed
         setTimeout(() => {
           const currentScroll = window.scrollY;
           const targetScroll = position.y;
-          const threshold = 50; // Allow for some variation
+          const threshold = 30;
 
           if (Math.abs(currentScroll - targetScroll) > threshold) {
             console.log('Scroll verification failed, retrying...', { current: currentScroll, target: targetScroll });
@@ -143,10 +168,21 @@ export const useScrollPosition = () => {
               top: position.y,
               behavior: 'auto'
             });
+            
+            // Final verification
+            setTimeout(() => {
+              const finalScroll = window.scrollY;
+              if (Math.abs(finalScroll - targetScroll) > threshold) {
+                console.log('Final scroll attempt...', { final: finalScroll, target: targetScroll });
+                window.scrollTo(position.x, position.y);
+              } else {
+                console.log('Scroll position restored successfully');
+              }
+            }, 100);
           } else {
             console.log('Scroll position restored successfully');
           }
-        }, 200);
+        }, 100);
 
       } catch (error) {
         console.error('Error restoring scroll position:', error);

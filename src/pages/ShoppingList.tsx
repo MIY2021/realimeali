@@ -54,13 +54,25 @@ export default function ShoppingList() {
     if (shouldRestore) {
       console.log('Restoring shopping list scroll position');
       sessionStorage.removeItem('restoreShoppingListScroll');
-      restoreScrollPosition(scrollKey);
+      
+      // Delay restoration to ensure content is rendered
+      setTimeout(() => {
+        restoreScrollPosition(scrollKey);
+      }, 100);
     }
   }, [weekNumber, setScrollKey, restoreScrollPosition]);
 
-  // Save scroll position before unmounting
+  // Save scroll position before unmounting and when navigating
   useEffect(() => {
+    const handleBeforeUnload = () => {
+      const scrollKey = `shopping-list-week-${weekNumber}`;
+      saveScrollPosition(scrollKey);
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    
     return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
       const scrollKey = `shopping-list-week-${weekNumber}`;
       saveScrollPosition(scrollKey);
     };
@@ -251,7 +263,10 @@ export default function ShoppingList() {
           {isLoading ? (
             <ShoppingListSkeleton />
           ) : (
-            <div className={`space-y-${isMobile ? '2' : '3'}`}>
+            <div 
+              className={`space-y-${isMobile ? '2' : '3'}`}
+              data-shopping-list-container
+            >
               {shoppingList.length === 0 ? (
                 <Card>
                   <CardContent className="p-6 text-center">
@@ -270,7 +285,7 @@ export default function ShoppingList() {
                 </Card>
               ) : (
                 shoppingList.map((item) => (
-                  <Card key={item.id} className="w-full">
+                  <Card key={item.id} className="w-full" data-shopping-list-item>
                     <CardContent className={`${isMobile ? 'p-2' : 'p-3'}`}>
                       <ShoppingListItem
                         id={item.id}
