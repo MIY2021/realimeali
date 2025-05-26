@@ -15,7 +15,7 @@ export function generateSlug(title: string): string {
 }
 
 /**
- * Ensures slug uniqueness by appending descriptive words instead of numbers
+ * Ensures slug uniqueness by trying descriptive variations before numbers
  */
 export function ensureUniqueSlug(baseSlug: string, existingSlugs: string[]): string {
   if (!existingSlugs.includes(baseSlug)) {
@@ -30,7 +30,10 @@ export function ensureUniqueSlug(baseSlug: string, existingSlugs: string[]): str
     `${baseSlug}-special`,
     `${baseSlug}-homemade`,
     `${baseSlug}-classic`,
-    `${baseSlug}-delicious`
+    `${baseSlug}-delicious`,
+    `${baseSlug}-easy`,
+    `${baseSlug}-quick`,
+    `${baseSlug}-favorite`
   ];
   
   for (const variation of variations) {
@@ -39,7 +42,7 @@ export function ensureUniqueSlug(baseSlug: string, existingSlugs: string[]): str
     }
   }
   
-  // Only as last resort, use numbers but start with 2
+  // Only as last resort, use numbers starting with 2
   let counter = 2;
   let slug = `${baseSlug}-${counter}`;
   
@@ -52,7 +55,7 @@ export function ensureUniqueSlug(baseSlug: string, existingSlugs: string[]): str
 }
 
 /**
- * Improved approach: try multiple variations before adding numbers
+ * Generates a unique slug from a title, trying variations before numbers
  */
 export function generateUniqueSlug(title: string, existingSlugs: string[]): string {
   const baseSlug = generateSlug(title);
