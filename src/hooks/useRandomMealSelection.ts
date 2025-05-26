@@ -7,6 +7,14 @@ import { useMealPlan } from "@/contexts/MealPlanContext";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { createMealTypeToCategories } from "@/utils/mealCategoryUtils";
 
+// Define desired quantities for each meal type
+const MEAL_TYPE_QUANTITIES: Record<MealType, number> = {
+  dinner: 5,
+  lunch: 3,
+  breakfast: 2,
+  snacks: 2,
+};
+
 export const useRandomMealSelection = (
   week: 1 | 2,
   mealTypes: MealType[]
@@ -91,15 +99,17 @@ export const useRandomMealSelection = (
       
       let allSelectedIds = new Set<string>();
       let hasNoRecipesWarning = false;
+      let partialResults: string[] = [];
       
       for (const mealType of mealTypes) {
         console.log(`Selecting recipes for ${mealType}...`);
         
         const allowedCategories = mealTypeToCategories[mealType];
+        const desiredCount = MEAL_TYPE_QUANTITIES[mealType];
         const unique = getUniqueRandomRecipes(
           recipes,
           allowedCategories,
-          Math.min(3, recipes.length),
+          desiredCount,
           allSelectedIds
         );
         
@@ -107,6 +117,10 @@ export const useRandomMealSelection = (
           console.warn(`No recipes available for ${mealType} with categories: ${allowedCategories.join(', ')}`);
           hasNoRecipesWarning = true;
           continue;
+        }
+        
+        if (unique.length < desiredCount) {
+          partialResults.push(`${mealType}: ${unique.length}/${desiredCount} recipes`);
         }
         
         console.log(`Found ${unique.length} recipes for ${mealType}:`, unique.map(r => r.title));
@@ -135,6 +149,11 @@ export const useRandomMealSelection = (
           title: "Meal Plan Partially Randomised",
           description: "Some meal types were skipped due to lack of recipes with appropriate categories. Consider adding more recipes with Breakfast, Lunch, or Snacks categories.",
           variant: "destructive",
+        });
+      } else if (partialResults.length > 0) {
+        toast({
+          title: "Meal Plan Randomised",
+          description: `Your meals have been chosen! Note: ${partialResults.join(', ')} - not enough recipes available for full quantities.`,
         });
       } else {
         toast({

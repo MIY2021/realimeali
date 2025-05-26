@@ -6,7 +6,7 @@ import { Plus, Trash2, X, Camera } from "lucide-react";
 const AVAILABLE_CATEGORIES: RecipeCategory[] = [
   "Bulk", "Easy", "Cheap", "Healthy", "Vegetarian", "Fish",
   "Super Tasty", "Pasta", "Tapas", "Winter", "BBQ",
-  "Faffy", "Pricey!", "Not Yet Made", "Snacks", "Breakfast"
+  "Faffy", "Pricey!", "Not Yet Made", "Snacks", "Breakfast", "Lunch"
 ];
 
 interface RecipeManualTabProps {
