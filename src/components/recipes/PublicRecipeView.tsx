@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, Navigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Clock, Users, CalendarDays, cloud } from "lucide-react";
+import { Clock, Users, CalendarDays, Cloud } from "lucide-react";
 import { RecipeImage } from "@/components/ui/recipe-image";
 import { usePublicRecipeSharing, PublicRecipeShare } from "@/hooks/usePublicRecipeSharing";
 import { useAuth } from "@/contexts/AuthContext";
@@ -198,7 +198,7 @@ export function PublicRecipeView() {
                   className="w-full sm:w-auto"
                   style={{ backgroundColor: '#e38165' }}
                 >
-                  <cloud className="h-4 w-4 mr-2" />
+                  <Cloud className="h-4 w-4 mr-2" />
                   {isSavingRecipe ? 'Saving...' : '📖 Add To My Recipes'}
                 </Button>
               </div>
