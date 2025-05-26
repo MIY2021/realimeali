@@ -2,7 +2,7 @@ import { Recipe, RecipeCategory } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, Trash2, X, Camera, Loader2 } from "lucide-react";
+import { Plus, Trash2, X, Camera, Loader } from "lucide-react";
 
 const AVAILABLE_CATEGORIES: RecipeCategory[] = [
   "Bulk", "Easy", "Cheap", "Healthy", "Vegetarian", "Fish",
@@ -134,7 +134,7 @@ export function RecipeManualTab({
               >
                 {isGeneratingImage ? (
                   <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    <Loader className="h-4 w-4 mr-2 animate-spin" />
                     Generating...
                   </>
                 ) : (
