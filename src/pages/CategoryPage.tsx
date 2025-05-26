@@ -97,28 +97,6 @@ export default function CategoryPage() {
     }
   };
 
-  const handleShareRecipe = (recipe: Recipe) => {
-    const recipeSlug = recipe.title
-      .toLowerCase()
-      .replace(/[^a-z0-9 -]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-')
-      .trim();
-    const recipeUrl = `${window.location.origin}/recipes/${recipeSlug}`;
-    navigator.clipboard.writeText(recipeUrl).then(() => {
-      toast({
-        title: "Recipe Link Copied",
-        description: "The recipe link has been copied to your clipboard.",
-      });
-    }).catch(() => {
-      toast({
-        title: "Share Failed",
-        description: "Could not copy the recipe link.",
-        variant: "destructive",
-      });
-    });
-  };
-
   const handleSaveEdit = async (updatedRecipe: Recipe) => {
     if (!editRecipe) return;
     
@@ -174,7 +152,6 @@ export default function CategoryPage() {
               onAddToMealPlan={() => handleAddToMealPlan(recipe)}
               onEdit={() => handleEditRecipe(recipe)}
               onDelete={() => handleDeleteRecipe(recipe)}
-              onShare={() => handleShareRecipe(recipe)}
               showActions={true}
             />
           ))}

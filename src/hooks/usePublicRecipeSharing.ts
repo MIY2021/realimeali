@@ -5,7 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { useUserProfile } from "@/hooks/useUserProfile";
-import { Recipe } from "@/types";
+import { Recipe, RecipeCategory } from "@/types";
 
 export interface PublicRecipeShare {
   id: string;
@@ -143,6 +143,9 @@ export const usePublicRecipeSharing = () => {
 
     setIsSavingRecipe(true);
     try {
+      // Type assertion to ensure categories are properly typed
+      const typedCategories = publicShare.categories as RecipeCategory[];
+      
       const { error } = await supabase
         .from('recipes')
         .insert({
@@ -150,7 +153,7 @@ export const usePublicRecipeSharing = () => {
           description: publicShare.description,
           ingredients: publicShare.ingredients,
           instructions: publicShare.instructions,
-          categories: publicShare.categories,
+          categories: typedCategories,
           prep_time: publicShare.prep_time,
           cook_time: publicShare.cook_time,
           servings: publicShare.servings,

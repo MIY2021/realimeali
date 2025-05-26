@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useParams, Navigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Clock, Users, Download, Eye, Calendar } from "lucide-react";
+import { Clock, Users, ArrowLeft, CalendarDays } from "lucide-react";
 import { RecipeImage } from "@/components/ui/recipe-image";
 import { usePublicRecipeSharing, PublicRecipeShare } from "@/hooks/usePublicRecipeSharing";
 import { useAuth } from "@/contexts/AuthContext";
@@ -113,11 +113,11 @@ export function PublicRecipeView() {
             </div>
             <div className="flex items-center gap-4 text-sm text-muted-foreground">
               <div className="flex items-center gap-1">
-                <Eye className="h-4 w-4" />
+                <span className="inline-block w-2 h-2 bg-sage rounded-full"></span>
                 <span>{publicShare.view_count} views</span>
               </div>
               <div className="flex items-center gap-1">
-                <Calendar className="h-4 w-4" />
+                <CalendarDays className="h-4 w-4" />
                 <span>Shared {format(new Date(publicShare.created_at), 'MMM d, yyyy')}</span>
               </div>
             </div>
@@ -197,7 +197,7 @@ export function PublicRecipeView() {
                   className="w-full sm:w-auto"
                   style={{ backgroundColor: '#e38165' }}
                 >
-                  <Download className="h-4 w-4 mr-2" />
+                  <ArrowLeft className="h-4 w-4 mr-2" />
                   {isSavingRecipe ? 'Saving...' : 'Save to My Recipes'}
                 </Button>
               </div>
