@@ -1,6 +1,6 @@
 
 import { useCallback } from "react";
-import { ShoppingListCategory, SHOPPING_CATEGORIES } from "@/types/shoppingList";
+import { ShoppingListItem } from "@/types/shoppingList";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { useMealPlan } from "@/contexts/MealPlanContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -14,42 +14,27 @@ export const useShoppingListGenerator = () => {
   const { user } = useAuth();
   const { currentHousehold } = useHousehold();
 
-  const categorizeWithAI = async (ingredient: string): Promise<string> => {
-    try {
-      const { data, error } = await supabase.functions.invoke('categorize-ingredient', {
-        body: { ingredient }
-      });
-
-      if (error) throw error;
-      
-      return data.category || 'Food Cupboard';
-    } catch (error) {
-      console.error('Error categorizing ingredient:', error);
-      return 'Food Cupboard';
-    }
-  };
-
-  const generateAndSaveFromMealPlans = useCallback(async (weekNumber: 1 | 2): Promise<ShoppingListCategory> => {
+  const generateAndSaveFromMealPlans = useCallback(async (weekNumber: 1 | 2): Promise<ShoppingListItem[]> => {
     if (!recipes.length || !user || !currentHousehold) {
       console.log('Missing requirements for generation');
-      return {};
+      return [];
     }
 
     const mealPlans = getMealPlansForWeek(weekNumber);
     if (!mealPlans.length) {
       console.log('No meal plans for week', weekNumber);
-      return {};
+      return [];
     }
 
-    console.log('Generating shopping list from meal plans for week', weekNumber, ':', mealPlans.length);
+    console.log('Generating consolidated shopping list from meal plans for week', weekNumber, ':', mealPlans.length);
 
-    const ingredientMap = new Map<string, {
-      quantity: number;
-      unit: string;
-      recipeIds: string[];
-    }>();
+    // Collect ingredients from meal plans
+    const ingredientInputs: Array<{
+      name: string;
+      recipeId: string;
+      recipeTitle: string;
+    }> = [];
 
-    // Collect ingredients from meal plans for the specific week
     mealPlans.forEach(mealPlan => {
       if (mealPlan.isLeftover) return;
       
@@ -57,63 +42,53 @@ export const useShoppingListGenerator = () => {
       if (!recipe) return;
 
       recipe.ingredients.forEach(ingredient => {
-        const normalizedName = ingredient.toLowerCase().trim();
-        
-        if (ingredientMap.has(normalizedName)) {
-          const existing = ingredientMap.get(normalizedName)!;
-          if (!existing.recipeIds.includes(recipe.id)) {
-            existing.recipeIds.push(recipe.id);
-          }
-        } else {
-          ingredientMap.set(normalizedName, {
-            quantity: 1,
-            unit: '',
-            recipeIds: [recipe.id]
-          });
-        }
+        ingredientInputs.push({
+          name: ingredient,
+          recipeId: recipe.id,
+          recipeTitle: recipe.title
+        });
       });
     });
 
-    console.log('Found ingredients for week', weekNumber, ':', ingredientMap.size);
+    console.log('Found ingredients for consolidation:', ingredientInputs.length);
 
-    // Save ingredients to database with AI categorization and week association
-    const categorizedItems: ShoppingListCategory = {};
-    SHOPPING_CATEGORIES.forEach(cat => {
-      categorizedItems[cat] = [];
-    });
+    try {
+      // Call OpenAI consolidation function
+      const { data, error } = await supabase.functions.invoke('consolidate-ingredients', {
+        body: { ingredients: ingredientInputs }
+      });
 
-    // Process ingredients in batches to avoid overwhelming the API
-    const ingredients = Array.from(ingredientMap.entries());
-    const batchSize = 5;
-    
-    for (let i = 0; i < ingredients.length; i += batchSize) {
-      const batch = ingredients.slice(i, i + batchSize);
+      if (error) throw error;
+
+      const consolidatedIngredients = data.consolidatedIngredients;
+      console.log('Received consolidated ingredients:', consolidatedIngredients.length);
+
+      // Save consolidated ingredients to database
+      const savedItems: ShoppingListItem[] = [];
       
-      await Promise.all(batch.map(async ([name, details]) => {
-        try {
-          const category = await categorizeWithAI(name);
-          
-          // Save to database with week association
-          const newItem = await ShoppingListService.addCustomItem(
-            name, 
-            category, 
-            currentHousehold.id, 
-            user.id,
-            weekNumber,
-            details.recipeIds
-          );
-          
-          if (newItem && categorizedItems[category]) {
-            categorizedItems[category].push(newItem);
-          }
-        } catch (error) {
-          console.error('Error processing ingredient:', name, error);
+      for (const item of consolidatedIngredients) {
+        const savedItem = await ShoppingListService.addConsolidatedItem(
+          item.name,
+          item.consolidatedQuantity,
+          item.consolidatedUnit,
+          item.sourceIngredients,
+          item.recipeIds,
+          currentHousehold.id,
+          user.id,
+          weekNumber
+        );
+        
+        if (savedItem) {
+          savedItems.push(savedItem);
         }
-      }));
-    }
+      }
 
-    console.log('Generated shopping list for week', weekNumber, 'with categories:', Object.keys(categorizedItems).map(cat => `${cat}: ${categorizedItems[cat].length}`));
-    return categorizedItems;
+      console.log('Generated consolidated shopping list for week', weekNumber, 'with', savedItems.length, 'items');
+      return savedItems;
+    } catch (error) {
+      console.error('Error consolidating ingredients:', error);
+      return [];
+    }
   }, [recipes, getMealPlansForWeek, user, currentHousehold]);
 
   return { generateAndSaveFromMealPlans };

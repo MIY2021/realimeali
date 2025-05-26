@@ -1,9 +1,9 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { ShoppingListItem, ShoppingListCategory, SHOPPING_CATEGORIES } from "@/types/shoppingList";
+import { ShoppingListItem } from "@/types/shoppingList";
 
 export class ShoppingListService {
-  static async loadExistingShoppingList(householdId: string, weekNumber: number): Promise<ShoppingListCategory> {
+  static async loadExistingShoppingList(householdId: string, weekNumber: number): Promise<ShoppingListItem[]> {
     try {
       const { data, error } = await supabase
         .from('household_shopping_lists')
@@ -13,33 +13,21 @@ export class ShoppingListService {
 
       if (error) throw error;
 
-      const categorizedItems: ShoppingListCategory = {};
-      SHOPPING_CATEGORIES.forEach(cat => {
-        categorizedItems[cat] = [];
-      });
-
-      (data || []).forEach((item: any) => {
-        const category = item.category || "Food Cupboard";
-        if (!categorizedItems[category]) {
-          categorizedItems[category] = [];
-        }
-        
-        categorizedItems[category].push({
-          id: item.id,
-          name: item.name,
-          quantity: item.quantity,
-          unit: item.unit,
-          category: category,
-          isChecked: item.is_checked,
-          isCustom: item.is_custom,
-          recipeIds: item.recipe_ids || []
-        });
-      });
-
-      return categorizedItems;
+      return (data || []).map((item: any) => ({
+        id: item.id,
+        name: item.name,
+        quantity: item.quantity,
+        unit: item.unit,
+        consolidatedQuantity: item.consolidated_quantity,
+        consolidatedUnit: item.consolidated_unit,
+        sourceIngredients: item.source_ingredients || [],
+        isChecked: item.is_checked,
+        isCustom: item.is_custom,
+        recipeIds: item.recipe_ids || []
+      }));
     } catch (error) {
       console.error("Error loading shopping list:", error);
-      return {};
+      return [];
     }
   }
 
@@ -78,7 +66,6 @@ export class ShoppingListService {
 
   static async addCustomItem(
     name: string, 
-    category: string, 
     householdId: string, 
     userId: string, 
     weekNumber: number,
@@ -91,11 +78,13 @@ export class ShoppingListService {
           household_id: householdId,
           created_by: userId,
           name: name.trim(),
-          category,
           week_number: weekNumber,
           is_custom: recipeIds.length === 0,
           is_checked: false,
-          recipe_ids: recipeIds
+          recipe_ids: recipeIds,
+          consolidated_quantity: 1,
+          consolidated_unit: '',
+          source_ingredients: [name.trim()]
         })
         .select()
         .single();
@@ -107,13 +96,63 @@ export class ShoppingListService {
         name: data.name,
         quantity: data.quantity,
         unit: data.unit,
-        category: data.category,
+        consolidatedQuantity: data.consolidated_quantity,
+        consolidatedUnit: data.consolidated_unit,
+        sourceIngredients: data.source_ingredients || [],
         isChecked: data.is_checked,
         isCustom: data.is_custom,
         recipeIds: data.recipe_ids || []
       };
     } catch (error) {
       console.error("Error adding item:", error);
+      return null;
+    }
+  }
+
+  static async addConsolidatedItem(
+    name: string,
+    consolidatedQuantity: number,
+    consolidatedUnit: string,
+    sourceIngredients: string[],
+    recipeIds: string[],
+    householdId: string,
+    userId: string,
+    weekNumber: number
+  ): Promise<ShoppingListItem | null> {
+    try {
+      const { data, error } = await supabase
+        .from('household_shopping_lists')
+        .insert({
+          household_id: householdId,
+          created_by: userId,
+          name: name.trim(),
+          week_number: weekNumber,
+          is_custom: false,
+          is_checked: false,
+          recipe_ids: recipeIds,
+          consolidated_quantity: consolidatedQuantity,
+          consolidated_unit: consolidatedUnit,
+          source_ingredients: sourceIngredients
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      return {
+        id: data.id,
+        name: data.name,
+        quantity: data.quantity,
+        unit: data.unit,
+        consolidatedQuantity: data.consolidated_quantity,
+        consolidatedUnit: data.consolidated_unit,
+        sourceIngredients: data.source_ingredients || [],
+        isChecked: data.is_checked,
+        isCustom: data.is_custom,
+        recipeIds: data.recipe_ids || []
+      };
+    } catch (error) {
+      console.error("Error adding consolidated item:", error);
       return null;
     }
   }

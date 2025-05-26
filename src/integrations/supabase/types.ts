@@ -258,7 +258,8 @@ export type Database = {
       }
       household_shopping_lists: {
         Row: {
-          category: string | null
+          consolidated_quantity: number | null
+          consolidated_unit: string | null
           created_at: string
           created_by: string
           household_id: string
@@ -268,12 +269,14 @@ export type Database = {
           name: string
           quantity: number | null
           recipe_ids: string[] | null
+          source_ingredients: string[] | null
           unit: string | null
           updated_at: string
           week_number: number
         }
         Insert: {
-          category?: string | null
+          consolidated_quantity?: number | null
+          consolidated_unit?: string | null
           created_at?: string
           created_by: string
           household_id: string
@@ -283,12 +286,14 @@ export type Database = {
           name: string
           quantity?: number | null
           recipe_ids?: string[] | null
+          source_ingredients?: string[] | null
           unit?: string | null
           updated_at?: string
           week_number?: number
         }
         Update: {
-          category?: string | null
+          consolidated_quantity?: number | null
+          consolidated_unit?: string | null
           created_at?: string
           created_by?: string
           household_id?: string
@@ -298,6 +303,7 @@ export type Database = {
           name?: string
           quantity?: number | null
           recipe_ids?: string[] | null
+          source_ingredients?: string[] | null
           unit?: string | null
           updated_at?: string
           week_number?: number

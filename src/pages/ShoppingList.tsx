@@ -2,16 +2,18 @@
 import { useState } from "react";
 import ShoppingListHeader from "@/components/shopping-list/ShoppingListHeader";
 import ShoppingListWeekSelector from "@/components/shopping-list/ShoppingListWeekSelector";
-import ShoppingListCategory from "@/components/shopping-list/ShoppingListCategory";
 import ShoppingListSkeleton from "@/components/shopping-list/ShoppingListSkeleton";
 import { useShoppingList } from "@/hooks/useShoppingList";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
-import { SHOPPING_CATEGORIES } from "@/types/shoppingList";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { extractIngredientName } from "@/utils/shoppingListUtils";
+import { Card, CardContent } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
+import { Copy, Check } from "lucide-react";
 
 export default function ShoppingList() {
   useDocumentTitle("Shopping List | RealiMeali");
@@ -43,7 +45,6 @@ export default function ShoppingList() {
   };
 
   const handleCopyItem = (itemName: string, itemId: string) => {
-    // Use the utility function to extract clean ingredient name
     const ingredientName = extractIngredientName(itemName);
     navigator.clipboard.writeText(ingredientName);
     setCopiedItemId(itemId);
@@ -54,13 +55,14 @@ export default function ShoppingList() {
   };
 
   const handleShare = () => {
-    const listText = Object.entries(shoppingList)
-      .filter(([, items]) => items.length > 0)
-      .map(([category, items]) => {
-        const itemsList = items.map(item => `• ${item.name}${item.quantity && item.quantity > 1 ? ` (${item.quantity}${item.unit ? ` ${item.unit}` : ''})` : ''}`).join('\n');
-        return `${category}:\n${itemsList}`;
+    const listText = shoppingList
+      .map(item => {
+        const qty = item.consolidatedQuantity && item.consolidatedQuantity > 1 
+          ? ` (${item.consolidatedQuantity}${item.consolidatedUnit ? ` ${item.consolidatedUnit}` : ''})`
+          : '';
+        return `• ${item.name}${qty}`;
       })
-      .join('\n\n');
+      .join('\n');
 
     if (navigator.share) {
       navigator.share({
@@ -74,9 +76,7 @@ export default function ShoppingList() {
 
   return (
     <div className={`w-full mx-auto px-4 sm:px-6 lg:px-8 ${isMobile ? 'py-4' : 'py-8'} ${!isMobile ? 'max-w-4xl' : ''}`}>
-      <ShoppingListHeader
-        onShare={handleShare}
-      />
+      <ShoppingListHeader onShare={handleShare} />
 
       {!user ? (
         <div className="py-10 text-center">
@@ -96,18 +96,55 @@ export default function ShoppingList() {
           {isLoading ? (
             <ShoppingListSkeleton />
           ) : (
-            <div className={`space-y-${isMobile ? '4' : '6'}`}>
-              {SHOPPING_CATEGORIES.map((category) => (
-                <ShoppingListCategory
-                  key={category}
-                  category={category}
-                  items={shoppingList[category] || []}
-                  copiedItemId={copiedItemId}
-                  onCheckItem={(itemId, checked) => toggleItemChecked(itemId, category)}
-                  onCopyItem={handleCopyItem}
-                  getRecipeNames={getRecipeNames}
-                />
-              ))}
+            <div className={`space-y-${isMobile ? '2' : '3'}`}>
+              {shoppingList.length === 0 ? (
+                <Card>
+                  <CardContent className="p-6 text-center">
+                    <p className="text-muted-foreground">No items in your shopping list for this week.</p>
+                  </CardContent>
+                </Card>
+              ) : (
+                shoppingList.map((item) => (
+                  <Card key={item.id} className="w-full">
+                    <CardContent className={`flex items-center justify-between ${isMobile ? 'p-3' : 'p-4'}`}>
+                      <div className="flex items-center space-x-3 flex-1">
+                        <Checkbox
+                          checked={item.isChecked}
+                          onCheckedChange={() => toggleItemChecked(item.id)}
+                          className="flex-shrink-0"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className={`font-medium ${item.isChecked ? 'line-through text-muted-foreground' : ''}`}>
+                            {item.name}
+                            {item.consolidatedQuantity && item.consolidatedQuantity > 1 && (
+                              <span className="ml-2 text-sm text-muted-foreground">
+                                ({item.consolidatedQuantity}{item.consolidatedUnit ? ` ${item.consolidatedUnit}` : ''})
+                              </span>
+                            )}
+                          </div>
+                          {item.recipeIds.length > 0 && (
+                            <div className="text-sm text-green-600 mt-1">
+                              From: {getRecipeNames(item.recipeIds)}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleCopyItem(item.name, item.id)}
+                        className="flex-shrink-0 ml-2"
+                      >
+                        {copiedItemId === item.id ? (
+                          <Check className="h-4 w-4 text-green-600" />
+                        ) : (
+                          <Copy className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
             </div>
           )}
         </>

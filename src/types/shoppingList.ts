@@ -4,22 +4,17 @@ export interface ShoppingListItem {
   name: string;
   quantity?: number;
   unit?: string;
-  category: string;
+  consolidatedQuantity?: number;
+  consolidatedUnit?: string;
+  sourceIngredients?: string[];
   isChecked: boolean;
   isCustom: boolean;
   recipeIds: string[];
 }
 
-export interface ShoppingListCategory {
+export interface ConsolidatedShoppingList {
   [key: string]: ShoppingListItem[];
 }
 
-export const SHOPPING_CATEGORIES = [
-  "Fresh & Chilled Food",
-  "Food Cupboard", 
-  "Bakery",
-  "Frozen Food",
-  "Dietary, Lifestyle & World Foods",
-  "Soft Drinks, Tea & Coffee",
-  "Beer, Wine & Spirits"
-];
+// Remove categories since we're going category-free
+export const SHOPPING_CATEGORIES: string[] = [];
