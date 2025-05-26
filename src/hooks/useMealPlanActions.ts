@@ -16,7 +16,8 @@ export const useMealPlanActions = (week: 1 | 2) => {
     addMealPlan, 
     addMealPlanWithLeftovers,
     removeMealPlan, 
-    clearWeek 
+    clearWeek,
+    reorderMealPlans
   } = useMealPlan();
   const { toast } = useToast();
 
@@ -188,6 +189,34 @@ export const useMealPlanActions = (week: 1 | 2) => {
     });
   };
 
+  const handleReorderMeals = async (mealType: MealType, sourceIndex: number, destinationIndex: number) => {
+    if (!user || !currentHousehold) return;
+
+    const mealPlansForType = getMealPlansForType(mealType);
+    
+    if (sourceIndex < 0 || destinationIndex < 0 || 
+        sourceIndex >= mealPlansForType.length || 
+        destinationIndex >= mealPlansForType.length) {
+      return;
+    }
+
+    try {
+      await reorderMealPlans(mealType, week, sourceIndex, destinationIndex);
+      
+      toast({
+        title: "Meals Reordered",
+        description: `${mealType} meals have been reordered.`,
+      });
+    } catch (error) {
+      console.error("Error reordering meals:", error);
+      toast({
+        title: "Error",
+        description: "Failed to reorder meals. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return {
     mealTypes,
     mealTypeToCategories,
@@ -199,6 +228,7 @@ export const useMealPlanActions = (week: 1 | 2) => {
     handleRemoveMeal,
     handleAddMeal,
     handleCreateLeftover,
+    handleReorderMeals,
     onLeftoverConfirm,
     onAddMealFinish,
     handleClearAll,

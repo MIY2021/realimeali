@@ -43,6 +43,7 @@ export default function MealPlanner() {
     handleRemoveMeal,
     handleAddMeal,
     handleCreateLeftover,
+    handleReorderMeals,
     onLeftoverConfirm,
     onAddMealFinish,
     handleClearAll,
@@ -105,6 +106,7 @@ export default function MealPlanner() {
                       onAddMeal={handleAddMeal}
                       onRemoveMeal={handleRemoveMeal}
                       onCreateLeftover={handleCreateLeftover}
+                      onReorderMeals={handleReorderMeals}
                     />
                   ))}
                   

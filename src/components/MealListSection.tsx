@@ -1,9 +1,10 @@
 
 import { MealType, MealPlan, Recipe } from "@/types";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, GripVertical } from "lucide-react";
 import { EnhancedMealCard } from "@/components/meal-planner/EnhancedMealCard";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { DragDropContext, Droppable, Draggable, DropResult } from "react-beautiful-dnd";
 
 interface MealListSectionProps {
   mealType: MealType;
@@ -12,6 +13,7 @@ interface MealListSectionProps {
   onAddMeal: (mealType: MealType) => void;
   onRemoveMeal: (planId: string) => void;
   onCreateLeftover?: (mealPlan: MealPlan, recipe: Recipe) => void;
+  onReorderMeals?: (mealType: MealType, sourceIndex: number, destinationIndex: number) => void;
 }
 
 export default function MealListSection({
@@ -21,8 +23,22 @@ export default function MealListSection({
   onAddMeal,
   onRemoveMeal,
   onCreateLeftover,
+  onReorderMeals,
 }: MealListSectionProps) {
   const isMobile = useIsMobile();
+
+  const handleDragEnd = (result: DropResult) => {
+    if (!result.destination || !onReorderMeals) {
+      return;
+    }
+
+    const sourceIndex = result.source.index;
+    const destinationIndex = result.destination.index;
+
+    if (sourceIndex !== destinationIndex) {
+      onReorderMeals(mealType, sourceIndex, destinationIndex);
+    }
+  };
 
   return (
     <div className={`mb-${isMobile ? '4' : '6'}`}>
@@ -46,27 +62,61 @@ export default function MealListSection({
           <span className={`${isMobile ? 'text-sm' : ''}`}>No {mealType} planned yet</span>
         </div>
       ) : (
-        <div className={`space-y-${isMobile ? '1.5' : '2'}`}>
-          {mealPlans.map((plan) => {
-            const recipe = getRecipeById(plan.recipeId);
-            
-            // For leftover meals, get the parent recipe if the current recipe is not found
-            const parentRecipe = plan.isLeftover && plan.parentMealPlanId 
-              ? getRecipeById(plan.recipeId) 
-              : undefined;
+        <DragDropContext onDragEnd={handleDragEnd}>
+          <Droppable droppableId={`${mealType}-meals`}>
+            {(provided, snapshot) => (
+              <div
+                {...provided.droppableProps}
+                ref={provided.innerRef}
+                className={`space-y-${isMobile ? '1.5' : '2'} ${
+                  snapshot.isDraggingOver ? 'bg-gray-50 rounded-lg p-2' : ''
+                }`}
+              >
+                {mealPlans.map((plan, index) => {
+                  const recipe = getRecipeById(plan.recipeId);
+                  
+                  // For leftover meals, get the parent recipe if the current recipe is not found
+                  const parentRecipe = plan.isLeftover && plan.parentMealPlanId 
+                    ? getRecipeById(plan.recipeId) 
+                    : undefined;
 
-            return (
-              <EnhancedMealCard
-                key={plan.id}
-                mealPlan={plan}
-                recipe={recipe}
-                onRemove={onRemoveMeal}
-                onCreateLeftover={onCreateLeftover}
-                parentRecipe={parentRecipe}
-              />
-            );
-          })}
-        </div>
+                  return (
+                    <Draggable key={plan.id} draggableId={plan.id} index={index}>
+                      {(provided, snapshot) => (
+                        <div
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          className={`flex items-center gap-2 ${
+                            snapshot.isDragging ? 'z-50' : ''
+                          }`}
+                        >
+                          <div
+                            {...provided.dragHandleProps}
+                            className={`flex-shrink-0 text-gray-400 hover:text-gray-600 cursor-grab active:cursor-grabbing ${
+                              isMobile ? 'p-1' : 'p-1.5'
+                            }`}
+                          >
+                            <GripVertical className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
+                          </div>
+                          <div className="flex-1">
+                            <EnhancedMealCard
+                              mealPlan={plan}
+                              recipe={recipe}
+                              onRemove={onRemoveMeal}
+                              onCreateLeftover={onCreateLeftover}
+                              parentRecipe={parentRecipe}
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </Draggable>
+                  );
+                })}
+                {provided.placeholder}
+              </div>
+            )}
+          </Droppable>
+        </DragDropContext>
       )}
     </div>
   );

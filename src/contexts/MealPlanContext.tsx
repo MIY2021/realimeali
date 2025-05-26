@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
-import { MealPlan, Recipe } from "@/types";
+import { MealPlan, Recipe, MealType } from "@/types";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
@@ -32,6 +32,7 @@ interface MealPlanContextType {
   addMealPlanWithLeftovers: (mealPlan: Omit<MealPlan, 'id' | 'createdAt' | 'updatedAt'>, weekNumber: 1 | 2, leftoverServings?: number) => Promise<void>;
   removeMealPlan: (id: string) => Promise<void>;
   clearWeek: (weekNumber: 1 | 2) => Promise<void>;
+  reorderMealPlans: (mealType: MealType, weekNumber: 1 | 2, sourceIndex: number, destinationIndex: number) => Promise<void>;
   isLoading: boolean;
 }
 
@@ -345,6 +346,71 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [user?.id, currentHousehold?.id]);
 
+  const reorderMealPlans = useCallback(async (
+    mealType: MealType, 
+    weekNumber: 1 | 2, 
+    sourceIndex: number, 
+    destinationIndex: number
+  ) => {
+    if (!user || !currentHousehold) return;
+
+    const mealPlansForType = mealPlans.filter(
+      plan => plan.mealType === mealType && (plan as any).weekNumber === weekNumber
+    );
+
+    if (sourceIndex < 0 || destinationIndex < 0 || 
+        sourceIndex >= mealPlansForType.length || 
+        destinationIndex >= mealPlansForType.length) {
+      return;
+    }
+
+    // Create reordered array
+    const reorderedPlans = [...mealPlansForType];
+    const [movedPlan] = reorderedPlans.splice(sourceIndex, 1);
+    reorderedPlans.splice(destinationIndex, 0, movedPlan);
+
+    try {
+      // Update slot indices in database
+      const updatePromises = reorderedPlans.map((plan, index) => 
+        supabase
+          .from('household_meal_plans')
+          .update({ slot_index: index })
+          .eq('id', plan.id)
+          .eq('household_id', currentHousehold.id)
+      );
+
+      const results = await Promise.all(updatePromises);
+      
+      // Check for errors
+      const hasError = results.some(result => result.error);
+      if (hasError) {
+        throw new Error("Failed to update meal plan order");
+      }
+
+      // Update local state
+      setMealPlans(prev => {
+        const updated = [...prev];
+        
+        // Remove old plans
+        const filteredPlans = updated.filter(
+          plan => !(plan.mealType === mealType && (plan as any).weekNumber === weekNumber)
+        );
+        
+        // Add reordered plans with updated slot indices
+        const updatedReorderedPlans = reorderedPlans.map((plan, index) => ({
+          ...plan,
+          slotIndex: index
+        }));
+        
+        return [...filteredPlans, ...updatedReorderedPlans];
+      });
+
+    } catch (err) {
+      console.error("Error reordering meal plans:", err);
+      throw err;
+    }
+  }, [user?.id, currentHousehold?.id, mealPlans]);
+
   return (
     <MealPlanContext.Provider value={{
       mealPlans,
@@ -354,6 +420,7 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
       addMealPlanWithLeftovers,
       removeMealPlan,
       clearWeek,
+      reorderMealPlans,
       isLoading
     }}>
       {children}
