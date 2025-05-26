@@ -48,8 +48,9 @@ Rules:
 3. Use standard units: cloves, cups, tablespoons, teaspoons, pounds, ounces, pieces
 4. If units can't be combined, pick the most common unit and estimate
 5. Clean ingredient names (remove extra words, standardize)
-6. CRITICAL: Preserve the EXACT recipe IDs and names from the input - do not modify or reassign them
-7. Only group ingredients that are truly the same ingredient across different recipes
+6. CRITICAL: ONLY group ingredients that are truly the same ingredient (e.g., don't group "diced tomatoes" with "fresh tomatoes")
+7. CRITICAL: Preserve the EXACT recipe IDs and names from the input for each ingredient
+8. Each consolidated ingredient should only include recipe IDs where that specific ingredient actually appears
 
 Input ingredients with their recipe context:
 ${ingredients.map(ing => `- "${ing.name}" (Recipe: ${ing.recipeTitle}, ID: ${ing.recipeId})`).join('\n')}
@@ -70,7 +71,7 @@ Important:
 - Return only valid JSON, no other text
 - Use the EXACT recipe IDs and names from the input
 - Only consolidate ingredients that are actually the same ingredient
-- Keep recipe attribution accurate`;
+- Keep recipe attribution accurate - only include recipes that actually use each ingredient`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -106,23 +107,23 @@ Important:
       return basicConsolidation(ingredients);
     }
 
-    // Validate and clean up the consolidated ingredients
+    // Validate the consolidated ingredients to ensure recipe attribution is correct
     const result = consolidatedIngredients.map(item => {
-      // Ensure recipe IDs are unique and valid
-      const uniqueRecipeIds = [...new Set(item.recipeIds)].filter(id => 
+      // Ensure recipe IDs are unique and exist in the original input
+      const validRecipeIds = [...new Set(item.recipeIds)].filter(id => 
         ingredients.some(ing => ing.recipeId === id)
       );
       
-      // Get corresponding recipe names
-      const uniqueRecipeNames = uniqueRecipeIds.map(id => {
+      // Get corresponding recipe names for the valid IDs
+      const validRecipeNames = validRecipeIds.map(id => {
         const ing = ingredients.find(ing => ing.recipeId === id);
         return ing ? ing.recipeTitle : '';
       }).filter(Boolean);
 
       return {
         ...item,
-        recipeIds: uniqueRecipeIds,
-        recipeNames: uniqueRecipeNames
+        recipeIds: validRecipeIds,
+        recipeNames: validRecipeNames
       };
     });
 
@@ -150,19 +151,23 @@ Important:
 function basicConsolidation(ingredients: IngredientInput[]): Response {
   console.log('Using basic consolidation fallback');
   
-  const grouped = new Map<string, {
-    name: string;
-    consolidatedQuantity: number;
-    consolidatedUnit: string;
-    sourceIngredients: string[];
-    recipeIds: string[];
-    recipeNames: string[];
-  }>();
+  // Group ingredients by recipe to avoid cross-contamination
+  const byRecipe = new Map<string, IngredientInput[]>();
+  ingredients.forEach(ing => {
+    if (!byRecipe.has(ing.recipeId)) {
+      byRecipe.set(ing.recipeId, []);
+    }
+    byRecipe.get(ing.recipeId)!.push(ing);
+  });
 
+  const result: ConsolidatedIngredient[] = [];
+  
+  // Process each ingredient individually to maintain accurate recipe attribution
   ingredients.forEach(ingredient => {
     const words = ingredient.name.toLowerCase().trim().split(/\s+/);
     let key = words[0];
     
+    // Basic ingredient normalization
     if (words.includes('garlic') || words.includes('cloves')) key = 'garlic';
     else if (words.includes('onion') || words.includes('onions')) key = 'onion';
     else if (words.includes('tomato') || words.includes('tomatoes')) key = 'tomato';
@@ -171,29 +176,28 @@ function basicConsolidation(ingredients: IngredientInput[]): Response {
     else if (words.includes('pepper')) key = 'pepper';
     else if (words.length >= 2) key = `${words[0]} ${words[1]}`;
 
-    if (!grouped.has(key)) {
-      grouped.set(key, {
+    // Check if we already have this ingredient from the same recipe
+    const existingIndex = result.findIndex(item => 
+      item.name === key && item.recipeIds.includes(ingredient.recipeId)
+    );
+
+    if (existingIndex >= 0) {
+      // Add to existing entry
+      result[existingIndex].sourceIngredients.push(ingredient.name);
+      result[existingIndex].consolidatedQuantity = result[existingIndex].sourceIngredients.length;
+    } else {
+      // Create new entry
+      result.push({
         name: key,
         consolidatedQuantity: 1,
         consolidatedUnit: '',
-        sourceIngredients: [],
-        recipeIds: [],
-        recipeNames: []
+        sourceIngredients: [ingredient.name],
+        recipeIds: [ingredient.recipeId],
+        recipeNames: [ingredient.recipeTitle]
       });
     }
-
-    const group = grouped.get(key)!;
-    group.sourceIngredients.push(ingredient.name);
-    
-    if (!group.recipeIds.includes(ingredient.recipeId)) {
-      group.recipeIds.push(ingredient.recipeId);
-      group.recipeNames.push(ingredient.recipeTitle);
-    }
-    
-    group.consolidatedQuantity = group.sourceIngredients.length;
   });
 
-  const result = Array.from(grouped.values());
   console.log('Basic consolidation result:', result.length, 'items');
 
   return new Response(JSON.stringify({ consolidatedIngredients: result }), {

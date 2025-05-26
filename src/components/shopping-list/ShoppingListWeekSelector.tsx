@@ -128,7 +128,7 @@ export default function ShoppingListWeekSelector({
         </div>
       )}
       
-      <style jsx>{`
+      <style>{`
         .dancing-bird {
           animation: dance 1s ease-in-out infinite alternate;
           font-size: 16px;
