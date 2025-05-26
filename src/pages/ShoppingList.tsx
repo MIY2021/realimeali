@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import ShoppingListHeader from "@/components/shopping-list/ShoppingListHeader";
 import ShoppingListWeekSelector from "@/components/shopping-list/ShoppingListWeekSelector";
@@ -15,6 +16,8 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useToast } from "@/hooks/use-toast";
 import { useScrollPosition } from "@/hooks/useScrollPosition";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 
 export default function ShoppingList() {
   useDocumentTitle("Shopping List | RealiMeali");
@@ -241,7 +244,17 @@ export default function ShoppingList() {
         </div>
       ) : !currentHousehold ? (
         <div className="py-10 text-center">
-          <p className="text-muted-foreground mb-4">Please create or select a household to manage shopping lists.</p>
+          <div className="max-w-md mx-auto">
+            <h2 className="text-xl font-semibold text-navy mb-2">No Household Selected</h2>
+            <p className="text-muted-foreground mb-6">
+              You need to create or join a household to manage shopping lists.
+            </p>
+            <Button asChild className="bg-terracotta hover:bg-terracotta/90">
+              <Link to="/household">
+                Manage Household
+              </Link>
+            </Button>
+          </div>
         </div>
       ) : (
         <>

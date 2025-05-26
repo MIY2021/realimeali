@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
@@ -66,7 +67,17 @@ export default function MealPlanner() {
         </div>
       ) : !currentHousehold ? (
         <div className="py-10 text-center">
-          <p className="text-muted-foreground mb-4">Please create or select a household to manage meal plans.</p>
+          <div className="max-w-md mx-auto">
+            <h2 className="text-xl font-semibold text-navy mb-2">No Household Selected</h2>
+            <p className="text-muted-foreground mb-6">
+              You need to create or join a household to manage meal plans.
+            </p>
+            <Button asChild className="bg-terracotta hover:bg-terracotta/90">
+              <Link to="/household">
+                Manage Household
+              </Link>
+            </Button>
+          </div>
         </div>
       ) : (
         <>
