@@ -1,8 +1,6 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Plus, UtensilsCrossed } from "lucide-react";
-import { Grid3X3 } from "lucide-react";
+import { Plus, UtensilsCrossed, Grid } from "lucide-react";
 import { Link } from "react-router-dom";
 import { RecipeList } from "@/components/recipes/RecipeList";
 import { useRecipes } from "@/contexts/RecipesContext";
@@ -80,7 +78,7 @@ export default function RecipesPage() {
       {/* Mobile Layout Toggle */}
       {isMobile && (
         <div className="flex items-center gap-2 mb-4">
-          <Grid3X3 className="h-4 w-4" />
+          <Grid className="h-4 w-4" />
           <span className="text-sm font-medium">Layout:</span>
           <ToggleGroup 
             type="single" 
