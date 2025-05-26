@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { Share, RotateCcw, Plus } from "lucide-react";
+import { Share, RefreshCw, Plus } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -58,7 +58,7 @@ export default function ShoppingListHeader({
               disabled={isRegenerating}
               className="flex items-center gap-2"
             >
-              <RotateCcw className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'} ${isRegenerating ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'} ${isRegenerating ? 'animate-spin' : ''}`} />
               {!isMobile && (isRegenerating ? 'Regenerating...' : 'Regenerate')}
             </Button>
           )}

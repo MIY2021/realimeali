@@ -2,30 +2,20 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
-import { useMealPlan } from "@/contexts/MealPlanContext";
 import { useToast } from "@/hooks/use-toast";
 import { ShoppingListItem } from "@/types/shoppingList";
 import { ShoppingListService } from "@/services/shoppingListService";
-import { useShoppingListGenerator } from "@/hooks/useShoppingListGenerator";
 import { supabase } from "@/integrations/supabase/client";
 
 export const useShoppingList = (weekNumber: 1 | 2) => {
   const { user } = useAuth();
   const { currentHousehold } = useHousehold();
-  const { getMealPlansForWeek } = useMealPlan();
   const { toast } = useToast();
-  const { generateAndSaveFromMealPlans } = useShoppingListGenerator();
   
   const [shoppingList, setShoppingList] = useState<ShoppingListItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   
-  // Use refs to prevent re-renders and track state
-  const hasGeneratedRef = useRef<Set<string>>(new Set());
-  const isGeneratingRef = useRef(false);
   const lastLoadTimeRef = useRef<number>(0);
-  const generationCooldownRef = useRef<Map<string, number>>(new Map());
-
-  const generationKey = currentHousehold ? `${currentHousehold.id}-week-${weekNumber}` : null;
 
   const loadShoppingList = useCallback(async () => {
     if (!user || !currentHousehold) return;
@@ -48,49 +38,6 @@ export const useShoppingList = (weekNumber: 1 | 2) => {
       setIsLoading(false);
     }
   }, [user, currentHousehold, weekNumber]);
-
-  const autoGenerateFromMealPlans = useCallback(async () => {
-    if (!user || !currentHousehold || !generationKey || isGeneratingRef.current) {
-      return;
-    }
-
-    const lastGeneration = generationCooldownRef.current.get(generationKey);
-    const now = Date.now();
-    if (lastGeneration && now - lastGeneration < 5000) {
-      console.log('Generation on cooldown for', generationKey);
-      return;
-    }
-
-    if (hasGeneratedRef.current.has(generationKey)) {
-      return;
-    }
-
-    const mealPlans = getMealPlansForWeek(weekNumber);
-    
-    if (mealPlans.length > 0) {
-      const hasExistingItems = await ShoppingListService.checkDatabaseForItems(currentHousehold.id, weekNumber);
-      
-      if (!hasExistingItems) {
-        console.log('Auto-generating consolidated shopping list for', generationKey);
-        
-        isGeneratingRef.current = true;
-        hasGeneratedRef.current.add(generationKey);
-        generationCooldownRef.current.set(generationKey, now);
-        
-        try {
-          setIsLoading(true);
-          await generateAndSaveFromMealPlans(weekNumber);
-        } catch (error) {
-          console.error("Error auto-generating shopping list:", error);
-          hasGeneratedRef.current.delete(generationKey);
-          generationCooldownRef.current.delete(generationKey);
-        } finally {
-          setIsLoading(false);
-          isGeneratingRef.current = false;
-        }
-      }
-    }
-  }, [user, currentHousehold, getMealPlansForWeek, weekNumber, generateAndSaveFromMealPlans, generationKey]);
 
   // Real-time subscription
   useEffect(() => {
@@ -116,7 +63,7 @@ export const useShoppingList = (weekNumber: 1 | 2) => {
           }
           
           debounceTimer = setTimeout(() => {
-            if (!isGeneratingRef.current && !isLoading) {
+            if (!isLoading) {
               loadShoppingList();
             }
           }, 1000);
@@ -135,16 +82,6 @@ export const useShoppingList = (weekNumber: 1 | 2) => {
   useEffect(() => {
     loadShoppingList();
   }, [loadShoppingList]);
-
-  useEffect(() => {
-    if (!isLoading && generationKey) {
-      const timer = setTimeout(() => {
-        autoGenerateFromMealPlans();
-      }, 1000);
-
-      return () => clearTimeout(timer);
-    }
-  }, [autoGenerateFromMealPlans, isLoading, generationKey]);
 
   const toggleItemChecked = useCallback(async (itemId: string) => {
     if (!user || !currentHousehold) return;
@@ -206,11 +143,6 @@ export const useShoppingList = (weekNumber: 1 | 2) => {
       
       if (success) {
         setShoppingList([]);
-        
-        if (generationKey) {
-          hasGeneratedRef.current.delete(generationKey);
-          generationCooldownRef.current.delete(generationKey);
-        }
 
         toast({
           title: "Shopping list cleared",
@@ -233,7 +165,7 @@ export const useShoppingList = (weekNumber: 1 | 2) => {
     } finally {
       setIsLoading(false);
     }
-  }, [user, currentHousehold, toast, generationKey, weekNumber]);
+  }, [user, currentHousehold, toast, weekNumber]);
 
   return {
     shoppingList,

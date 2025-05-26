@@ -3,11 +3,13 @@ import { useState } from "react";
 import ShoppingListHeader from "@/components/shopping-list/ShoppingListHeader";
 import ShoppingListWeekSelector from "@/components/shopping-list/ShoppingListWeekSelector";
 import ShoppingListSkeleton from "@/components/shopping-list/ShoppingListSkeleton";
+import GenerateShoppingListButton from "@/components/shopping-list/GenerateShoppingListButton";
 import { useShoppingList } from "@/hooks/useShoppingList";
 import { useShoppingListGenerator } from "@/hooks/useShoppingListGenerator";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { useRecipes } from "@/contexts/RecipesContext";
+import { useMealPlan } from "@/contexts/MealPlanContext";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useToast } from "@/hooks/use-toast";
@@ -23,12 +25,13 @@ export default function ShoppingList() {
   const { user } = useAuth();
   const { currentHousehold } = useHousehold();
   const { recipes } = useRecipes();
+  const { getMealPlansForWeek } = useMealPlan();
   const { toast } = useToast();
   const { generateAndSaveFromMealPlans } = useShoppingListGenerator();
   const isMobile = useIsMobile();
   const [weekNumber, setWeekNumber] = useState<1 | 2>(1);
   const [copiedItemId, setCopiedItemId] = useState<string | null>(null);
-  const [isRegenerating, setIsRegenerating] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   
   const {
     shoppingList,
@@ -37,6 +40,9 @@ export default function ShoppingList() {
     addCustomItem,
     clearAll,
   } = useShoppingList(weekNumber);
+
+  const mealPlans = getMealPlansForWeek(weekNumber);
+  const hasMealPlans = mealPlans.length > 0;
 
   const getRecipeNames = (recipeIds: string[]): string => {
     const recipeNames = recipeIds
@@ -83,25 +89,34 @@ export default function ShoppingList() {
     }
   };
 
-  const handleRegenerate = async () => {
+  const handleGenerate = async () => {
     if (!user || !currentHousehold) return;
 
-    setIsRegenerating(true);
+    if (!hasMealPlans) {
+      toast({
+        title: "No meal plans",
+        description: `Please add some meal plans for week ${weekNumber} first`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsGenerating(true);
     try {
       await generateAndSaveFromMealPlans(weekNumber);
       toast({
-        title: "List regenerated",
-        description: `Shopping list for week ${weekNumber} has been regenerated with consolidated ingredients`,
+        title: "Shopping list generated!",
+        description: `Week ${weekNumber} shopping list has been created with consolidated ingredients`,
       });
     } catch (error) {
-      console.error('Error regenerating shopping list:', error);
+      console.error('Error generating shopping list:', error);
       toast({
         title: "Error",
-        description: "Failed to regenerate shopping list",
+        description: "Failed to generate shopping list",
         variant: "destructive",
       });
     } finally {
-      setIsRegenerating(false);
+      setIsGenerating(false);
     }
   };
 
@@ -109,9 +124,9 @@ export default function ShoppingList() {
     <div className={`w-full mx-auto px-4 sm:px-6 lg:px-8 ${isMobile ? 'py-4' : 'py-8'} ${!isMobile ? 'max-w-4xl' : ''}`}>
       <ShoppingListHeader 
         onShare={handleShare} 
-        onRegenerate={handleRegenerate}
+        onRegenerate={handleGenerate}
         weekNumber={weekNumber}
-        isRegenerating={isRegenerating}
+        isRegenerating={isGenerating}
       />
 
       {!user ? (
@@ -129,14 +144,31 @@ export default function ShoppingList() {
             onWeekSelect={setWeekNumber} 
           />
 
-          {isLoading || isRegenerating ? (
+          <GenerateShoppingListButton
+            onGenerate={handleGenerate}
+            isGenerating={isGenerating}
+            weekNumber={weekNumber}
+            hasItems={shoppingList.length > 0}
+          />
+
+          {isLoading ? (
             <ShoppingListSkeleton />
           ) : (
             <div className={`space-y-${isMobile ? '2' : '3'}`}>
               {shoppingList.length === 0 ? (
                 <Card>
                   <CardContent className="p-6 text-center">
-                    <p className="text-muted-foreground">No items in your shopping list for this week.</p>
+                    <p className="text-muted-foreground mb-4">
+                      {hasMealPlans 
+                        ? `No shopping list generated yet for week ${weekNumber}.`
+                        : `No meal plans found for week ${weekNumber}.`
+                      }
+                    </p>
+                    {!hasMealPlans && (
+                      <p className="text-sm text-muted-foreground">
+                        Add some meal plans first to generate a shopping list.
+                      </p>
+                    )}
                   </CardContent>
                 </Card>
               ) : (
