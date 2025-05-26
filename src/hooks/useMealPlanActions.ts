@@ -1,11 +1,11 @@
-
 import { useState } from "react";
-import { MealType, RecipeCategory, MealPlan, Recipe } from "@/types";
+import { MealType, MealPlan, Recipe } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { useMealPlan } from "@/contexts/MealPlanContext";
 import { useRecipes } from "@/contexts/RecipesContext";
+import { createMealTypeToCategories } from "@/utils/mealCategoryUtils";
 
 export const useMealPlanActions = (week: 1 | 2) => {
   const { user } = useAuth();
@@ -33,25 +33,8 @@ export const useMealPlanActions = (week: 1 | 2) => {
 
   const mealTypes: MealType[] = ["dinner", "lunch", "breakfast", "snacks"];
   
-  // Updated category mappings based on requirements
-  const mealTypeToCategories: Record<MealType, RecipeCategory[]> = {
-    // Dinner: All categories except Breakfast and Snacks
-    dinner: [
-      "Bulk", "Easy", "Cheap", "Healthy", "Vegetarian", "Fish", 
-      "Super Tasty", "Pasta", "Tapas", "Winter", "BBQ", "Faffy", 
-      "Pricey!", "Not Yet Made", "Lunch"
-    ],
-    // Lunch: Dinner categories plus Lunch category
-    lunch: [
-      "Bulk", "Easy", "Cheap", "Healthy", "Vegetarian", "Fish", 
-      "Super Tasty", "Pasta", "Tapas", "Winter", "BBQ", "Faffy", 
-      "Pricey!", "Not Yet Made", "Lunch"
-    ],
-    // Breakfast: Only Breakfast category
-    breakfast: ["Breakfast"],
-    // Snacks: Only Snacks category
-    snacks: ["Snacks"],
-  };
+  // Use dynamic category mappings
+  const mealTypeToCategories = createMealTypeToCategories();
 
   const getMealPlansForType = (mealType: MealType) =>
     getMealPlansForWeek(week).filter(plan => plan.mealType === mealType);

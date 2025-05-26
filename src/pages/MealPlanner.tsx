@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
@@ -50,11 +49,8 @@ export default function MealPlanner() {
     handleShareMealPlan,
   } = useMealPlanActions(week);
 
-  const { handleRandomMealSelection } = useRandomMealSelection(
-    week, 
-    mealTypeToCategories, 
-    mealTypes
-  );
+  // Updated to use simplified signature
+  const { handleRandomMealSelection } = useRandomMealSelection(week, mealTypes);
 
   const isLoading = recipesLoading || mealPlansLoading;
   const getRecipeById = (id: string) => recipes.find(r => r.id === id);

@@ -1,14 +1,13 @@
-
-import { MealType, RecipeCategory } from "@/types";
+import { MealType } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { useMealPlan } from "@/contexts/MealPlanContext";
 import { useRecipes } from "@/contexts/RecipesContext";
+import { createMealTypeToCategories } from "@/utils/mealCategoryUtils";
 
 export const useRandomMealSelection = (
   week: 1 | 2,
-  mealTypeToCategories: Record<MealType, RecipeCategory[]>,
   mealTypes: MealType[]
 ) => {
   const { user } = useAuth();
@@ -16,6 +15,9 @@ export const useRandomMealSelection = (
   const { currentHousehold } = useHousehold();
   const { getMealPlansForWeek, addMealPlan, clearWeek } = useMealPlan();
   const { toast } = useToast();
+
+  // Use dynamic category mappings
+  const mealTypeToCategories = createMealTypeToCategories();
 
   const getUniqueRandomRecipes = (
     availableRecipes: typeof recipes,
