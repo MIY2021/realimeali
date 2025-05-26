@@ -4,6 +4,7 @@ import ShoppingListHeader from "@/components/shopping-list/ShoppingListHeader";
 import ShoppingListWeekSelector from "@/components/shopping-list/ShoppingListWeekSelector";
 import ShoppingListSkeleton from "@/components/shopping-list/ShoppingListSkeleton";
 import ShoppingListItem from "@/components/shopping-list/ShoppingListItem";
+import ShoppingListProgress from "@/components/shopping-list/ShoppingListProgress";
 import { useShoppingList } from "@/hooks/useShoppingList";
 import { useShoppingListGenerator } from "@/hooks/useShoppingListGenerator";
 import { useAuth } from "@/contexts/AuthContext";
@@ -28,6 +29,11 @@ export default function ShoppingList() {
   const [weekNumber, setWeekNumber] = useState<1 | 2>(1);
   const [copiedItemId, setCopiedItemId] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [generationProgress, setGenerationProgress] = useState({
+    step: 0,
+    totalSteps: 4,
+    currentAction: ''
+  });
   
   const {
     shoppingList,
@@ -35,34 +41,14 @@ export default function ShoppingList() {
     toggleItemChecked,
   } = useShoppingList(weekNumber);
 
-  // Debug logging
-  console.log('ShoppingList Debug:', {
-    user: !!user,
-    currentHousehold: !!currentHousehold,
-    recipesCount: recipes.length,
-    recipesLoading,
-    shoppingListCount: shoppingList.length,
-    weekNumber
-  });
-
   const mealPlans = getMealPlansForWeek(weekNumber);
   const hasMealPlans = mealPlans.length > 0;
 
-  console.log('MealPlans Debug:', {
-    mealPlansCount: mealPlans.length,
-    hasMealPlans,
-    mealPlans: mealPlans.map(mp => ({ id: mp.id, recipeId: mp.recipeId, mealType: mp.mealType }))
-  });
-
   const getRecipeNames = (recipeIds: string[]): string => {
-    console.log('Getting recipe names for IDs:', recipeIds);
-    console.log('Available recipes:', recipes.map(r => ({ id: r.id, title: r.title })));
-    
     const uniqueRecipeIds = [...new Set(recipeIds)];
     const recipeNames = uniqueRecipeIds
       .map(id => {
         const recipe = recipes.find(r => r.id === id);
-        console.log(`Recipe lookup for ${id}:`, recipe?.title || 'NOT FOUND');
         return recipe ? recipe.title : `Recipe ${id.substring(0, 8)}`;
       })
       .filter(Boolean);
@@ -102,18 +88,7 @@ export default function ShoppingList() {
   };
 
   const handleGenerate = async () => {
-    console.log('Generate button clicked');
-    console.log('Generation conditions:', {
-      user: !!user,
-      currentHousehold: !!currentHousehold,
-      recipesLoading,
-      recipesCount: recipes.length,
-      hasMealPlans,
-      mealPlansCount: mealPlans.length
-    });
-
     if (!user || !currentHousehold) {
-      console.error('Missing user or household');
       toast({
         title: "Error",
         description: "Please log in and select a household",
@@ -123,7 +98,6 @@ export default function ShoppingList() {
     }
 
     if (recipesLoading) {
-      console.log('Recipes still loading, please wait');
       toast({
         title: "Please wait",
         description: "Recipes are still loading...",
@@ -133,7 +107,6 @@ export default function ShoppingList() {
     }
 
     if (recipes.length === 0) {
-      console.error('No recipes loaded');
       toast({
         title: "No recipes",
         description: "No recipes found. Please add some recipes first.",
@@ -143,7 +116,6 @@ export default function ShoppingList() {
     }
 
     if (!hasMealPlans) {
-      console.error('No meal plans for week', weekNumber);
       toast({
         title: "No meal plans",
         description: `Please add some meal plans for week ${weekNumber} first`,
@@ -153,23 +125,35 @@ export default function ShoppingList() {
     }
 
     setIsGenerating(true);
+    setGenerationProgress({ step: 1, totalSteps: 4, currentAction: 'Collecting ingredients from meal plans...' });
+
     try {
-      console.log('Starting shopping list generation...');
-      const result = await generateAndSaveFromMealPlans(weekNumber);
-      console.log('Generation result:', result);
+      setGenerationProgress({ step: 2, totalSteps: 4, currentAction: 'Consolidating similar ingredients...' });
       
-      if (result && result.length > 0) {
-        toast({
-          title: "Shopping list generated!",
-          description: `Week ${weekNumber} shopping list has been created with ${result.length} items`,
-        });
-      } else {
-        toast({
-          title: "Generation completed",
-          description: "Shopping list generation completed, but no items were created",
-          variant: "destructive",
-        });
-      }
+      const startTime = performance.now();
+      const result = await generateAndSaveFromMealPlans(weekNumber);
+      const endTime = performance.now();
+      const duration = Math.round(endTime - startTime);
+      
+      setGenerationProgress({ step: 3, totalSteps: 4, currentAction: 'Saving to database...' });
+      
+      setTimeout(() => {
+        setGenerationProgress({ step: 4, totalSteps: 4, currentAction: 'Complete!' });
+        
+        if (result && result.length > 0) {
+          toast({
+            title: "Shopping list generated!",
+            description: `Week ${weekNumber} shopping list created with ${result.length} items in ${duration}ms`,
+          });
+        } else {
+          toast({
+            title: "No items created",
+            description: "No ingredients were found to add to the shopping list",
+            variant: "destructive",
+          });
+        }
+      }, 500);
+      
     } catch (error) {
       console.error('Error generating shopping list:', error);
       toast({
@@ -178,7 +162,10 @@ export default function ShoppingList() {
         variant: "destructive",
       });
     } finally {
-      setIsGenerating(false);
+      setTimeout(() => {
+        setIsGenerating(false);
+        setGenerationProgress({ step: 0, totalSteps: 4, currentAction: '' });
+      }, 1000);
     }
   };
 
@@ -222,10 +209,12 @@ export default function ShoppingList() {
             hasItems={shoppingList.length > 0}
           />
 
-          {/* Debug info (remove in production) */}
-          <div className="mb-4 p-2 bg-gray-100 rounded text-xs">
-            <p>Debug: Recipes: {recipes.length}, Meal Plans: {mealPlans.length}, Shopping Items: {shoppingList.length}</p>
-          </div>
+          <ShoppingListProgress
+            step={generationProgress.step}
+            totalSteps={generationProgress.totalSteps}
+            currentAction={generationProgress.currentAction}
+            isVisible={isGenerating}
+          />
 
           {isLoading ? (
             <ShoppingListSkeleton />

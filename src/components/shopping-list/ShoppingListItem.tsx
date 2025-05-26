@@ -30,18 +30,10 @@ export default function ShoppingListItem({
   copiedItemId,
   onCheck,
   onCopy,
-  getRecipeNames
 }: ShoppingListItemProps) {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
   const { recipes } = useRecipes();
-
-  console.log('ShoppingListItem render:', {
-    id,
-    name,
-    recipeIds,
-    recipesAvailable: recipes.length
-  });
 
   const createSlug = (title: string) => {
     return title
@@ -56,10 +48,7 @@ export default function ShoppingListItem({
     e.preventDefault();
     e.stopPropagation();
     
-    console.log('Recipe click:', recipeId);
     const recipe = recipes.find(r => r.id === recipeId);
-    console.log('Found recipe:', recipe?.title);
-    
     if (recipe) {
       const slug = createSlug(recipe.title);
       navigate(`/recipes/${slug}`);
@@ -73,28 +62,10 @@ export default function ShoppingListItem({
   };
 
   const handleCheckboxChange = (checked: boolean | string) => {
-    console.log('Checkbox changed:', checked, 'for item:', id);
     onCheck(checked as boolean);
   };
 
   const displayName = capitalizeShoppingItem(name.replace(/^week\d+-/, ''));
-
-  // Get recipe names for display
-  const recipeNamesText = recipeIds.length > 0 ? (() => {
-    const uniqueRecipeIds = [...new Set(recipeIds)];
-    console.log('Getting recipe names for:', uniqueRecipeIds);
-    
-    const recipeNames = uniqueRecipeIds
-      .map(recipeId => {
-        const recipe = recipes.find(r => r.id === recipeId);
-        console.log(`Recipe lookup ${recipeId}:`, recipe?.title || 'NOT FOUND');
-        return recipe ? recipe.title : null;
-      })
-      .filter(Boolean);
-
-    console.log('Resolved recipe names:', recipeNames);
-    return recipeNames.length > 0 ? recipeNames.join(', ') : `Recipe(s) ${uniqueRecipeIds.map(id => id.substring(0, 8)).join(', ')}`;
-  })() : '';
 
   return (
     <div className={`flex items-start space-x-${isMobile ? '2' : '3'} ${isMobile ? 'p-1.5' : 'p-2'} rounded hover:bg-accent`}>
@@ -106,12 +77,11 @@ export default function ShoppingListItem({
       <div className="flex-1 min-w-0">
         <div className={`${isChecked ? 'line-through text-muted-foreground' : ''}`}>
           <span className={`font-medium ${isMobile ? 'text-sm' : ''}`}>
-            {quantity > 1 && `${quantity}x `}
+            {quantity && quantity > 1 && `${quantity}${unit ? ` ${unit}` : ''} `}
             {displayName}
           </span>
-          {unit && <span className={`${isMobile ? 'text-xs' : 'text-sm'} text-muted-foreground ml-1`}>({unit})</span>}
         </div>
-        {recipeIds.length > 0 && recipeNamesText && (
+        {recipeIds.length > 0 && (
           <div className={`${isMobile ? 'text-xs' : 'text-xs'} text-green-600 mt-1`}>
             From: {recipeIds.map((recipeId, index) => {
               const recipe = recipes.find(r => r.id === recipeId);
@@ -122,7 +92,7 @@ export default function ShoppingListItem({
                   {recipe ? (
                     <button
                       onClick={(e) => handleRecipeClick(recipeId, e)}
-                      className="hover:underline cursor-pointer text-green-600 hover:text-green-700 font-medium"
+                      className="hover:underline cursor-pointer text-green-600 hover:text-green-700 font-medium transition-colors"
                     >
                       {recipeName}
                     </button>

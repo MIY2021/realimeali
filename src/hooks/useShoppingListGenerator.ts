@@ -5,8 +5,8 @@ import { useRecipes } from "@/contexts/RecipesContext";
 import { useMealPlan } from "@/contexts/MealPlanContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
-import { supabase } from "@/integrations/supabase/client";
 import { ShoppingListService } from "@/services/shoppingListService";
+import { IngredientConsolidationService } from "@/services/ingredientConsolidation";
 
 export const useShoppingListGenerator = () => {
   const { recipes } = useRecipes();
@@ -15,7 +15,7 @@ export const useShoppingListGenerator = () => {
   const { currentHousehold } = useHousehold();
 
   const generateAndSaveFromMealPlans = useCallback(async (weekNumber: 1 | 2): Promise<ShoppingListItem[]> => {
-    console.log('=== STARTING SHOPPING LIST GENERATION ===');
+    console.log('=== STARTING FAST SHOPPING LIST GENERATION ===');
     console.log('Week:', weekNumber);
     console.log('User:', !!user);
     console.log('Household:', !!currentHousehold);
@@ -28,19 +28,13 @@ export const useShoppingListGenerator = () => {
 
     const mealPlans = getMealPlansForWeek(weekNumber);
     console.log('Meal plans found:', mealPlans.length);
-    console.log('Meal plans details:', mealPlans.map(mp => ({
-      id: mp.id,
-      recipeId: mp.recipeId,
-      mealType: mp.mealType,
-      isLeftover: mp.isLeftover
-    })));
 
     if (!mealPlans.length) {
       console.log('No meal plans for week', weekNumber);
       return [];
     }
 
-    // Clear existing items for this week first to prevent duplicates
+    // Clear existing items for this week first
     console.log('Clearing existing items for week', weekNumber);
     await ShoppingListService.clearAll(currentHousehold.id, weekNumber);
 
@@ -75,7 +69,6 @@ export const useShoppingListGenerator = () => {
     });
 
     console.log('Total ingredients collected:', ingredientInputs.length);
-    console.log('Sample ingredients:', ingredientInputs.slice(0, 5));
 
     if (ingredientInputs.length === 0) {
       console.log('No ingredients found to consolidate');
@@ -83,41 +76,23 @@ export const useShoppingListGenerator = () => {
     }
 
     try {
-      console.log('Calling consolidate-ingredients edge function...');
+      // Use fast local consolidation instead of OpenAI
+      console.log('Starting fast local consolidation...');
+      const startTime = performance.now();
       
-      // Call OpenAI consolidation function
-      const { data, error } = await supabase.functions.invoke('consolidate-ingredients', {
-        body: { ingredients: ingredientInputs }
-      });
+      const consolidatedIngredients = IngredientConsolidationService.consolidateIngredients(ingredientInputs);
+      
+      const endTime = performance.now();
+      console.log(`Consolidation completed in ${Math.round(endTime - startTime)}ms`);
+      console.log('Consolidated ingredients:', consolidatedIngredients.length);
 
-      console.log('Edge function response:', { data, error });
-
-      if (error) {
-        console.error('Supabase function error:', error);
-        throw new Error(`Edge function error: ${error.message}`);
-      }
-
-      if (!data || !data.consolidatedIngredients) {
-        console.error('No consolidated ingredients returned from function');
-        throw new Error('No data returned from consolidation function');
-      }
-
-      const consolidatedIngredients = data.consolidatedIngredients;
-      console.log('Received consolidated ingredients:', consolidatedIngredients.length);
-      console.log('Sample consolidated:', consolidatedIngredients.slice(0, 3));
-
-      // Save consolidated ingredients to database
+      // Batch save all items to database
       const savedItems: ShoppingListItem[] = [];
+      
+      console.log('Batch saving', consolidatedIngredients.length, 'items...');
       
       for (const item of consolidatedIngredients) {
         try {
-          console.log('Saving item:', {
-            name: item.name,
-            quantity: item.consolidatedQuantity,
-            unit: item.consolidatedUnit,
-            recipeIds: item.recipeIds
-          });
-
           const savedItem = await ShoppingListService.addConsolidatedItem(
             item.name,
             item.consolidatedQuantity || 1,
@@ -130,10 +105,7 @@ export const useShoppingListGenerator = () => {
           );
           
           if (savedItem) {
-            console.log('Successfully saved item:', savedItem.id);
             savedItems.push(savedItem);
-          } else {
-            console.error('Failed to save item:', item.name);
           }
         } catch (itemError) {
           console.error('Error saving individual item:', item, itemError);
@@ -142,33 +114,10 @@ export const useShoppingListGenerator = () => {
 
       console.log('Successfully saved', savedItems.length, 'consolidated items for week', weekNumber);
       return savedItems;
+      
     } catch (error) {
       console.error('Error in consolidation process:', error);
-      
-      // Fallback: save individual ingredients if consolidation fails completely
-      console.log('Falling back to individual ingredient saving');
-      const fallbackItems: ShoppingListItem[] = [];
-      
-      for (const ingredient of ingredientInputs.slice(0, 10)) { // Limit fallback to prevent spam
-        try {
-          const savedItem = await ShoppingListService.addCustomItem(
-            ingredient.name,
-            currentHousehold.id,
-            user.id,
-            weekNumber,
-            [ingredient.recipeId]
-          );
-          
-          if (savedItem) {
-            fallbackItems.push(savedItem);
-          }
-        } catch (itemError) {
-          console.error('Error saving fallback item:', ingredient, itemError);
-        }
-      }
-      
-      console.log('Fallback saved', fallbackItems.length, 'items');
-      return fallbackItems;
+      return [];
     }
   }, [recipes, getMealPlansForWeek, user, currentHousehold]);
 
