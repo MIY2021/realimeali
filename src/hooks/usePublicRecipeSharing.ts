@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -82,8 +81,8 @@ export const usePublicRecipeSharing = () => {
         throw error;
       }
 
-      // Use the recipe-meta endpoint for better social media previews
-      const shareUrl = `${window.location.origin}/recipe-meta/${publicShareId}`;
+      // Use the Supabase project URL for the edge function
+      const shareUrl = `https://bdjzefekuahfofwzxqxd.supabase.co/functions/v1/recipe-meta/${publicShareId}`;
       
       // Copy to clipboard
       await navigator.clipboard.writeText(shareUrl);
