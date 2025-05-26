@@ -7,7 +7,7 @@ interface RecipesContextType {
   recipes: Recipe[];
   setRecipes: (recipes: Recipe[]) => void;
   addRecipe: (recipe: Recipe) => void;
-  updateRecipe: (id: string, recipe: Recipe) => void;
+  updateRecipe: (id: string, recipe: Recipe) => Promise<void>;
   removeRecipe: (id: string) => void;
   getRecipeById: (id: string) => Recipe | undefined;
   getRecipeBySlug: (slug: string) => Recipe | undefined;
@@ -42,11 +42,19 @@ export const RecipesProvider = ({ children }: RecipesProviderProps) => {
     setRecipes(prev => [recipe, ...prev]);
   }, []);
 
-  const updateRecipe = useCallback((id: string, updatedRecipe: Recipe) => {
-    setRecipes(prev => prev.map(recipe => 
-      recipe.id === id ? updatedRecipe : recipe
-    ));
-  }, []);
+  const updateRecipe = useCallback(async (id: string, updatedRecipe: Recipe) => {
+    try {
+      const result = await recipeApi.updateRecipe(id, updatedRecipe);
+      if (result) {
+        setRecipes(prev => prev.map(recipe => 
+          recipe.id === id ? result : recipe
+        ));
+      }
+    } catch (error) {
+      console.error('Error updating recipe:', error);
+      throw error;
+    }
+  }, [recipeApi]);
 
   const removeRecipe = useCallback((id: string) => {
     setRecipes(prev => prev.filter(recipe => recipe.id !== id));
