@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useParams, Navigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -10,28 +11,31 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 
 export function PublicRecipeView() {
-  const { publicShareId } = useParams();
+  const { slug, publicShareId } = useParams();
   const { user } = useAuth();
   const { getPublicShare, trackView, saveToMyRecipes, isSavingRecipe } = usePublicRecipeSharing();
   const [publicShare, setPublicShare] = useState<PublicRecipeShare | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
+  // Use slug if available, otherwise fall back to publicShareId for backward compatibility
+  const identifier = slug || publicShareId;
+
   useDocumentTitle(publicShare ? `${publicShare.title} | Shared Recipe` : "Shared Recipe");
 
   useEffect(() => {
     const fetchPublicShare = async () => {
-      if (!publicShareId) {
+      if (!identifier) {
         setNotFound(true);
         setIsLoading(false);
         return;
       }
 
-      const share = await getPublicShare(publicShareId);
+      const share = await getPublicShare(identifier);
       if (share) {
         setPublicShare(share);
         // Track view separately after fetching data
-        trackView(publicShareId);
+        trackView(identifier);
       } else {
         setNotFound(true);
       }
@@ -39,7 +43,7 @@ export function PublicRecipeView() {
     };
 
     fetchPublicShare();
-  }, [publicShareId, getPublicShare, trackView]);
+  }, [identifier, getPublicShare, trackView]);
 
   const handleSaveRecipe = async () => {
     if (!publicShare) return;

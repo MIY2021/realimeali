@@ -27,6 +27,7 @@ export interface PublicRecipeShare {
   created_at: string;
   expires_at?: string;
   is_active: boolean;
+  slug: string | null;
 }
 
 export const usePublicRecipeSharing = () => {
@@ -53,11 +54,35 @@ export const usePublicRecipeSharing = () => {
       const { data: shareIdData } = await supabase.rpc('generate_public_share_id');
       const publicShareId = shareIdData;
 
+      // Generate URL-friendly slug from recipe title
+      const baseSlug = recipe.title
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/[\s-]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+
+      // Check for existing slugs to ensure uniqueness
+      const { data: existingSlugs } = await supabase
+        .from('public_recipe_shares')
+        .select('slug')
+        .not('slug', 'is', null);
+
+      let slug = baseSlug;
+      let counter = 1;
+      const slugList = existingSlugs?.map(item => item.slug) || [];
+      
+      while (slugList.includes(slug)) {
+        slug = `${baseSlug}-${counter}`;
+        counter++;
+      }
+
       // Create the public share
       const { data, error } = await supabase
         .from('public_recipe_shares')
         .insert({
           public_share_id: publicShareId,
+          slug: slug,
           original_recipe_id: recipe.id,
           original_household_id: recipe.householdId,
           title: recipe.title,
@@ -81,8 +106,8 @@ export const usePublicRecipeSharing = () => {
         throw error;
       }
 
-      // Use the Supabase project URL for the edge function
-      const shareUrl = `https://bdjzefekuahfofwzxqxd.supabase.co/functions/v1/recipe-meta/${publicShareId}`;
+      // Use the clean URL format with the slug
+      const shareUrl = `https://realimeali.com/recipe/${slug}`;
       
       // Copy to clipboard
       await navigator.clipboard.writeText(shareUrl);
@@ -106,19 +131,31 @@ export const usePublicRecipeSharing = () => {
     }
   };
 
-  const getPublicShare = async (publicShareId: string): Promise<PublicRecipeShare | null> => {
+  const getPublicShare = async (slugOrId: string): Promise<PublicRecipeShare | null> => {
     try {
-      // Fetch the public share without incrementing view count
-      const { data, error } = await supabase
+      // Try to fetch by slug first
+      let { data, error } = await supabase
         .from('public_recipe_shares')
         .select('*')
-        .eq('public_share_id', publicShareId)
+        .eq('slug', slugOrId)
         .eq('is_active', true)
         .single();
 
-      if (error) {
-        console.error("Error fetching public share:", error);
-        return null;
+      if (error || !data) {
+        // Fallback: try to fetch by public_share_id for backward compatibility
+        const { data: fallbackData, error: fallbackError } = await supabase
+          .from('public_recipe_shares')
+          .select('*')
+          .eq('public_share_id', slugOrId)
+          .eq('is_active', true)
+          .single();
+
+        if (fallbackError || !fallbackData) {
+          console.error("Error fetching public share:", error, fallbackError);
+          return null;
+        }
+        
+        data = fallbackData;
       }
 
       return data as PublicRecipeShare;
@@ -128,9 +165,9 @@ export const usePublicRecipeSharing = () => {
     }
   };
 
-  const trackView = async (publicShareId: string): Promise<void> => {
+  const trackView = async (slugOrId: string): Promise<void> => {
     // Check if we've already tracked a view for this recipe in this session
-    const viewKey = `recipe_view_${publicShareId}`;
+    const viewKey = `recipe_view_${slugOrId}`;
     const hasViewed = sessionStorage.getItem(viewKey);
     
     if (hasViewed) {
@@ -138,11 +175,21 @@ export const usePublicRecipeSharing = () => {
     }
 
     try {
-      // Increment view count
-      await supabase.rpc('increment_share_view_count', { share_id: publicShareId });
-      
-      // Mark as viewed in this session
-      sessionStorage.setItem(viewKey, 'true');
+      // Try to increment view count by slug first
+      const { data: recipe } = await supabase
+        .from('public_recipe_shares')
+        .select('public_share_id')
+        .or(`slug.eq.${slugOrId},public_share_id.eq.${slugOrId}`)
+        .eq('is_active', true)
+        .single();
+
+      if (recipe) {
+        // Increment view count using the public_share_id
+        await supabase.rpc('increment_share_view_count', { share_id: recipe.public_share_id });
+        
+        // Mark as viewed in this session
+        sessionStorage.setItem(viewKey, 'true');
+      }
     } catch (error) {
       console.error("Error tracking view:", error);
     }

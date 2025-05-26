@@ -9,6 +9,7 @@ const corsHeaders = {
 interface PublicRecipeShare {
   id: string;
   public_share_id: string;
+  slug: string;
   title: string;
   description: string;
   image?: string;
@@ -30,13 +31,24 @@ Deno.serve(async (req) => {
 
   try {
     const url = new URL(req.url);
-    const pathParts = url.pathname.split('/');
-    const publicShareId = pathParts[pathParts.length - 1];
+    const pathParts = url.pathname.split('/').filter(part => part);
+    
+    // Handle both old format (/recipe-meta/share-id) and new format (/recipe/slug)
+    let recipeSlug = '';
+    
+    if (pathParts.includes('recipe') && pathParts.length >= 2) {
+      // New format: /recipe/slug
+      const recipeIndex = pathParts.indexOf('recipe');
+      recipeSlug = pathParts[recipeIndex + 1];
+    } else {
+      // Old format fallback: /recipe-meta/share-id
+      recipeSlug = pathParts[pathParts.length - 1];
+    }
 
-    console.log('Extracted publicShareId:', publicShareId);
+    console.log('Extracted recipe slug:', recipeSlug);
 
-    if (!publicShareId) {
-      console.log('No publicShareId found, redirecting to app');
+    if (!recipeSlug) {
+      console.log('No recipe slug found, redirecting to app');
       return redirectToApp('');
     }
 
@@ -45,25 +57,37 @@ Deno.serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    console.log('Fetching recipe data for:', publicShareId);
+    console.log('Fetching recipe data for slug:', recipeSlug);
 
-    // Fetch the recipe data
-    const { data: recipe, error } = await supabase
+    // Try to fetch by slug first, then fall back to public_share_id for backward compatibility
+    let { data: recipe, error } = await supabase
       .from('public_recipe_shares')
       .select('*')
-      .eq('public_share_id', publicShareId)
+      .eq('slug', recipeSlug)
       .eq('is_active', true)
       .single();
 
     if (error || !recipe) {
-      console.error('Error fetching recipe:', error);
-      return redirectToApp(publicShareId);
+      // Fallback: try to fetch by public_share_id for old links
+      const { data: fallbackRecipe, error: fallbackError } = await supabase
+        .from('public_recipe_shares')
+        .select('*')
+        .eq('public_share_id', recipeSlug)
+        .eq('is_active', true)
+        .single();
+
+      if (fallbackError || !fallbackRecipe) {
+        console.error('Recipe not found:', error, fallbackError);
+        return redirectToApp(recipeSlug);
+      }
+      
+      recipe = fallbackRecipe;
     }
 
     console.log('Recipe found:', recipe.title);
 
     // Generate the HTML with proper meta tags
-    const html = generateRecipeHTML(recipe, url.origin);
+    const html = generateRecipeHTML(recipe);
     
     return new Response(html, {
       headers: {
@@ -78,9 +102,9 @@ Deno.serve(async (req) => {
   }
 });
 
-function generateRecipeHTML(recipe: PublicRecipeShare, origin: string): string {
-  const recipeUrl = `https://reali-meali.lovable.app/share/recipes/${recipe.public_share_id}`;
-  const imageUrl = recipe.image || `https://reali-meali.lovable.app/lovable-uploads/48805e49-e8eb-4205-a741-e7fb6446e6d1.png`;
+function generateRecipeHTML(recipe: PublicRecipeShare): string {
+  const recipeUrl = `https://realimeali.com/recipe/${recipe.slug || recipe.public_share_id}`;
+  const imageUrl = recipe.image || `https://realimeali.com/lovable-uploads/48805e49-e8eb-4205-a741-e7fb6446e6d1.png`;
   const title = `${recipe.title} | Shared Recipe`;
   const description = recipe.description || `A delicious recipe shared by ${recipe.shared_by_name || 'a fellow cook'}`;
 
@@ -152,7 +176,9 @@ function generateRecipeHTML(recipe: PublicRecipeShare, origin: string): string {
 </html>`;
 }
 
-function redirectToApp(publicShareId: string): Response {
+function redirectToApp(slug: string): Response {
+  const redirectUrl = slug ? `https://realimeali.com/recipe/${slug}` : 'https://realimeali.com';
+  
   const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -160,9 +186,9 @@ function redirectToApp(publicShareId: string): Response {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Recipe Not Found | RealiMeali</title>
   <script>
-    window.location.href = "https://reali-meali.lovable.app/share/recipes/${publicShareId}";
+    window.location.href = "${redirectUrl}";
   </script>
-  <meta http-equiv="refresh" content="0; url=https://reali-meali.lovable.app/share/recipes/${publicShareId}">
+  <meta http-equiv="refresh" content="0; url=${redirectUrl}">
 </head>
 <body>
   <div style="text-align: center; padding: 50px; font-family: Arial, sans-serif;">

@@ -380,6 +380,7 @@ export type Database = {
           shared_by_household_name: string | null
           shared_by_name: string | null
           shared_by_user_id: string
+          slug: string | null
           title: string
           view_count: number | null
         }
@@ -402,6 +403,7 @@ export type Database = {
           shared_by_household_name?: string | null
           shared_by_name?: string | null
           shared_by_user_id: string
+          slug?: string | null
           title: string
           view_count?: number | null
         }
@@ -424,6 +426,7 @@ export type Database = {
           shared_by_household_name?: string | null
           shared_by_name?: string | null
           shared_by_user_id?: string
+          slug?: string | null
           title?: string
           view_count?: number | null
         }
