@@ -33,13 +33,16 @@ Deno.serve(async (req) => {
     const url = new URL(req.url);
     const pathParts = url.pathname.split('/').filter(part => part);
     
-    // Handle both old format (/recipe-meta/share-id) and new format (/recipe/slug)
+    // Handle the new format /recipe/slug/share and existing formats
     let recipeSlug = '';
     
     if (pathParts.includes('recipe') && pathParts.length >= 2) {
-      // New format: /recipe/slug
       const recipeIndex = pathParts.indexOf('recipe');
       recipeSlug = pathParts[recipeIndex + 1];
+      
+      // If the path has /share at the end, it's the new format
+      const hasShareSuffix = pathParts[recipeIndex + 2] === 'share';
+      console.log('Has share suffix:', hasShareSuffix);
     } else {
       // Old format fallback: /recipe-meta/share-id
       recipeSlug = pathParts[pathParts.length - 1];
@@ -103,7 +106,7 @@ Deno.serve(async (req) => {
 });
 
 function generateRecipeHTML(recipe: PublicRecipeShare): string {
-  const recipeUrl = `https://realimeali.com/recipe/${recipe.slug || recipe.public_share_id}`;
+  const recipeUrl = `https://realimeali.com/recipe/${recipe.slug || recipe.public_share_id}/share`;
   const imageUrl = recipe.image || `https://realimeali.com/lovable-uploads/48805e49-e8eb-4205-a741-e7fb6446e6d1.png`;
   const title = `${recipe.title} | Shared Recipe`;
   const description = recipe.description || `A delicious recipe shared by ${recipe.shared_by_name || 'a fellow cook'}`;
@@ -177,7 +180,7 @@ function generateRecipeHTML(recipe: PublicRecipeShare): string {
 }
 
 function redirectToApp(slug: string): Response {
-  const redirectUrl = slug ? `https://realimeali.com/recipe/${slug}` : 'https://realimeali.com';
+  const redirectUrl = slug ? `https://realimeali.com/recipe/${slug}/share` : 'https://realimeali.com';
   
   const html = `<!DOCTYPE html>
 <html lang="en">

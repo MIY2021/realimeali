@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -5,6 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { Recipe, RecipeCategory } from "@/types";
+import { generateSlug, ensureUniqueSlug } from "@/utils/slugUtils";
 
 export interface PublicRecipeShare {
   id: string;
@@ -55,12 +57,7 @@ export const usePublicRecipeSharing = () => {
       const publicShareId = shareIdData;
 
       // Generate URL-friendly slug from recipe title
-      const baseSlug = recipe.title
-        .toLowerCase()
-        .trim()
-        .replace(/[^a-z0-9\s-]/g, '')
-        .replace(/[\s-]+/g, '-')
-        .replace(/^-+|-+$/g, '');
+      const baseSlug = generateSlug(recipe.title);
 
       // Check for existing slugs to ensure uniqueness
       const { data: existingSlugs } = await supabase
@@ -68,21 +65,15 @@ export const usePublicRecipeSharing = () => {
         .select('slug')
         .not('slug', 'is', null);
 
-      let slug = baseSlug;
-      let counter = 1;
       const slugList = existingSlugs?.map(item => item.slug) || [];
-      
-      while (slugList.includes(slug)) {
-        slug = `${baseSlug}-${counter}`;
-        counter++;
-      }
+      const uniqueSlug = ensureUniqueSlug(baseSlug, slugList);
 
       // Create the public share
       const { data, error } = await supabase
         .from('public_recipe_shares')
         .insert({
           public_share_id: publicShareId,
-          slug: slug,
+          slug: uniqueSlug,
           original_recipe_id: recipe.id,
           original_household_id: recipe.householdId,
           title: recipe.title,
@@ -106,17 +97,9 @@ export const usePublicRecipeSharing = () => {
         throw error;
       }
 
-      // Use the clean URL format with the slug
-      const shareUrl = `https://realimeali.com/recipe/${slug}`;
+      // Use the clean URL format with the slug and /share suffix
+      const shareUrl = `https://realimeali.com/recipe/${uniqueSlug}/share`;
       
-      // Copy to clipboard
-      await navigator.clipboard.writeText(shareUrl);
-      
-      toast({
-        title: "Recipe Shared Successfully!",
-        description: "The public recipe link has been copied to your clipboard.",
-      });
-
       return shareUrl;
     } catch (error) {
       console.error("Error creating public share:", error);
