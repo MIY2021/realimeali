@@ -48,9 +48,10 @@ Rules:
 3. Use standard units: cloves, cups, tablespoons, teaspoons, pounds, ounces, pieces
 4. If units can't be combined, pick the most common unit and estimate
 5. Clean ingredient names (remove extra words, standardize)
+6. IMPORTANT: Each consolidated item should have UNIQUE recipe IDs (no duplicates)
 
 Ingredients to consolidate:
-${ingredients.map(ing => `- "${ing.name}" (from ${ing.recipeTitle})`).join('\n')}
+${ingredients.map(ing => `- "${ing.name}" (from ${ing.recipeTitle}, ID: ${ing.recipeId})`).join('\n')}
 
 Return ONLY a JSON array with this exact structure:
 [
@@ -64,7 +65,10 @@ Return ONLY a JSON array with this exact structure:
   }
 ]
 
-Important: Return only valid JSON, no other text.`;
+Important: 
+- Return only valid JSON, no other text
+- Ensure recipeIds arrays contain no duplicates
+- Match recipe IDs from the input exactly`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -75,7 +79,7 @@ Important: Return only valid JSON, no other text.`;
       body: JSON.stringify({
         model: 'gpt-4o-mini',
         messages: [
-          { role: 'system', content: 'You are a helpful assistant that consolidates cooking ingredients. Always return valid JSON.' },
+          { role: 'system', content: 'You are a helpful assistant that consolidates cooking ingredients. Always return valid JSON with unique recipe IDs.' },
           { role: 'user', content: prompt }
         ],
         temperature: 0.1,
@@ -100,7 +104,7 @@ Important: Return only valid JSON, no other text.`;
       return basicConsolidation(ingredients);
     }
 
-    // Map recipe IDs correctly
+    // Ensure recipe IDs are properly mapped and deduplicated
     const result = consolidatedIngredients.map(item => {
       const matchingIngredients = ingredients.filter(ing => 
         item.sourceIngredients.some(source => 
@@ -109,10 +113,14 @@ Important: Return only valid JSON, no other text.`;
         )
       );
 
+      // Deduplicate recipe IDs and names
+      const uniqueRecipeIds = [...new Set(matchingIngredients.map(ing => ing.recipeId))];
+      const uniqueRecipeNames = [...new Set(matchingIngredients.map(ing => ing.recipeTitle))];
+
       return {
         ...item,
-        recipeIds: matchingIngredients.map(ing => ing.recipeId),
-        recipeNames: matchingIngredients.map(ing => ing.recipeTitle)
+        recipeIds: uniqueRecipeIds,
+        recipeNames: uniqueRecipeNames
       };
     });
 
@@ -178,8 +186,15 @@ function basicConsolidation(ingredients: IngredientInput[]): Response {
 
     const group = grouped.get(key)!;
     group.sourceIngredients.push(ingredient.name);
-    group.recipeIds.push(ingredient.recipeId);
-    group.recipeNames.push(ingredient.recipeTitle);
+    
+    // Deduplicate recipe IDs and names
+    if (!group.recipeIds.includes(ingredient.recipeId)) {
+      group.recipeIds.push(ingredient.recipeId);
+    }
+    if (!group.recipeNames.includes(ingredient.recipeTitle)) {
+      group.recipeNames.push(ingredient.recipeTitle);
+    }
+    
     group.consolidatedQuantity = group.sourceIngredients.length; // Simple count
   });
 

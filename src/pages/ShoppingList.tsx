@@ -3,7 +3,7 @@ import { useState } from "react";
 import ShoppingListHeader from "@/components/shopping-list/ShoppingListHeader";
 import ShoppingListWeekSelector from "@/components/shopping-list/ShoppingListWeekSelector";
 import ShoppingListSkeleton from "@/components/shopping-list/ShoppingListSkeleton";
-import GenerateShoppingListButton from "@/components/shopping-list/GenerateShoppingListButton";
+import ShoppingListItem from "@/components/shopping-list/ShoppingListItem";
 import { useShoppingList } from "@/hooks/useShoppingList";
 import { useShoppingListGenerator } from "@/hooks/useShoppingListGenerator";
 import { useAuth } from "@/contexts/AuthContext";
@@ -13,11 +13,7 @@ import { useMealPlan } from "@/contexts/MealPlanContext";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useToast } from "@/hooks/use-toast";
-import { extractIngredientName } from "@/utils/shoppingListUtils";
 import { Card, CardContent } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Button } from "@/components/ui/button";
-import { Copy, Check } from "lucide-react";
 
 export default function ShoppingList() {
   useDocumentTitle("Shopping List | RealiMeali");
@@ -37,15 +33,14 @@ export default function ShoppingList() {
     shoppingList,
     isLoading,
     toggleItemChecked,
-    addCustomItem,
-    clearAll,
   } = useShoppingList(weekNumber);
 
   const mealPlans = getMealPlansForWeek(weekNumber);
   const hasMealPlans = mealPlans.length > 0;
 
   const getRecipeNames = (recipeIds: string[]): string => {
-    const recipeNames = recipeIds
+    const uniqueRecipeIds = [...new Set(recipeIds)];
+    const recipeNames = uniqueRecipeIds
       .map(id => {
         const recipe = recipes.find(r => r.id === id);
         return recipe ? recipe.title : `Recipe ${id.substring(0, 8)}`;
@@ -55,11 +50,8 @@ export default function ShoppingList() {
     return recipeNames.length > 0 ? recipeNames.join(', ') : 'Unknown Recipe';
   };
 
-  const handleCopyItem = (itemName: string, itemId: string) => {
-    const ingredientName = extractIngredientName(itemName);
-    navigator.clipboard.writeText(ingredientName);
+  const handleCopyItem = (itemId: string) => {
     setCopiedItemId(itemId);
-    
     setTimeout(() => {
       setCopiedItemId(null);
     }, 2000);
@@ -124,9 +116,7 @@ export default function ShoppingList() {
     <div className={`w-full mx-auto px-4 sm:px-6 lg:px-8 ${isMobile ? 'py-4' : 'py-8'} ${!isMobile ? 'max-w-4xl' : ''}`}>
       <ShoppingListHeader 
         onShare={handleShare} 
-        onRegenerate={handleGenerate}
         weekNumber={weekNumber}
-        isRegenerating={isGenerating}
       />
 
       {!user ? (
@@ -141,13 +131,9 @@ export default function ShoppingList() {
         <>
           <ShoppingListWeekSelector 
             selectedWeek={weekNumber} 
-            onWeekSelect={setWeekNumber} 
-          />
-
-          <GenerateShoppingListButton
+            onWeekSelect={setWeekNumber}
             onGenerate={handleGenerate}
             isGenerating={isGenerating}
-            weekNumber={weekNumber}
             hasItems={shoppingList.length > 0}
           />
 
@@ -174,42 +160,19 @@ export default function ShoppingList() {
               ) : (
                 shoppingList.map((item) => (
                   <Card key={item.id} className="w-full">
-                    <CardContent className={`flex items-center justify-between ${isMobile ? 'p-3' : 'p-4'}`}>
-                      <div className="flex items-center space-x-3 flex-1">
-                        <Checkbox
-                          checked={item.isChecked}
-                          onCheckedChange={() => toggleItemChecked(item.id)}
-                          className="flex-shrink-0"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <div className={`font-medium ${item.isChecked ? 'line-through text-muted-foreground' : ''}`}>
-                            {item.consolidatedQuantity && item.consolidatedQuantity > 1 ? (
-                              <span className="text-primary font-semibold">
-                                {item.consolidatedQuantity}{item.consolidatedUnit ? ` ${item.consolidatedUnit}` : ''} 
-                              </span>
-                            ) : null}
-                            {item.consolidatedQuantity && item.consolidatedQuantity > 1 ? ' ' : ''}
-                            {item.name}
-                          </div>
-                          {item.recipeIds.length > 0 && (
-                            <div className="text-sm text-green-600 mt-1">
-                              From: {getRecipeNames(item.recipeIds)}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleCopyItem(item.name, item.id)}
-                        className="flex-shrink-0 ml-2"
-                      >
-                        {copiedItemId === item.id ? (
-                          <Check className="h-4 w-4 text-green-600" />
-                        ) : (
-                          <Copy className="h-4 w-4" />
-                        )}
-                      </Button>
+                    <CardContent className={`${isMobile ? 'p-2' : 'p-3'}`}>
+                      <ShoppingListItem
+                        id={item.id}
+                        name={item.name}
+                        quantity={item.consolidatedQuantity || 1}
+                        unit={item.consolidatedUnit}
+                        isChecked={item.isChecked}
+                        recipeIds={[...new Set(item.recipeIds)]}
+                        copiedItemId={copiedItemId}
+                        onCheck={(checked) => toggleItemChecked(item.id)}
+                        onCopy={() => handleCopyItem(item.id)}
+                        getRecipeNames={getRecipeNames}
+                      />
                     </CardContent>
                   </Card>
                 ))

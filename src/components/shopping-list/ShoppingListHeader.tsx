@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { Share, RefreshCw, Plus } from "lucide-react";
+import { Share, Plus } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -9,16 +9,12 @@ import { useHouseholdShopping } from "@/contexts/HouseholdShoppingContext";
 
 interface ShoppingListHeaderProps {
   onShare: () => void;
-  onRegenerate?: () => void;
   weekNumber: 1 | 2;
-  isRegenerating?: boolean;
 }
 
 export default function ShoppingListHeader({ 
   onShare, 
-  onRegenerate, 
-  weekNumber, 
-  isRegenerating = false 
+  weekNumber
 }: ShoppingListHeaderProps) {
   const isMobile = useIsMobile();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -50,19 +46,6 @@ export default function ShoppingListHeader({
           Shopping List
         </h1>
         <div className="flex gap-2">
-          {onRegenerate && (
-            <Button 
-              variant="outline" 
-              size={isMobile ? "sm" : "default"}
-              onClick={onRegenerate}
-              disabled={isRegenerating}
-              className="flex items-center gap-2"
-            >
-              <RefreshCw className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'} ${isRegenerating ? 'animate-spin' : ''}`} />
-              {!isMobile && (isRegenerating ? 'Regenerating...' : 'Regenerate')}
-            </Button>
-          )}
-          
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
             <DialogTrigger asChild>
               <Button 
