@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -6,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { Recipe, RecipeCategory } from "@/types";
-import { generateSlug, ensureUniqueSlug } from "@/utils/slugUtils";
+import { generateUniqueSlug } from "@/utils/slugUtils";
 
 export interface PublicRecipeShare {
   id: string;
@@ -56,9 +55,6 @@ export const usePublicRecipeSharing = () => {
       const { data: shareIdData } = await supabase.rpc('generate_public_share_id');
       const publicShareId = shareIdData;
 
-      // Generate URL-friendly slug from recipe title
-      const baseSlug = generateSlug(recipe.title);
-
       // Check for existing slugs to ensure uniqueness
       const { data: existingSlugs } = await supabase
         .from('public_recipe_shares')
@@ -66,7 +62,12 @@ export const usePublicRecipeSharing = () => {
         .not('slug', 'is', null);
 
       const slugList = existingSlugs?.map(item => item.slug) || [];
-      const uniqueSlug = ensureUniqueSlug(baseSlug, slugList);
+      
+      // Use the improved slug generation that tries variations before numbers
+      const uniqueSlug = generateUniqueSlug(recipe.title, slugList);
+
+      console.log('Creating share with slug:', uniqueSlug);
+      console.log('Recipe image:', recipe.image);
 
       // Create the public share
       const { data, error } = await supabase
@@ -97,6 +98,8 @@ export const usePublicRecipeSharing = () => {
         throw error;
       }
 
+      console.log('Created share successfully:', data);
+
       // Use the new URL format: /share/{slug}
       const shareUrl = `https://realimeali.com/share/${uniqueSlug}`;
       
@@ -116,6 +119,8 @@ export const usePublicRecipeSharing = () => {
 
   const getPublicShare = async (slugOrId: string): Promise<PublicRecipeShare | null> => {
     try {
+      console.log('Fetching public share for:', slugOrId);
+      
       // Try to fetch by slug first
       let { data, error } = await supabase
         .from('public_recipe_shares')
@@ -125,6 +130,7 @@ export const usePublicRecipeSharing = () => {
         .single();
 
       if (error || !data) {
+        console.log('Slug lookup failed, trying public_share_id fallback');
         // Fallback: try to fetch by public_share_id for backward compatibility
         const { data: fallbackData, error: fallbackError } = await supabase
           .from('public_recipe_shares')
@@ -141,6 +147,7 @@ export const usePublicRecipeSharing = () => {
         data = fallbackData;
       }
 
+      console.log('Found public share:', data.title);
       return data as PublicRecipeShare;
     } catch (error) {
       console.error("Error getting public share:", error);

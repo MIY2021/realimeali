@@ -33,6 +33,9 @@ Deno.serve(async (req) => {
     const url = new URL(req.url);
     const pathParts = url.pathname.split('/').filter(part => part);
     
+    console.log('URL pathname:', url.pathname);
+    console.log('Path parts:', pathParts);
+    
     // Handle the new format /share/slug and existing formats
     let recipeSlug = '';
     
@@ -75,6 +78,7 @@ Deno.serve(async (req) => {
       .single();
 
     if (error || !recipe) {
+      console.log('Slug lookup failed, trying public_share_id fallback');
       // Fallback: try to fetch by public_share_id for old links
       const { data: fallbackRecipe, error: fallbackError } = await supabase
         .from('public_recipe_shares')
@@ -92,6 +96,8 @@ Deno.serve(async (req) => {
     }
 
     console.log('Recipe found:', recipe.title);
+    console.log('Recipe image:', recipe.image);
+    console.log('Recipe description:', recipe.description);
 
     // Generate the HTML with proper meta tags
     const html = generateRecipeHTML(recipe);
@@ -113,8 +119,14 @@ function generateRecipeHTML(recipe: PublicRecipeShare): string {
   // Use the new URL format: /share/{slug}
   const recipeUrl = `https://realimeali.com/share/${recipe.slug || recipe.public_share_id}`;
   const imageUrl = recipe.image || `https://realimeali.com/lovable-uploads/48805e49-e8eb-4205-a741-e7fb6446e6d1.png`;
-  const title = `${recipe.title} | RealiMeali`;
-  const description = recipe.description || `A delicious recipe shared by ${recipe.shared_by_name || 'a fellow cook'}`;
+  const title = `${recipe.title} Recipe | RealiMeali`;
+  const description = recipe.description || `A delicious recipe shared by ${recipe.shared_by_name || 'a fellow cook'}. Prep time: ${recipe.prep_time} min, Cook time: ${recipe.cook_time} min, Serves: ${recipe.servings}.`;
+
+  console.log('Generated meta data:');
+  console.log('- Title:', title);
+  console.log('- Description:', description);
+  console.log('- Image URL:', imageUrl);
+  console.log('- Recipe URL:', recipeUrl);
 
   return `<!DOCTYPE html>
 <html lang="en">
