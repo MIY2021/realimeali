@@ -97,7 +97,17 @@ export default function RecipesPage() {
         </div>
       ) : !currentHousehold ? (
         <div className="py-10 text-center px-4">
-          <p className="text-muted-foreground mb-4">Please create or select a household to view recipes.</p>
+          <div className="max-w-md mx-auto">
+            <h2 className="text-xl font-semibold text-navy mb-2">No Household Selected</h2>
+            <p className="text-muted-foreground mb-6">
+              You need to create or join a household to view and manage recipes.
+            </p>
+            <Button asChild className="bg-terracotta hover:bg-terracotta/90">
+              <Link to="/household">
+                Manage Household
+              </Link>
+            </Button>
+          </div>
         </div>
       ) : (
         <RecipeList 
