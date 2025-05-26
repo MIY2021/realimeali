@@ -30,7 +30,7 @@ export function RecipeList({
   
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
-  const [sortType, setSortType] = useState<string>("title-asc");
+  const [sortType, setSortType] = useState<string>("date-newest");
   const [displayCount, setDisplayCount] = useState(12);
   
   // State for meal plan dialog
