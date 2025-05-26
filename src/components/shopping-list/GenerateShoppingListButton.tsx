@@ -1,5 +1,6 @@
+
 import { Button } from "@/components/ui/button";
-import { ShoppingBag, Sparkles } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface GenerateShoppingListButtonProps {
@@ -42,7 +43,20 @@ export default function GenerateShoppingListButton({
           </>
         ) : (
           <>
-            <ShoppingBag className={`${isMobile ? 'h-4 w-4' : 'h-5 w-5'}`} />
+            <svg 
+              className={`${isMobile ? 'h-4 w-4' : 'h-5 w-5'}`} 
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24" 
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                strokeWidth={2} 
+                d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" 
+              />
+            </svg>
             <span>
               {hasItems 
                 ? (isMobile ? 'Regenerate List' : `Regenerate Week ${weekNumber} List`)
