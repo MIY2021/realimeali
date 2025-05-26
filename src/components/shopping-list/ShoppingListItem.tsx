@@ -6,6 +6,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useNavigate } from "react-router-dom";
 import { extractIngredientName, capitalizeShoppingItem } from "@/utils/shoppingListUtils";
 import { useRecipes } from "@/contexts/RecipesContext";
+import { useRef, useCallback } from "react";
 
 interface ShoppingListItemProps {
   id: string;
@@ -34,6 +35,8 @@ export default function ShoppingListItem({
   const isMobile = useIsMobile();
   const navigate = useNavigate();
   const { recipes } = useRecipes();
+  const longPressTimer = useRef<NodeJS.Timeout | null>(null);
+  const isLongPressing = useRef(false);
 
   const createSlug = (title: string) => {
     return title
@@ -66,6 +69,63 @@ export default function ShoppingListItem({
     onCheck(checked as boolean);
   };
 
+  // Long press handlers
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    e.preventDefault(); // Prevent default touch highlighting
+    isLongPressing.current = false;
+    
+    longPressTimer.current = setTimeout(() => {
+      isLongPressing.current = true;
+      handleCopy();
+      // Add haptic feedback if available
+      if (navigator.vibrate) {
+        navigator.vibrate(50);
+      }
+    }, 500); // 500ms for long press
+  }, []);
+
+  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+    e.preventDefault();
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+  }, []);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    // Cancel long press if user moves finger
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+  }, []);
+
+  // Mouse handlers for desktop long press
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent default selection highlighting
+    isLongPressing.current = false;
+    
+    longPressTimer.current = setTimeout(() => {
+      isLongPressing.current = true;
+      handleCopy();
+    }, 500);
+  }, []);
+
+  const handleMouseUp = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+  }, []);
+
   const displayName = capitalizeShoppingItem(name.replace(/^week\d+-/, ''));
 
   // Format quantity and unit display - ALWAYS show quantity, including 1
@@ -81,7 +141,21 @@ export default function ShoppingListItem({
   };
 
   return (
-    <div className={`flex items-start space-x-${isMobile ? '2' : '3'} ${isMobile ? 'p-1.5' : 'p-2'} rounded hover:bg-accent`}>
+    <div 
+      className={`flex items-start space-x-${isMobile ? '2' : '3'} ${isMobile ? 'p-1.5' : 'p-2'} rounded hover:bg-accent select-none`}
+      style={{ 
+        WebkitTouchCallout: 'none',
+        WebkitUserSelect: 'none',
+        userSelect: 'none',
+        WebkitTapHighlightColor: 'transparent'
+      }}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      onTouchMove={handleTouchMove}
+      onMouseDown={handleMouseDown}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseLeave}
+    >
       <Checkbox
         checked={isChecked}
         onCheckedChange={handleCheckboxChange}
