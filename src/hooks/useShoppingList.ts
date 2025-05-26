@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { useMealPlan } from "@/contexts/MealPlanContext";
@@ -19,19 +19,47 @@ export const useShoppingList = (weekNumber: 1 | 2) => {
   const [shoppingList, setShoppingList] = useState<ShoppingListCategory>({});
   const [isLoading, setIsLoading] = useState(false);
   
-  // Use refs to track generation state without triggering re-renders
+  // Use refs to prevent re-renders and track state
   const hasGeneratedRef = useRef<Set<string>>(new Set());
   const isGeneratingRef = useRef(false);
+  const lastLoadTimeRef = useRef<number>(0);
+  const generationCooldownRef = useRef<Map<string, number>>(new Map());
+  const realtimeUpdateCountRef = useRef(0);
 
-  // Generate a unique key for the current week/household combination
-  const getGenerationKey = useCallback(() => {
+  // Memoize generation key to prevent unnecessary re-renders
+  const generationKey = useMemo(() => {
     if (!currentHousehold) return null;
     return `${currentHousehold.id}-week-${weekNumber}`;
-  }, [currentHousehold, weekNumber]);
+  }, [currentHousehold?.id, weekNumber]);
 
-  // Load existing shopping list
+  // Database-first check for existing items
+  const checkDatabaseForItems = useCallback(async (householdId: string): Promise<boolean> => {
+    try {
+      const { data, error } = await supabase
+        .from('household_shopping_lists')
+        .select('id')
+        .eq('household_id', householdId)
+        .limit(1);
+
+      if (error) throw error;
+      return (data || []).length > 0;
+    } catch (error) {
+      console.error("Error checking database for items:", error);
+      return false; // Assume empty on error to allow generation
+    }
+  }, []);
+
+  // Stable load function without toast dependency
   const loadShoppingList = useCallback(async () => {
     if (!user || !currentHousehold) return;
+
+    const now = Date.now();
+    // Prevent rapid reloads
+    if (now - lastLoadTimeRef.current < 500) {
+      console.log('Skipping load - too frequent');
+      return;
+    }
+    lastLoadTimeRef.current = now;
 
     setIsLoading(true);
     try {
@@ -39,67 +67,76 @@ export const useShoppingList = (weekNumber: 1 | 2) => {
       setShoppingList(existingItems || {});
     } catch (error) {
       console.error("Error loading shopping list:", error);
-      toast({
-        title: "Error",
-        description: "Failed to load shopping list",
-        variant: "destructive",
-      });
+      // Handle error without toast to avoid dependency issues
+      setShoppingList({});
     } finally {
       setIsLoading(false);
     }
-  }, [user, currentHousehold, toast]);
+  }, [user, currentHousehold]);
 
-  // Auto-generate shopping list from meal plans if needed
+  // Auto-generate with database-first approach and cooldown
   const autoGenerateFromMealPlans = useCallback(async () => {
-    if (!user || !currentHousehold || isGeneratingRef.current) return;
+    if (!user || !currentHousehold || !generationKey || isGeneratingRef.current) {
+      return;
+    }
 
-    const generationKey = getGenerationKey();
-    if (!generationKey || hasGeneratedRef.current.has(generationKey)) return;
+    // Check cooldown period
+    const lastGeneration = generationCooldownRef.current.get(generationKey);
+    const now = Date.now();
+    if (lastGeneration && now - lastGeneration < 5000) { // 5 second cooldown
+      console.log('Generation on cooldown for', generationKey);
+      return;
+    }
+
+    // Check if already generated for this key
+    if (hasGeneratedRef.current.has(generationKey)) {
+      return;
+    }
 
     const mealPlans = getMealPlansForWeek(weekNumber);
     
     // Only generate if we have meal plans
     if (mealPlans.length > 0) {
-      // Check if shopping list is truly empty (not just loading)
-      const allItems = Object.values(shoppingList).flat();
-      if (allItems.length === 0 && !isLoading) {
+      // Check database directly instead of using state
+      const hasExistingItems = await checkDatabaseForItems(currentHousehold.id);
+      
+      if (!hasExistingItems) {
         console.log('Auto-generating shopping list from meal plans for', generationKey);
         
         isGeneratingRef.current = true;
         hasGeneratedRef.current.add(generationKey);
+        generationCooldownRef.current.set(generationKey, now);
         
         try {
           setIsLoading(true);
           await generateAndSaveFromMealPlans(weekNumber);
-          // Don't call loadShoppingList here - let real-time sync handle it
+          // Let real-time sync handle the update
         } catch (error) {
           console.error("Error auto-generating shopping list:", error);
           // Remove from generated set on error so user can retry
           hasGeneratedRef.current.delete(generationKey);
+          generationCooldownRef.current.delete(generationKey);
         } finally {
           setIsLoading(false);
           isGeneratingRef.current = false;
         }
       }
     }
-  }, [user, currentHousehold, getMealPlansForWeek, weekNumber, generateAndSaveFromMealPlans, getGenerationKey, isLoading]);
+  }, [user, currentHousehold, getMealPlansForWeek, weekNumber, generateAndSaveFromMealPlans, generationKey, checkDatabaseForItems]);
 
-  // Clear generation flag when week or household changes
+  // Clear generation flags when generation key changes
   useEffect(() => {
-    const generationKey = getGenerationKey();
-    if (generationKey && !hasGeneratedRef.current.has(generationKey)) {
-      // Reset the shopping list when switching weeks/households
-      const emptyCategories: ShoppingListCategory = {};
-      SHOPPING_CATEGORIES.forEach(cat => {
-        emptyCategories[cat] = [];
-      });
-      setShoppingList(emptyCategories);
+    if (generationKey) {
+      // Don't reset shopping list state here to prevent flashing
+      console.log('Generation key changed to:', generationKey);
     }
-  }, [getGenerationKey]);
+  }, [generationKey]);
 
-  // Set up real-time subscription for cross-household sync
+  // Optimized real-time subscription with proper debouncing
   useEffect(() => {
     if (!currentHousehold) return;
+
+    let debounceTimer: NodeJS.Timeout;
 
     const channel = supabase
       .channel('shopping-list-changes')
@@ -113,33 +150,60 @@ export const useShoppingList = (weekNumber: 1 | 2) => {
         },
         (payload) => {
           console.log('Shopping list changed:', payload);
-          // Debounce the reload to prevent rapid-fire updates
+          
+          // Increment update counter for circuit breaker
+          realtimeUpdateCountRef.current++;
+          
+          // Circuit breaker: if too many updates in short time, ignore
+          if (realtimeUpdateCountRef.current > 10) {
+            console.log('Circuit breaker: too many real-time updates, ignoring');
+            return;
+          }
+          
+          // Reset counter after a delay
           setTimeout(() => {
-            if (!isGeneratingRef.current) {
+            realtimeUpdateCountRef.current = 0;
+          }, 10000);
+
+          // Clear any existing timer
+          if (debounceTimer) {
+            clearTimeout(debounceTimer);
+          }
+          
+          // Debounce with longer delay and proper guards
+          debounceTimer = setTimeout(() => {
+            if (!isGeneratingRef.current && !isLoading) {
               loadShoppingList();
             }
-          }, 100);
+          }, 1000); // Increased from 100ms to 1000ms
         }
       )
       .subscribe();
 
     return () => {
+      if (debounceTimer) {
+        clearTimeout(debounceTimer);
+      }
       supabase.removeChannel(channel);
     };
-  }, [currentHousehold, loadShoppingList]);
+  }, [currentHousehold, loadShoppingList, isLoading]);
 
   // Load shopping list when dependencies change
   useEffect(() => {
     loadShoppingList();
   }, [loadShoppingList]);
 
-  // Auto-generate ONLY when shopping list is loaded and empty
+  // Auto-generate with proper guards
   useEffect(() => {
-    // Only run auto-generation after shopping list is loaded
-    if (!isLoading) {
-      autoGenerateFromMealPlans();
+    // Only run auto-generation after initial load and with proper delays
+    if (!isLoading && generationKey) {
+      const timer = setTimeout(() => {
+        autoGenerateFromMealPlans();
+      }, 1000); // Delay auto-generation
+
+      return () => clearTimeout(timer);
     }
-  }, [autoGenerateFromMealPlans, isLoading]);
+  }, [autoGenerateFromMealPlans, isLoading, generationKey]);
 
   const toggleItemChecked = useCallback(async (itemId: string, category: string) => {
     if (!user || !currentHousehold) return;
@@ -226,9 +290,9 @@ export const useShoppingList = (weekNumber: 1 | 2) => {
         setShoppingList(emptyCategories);
         
         // Clear generation flag so it can generate again
-        const generationKey = getGenerationKey();
         if (generationKey) {
           hasGeneratedRef.current.delete(generationKey);
+          generationCooldownRef.current.delete(generationKey);
         }
 
         toast({
@@ -252,7 +316,7 @@ export const useShoppingList = (weekNumber: 1 | 2) => {
     } finally {
       setIsLoading(false);
     }
-  }, [user, currentHousehold, toast, getGenerationKey]);
+  }, [user, currentHousehold, toast, generationKey]);
 
   return {
     shoppingList,
