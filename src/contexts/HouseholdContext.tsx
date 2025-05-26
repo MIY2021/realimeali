@@ -535,23 +535,44 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
   const createHousehold = async (name: string): Promise<Household | null> => {
     try {
       if (!user) {
-        toast({
-          title: "Authentication Required",
-          description: "You must be logged in to create a household.",
-          variant: "destructive",
-        });
-        return null;
+        throw new Error("You must be logged in to create a household. Please sign in and try again.");
+      }
+
+      if (!name.trim()) {
+        throw new Error("Household name cannot be empty.");
+      }
+
+      if (name.trim().length < 2) {
+        throw new Error("Household name must be at least 2 characters long.");
+      }
+
+      if (name.trim().length > 50) {
+        throw new Error("Household name cannot be longer than 50 characters.");
       }
 
       console.log("Creating household with name:", name);
 
       const { data, error } = await supabase.rpc('create_household_with_owner', {
-        household_name: name
+        household_name: name.trim()
       });
 
       if (error) {
         console.error("Error creating household:", error);
-        throw error;
+        
+        // Provide specific error messages based on error codes
+        if (error.code === '23505') {
+          throw new Error("A household with this name already exists for your account. Please choose a different name.");
+        } else if (error.code === '42501') {
+          throw new Error("You don't have permission to create households. Please contact support.");
+        } else if (error.message?.includes('network')) {
+          throw new Error("Network error. Please check your internet connection and try again.");
+        } else {
+          throw new Error(`Failed to create household: ${error.message || 'Unknown database error'}`);
+        }
+      }
+
+      if (!data) {
+        throw new Error("Failed to create household. No data returned from server.");
       }
 
       console.log("Household created with ID:", data);
@@ -565,7 +586,7 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
 
       if (fetchError) {
         console.error("Error fetching created household:", fetchError);
-        throw fetchError;
+        throw new Error(`Household created but failed to retrieve details: ${fetchError.message}`);
       }
 
       const newHousehold: Household = {
@@ -587,11 +608,13 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
       return newHousehold;
     } catch (err) {
       console.error("Error creating household:", err);
-      toast({
-        title: "Error",
-        description: "Failed to create household. Please try again.",
-      });
-      return null;
+      
+      // Re-throw the error so the UI component can handle it
+      if (err instanceof Error) {
+        throw err;
+      } else {
+        throw new Error("An unexpected error occurred while creating the household. Please try again.");
+      }
     }
   };
 
