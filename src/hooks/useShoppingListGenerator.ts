@@ -15,7 +15,7 @@ export const useShoppingListGenerator = () => {
   const { currentHousehold } = useHousehold();
 
   const generateAndSaveFromMealPlans = useCallback(async (weekNumber: 1 | 2): Promise<ShoppingListItem[]> => {
-    console.log('=== STARTING FAST SHOPPING LIST GENERATION ===');
+    console.log('=== STARTING OPTIMIZED SHOPPING LIST GENERATION ===');
     console.log('Week:', weekNumber);
     console.log('User:', !!user);
     console.log('Household:', !!currentHousehold);
@@ -34,49 +34,53 @@ export const useShoppingListGenerator = () => {
       return [];
     }
 
-    // Clear existing items for this week first
-    console.log('Clearing existing items for week', weekNumber);
-    await ShoppingListService.clearAll(currentHousehold.id, weekNumber);
+    try {
+      // Step 1: Clear existing items for this week
+      console.log('Clearing existing items for week', weekNumber);
+      await ShoppingListService.clearAll(currentHousehold.id, weekNumber);
 
-    // Collect ingredients from meal plans
-    const ingredientInputs: Array<{
-      name: string;
-      recipeId: string;
-      recipeTitle: string;
-    }> = [];
+      // Step 2: Collect ingredients from meal plans
+      const ingredientInputs: Array<{
+        name: string;
+        recipeId: string;
+        recipeTitle: string;
+      }> = [];
 
-    mealPlans.forEach(mealPlan => {
-      if (mealPlan.isLeftover) {
-        console.log('Skipping leftover meal plan:', mealPlan.id);
-        return;
-      }
-      
-      const recipe = recipes.find(r => r.id === mealPlan.recipeId);
-      if (!recipe) {
-        console.log('Recipe not found for meal plan:', mealPlan.recipeId);
-        return;
-      }
+      mealPlans.forEach(mealPlan => {
+        if (mealPlan.isLeftover) {
+          console.log('Skipping leftover meal plan:', mealPlan.id);
+          return;
+        }
+        
+        const recipe = recipes.find(r => r.id === mealPlan.recipeId);
+        if (!recipe) {
+          console.log('Recipe not found for meal plan:', mealPlan.recipeId);
+          return;
+        }
 
-      console.log('Processing recipe:', recipe.title, 'with', recipe.ingredients.length, 'ingredients');
+        console.log('Processing recipe:', recipe.title, 'with', recipe.ingredients.length, 'ingredients');
 
-      recipe.ingredients.forEach(ingredient => {
-        ingredientInputs.push({
-          name: ingredient,
-          recipeId: recipe.id,
-          recipeTitle: recipe.title
+        recipe.ingredients.forEach(ingredient => {
+          // Filter out empty or invalid ingredients
+          const trimmed = ingredient?.trim();
+          if (trimmed && trimmed.length > 0 && trimmed !== 'undefined' && trimmed !== 'null') {
+            ingredientInputs.push({
+              name: trimmed,
+              recipeId: recipe.id,
+              recipeTitle: recipe.title
+            });
+          }
         });
       });
-    });
 
-    console.log('Total ingredients collected:', ingredientInputs.length);
+      console.log('Total valid ingredients collected:', ingredientInputs.length);
 
-    if (ingredientInputs.length === 0) {
-      console.log('No ingredients found to consolidate');
-      return [];
-    }
+      if (ingredientInputs.length === 0) {
+        console.log('No valid ingredients found to consolidate');
+        return [];
+      }
 
-    try {
-      // Use fast local consolidation instead of OpenAI
+      // Step 3: Use fast local consolidation
       console.log('Starting fast local consolidation...');
       const startTime = performance.now();
       
@@ -86,12 +90,29 @@ export const useShoppingListGenerator = () => {
       console.log(`Consolidation completed in ${Math.round(endTime - startTime)}ms`);
       console.log('Consolidated ingredients:', consolidatedIngredients.length);
 
-      // Batch save all items to database
+      // Step 4: Filter out invalid consolidated items
+      const validConsolidatedIngredients = consolidatedIngredients.filter(item => {
+        const isValid = item.name && 
+                       item.name.trim().length > 0 && 
+                       item.name !== 'undefined' && 
+                       item.name !== 'null' &&
+                       item.consolidatedQuantity > 0;
+        
+        if (!isValid) {
+          console.log('Filtering out invalid item:', item);
+        }
+        
+        return isValid;
+      });
+
+      console.log('Valid items after filtering:', validConsolidatedIngredients.length);
+
+      // Step 5: Batch save all valid items to database
       const savedItems: ShoppingListItem[] = [];
       
-      console.log('Batch saving', consolidatedIngredients.length, 'items...');
+      console.log('Batch saving', validConsolidatedIngredients.length, 'items...');
       
-      for (const item of consolidatedIngredients) {
+      for (const item of validConsolidatedIngredients) {
         try {
           const savedItem = await ShoppingListService.addConsolidatedItem(
             item.name,

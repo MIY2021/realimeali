@@ -67,6 +67,18 @@ export default function ShoppingListItem({
 
   const displayName = capitalizeShoppingItem(name.replace(/^week\d+-/, ''));
 
+  // Format quantity and unit display
+  const formatQuantityAndUnit = () => {
+    if (!quantity || quantity <= 1) {
+      // Don't show "1" but do show unit if it exists
+      return unit ? `${unit} ` : '';
+    }
+    
+    // Show quantity and unit for amounts > 1
+    const formattedQuantity = quantity % 1 === 0 ? quantity.toString() : quantity.toFixed(1);
+    return unit ? `${formattedQuantity} ${unit} ` : `${formattedQuantity} `;
+  };
+
   return (
     <div className={`flex items-start space-x-${isMobile ? '2' : '3'} ${isMobile ? 'p-1.5' : 'p-2'} rounded hover:bg-accent`}>
       <Checkbox
@@ -77,8 +89,7 @@ export default function ShoppingListItem({
       <div className="flex-1 min-w-0">
         <div className={`${isChecked ? 'line-through text-muted-foreground' : ''}`}>
           <span className={`font-medium ${isMobile ? 'text-sm' : ''}`}>
-            {quantity && quantity > 1 && `${quantity}${unit ? ` ${unit}` : ''} `}
-            {displayName}
+            {formatQuantityAndUnit()}{displayName}
           </span>
         </div>
         {recipeIds.length > 0 && (
