@@ -61,7 +61,9 @@ export default function ShoppingListWeekSelector({
     if (!isGenerating) return;
 
     const interval = setInterval(() => {
-      setCurrentMessage(prev => (prev + 1) % humorousMessages.length);
+      // Generate a random index instead of cycling sequentially
+      const randomIndex = Math.floor(Math.random() * humorousMessages.length);
+      setCurrentMessage(randomIndex);
     }, 2000);
 
     return () => clearInterval(interval);
