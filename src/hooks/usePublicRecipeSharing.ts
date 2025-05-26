@@ -82,7 +82,8 @@ export const usePublicRecipeSharing = () => {
         throw error;
       }
 
-      const shareUrl = `${window.location.origin}/share/recipes/${publicShareId}`;
+      // Use the recipe-meta endpoint for better social media previews
+      const shareUrl = `${window.location.origin}/recipe-meta/${publicShareId}`;
       
       // Copy to clipboard
       await navigator.clipboard.writeText(shareUrl);
