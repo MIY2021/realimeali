@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Recipe, RecipeCategory } from "@/types";
 import {
@@ -9,9 +8,11 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, X, Sparkles } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { useImageGeneration } from "@/hooks/useImageGeneration";
+import { Plus, Trash2, X, Camera, Loader } from "lucide-react";
 
 interface EditRecipeDialogProps {
   recipe: Recipe;
@@ -29,12 +30,14 @@ const AVAILABLE_CATEGORIES: RecipeCategory[] = [
 
 export function EditRecipeDialog({ recipe, open, onOpenChange, onSave }: EditRecipeDialogProps) {
   const { toast } = useToast();
+  const { handleGenerateImage } = useImageGeneration();
   const [editedRecipe, setEditedRecipe] = useState<Recipe>({ ...recipe });
   const [newCategory, setNewCategory] = useState("");
   const [newIngredient, setNewIngredient] = useState("");
   const [newInstruction, setNewInstruction] = useState("");
   const [imagePreview, setImagePreview] = useState<string | null>(recipe.image || null);
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+  const [generationProgress, setGenerationProgress] = useState("");
 
   useEffect(() => {
     if (open) {
@@ -83,51 +86,14 @@ export function EditRecipeDialog({ recipe, open, onOpenChange, onSave }: EditRec
     });
   };
 
-  const handleGenerateImage = async () => {
-    setIsGeneratingImage(true);
-    console.log("🎨 Generating AI image for recipe:", editedRecipe.title);
-
-    try {
-      const prompt = `A delicious, appetizing photo of ${editedRecipe.title}. Professional food photography, well-lit, garnished, restaurant quality presentation.`;
-      
-      console.log("📡 Calling generate-recipe-image function with prompt:", prompt);
-      
-      const { data, error } = await supabase.functions.invoke('generate-recipe-image', {
-        body: { prompt },
-      });
-
-      if (error) {
-        console.error("❌ Error generating image:", error);
-        throw new Error(error.message || 'Failed to generate image');
-      }
-
-      if (!data?.image) {
-        console.error("❌ No image in response:", data);
-        throw new Error('No image received from AI');
-      }
-
-      console.log("✅ Image generated successfully");
-      setImagePreview(data.image);
-      setEditedRecipe({
-        ...editedRecipe,
-        image: data.image,
-      });
-
-      toast({
-        title: "Image Generated!",
-        description: "AI has created a beautiful image for your recipe.",
-      });
-
-    } catch (error) {
-      console.error("💥 Error generating image:", error);
-      toast({
-        title: "Generation Failed",
-        description: error instanceof Error ? error.message : "Failed to generate image. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsGeneratingImage(false);
-    }
+  const onGenerateImage = () => {
+    handleGenerateImage(
+      editedRecipe.title,
+      setImagePreview,
+      (imageUrl: string) => setEditedRecipe({ ...editedRecipe, image: imageUrl }),
+      setIsGeneratingImage,
+      setGenerationProgress
+    );
   };
 
   const handleAddCategory = () => {
@@ -264,8 +230,51 @@ export function EditRecipeDialog({ recipe, open, onOpenChange, onSave }: EditRec
 
             <div>
               <label className="block text-sm font-medium mb-1">Image</label>
-              <div className="flex flex-col items-center space-y-2">
-                {imagePreview ? (
+              <div className="space-y-3">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="w-full p-2 border rounded"
+                  disabled={isGeneratingImage}
+                />
+                
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={onGenerateImage}
+                  disabled={isGeneratingImage || !editedRecipe.title.trim()}
+                  className="w-full"
+                >
+                  {isGeneratingImage ? (
+                    <>
+                      <Loader className="h-4 w-4 mr-2 animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <Camera className="h-4 w-4 mr-2" />
+                      Generate AI Photo
+                    </>
+                  )}
+                </Button>
+
+                {/* Progress indicator */}
+                {isGeneratingImage && (
+                  <div className="space-y-2">
+                    <Progress value={undefined} className="w-full" />
+                    {generationProgress && (
+                      <p className="text-sm text-muted-foreground text-center">
+                        {generationProgress}
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* Image preview or loading skeleton */}
+                {isGeneratingImage && !imagePreview ? (
+                  <Skeleton className="w-full aspect-video rounded" />
+                ) : imagePreview ? (
                   <div className="relative w-full aspect-video">
                     <img
                       src={imagePreview}
@@ -284,29 +293,7 @@ export function EditRecipeDialog({ recipe, open, onOpenChange, onSave }: EditRec
                       <X className="h-4 w-4" />
                     </Button>
                   </div>
-                ) : (
-                  <div className="border-2 border-dashed border-gray-300 rounded-md p-6 w-full flex items-center justify-center">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageChange}
-                      className="block w-full"
-                    />
-                  </div>
-                )}
-                
-                <div className="flex gap-2 w-full">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleGenerateImage}
-                    disabled={isGeneratingImage}
-                    className="flex-1"
-                  >
-                    <Sparkles className="h-4 w-4 mr-2" />
-                    {isGeneratingImage ? "Generating..." : "Generate AI Image"}
-                  </Button>
-                </div>
+                ) : null}
               </div>
             </div>
           </div>
