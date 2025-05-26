@@ -1,6 +1,5 @@
-
 import { Button } from "@/components/ui/button";
-import { ShoppingCart, Sparkles } from "lucide-react";
+import { ShoppingBag, Sparkles } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface GenerateShoppingListButtonProps {
@@ -43,7 +42,7 @@ export default function GenerateShoppingListButton({
           </>
         ) : (
           <>
-            <ShoppingCart className={`${isMobile ? 'h-4 w-4' : 'h-5 w-5'}`} />
+            <ShoppingBag className={`${isMobile ? 'h-4 w-4' : 'h-5 w-5'}`} />
             <span>
               {hasItems 
                 ? (isMobile ? 'Regenerate List' : `Regenerate Week ${weekNumber} List`)
