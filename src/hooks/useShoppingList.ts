@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
@@ -56,11 +55,17 @@ export const useShoppingList = (weekNumber: 1 | 2) => {
   const toggleItemChecked = useCallback(async (itemId: string, category: string) => {
     if (!user || !currentHousehold) return;
 
+    console.log('Toggling item checked:', itemId, category);
+
     const items = shoppingList[category] || [];
     const item = items.find(i => i.id === itemId);
-    if (!item) return;
+    if (!item) {
+      console.error('Item not found:', itemId, category);
+      return;
+    }
 
     const newCheckedState = !item.isChecked;
+    console.log('New checked state:', newCheckedState);
 
     // Update local state immediately
     setShoppingList(prev => ({
@@ -70,19 +75,28 @@ export const useShoppingList = (weekNumber: 1 | 2) => {
       ) || []
     }));
 
-    // Update database if it's a saved item
-    const success = await ShoppingListService.toggleItemChecked(itemId, newCheckedState, currentHousehold.id);
-    
-    if (!success) {
-      // Revert on error
-      setShoppingList(prev => ({
-        ...prev,
-        [category]: prev[category]?.map(i => 
-          i.id === itemId ? { ...i, isChecked: !newCheckedState } : i
-        ) || []
-      }));
+    // Update database if it's a saved item (not generated)
+    if (!itemId.startsWith('generated-')) {
+      const success = await ShoppingListService.toggleItemChecked(itemId, newCheckedState, currentHousehold.id);
+      
+      if (!success) {
+        console.error('Failed to update item in database');
+        // Revert on error
+        setShoppingList(prev => ({
+          ...prev,
+          [category]: prev[category]?.map(i => 
+            i.id === itemId ? { ...i, isChecked: !newCheckedState } : i
+          ) || []
+        }));
+        
+        toast({
+          title: "Error",
+          description: "Failed to update item",
+          variant: "destructive",
+        });
+      }
     }
-  }, [user, currentHousehold, shoppingList]);
+  }, [user, currentHousehold, shoppingList, toast]);
 
   const addCustomItem = useCallback(async (name: string, category: string) => {
     if (!user || !currentHousehold || !name.trim()) return;

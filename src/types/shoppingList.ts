@@ -21,11 +21,5 @@ export const SHOPPING_CATEGORIES = [
   "Frozen Food",
   "Dietary, Lifestyle & World Foods",
   "Soft Drinks, Tea & Coffee",
-  "Beer, Wine & Spirits",
-  "Health, Beauty & Personal Care",
-  "Baby, Parent & Kids",
-  "Home Care & Cleaning",
-  "Pets, Home & Garden",
-  "Occasions & Entertaining",
-  "Clothing & Accessories"
+  "Beer, Wine & Spirits"
 ];

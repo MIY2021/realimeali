@@ -3,6 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Copy, Check, Trash2 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useNavigate } from "react-router-dom";
+import { extractIngredientName, capitalizeShoppingItem } from "@/utils/shoppingListUtils";
+import { useRecipes } from "@/contexts/RecipesContext";
 
 interface ShoppingListItemProps {
   id: string;
@@ -32,25 +35,76 @@ export default function ShoppingListItem({
   getRecipeNames
 }: ShoppingListItemProps) {
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
+  const { recipes } = useRecipes();
+
+  const createSlug = (title: string) => {
+    return title
+      .toLowerCase()
+      .replace(/[^a-z0-9 -]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .trim();
+  };
+
+  const handleRecipeClick = (recipeId: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const recipe = recipes.find(r => r.id === recipeId);
+    if (recipe) {
+      const slug = createSlug(recipe.title);
+      navigate(`/recipes/${slug}`);
+    }
+  };
+
+  const handleCopy = () => {
+    // Extract just the ingredient name (removing quantities, etc.)
+    const ingredientName = extractIngredientName(name);
+    navigator.clipboard.writeText(ingredientName);
+    onCopy();
+  };
+
+  const handleCheckboxChange = (checked: boolean | string) => {
+    console.log('Checkbox changed:', checked, 'for item:', id);
+    onCheck(checked as boolean);
+  };
+
+  const displayName = capitalizeShoppingItem(name.replace(/^week\d+-/, ''));
 
   return (
     <div className={`flex items-start space-x-${isMobile ? '2' : '3'} ${isMobile ? 'p-1.5' : 'p-2'} rounded hover:bg-accent`}>
       <Checkbox
         checked={isChecked}
-        onCheckedChange={(checked) => onCheck(checked as boolean)}
+        onCheckedChange={handleCheckboxChange}
         className={`${isMobile ? 'mt-0.5' : 'mt-1'} ${isMobile ? 'h-4 w-4' : ''}`}
       />
       <div className="flex-1 min-w-0">
         <div className={`${isChecked ? 'line-through text-muted-foreground' : ''}`}>
           <span className={`font-medium ${isMobile ? 'text-sm' : ''}`}>
             {quantity > 1 && `${quantity}x `}
-            {name.replace(/^week\d+-/, '')}
+            {displayName}
           </span>
           {unit && <span className={`${isMobile ? 'text-xs' : 'text-sm'} text-muted-foreground ml-1`}>({unit})</span>}
         </div>
         {recipeIds.length > 0 && (
-          <div className={`${isMobile ? 'text-xs' : 'text-xs'} text-green-600 mt-1 truncate`}>
-            From: {getRecipeNames(recipeIds)}
+          <div className={`${isMobile ? 'text-xs' : 'text-xs'} text-green-600 mt-1`}>
+            From: {recipeIds.map((recipeId, index) => {
+              const recipe = recipes.find(r => r.id === recipeId);
+              const recipeName = recipe ? recipe.title : `Recipe ${recipeId.substring(0, 8)}`;
+              
+              return (
+                <span key={recipeId}>
+                  <button
+                    onClick={(e) => handleRecipeClick(recipeId, e)}
+                    className="hover:underline cursor-pointer text-green-600 hover:text-green-700"
+                  >
+                    {recipeName}
+                  </button>
+                  {index < recipeIds.length - 1 && ', '}
+                </span>
+              );
+            })}
           </div>
         )}
       </div>
@@ -58,7 +112,7 @@ export default function ShoppingListItem({
         <Button
           variant="ghost"
           size="icon"
-          onClick={onCopy}
+          onClick={handleCopy}
           className={`${isMobile ? 'h-8 w-8' : 'h-8 w-8'} text-muted-foreground hover:text-primary`}
         >
           {copiedItemId === id ? (

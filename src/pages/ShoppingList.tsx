@@ -10,6 +10,7 @@ import { useRecipes } from "@/contexts/RecipesContext";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { SHOPPING_CATEGORIES } from "@/types/shoppingList";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { extractIngredientName } from "@/utils/shoppingListUtils";
 
 export default function ShoppingList() {
   useDocumentTitle("Shopping List | RealiMeali");
@@ -19,6 +20,7 @@ export default function ShoppingList() {
   const { recipes } = useRecipes();
   const isMobile = useIsMobile();
   const [weekNumber, setWeekNumber] = useState<1 | 2>(1);
+  const [copiedItemId, setCopiedItemId] = useState<string | null>(null);
   
   const {
     shoppingList,
@@ -38,6 +40,17 @@ export default function ShoppingList() {
       .filter(Boolean);
     
     return recipeNames.length > 0 ? recipeNames.join(', ') : 'Unknown Recipe';
+  };
+
+  const handleCopyItem = (itemName: string, itemId: string) => {
+    const ingredientName = extractIngredientName(itemName);
+    navigator.clipboard.writeText(ingredientName);
+    setCopiedItemId(itemId);
+    
+    // Clear the copied state after 2 seconds
+    setTimeout(() => {
+      setCopiedItemId(null);
+    }, 2000);
   };
 
   const handleShare = () => {
@@ -92,11 +105,9 @@ export default function ShoppingList() {
                   key={category}
                   category={category}
                   items={shoppingList[category] || []}
-                  copiedItemId={null}
+                  copiedItemId={copiedItemId}
                   onCheckItem={(itemId, checked) => toggleItemChecked(itemId, category)}
-                  onCopyItem={(name, itemId) => {
-                    navigator.clipboard.writeText(name);
-                  }}
+                  onCopyItem={handleCopyItem}
                   onRemoveItem={(itemId) => removeItem(itemId, category)}
                   getRecipeNames={getRecipeNames}
                 />
