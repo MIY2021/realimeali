@@ -23,6 +23,8 @@ interface PublicRecipeShare {
 
 Deno.serve(async (req) => {
   console.log('Recipe-meta function called:', req.url);
+  console.log('Request method:', req.method);
+  console.log('Request headers:', req.headers);
   
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -42,7 +44,7 @@ Deno.serve(async (req) => {
     if (pathParts.includes('share') && pathParts.length >= 2) {
       const shareIndex = pathParts.indexOf('share');
       recipeSlug = pathParts[shareIndex + 1];
-      console.log('New format detected: /share/{slug}');
+      console.log('Share format detected: /share/{slug}');
     } else if (pathParts.includes('recipe') && pathParts.length >= 2) {
       const recipeIndex = pathParts.indexOf('recipe');
       recipeSlug = pathParts[recipeIndex + 1];
@@ -79,6 +81,7 @@ Deno.serve(async (req) => {
 
     if (error || !recipe) {
       console.log('Slug lookup failed, trying public_share_id fallback');
+      console.log('Error:', error);
       // Fallback: try to fetch by public_share_id for old links
       const { data: fallbackRecipe, error: fallbackError } = await supabase
         .from('public_recipe_shares')
@@ -118,9 +121,20 @@ Deno.serve(async (req) => {
 function generateRecipeHTML(recipe: PublicRecipeShare): string {
   // Use the new URL format: /share/{slug}
   const recipeUrl = `https://realimeali.com/share/${recipe.slug || recipe.public_share_id}`;
-  const imageUrl = recipe.image || `https://realimeali.com/lovable-uploads/48805e49-e8eb-4205-a741-e7fb6446e6d1.png`;
+  
+  // Use recipe image if available, otherwise fall back to the placeholder
+  const imageUrl = recipe.image || 'https://realimeali.com/lovable-uploads/48805e49-e8eb-4205-a741-e7fb6446e6d1.png';
+  
   const title = `${recipe.title} Recipe | RealiMeali`;
-  const description = recipe.description || `A delicious recipe shared by ${recipe.shared_by_name || 'a fellow cook'}. Prep time: ${recipe.prep_time} min, Cook time: ${recipe.cook_time} min, Serves: ${recipe.servings}.`;
+  
+  // Create a more detailed description if recipe description exists
+  let description = recipe.description;
+  if (!description || description.trim() === '') {
+    description = `A delicious recipe shared by ${recipe.shared_by_name || 'a fellow cook'}. Prep time: ${recipe.prep_time} min, Cook time: ${recipe.cook_time} min, Serves: ${recipe.servings}.`;
+  } else {
+    // Enhance existing description with timing and serving info
+    description = `${recipe.description} Prep time: ${recipe.prep_time} min, Cook time: ${recipe.cook_time} min, Serves: ${recipe.servings}.`;
+  }
 
   console.log('Generated meta data:');
   console.log('- Title:', title);

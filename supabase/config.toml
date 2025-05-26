@@ -6,3 +6,7 @@ verify_jwt = false
 
 [functions.recipe-meta]
 verify_jwt = false
+
+# Configure the recipe-meta function to handle share routes
+[[functions.recipe-meta.routes]]
+path = "/share/*"

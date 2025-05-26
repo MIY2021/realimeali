@@ -15,15 +15,31 @@ export function generateSlug(title: string): string {
 }
 
 /**
- * Ensures slug uniqueness by appending a minimal number if needed
- * Now uses a more elegant approach with smaller increments
+ * Ensures slug uniqueness by appending descriptive words instead of numbers
  */
 export function ensureUniqueSlug(baseSlug: string, existingSlugs: string[]): string {
   if (!existingSlugs.includes(baseSlug)) {
     return baseSlug;
   }
   
-  // Only add a number if absolutely necessary, and start with 2
+  // Try descriptive variations first
+  const variations = [
+    `${baseSlug}-recipe`,
+    `${baseSlug}-dish`,
+    `${baseSlug}-meal`,
+    `${baseSlug}-special`,
+    `${baseSlug}-homemade`,
+    `${baseSlug}-classic`,
+    `${baseSlug}-delicious`
+  ];
+  
+  for (const variation of variations) {
+    if (!existingSlugs.includes(variation)) {
+      return variation;
+    }
+  }
+  
+  // Only as last resort, use numbers but start with 2
   let counter = 2;
   let slug = `${baseSlug}-${counter}`;
   
@@ -36,28 +52,9 @@ export function ensureUniqueSlug(baseSlug: string, existingSlugs: string[]): str
 }
 
 /**
- * Alternative approach: try variations before adding numbers
+ * Improved approach: try multiple variations before adding numbers
  */
 export function generateUniqueSlug(title: string, existingSlugs: string[]): string {
   const baseSlug = generateSlug(title);
-  
-  // First try the base slug
-  if (!existingSlugs.includes(baseSlug)) {
-    return baseSlug;
-  }
-  
-  // Try some variations before adding numbers
-  const variations = [
-    `${baseSlug}-recipe`,
-    `${baseSlug}-dish`,
-  ];
-  
-  for (const variation of variations) {
-    if (!existingSlugs.includes(variation)) {
-      return variation;
-    }
-  }
-  
-  // Fall back to the numbered approach
   return ensureUniqueSlug(baseSlug, existingSlugs);
 }
