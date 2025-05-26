@@ -42,4 +42,30 @@ declare module 'lucide-react' {
   export const Globe: LucideIcon;
   export const Camera: LucideIcon;
   export const AlignJustify: LucideIcon;
+  
+  // Additional commonly used icons to prevent future import issues
+  export const Save: LucideIcon;
+  export const Download: LucideIcon;
+  export const Star: LucideIcon;
+  export const Bookmark: LucideIcon;
+  export const Archive: LucideIcon;
+  export const Settings: LucideIcon;
+  export const Home: LucideIcon;
+  export const Menu: LucideIcon;
+  export const Mail: LucideIcon;
+  export const Phone: LucideIcon;
+  export const MapPin: LucideIcon;
+  export const Calendar: LucideIcon;
+  export const Filter: LucideIcon;
+  export const SortAsc: LucideIcon;
+  export const SortDesc: LucideIcon;
+  export const Eye: LucideIcon;
+  export const EyeOff: LucideIcon;
+  export const Edit: LucideIcon;
+  export const Delete: LucideIcon;
+  export const Refresh: LucideIcon;
+  export const Info: LucideIcon;
+  export const Warning: LucideIcon;
+  export const Success: LucideIcon;
+  export const Error: LucideIcon;
 }
