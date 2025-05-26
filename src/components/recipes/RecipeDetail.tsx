@@ -1,3 +1,4 @@
+
 import { Recipe } from "@/types";
 import { Button } from "@/components/ui/button";
 import { CalendarDays, Clock, Pencil, Share, Users, Trash2, ArrowLeft } from "lucide-react";
@@ -8,7 +9,7 @@ import { useUserProfile } from "@/hooks/useUserProfile";
 import { usePublicRecipeSharing } from "@/hooks/usePublicRecipeSharing";
 import { useState } from "react";
 import { format } from "date-fns";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useNavigationState } from "@/hooks/useNavigationState";
 
 interface RecipeDetailProps {
@@ -25,6 +26,7 @@ export function RecipeDetail({ recipe, onAddToMealPlan, onEdit, onDelete, isOwne
   const { profile } = useUserProfile(recipe.createdBy);
   const { createPublicShare, isCreatingShare } = usePublicRecipeSharing();
   const navigate = useNavigate();
+  const location = useLocation();
   const { navigationState } = useNavigationState();
   
   const { 
@@ -41,8 +43,18 @@ export function RecipeDetail({ recipe, onAddToMealPlan, onEdit, onDelete, isOwne
 
   const handleBackToRecipes = () => {
     console.log('Back button clicked, navigation state:', navigationState);
+    console.log('Location state:', location.state);
     
-    if (navigationState.cameFromRecipes || navigationState.shouldRestoreScroll) {
+    // Check if user came from shopping list
+    const fromShoppingList = location.state?.fromShoppingList === true;
+    const previousRoute = sessionStorage.getItem('previousRoute');
+    
+    if (fromShoppingList || previousRoute === '/shopping-list') {
+      // User came from shopping list, restore their scroll position
+      console.log('Navigating back to shopping list with scroll restoration');
+      sessionStorage.setItem('restoreShoppingListScroll', 'true');
+      navigate('/shopping-list', { state: { restoreScroll: true } });
+    } else if (navigationState.cameFromRecipes || navigationState.shouldRestoreScroll) {
       // User came from recipes page, restore their scroll position
       console.log('Navigating back with scroll restoration');
       sessionStorage.setItem('restoreRecipesScroll', 'true');
@@ -132,7 +144,7 @@ export function RecipeDetail({ recipe, onAddToMealPlan, onEdit, onDelete, isOwne
             className="flex items-center gap-2"
           >
             <ArrowLeft className="h-4 w-4" />
-            <span>Back to Recipes</span>
+            <span>Back to {location.state?.fromShoppingList ? 'Shopping List' : 'Recipes'}</span>
           </Button>
         </div>
 

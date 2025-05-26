@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ShoppingListHeader from "@/components/shopping-list/ShoppingListHeader";
 import ShoppingListWeekSelector from "@/components/shopping-list/ShoppingListWeekSelector";
 import ShoppingListSkeleton from "@/components/shopping-list/ShoppingListSkeleton";
@@ -14,6 +13,7 @@ import { useMealPlan } from "@/contexts/MealPlanContext";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useToast } from "@/hooks/use-toast";
+import { useScrollPosition } from "@/hooks/useScrollPosition";
 import { Card, CardContent } from "@/components/ui/card";
 
 export default function ShoppingList() {
@@ -25,6 +25,7 @@ export default function ShoppingList() {
   const { getMealPlansForWeek } = useMealPlan();
   const { toast } = useToast();
   const { generateAndSaveFromMealPlans } = useShoppingListGenerator();
+  const { setScrollKey, restoreScrollPosition, saveScrollPosition } = useScrollPosition();
   const isMobile = useIsMobile();
   const [weekNumber, setWeekNumber] = useState<1 | 2>(1);
   const [copiedItemId, setCopiedItemId] = useState<string | null>(null);
@@ -42,6 +43,28 @@ export default function ShoppingList() {
     clearAll,
     refreshList,
   } = useShoppingList(weekNumber);
+
+  // Set up scroll position management
+  useEffect(() => {
+    const scrollKey = `shopping-list-week-${weekNumber}`;
+    setScrollKey(scrollKey);
+    
+    // Check if we should restore scroll position
+    const shouldRestore = sessionStorage.getItem('restoreShoppingListScroll') === 'true';
+    if (shouldRestore) {
+      console.log('Restoring shopping list scroll position');
+      sessionStorage.removeItem('restoreShoppingListScroll');
+      restoreScrollPosition(scrollKey);
+    }
+  }, [weekNumber, setScrollKey, restoreScrollPosition]);
+
+  // Save scroll position before unmounting
+  useEffect(() => {
+    return () => {
+      const scrollKey = `shopping-list-week-${weekNumber}`;
+      saveScrollPosition(scrollKey);
+    };
+  }, [weekNumber, saveScrollPosition]);
 
   const mealPlans = getMealPlansForWeek(weekNumber);
   const hasMealPlans = mealPlans.length > 0;

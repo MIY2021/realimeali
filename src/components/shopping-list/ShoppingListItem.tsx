@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Copy, Check } from "lucide-react";
@@ -6,6 +5,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useNavigate } from "react-router-dom";
 import { extractIngredientName, capitalizeShoppingItem } from "@/utils/shoppingListUtils";
 import { useRecipes } from "@/contexts/RecipesContext";
+import { useScrollPosition } from "@/hooks/useScrollPosition";
 import { useRef, useCallback } from "react";
 
 interface ShoppingListItemProps {
@@ -35,6 +35,7 @@ export default function ShoppingListItem({
   const isMobile = useIsMobile();
   const navigate = useNavigate();
   const { recipes } = useRecipes();
+  const { saveScrollPosition } = useScrollPosition();
   const longPressTimer = useRef<NodeJS.Timeout | null>(null);
   const isLongPressing = useRef(false);
   const lastTapTime = useRef(0);
@@ -55,8 +56,26 @@ export default function ShoppingListItem({
     
     const recipe = recipes.find(r => r.id === recipeId);
     if (recipe) {
+      // Save current scroll position before navigating
+      const currentUrl = window.location.pathname;
+      const weekMatch = currentUrl.match(/week=(\d)/);
+      const weekNumber = weekMatch ? weekMatch[1] : '1';
+      const scrollKey = `shopping-list-week-${weekNumber}`;
+      
+      console.log('Saving shopping list scroll position before navigating to recipe');
+      saveScrollPosition(scrollKey);
+      
+      // Set flag to restore scroll when returning
+      sessionStorage.setItem('restoreShoppingListScroll', 'true');
+      sessionStorage.setItem('previousRoute', '/shopping-list');
+      
       const slug = createSlug(recipe.title);
-      navigate(`/recipes/${slug}`);
+      navigate(`/recipes/${slug}`, { 
+        state: { 
+          fromShoppingList: true,
+          restoreScroll: true 
+        } 
+      });
     }
   };
 
@@ -105,7 +124,7 @@ export default function ShoppingListItem({
         navigator.vibrate(50);
       }
     }, 500); // 500ms for long press
-  }, []);
+  }, [handleCopy]);
 
   const handleTouchEnd = useCallback((e: React.TouchEvent) => {
     // Don't interfere with checkbox or button interactions
@@ -149,7 +168,7 @@ export default function ShoppingListItem({
       isLongPressing.current = true;
       handleCopy();
     }, 500);
-  }, []);
+  }, [handleCopy]);
 
   const handleMouseUp = useCallback((e: React.MouseEvent) => {
     // Don't interfere with checkbox or button interactions
