@@ -25,7 +25,7 @@ export const useShoppingListGenerator = () => {
       return data.category || 'Food Cupboard';
     } catch (error) {
       console.error('Error categorizing ingredient:', error);
-      return 'Food Cupboard'; // Fallback
+      return 'Food Cupboard';
     }
   };
 
@@ -41,7 +41,7 @@ export const useShoppingListGenerator = () => {
       return {};
     }
 
-    console.log('Generating shopping list from meal plans:', mealPlans.length);
+    console.log('Generating shopping list from meal plans for week', weekNumber, ':', mealPlans.length);
 
     const ingredientMap = new Map<string, {
       quantity: number;
@@ -49,7 +49,7 @@ export const useShoppingListGenerator = () => {
       recipeIds: string[];
     }>();
 
-    // Collect ingredients from meal plans
+    // Collect ingredients from meal plans for the specific week
     mealPlans.forEach(mealPlan => {
       if (mealPlan.isLeftover) return;
       
@@ -74,9 +74,9 @@ export const useShoppingListGenerator = () => {
       });
     });
 
-    console.log('Found ingredients:', ingredientMap.size);
+    console.log('Found ingredients for week', weekNumber, ':', ingredientMap.size);
 
-    // Save ingredients to database with AI categorization
+    // Save ingredients to database with AI categorization and week association
     const categorizedItems: ShoppingListCategory = {};
     SHOPPING_CATEGORIES.forEach(cat => {
       categorizedItems[cat] = [];
@@ -93,12 +93,13 @@ export const useShoppingListGenerator = () => {
         try {
           const category = await categorizeWithAI(name);
           
-          // Save to database
+          // Save to database with week association
           const newItem = await ShoppingListService.addCustomItem(
             name, 
             category, 
             currentHousehold.id, 
             user.id,
+            weekNumber,
             details.recipeIds
           );
           
@@ -111,7 +112,7 @@ export const useShoppingListGenerator = () => {
       }));
     }
 
-    console.log('Generated shopping list with categories:', Object.keys(categorizedItems).map(cat => `${cat}: ${categorizedItems[cat].length}`));
+    console.log('Generated shopping list for week', weekNumber, 'with categories:', Object.keys(categorizedItems).map(cat => `${cat}: ${categorizedItems[cat].length}`));
     return categorizedItems;
   }, [recipes, getMealPlansForWeek, user, currentHousehold]);
 

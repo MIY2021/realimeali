@@ -3,6 +3,7 @@ import { useState } from "react";
 import ShoppingListHeader from "@/components/shopping-list/ShoppingListHeader";
 import ShoppingListWeekSelector from "@/components/shopping-list/ShoppingListWeekSelector";
 import ShoppingListCategory from "@/components/shopping-list/ShoppingListCategory";
+import ShoppingListSkeleton from "@/components/shopping-list/ShoppingListSkeleton";
 import { useShoppingList } from "@/hooks/useShoppingList";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
@@ -42,6 +43,7 @@ export default function ShoppingList() {
   };
 
   const handleCopyItem = (itemName: string, itemId: string) => {
+    // Use the utility function to extract clean ingredient name
     const ingredientName = extractIngredientName(itemName);
     navigator.clipboard.writeText(ingredientName);
     setCopiedItemId(itemId);
@@ -62,7 +64,7 @@ export default function ShoppingList() {
 
     if (navigator.share) {
       navigator.share({
-        title: 'Shopping List',
+        title: `Shopping List - Week ${weekNumber}`,
         text: listText,
       });
     } else {
@@ -92,9 +94,7 @@ export default function ShoppingList() {
           />
 
           {isLoading ? (
-            <div className="py-10 text-center">
-              <p className="text-muted-foreground">Loading shopping list...</p>
-            </div>
+            <ShoppingListSkeleton />
           ) : (
             <div className={`space-y-${isMobile ? '4' : '6'}`}>
               {SHOPPING_CATEGORIES.map((category) => (

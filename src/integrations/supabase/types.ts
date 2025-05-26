@@ -270,6 +270,7 @@ export type Database = {
           recipe_ids: string[] | null
           unit: string | null
           updated_at: string
+          week_number: number
         }
         Insert: {
           category?: string | null
@@ -284,6 +285,7 @@ export type Database = {
           recipe_ids?: string[] | null
           unit?: string | null
           updated_at?: string
+          week_number?: number
         }
         Update: {
           category?: string | null
@@ -298,6 +300,7 @@ export type Database = {
           recipe_ids?: string[] | null
           unit?: string | null
           updated_at?: string
+          week_number?: number
         }
         Relationships: [
           {

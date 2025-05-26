@@ -1,13 +1,15 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { ShoppingListItem, ShoppingListCategory, SHOPPING_CATEGORIES } from "@/types/shoppingList";
 
 export class ShoppingListService {
-  static async loadExistingShoppingList(householdId: string): Promise<ShoppingListCategory> {
+  static async loadExistingShoppingList(householdId: string, weekNumber: number): Promise<ShoppingListCategory> {
     try {
       const { data, error } = await supabase
         .from('household_shopping_lists')
         .select('*')
-        .eq('household_id', householdId);
+        .eq('household_id', householdId)
+        .eq('week_number', weekNumber);
 
       if (error) throw error;
 
@@ -41,6 +43,23 @@ export class ShoppingListService {
     }
   }
 
+  static async checkDatabaseForItems(householdId: string, weekNumber: number): Promise<boolean> {
+    try {
+      const { data, error } = await supabase
+        .from('household_shopping_lists')
+        .select('id')
+        .eq('household_id', householdId)
+        .eq('week_number', weekNumber)
+        .limit(1);
+
+      if (error) throw error;
+      return (data || []).length > 0;
+    } catch (error) {
+      console.error("Error checking database for items:", error);
+      return false;
+    }
+  }
+
   static async toggleItemChecked(itemId: string, newCheckedState: boolean, householdId: string): Promise<boolean> {
     try {
       const { error } = await supabase
@@ -62,6 +81,7 @@ export class ShoppingListService {
     category: string, 
     householdId: string, 
     userId: string, 
+    weekNumber: number,
     recipeIds: string[] = []
   ): Promise<ShoppingListItem | null> {
     try {
@@ -72,6 +92,7 @@ export class ShoppingListService {
           created_by: userId,
           name: name.trim(),
           category,
+          week_number: weekNumber,
           is_custom: recipeIds.length === 0,
           is_checked: false,
           recipe_ids: recipeIds
@@ -113,12 +134,13 @@ export class ShoppingListService {
     }
   }
 
-  static async clearAll(householdId: string): Promise<boolean> {
+  static async clearAll(householdId: string, weekNumber: number): Promise<boolean> {
     try {
       const { error } = await supabase
         .from('household_shopping_lists')
         .delete()
-        .eq('household_id', householdId);
+        .eq('household_id', householdId)
+        .eq('week_number', weekNumber);
 
       if (error) throw error;
       return true;

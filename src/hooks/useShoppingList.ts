@@ -16,7 +16,14 @@ export const useShoppingList = (weekNumber: 1 | 2) => {
   const { toast } = useToast();
   const { generateAndSaveFromMealPlans } = useShoppingListGenerator();
   
-  const [shoppingList, setShoppingList] = useState<ShoppingListCategory>({});
+  // Initialize with empty categories to prevent layout flickering
+  const [shoppingList, setShoppingList] = useState<ShoppingListCategory>(() => {
+    const emptyCategories: ShoppingListCategory = {};
+    SHOPPING_CATEGORIES.forEach(cat => {
+      emptyCategories[cat] = [];
+    });
+    return emptyCategories;
+  });
   const [isLoading, setIsLoading] = useState(false);
   
   // Use refs to prevent re-renders and track state
@@ -32,24 +39,7 @@ export const useShoppingList = (weekNumber: 1 | 2) => {
     return `${currentHousehold.id}-week-${weekNumber}`;
   }, [currentHousehold?.id, weekNumber]);
 
-  // Database-first check for existing items
-  const checkDatabaseForItems = useCallback(async (householdId: string): Promise<boolean> => {
-    try {
-      const { data, error } = await supabase
-        .from('household_shopping_lists')
-        .select('id')
-        .eq('household_id', householdId)
-        .limit(1);
-
-      if (error) throw error;
-      return (data || []).length > 0;
-    } catch (error) {
-      console.error("Error checking database for items:", error);
-      return false; // Assume empty on error to allow generation
-    }
-  }, []);
-
-  // Stable load function without toast dependency
+  // Stable load function with week-specific loading
   const loadShoppingList = useCallback(async () => {
     if (!user || !currentHousehold) return;
 
@@ -63,16 +53,20 @@ export const useShoppingList = (weekNumber: 1 | 2) => {
 
     setIsLoading(true);
     try {
-      const existingItems = await ShoppingListService.loadExistingShoppingList(currentHousehold.id);
+      const existingItems = await ShoppingListService.loadExistingShoppingList(currentHousehold.id, weekNumber);
       setShoppingList(existingItems || {});
     } catch (error) {
       console.error("Error loading shopping list:", error);
-      // Handle error without toast to avoid dependency issues
-      setShoppingList({});
+      // Initialize with empty categories on error
+      const emptyCategories: ShoppingListCategory = {};
+      SHOPPING_CATEGORIES.forEach(cat => {
+        emptyCategories[cat] = [];
+      });
+      setShoppingList(emptyCategories);
     } finally {
       setIsLoading(false);
     }
-  }, [user, currentHousehold]);
+  }, [user, currentHousehold, weekNumber]);
 
   // Auto-generate with database-first approach and cooldown
   const autoGenerateFromMealPlans = useCallback(async () => {
@@ -97,8 +91,8 @@ export const useShoppingList = (weekNumber: 1 | 2) => {
     
     // Only generate if we have meal plans
     if (mealPlans.length > 0) {
-      // Check database directly instead of using state
-      const hasExistingItems = await checkDatabaseForItems(currentHousehold.id);
+      // Check database directly for week-specific items
+      const hasExistingItems = await ShoppingListService.checkDatabaseForItems(currentHousehold.id, weekNumber);
       
       if (!hasExistingItems) {
         console.log('Auto-generating shopping list from meal plans for', generationKey);
@@ -122,34 +116,33 @@ export const useShoppingList = (weekNumber: 1 | 2) => {
         }
       }
     }
-  }, [user, currentHousehold, getMealPlansForWeek, weekNumber, generateAndSaveFromMealPlans, generationKey, checkDatabaseForItems]);
+  }, [user, currentHousehold, getMealPlansForWeek, weekNumber, generateAndSaveFromMealPlans, generationKey]);
 
   // Clear generation flags when generation key changes
   useEffect(() => {
     if (generationKey) {
-      // Don't reset shopping list state here to prevent flashing
       console.log('Generation key changed to:', generationKey);
     }
   }, [generationKey]);
 
-  // Optimized real-time subscription with proper debouncing
+  // Optimized real-time subscription with week filtering
   useEffect(() => {
     if (!currentHousehold) return;
 
     let debounceTimer: NodeJS.Timeout;
 
     const channel = supabase
-      .channel('shopping-list-changes')
+      .channel(`shopping-list-changes-week-${weekNumber}`)
       .on(
         'postgres_changes',
         {
           event: '*',
           schema: 'public',
           table: 'household_shopping_lists',
-          filter: `household_id=eq.${currentHousehold.id}`
+          filter: `household_id=eq.${currentHousehold.id}.and.week_number=eq.${weekNumber}`
         },
         (payload) => {
-          console.log('Shopping list changed:', payload);
+          console.log('Shopping list changed for week', weekNumber, ':', payload);
           
           // Increment update counter for circuit breaker
           realtimeUpdateCountRef.current++;
@@ -175,7 +168,7 @@ export const useShoppingList = (weekNumber: 1 | 2) => {
             if (!isGeneratingRef.current && !isLoading) {
               loadShoppingList();
             }
-          }, 1000); // Increased from 100ms to 1000ms
+          }, 1000);
         }
       )
       .subscribe();
@@ -186,7 +179,7 @@ export const useShoppingList = (weekNumber: 1 | 2) => {
       }
       supabase.removeChannel(channel);
     };
-  }, [currentHousehold, loadShoppingList, isLoading]);
+  }, [currentHousehold, loadShoppingList, isLoading, weekNumber]);
 
   // Load shopping list when dependencies change
   useEffect(() => {
@@ -252,7 +245,7 @@ export const useShoppingList = (weekNumber: 1 | 2) => {
   const addCustomItem = useCallback(async (name: string, category: string) => {
     if (!user || !currentHousehold || !name.trim()) return;
 
-    const newItem = await ShoppingListService.addCustomItem(name, category, currentHousehold.id, user.id);
+    const newItem = await ShoppingListService.addCustomItem(name, category, currentHousehold.id, user.id, weekNumber);
     
     if (newItem) {
       // Real-time sync will handle the update, but add locally for immediate feedback
@@ -272,14 +265,14 @@ export const useShoppingList = (weekNumber: 1 | 2) => {
         variant: "destructive",
       });
     }
-  }, [user, currentHousehold, toast]);
+  }, [user, currentHousehold, toast, weekNumber]);
 
   const clearAll = useCallback(async () => {
     if (!user || !currentHousehold) return;
 
     setIsLoading(true);
     try {
-      const success = await ShoppingListService.clearAll(currentHousehold.id);
+      const success = await ShoppingListService.clearAll(currentHousehold.id, weekNumber);
       
       if (success) {
         const emptyCategories: ShoppingListCategory = {};
@@ -316,7 +309,7 @@ export const useShoppingList = (weekNumber: 1 | 2) => {
     } finally {
       setIsLoading(false);
     }
-  }, [user, currentHousehold, toast, generationKey]);
+  }, [user, currentHousehold, toast, generationKey, weekNumber]);
 
   return {
     shoppingList,
