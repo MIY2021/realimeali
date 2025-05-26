@@ -20,7 +20,7 @@ export default function ShoppingList() {
   
   const { user } = useAuth();
   const { currentHousehold } = useHousehold();
-  const { recipes } = useRecipes();
+  const { recipes, isLoading: recipesLoading } = useRecipes();
   const { getMealPlansForWeek } = useMealPlan();
   const { toast } = useToast();
   const { generateAndSaveFromMealPlans } = useShoppingListGenerator();
@@ -35,14 +35,34 @@ export default function ShoppingList() {
     toggleItemChecked,
   } = useShoppingList(weekNumber);
 
+  // Debug logging
+  console.log('ShoppingList Debug:', {
+    user: !!user,
+    currentHousehold: !!currentHousehold,
+    recipesCount: recipes.length,
+    recipesLoading,
+    shoppingListCount: shoppingList.length,
+    weekNumber
+  });
+
   const mealPlans = getMealPlansForWeek(weekNumber);
   const hasMealPlans = mealPlans.length > 0;
 
+  console.log('MealPlans Debug:', {
+    mealPlansCount: mealPlans.length,
+    hasMealPlans,
+    mealPlans: mealPlans.map(mp => ({ id: mp.id, recipeId: mp.recipeId, mealType: mp.mealType }))
+  });
+
   const getRecipeNames = (recipeIds: string[]): string => {
+    console.log('Getting recipe names for IDs:', recipeIds);
+    console.log('Available recipes:', recipes.map(r => ({ id: r.id, title: r.title })));
+    
     const uniqueRecipeIds = [...new Set(recipeIds)];
     const recipeNames = uniqueRecipeIds
       .map(id => {
         const recipe = recipes.find(r => r.id === id);
+        console.log(`Recipe lookup for ${id}:`, recipe?.title || 'NOT FOUND');
         return recipe ? recipe.title : `Recipe ${id.substring(0, 8)}`;
       })
       .filter(Boolean);
@@ -82,9 +102,48 @@ export default function ShoppingList() {
   };
 
   const handleGenerate = async () => {
-    if (!user || !currentHousehold) return;
+    console.log('Generate button clicked');
+    console.log('Generation conditions:', {
+      user: !!user,
+      currentHousehold: !!currentHousehold,
+      recipesLoading,
+      recipesCount: recipes.length,
+      hasMealPlans,
+      mealPlansCount: mealPlans.length
+    });
+
+    if (!user || !currentHousehold) {
+      console.error('Missing user or household');
+      toast({
+        title: "Error",
+        description: "Please log in and select a household",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (recipesLoading) {
+      console.log('Recipes still loading, please wait');
+      toast({
+        title: "Please wait",
+        description: "Recipes are still loading...",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (recipes.length === 0) {
+      console.error('No recipes loaded');
+      toast({
+        title: "No recipes",
+        description: "No recipes found. Please add some recipes first.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     if (!hasMealPlans) {
+      console.error('No meal plans for week', weekNumber);
       toast({
         title: "No meal plans",
         description: `Please add some meal plans for week ${weekNumber} first`,
@@ -95,22 +154,48 @@ export default function ShoppingList() {
 
     setIsGenerating(true);
     try {
-      await generateAndSaveFromMealPlans(weekNumber);
-      toast({
-        title: "Shopping list generated!",
-        description: `Week ${weekNumber} shopping list has been created with consolidated ingredients`,
-      });
+      console.log('Starting shopping list generation...');
+      const result = await generateAndSaveFromMealPlans(weekNumber);
+      console.log('Generation result:', result);
+      
+      if (result && result.length > 0) {
+        toast({
+          title: "Shopping list generated!",
+          description: `Week ${weekNumber} shopping list has been created with ${result.length} items`,
+        });
+      } else {
+        toast({
+          title: "Generation completed",
+          description: "Shopping list generation completed, but no items were created",
+          variant: "destructive",
+        });
+      }
     } catch (error) {
       console.error('Error generating shopping list:', error);
       toast({
         title: "Error",
-        description: "Failed to generate shopping list",
+        description: `Failed to generate shopping list: ${error.message || 'Unknown error'}`,
         variant: "destructive",
       });
     } finally {
       setIsGenerating(false);
     }
   };
+
+  // Show loading state while recipes are loading
+  if (recipesLoading) {
+    return (
+      <div className={`w-full mx-auto px-4 sm:px-6 lg:px-8 ${isMobile ? 'py-4' : 'py-8'} ${!isMobile ? 'max-w-4xl' : ''}`}>
+        <ShoppingListHeader 
+          onShare={handleShare} 
+          weekNumber={weekNumber}
+        />
+        <div className="py-10 text-center">
+          <p className="text-muted-foreground mb-4">Loading recipes...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`w-full mx-auto px-4 sm:px-6 lg:px-8 ${isMobile ? 'py-4' : 'py-8'} ${!isMobile ? 'max-w-4xl' : ''}`}>
@@ -136,6 +221,11 @@ export default function ShoppingList() {
             isGenerating={isGenerating}
             hasItems={shoppingList.length > 0}
           />
+
+          {/* Debug info (remove in production) */}
+          <div className="mb-4 p-2 bg-gray-100 rounded text-xs">
+            <p>Debug: Recipes: {recipes.length}, Meal Plans: {mealPlans.length}, Shopping Items: {shoppingList.length}</p>
+          </div>
 
           {isLoading ? (
             <ShoppingListSkeleton />
