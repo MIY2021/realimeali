@@ -27,7 +27,6 @@ export default function ShoppingList() {
     isLoading,
     toggleItemChecked,
     addCustomItem,
-    removeItem,
     clearAll,
   } = useShoppingList(weekNumber);
 
@@ -47,14 +46,12 @@ export default function ShoppingList() {
     navigator.clipboard.writeText(ingredientName);
     setCopiedItemId(itemId);
     
-    // Clear the copied state after 2 seconds
     setTimeout(() => {
       setCopiedItemId(null);
     }, 2000);
   };
 
   const handleShare = () => {
-    // Simple share functionality
     const listText = Object.entries(shoppingList)
       .filter(([, items]) => items.length > 0)
       .map(([category, items]) => {
@@ -108,7 +105,6 @@ export default function ShoppingList() {
                   copiedItemId={copiedItemId}
                   onCheckItem={(itemId, checked) => toggleItemChecked(itemId, category)}
                   onCopyItem={handleCopyItem}
-                  onRemoveItem={(itemId) => removeItem(itemId, category)}
                   getRecipeNames={getRecipeNames}
                 />
               ))}

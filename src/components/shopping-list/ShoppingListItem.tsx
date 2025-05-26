@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Copy, Check, Trash2 } from "lucide-react";
+import { Copy, Check } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useNavigate } from "react-router-dom";
 import { extractIngredientName, capitalizeShoppingItem } from "@/utils/shoppingListUtils";
@@ -17,7 +17,6 @@ interface ShoppingListItemProps {
   copiedItemId: string | null;
   onCheck: (checked: boolean) => void;
   onCopy: () => void;
-  onRemove: () => void;
   getRecipeNames: (recipeIds: string[]) => string;
 }
 
@@ -31,7 +30,6 @@ export default function ShoppingListItem({
   copiedItemId,
   onCheck,
   onCopy,
-  onRemove,
   getRecipeNames
 }: ShoppingListItemProps) {
   const isMobile = useIsMobile();
@@ -59,7 +57,6 @@ export default function ShoppingListItem({
   };
 
   const handleCopy = () => {
-    // Extract just the ingredient name (removing quantities, etc.)
     const ingredientName = extractIngredientName(name);
     navigator.clipboard.writeText(ingredientName);
     onCopy();
@@ -97,7 +94,7 @@ export default function ShoppingListItem({
                 <span key={recipeId}>
                   <button
                     onClick={(e) => handleRecipeClick(recipeId, e)}
-                    className="hover:underline cursor-pointer text-green-600 hover:text-green-700"
+                    className="hover:underline cursor-pointer text-green-600 hover:text-green-700 font-medium"
                   >
                     {recipeName}
                   </button>
@@ -108,7 +105,7 @@ export default function ShoppingListItem({
           </div>
         )}
       </div>
-      <div className={`flex gap-${isMobile ? '0.5' : '1'} flex-shrink-0`}>
+      <div className="flex-shrink-0">
         <Button
           variant="ghost"
           size="icon"
@@ -120,14 +117,6 @@ export default function ShoppingListItem({
           ) : (
             <Copy className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
           )}
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={onRemove}
-          className={`${isMobile ? 'h-8 w-8' : 'h-8 w-8'} text-muted-foreground hover:text-destructive`}
-        >
-          <Trash2 className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
         </Button>
       </div>
     </div>

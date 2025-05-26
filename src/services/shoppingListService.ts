@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { ShoppingListItem, ShoppingListCategory, SHOPPING_CATEGORIES } from "@/types/shoppingList";
 
@@ -43,10 +42,6 @@ export class ShoppingListService {
   }
 
   static async toggleItemChecked(itemId: string, newCheckedState: boolean, householdId: string): Promise<boolean> {
-    if (itemId.startsWith('generated-')) {
-      return true; // Generated items don't need database updates
-    }
-
     try {
       const { error } = await supabase
         .from('household_shopping_lists')
@@ -62,7 +57,13 @@ export class ShoppingListService {
     }
   }
 
-  static async addCustomItem(name: string, category: string, householdId: string, userId: string): Promise<ShoppingListItem | null> {
+  static async addCustomItem(
+    name: string, 
+    category: string, 
+    householdId: string, 
+    userId: string, 
+    recipeIds: string[] = []
+  ): Promise<ShoppingListItem | null> {
     try {
       const { data, error } = await supabase
         .from('household_shopping_lists')
@@ -71,8 +72,9 @@ export class ShoppingListService {
           created_by: userId,
           name: name.trim(),
           category,
-          is_custom: true,
-          is_checked: false
+          is_custom: recipeIds.length === 0,
+          is_checked: false,
+          recipe_ids: recipeIds
         })
         .select()
         .single();
@@ -96,10 +98,6 @@ export class ShoppingListService {
   }
 
   static async removeItem(itemId: string, householdId: string): Promise<boolean> {
-    if (itemId.startsWith('generated-')) {
-      return true; // Generated items don't need database deletion
-    }
-
     try {
       const { error } = await supabase
         .from('household_shopping_lists')
