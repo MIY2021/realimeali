@@ -534,8 +534,14 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
 
   const createHousehold = async (name: string): Promise<Household | null> => {
     try {
+      console.log("=== Starting household creation process ===");
+      console.log("User:", user?.id);
+      console.log("Household name:", name);
+
       if (!user) {
-        throw new Error("You must be logged in to create a household. Please sign in and try again.");
+        const errorMsg = "You must be logged in to create a household. Please sign in and try again.";
+        console.error("ERROR: No authenticated user");
+        throw new Error(errorMsg);
       }
 
       if (!name.trim()) {
@@ -550,20 +556,28 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
         throw new Error("Household name cannot be longer than 50 characters.");
       }
 
-      console.log("Creating household with name:", name);
+      console.log("Calling create_household_with_owner function...");
 
       const { data, error } = await supabase.rpc('create_household_with_owner', {
         household_name: name.trim()
       });
 
       if (error) {
-        console.error("Error creating household:", error);
+        console.error("Database error during household creation:", error);
+        console.error("Error details:", {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint
+        });
         
         // Provide specific error messages based on error codes
         if (error.code === '23505') {
           throw new Error("A household with this name already exists for your account. Please choose a different name.");
         } else if (error.code === '42501') {
           throw new Error("You don't have permission to create households. Please contact support.");
+        } else if (error.code === '23503') {
+          throw new Error("There was an issue with your user account. Please try logging out and back in.");
         } else if (error.message?.includes('network')) {
           throw new Error("Network error. Please check your internet connection and try again.");
         } else {
@@ -572,12 +586,14 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
       }
 
       if (!data) {
+        console.error("No data returned from create_household_with_owner");
         throw new Error("Failed to create household. No data returned from server.");
       }
 
-      console.log("Household created with ID:", data);
+      console.log("Household created successfully with ID:", data);
 
-      // Fetch the created household
+      // Fetch the created household details
+      console.log("Fetching created household details...");
       const { data: householdData, error: fetchError } = await supabase
         .from('households')
         .select('*')
@@ -588,6 +604,8 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
         console.error("Error fetching created household:", fetchError);
         throw new Error(`Household created but failed to retrieve details: ${fetchError.message}`);
       }
+
+      console.log("Successfully fetched household data:", householdData);
 
       const newHousehold: Household = {
         id: householdData.id,
@@ -600,6 +618,8 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
       setHouseholds(prev => [newHousehold, ...prev]);
       setCurrentHousehold(newHousehold);
       
+      console.log("=== Household creation completed successfully ===");
+      
       toast({
         title: "Household Created",
         description: `${name} has been created successfully.`,
@@ -607,7 +627,9 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
 
       return newHousehold;
     } catch (err) {
-      console.error("Error creating household:", err);
+      console.error("=== Error in createHousehold function ===");
+      console.error("Error type:", typeof err);
+      console.error("Error details:", err);
       
       // Re-throw the error so the UI component can handle it
       if (err instanceof Error) {
