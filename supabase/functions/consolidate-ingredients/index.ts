@@ -48,10 +48,11 @@ Rules:
 3. Use standard units: cloves, cups, tablespoons, teaspoons, pounds, ounces, pieces
 4. If units can't be combined, pick the most common unit and estimate
 5. Clean ingredient names (remove extra words, standardize)
-6. IMPORTANT: Each consolidated item should have UNIQUE recipe IDs (no duplicates)
+6. CRITICAL: Preserve the EXACT recipe IDs and names from the input - do not modify or reassign them
+7. Only group ingredients that are truly the same ingredient across different recipes
 
-Ingredients to consolidate:
-${ingredients.map(ing => `- "${ing.name}" (from ${ing.recipeTitle}, ID: ${ing.recipeId})`).join('\n')}
+Input ingredients with their recipe context:
+${ingredients.map(ing => `- "${ing.name}" (Recipe: ${ing.recipeTitle}, ID: ${ing.recipeId})`).join('\n')}
 
 Return ONLY a JSON array with this exact structure:
 [
@@ -67,8 +68,9 @@ Return ONLY a JSON array with this exact structure:
 
 Important: 
 - Return only valid JSON, no other text
-- Ensure recipeIds arrays contain no duplicates
-- Match recipe IDs from the input exactly`;
+- Use the EXACT recipe IDs and names from the input
+- Only consolidate ingredients that are actually the same ingredient
+- Keep recipe attribution accurate`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -79,7 +81,7 @@ Important:
       body: JSON.stringify({
         model: 'gpt-4o-mini',
         messages: [
-          { role: 'system', content: 'You are a helpful assistant that consolidates cooking ingredients. Always return valid JSON with unique recipe IDs.' },
+          { role: 'system', content: 'You are a helpful assistant that consolidates cooking ingredients while preserving accurate recipe attribution. Always return valid JSON.' },
           { role: 'user', content: prompt }
         ],
         temperature: 0.1,
@@ -104,18 +106,18 @@ Important:
       return basicConsolidation(ingredients);
     }
 
-    // Ensure recipe IDs are properly mapped and deduplicated
+    // Validate and clean up the consolidated ingredients
     const result = consolidatedIngredients.map(item => {
-      const matchingIngredients = ingredients.filter(ing => 
-        item.sourceIngredients.some(source => 
-          source.toLowerCase().includes(ing.name.toLowerCase().split(' ')[0]) ||
-          ing.name.toLowerCase().includes(item.name.toLowerCase())
-        )
+      // Ensure recipe IDs are unique and valid
+      const uniqueRecipeIds = [...new Set(item.recipeIds)].filter(id => 
+        ingredients.some(ing => ing.recipeId === id)
       );
-
-      // Deduplicate recipe IDs and names
-      const uniqueRecipeIds = [...new Set(matchingIngredients.map(ing => ing.recipeId))];
-      const uniqueRecipeNames = [...new Set(matchingIngredients.map(ing => ing.recipeTitle))];
+      
+      // Get corresponding recipe names
+      const uniqueRecipeNames = uniqueRecipeIds.map(id => {
+        const ing = ingredients.find(ing => ing.recipeId === id);
+        return ing ? ing.recipeTitle : '';
+      }).filter(Boolean);
 
       return {
         ...item,
@@ -132,7 +134,6 @@ Important:
   } catch (error) {
     console.error('Error in consolidate-ingredients function:', error);
     
-    // Fallback to basic consolidation on any error
     try {
       const { ingredients } = await req.json() as { ingredients: IngredientInput[] };
       return basicConsolidation(ingredients);
@@ -146,7 +147,6 @@ Important:
   }
 });
 
-// Basic consolidation fallback when OpenAI fails
 function basicConsolidation(ingredients: IngredientInput[]): Response {
   console.log('Using basic consolidation fallback');
   
@@ -160,11 +160,9 @@ function basicConsolidation(ingredients: IngredientInput[]): Response {
   }>();
 
   ingredients.forEach(ingredient => {
-    // Simple ingredient name extraction (take first word or first two words)
     const words = ingredient.name.toLowerCase().trim().split(/\s+/);
     let key = words[0];
     
-    // Common ingredient groupings
     if (words.includes('garlic') || words.includes('cloves')) key = 'garlic';
     else if (words.includes('onion') || words.includes('onions')) key = 'onion';
     else if (words.includes('tomato') || words.includes('tomatoes')) key = 'tomato';
@@ -187,15 +185,12 @@ function basicConsolidation(ingredients: IngredientInput[]): Response {
     const group = grouped.get(key)!;
     group.sourceIngredients.push(ingredient.name);
     
-    // Deduplicate recipe IDs and names
     if (!group.recipeIds.includes(ingredient.recipeId)) {
       group.recipeIds.push(ingredient.recipeId);
-    }
-    if (!group.recipeNames.includes(ingredient.recipeTitle)) {
       group.recipeNames.push(ingredient.recipeTitle);
     }
     
-    group.consolidatedQuantity = group.sourceIngredients.length; // Simple count
+    group.consolidatedQuantity = group.sourceIngredients.length;
   });
 
   const result = Array.from(grouped.values());

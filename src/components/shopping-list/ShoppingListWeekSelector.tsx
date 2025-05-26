@@ -21,7 +21,32 @@ const humorousMessages = [
   "Calculating cheese requirements...",
   "Searching for that one spice...",
   "Organizing by grocery store aisles...",
-  "Making sure we don't forget bread..."
+  "Making sure we don't forget bread...",
+  "Getting my reading glasses on...",
+  "Squinting at tiny recipe text...",
+  "This is making me hungry already...",
+  "You're in for a treat this week!",
+  "Wondering if we have enough snacks...",
+  "Checking the back of the pantry...",
+  "Sorting through recipe chaos...",
+  "Finding ingredients I can't pronounce...",
+  "Adding 'just in case' items...",
+  "Remembering we're out of everything...",
+  "Calculating portions for leftovers...",
+  "Deciding between brands...",
+  "Adding emergency chocolate...",
+  "Checking expiration dates mentally...",
+  "Grouping by supermarket layout...",
+  "Adding items we'll forget to buy...",
+  "Estimating how much milk we need...",
+  "Planning for midnight snack attacks...",
+  "Organizing ingredients by urgency...",
+  "Adding backup dinner options...",
+  "Checking if we need more coffee...",
+  "Preparing for cooking adventures...",
+  "Mapping out the perfect shop...",
+  "Adding treats for good behavior...",
+  "Planning meals that won't fail..."
 ];
 
 export default function ShoppingListWeekSelector({ 
@@ -78,14 +103,14 @@ export default function ShoppingListWeekSelector({
             <>
               <RotateCcw className="h-4 w-4 animate-spin" />
               <span className="animate-fade-in">
-                Generate List
+                Generating List
               </span>
             </>
           ) : (
             <>
               <ShoppingBag className="h-4 w-4" />
               <span>
-                {hasItems ? 'Regenerate List' : 'Generate List'}
+                Generate Shopping List
               </span>
             </>
           )}
@@ -93,12 +118,31 @@ export default function ShoppingListWeekSelector({
       </div>
       
       {isGenerating && (
-        <div className="text-center">
+        <div className="flex items-center gap-3 text-left">
+          <div className="dancing-bird">
+            🐦
+          </div>
           <p className="text-sm text-muted-foreground animate-fade-in">
             {humorousMessages[currentMessage]}
           </p>
         </div>
       )}
+      
+      <style jsx>{`
+        .dancing-bird {
+          animation: dance 1s ease-in-out infinite alternate;
+          font-size: 16px;
+        }
+        
+        @keyframes dance {
+          0% {
+            transform: translateY(0px) rotate(-5deg);
+          }
+          100% {
+            transform: translateY(-4px) rotate(5deg);
+          }
+        }
+      `}</style>
     </div>
   );
 }
