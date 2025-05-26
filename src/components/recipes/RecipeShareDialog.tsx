@@ -9,7 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Copy, Share2, MessageCircle } from "lucide-react";
+import { Copy, Share, Mail } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface RecipeShareDialogProps {
@@ -64,7 +64,7 @@ export function RecipeShareDialog({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Share2 className="h-5 w-5" />
+            <Share className="h-5 w-5" />
             Share Recipe
           </DialogTitle>
         </DialogHeader>
@@ -99,7 +99,7 @@ export function RecipeShareDialog({
                 className="justify-start"
                 onClick={handleWhatsAppShare}
               >
-                <MessageCircle className="h-4 w-4 mr-2" />
+                <Share className="h-4 w-4 mr-2" />
                 WhatsApp
               </Button>
               
@@ -108,7 +108,7 @@ export function RecipeShareDialog({
                 className="justify-start"
                 onClick={handleEmailShare}
               >
-                <Share2 className="h-4 w-4 mr-2" />
+                <Mail className="h-4 w-4 mr-2" />
                 Email
               </Button>
             </div>
