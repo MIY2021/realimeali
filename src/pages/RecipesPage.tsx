@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus, UtensilsCrossed } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -9,6 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { useRecipesLoader } from "@/hooks/useRecipesLoader";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
+import { useScrollPosition } from "@/hooks/useScrollPosition";
 
 export default function RecipesPage() {
   useDocumentTitle("Recipes | RealiMeali");
@@ -16,9 +17,22 @@ export default function RecipesPage() {
   const { user } = useAuth();
   const { currentHousehold } = useHousehold();
   const { recipes, isLoading } = useRecipes();
+  const { restoreScrollPosition, setScrollKey } = useScrollPosition();
 
   // Load recipes automatically
   useRecipesLoader();
+
+  // Set up scroll position tracking for this page
+  useEffect(() => {
+    setScrollKey('recipes');
+    
+    // Check if we should restore scroll position
+    const shouldRestore = sessionStorage.getItem('restoreRecipesScroll');
+    if (shouldRestore === 'true') {
+      restoreScrollPosition('recipes');
+      sessionStorage.removeItem('restoreRecipesScroll');
+    }
+  }, [setScrollKey, restoreScrollPosition]);
 
   return (
     <div className="container max-w-7xl py-4 px-4 sm:py-8 sm:px-6">

@@ -1,7 +1,6 @@
-
 import { Recipe } from "@/types";
 import { Button } from "@/components/ui/button";
-import { CalendarDays, Clock, Pencil, Share, Users, Trash2 } from "lucide-react";
+import { CalendarDays, Clock, Pencil, Share, Users, Trash2, ArrowLeft } from "lucide-react";
 import { RecipeImage } from "@/components/ui/recipe-image";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -9,6 +8,8 @@ import { useUserProfile } from "@/hooks/useUserProfile";
 import { usePublicRecipeSharing } from "@/hooks/usePublicRecipeSharing";
 import { useState } from "react";
 import { format } from "date-fns";
+import { useNavigate } from "react-router-dom";
+import { useNavigationState } from "@/hooks/useNavigationState";
 
 interface RecipeDetailProps {
   recipe: Recipe;
@@ -23,6 +24,8 @@ export function RecipeDetail({ recipe, onAddToMealPlan, onEdit, onDelete, isOwne
   const { toast } = useToast();
   const { profile } = useUserProfile(recipe.createdBy);
   const { createPublicShare, isCreatingShare } = usePublicRecipeSharing();
+  const navigate = useNavigate();
+  const { navigationState } = useNavigationState();
   
   const { 
     title, 
@@ -35,6 +38,17 @@ export function RecipeDetail({ recipe, onAddToMealPlan, onEdit, onDelete, isOwne
     categories,
     createdAt
   } = recipe;
+
+  const handleBackToRecipes = () => {
+    if (navigationState.cameFromRecipes) {
+      // User came from recipes page, restore their scroll position
+      sessionStorage.setItem('restoreRecipesScroll', 'true');
+      navigate('/recipes');
+    } else {
+      // User entered directly (bookmark, share, etc.), go to top of recipes
+      navigate('/recipes');
+    }
+  };
 
   const handleEdit = () => {
     if (onEdit) {
@@ -106,6 +120,18 @@ export function RecipeDetail({ recipe, onAddToMealPlan, onEdit, onDelete, isOwne
   return (
     <div className="container max-w-4xl mx-auto px-4 py-4 sm:px-6 sm:py-8">
       <div className="space-y-6 sm:space-y-8">
+        {/* Back to Recipes Button */}
+        <div className="flex items-center">
+          <Button
+            variant="outline"
+            onClick={handleBackToRecipes}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            <span>Back to Recipes</span>
+          </Button>
+        </div>
+
         <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
           <div className="lg:w-1/2">
             <div className="aspect-video overflow-hidden rounded-lg">

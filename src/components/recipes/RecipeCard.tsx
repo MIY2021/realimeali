@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { usePublicRecipeSharing } from "@/hooks/usePublicRecipeSharing";
 import { RecipeImage } from "@/components/ui/recipe-image";
+import { useScrollPosition } from "@/hooks/useScrollPosition";
 
 interface RecipeCardProps {
   recipe: Recipe;
@@ -21,6 +22,7 @@ export function RecipeCard({ recipe, onAddToMealPlan, onEdit, onDelete, showActi
   const { user } = useAuth();
   const { currentHousehold } = useHousehold();
   const { createPublicShare, isCreatingShare } = usePublicRecipeSharing();
+  const { saveScrollPosition } = useScrollPosition();
   const { id, title, description, prepTime, cookTime, servings, categories } = recipe;
   const totalTime = prepTime + cookTime;
 
@@ -42,6 +44,11 @@ export function RecipeCard({ recipe, onAddToMealPlan, onEdit, onDelete, showActi
   const recipeSlug = createSlug(title);
   const recipeUrl = `/recipes/${recipeSlug}`;
 
+  const handleRecipeClick = () => {
+    // Save scroll position before navigating
+    saveScrollPosition('recipes');
+  };
+
   const handleShare = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -50,7 +57,7 @@ export function RecipeCard({ recipe, onAddToMealPlan, onEdit, onDelete, showActi
 
   return (
     <Card className="overflow-hidden transition-all hover:shadow-md relative flex flex-col h-full">
-      <Link to={recipeUrl}>
+      <Link to={recipeUrl} onClick={handleRecipeClick}>
         <div className="aspect-video w-full overflow-hidden bg-muted relative">
           <RecipeImage 
             recipe={recipe} 
@@ -65,6 +72,7 @@ export function RecipeCard({ recipe, onAddToMealPlan, onEdit, onDelete, showActi
             to={recipeUrl}
             className="text-lg font-semibold hover:text-terracotta transition-colors"
             title={title}
+            onClick={handleRecipeClick}
           >
             {title}
           </Link>

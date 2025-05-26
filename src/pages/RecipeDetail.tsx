@@ -10,6 +10,7 @@ import { EditRecipeDialog } from "@/components/recipes/EditRecipeDialog";
 import { Recipe } from "@/types";
 import { useRecipesLoader } from "@/hooks/useRecipesLoader";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useNavigationState } from "@/hooks/useNavigationState";
 
 export default function RecipeDetail() {
   const { id, slug } = useParams();
@@ -17,6 +18,7 @@ export default function RecipeDetail() {
   const { user } = useAuth();
   const { toast } = useToast();
   const { isLoading } = useRecipesLoader();
+  const { markCameFromRecipes } = useNavigationState();
   
   // State for meal plan dialog
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
@@ -45,6 +47,28 @@ export default function RecipeDetail() {
       return <Navigate to={`/recipes/${newSlug}`} replace />;
     }
   }
+
+  // Handle popstate event (browser back button)
+  useEffect(() => {
+    const handlePopState = () => {
+      // Check if previous route was recipes page
+      const previousRoute = sessionStorage.getItem('previousRoute');
+      if (previousRoute === '/recipes') {
+        sessionStorage.setItem('restoreRecipesScroll', 'true');
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  // Mark that user came from recipes if referrer indicates so
+  useEffect(() => {
+    const referrer = document.referrer;
+    if (referrer.includes('/recipes') && !referrer.includes('/recipes/')) {
+      markCameFromRecipes();
+    }
+  }, [markCameFromRecipes]);
 
   // Scroll to top when recipe loads or changes
   useEffect(() => {
