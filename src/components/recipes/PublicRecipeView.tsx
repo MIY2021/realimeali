@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useParams, Navigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Clock, Users, ArrowLeft, CalendarDays } from "lucide-react";
+import { Clock, Users, CalendarDays, Cloud } from "lucide-react";
 import { RecipeImage } from "@/components/ui/recipe-image";
 import { usePublicRecipeSharing, PublicRecipeShare } from "@/hooks/usePublicRecipeSharing";
 import { useAuth } from "@/contexts/AuthContext";
@@ -13,7 +13,7 @@ import { format } from "date-fns";
 export function PublicRecipeView() {
   const { publicShareId } = useParams();
   const { user } = useAuth();
-  const { getPublicShare, saveToMyRecipes, isSavingRecipe } = usePublicRecipeSharing();
+  const { getPublicShare, trackView, saveToMyRecipes, isSavingRecipe } = usePublicRecipeSharing();
   const [publicShare, setPublicShare] = useState<PublicRecipeShare | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
@@ -31,6 +31,8 @@ export function PublicRecipeView() {
       const share = await getPublicShare(publicShareId);
       if (share) {
         setPublicShare(share);
+        // Track view separately after fetching data
+        trackView(publicShareId);
       } else {
         setNotFound(true);
       }
@@ -38,7 +40,7 @@ export function PublicRecipeView() {
     };
 
     fetchPublicShare();
-  }, [publicShareId, getPublicShare]);
+  }, [publicShareId, getPublicShare, trackView]);
 
   const handleSaveRecipe = async () => {
     if (!publicShare) return;
@@ -197,8 +199,8 @@ export function PublicRecipeView() {
                   className="w-full sm:w-auto"
                   style={{ backgroundColor: '#e38165' }}
                 >
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  {isSavingRecipe ? 'Saving...' : 'Save to My Recipes'}
+                  <Cloud className="h-4 w-4 mr-2" />
+                  {isSavingRecipe ? 'Saving...' : '📖 Add To My Recipes'}
                 </Button>
               </div>
             )}
@@ -206,10 +208,10 @@ export function PublicRecipeView() {
             {!user && (
               <div className="pt-4">
                 <p className="text-sm text-muted-foreground mb-2">
-                  Sign in to save this recipe to your collection
+                  Sign in to add this recipe to your collection
                 </p>
                 <Button asChild variant="outline" className="w-full sm:w-auto">
-                  <a href="/login">Sign In</a>
+                  <a href="/login">📖 Add To My Recipes</a>
                 </Button>
               </div>
             )}

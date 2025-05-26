@@ -108,10 +108,7 @@ export const usePublicRecipeSharing = () => {
 
   const getPublicShare = async (publicShareId: string): Promise<PublicRecipeShare | null> => {
     try {
-      // Increment view count
-      await supabase.rpc('increment_share_view_count', { share_id: publicShareId });
-
-      // Fetch the public share
+      // Fetch the public share without incrementing view count
       const { data, error } = await supabase
         .from('public_recipe_shares')
         .select('*')
@@ -128,6 +125,26 @@ export const usePublicRecipeSharing = () => {
     } catch (error) {
       console.error("Error getting public share:", error);
       return null;
+    }
+  };
+
+  const trackView = async (publicShareId: string): Promise<void> => {
+    // Check if we've already tracked a view for this recipe in this session
+    const viewKey = `recipe_view_${publicShareId}`;
+    const hasViewed = sessionStorage.getItem(viewKey);
+    
+    if (hasViewed) {
+      return; // Already tracked view in this session
+    }
+
+    try {
+      // Increment view count
+      await supabase.rpc('increment_share_view_count', { share_id: publicShareId });
+      
+      // Mark as viewed in this session
+      sessionStorage.setItem(viewKey, 'true');
+    } catch (error) {
+      console.error("Error tracking view:", error);
     }
   };
 
@@ -190,6 +207,7 @@ export const usePublicRecipeSharing = () => {
   return {
     createPublicShare,
     getPublicShare,
+    trackView,
     saveToMyRecipes,
     isCreatingShare,
     isSavingRecipe,
