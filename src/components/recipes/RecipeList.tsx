@@ -5,8 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useHouseholdShopping } from "@/contexts/HouseholdShoppingContext";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Grid3X3 } from "lucide-react";
 import { AddToMealPlanDialog } from "./AddToMealPlanDialog";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
   Select,
   SelectContent,
@@ -29,6 +31,7 @@ export function RecipeList({
   mobileLayout 
 }: RecipeListProps) {
   const { recipeCategories } = useHouseholdShopping();
+  const isMobile = useIsMobile();
   
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
@@ -38,6 +41,21 @@ export function RecipeList({
   // State for meal plan dialog
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const [mealPlanDialogOpen, setMealPlanDialogOpen] = useState(false);
+
+  // Mobile layout state - lifted from RecipesPage
+  const [localMobileLayout, setLocalMobileLayout] = useState<string>(() => {
+    return localStorage.getItem('mobileRecipeLayout') || '1';
+  });
+
+  // Use prop layout if provided, otherwise use local state
+  const currentMobileLayout = mobileLayout || localMobileLayout;
+
+  const handleMobileLayoutChange = (value: string) => {
+    if (value) {
+      setLocalMobileLayout(value);
+      localStorage.setItem('mobileRecipeLayout', value);
+    }
+  };
 
   const filteredRecipes = recipes.filter((recipe) => {
     const matchesSearch = recipe.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -86,11 +104,11 @@ export function RecipeList({
 
   // Determine grid classes based on mobile layout or default responsive layout
   const getGridClasses = () => {
-    if (mobileLayout) {
+    if (isMobile) {
       // Mobile with layout preference
-      return mobileLayout === '1' 
+      return currentMobileLayout === '1' 
         ? 'grid grid-cols-1 gap-4 sm:gap-6'
-        : 'grid grid-cols-2 gap-4 sm:gap-6';
+        : 'grid grid-cols-2 gap-3 sm:gap-4';
     }
     // Default responsive layout for desktop
     return 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6';
@@ -107,14 +125,44 @@ export function RecipeList({
   return (
     <div className="space-y-4 sm:space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
-        <div className="flex-1">
+        <div className="flex-1 flex gap-2">
           <Input
             placeholder="Search recipes..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full"
+            className="flex-1"
           />
+          
+          {/* Mobile Layout Toggle - now inline and subtle */}
+          {isMobile && (
+            <div className="flex items-center gap-1 px-2 py-1 border rounded-md bg-background">
+              <Grid3X3 className="h-3 w-3 text-muted-foreground" />
+              <ToggleGroup 
+                type="single" 
+                value={currentMobileLayout} 
+                onValueChange={handleMobileLayoutChange}
+                className="h-auto"
+                size="sm"
+              >
+                <ToggleGroupItem 
+                  value="1" 
+                  aria-label="Single column" 
+                  className="h-6 w-6 p-0 text-xs"
+                >
+                  1
+                </ToggleGroupItem>
+                <ToggleGroupItem 
+                  value="2" 
+                  aria-label="Two columns" 
+                  className="h-6 w-6 p-0 text-xs"
+                >
+                  2
+                </ToggleGroupItem>
+              </ToggleGroup>
+            </div>
+          )}
         </div>
+        
         <div className="w-full sm:w-48 relative">
           <select
             value={categoryFilter}
@@ -151,7 +199,7 @@ export function RecipeList({
         </div>
       ) : (
         <>
-          <div className={getGridClasses()}>
+          <div className={getGridClasses()} data-testid="recipe-list">
             {visibleRecipes.map((recipe) => (
               <RecipeCard 
                 key={recipe.id} 

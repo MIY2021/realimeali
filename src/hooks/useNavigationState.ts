@@ -20,7 +20,10 @@ export const useNavigationState = () => {
     // Get the previous route from session storage
     const previousRoute = sessionStorage.getItem('previousRoute');
     const cameFromRecipes = previousRoute === '/recipes';
-    const shouldRestoreScroll = location.state?.restoreScroll === true;
+    const shouldRestoreScroll = location.state?.restoreScroll === true || 
+                               sessionStorage.getItem('navigatedFromRecipes') === 'true';
+    
+    console.log('Navigation state updated:', { previousRoute, cameFromRecipes, shouldRestoreScroll });
     
     setNavigationState({
       previousRoute,
@@ -33,7 +36,9 @@ export const useNavigationState = () => {
   }, [location.pathname, location.state]);
 
   const markCameFromRecipes = () => {
+    console.log('Marking navigation as coming from recipes');
     sessionStorage.setItem('previousRoute', '/recipes');
+    sessionStorage.setItem('navigatedFromRecipes', 'true');
     setNavigationState(prev => ({
       ...prev,
       cameFromRecipes: true,
@@ -42,6 +47,7 @@ export const useNavigationState = () => {
 
   const clearNavigationState = () => {
     sessionStorage.removeItem('previousRoute');
+    sessionStorage.removeItem('navigatedFromRecipes');
     setNavigationState({
       previousRoute: null,
       cameFromRecipes: false,

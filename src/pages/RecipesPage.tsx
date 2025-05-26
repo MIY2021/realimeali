@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Plus, UtensilsCrossed, Grid3X3 } from "lucide-react";
+import { Plus, UtensilsCrossed } from "lucide-react";
 import { Link } from "react-router-dom";
 import { RecipeList } from "@/components/recipes/RecipeList";
 import { useRecipes } from "@/contexts/RecipesContext";
@@ -12,7 +12,6 @@ import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useScrollPosition } from "@/hooks/useScrollPosition";
 import { useNavigationState } from "@/hooks/useNavigationState";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 export default function RecipesPage() {
   useDocumentTitle("Recipes | RealiMeali");
@@ -39,18 +38,28 @@ export default function RecipesPage() {
     // Check if we should restore scroll position
     if (navigationState.shouldRestoreScroll || sessionStorage.getItem('restoreRecipesScroll') === 'true') {
       console.log('Restoring scroll position on recipes page');
-      restoreScrollPosition('recipes');
-      sessionStorage.removeItem('restoreRecipesScroll');
+      
+      // Wait for recipes to load before restoring scroll
+      const attemptRestore = () => {
+        if (!isLoading && recipes.length > 0) {
+          restoreScrollPosition('recipes');
+          sessionStorage.removeItem('restoreRecipesScroll');
+          sessionStorage.removeItem('navigatedFromRecipes');
+        } else if (!isLoading) {
+          // Even if no recipes, still try to restore
+          restoreScrollPosition('recipes');
+          sessionStorage.removeItem('restoreRecipesScroll');
+          sessionStorage.removeItem('navigatedFromRecipes');
+        } else {
+          // Wait a bit more for loading to complete
+          setTimeout(attemptRestore, 100);
+        }
+      };
+      
+      // Give a small delay to ensure DOM is ready
+      setTimeout(attemptRestore, 50);
     }
-  }, [setScrollKey, restoreScrollPosition, navigationState.shouldRestoreScroll]);
-
-  // Handle mobile layout change
-  const handleMobileLayoutChange = (value: string) => {
-    if (value) {
-      setMobileLayout(value);
-      localStorage.setItem('mobileRecipeLayout', value);
-    }
-  };
+  }, [setScrollKey, restoreScrollPosition, navigationState.shouldRestoreScroll, isLoading, recipes.length]);
 
   return (
     <div className="container max-w-7xl py-4 px-4 sm:py-8 sm:px-6">
@@ -75,27 +84,6 @@ export default function RecipesPage() {
           </Button>
         )}
       </div>
-
-      {/* Mobile Layout Toggle */}
-      {isMobile && (
-        <div className="flex items-center gap-2 mb-4">
-          <Grid3X3 className="h-4 w-4" />
-          <span className="text-sm font-medium">Layout:</span>
-          <ToggleGroup 
-            type="single" 
-            value={mobileLayout} 
-            onValueChange={handleMobileLayoutChange}
-            className="border rounded-md p-1"
-          >
-            <ToggleGroupItem value="1" aria-label="Single column" className="text-xs px-3 py-1">
-              1 Col
-            </ToggleGroupItem>
-            <ToggleGroupItem value="2" aria-label="Two columns" className="text-xs px-3 py-1">
-              2 Col
-            </ToggleGroupItem>
-          </ToggleGroup>
-        </div>
-      )}
 
       {!user ? (
         <div className="py-10 text-center px-4">

@@ -9,6 +9,7 @@ import { useHousehold } from "@/contexts/HouseholdContext";
 import { usePublicRecipeSharing } from "@/hooks/usePublicRecipeSharing";
 import { RecipeImage } from "@/components/ui/recipe-image";
 import { useScrollPosition } from "@/hooks/useScrollPosition";
+import { useNavigationState } from "@/hooks/useNavigationState";
 
 interface RecipeCardProps {
   recipe: Recipe;
@@ -23,6 +24,7 @@ export function RecipeCard({ recipe, onAddToMealPlan, onEdit, onDelete, showActi
   const { currentHousehold } = useHousehold();
   const { createPublicShare, isCreatingShare } = usePublicRecipeSharing();
   const { saveScrollPosition } = useScrollPosition();
+  const { markCameFromRecipes } = useNavigationState();
   const navigate = useNavigate();
   const { id, title, description, prepTime, cookTime, servings, categories } = recipe;
   const totalTime = prepTime + cookTime;
@@ -47,9 +49,14 @@ export function RecipeCard({ recipe, onAddToMealPlan, onEdit, onDelete, showActi
 
   const handleRecipeClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    console.log('Recipe card clicked, saving scroll position');
+    console.log('Recipe card clicked, tracking navigation from recipes');
+    
+    // Mark that we're navigating from recipes page
+    markCameFromRecipes();
+    
     // Save scroll position immediately
     saveScrollPosition('recipes');
+    
     // Navigate with state to indicate scroll should be restored
     navigate(recipeUrl, { state: { restoreScroll: true } });
   };
@@ -61,7 +68,7 @@ export function RecipeCard({ recipe, onAddToMealPlan, onEdit, onDelete, showActi
   };
 
   return (
-    <Card className="overflow-hidden transition-all hover:shadow-md relative flex flex-col h-full">
+    <Card className="overflow-hidden transition-all hover:shadow-md relative flex flex-col h-full" data-recipe-card>
       <div onClick={handleRecipeClick} className="cursor-pointer">
         <div className="aspect-video w-full overflow-hidden bg-muted relative">
           <RecipeImage 

@@ -27,10 +27,25 @@ export const useScrollPosition = () => {
         const position: ScrollPosition = JSON.parse(savedPosition);
         console.log('Restoring scroll position:', position, 'for key:', key);
         
-        // Use requestAnimationFrame for better timing
+        // Wait for DOM to be ready and content to load
+        const attemptRestore = () => {
+          // Check if page has content loaded
+          const hasContent = document.querySelector('[data-testid="recipe-list"], .grid') || 
+                           document.querySelectorAll('.recipe-card, [data-recipe-card]').length > 0;
+          
+          if (hasContent || document.readyState === 'complete') {
+            console.log('Content ready, restoring scroll position');
+            window.scrollTo(position.x, position.y);
+          } else {
+            // Try again after a short delay
+            setTimeout(attemptRestore, 100);
+          }
+        };
+
+        // Use multiple timing strategies for reliability
         requestAnimationFrame(() => {
           requestAnimationFrame(() => {
-            window.scrollTo(position.x, position.y);
+            setTimeout(attemptRestore, 50);
           });
         });
       } catch (error) {
