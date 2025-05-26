@@ -4,11 +4,13 @@ import ShoppingListHeader from "@/components/shopping-list/ShoppingListHeader";
 import ShoppingListWeekSelector from "@/components/shopping-list/ShoppingListWeekSelector";
 import ShoppingListSkeleton from "@/components/shopping-list/ShoppingListSkeleton";
 import { useShoppingList } from "@/hooks/useShoppingList";
+import { useShoppingListGenerator } from "@/hooks/useShoppingListGenerator";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useToast } from "@/hooks/use-toast";
 import { extractIngredientName } from "@/utils/shoppingListUtils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -21,9 +23,12 @@ export default function ShoppingList() {
   const { user } = useAuth();
   const { currentHousehold } = useHousehold();
   const { recipes } = useRecipes();
+  const { toast } = useToast();
+  const { generateAndSaveFromMealPlans } = useShoppingListGenerator();
   const isMobile = useIsMobile();
   const [weekNumber, setWeekNumber] = useState<1 | 2>(1);
   const [copiedItemId, setCopiedItemId] = useState<string | null>(null);
+  const [isRegenerating, setIsRegenerating] = useState(false);
   
   const {
     shoppingList,
@@ -71,12 +76,43 @@ export default function ShoppingList() {
       });
     } else {
       navigator.clipboard.writeText(listText);
+      toast({
+        title: "Copied to clipboard",
+        description: "Shopping list has been copied to your clipboard",
+      });
+    }
+  };
+
+  const handleRegenerate = async () => {
+    if (!user || !currentHousehold) return;
+
+    setIsRegenerating(true);
+    try {
+      await generateAndSaveFromMealPlans(weekNumber);
+      toast({
+        title: "List regenerated",
+        description: `Shopping list for week ${weekNumber} has been regenerated with consolidated ingredients`,
+      });
+    } catch (error) {
+      console.error('Error regenerating shopping list:', error);
+      toast({
+        title: "Error",
+        description: "Failed to regenerate shopping list",
+        variant: "destructive",
+      });
+    } finally {
+      setIsRegenerating(false);
     }
   };
 
   return (
     <div className={`w-full mx-auto px-4 sm:px-6 lg:px-8 ${isMobile ? 'py-4' : 'py-8'} ${!isMobile ? 'max-w-4xl' : ''}`}>
-      <ShoppingListHeader onShare={handleShare} />
+      <ShoppingListHeader 
+        onShare={handleShare} 
+        onRegenerate={handleRegenerate}
+        weekNumber={weekNumber}
+        isRegenerating={isRegenerating}
+      />
 
       {!user ? (
         <div className="py-10 text-center">
@@ -93,7 +129,7 @@ export default function ShoppingList() {
             onWeekSelect={setWeekNumber} 
           />
 
-          {isLoading ? (
+          {isLoading || isRegenerating ? (
             <ShoppingListSkeleton />
           ) : (
             <div className={`space-y-${isMobile ? '2' : '3'}`}>
@@ -115,12 +151,13 @@ export default function ShoppingList() {
                         />
                         <div className="flex-1 min-w-0">
                           <div className={`font-medium ${item.isChecked ? 'line-through text-muted-foreground' : ''}`}>
-                            {item.name}
-                            {item.consolidatedQuantity && item.consolidatedQuantity > 1 && (
-                              <span className="ml-2 text-sm text-muted-foreground">
-                                ({item.consolidatedQuantity}{item.consolidatedUnit ? ` ${item.consolidatedUnit}` : ''})
+                            {item.consolidatedQuantity && item.consolidatedQuantity > 1 ? (
+                              <span className="text-primary font-semibold">
+                                {item.consolidatedQuantity}{item.consolidatedUnit ? ` ${item.consolidatedUnit}` : ''} 
                               </span>
-                            )}
+                            ) : null}
+                            {item.consolidatedQuantity && item.consolidatedQuantity > 1 ? ' ' : ''}
+                            {item.name}
                           </div>
                           {item.recipeIds.length > 0 && (
                             <div className="text-sm text-green-600 mt-1">

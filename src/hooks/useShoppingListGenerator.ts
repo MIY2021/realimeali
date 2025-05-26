@@ -28,6 +28,9 @@ export const useShoppingListGenerator = () => {
 
     console.log('Generating consolidated shopping list from meal plans for week', weekNumber, ':', mealPlans.length);
 
+    // Clear existing items for this week first to prevent duplicates
+    await ShoppingListService.clearAll(currentHousehold.id, weekNumber);
+
     // Collect ingredients from meal plans
     const ingredientInputs: Array<{
       name: string;
@@ -52,13 +55,26 @@ export const useShoppingListGenerator = () => {
 
     console.log('Found ingredients for consolidation:', ingredientInputs.length);
 
+    if (ingredientInputs.length === 0) {
+      console.log('No ingredients found to consolidate');
+      return [];
+    }
+
     try {
       // Call OpenAI consolidation function
       const { data, error } = await supabase.functions.invoke('consolidate-ingredients', {
         body: { ingredients: ingredientInputs }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase function error:', error);
+        throw error;
+      }
+
+      if (!data || !data.consolidatedIngredients) {
+        console.error('No consolidated ingredients returned from function');
+        return [];
+      }
 
       const consolidatedIngredients = data.consolidatedIngredients;
       console.log('Received consolidated ingredients:', consolidatedIngredients.length);
@@ -67,27 +83,54 @@ export const useShoppingListGenerator = () => {
       const savedItems: ShoppingListItem[] = [];
       
       for (const item of consolidatedIngredients) {
-        const savedItem = await ShoppingListService.addConsolidatedItem(
-          item.name,
-          item.consolidatedQuantity,
-          item.consolidatedUnit,
-          item.sourceIngredients,
-          item.recipeIds,
-          currentHousehold.id,
-          user.id,
-          weekNumber
-        );
-        
-        if (savedItem) {
-          savedItems.push(savedItem);
+        try {
+          const savedItem = await ShoppingListService.addConsolidatedItem(
+            item.name,
+            item.consolidatedQuantity || 1,
+            item.consolidatedUnit || '',
+            item.sourceIngredients || [item.name],
+            item.recipeIds || [],
+            currentHousehold.id,
+            user.id,
+            weekNumber
+          );
+          
+          if (savedItem) {
+            savedItems.push(savedItem);
+          }
+        } catch (itemError) {
+          console.error('Error saving individual item:', item, itemError);
         }
       }
 
-      console.log('Generated consolidated shopping list for week', weekNumber, 'with', savedItems.length, 'items');
+      console.log('Successfully saved', savedItems.length, 'consolidated items for week', weekNumber);
       return savedItems;
     } catch (error) {
-      console.error('Error consolidating ingredients:', error);
-      return [];
+      console.error('Error in consolidation process:', error);
+      
+      // Fallback: save individual ingredients if consolidation fails completely
+      console.log('Falling back to individual ingredient saving');
+      const fallbackItems: ShoppingListItem[] = [];
+      
+      for (const ingredient of ingredientInputs) {
+        try {
+          const savedItem = await ShoppingListService.addCustomItem(
+            ingredient.name,
+            currentHousehold.id,
+            user.id,
+            weekNumber,
+            [ingredient.recipeId]
+          );
+          
+          if (savedItem) {
+            fallbackItems.push(savedItem);
+          }
+        } catch (itemError) {
+          console.error('Error saving fallback item:', ingredient, itemError);
+        }
+      }
+      
+      return fallbackItems;
     }
   }, [recipes, getMealPlansForWeek, user, currentHousehold]);
 
