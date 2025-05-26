@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { useMealPlan } from "@/contexts/MealPlanContext";
@@ -18,6 +18,16 @@ export const useShoppingList = (weekNumber: 1 | 2) => {
   
   const [shoppingList, setShoppingList] = useState<ShoppingListCategory>({});
   const [isLoading, setIsLoading] = useState(false);
+  
+  // Use refs to track generation state without triggering re-renders
+  const hasGeneratedRef = useRef<Set<string>>(new Set());
+  const isGeneratingRef = useRef(false);
+
+  // Generate a unique key for the current week/household combination
+  const getGenerationKey = useCallback(() => {
+    if (!currentHousehold) return null;
+    return `${currentHousehold.id}-week-${weekNumber}`;
+  }, [currentHousehold, weekNumber]);
 
   // Load existing shopping list
   const loadShoppingList = useCallback(async () => {
@@ -39,29 +49,53 @@ export const useShoppingList = (weekNumber: 1 | 2) => {
     }
   }, [user, currentHousehold, toast]);
 
-  // Auto-generate shopping list from meal plans if empty
+  // Auto-generate shopping list from meal plans if needed
   const autoGenerateFromMealPlans = useCallback(async () => {
-    if (!user || !currentHousehold) return;
+    if (!user || !currentHousehold || isGeneratingRef.current) return;
+
+    const generationKey = getGenerationKey();
+    if (!generationKey || hasGeneratedRef.current.has(generationKey)) return;
 
     const mealPlans = getMealPlansForWeek(weekNumber);
     
-    // Only generate if we have meal plans and no existing items
+    // Only generate if we have meal plans
     if (mealPlans.length > 0) {
+      // Check if shopping list is truly empty (not just loading)
       const allItems = Object.values(shoppingList).flat();
-      if (allItems.length === 0) {
-        setIsLoading(true);
+      if (allItems.length === 0 && !isLoading) {
+        console.log('Auto-generating shopping list from meal plans for', generationKey);
+        
+        isGeneratingRef.current = true;
+        hasGeneratedRef.current.add(generationKey);
+        
         try {
-          console.log('Auto-generating shopping list from meal plans');
+          setIsLoading(true);
           await generateAndSaveFromMealPlans(weekNumber);
-          await loadShoppingList(); // Reload after generation
+          // Don't call loadShoppingList here - let real-time sync handle it
         } catch (error) {
           console.error("Error auto-generating shopping list:", error);
+          // Remove from generated set on error so user can retry
+          hasGeneratedRef.current.delete(generationKey);
         } finally {
           setIsLoading(false);
+          isGeneratingRef.current = false;
         }
       }
     }
-  }, [user, currentHousehold, getMealPlansForWeek, weekNumber, generateAndSaveFromMealPlans, shoppingList, loadShoppingList]);
+  }, [user, currentHousehold, getMealPlansForWeek, weekNumber, generateAndSaveFromMealPlans, getGenerationKey, isLoading]);
+
+  // Clear generation flag when week or household changes
+  useEffect(() => {
+    const generationKey = getGenerationKey();
+    if (generationKey && !hasGeneratedRef.current.has(generationKey)) {
+      // Reset the shopping list when switching weeks/households
+      const emptyCategories: ShoppingListCategory = {};
+      SHOPPING_CATEGORIES.forEach(cat => {
+        emptyCategories[cat] = [];
+      });
+      setShoppingList(emptyCategories);
+    }
+  }, [getGenerationKey]);
 
   // Set up real-time subscription for cross-household sync
   useEffect(() => {
@@ -79,7 +113,12 @@ export const useShoppingList = (weekNumber: 1 | 2) => {
         },
         (payload) => {
           console.log('Shopping list changed:', payload);
-          loadShoppingList(); // Reload when any changes occur
+          // Debounce the reload to prevent rapid-fire updates
+          setTimeout(() => {
+            if (!isGeneratingRef.current) {
+              loadShoppingList();
+            }
+          }, 100);
         }
       )
       .subscribe();
@@ -94,10 +133,13 @@ export const useShoppingList = (weekNumber: 1 | 2) => {
     loadShoppingList();
   }, [loadShoppingList]);
 
-  // Auto-generate when shopping list is loaded
+  // Auto-generate ONLY when shopping list is loaded and empty
   useEffect(() => {
-    autoGenerateFromMealPlans();
-  }, [autoGenerateFromMealPlans]);
+    // Only run auto-generation after shopping list is loaded
+    if (!isLoading) {
+      autoGenerateFromMealPlans();
+    }
+  }, [autoGenerateFromMealPlans, isLoading]);
 
   const toggleItemChecked = useCallback(async (itemId: string, category: string) => {
     if (!user || !currentHousehold) return;
@@ -182,6 +224,12 @@ export const useShoppingList = (weekNumber: 1 | 2) => {
         });
         
         setShoppingList(emptyCategories);
+        
+        // Clear generation flag so it can generate again
+        const generationKey = getGenerationKey();
+        if (generationKey) {
+          hasGeneratedRef.current.delete(generationKey);
+        }
 
         toast({
           title: "Shopping list cleared",
@@ -204,7 +252,7 @@ export const useShoppingList = (weekNumber: 1 | 2) => {
     } finally {
       setIsLoading(false);
     }
-  }, [user, currentHousehold, toast]);
+  }, [user, currentHousehold, toast, getGenerationKey]);
 
   return {
     shoppingList,
