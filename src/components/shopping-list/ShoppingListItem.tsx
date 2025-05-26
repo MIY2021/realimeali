@@ -56,6 +56,7 @@ export default function ShoppingListItem({
   };
 
   const handleCopy = () => {
+    // Only copy the clean ingredient name without quantities or units
     const ingredientName = extractIngredientName(name);
     navigator.clipboard.writeText(ingredientName);
     onCopy();
@@ -74,8 +75,8 @@ export default function ShoppingListItem({
     if (unit && unit.trim()) {
       return `${formattedQuantity} ${unit.trim()} `;
     } else {
-      // Only show number if it's greater than 1, or always show if we have a quantity
-      return quantity > 1 ? `${formattedQuantity} ` : '1 ';
+      // Always show "1" for single items to be clear
+      return `${formattedQuantity} `;
     }
   };
 
