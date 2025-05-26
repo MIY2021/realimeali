@@ -21,7 +21,7 @@ export const useShoppingList = (weekNumber: 1 | 2) => {
     if (!user || !currentHousehold) return;
 
     const now = Date.now();
-    if (now - lastLoadTimeRef.current < 500) {
+    if (now - lastLoadTimeRef.current < 200) {
       console.log('Skipping load - too frequent');
       return;
     }
@@ -30,6 +30,7 @@ export const useShoppingList = (weekNumber: 1 | 2) => {
     setIsLoading(true);
     try {
       const items = await ShoppingListService.loadExistingShoppingList(currentHousehold.id, weekNumber);
+      console.log('Loaded shopping list items:', items);
       setShoppingList(items);
     } catch (error) {
       console.error("Error loading shopping list:", error);
@@ -39,7 +40,7 @@ export const useShoppingList = (weekNumber: 1 | 2) => {
     }
   }, [user, currentHousehold, weekNumber]);
 
-  // Real-time subscription
+  // Real-time subscription with immediate refresh
   useEffect(() => {
     if (!currentHousehold) return;
 
@@ -62,11 +63,10 @@ export const useShoppingList = (weekNumber: 1 | 2) => {
             clearTimeout(debounceTimer);
           }
           
+          // Reduced debounce time for faster updates
           debounceTimer = setTimeout(() => {
-            if (!isLoading) {
-              loadShoppingList();
-            }
-          }, 1000);
+            loadShoppingList();
+          }, 300);
         }
       )
       .subscribe();
@@ -77,7 +77,7 @@ export const useShoppingList = (weekNumber: 1 | 2) => {
       }
       supabase.removeChannel(channel);
     };
-  }, [currentHousehold, loadShoppingList, isLoading, weekNumber]);
+  }, [currentHousehold, loadShoppingList, weekNumber]);
 
   useEffect(() => {
     loadShoppingList();
@@ -137,18 +137,15 @@ export const useShoppingList = (weekNumber: 1 | 2) => {
   const clearAll = useCallback(async () => {
     if (!user || !currentHousehold) return;
 
-    setIsLoading(true);
+    // Clear UI immediately
+    setShoppingList([]);
+    
     try {
       const success = await ShoppingListService.clearAll(currentHousehold.id, weekNumber);
       
-      if (success) {
-        setShoppingList([]);
-
-        toast({
-          title: "Shopping list cleared",
-          description: "All items have been removed",
-        });
-      } else {
+      if (!success) {
+        // Reload on error to restore actual state
+        await loadShoppingList();
         toast({
           title: "Error",
           description: "Failed to clear shopping list",
@@ -157,15 +154,15 @@ export const useShoppingList = (weekNumber: 1 | 2) => {
       }
     } catch (error) {
       console.error("Error clearing shopping list:", error);
+      // Reload on error to restore actual state
+      await loadShoppingList();
       toast({
         title: "Error",
         description: "Failed to clear shopping list",
         variant: "destructive",
       });
-    } finally {
-      setIsLoading(false);
     }
-  }, [user, currentHousehold, toast, weekNumber]);
+  }, [user, currentHousehold, weekNumber, loadShoppingList, toast]);
 
   return {
     shoppingList,
@@ -173,5 +170,6 @@ export const useShoppingList = (weekNumber: 1 | 2) => {
     toggleItemChecked,
     addCustomItem,
     clearAll,
+    refreshList: loadShoppingList,
   };
 };

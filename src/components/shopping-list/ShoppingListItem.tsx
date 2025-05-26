@@ -67,16 +67,16 @@ export default function ShoppingListItem({
 
   const displayName = capitalizeShoppingItem(name.replace(/^week\d+-/, ''));
 
-  // Format quantity and unit display
+  // Format quantity and unit display - ALWAYS show quantity, including 1
   const formatQuantityAndUnit = () => {
-    if (!quantity || quantity <= 1) {
-      // Don't show "1" but do show unit if it exists
-      return unit ? `${unit} ` : '';
-    }
+    const formattedQuantity = quantity && quantity % 1 === 0 ? quantity.toString() : (quantity || 1).toFixed(1);
     
-    // Show quantity and unit for amounts > 1
-    const formattedQuantity = quantity % 1 === 0 ? quantity.toString() : quantity.toFixed(1);
-    return unit ? `${formattedQuantity} ${unit} ` : `${formattedQuantity} `;
+    if (unit && unit.trim()) {
+      return `${formattedQuantity} ${unit.trim()} `;
+    } else {
+      // Only show number if it's greater than 1, or always show if we have a quantity
+      return quantity > 1 ? `${formattedQuantity} ` : '1 ';
+    }
   };
 
   return (

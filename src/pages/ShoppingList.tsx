@@ -40,6 +40,7 @@ export default function ShoppingList() {
     isLoading,
     toggleItemChecked,
     clearAll,
+    refreshList,
   } = useShoppingList(weekNumber);
 
   const mealPlans = getMealPlansForWeek(weekNumber);
@@ -143,8 +144,10 @@ export default function ShoppingList() {
       
       setGenerationProgress({ step: 4, totalSteps: 5, currentAction: 'Saving to database...' });
       
-      setTimeout(() => {
+      // Force refresh the list after generation
+      setTimeout(async () => {
         setGenerationProgress({ step: 5, totalSteps: 5, currentAction: 'Complete!' });
+        await refreshList();
         
         if (result && result.length > 0) {
           toast({
