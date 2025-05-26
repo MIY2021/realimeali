@@ -1,6 +1,6 @@
 
 import { Recipe } from "@/types";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Clock, Users, Plus, Pencil, Share, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,7 @@ export function RecipeCard({ recipe, onAddToMealPlan, onEdit, onDelete, showActi
   const { currentHousehold } = useHousehold();
   const { createPublicShare, isCreatingShare } = usePublicRecipeSharing();
   const { saveScrollPosition } = useScrollPosition();
+  const navigate = useNavigate();
   const { id, title, description, prepTime, cookTime, servings, categories } = recipe;
   const totalTime = prepTime + cookTime;
 
@@ -44,9 +45,13 @@ export function RecipeCard({ recipe, onAddToMealPlan, onEdit, onDelete, showActi
   const recipeSlug = createSlug(title);
   const recipeUrl = `/recipes/${recipeSlug}`;
 
-  const handleRecipeClick = () => {
-    // Save scroll position before navigating
+  const handleRecipeClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    console.log('Recipe card clicked, saving scroll position');
+    // Save scroll position immediately
     saveScrollPosition('recipes');
+    // Navigate with state to indicate scroll should be restored
+    navigate(recipeUrl, { state: { restoreScroll: true } });
   };
 
   const handleShare = async (e: React.MouseEvent) => {
@@ -57,7 +62,7 @@ export function RecipeCard({ recipe, onAddToMealPlan, onEdit, onDelete, showActi
 
   return (
     <Card className="overflow-hidden transition-all hover:shadow-md relative flex flex-col h-full">
-      <Link to={recipeUrl} onClick={handleRecipeClick}>
+      <div onClick={handleRecipeClick} className="cursor-pointer">
         <div className="aspect-video w-full overflow-hidden bg-muted relative">
           <RecipeImage 
             recipe={recipe} 
@@ -65,17 +70,16 @@ export function RecipeCard({ recipe, onAddToMealPlan, onEdit, onDelete, showActi
             iconSize="h-12 w-12"
           />
         </div>
-      </Link>
+      </div>
       <CardHeader className="p-4 pb-2">
         <div className="flex justify-between items-start">
-          <Link
-            to={recipeUrl}
-            className="text-lg font-semibold hover:text-terracotta transition-colors"
-            title={title}
+          <button
             onClick={handleRecipeClick}
+            className="text-lg font-semibold hover:text-terracotta transition-colors text-left"
+            title={title}
           >
             {title}
-          </Link>
+          </button>
         </div>
         <div className="flex flex-wrap gap-2 mt-1">
           {categories.map((category) => (
@@ -108,9 +112,9 @@ export function RecipeCard({ recipe, onAddToMealPlan, onEdit, onDelete, showActi
           variant="outline"
           size="sm"
           className="w-full text-xs hover:bg-terracotta hover:text-white"
-          asChild
+          onClick={handleRecipeClick}
         >
-          <Link to={recipeUrl}>View Recipe</Link>
+          View Recipe
         </Button>
         
         {onAddToMealPlan && (

@@ -18,7 +18,7 @@ export default function RecipeDetail() {
   const { user } = useAuth();
   const { toast } = useToast();
   const { isLoading } = useRecipesLoader();
-  const { markCameFromRecipes } = useNavigationState();
+  const { navigationState } = useNavigationState();
   
   // State for meal plan dialog
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
@@ -48,27 +48,19 @@ export default function RecipeDetail() {
     }
   }
 
-  // Handle popstate event (browser back button)
+  // Handle browser back button
   useEffect(() => {
     const handlePopState = () => {
+      console.log('Popstate event detected, checking if should restore scroll');
       // Check if previous route was recipes page
-      const previousRoute = sessionStorage.getItem('previousRoute');
-      if (previousRoute === '/recipes') {
+      if (navigationState.cameFromRecipes) {
         sessionStorage.setItem('restoreRecipesScroll', 'true');
       }
     };
 
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
-  }, []);
-
-  // Mark that user came from recipes if referrer indicates so
-  useEffect(() => {
-    const referrer = document.referrer;
-    if (referrer.includes('/recipes') && !referrer.includes('/recipes/')) {
-      markCameFromRecipes();
-    }
-  }, [markCameFromRecipes]);
+  }, [navigationState.cameFromRecipes]);
 
   // Scroll to top when recipe loads or changes
   useEffect(() => {

@@ -5,6 +5,7 @@ import { useLocation } from 'react-router-dom';
 interface NavigationState {
   previousRoute: string | null;
   cameFromRecipes: boolean;
+  shouldRestoreScroll: boolean;
 }
 
 export const useNavigationState = () => {
@@ -12,21 +13,24 @@ export const useNavigationState = () => {
   const [navigationState, setNavigationState] = useState<NavigationState>({
     previousRoute: null,
     cameFromRecipes: false,
+    shouldRestoreScroll: false,
   });
 
   useEffect(() => {
     // Get the previous route from session storage
     const previousRoute = sessionStorage.getItem('previousRoute');
     const cameFromRecipes = previousRoute === '/recipes';
+    const shouldRestoreScroll = location.state?.restoreScroll === true;
     
     setNavigationState({
       previousRoute,
       cameFromRecipes,
+      shouldRestoreScroll,
     });
 
     // Save current route as previous route for next navigation
     sessionStorage.setItem('previousRoute', location.pathname);
-  }, [location.pathname]);
+  }, [location.pathname, location.state]);
 
   const markCameFromRecipes = () => {
     sessionStorage.setItem('previousRoute', '/recipes');
@@ -41,6 +45,7 @@ export const useNavigationState = () => {
     setNavigationState({
       previousRoute: null,
       cameFromRecipes: false,
+      shouldRestoreScroll: false,
     });
   };
 

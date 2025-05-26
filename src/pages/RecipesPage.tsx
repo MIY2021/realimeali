@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Plus, UtensilsCrossed } from "lucide-react";
+import { Plus, UtensilsCrossed, LayoutGrid } from "lucide-react";
 import { Link } from "react-router-dom";
 import { RecipeList } from "@/components/recipes/RecipeList";
 import { useRecipes } from "@/contexts/RecipesContext";
@@ -10,6 +10,9 @@ import { useHousehold } from "@/contexts/HouseholdContext";
 import { useRecipesLoader } from "@/hooks/useRecipesLoader";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useScrollPosition } from "@/hooks/useScrollPosition";
+import { useNavigationState } from "@/hooks/useNavigationState";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 export default function RecipesPage() {
   useDocumentTitle("Recipes | RealiMeali");
@@ -18,6 +21,13 @@ export default function RecipesPage() {
   const { currentHousehold } = useHousehold();
   const { recipes, isLoading } = useRecipes();
   const { restoreScrollPosition, setScrollKey } = useScrollPosition();
+  const { navigationState } = useNavigationState();
+  const isMobile = useIsMobile();
+
+  // Mobile layout state
+  const [mobileLayout, setMobileLayout] = useState<string>(() => {
+    return localStorage.getItem('mobileRecipeLayout') || '1';
+  });
 
   // Load recipes automatically
   useRecipesLoader();
@@ -27,12 +37,20 @@ export default function RecipesPage() {
     setScrollKey('recipes');
     
     // Check if we should restore scroll position
-    const shouldRestore = sessionStorage.getItem('restoreRecipesScroll');
-    if (shouldRestore === 'true') {
+    if (navigationState.shouldRestoreScroll || sessionStorage.getItem('restoreRecipesScroll') === 'true') {
+      console.log('Restoring scroll position on recipes page');
       restoreScrollPosition('recipes');
       sessionStorage.removeItem('restoreRecipesScroll');
     }
-  }, [setScrollKey, restoreScrollPosition]);
+  }, [setScrollKey, restoreScrollPosition, navigationState.shouldRestoreScroll]);
+
+  // Handle mobile layout change
+  const handleMobileLayoutChange = (value: string) => {
+    if (value) {
+      setMobileLayout(value);
+      localStorage.setItem('mobileRecipeLayout', value);
+    }
+  };
 
   return (
     <div className="container max-w-7xl py-4 px-4 sm:py-8 sm:px-6">
@@ -58,6 +76,27 @@ export default function RecipesPage() {
         )}
       </div>
 
+      {/* Mobile Layout Toggle */}
+      {isMobile && (
+        <div className="flex items-center gap-2 mb-4">
+          <LayoutGrid className="h-4 w-4" />
+          <span className="text-sm font-medium">Layout:</span>
+          <ToggleGroup 
+            type="single" 
+            value={mobileLayout} 
+            onValueChange={handleMobileLayoutChange}
+            className="border rounded-md p-1"
+          >
+            <ToggleGroupItem value="1" aria-label="Single column" className="text-xs px-3 py-1">
+              1 Col
+            </ToggleGroupItem>
+            <ToggleGroupItem value="2" aria-label="Two columns" className="text-xs px-3 py-1">
+              2 Col
+            </ToggleGroupItem>
+          </ToggleGroup>
+        </div>
+      )}
+
       {!user ? (
         <div className="py-10 text-center px-4">
           <p className="text-muted-foreground mb-4">Please log in to view and manage recipes.</p>
@@ -70,6 +109,7 @@ export default function RecipesPage() {
         <RecipeList 
           recipes={recipes}
           isLoading={isLoading}
+          mobileLayout={isMobile ? mobileLayout : undefined}
         />
       )}
     </div>

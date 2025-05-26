@@ -40,12 +40,16 @@ export function RecipeDetail({ recipe, onAddToMealPlan, onEdit, onDelete, isOwne
   } = recipe;
 
   const handleBackToRecipes = () => {
-    if (navigationState.cameFromRecipes) {
+    console.log('Back button clicked, navigation state:', navigationState);
+    
+    if (navigationState.cameFromRecipes || navigationState.shouldRestoreScroll) {
       // User came from recipes page, restore their scroll position
+      console.log('Navigating back with scroll restoration');
       sessionStorage.setItem('restoreRecipesScroll', 'true');
-      navigate('/recipes');
+      navigate('/recipes', { state: { restoreScroll: true } });
     } else {
       // User entered directly (bookmark, share, etc.), go to top of recipes
+      console.log('Navigating back to top of recipes');
       navigate('/recipes');
     }
   };

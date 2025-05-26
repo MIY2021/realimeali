@@ -19,12 +19,14 @@ interface RecipeListProps {
   recipes: Recipe[];
   showActions?: boolean;
   isLoading?: boolean;
+  mobileLayout?: string;
 }
 
 export function RecipeList({ 
   recipes, 
   showActions = false, 
-  isLoading = false 
+  isLoading = false,
+  mobileLayout 
 }: RecipeListProps) {
   const { recipeCategories } = useHouseholdShopping();
   
@@ -82,6 +84,18 @@ export function RecipeList({
   const visibleRecipes = sortedRecipes.slice(0, displayCount);
   const hasMoreRecipes = displayCount < sortedRecipes.length;
 
+  // Determine grid classes based on mobile layout or default responsive layout
+  const getGridClasses = () => {
+    if (mobileLayout) {
+      // Mobile with layout preference
+      return mobileLayout === '1' 
+        ? 'grid grid-cols-1 gap-4 sm:gap-6'
+        : 'grid grid-cols-2 gap-4 sm:gap-6';
+    }
+    // Default responsive layout for desktop
+    return 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6';
+  };
+
   if (isLoading) {
     return (
       <div className="py-10 text-center">
@@ -137,7 +151,7 @@ export function RecipeList({
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+          <div className={getGridClasses()}>
             {visibleRecipes.map((recipe) => (
               <RecipeCard 
                 key={recipe.id} 

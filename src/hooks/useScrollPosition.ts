@@ -17,6 +17,7 @@ export const useScrollPosition = () => {
       y: window.scrollY,
     };
     sessionStorage.setItem(`scroll_${key}`, JSON.stringify(position));
+    console.log('Saved scroll position:', position, 'for key:', key);
   };
 
   const restoreScrollPosition = (key: string) => {
@@ -24,10 +25,14 @@ export const useScrollPosition = () => {
     if (savedPosition) {
       try {
         const position: ScrollPosition = JSON.parse(savedPosition);
-        // Use setTimeout to ensure DOM is ready
-        setTimeout(() => {
-          window.scrollTo(position.x, position.y);
-        }, 100);
+        console.log('Restoring scroll position:', position, 'for key:', key);
+        
+        // Use requestAnimationFrame for better timing
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            window.scrollTo(position.x, position.y);
+          });
+        });
       } catch (error) {
         console.error('Error restoring scroll position:', error);
       }
@@ -40,13 +45,6 @@ export const useScrollPosition = () => {
 
   // Save scroll position when navigating away from current route
   useEffect(() => {
-    const handleBeforeUnload = () => {
-      if (scrollKey.current) {
-        saveScrollPosition(scrollKey.current);
-      }
-    };
-
-    // Save scroll position when component unmounts or route changes
     return () => {
       if (scrollKey.current) {
         saveScrollPosition(scrollKey.current);
