@@ -68,6 +68,7 @@ export function RecipeManualTab({
               onChange={(e) => setNewRecipe({ ...newRecipe, title: e.target.value })}
               className="w-full p-3 border rounded-lg"
               placeholder="What's this delicious dish called?"
+              autoFocus={false}
             />
           </div>
 
@@ -79,6 +80,7 @@ export function RecipeManualTab({
               className="w-full p-3 border rounded-lg"
               rows={3}
               placeholder="Tell us about this recipe..."
+              autoFocus={false}
             />
           </div>
 
@@ -91,6 +93,7 @@ export function RecipeManualTab({
                 onChange={(e) => setNewRecipe({ ...newRecipe, prepTime: Number(e.target.value) })}
                 className="w-full p-3 border rounded-lg"
                 min={0}
+                autoFocus={false}
               />
             </div>
             <div>
@@ -101,6 +104,7 @@ export function RecipeManualTab({
                 onChange={(e) => setNewRecipe({ ...newRecipe, cookTime: Number(e.target.value) })}
                 className="w-full p-3 border rounded-lg"
                 min={0}
+                autoFocus={false}
               />
             </div>
             <div>
@@ -111,6 +115,7 @@ export function RecipeManualTab({
                 onChange={(e) => setNewRecipe({ ...newRecipe, servings: Number(e.target.value) })}
                 className="w-full p-3 border rounded-lg"
                 min={1}
+                autoFocus={false}
               />
             </div>
           </div>
@@ -124,6 +129,7 @@ export function RecipeManualTab({
                 onChange={onImageChange}
                 className="w-full p-3 border rounded-lg"
                 disabled={isGeneratingImage}
+                autoFocus={false}
               />
               <Button 
                 type="button"
@@ -234,6 +240,7 @@ export function RecipeManualTab({
                   onChange={(e) => setNewIngredient(e.target.value)}
                   placeholder="Add an ingredient..."
                   className="flex-1 p-3 border rounded-lg"
+                  autoFocus={false}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                       e.preventDefault();
@@ -276,6 +283,7 @@ export function RecipeManualTab({
                   placeholder="Add a cooking step..."
                   className="flex-1 p-3 border rounded-lg"
                   rows={2}
+                  autoFocus={false}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && e.ctrlKey) {
                       e.preventDefault();

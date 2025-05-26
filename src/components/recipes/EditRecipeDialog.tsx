@@ -182,6 +182,7 @@ export function EditRecipeDialog({ recipe, open, onOpenChange, onSave }: EditRec
                 value={editedRecipe.title}
                 onChange={(e) => setEditedRecipe({ ...editedRecipe, title: e.target.value })}
                 className="w-full p-2 border rounded"
+                autoFocus={false}
               />
             </div>
 
@@ -192,6 +193,7 @@ export function EditRecipeDialog({ recipe, open, onOpenChange, onSave }: EditRec
                 onChange={(e) => setEditedRecipe({ ...editedRecipe, description: e.target.value })}
                 className="w-full p-2 border rounded"
                 rows={3}
+                autoFocus={false}
               />
             </div>
 
@@ -204,6 +206,7 @@ export function EditRecipeDialog({ recipe, open, onOpenChange, onSave }: EditRec
                   onChange={(e) => setEditedRecipe({ ...editedRecipe, prepTime: Number(e.target.value) })}
                   className="w-full p-2 border rounded"
                   min={0}
+                  autoFocus={false}
                 />
               </div>
               <div>
@@ -214,6 +217,7 @@ export function EditRecipeDialog({ recipe, open, onOpenChange, onSave }: EditRec
                   onChange={(e) => setEditedRecipe({ ...editedRecipe, cookTime: Number(e.target.value) })}
                   className="w-full p-2 border rounded"
                   min={0}
+                  autoFocus={false}
                 />
               </div>
               <div>
@@ -224,6 +228,7 @@ export function EditRecipeDialog({ recipe, open, onOpenChange, onSave }: EditRec
                   onChange={(e) => setEditedRecipe({ ...editedRecipe, servings: Number(e.target.value) })}
                   className="w-full p-2 border rounded"
                   min={1}
+                  autoFocus={false}
                 />
               </div>
             </div>
@@ -237,6 +242,7 @@ export function EditRecipeDialog({ recipe, open, onOpenChange, onSave }: EditRec
                   onChange={handleImageChange}
                   className="w-full p-2 border rounded"
                   disabled={isGeneratingImage}
+                  autoFocus={false}
                 />
                 
                 <Button
@@ -363,6 +369,7 @@ export function EditRecipeDialog({ recipe, open, onOpenChange, onSave }: EditRec
                   onChange={(e) => setNewIngredient(e.target.value)}
                   placeholder="Add ingredient"
                   className="flex-1 p-2 border rounded"
+                  autoFocus={false}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                       e.preventDefault();
@@ -403,6 +410,7 @@ export function EditRecipeDialog({ recipe, open, onOpenChange, onSave }: EditRec
                   placeholder="Add instruction"
                   className="flex-1 p-2 border rounded"
                   rows={2}
+                  autoFocus={false}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && e.ctrlKey) {
                       e.preventDefault();

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -81,6 +80,7 @@ export function RecipeAmendment({
               id="title"
               value={editedRecipe.title}
               onChange={(e) => updateRecipe('title', e.target.value)}
+              autoFocus={false}
             />
           </div>
 
@@ -91,6 +91,7 @@ export function RecipeAmendment({
               value={editedRecipe.description}
               onChange={(e) => updateRecipe('description', e.target.value)}
               rows={3}
+              autoFocus={false}
             />
           </div>
 
@@ -103,6 +104,7 @@ export function RecipeAmendment({
                 value={editedRecipe.prepTime}
                 onChange={(e) => updateRecipe('prepTime', Number(e.target.value))}
                 min={0}
+                autoFocus={false}
               />
             </div>
             <div>
@@ -113,6 +115,7 @@ export function RecipeAmendment({
                 value={editedRecipe.cookTime}
                 onChange={(e) => updateRecipe('cookTime', Number(e.target.value))}
                 min={0}
+                autoFocus={false}
               />
             </div>
             <div>
@@ -123,6 +126,7 @@ export function RecipeAmendment({
                 value={editedRecipe.servings}
                 onChange={(e) => updateRecipe('servings', Number(e.target.value))}
                 min={1}
+                autoFocus={false}
               />
             </div>
           </div>
@@ -149,6 +153,7 @@ export function RecipeAmendment({
               }}
               value=""
               className="w-full p-2 border rounded"
+              autoFocus={false}
             >
               <option value="">Add category...</option>
               {availableCategories.filter(cat => !editedRecipe.categories.includes(cat)).map(cat => (
@@ -169,6 +174,7 @@ export function RecipeAmendment({
                     onChange={(e) => updateIngredient(index, e.target.value)}
                     placeholder="Enter ingredient..."
                     className="flex-1"
+                    autoFocus={false}
                   />
                   <Button
                     variant="outline"
@@ -203,6 +209,7 @@ export function RecipeAmendment({
                     placeholder="Enter instruction..."
                     className="flex-1"
                     rows={2}
+                    autoFocus={false}
                   />
                   <Button
                     variant="outline"
