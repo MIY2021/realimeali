@@ -6,6 +6,7 @@ import { Clock, Users, Plus, Pencil, Share, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
+import { usePublicRecipeSharing } from "@/hooks/usePublicRecipeSharing";
 import { RecipeImage } from "@/components/ui/recipe-image";
 
 interface RecipeCardProps {
@@ -13,20 +14,20 @@ interface RecipeCardProps {
   onAddToMealPlan?: (recipe: Recipe) => void;
   onEdit?: (recipe: Recipe) => void;
   onDelete?: (recipe: Recipe) => void;
-  onShare?: (recipe: Recipe) => void;
   showActions?: boolean;
 }
 
-export function RecipeCard({ recipe, onAddToMealPlan, onEdit, onDelete, onShare, showActions = true }: RecipeCardProps) {
+export function RecipeCard({ recipe, onAddToMealPlan, onEdit, onDelete, showActions = true }: RecipeCardProps) {
   const { user } = useAuth();
   const { currentHousehold } = useHousehold();
+  const { createPublicShare, isCreatingShare } = usePublicRecipeSharing();
   const { id, title, description, prepTime, cookTime, servings, categories } = recipe;
   const totalTime = prepTime + cookTime;
 
   // Allow editing/deleting if user is part of the same household as the recipe
   const canEdit = user && currentHousehold && recipe.householdId === currentHousehold.id && onEdit && showActions;
   const canDelete = user && currentHousehold && recipe.householdId === currentHousehold.id && onDelete && showActions;
-  const canShare = onShare && showActions;
+  const canShare = user && showActions;
 
   // Create URL-friendly slug from recipe title - use new format without ID
   const createSlug = (title: string) => {
@@ -40,6 +41,12 @@ export function RecipeCard({ recipe, onAddToMealPlan, onEdit, onDelete, onShare,
 
   const recipeSlug = createSlug(title);
   const recipeUrl = `/recipes/${recipeSlug}`;
+
+  const handleShare = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    await createPublicShare(recipe);
+  };
 
   return (
     <Card className="overflow-hidden transition-all hover:shadow-md relative flex flex-col h-full">
@@ -134,11 +141,8 @@ export function RecipeCard({ recipe, onAddToMealPlan, onEdit, onDelete, onShare,
                 variant="outline"
                 size="sm"
                 className="flex-1 text-xs hover:bg-blue-500 hover:text-white flex items-center justify-center"
-                onClick={(e) => { 
-                  e.preventDefault(); 
-                  e.stopPropagation(); 
-                  onShare(recipe); 
-                }}
+                onClick={handleShare}
+                disabled={isCreatingShare}
                 title="Share recipe"
               >
                 <Share className="h-3 w-3" />

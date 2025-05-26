@@ -15,6 +15,7 @@ import Index from "@/pages/Index";
 import RecipesPage from "@/pages/RecipesPage";
 import CreateRecipePage from "@/pages/CreateRecipePage";
 import RecipeDetail from "@/pages/RecipeDetail";
+import PublicRecipe from "@/pages/PublicRecipe";
 import MealPlanner from "@/pages/MealPlanner";
 import ShoppingList from "@/pages/ShoppingList";
 import CategoryPage from "@/pages/CategoryPage";
@@ -42,6 +43,7 @@ const App = () => (
                       <Route path="/" element={<Index />} />
                       <Route path="/login" element={<Login />} />
                       <Route path="/signup" element={<Signup />} />
+                      <Route path="/share/recipes/:publicShareId" element={<PublicRecipe />} />
                       <Route
                         path="/recipes"
                         element={

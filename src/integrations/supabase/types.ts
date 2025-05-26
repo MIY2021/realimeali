@@ -360,6 +360,75 @@ export type Database = {
         }
         Relationships: []
       }
+      public_recipe_shares: {
+        Row: {
+          categories: Database["public"]["Enums"]["recipe_category"][] | null
+          cook_time: number | null
+          created_at: string
+          description: string | null
+          expires_at: string | null
+          id: string
+          image: string | null
+          ingredients: string[]
+          instructions: string[]
+          is_active: boolean
+          original_household_id: string
+          original_recipe_id: string
+          prep_time: number | null
+          public_share_id: string
+          servings: number | null
+          shared_by_household_name: string | null
+          shared_by_name: string | null
+          shared_by_user_id: string
+          title: string
+          view_count: number | null
+        }
+        Insert: {
+          categories?: Database["public"]["Enums"]["recipe_category"][] | null
+          cook_time?: number | null
+          created_at?: string
+          description?: string | null
+          expires_at?: string | null
+          id?: string
+          image?: string | null
+          ingredients?: string[]
+          instructions?: string[]
+          is_active?: boolean
+          original_household_id: string
+          original_recipe_id: string
+          prep_time?: number | null
+          public_share_id: string
+          servings?: number | null
+          shared_by_household_name?: string | null
+          shared_by_name?: string | null
+          shared_by_user_id: string
+          title: string
+          view_count?: number | null
+        }
+        Update: {
+          categories?: Database["public"]["Enums"]["recipe_category"][] | null
+          cook_time?: number | null
+          created_at?: string
+          description?: string | null
+          expires_at?: string | null
+          id?: string
+          image?: string | null
+          ingredients?: string[]
+          instructions?: string[]
+          is_active?: boolean
+          original_household_id?: string
+          original_recipe_id?: string
+          prep_time?: number | null
+          public_share_id?: string
+          servings?: number | null
+          shared_by_household_name?: string | null
+          shared_by_name?: string | null
+          shared_by_user_id?: string
+          title?: string
+          view_count?: number | null
+        }
+        Relationships: []
+      }
       recipes: {
         Row: {
           categories: Database["public"]["Enums"]["recipe_category"][] | null
@@ -435,9 +504,17 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      generate_public_share_id: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       get_user_households: {
         Args: { user_id: string }
         Returns: string[]
+      }
+      increment_share_view_count: {
+        Args: { share_id: string }
+        Returns: undefined
       }
       is_household_member: {
         Args: { household_id: string; user_id: string }

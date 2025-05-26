@@ -1,3 +1,4 @@
+
 import { Recipe } from "@/types";
 import { Button } from "@/components/ui/button";
 import { CalendarDays, Clock, Pencil, Share, Users, Trash2 } from "lucide-react";
@@ -5,6 +6,7 @@ import { RecipeImage } from "@/components/ui/recipe-image";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useUserProfile } from "@/hooks/useUserProfile";
+import { usePublicRecipeSharing } from "@/hooks/usePublicRecipeSharing";
 import { format } from "date-fns";
 
 interface RecipeDetailProps {
@@ -19,6 +21,7 @@ export function RecipeDetail({ recipe, onAddToMealPlan, onEdit, onDelete, isOwne
   const { user } = useAuth();
   const { toast } = useToast();
   const { profile } = useUserProfile(recipe.createdBy);
+  const { createPublicShare, isCreatingShare } = usePublicRecipeSharing();
   
   const { 
     title, 
@@ -54,26 +57,17 @@ export function RecipeDetail({ recipe, onAddToMealPlan, onEdit, onDelete, isOwne
     }
   };
 
-  const handleShare = () => {
-    const recipeSlug = recipe.title
-      .toLowerCase()
-      .replace(/[^a-z0-9 -]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-')
-      .trim();
-    const recipeUrl = `${window.location.origin}/recipes/${recipeSlug}`;
-    navigator.clipboard.writeText(recipeUrl).then(() => {
+  const handleShare = async () => {
+    if (!user) {
       toast({
-        title: "Recipe Link Copied",
-        description: "The recipe link has been copied to your clipboard.",
-      });
-    }).catch(() => {
-      toast({
-        title: "Share Failed",
-        description: "Could not copy the recipe link.",
+        title: "Login Required",
+        description: "You need to log in to share recipes.",
         variant: "destructive",
       });
-    });
+      return;
+    }
+
+    await createPublicShare(recipe);
   };
   
   return (
@@ -146,9 +140,10 @@ export function RecipeDetail({ recipe, onAddToMealPlan, onEdit, onDelete, isOwne
                   variant="outline" 
                   className="flex items-center gap-2 w-full sm:w-auto"
                   onClick={handleShare}
+                  disabled={isCreatingShare}
                 >
                   <Share className="h-4 w-4" />
-                  <span>Share</span>
+                  <span>{isCreatingShare ? 'Creating Link...' : 'Share'}</span>
                 </Button>
                 {user && (
                   <Button
