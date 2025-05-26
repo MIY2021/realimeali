@@ -27,6 +27,12 @@ export const useRandomMealSelection = (
       r.categories.some(cat => categories.includes(cat as RecipeCategory)) &&
       !excludeIds.has(r.id)
     );
+    
+    if (pool.length === 0) {
+      console.warn(`No recipes found for categories: ${categories.join(', ')}`);
+      return [];
+    }
+    
     const shuffled = [...pool].sort(() => Math.random() - 0.5);
     const result = [];
     const seen = new Set(excludeIds);
@@ -81,16 +87,24 @@ export const useRandomMealSelection = (
       await clearWeek(week);
       
       let allSelectedIds = new Set<string>();
+      let hasNoRecipesWarning = false;
       
       for (const mealType of mealTypes) {
         console.log(`Selecting recipes for ${mealType}...`);
         
+        const allowedCategories = mealTypeToCategories[mealType];
         const unique = getUniqueRandomRecipes(
           recipes,
-          mealTypeToCategories[mealType],
+          allowedCategories,
           Math.min(3, recipes.length),
           allSelectedIds
         );
+        
+        if (unique.length === 0) {
+          console.warn(`No recipes available for ${mealType} with categories: ${allowedCategories.join(', ')}`);
+          hasNoRecipesWarning = true;
+          continue;
+        }
         
         console.log(`Found ${unique.length} recipes for ${mealType}:`, unique.map(r => r.title));
         
@@ -112,10 +126,19 @@ export const useRandomMealSelection = (
       }
       
       console.log("Random meal selection completed");
-      toast({
-        title: "Meal Plan Randomised",
-        description: "Your meals have been chosen from your recipe collection!",
-      });
+      
+      if (hasNoRecipesWarning) {
+        toast({
+          title: "Meal Plan Partially Randomised",
+          description: "Some meal types were skipped due to lack of recipes with appropriate categories. Consider adding more recipes with Breakfast, Lunch, or Snacks categories.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Meal Plan Randomised",
+          description: "Your meals have been chosen from your recipe collection based on meal type categories!",
+        });
+      }
     } catch (error) {
       console.error("Error during random meal selection:", error);
       toast({

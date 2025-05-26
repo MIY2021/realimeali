@@ -1,4 +1,3 @@
-
 export type User = {
   id: string;
   name: string;
@@ -23,7 +22,8 @@ export type RecipeCategory =
   | "Pricey!"
   | "Not Yet Made"
   | "Snacks"
-  | "Breakfast";
+  | "Breakfast"
+  | "Lunch";
 
 export type Recipe = {
   id: string;

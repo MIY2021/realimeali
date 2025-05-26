@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
-import { Recipe, MealType } from "@/types";
+import { Recipe, MealType, RecipeCategory } from "@/types";
 
 interface AddMealWithLeftoversDialogProps {
   open: boolean;
@@ -15,6 +15,22 @@ interface AddMealWithLeftoversDialogProps {
   recipes: Recipe[];
   onSelectRecipe: (recipeId: string, leftoverServings?: number) => void;
 }
+
+// Define meal type category mappings
+const mealTypeToCategories: Record<MealType, RecipeCategory[]> = {
+  dinner: [
+    "Bulk", "Easy", "Cheap", "Healthy", "Vegetarian", "Fish", 
+    "Super Tasty", "Pasta", "Tapas", "Winter", "BBQ", "Faffy", 
+    "Pricey!", "Not Yet Made", "Lunch"
+  ],
+  lunch: [
+    "Bulk", "Easy", "Cheap", "Healthy", "Vegetarian", "Fish", 
+    "Super Tasty", "Pasta", "Tapas", "Winter", "BBQ", "Faffy", 
+    "Pricey!", "Not Yet Made", "Lunch"
+  ],
+  breakfast: ["Breakfast"],
+  snacks: ["Snacks"],
+};
 
 export function AddMealWithLeftoversDialog({
   open,
@@ -31,10 +47,20 @@ export function AddMealWithLeftoversDialog({
   const selectedRecipe = recipes.find(r => r.id === selectedRecipeId);
   const maxLeftoverServings = selectedRecipe ? selectedRecipe.servings - 1 : 1;
 
-  const filteredRecipes = recipes.filter(recipe =>
-    recipe.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    recipe.categories.some(cat => cat.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  // Filter recipes based on meal type categories and search term
+  const allowedCategories = mealTypeToCategories[mealType];
+  const filteredRecipes = recipes.filter(recipe => {
+    // Check if recipe has any category that's allowed for this meal type
+    const hasAllowedCategory = recipe.categories.some(cat => 
+      allowedCategories.includes(cat as RecipeCategory)
+    );
+    
+    // Check search term
+    const matchesSearch = recipe.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      recipe.categories.some(cat => cat.toLowerCase().includes(searchTerm.toLowerCase()));
+    
+    return hasAllowedCategory && matchesSearch;
+  });
 
   const handleSubmit = () => {
     if (selectedRecipeId) {
@@ -68,22 +94,28 @@ export function AddMealWithLeftoversDialog({
           </div>
 
           <div className="space-y-2 max-h-48 overflow-y-auto">
-            {filteredRecipes.map((recipe) => (
-              <div
-                key={recipe.id}
-                className={`p-3 border rounded-lg cursor-pointer transition-colors ${
-                  selectedRecipeId === recipe.id
-                    ? "border-primary bg-primary/10"
-                    : "border-gray-200 hover:border-gray-300"
-                }`}
-                onClick={() => setSelectedRecipeId(recipe.id)}
-              >
-                <div className="font-medium">{recipe.title}</div>
-                <div className="text-sm text-gray-600">
-                  {recipe.servings} servings • {recipe.categories.join(", ")}
-                </div>
+            {filteredRecipes.length === 0 ? (
+              <div className="text-center text-gray-500 py-4">
+                No {mealType} recipes found. Try adjusting your search or create recipes with appropriate categories.
               </div>
-            ))}
+            ) : (
+              filteredRecipes.map((recipe) => (
+                <div
+                  key={recipe.id}
+                  className={`p-3 border rounded-lg cursor-pointer transition-colors ${
+                    selectedRecipeId === recipe.id
+                      ? "border-primary bg-primary/10"
+                      : "border-gray-200 hover:border-gray-300"
+                  }`}
+                  onClick={() => setSelectedRecipeId(recipe.id)}
+                >
+                  <div className="font-medium">{recipe.title}</div>
+                  <div className="text-sm text-gray-600">
+                    {recipe.servings} servings • {recipe.categories.join(", ")}
+                  </div>
+                </div>
+              ))
+            )}
           </div>
 
           {mealType === 'dinner' && selectedRecipe && (
