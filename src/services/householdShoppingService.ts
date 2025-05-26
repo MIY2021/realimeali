@@ -2,7 +2,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { HouseholdShoppingItem, HouseholdRecipeCategory } from "@/types/householdShopping";
 import { DEFAULT_RECIPE_CATEGORIES } from "@/constants/householdShopping";
-import { parseIngredientQty, categoriseByName } from "@/utils/householdShoppingUtils";
 
 export class HouseholdShoppingService {
   static async fetchShoppingItems(householdId: string): Promise<HouseholdShoppingItem[]> {
@@ -128,58 +127,5 @@ export class HouseholdShoppingService {
       return true;
     }
     return false;
-  }
-
-  static async generateShoppingListFromMealPlan(householdId: string, userId: string): Promise<Array<Omit<HouseholdShoppingItem, 'id' | 'created_at' | 'updated_at' | 'created_by' | 'household_id'>>> {
-    // Get current household meal plans
-    const { data: mealPlans, error: mealError } = await supabase
-      .from('household_meal_plans')
-      .select(`
-        *,
-        recipes(*)
-      `)
-      .eq('household_id', householdId);
-
-    if (mealError) throw mealError;
-
-    // Extract ingredients from recipes
-    const ingredientMap = new Map<string, { quantity: number; unit: string; recipe_ids: string[] }>();
-    
-    mealPlans?.forEach(plan => {
-      if (plan.recipes?.ingredients) {
-        plan.recipes.ingredients.forEach((ingredient: string) => {
-          const { qty, unit, name } = parseIngredientQty(ingredient);
-          const key = `${name}_${unit}`;
-          
-          if (ingredientMap.has(key)) {
-            const existing = ingredientMap.get(key)!;
-            existing.quantity += qty;
-            if (!existing.recipe_ids.includes(plan.recipe_id)) {
-              existing.recipe_ids.push(plan.recipe_id);
-            }
-          } else {
-            ingredientMap.set(key, {
-              quantity: qty,
-              unit,
-              recipe_ids: [plan.recipe_id]
-            });
-          }
-        });
-      }
-    });
-
-    // Convert to shopping list items
-    return Array.from(ingredientMap.entries()).map(([key, data]) => {
-      const name = key.replace(`_${data.unit}`, '');
-      return {
-        name,
-        quantity: data.quantity,
-        unit: data.unit,
-        category: categoriseByName(name),
-        is_checked: false,
-        is_custom: false,
-        recipe_ids: data.recipe_ids
-      };
-    });
   }
 }

@@ -19,7 +19,6 @@ interface HouseholdShoppingContextType {
   updateRecipeCategory: (id: string, name: string) => Promise<void>;
   deleteRecipeCategory: (id: string) => Promise<void>;
   seedDefaultCategories: () => Promise<void>;
-  generateShoppingListFromMealPlan: () => Promise<void>;
 }
 
 const HouseholdShoppingContext = createContext<HouseholdShoppingContextType | undefined>(undefined);
@@ -99,12 +98,6 @@ export const HouseholdShoppingProvider = ({ children }: { children: ReactNode })
     });
   };
 
-  const generateShoppingListFromMealPlan = async () => {
-    await operations.generateShoppingListFromMealPlan(() => {
-      fetchShoppingItems();
-    });
-  };
-
   useEffect(() => {
     if (currentHousehold) {
       fetchShoppingItems();
@@ -125,8 +118,7 @@ export const HouseholdShoppingProvider = ({ children }: { children: ReactNode })
       addRecipeCategory,
       updateRecipeCategory,
       deleteRecipeCategory,
-      seedDefaultCategories,
-      generateShoppingListFromMealPlan
+      seedDefaultCategories
     }}>
       {children}
     </HouseholdShoppingContext.Provider>

@@ -5,7 +5,10 @@ export interface HouseholdShoppingItem {
   name: string;
   quantity?: number;
   unit?: string;
-  category: string;
+  consolidated_quantity?: number;
+  consolidated_unit?: string;
+  source_ingredients?: string[];
+  week_number: number;
   is_checked: boolean;
   is_custom: boolean;
   recipe_ids: string[];

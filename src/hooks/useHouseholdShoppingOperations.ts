@@ -145,31 +145,6 @@ export const useHouseholdShoppingOperations = () => {
     }
   };
 
-  const generateShoppingListFromMealPlan = async (onSuccess: (items: any[]) => void) => {
-    if (!currentHousehold || !user) return;
-
-    try {
-      const items = await HouseholdShoppingService.generateShoppingListFromMealPlan(currentHousehold.id, user.id);
-      
-      for (const item of items) {
-        await HouseholdShoppingService.addShoppingItem(item, currentHousehold.id, user.id);
-      }
-
-      onSuccess(items);
-      toast({
-        title: "Shopping List Generated",
-        description: `Added ${items.length} items from your meal plan`,
-      });
-    } catch (error) {
-      console.error('Error generating shopping list:', error);
-      toast({
-        title: "Error",
-        description: "Failed to generate shopping list from meal plan",
-        variant: "destructive",
-      });
-    }
-  };
-
   return {
     isLoading,
     addShoppingItem,
@@ -178,7 +153,6 @@ export const useHouseholdShoppingOperations = () => {
     addRecipeCategory,
     updateRecipeCategory,
     deleteRecipeCategory,
-    seedDefaultCategories,
-    generateShoppingListFromMealPlan
+    seedDefaultCategories
   };
 };
