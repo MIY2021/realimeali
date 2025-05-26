@@ -1,7 +1,7 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Trash2, UtensilsCrossed } from "lucide-react";
+import { Trash2, UtensilsCrossed, GripVertical } from "lucide-react";
 import { Link } from "react-router-dom";
 import { MealPlan, Recipe } from "@/types";
 import { RecipeImage } from "@/components/ui/recipe-image";
@@ -13,6 +13,7 @@ interface EnhancedMealCardProps {
   onRemove: (planId: string) => void;
   onCreateLeftover?: (mealPlan: MealPlan, recipe: Recipe) => void;
   parentRecipe?: Recipe; // For leftover meals
+  dragHandleProps?: any; // Props from react-beautiful-dnd
 }
 
 export function EnhancedMealCard({ 
@@ -20,7 +21,8 @@ export function EnhancedMealCard({
   recipe, 
   onRemove, 
   onCreateLeftover,
-  parentRecipe 
+  parentRecipe,
+  dragHandleProps
 }: EnhancedMealCardProps) {
   const isMobile = useIsMobile();
   const displayRecipe = recipe || parentRecipe;
@@ -46,14 +48,25 @@ export function EnhancedMealCard({
         <CardContent className={`${isMobile ? 'p-2.5' : 'p-3'}`}>
           <div className="flex items-center justify-between">
             <span className={`${isMobile ? 'text-xs' : 'text-sm'} text-gray-500`}>Unknown recipe</span>
-            <Button
-              variant="ghost"
-              size={isMobile ? "sm" : "sm"}
-              onClick={() => onRemove(mealPlan.id)}
-              className={isMobile ? 'h-8 w-8' : ''}
-            >
-              <Trash2 className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
-            </Button>
+            <div className={`flex items-center gap-${isMobile ? '0.5' : '1'} flex-shrink-0`}>
+              <Button
+                variant="ghost"
+                size={isMobile ? "sm" : "sm"}
+                onClick={() => onRemove(mealPlan.id)}
+                className={`text-red-500 hover:text-red-700 hover:bg-red-50 ${isMobile ? 'h-8 w-8' : ''}`}
+              >
+                <Trash2 className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
+              </Button>
+              
+              <div
+                {...dragHandleProps}
+                className={`flex-shrink-0 text-gray-400 hover:text-gray-600 cursor-grab active:cursor-grabbing ${
+                  isMobile ? 'p-1' : 'p-1.5'
+                }`}
+              >
+                <GripVertical className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -126,7 +139,7 @@ export function EnhancedMealCard({
                 title="Create lunch leftovers"
               >
                 <UtensilsCrossed className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
-                {!isMobile && <span className="text-xs">Lunch</span>}
+                <span className={`${isMobile ? 'text-xs' : 'text-xs'}`}>+ Lunch</span>
               </Button>
             )}
             
@@ -138,6 +151,15 @@ export function EnhancedMealCard({
             >
               <Trash2 className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
             </Button>
+
+            <div
+              {...dragHandleProps}
+              className={`flex-shrink-0 text-gray-400 hover:text-gray-600 cursor-grab active:cursor-grabbing ${
+                isMobile ? 'p-1' : 'p-1.5'
+              }`}
+            >
+              <GripVertical className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
+            </div>
           </div>
         </div>
       </CardContent>

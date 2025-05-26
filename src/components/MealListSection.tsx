@@ -1,4 +1,3 @@
-
 import { MealType, MealPlan, Recipe } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Plus, GripVertical } from "lucide-react";
@@ -86,27 +85,18 @@ export default function MealListSection({
                         <div
                           ref={provided.innerRef}
                           {...provided.draggableProps}
-                          className={`flex items-center gap-2 ${
+                          className={`${
                             snapshot.isDragging ? 'z-50' : ''
                           }`}
                         >
-                          <div
-                            {...provided.dragHandleProps}
-                            className={`flex-shrink-0 text-gray-400 hover:text-gray-600 cursor-grab active:cursor-grabbing ${
-                              isMobile ? 'p-1' : 'p-1.5'
-                            }`}
-                          >
-                            <GripVertical className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
-                          </div>
-                          <div className="flex-1">
-                            <EnhancedMealCard
-                              mealPlan={plan}
-                              recipe={recipe}
-                              onRemove={onRemoveMeal}
-                              onCreateLeftover={onCreateLeftover}
-                              parentRecipe={parentRecipe}
-                            />
-                          </div>
+                          <EnhancedMealCard
+                            mealPlan={plan}
+                            recipe={recipe}
+                            onRemove={onRemoveMeal}
+                            onCreateLeftover={onCreateLeftover}
+                            parentRecipe={parentRecipe}
+                            dragHandleProps={provided.dragHandleProps}
+                          />
                         </div>
                       )}
                     </Draggable>
