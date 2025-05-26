@@ -10,6 +10,7 @@ import { RecipesProvider } from "@/contexts/RecipesContext";
 import { MealPlanProvider } from "@/contexts/MealPlanContext";
 import { HouseholdShoppingProvider } from "@/contexts/HouseholdShoppingContext";
 import Layout from "@/components/layout/Layout";
+import { ScrollToTop } from "@/components/layout/ScrollToTop";
 import Index from "@/pages/Index";
 import RecipesPage from "@/pages/RecipesPage";
 import CreateRecipePage from "@/pages/CreateRecipePage";
@@ -29,6 +30,7 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <BrowserRouter>
+      <ScrollToTop />
       <AuthProvider>
         <HouseholdProvider>
           <RecipesProvider>
