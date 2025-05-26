@@ -97,8 +97,8 @@ export const usePublicRecipeSharing = () => {
         throw error;
       }
 
-      // Use the clean URL format with the slug and /share suffix
-      const shareUrl = `https://realimeali.com/recipe/${uniqueSlug}/share`;
+      // Use the new URL format: /share/{slug}
+      const shareUrl = `https://realimeali.com/share/${uniqueSlug}`;
       
       return shareUrl;
     } catch (error) {

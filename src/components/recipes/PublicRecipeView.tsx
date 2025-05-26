@@ -21,7 +21,7 @@ export function PublicRecipeView() {
   // Use slug if available, otherwise fall back to publicShareId for backward compatibility
   const identifier = slug || publicShareId;
 
-  useDocumentTitle(publicShare ? `${publicShare.title} | Shared Recipe` : "Shared Recipe");
+  useDocumentTitle(publicShare ? `${publicShare.title} | RealiMeali` : "Shared Recipe");
 
   useEffect(() => {
     const fetchPublicShare = async () => {

@@ -33,16 +33,20 @@ Deno.serve(async (req) => {
     const url = new URL(req.url);
     const pathParts = url.pathname.split('/').filter(part => part);
     
-    // Handle the new format /recipe/slug/share and existing formats
+    // Handle the new format /share/slug and existing formats
     let recipeSlug = '';
     
-    if (pathParts.includes('recipe') && pathParts.length >= 2) {
+    if (pathParts.includes('share') && pathParts.length >= 2) {
+      const shareIndex = pathParts.indexOf('share');
+      recipeSlug = pathParts[shareIndex + 1];
+      console.log('New format detected: /share/{slug}');
+    } else if (pathParts.includes('recipe') && pathParts.length >= 2) {
       const recipeIndex = pathParts.indexOf('recipe');
       recipeSlug = pathParts[recipeIndex + 1];
       
-      // If the path has /share at the end, it's the new format
+      // If the path has /share at the end, it's the old format
       const hasShareSuffix = pathParts[recipeIndex + 2] === 'share';
-      console.log('Has share suffix:', hasShareSuffix);
+      console.log('Old format detected:', hasShareSuffix ? '/recipe/{slug}/share' : '/recipe/{slug}');
     } else {
       // Old format fallback: /recipe-meta/share-id
       recipeSlug = pathParts[pathParts.length - 1];
@@ -106,9 +110,10 @@ Deno.serve(async (req) => {
 });
 
 function generateRecipeHTML(recipe: PublicRecipeShare): string {
-  const recipeUrl = `https://realimeali.com/recipe/${recipe.slug || recipe.public_share_id}/share`;
+  // Use the new URL format: /share/{slug}
+  const recipeUrl = `https://realimeali.com/share/${recipe.slug || recipe.public_share_id}`;
   const imageUrl = recipe.image || `https://realimeali.com/lovable-uploads/48805e49-e8eb-4205-a741-e7fb6446e6d1.png`;
-  const title = `${recipe.title} | Shared Recipe`;
+  const title = `${recipe.title} | RealiMeali`;
   const description = recipe.description || `A delicious recipe shared by ${recipe.shared_by_name || 'a fellow cook'}`;
 
   return `<!DOCTYPE html>
@@ -180,7 +185,7 @@ function generateRecipeHTML(recipe: PublicRecipeShare): string {
 }
 
 function redirectToApp(slug: string): Response {
-  const redirectUrl = slug ? `https://realimeali.com/recipe/${slug}/share` : 'https://realimeali.com';
+  const redirectUrl = slug ? `https://realimeali.com/share/${slug}` : 'https://realimeali.com';
   
   const html = `<!DOCTYPE html>
 <html lang="en">
