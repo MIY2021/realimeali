@@ -11,6 +11,7 @@ import { useMealPlanActions } from "@/hooks/useMealPlanActions";
 import { useRandomMealSelection } from "@/hooks/useRandomMealSelection";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useRecipes } from "@/contexts/RecipesContext";
+import { Calendar } from "lucide-react";
 
 const MealPlanner = () => {
   useDocumentTitle("Meal Planner");
@@ -41,25 +42,31 @@ const MealPlanner = () => {
   return (
     <Layout>
       <div className="container mx-auto px-4 py-8 max-w-4xl">
+        {/* Title with icon at the top */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-navy mb-2">Meal Planner</h1>
+          <div className="flex items-center gap-3 mb-2">
+            <Calendar className="h-8 w-8 text-terracotta" />
+            <h1 className="text-3xl font-bold text-navy">Meal Planner</h1>
+          </div>
           <p className="text-muted-foreground">
             Plan your meals for the coming weeks and generate shopping lists.
           </p>
         </div>
 
+        {/* Actions row: Generate meal plan and approval button */}
+        <MealPlannerActions
+          onRandomize={() => setShowReplaceDialog(true)}
+          isLoading={isLoading}
+          currentWeek={currentWeek}
+        />
+
+        {/* Week selector with share and clear buttons */}
         <WeekSelector 
           week={currentWeek} 
           onWeekChange={setCurrentWeek}
           onShare={handleShareMealPlan}
           onClearAll={handleClearAll}
           isLoading={isLoading}
-        />
-
-        <MealPlannerActions
-          onRandomize={() => setShowReplaceDialog(true)}
-          isLoading={isLoading}
-          currentWeek={currentWeek}
         />
 
         <div className="space-y-8">
