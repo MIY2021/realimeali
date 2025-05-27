@@ -37,6 +37,7 @@ export default function ShoppingList() {
     totalSteps: 5,
     currentAction: ''
   });
+  const [lastGenerated, setLastGenerated] = useState<Date | null>(null);
   
   const {
     shoppingList,
@@ -79,6 +80,22 @@ export default function ShoppingList() {
       saveScrollPosition(scrollKey);
     };
   }, [weekNumber, saveScrollPosition]);
+
+  // Check for existing shopping list creation time on load
+  useEffect(() => {
+    if (shoppingList.length > 0) {
+      // Get the oldest item's creation time as the list creation time
+      const oldestItem = shoppingList.reduce((oldest, current) => {
+        const currentTime = new Date(current.createdAt || '').getTime();
+        const oldestTime = new Date(oldest.createdAt || '').getTime();
+        return currentTime < oldestTime ? current : oldest;
+      });
+      
+      if (oldestItem.createdAt) {
+        setLastGenerated(new Date(oldestItem.createdAt));
+      }
+    }
+  }, [shoppingList]);
 
   const mealPlans = getMealPlansForWeek(weekNumber);
   const hasMealPlans = mealPlans.length > 0;
@@ -180,6 +197,9 @@ export default function ShoppingList() {
       const duration = Math.round(endTime - startTime);
       
       setGenerationProgress({ step: 4, totalSteps: 5, currentAction: 'Saving to database...' });
+      
+      // Set the generation time
+      setLastGenerated(new Date());
       
       // Force refresh the list after generation
       setTimeout(async () => {
@@ -296,24 +316,33 @@ export default function ShoppingList() {
                   </CardContent>
                 </Card>
               ) : (
-                shoppingList.map((item) => (
-                  <Card key={item.id} className="w-full" data-shopping-list-item>
-                    <CardContent className={`${isMobile ? 'p-2' : 'p-3'}`}>
-                      <ShoppingListItem
-                        id={item.id}
-                        name={item.name}
-                        quantity={item.consolidatedQuantity || 1}
-                        unit={item.consolidatedUnit}
-                        isChecked={item.isChecked}
-                        recipeIds={[...new Set(item.recipeIds)]}
-                        copiedItemId={copiedItemId}
-                        onCheck={(checked) => toggleItemChecked(item.id)}
-                        onCopy={() => handleCopyItem(item.id)}
-                        getRecipeNames={getRecipeNames}
-                      />
-                    </CardContent>
-                  </Card>
-                ))
+                <>
+                  {lastGenerated && (
+                    <div className="mb-3">
+                      <p className="text-xs text-muted-foreground">
+                        Shopping list created on {lastGenerated.toLocaleDateString()} at {lastGenerated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </p>
+                    </div>
+                  )}
+                  {shoppingList.map((item) => (
+                    <Card key={item.id} className="w-full" data-shopping-list-item>
+                      <CardContent className={`${isMobile ? 'p-2' : 'p-3'}`}>
+                        <ShoppingListItem
+                          id={item.id}
+                          name={item.name}
+                          quantity={item.consolidatedQuantity || 1}
+                          unit={item.consolidatedUnit}
+                          isChecked={item.isChecked}
+                          recipeIds={[...new Set(item.recipeIds)]}
+                          copiedItemId={copiedItemId}
+                          onCheck={(checked) => toggleItemChecked(item.id)}
+                          onCopy={() => handleCopyItem(item.id)}
+                          getRecipeNames={getRecipeNames}
+                        />
+                      </CardContent>
+                    </Card>
+                  ))}
+                </>
               )}
             </div>
           )}
