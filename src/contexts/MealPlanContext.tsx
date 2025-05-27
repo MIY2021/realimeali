@@ -28,8 +28,8 @@ interface MealPlanContextType {
   mealPlans: MealPlan[];
   getMealPlansForWeek: (weekNumber: 1 | 2) => MealPlan[];
   getRecipeForMealPlan: (mealPlan: MealPlan) => Recipe | undefined;
-  addMealPlan: (mealPlan: Omit<MealPlan, 'id' | 'createdAt' | 'updatedAt'>, weekNumber: 1 | 2) => Promise<void>;
-  addMealPlanWithLeftovers: (mealPlan: Omit<MealPlan, 'id' | 'createdAt' | 'updatedAt'>, weekNumber: 1 | 2, leftoverServings?: number) => Promise<void>;
+  addMealPlan: (mealPlan: Omit<MealPlan, 'id' | 'createdAt' | 'updatedAt'>, weekNumber: 1 | 2, silentMode?: boolean) => Promise<void>;
+  addMealPlanWithLeftovers: (mealPlan: Omit<MealPlan, 'id' | 'createdAt' | 'updatedAt'>, weekNumber: 1 | 2, leftoverServings?: number, silentMode?: boolean) => Promise<void>;
   removeMealPlan: (id: string) => Promise<void>;
   clearWeek: (weekNumber: 1 | 2) => Promise<void>;
   reorderMealPlans: (mealType: MealType, weekNumber: 1 | 2, sourceIndex: number, destinationIndex: number) => Promise<void>;
@@ -86,59 +86,71 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
     return recipes.find(recipe => recipe.id === mealPlan.recipeId);
   }, [recipes]);
 
-  const addMealPlan = useCallback(async (mealPlanData: Omit<MealPlan, 'id' | 'createdAt' | 'updatedAt'>, weekNumber: 1 | 2) => {
+  const addMealPlan = useCallback(async (mealPlanData: Omit<MealPlan, 'id' | 'createdAt' | 'updatedAt'>, weekNumber: 1 | 2, silentMode = false) => {
     if (!user || !currentHousehold) {
-      console.error("User or household not available");
-      toast({
-        title: "Error", 
-        description: "You must be logged in and have a current household to add meal plans.",
-        variant: "destructive",
-      });
+      if (!silentMode) {
+        console.error("User or household not available");
+        toast({
+          title: "Error", 
+          description: "You must be logged in and have a current household to add meal plans.",
+          variant: "destructive",
+        });
+      }
       return;
     }
 
     const recipeExists = recipes.some(recipe => recipe.id === mealPlanData.recipeId);
     if (!recipeExists) {
-      console.error("Recipe not found in collection:", mealPlanData.recipeId);
-      toast({
-        title: "Error",
-        description: "Recipe not found in your collection.",
-        variant: "destructive",
-      });
+      if (!silentMode) {
+        console.error("Recipe not found in collection:", mealPlanData.recipeId);
+        toast({
+          title: "Error",
+          description: "Recipe not found in your collection.",
+          variant: "destructive",
+        });
+      }
       return;
     }
 
     try {
-      console.log("Adding meal plan:", { mealPlanData, weekNumber, userId: user.id, householdId: currentHousehold.id });
+      if (!silentMode) {
+        console.log("Adding meal plan:", { mealPlanData, weekNumber, userId: user.id, householdId: currentHousehold.id });
+      }
       
       const newMealPlan = await mealPlanService.addMealPlan(
         mealPlanData, 
         weekNumber, 
         currentHousehold.id, 
-        user.id
+        user.id,
+        silentMode
       );
 
       setMealPlans(prev => [...prev, newMealPlan]);
       
-      const recipe = recipes.find(r => r.id === mealPlanData.recipeId);
-      toast({
-        title: "Recipe Added",
-        description: `${recipe?.title || 'Recipe'} has been added to your meal plan for Week ${weekNumber}.`,
-      });
+      if (!silentMode) {
+        const recipe = recipes.find(r => r.id === mealPlanData.recipeId);
+        toast({
+          title: "Recipe Added",
+          description: `${recipe?.title || 'Recipe'} has been added to your meal plan for Week ${weekNumber}.`,
+        });
+      }
     } catch (err) {
       console.error("Error adding meal plan:", err);
-      toast({
-        title: "Error",
-        description: "Failed to add meal plan. Please try again.",
-        variant: "destructive",
-      });
+      if (!silentMode) {
+        toast({
+          title: "Error",
+          description: "Failed to add meal plan. Please try again.",
+          variant: "destructive",
+        });
+      }
     }
   }, [user?.id, currentHousehold?.id, recipes]);
 
   const addMealPlanWithLeftovers = useCallback(async (
     mealPlanData: Omit<MealPlan, 'id' | 'createdAt' | 'updatedAt'>, 
     weekNumber: 1 | 2, 
-    leftoverServings?: number
+    leftoverServings?: number,
+    silentMode = false
   ) => {
     if (!user || !currentHousehold) return;
 
@@ -151,7 +163,7 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
         originalServings: recipe.servings,
         isLeftover: false,
         householdId: currentHousehold.id,
-      }, weekNumber);
+      }, weekNumber, silentMode);
 
       if (leftoverServings && leftoverServings > 0) {
         const currentPlans = getMealPlansForWeek(weekNumber);
@@ -169,12 +181,14 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
             leftoverServings: leftoverServings,
             originalServings: recipe.servings,
             householdId: currentHousehold.id,
-          }, weekNumber);
+          }, weekNumber, silentMode);
 
-          toast({
-            title: "Leftover Lunch Added",
-            description: `${leftoverServings} servings of ${recipe.title} scheduled for lunch leftovers.`,
-          });
+          if (!silentMode) {
+            toast({
+              title: "Leftover Lunch Added",
+              description: `${leftoverServings} servings of ${recipe.title} scheduled for lunch leftovers.`,
+            });
+          }
         }
       }
     } catch (err) {

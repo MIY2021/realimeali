@@ -33,10 +33,12 @@ export const useMealPlanOperations = (week: 1 | 2) => {
     });
   };
 
-  const performAddMeal = async (mealType: MealType, recipeId: string, leftoverServings?: number) => {
+  const performAddMeal = async (mealType: MealType, recipeId: string, leftoverServings?: number, silentMode = false) => {
     if (!user || !currentHousehold) return;
     
-    console.log("Adding meal to plan:", { mealType, recipeId, week, leftoverServings });
+    if (!silentMode) {
+      console.log("Adding meal to plan:", { mealType, recipeId, week, leftoverServings });
+    }
     
     const currentPlansForType = getMealPlansForType(mealType);
     
@@ -52,17 +54,20 @@ export const useMealPlanOperations = (week: 1 | 2) => {
       };
 
       if (mealType === 'dinner' && leftoverServings) {
-        await addMealPlanWithLeftovers(mealPlanData, week, leftoverServings);
+        await addMealPlanWithLeftovers(mealPlanData, week, leftoverServings, silentMode);
       } else {
-        await addMealPlan(mealPlanData, week);
+        await addMealPlan(mealPlanData, week, silentMode);
       }
     } catch (error) {
       console.error("Error adding meal:", error);
-      toast({
-        title: "Error",
-        description: "Failed to add meal. Please try again.",
-        variant: "destructive",
-      });
+      if (!silentMode) {
+        toast({
+          title: "Error",
+          description: "Failed to add meal. Please try again.",
+          variant: "destructive",
+        });
+      }
+      throw error;
     }
   };
 

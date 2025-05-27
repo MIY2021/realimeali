@@ -27,7 +27,8 @@ export const mealPlanService = {
     mealPlanData: Omit<MealPlan, 'id' | 'createdAt' | 'updatedAt'>, 
     weekNumber: 1 | 2,
     householdId: string,
-    userId: string
+    userId: string,
+    silentMode = false
   ): Promise<MealPlan> {
     const insertData = {
       household_id: householdId,
@@ -44,7 +45,9 @@ export const mealPlanService = {
       original_servings: mealPlanData.originalServings || null,
     };
 
-    console.log("Insert data:", insertData);
+    if (!silentMode) {
+      console.log("Insert data:", insertData);
+    }
 
     const { data, error } = await supabase
       .from('household_meal_plans')
@@ -57,7 +60,9 @@ export const mealPlanService = {
       throw error;
     }
 
-    console.log("Meal plan added successfully:", data);
+    if (!silentMode) {
+      console.log("Meal plan added successfully:", data);
+    }
     return this.transformDbToMealPlan(data);
   },
 
@@ -123,7 +128,6 @@ export const mealPlanService = {
       createdAt: dbPlan.created_at,
       updatedAt: dbPlan.updated_at,
       slotIndex: dbPlan.slot_index,
-      weekNumber: dbPlan.week_number,
       parentMealPlanId: dbPlan.parent_meal_plan_id,
       isLeftover: dbPlan.is_leftover,
       leftoverServings: dbPlan.leftover_servings,

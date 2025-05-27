@@ -45,18 +45,26 @@ export default function MealListSection({
   };
 
   return (
-    <div className={`mb-${isMobile ? '4' : '6'} transition-all duration-200 ${collapsed ? 'opacity-75' : ''}`}>
-      <div className={`flex items-center justify-between mb-3 ${isMobile ? 'px-1' : ''}`}>
+    <div className={`mb-${isMobile ? '4' : '6'} transition-all duration-300 ease-in-out ${
+      collapsed ? 'opacity-70 scale-98' : ''
+    }`}>
+      <div className={`flex items-center justify-between mb-3 ${isMobile ? 'px-1' : ''} ${
+        collapsed ? 'bg-gray-50 rounded-lg px-3 py-2' : ''
+      }`}>
         <div className="flex items-center gap-2">
-          <div {...dragHandleProps}>
-            <GripVertical className={`${isMobile ? 'h-4 w-4' : 'h-5 w-5'} text-gray-400 cursor-grab active:cursor-grabbing`} />
+          <div {...dragHandleProps} className="touch-none">
+            <GripVertical className={`${isMobile ? 'h-4 w-4' : 'h-5 w-5'} ${
+              collapsed ? 'text-blue-500' : 'text-gray-400'
+            } cursor-grab active:cursor-grabbing transition-colors`} />
           </div>
-          <h3 className={`${isMobile ? 'text-base' : 'text-lg'} font-semibold capitalize text-navy`}>
+          <h3 className={`${isMobile ? 'text-base' : 'text-lg'} font-semibold capitalize ${
+            collapsed ? 'text-blue-700' : 'text-navy'
+          } transition-colors`}>
             {mealType}
           </h3>
           {collapsed && (
-            <span className={`${isMobile ? 'text-xs' : 'text-sm'} text-muted-foreground`}>
-              ({mealPlans.length} meal{mealPlans.length !== 1 ? 's' : ''})
+            <span className={`${isMobile ? 'text-xs' : 'text-sm'} text-muted-foreground bg-white px-2 py-1 rounded-full`}>
+              {mealPlans.length} meal{mealPlans.length !== 1 ? 's' : ''}
             </span>
           )}
         </div>
@@ -74,7 +82,7 @@ export default function MealListSection({
       </div>
 
       {collapsed ? null : (
-        <>
+        <div className="overflow-hidden">
           {mealPlans.length === 0 ? (
             <div className={`border border-dashed border-gray-300 rounded-md ${isMobile ? 'p-3' : 'p-4'} text-center text-muted-foreground`}>
               <span className={`${isMobile ? 'text-sm' : ''}`}>No {mealType} planned yet</span>
@@ -86,7 +94,7 @@ export default function MealListSection({
                   <div
                     {...provided.droppableProps}
                     ref={provided.innerRef}
-                    className={`space-y-${isMobile ? '1.5' : '2'} ${
+                    className={`space-y-${isMobile ? '1.5' : '2'} transition-all duration-200 ${
                       snapshot.isDraggingOver ? 'bg-gray-50 rounded-lg p-2' : ''
                     }`}
                   >
@@ -104,8 +112,8 @@ export default function MealListSection({
                             <div
                               ref={provided.innerRef}
                               {...provided.draggableProps}
-                              className={`${
-                                snapshot.isDragging ? 'z-50' : ''
+                              className={`transition-all duration-200 ${
+                                snapshot.isDragging ? 'z-50 rotate-1' : ''
                               }`}
                             >
                               <EnhancedMealCard
@@ -127,7 +135,7 @@ export default function MealListSection({
               </Droppable>
             </DragDropContext>
           )}
-        </>
+        </div>
       )}
     </div>
   );

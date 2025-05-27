@@ -20,6 +20,7 @@ const MealPlanner = () => {
   useDocumentTitle("Meal Planner");
   const [currentWeek, setCurrentWeek] = useState<1 | 2>(1);
   const [isDraggingCategory, setIsDraggingCategory] = useState(false);
+  const [draggedCategoryId, setDraggedCategoryId] = useState<string | null>(null);
   const { getRecipeById, recipes } = useRecipes();
   
   const {
@@ -50,12 +51,14 @@ const MealPlanner = () => {
   const { handleRandomize, isLoading, showReplaceDialog, setShowReplaceDialog, performMealSelection } = 
     useRandomMealSelection(currentWeek);
 
-  const handleMealTypeDragStart = () => {
+  const handleMealTypeDragStart = (result: any) => {
     setIsDraggingCategory(true);
+    setDraggedCategoryId(result.draggableId);
   };
 
   const handleMealTypeDragEnd = (result: DropResult) => {
     setIsDraggingCategory(false);
+    setDraggedCategoryId(null);
     
     if (!result.destination) return;
 
@@ -102,18 +105,36 @@ const MealPlanner = () => {
         onDragEnd={handleMealTypeDragEnd}
       >
         <Droppable droppableId="meal-types">
-          {(provided) => (
+          {(provided, snapshot) => (
             <div
               {...provided.droppableProps}
               ref={provided.innerRef}
-              className="space-y-8"
+              className={`space-y-6 transition-all duration-200 ${
+                snapshot.isDraggingOver ? 'bg-blue-50/50 rounded-lg p-4' : ''
+              }`}
             >
               {mealTypes.map((mealType, index) => (
                 <Draggable key={mealType} draggableId={mealType} index={index}>
-                  {(provided) => (
+                  {(provided, snapshot) => (
                     <div
                       ref={provided.innerRef}
                       {...provided.draggableProps}
+                      className={`
+                        transition-all duration-200 ease-in-out
+                        ${snapshot.isDragging ? 
+                          'shadow-2xl scale-105 rotate-1 z-50 bg-white rounded-lg border-2 border-blue-300' : 
+                          isDraggingCategory && draggedCategoryId !== mealType ? 
+                            'opacity-60 scale-95' : 
+                            'opacity-100 scale-100'
+                        }
+                        ${snapshot.isDragging ? 'transform-gpu' : ''}
+                      `}
+                      style={{
+                        ...provided.draggableProps.style,
+                        ...(snapshot.isDragging && {
+                          transform: `${provided.draggableProps.style?.transform} translateY(-8px)`,
+                        }),
+                      }}
                     >
                       <MealListSection
                         mealType={mealType}
@@ -124,7 +145,7 @@ const MealPlanner = () => {
                         onCreateLeftover={handleCreateLeftover}
                         onReorderMeals={handleReorderMeals}
                         dragHandleProps={provided.dragHandleProps}
-                        collapsed={isDraggingCategory}
+                        collapsed={isDraggingCategory && draggedCategoryId !== mealType}
                       />
                     </div>
                   )}

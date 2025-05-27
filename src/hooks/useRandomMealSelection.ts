@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { MealType, RecipeCategory } from "@/types";
 import { useToast } from "@/hooks/use-toast";
@@ -20,7 +19,7 @@ export const useRandomMealSelection = (week: 1 | 2) => {
   const { user } = useAuth();
   const { recipes } = useRecipes();
   const { currentHousehold } = useHousehold();
-  const { getMealPlansForWeek, addMealPlan, clearWeek } = useMealPlan();
+  const { clearWeek, addMealPlan } = useMealPlan();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [showReplaceDialog, setShowReplaceDialog] = useState(false);
@@ -73,6 +72,13 @@ export const useRandomMealSelection = (week: 1 | 2) => {
     
     setIsLoading(true);
     
+    // Show a loading toast that we'll update
+    const loadingToast = toast({
+      title: "Generating Meal Plan",
+      description: "Creating your personalized meal plan...",
+      duration: 0, // Don't auto-dismiss
+    });
+    
     try {
       console.log("Clearing week", week);
       await clearWeek(week);
@@ -119,7 +125,7 @@ export const useRandomMealSelection = (week: 1 | 2) => {
             slotIndex: i,
             isLeftover: false,
             householdId: currentHousehold.id,
-          }, week);
+          }, week, true); // Silent mode enabled
           
           allSelectedIds.add(recipe.id);
           totalMealsAdded++;
@@ -127,6 +133,9 @@ export const useRandomMealSelection = (week: 1 | 2) => {
       }
       
       console.log("Random meal selection completed");
+      
+      // Dismiss the loading toast
+      loadingToast.dismiss();
       
       // Provide appropriate feedback based on results
       if (totalMealsAdded === 0) {
@@ -147,12 +156,13 @@ export const useRandomMealSelection = (week: 1 | 2) => {
         });
       } else {
         toast({
-          title: "Meal Plan Generated",
-          description: `Successfully generated ${totalMealsAdded} meals from your recipe collection!`,
+          title: "Meal Plan Generated Successfully! 🎉",
+          description: `Generated ${totalMealsAdded} delicious meals from your recipe collection!`,
         });
       }
     } catch (error) {
       console.error("Error during random meal selection:", error);
+      loadingToast.dismiss();
       toast({
         title: "Error",
         description: "Failed to generate meal plan. Please try again.",
