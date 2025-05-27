@@ -209,7 +209,7 @@ export default function ShoppingListItem({
 
   return (
     <div 
-      className={`flex items-start space-x-${isMobile ? '2' : '3'} ${isMobile ? 'p-1.5' : 'p-2'} rounded hover:bg-accent select-none`}
+      className={`flex items-start space-x-${isMobile ? '2' : '3'} ${isMobile ? 'p-1.5' : 'p-2'} rounded select-none`}
       style={{ 
         WebkitTouchCallout: 'none',
         WebkitUserSelect: 'none',
