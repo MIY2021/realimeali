@@ -45,6 +45,9 @@ declare module 'lucide-react' {
   export const RotateCcw: LucideIcon;
   export const Bell: LucideIcon;
   export const ShoppingBag: LucideIcon;
+  export const Lightbulb: LucideIcon;
+  export const Coins: LucideIcon;
+  export const Star: LucideIcon;
   
   // Grid and layout icons - adding these to prevent future import issues
   export const LayoutGrid: LucideIcon;
@@ -58,7 +61,6 @@ declare module 'lucide-react' {
   // Additional commonly used icons to prevent future import issues
   export const Save: LucideIcon;
   export const Download: LucideIcon;
-  export const Star: LucideIcon;
   export const Bookmark: LucideIcon;
   export const Archive: LucideIcon;
   export const Settings: LucideIcon;

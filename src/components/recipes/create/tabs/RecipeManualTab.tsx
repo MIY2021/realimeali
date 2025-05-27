@@ -3,30 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { X, Plus, Bulb } from "lucide-react";
-
-interface RecipeManualTabProps {
-  isMobile: boolean;
-  newRecipe: Omit<Recipe, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>;
-  setNewRecipe: (recipe: Omit<Recipe, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>) => void;
-  newCategory: string;
-  setNewCategory: (category: string) => void;
-  newIngredient: string;
-  setNewIngredient: (ingredient: string) => void;
-  newInstruction: string;
-  setNewInstruction: (instruction: string) => void;
-  imagePreview: string | null;
-  isGeneratingImage: boolean;
-  generationProgress: string;
-  onImageChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onGenerateImage: () => void;
-  onAddCategory: () => void;
-  onRemoveCategory: (category: string) => void;
-  onAddIngredient: () => void;
-  onRemoveIngredient: (index: number) => void;
-  onAddInstruction: () => void;
-  onRemoveInstruction: (index: number) => void;
-}
+import { X, Plus, Lightbulb } from "lucide-react";
 
 const PREDEFINED_CATEGORIES: RecipeCategory[] = [
   "Bulk", "Easy", "Cheap", "Healthy", "Vegetarian", "Fish", "Super Tasty",
@@ -211,7 +188,7 @@ export function RecipeManualTab({
       {/* Top Tip */}
       <div>
         <label className="block text-sm font-medium mb-2 flex items-center gap-2">
-          <Bulb className="h-4 w-4 text-yellow-600" />
+          <Lightbulb className="h-4 w-4 text-yellow-600" />
           Top Tip (Optional)
         </label>
         <Textarea
