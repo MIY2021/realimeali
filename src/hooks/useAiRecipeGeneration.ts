@@ -29,6 +29,8 @@ export function useAiRecipeGeneration() {
       }
     }
     
+    enhancedPrompt += "\n\nIMPORTANT: Please also include a helpful 'topTip' - a cooking tip, secret, or pro advice that will help make this recipe even better. This could be about technique, ingredient substitutions, timing, or any insider knowledge that would elevate the dish.";
+    
     return enhancedPrompt;
   };
 

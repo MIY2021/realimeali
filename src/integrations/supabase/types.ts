@@ -535,6 +535,7 @@ export type Database = {
           prep_time: number | null
           servings: number | null
           title: string
+          top_tip: string | null
           updated_at: string | null
           user_id: string
         }
@@ -552,6 +553,7 @@ export type Database = {
           prep_time?: number | null
           servings?: number | null
           title: string
+          top_tip?: string | null
           updated_at?: string | null
           user_id: string
         }
@@ -569,6 +571,7 @@ export type Database = {
           prep_time?: number | null
           servings?: number | null
           title?: string
+          top_tip?: string | null
           updated_at?: string | null
           user_id?: string
         }

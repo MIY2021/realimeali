@@ -1,4 +1,3 @@
-
 export type User = {
   id: string;
   name: string;
@@ -37,6 +36,7 @@ export type Recipe = {
   cookTime: number; // in minutes
   servings: number;
   image?: string;
+  topTip?: string; // New field for cooking tips
   createdBy: string; // user id
   createdAt: string; // ISO date string
   updatedAt: string; // ISO date string

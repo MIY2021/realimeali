@@ -12,6 +12,7 @@ export function useRecipeForm() {
     cookTime: 0,
     servings: 1,
     image: undefined,
+    topTip: "",
     isFavorite: false,
     householdId: "",
   });

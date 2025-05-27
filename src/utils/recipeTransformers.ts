@@ -1,3 +1,4 @@
+
 import { Recipe } from "@/types";
 
 export const transformDbRecipeToRecipe = (dbRecipe: any): Recipe => ({
@@ -11,6 +12,7 @@ export const transformDbRecipeToRecipe = (dbRecipe: any): Recipe => ({
   cookTime: dbRecipe.cook_time || 0,
   servings: dbRecipe.servings || 1,
   image: dbRecipe.image || undefined,
+  topTip: dbRecipe.top_tip || undefined,
   isFavorite: dbRecipe.is_favorite || false,
   createdBy: dbRecipe.user_id,
   createdAt: dbRecipe.created_at,
@@ -32,6 +34,7 @@ export const transformRecipeToDbInsert = (
   cook_time: recipeData.cookTime,
   servings: recipeData.servings,
   image: recipeData.image,
+  top_tip: recipeData.topTip,
   is_favorite: recipeData.isFavorite,
   user_id: userId,
   household_id: householdId
@@ -48,6 +51,7 @@ export const transformRecipeToDbUpdate = (recipeData: Partial<Recipe>) => {
   if (recipeData.cookTime !== undefined) updateData.cook_time = recipeData.cookTime;
   if (recipeData.servings !== undefined) updateData.servings = recipeData.servings;
   if (recipeData.image !== undefined) updateData.image = recipeData.image;
+  if (recipeData.topTip !== undefined) updateData.top_tip = recipeData.topTip;
   if (recipeData.isFavorite !== undefined) updateData.is_favorite = recipeData.isFavorite;
   return updateData;
 };

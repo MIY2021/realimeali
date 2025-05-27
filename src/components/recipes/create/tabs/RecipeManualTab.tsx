@@ -1,8 +1,9 @@
+
 import { Recipe, RecipeCategory } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, Trash2, X, Camera, Loader } from "lucide-react";
+import { Plus, Trash2, X, Camera, Loader, Lightbulb } from "lucide-react";
 
 const AVAILABLE_CATEGORIES: RecipeCategory[] = [
   "Bulk", "Easy", "Cheap", "Healthy", "Vegetarian", "Fish",
@@ -210,6 +211,25 @@ export function RecipeManualTab({
                 <Plus className="h-4 w-4" />
               </Button>
             </div>
+          </div>
+
+          {/* Top Tip Field */}
+          <div>
+            <label className="block text-sm font-medium mb-2 flex items-center gap-2">
+              <Lightbulb className="h-4 w-4 text-yellow-500" />
+              Top Tip
+            </label>
+            <textarea
+              value={newRecipe.topTip || ""}
+              onChange={(e) => setNewRecipe({ ...newRecipe, topTip: e.target.value })}
+              className="w-full p-3 border rounded-lg"
+              rows={2}
+              placeholder="Share a helpful cooking tip or secret for this recipe..."
+              autoFocus={false}
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              Add a pro tip to help others make this recipe even better!
+            </p>
           </div>
         </div>
 
