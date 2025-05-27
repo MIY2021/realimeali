@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-import { ChevronDown, Check, X, Clock, User } from "lucide-react";
+import { ChevronDown, Check, X, Clock, Bell } from "lucide-react";
 import { useMealPlanApproval, ApprovalRequest } from "@/contexts/MealPlanApprovalContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { useToast } from "@/hooks/use-toast";
@@ -107,7 +107,7 @@ export const ApprovalStatusDropdown = ({
           <ChevronDown className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-96 bg-white">
+      <DropdownMenuContent align="end" className="w-96 bg-white z-50">
         <DropdownMenuLabel className="text-base font-semibold">
           Week {request.week_number} Approval Status
         </DropdownMenuLabel>
@@ -141,20 +141,18 @@ export const ApprovalStatusDropdown = ({
                   {getStatusText(member.user_id)}
                 </Badge>
                 
-                {!approval && (
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="h-6 w-6 p-0 hover:bg-muted"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleSendNotification(memberName);
-                    }}
-                    title={`Send reminder to ${memberName}`}
-                  >
-                    <User className="h-3 w-3" />
-                  </Button>
-                )}
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-8 w-8 p-0 hover:bg-muted"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleSendNotification(memberName);
+                  }}
+                  title={`Send reminder to ${memberName}`}
+                >
+                  <Bell className="h-4 w-4" />
+                </Button>
               </div>
             </DropdownMenuItem>
           );

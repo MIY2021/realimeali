@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import Layout from "@/components/layout/Layout";
 import { WeekSelector } from "@/components/meal-planner/WeekSelector";
@@ -55,7 +54,7 @@ const MealPlanner = () => {
 
         {/* Actions row: Generate meal plan and approval button */}
         <MealPlannerActions
-          onRandomize={() => setShowReplaceDialog(true)}
+          onRandomize={handleRandomize}
           isLoading={isLoading}
           currentWeek={currentWeek}
         />
