@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -8,6 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { HouseholdProvider } from "@/contexts/HouseholdContext";
 import { RecipesProvider } from "@/contexts/RecipesContext";
 import { MealPlanProvider } from "@/contexts/MealPlanContext";
+import { MealPlanApprovalProvider } from "@/contexts/MealPlanApprovalContext";
 import { HouseholdShoppingProvider } from "@/contexts/HouseholdShoppingContext";
 import Layout from "@/components/layout/Layout";
 import { ScrollToTop } from "@/components/layout/ScrollToTop";
@@ -36,97 +36,99 @@ const App = () => (
         <HouseholdProvider>
           <RecipesProvider>
             <MealPlanProvider>
-              <HouseholdShoppingProvider>
-                <TooltipProvider>
-                  <Layout>
-                    <Routes>
-                      <Route path="/" element={<Index />} />
-                      <Route path="/login" element={<Login />} />
-                      <Route path="/signup" element={<Signup />} />
-                      <Route path="/share/:slug" element={<PublicRecipe />} />
-                      <Route path="/recipe/:slug/share" element={<PublicRecipe />} />
-                      <Route path="/recipe/:slug" element={<PublicRecipe />} />
-                      <Route path="/share/recipes/:publicShareId" element={<PublicRecipe />} />
-                      <Route path="/recipe-meta/:publicShareId" element={<PublicRecipe />} />
-                      <Route
-                        path="/recipes"
-                        element={
-                          <ProtectedRoute>
-                            <RecipesPage />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/recipes/new"
-                        element={
-                          <ProtectedRoute>
-                            <CreateRecipePage />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/recipes/:slug"
-                        element={
-                          <ProtectedRoute>
-                            <RecipeDetail />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/recipes/:id/:slug"
-                        element={
-                          <ProtectedRoute>
-                            <RecipeDetail />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/meal-planner"
-                        element={
-                          <ProtectedRoute>
-                            <MealPlanner />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/shopping-list"
-                        element={
-                          <ProtectedRoute>
-                            <ShoppingList />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/category/:category"
-                        element={
-                          <ProtectedRoute>
-                            <CategoryPage />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/account"
-                        element={
-                          <ProtectedRoute>
-                            <Account />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/household"
-                        element={
-                          <ProtectedRoute>
-                            <Household />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route path="*" element={<NotFound />} />
-                    </Routes>
-                  </Layout>
-                  <Toaster />
-                  <Sonner />
-                </TooltipProvider>
-              </HouseholdShoppingProvider>
+              <MealPlanApprovalProvider>
+                <HouseholdShoppingProvider>
+                  <TooltipProvider>
+                    <Layout>
+                      <Routes>
+                        <Route path="/" element={<Index />} />
+                        <Route path="/login" element={<Login />} />
+                        <Route path="/signup" element={<Signup />} />
+                        <Route path="/share/:slug" element={<PublicRecipe />} />
+                        <Route path="/recipe/:slug/share" element={<PublicRecipe />} />
+                        <Route path="/recipe/:slug" element={<PublicRecipe />} />
+                        <Route path="/share/recipes/:publicShareId" element={<PublicRecipe />} />
+                        <Route path="/recipe-meta/:publicShareId" element={<PublicRecipe />} />
+                        <Route
+                          path="/recipes"
+                          element={
+                            <ProtectedRoute>
+                              <RecipesPage />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/recipes/new"
+                          element={
+                            <ProtectedRoute>
+                              <CreateRecipePage />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/recipes/:slug"
+                          element={
+                            <ProtectedRoute>
+                              <RecipeDetail />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/recipes/:id/:slug"
+                          element={
+                            <ProtectedRoute>
+                              <RecipeDetail />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/meal-planner"
+                          element={
+                            <ProtectedRoute>
+                              <MealPlanner />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/shopping-list"
+                          element={
+                            <ProtectedRoute>
+                              <ShoppingList />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/category/:category"
+                          element={
+                            <ProtectedRoute>
+                              <CategoryPage />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/account"
+                          element={
+                            <ProtectedRoute>
+                              <Account />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/household"
+                          element={
+                            <ProtectedRoute>
+                              <Household />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route path="*" element={<NotFound />} />
+                      </Routes>
+                    </Layout>
+                    <Toaster />
+                    <Sonner />
+                  </TooltipProvider>
+                </HouseholdShoppingProvider>
+              </MealPlanApprovalProvider>
             </MealPlanProvider>
           </RecipesProvider>
         </HouseholdProvider>

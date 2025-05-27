@@ -342,6 +342,85 @@ export type Database = {
         }
         Relationships: []
       }
+      meal_plan_approval_requests: {
+        Row: {
+          created_at: string
+          expires_at: string
+          household_id: string
+          id: string
+          message: string | null
+          requested_by: string
+          status: Database["public"]["Enums"]["approval_request_status"]
+          updated_at: string
+          week_number: number
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string
+          household_id: string
+          id?: string
+          message?: string | null
+          requested_by: string
+          status?: Database["public"]["Enums"]["approval_request_status"]
+          updated_at?: string
+          week_number: number
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          household_id?: string
+          id?: string
+          message?: string | null
+          requested_by?: string
+          status?: Database["public"]["Enums"]["approval_request_status"]
+          updated_at?: string
+          week_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meal_plan_approval_requests_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      meal_plan_approvals: {
+        Row: {
+          approval_request_id: string
+          approved: boolean
+          comments: string | null
+          id: string
+          responded_at: string
+          user_id: string
+        }
+        Insert: {
+          approval_request_id: string
+          approved: boolean
+          comments?: string | null
+          id?: string
+          responded_at?: string
+          user_id: string
+        }
+        Update: {
+          approval_request_id?: string
+          approved?: boolean
+          comments?: string | null
+          id?: string
+          responded_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meal_plan_approvals_approval_request_id_fkey"
+            columns: ["approval_request_id"]
+            isOneToOne: false
+            referencedRelation: "meal_plan_approval_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -550,6 +629,7 @@ export type Database = {
       }
     }
     Enums: {
+      approval_request_status: "pending" | "approved" | "rejected" | "expired"
       household_role: "owner" | "member"
       invitation_status: "pending" | "accepted" | "declined" | "expired"
       recipe_category:
@@ -685,6 +765,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      approval_request_status: ["pending", "approved", "rejected", "expired"],
       household_role: ["owner", "member"],
       invitation_status: ["pending", "accepted", "declined", "expired"],
       recipe_category: [

@@ -1,21 +1,27 @@
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ListChecks, Share, FileSpreadsheet, Trash2, Plus } from "lucide-react";
+import { ListChecks, Share, FileSpreadsheet, Trash2, UserCheck } from "lucide-react";
 import { Link } from "react-router-dom";
+import { ApprovalRequestDialog } from "@/components/meal-planner/ApprovalRequestDialog";
 
 interface MealPlannerActionsProps {
   onRandomize: () => void;
   onShare: () => void;
   onClearAll: () => void;
   isLoading: boolean;
+  currentWeek: 1 | 2;
 }
 
 export const MealPlannerActions = ({ 
   onRandomize, 
   onShare, 
   onClearAll, 
-  isLoading 
+  isLoading,
+  currentWeek 
 }: MealPlannerActionsProps) => {
+  const [approvalDialogOpen, setApprovalDialogOpen] = useState(false);
+
   return (
     <>
       <div className="flex gap-2 flex-wrap mb-4">
@@ -27,6 +33,15 @@ export const MealPlannerActions = ({
         >
           <FileSpreadsheet className="mr-2 h-4 w-4" />
           Randomise
+        </Button>
+        <Button
+          onClick={() => setApprovalDialogOpen(true)}
+          size="sm"
+          className="bg-terracotta hover:bg-terracotta/90 flex items-center whitespace-nowrap"
+          disabled={isLoading}
+        >
+          <UserCheck className="mr-2 h-4 w-4" />
+          Request Approval
         </Button>
         <Button
           onClick={onShare}
@@ -54,6 +69,12 @@ export const MealPlannerActions = ({
           </Link>
         </Button>
       </div>
+
+      <ApprovalRequestDialog
+        open={approvalDialogOpen}
+        onClose={() => setApprovalDialogOpen(false)}
+        weekNumber={currentWeek}
+      />
     </>
   );
 };
