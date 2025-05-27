@@ -53,9 +53,9 @@ export const HouseholdMembersCard = ({ members, isOwner, onRemoveMember, isLoadi
               </div>
             ) : (
               members.map((member) => (
-                <div key={member.id} className="flex items-center justify-between p-3 border rounded">
-                  <div className="flex items-center space-x-3">
-                    <Avatar className="h-8 w-8">
+                <div key={member.id} className="flex items-center justify-between p-3 border rounded gap-3">
+                  <div className="flex items-center space-x-3 min-w-0 flex-1">
+                    <Avatar className="h-8 w-8 flex-shrink-0">
                       <AvatarImage 
                         src={member.profile?.avatar_url} 
                         alt={member.profile?.full_name || 'User'} 
@@ -67,16 +67,16 @@ export const HouseholdMembersCard = ({ members, isOwner, onRemoveMember, isLoadi
                         }
                       </AvatarFallback>
                     </Avatar>
-                    <div>
-                      <p className="font-medium">
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium truncate">
                         {member.profile?.full_name || 'Unknown User'}
                       </p>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-sm text-muted-foreground truncate">
                         {member.profile?.email || 'No email available'}
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-2 flex-shrink-0">
                     <Badge variant={member.role === 'owner' ? 'default' : 'secondary'}>
                       {member.role}
                     </Badge>

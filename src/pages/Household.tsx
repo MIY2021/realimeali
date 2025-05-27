@@ -26,7 +26,7 @@ export default function Household() {
 
   if (!user) {
     return (
-      <div className="container max-w-lg py-8">
+      <div className="container max-w-2xl mx-auto px-4 py-8">
         <p className="text-center text-muted-foreground">Please log in to manage households.</p>
       </div>
     );
@@ -34,9 +34,9 @@ export default function Household() {
 
   if (!currentHousehold) {
     return (
-      <div className="container max-w-lg py-8">
+      <div className="container max-w-2xl mx-auto px-4 py-8">
         <div className="flex items-center gap-2 mb-6">
-          <User className="h-6 w-6 text-terracotta" />
+          <User className="h-6 w-6 text-terracotta flex-shrink-0" />
           <h1 className="text-2xl font-bold text-navy">Household Management</h1>
         </div>
 
@@ -49,9 +49,9 @@ export default function Household() {
   }
 
   return (
-    <div className="container max-w-lg py-8">
+    <div className="container max-w-2xl mx-auto px-4 py-8">
       <div className="flex items-center gap-2 mb-6">
-        <User className="h-6 w-6 text-terracotta" />
+        <User className="h-6 w-6 text-terracotta flex-shrink-0" />
         <h1 className="text-2xl font-bold text-navy">Household Management</h1>
       </div>
 

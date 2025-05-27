@@ -80,18 +80,20 @@ export const HouseholdDetailsCard = ({ household, isOwner, onHouseholdUpdate }: 
       <CardContent className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="householdName">Household Name</Label>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-col sm:flex-row">
             <Input
               id="householdName"
               value={householdName}
               onChange={(e) => setHouseholdName(e.target.value)}
               disabled={!isOwner}
+              className="flex-1"
             />
             {isOwner && (
               <Button 
                 onClick={handleUpdateHouseholdName}
                 disabled={isUpdatingName || householdName.trim() === household.name}
                 size="sm"
+                className="w-full sm:w-auto"
               >
                 {isUpdatingName ? "Saving..." : "Save"}
               </Button>
@@ -106,8 +108,8 @@ export const HouseholdDetailsCard = ({ household, isOwner, onHouseholdUpdate }: 
 
         <div className="space-y-2">
           <Label>Household Code</Label>
-          <div className="flex gap-2">
-            <Input value={householdCode} readOnly />
+          <div className="flex gap-2 flex-col sm:flex-row">
+            <Input value={householdCode} readOnly className="flex-1" />
             <Button 
               variant="outline" 
               size="sm"
@@ -115,8 +117,10 @@ export const HouseholdDetailsCard = ({ household, isOwner, onHouseholdUpdate }: 
                 navigator.clipboard.writeText(householdCode);
                 toast({ title: "Code copied to clipboard!" });
               }}
+              className="w-full sm:w-auto"
             >
-              <Copy className="h-4 w-4" />
+              <Copy className="h-4 w-4 mr-2 sm:mr-0" />
+              <span className="sm:hidden">Copy Code</span>
             </Button>
           </div>
           <p className="text-sm text-muted-foreground">
