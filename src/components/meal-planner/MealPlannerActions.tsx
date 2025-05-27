@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ListChecks, Share, FileSpreadsheet, Trash2, User, Check } from "lucide-react";
+import { ListChecks, FileSpreadsheet, User, Check } from "lucide-react";
 import { Link } from "react-router-dom";
 import { ApprovalRequestDialog } from "@/components/meal-planner/ApprovalRequestDialog";
 import { ApprovalStatusDropdown } from "@/components/meal-planner/ApprovalStatusDropdown";
@@ -9,16 +9,12 @@ import { useMealPlanApproval } from "@/contexts/MealPlanApprovalContext";
 
 interface MealPlannerActionsProps {
   onRandomize: () => void;
-  onShare: () => void;
-  onClearAll: () => void;
   isLoading: boolean;
   currentWeek: 1 | 2;
 }
 
 export const MealPlannerActions = ({ 
   onRandomize, 
-  onShare, 
-  onClearAll, 
   isLoading,
   currentWeek 
 }: MealPlannerActionsProps) => {
@@ -89,23 +85,6 @@ export const MealPlannerActions = ({
             {approvalButton.text}
           </Button>
         )}
-        
-        <Button
-          onClick={onShare}
-          size="sm"
-          variant="outline"
-          className="flex items-center"
-        >
-          <Share className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          className="text-terracotta border-terracotta hover:bg-terracotta/10 flex items-center"
-          onClick={onClearAll}
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
       </div>
       
       <div className="flex gap-2 items-center mb-4">
