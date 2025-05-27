@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { MealType, MealPlan, Recipe } from "@/types";
 import { useToast } from "@/hooks/use-toast";
@@ -34,6 +33,14 @@ export const useMealPlanActions = (week: 1 | 2) => {
     recipe: Recipe | null;
   }>({ open: false, mealPlan: null, recipe: null });
 
+  const [clearMealPlanDialog, setClearMealPlanDialog] = useState(false);
+
+  const [deleteMealDialog, setDeleteMealDialog] = useState<{
+    open: boolean;
+    planId: string | null;
+    recipe: Recipe | null;
+  }>({ open: false, planId: null, recipe: null });
+
   const [mealTypes, setMealTypes] = useState<MealType[]>(["dinner", "lunch", "breakfast", "snacks"]);
   
   // Use dynamic category mappings
@@ -43,8 +50,22 @@ export const useMealPlanActions = (week: 1 | 2) => {
     getMealPlansForWeek(week).filter(plan => plan.mealType === mealType);
 
   const handleRemoveMeal = async (planId: string) => {
-    console.log("Removing meal plan:", planId);
-    await removeMealPlan(planId);
+    const mealPlan = getMealPlansForWeek(week).find(plan => plan.id === planId);
+    const recipe = mealPlan ? recipes.find(r => r.id === mealPlan.recipeId) : null;
+    
+    setDeleteMealDialog({ open: true, planId, recipe });
+  };
+
+  const confirmRemoveMeal = async () => {
+    if (!deleteMealDialog.planId) return;
+    
+    console.log("Removing meal plan:", deleteMealDialog.planId);
+    await removeMealPlan(deleteMealDialog.planId);
+    
+    useToastHook({
+      title: "Meal Removed",
+      description: "The meal has been removed from your plan.",
+    });
   };
 
   const handleAddMeal = (mealType: MealType) => {
@@ -161,29 +182,24 @@ export const useMealPlanActions = (week: 1 | 2) => {
     const currentWeekPlans = getMealPlansForWeek(week);
     if (currentWeekPlans.length === 0) return;
     
-    toast("Clear the entire meal plan?", {
-      description: "This action cannot be undone.",
-      action: {
-        label: "Clear All",
-        onClick: async () => {
-          try {
-            await clearWeek(week);
-            toast.success("Meal plan cleared", {
-              description: `Week ${week} meal plan has been cleared.`
-            });
-          } catch (error) {
-            console.error("Error clearing meal plan:", error);
-            toast.error("Error", {
-              description: "Failed to clear meal plan. Please try again."
-            });
-          }
-        }
-      },
-      cancel: {
-        label: "Cancel",
-        onClick: () => {}
-      }
-    });
+    setClearMealPlanDialog(true);
+  };
+
+  const confirmClearAll = async () => {
+    try {
+      await clearWeek(week);
+      useToastHook({
+        title: "Meal Plan Cleared",
+        description: `Week ${week} meal plan has been cleared.`,
+      });
+    } catch (error) {
+      console.error("Error clearing meal plan:", error);
+      useToastHook({
+        title: "Error",
+        description: "Failed to clear meal plan. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleShareMealPlan = () => {
@@ -248,14 +264,20 @@ export const useMealPlanActions = (week: 1 | 2) => {
     setAddMealModal,
     leftoverModal,
     setLeftoverModal,
+    clearMealPlanDialog,
+    setClearMealPlanDialog,
+    deleteMealDialog,
+    setDeleteMealDialog,
     getMealPlansForType,
     handleRemoveMeal,
+    confirmRemoveMeal,
     handleAddMeal,
     handleCreateLeftover,
     handleReorderMeals,
     onLeftoverConfirm,
     onAddMealFinish,
     handleClearAll,
+    confirmClearAll,
     handleShareMealPlan,
   };
 };

@@ -6,6 +6,8 @@ import MealListSection from "@/components/MealListSection";
 import { AddMealPlanDialog } from "@/components/meal-planner/AddMealPlanDialog";
 import { LeftoverServingsDialog } from "@/components/meal-planner/LeftoverServingsDialog";
 import { MealPlanReplaceDialog } from "@/components/meal-planner/MealPlanReplaceDialog";
+import { ClearMealPlanDialog } from "@/components/meal-planner/ClearMealPlanDialog";
+import { DeleteMealDialog } from "@/components/meal-planner/DeleteMealDialog";
 import { useMealPlanActions } from "@/hooks/useMealPlanActions";
 import { useRandomMealSelection } from "@/hooks/useRandomMealSelection";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
@@ -17,6 +19,7 @@ import { MealType } from "@/types";
 const MealPlanner = () => {
   useDocumentTitle("Meal Planner");
   const [currentWeek, setCurrentWeek] = useState<1 | 2>(1);
+  const [isDraggingCategory, setIsDraggingCategory] = useState(false);
   const { getRecipeById, recipes } = useRecipes();
   
   const {
@@ -27,21 +30,33 @@ const MealPlanner = () => {
     setAddMealModal,
     leftoverModal,
     setLeftoverModal,
+    clearMealPlanDialog,
+    setClearMealPlanDialog,
+    deleteMealDialog,
+    setDeleteMealDialog,
     getMealPlansForType,
     handleRemoveMeal,
+    confirmRemoveMeal,
     handleAddMeal,
     handleCreateLeftover,
     handleReorderMeals,
     onLeftoverConfirm,
     onAddMealFinish,
     handleClearAll,
+    confirmClearAll,
     handleShareMealPlan,
   } = useMealPlanActions(currentWeek);
 
   const { handleRandomize, isLoading, showReplaceDialog, setShowReplaceDialog, performMealSelection } = 
     useRandomMealSelection(currentWeek);
 
+  const handleMealTypeDragStart = () => {
+    setIsDraggingCategory(true);
+  };
+
   const handleMealTypeDragEnd = (result: DropResult) => {
+    setIsDraggingCategory(false);
+    
     if (!result.destination) return;
 
     const items = Array.from(mealTypes);
@@ -82,7 +97,10 @@ const MealPlanner = () => {
         isLoading={isLoading}
       />
 
-      <DragDropContext onDragEnd={handleMealTypeDragEnd}>
+      <DragDropContext 
+        onDragStart={handleMealTypeDragStart}
+        onDragEnd={handleMealTypeDragEnd}
+      >
         <Droppable droppableId="meal-types">
           {(provided) => (
             <div
@@ -106,6 +124,7 @@ const MealPlanner = () => {
                         onCreateLeftover={handleCreateLeftover}
                         onReorderMeals={handleReorderMeals}
                         dragHandleProps={provided.dragHandleProps}
+                        collapsed={isDraggingCategory}
                       />
                     </div>
                   )}
@@ -143,6 +162,20 @@ const MealPlanner = () => {
         onOpenChange={setShowReplaceDialog}
         onConfirm={performMealSelection}
         weekNumber={currentWeek}
+      />
+
+      <ClearMealPlanDialog
+        open={clearMealPlanDialog}
+        onOpenChange={setClearMealPlanDialog}
+        onConfirm={confirmClearAll}
+        weekNumber={currentWeek}
+      />
+
+      <DeleteMealDialog
+        open={deleteMealDialog.open}
+        onOpenChange={(open) => setDeleteMealDialog({ ...deleteMealDialog, open })}
+        onConfirm={confirmRemoveMeal}
+        recipe={deleteMealDialog.recipe}
       />
     </div>
   );

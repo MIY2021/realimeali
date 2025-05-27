@@ -15,6 +15,7 @@ interface MealListSectionProps {
   onCreateLeftover?: (mealPlan: MealPlan, recipe: Recipe) => void;
   onReorderMeals?: (mealType: MealType, sourceIndex: number, destinationIndex: number) => void;
   dragHandleProps?: DraggableProvidedDragHandleProps | null;
+  collapsed?: boolean;
 }
 
 export default function MealListSection({
@@ -26,6 +27,7 @@ export default function MealListSection({
   onCreateLeftover,
   onReorderMeals,
   dragHandleProps,
+  collapsed = false,
 }: MealListSectionProps) {
   const isMobile = useIsMobile();
 
@@ -43,7 +45,7 @@ export default function MealListSection({
   };
 
   return (
-    <div className={`mb-${isMobile ? '4' : '6'}`}>
+    <div className={`mb-${isMobile ? '4' : '6'} transition-all duration-200 ${collapsed ? 'opacity-75' : ''}`}>
       <div className={`flex items-center justify-between mb-3 ${isMobile ? 'px-1' : ''}`}>
         <div className="flex items-center gap-2">
           <div {...dragHandleProps}>
@@ -52,69 +54,80 @@ export default function MealListSection({
           <h3 className={`${isMobile ? 'text-base' : 'text-lg'} font-semibold capitalize text-navy`}>
             {mealType}
           </h3>
+          {collapsed && (
+            <span className={`${isMobile ? 'text-xs' : 'text-sm'} text-muted-foreground`}>
+              ({mealPlans.length} meal{mealPlans.length !== 1 ? 's' : ''})
+            </span>
+          )}
         </div>
-        <Button
-          size={isMobile ? "sm" : "sm"}
-          variant="outline"
-          onClick={() => onAddMeal(mealType)}
-          className={`text-terracotta border-terracotta hover:bg-terracotta/10 ${isMobile ? 'h-8 px-2 text-xs' : ''}`}
-        >
-          <Plus className={`${isMobile ? 'h-3 w-3 mr-0.5' : 'h-4 w-4 mr-1'}`} />
-          Add
-        </Button>
+        {!collapsed && (
+          <Button
+            size={isMobile ? "sm" : "sm"}
+            variant="outline"
+            onClick={() => onAddMeal(mealType)}
+            className={`text-terracotta border-terracotta hover:bg-terracotta/10 ${isMobile ? 'h-8 px-2 text-xs' : ''}`}
+          >
+            <Plus className={`${isMobile ? 'h-3 w-3 mr-0.5' : 'h-4 w-4 mr-1'}`} />
+            Add
+          </Button>
+        )}
       </div>
 
-      {mealPlans.length === 0 ? (
-        <div className={`border border-dashed border-gray-300 rounded-md ${isMobile ? 'p-3' : 'p-4'} text-center text-muted-foreground`}>
-          <span className={`${isMobile ? 'text-sm' : ''}`}>No {mealType} planned yet</span>
-        </div>
-      ) : (
-        <DragDropContext onDragEnd={handleDragEnd}>
-          <Droppable droppableId={`${mealType}-meals`}>
-            {(provided, snapshot) => (
-              <div
-                {...provided.droppableProps}
-                ref={provided.innerRef}
-                className={`space-y-${isMobile ? '1.5' : '2'} ${
-                  snapshot.isDraggingOver ? 'bg-gray-50 rounded-lg p-2' : ''
-                }`}
-              >
-                {mealPlans.map((plan, index) => {
-                  const recipe = getRecipeById(plan.recipeId);
-                  
-                  // For leftover meals, get the parent recipe if the current recipe is not found
-                  const parentRecipe = plan.isLeftover && plan.parentMealPlanId 
-                    ? getRecipeById(plan.recipeId) 
-                    : undefined;
+      {collapsed ? null : (
+        <>
+          {mealPlans.length === 0 ? (
+            <div className={`border border-dashed border-gray-300 rounded-md ${isMobile ? 'p-3' : 'p-4'} text-center text-muted-foreground`}>
+              <span className={`${isMobile ? 'text-sm' : ''}`}>No {mealType} planned yet</span>
+            </div>
+          ) : (
+            <DragDropContext onDragEnd={handleDragEnd}>
+              <Droppable droppableId={`${mealType}-meals`}>
+                {(provided, snapshot) => (
+                  <div
+                    {...provided.droppableProps}
+                    ref={provided.innerRef}
+                    className={`space-y-${isMobile ? '1.5' : '2'} ${
+                      snapshot.isDraggingOver ? 'bg-gray-50 rounded-lg p-2' : ''
+                    }`}
+                  >
+                    {mealPlans.map((plan, index) => {
+                      const recipe = getRecipeById(plan.recipeId);
+                      
+                      // For leftover meals, get the parent recipe if the current recipe is not found
+                      const parentRecipe = plan.isLeftover && plan.parentMealPlanId 
+                        ? getRecipeById(plan.recipeId) 
+                        : undefined;
 
-                  return (
-                    <Draggable key={plan.id} draggableId={plan.id} index={index}>
-                      {(provided, snapshot) => (
-                        <div
-                          ref={provided.innerRef}
-                          {...provided.draggableProps}
-                          className={`${
-                            snapshot.isDragging ? 'z-50' : ''
-                          }`}
-                        >
-                          <EnhancedMealCard
-                            mealPlan={plan}
-                            recipe={recipe}
-                            onRemove={onRemoveMeal}
-                            onCreateLeftover={onCreateLeftover}
-                            parentRecipe={parentRecipe}
-                            dragHandleProps={provided.dragHandleProps}
-                          />
-                        </div>
-                      )}
-                    </Draggable>
-                  );
-                })}
-                {provided.placeholder}
-              </div>
-            )}
-          </Droppable>
-        </DragDropContext>
+                      return (
+                        <Draggable key={plan.id} draggableId={plan.id} index={index}>
+                          {(provided, snapshot) => (
+                            <div
+                              ref={provided.innerRef}
+                              {...provided.draggableProps}
+                              className={`${
+                                snapshot.isDragging ? 'z-50' : ''
+                              }`}
+                            >
+                              <EnhancedMealCard
+                                mealPlan={plan}
+                                recipe={recipe}
+                                onRemove={onRemoveMeal}
+                                onCreateLeftover={onCreateLeftover}
+                                parentRecipe={parentRecipe}
+                                dragHandleProps={provided.dragHandleProps}
+                              />
+                            </div>
+                          )}
+                        </Draggable>
+                      );
+                    })}
+                    {provided.placeholder}
+                  </div>
+                )}
+              </Droppable>
+            </DragDropContext>
+          )}
+        </>
       )}
     </div>
   );
