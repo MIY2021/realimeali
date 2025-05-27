@@ -1,4 +1,5 @@
 
+import { useState } from "react";
 import { MealType, RecipeCategory } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
@@ -15,16 +16,17 @@ const MEAL_TYPE_QUANTITIES: Record<MealType, number> = {
   snacks: 2,
 };
 
-export const useRandomMealSelection = (
-  week: 1 | 2,
-  mealTypes: MealType[]
-) => {
+export const useRandomMealSelection = (week: 1 | 2) => {
   const { user } = useAuth();
   const { recipes } = useRecipes();
   const { currentHousehold } = useHousehold();
   const { getMealPlansForWeek, addMealPlan, clearWeek } = useMealPlan();
   const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
+  const [showReplaceDialog, setShowReplaceDialog] = useState(false);
 
+  const mealTypes: MealType[] = ["dinner", "lunch", "breakfast", "snacks"];
+  
   // Use dynamic category mappings
   const mealTypeToCategories = createMealTypeToCategories();
 
@@ -59,6 +61,7 @@ export const useRandomMealSelection = (
 
   const performMealSelection = async () => {
     console.log("Starting random meal selection...");
+    setIsLoading(true);
     
     try {
       console.log("Clearing week", week);
@@ -135,10 +138,12 @@ export const useRandomMealSelection = (
         description: "Failed to generate meal plan. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleRandomMealSelection = async (onConfirmReplace?: () => void) => {
+  const handleRandomize = async () => {
     if (!user) {
       toast({
         title: "Login Required",
@@ -168,18 +173,18 @@ export const useRandomMealSelection = (
 
     const currentWeekPlans = getMealPlansForWeek(week);
     if (currentWeekPlans.length > 0) {
-      // Show the replacement dialog via callback
-      if (onConfirmReplace) {
-        onConfirmReplace();
-        return;
-      }
+      setShowReplaceDialog(true);
+      return;
     }
     
     await performMealSelection();
   };
 
   return { 
-    handleRandomMealSelection, 
-    performMealSelection 
+    handleRandomize, 
+    performMealSelection,
+    isLoading,
+    showReplaceDialog,
+    setShowReplaceDialog
   };
 };

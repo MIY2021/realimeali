@@ -1,19 +1,21 @@
 
 import { useState } from "react";
-import { Layout } from "@/components/layout/Layout";
+import Layout from "@/components/layout/Layout";
 import { WeekSelector } from "@/components/meal-planner/WeekSelector";
 import { MealPlannerActions } from "@/components/meal-planner/MealPlannerActions";
-import { MealListSection } from "@/components/MealListSection";
+import MealListSection from "@/components/MealListSection";
 import { AddMealPlanDialog } from "@/components/meal-planner/AddMealPlanDialog";
 import { LeftoverServingsDialog } from "@/components/meal-planner/LeftoverServingsDialog";
 import { MealPlanReplaceDialog } from "@/components/meal-planner/MealPlanReplaceDialog";
 import { useMealPlanActions } from "@/hooks/useMealPlanActions";
 import { useRandomMealSelection } from "@/hooks/useRandomMealSelection";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
+import { useRecipes } from "@/contexts/RecipesContext";
 
 const MealPlanner = () => {
   useDocumentTitle("Meal Planner");
   const [currentWeek, setCurrentWeek] = useState<1 | 2>(1);
+  const { getRecipeById } = useRecipes();
   
   const {
     mealTypes,
@@ -33,7 +35,7 @@ const MealPlanner = () => {
     handleShareMealPlan,
   } = useMealPlanActions(currentWeek);
 
-  const { handleRandomize, isLoading, showReplaceDialog, setShowReplaceDialog } = 
+  const { handleRandomize, isLoading, showReplaceDialog, setShowReplaceDialog, performMealSelection } = 
     useRandomMealSelection(currentWeek);
 
   return (
@@ -66,6 +68,7 @@ const MealPlanner = () => {
               key={mealType}
               mealType={mealType}
               mealPlans={getMealPlansForType(mealType)}
+              getRecipeById={getRecipeById}
               onRemoveMeal={handleRemoveMeal}
               onAddMeal={() => handleAddMeal(mealType)}
               onCreateLeftover={handleCreateLeftover}
@@ -74,25 +77,27 @@ const MealPlanner = () => {
           ))}
         </div>
 
-        <AddMealPlanDialog
-          open={addMealModal.open}
-          onOpenChange={(open) => setAddMealModal({ ...addMealModal, open })}
-          mealType={addMealModal.mealType}
-          categories={addMealModal.mealType ? mealTypeToCategories[addMealModal.mealType] : []}
-          onFinish={onAddMealFinish}
-        />
+        {addMealModal.open && (
+          <AddMealPlanDialog
+            mealType={addMealModal.mealType}
+            categories={addMealModal.mealType ? mealTypeToCategories[addMealModal.mealType] : []}
+            onClose={() => setAddMealModal({ ...addMealModal, open: false })}
+            onFinish={onAddMealFinish}
+          />
+        )}
 
-        <LeftoverServingsDialog
-          open={leftoverModal.open}
-          onOpenChange={(open) => setLeftoverModal({ ...leftoverModal, open })}
-          recipe={leftoverModal.recipe}
-          onConfirm={onLeftoverConfirm}
-        />
+        {leftoverModal.open && leftoverModal.recipe && (
+          <LeftoverServingsDialog
+            recipe={leftoverModal.recipe}
+            onClose={() => setLeftoverModal({ ...leftoverModal, open: false })}
+            onConfirm={onLeftoverConfirm}
+          />
+        )}
 
         <MealPlanReplaceDialog
           open={showReplaceDialog}
           onOpenChange={setShowReplaceDialog}
-          onConfirm={handleRandomize}
+          onConfirm={performMealSelection}
           weekNumber={currentWeek}
         />
       </div>

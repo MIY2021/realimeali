@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-import { ChevronDown, Check, X, Clock, Bell } from "lucide-react";
+import { ChevronDown, Check, X, Clock, User } from "lucide-react";
 import { useMealPlanApproval, ApprovalRequest } from "@/contexts/MealPlanApprovalContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { useToast } from "@/hooks/use-toast";
@@ -152,7 +152,7 @@ export const ApprovalStatusDropdown = ({
                     }}
                     title={`Send reminder to ${memberName}`}
                   >
-                    <Bell className="h-3 w-3" />
+                    <User className="h-3 w-3" />
                   </Button>
                 )}
               </div>
