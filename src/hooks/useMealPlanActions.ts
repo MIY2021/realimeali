@@ -1,78 +1,45 @@
+
 import { useState } from "react";
 import { MealType, MealPlan, Recipe } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
-import { useMealPlan } from "@/contexts/MealPlanContext";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { createMealTypeToCategories } from "@/utils/mealCategoryUtils";
-import { toast } from "sonner";
+import { useMealPlanModals } from "./useMealPlanModals";
+import { useMealPlanOperations } from "./useMealPlanOperations";
 
 export const useMealPlanActions = (week: 1 | 2) => {
   const { user } = useAuth();
   const { recipes } = useRecipes();
   const { currentHousehold } = useHousehold();
-  const { 
-    getMealPlansForWeek, 
-    addMealPlan, 
-    addMealPlanWithLeftovers,
-    removeMealPlan, 
-    clearWeek,
-    reorderMealPlans
-  } = useMealPlan();
-  const { toast: useToastHook } = useToast();
-
-  const [addMealModal, setAddMealModal] = useState<{
-    open: boolean;
-    mealType: MealType | null;
-  }>({ open: false, mealType: null });
-
-  const [leftoverModal, setLeftoverModal] = useState<{
-    open: boolean;
-    mealPlan: MealPlan | null;
-    recipe: Recipe | null;
-  }>({ open: false, mealPlan: null, recipe: null });
-
-  const [clearMealPlanDialog, setClearMealPlanDialog] = useState(false);
-
-  const [deleteMealDialog, setDeleteMealDialog] = useState<{
-    open: boolean;
-    planId: string | null;
-    recipe: Recipe | null;
-  }>({ open: false, planId: null, recipe: null });
+  const { toast } = useToast();
 
   const [mealTypes, setMealTypes] = useState<MealType[]>(["dinner", "lunch", "breakfast", "snacks"]);
-  
-  // Use dynamic category mappings
   const mealTypeToCategories = createMealTypeToCategories();
 
-  const getMealPlansForType = (mealType: MealType) =>
-    getMealPlansForWeek(week).filter(plan => plan.mealType === mealType);
+  const modals = useMealPlanModals();
+  const operations = useMealPlanOperations(week);
 
   const handleRemoveMeal = async (planId: string) => {
-    const mealPlan = getMealPlansForWeek(week).find(plan => plan.id === planId);
+    const mealPlan = operations.getMealPlansForType(
+      modals.deleteMealDialog.recipe?.categories?.[0] as MealType || 'dinner'
+    ).find(plan => plan.id === planId);
     const recipe = mealPlan ? recipes.find(r => r.id === mealPlan.recipeId) : null;
     
-    setDeleteMealDialog({ open: true, planId, recipe });
+    modals.setDeleteMealDialog({ open: true, planId, recipe });
   };
 
   const confirmRemoveMeal = async () => {
-    if (!deleteMealDialog.planId) return;
-    
-    console.log("Removing meal plan:", deleteMealDialog.planId);
-    await removeMealPlan(deleteMealDialog.planId);
-    
-    useToastHook({
-      title: "Meal Removed",
-      description: "The meal has been removed from your plan.",
-    });
+    if (!modals.deleteMealDialog.planId) return;
+    await operations.performRemoveMeal(modals.deleteMealDialog.planId);
   };
 
   const handleAddMeal = (mealType: MealType) => {
     console.log("Opening add meal modal for:", mealType);
     
     if (!user) {
-      useToastHook({
+      toast({
         title: "Login Required",
         description: "You need to log in to add meals.",
         variant: "destructive",
@@ -81,7 +48,7 @@ export const useMealPlanActions = (week: 1 | 2) => {
     }
 
     if (!currentHousehold) {
-      useToastHook({
+      toast({
         title: "No Household Selected",
         description: "Please select or create a household to manage meal plans.",
         variant: "destructive",
@@ -89,12 +56,12 @@ export const useMealPlanActions = (week: 1 | 2) => {
       return;
     }
     
-    setAddMealModal({ open: true, mealType });
+    modals.setAddMealModal({ open: true, mealType });
   };
 
   const handleCreateLeftover = (mealPlan: MealPlan, recipe: Recipe) => {
     if (!user || !currentHousehold) {
-      useToastHook({
+      toast({
         title: "Login Required",
         description: "You need to log in to create leftovers.",
         variant: "destructive",
@@ -102,173 +69,60 @@ export const useMealPlanActions = (week: 1 | 2) => {
       return;
     }
 
-    setLeftoverModal({ open: true, mealPlan, recipe });
+    modals.setLeftoverModal({ open: true, mealPlan, recipe });
   };
 
   const onLeftoverConfirm = async (servings: number) => {
-    if (!user || !currentHousehold || !leftoverModal.mealPlan || !leftoverModal.recipe) return;
+    if (!user || !currentHousehold || !modals.leftoverModal.mealPlan || !modals.leftoverModal.recipe) return;
     
-    const { mealPlan, recipe } = leftoverModal;
-    
-    try {
-      const currentLunchPlans = getMealPlansForType('lunch');
-      
-      // Create leftover lunch meal plan
-      await addMealPlan({
-        date: mealPlan.date,
-        mealType: 'lunch',
-        recipeId: mealPlan.recipeId,
-        createdBy: user.id,
-        slotIndex: currentLunchPlans.length,
-        parentMealPlanId: mealPlan.id,
-        isLeftover: true,
-        leftoverServings: servings,
-        originalServings: recipe.servings,
-        householdId: currentHousehold.id,
-      }, week);
-
-      useToastHook({
-        title: "Leftover Lunch Added",
-        description: `${servings} servings of ${recipe.title} scheduled for lunch leftovers.`,
-      });
-
-      setLeftoverModal({ open: false, mealPlan: null, recipe: null });
-    } catch (error) {
-      console.error("Error creating leftover:", error);
-      useToastHook({
-        title: "Error",
-        description: "Failed to create leftover. Please try again.",
-        variant: "destructive",
-      });
-    }
+    const { mealPlan, recipe } = modals.leftoverModal;
+    await operations.performCreateLeftover(mealPlan, recipe, servings);
+    modals.setLeftoverModal({ open: false, mealPlan: null, recipe: null });
   };
 
   const onAddMealFinish = async (mealType: MealType, recipeId: string, leftoverServings?: number) => {
-    if (!user || !currentHousehold) return;
-    
-    console.log("Adding meal to plan:", { mealType, recipeId, week, leftoverServings });
-    
-    const currentPlansForType = getMealPlansForType(mealType);
-    
-    try {
-      const mealPlanData = {
-        date: new Date().toISOString().split('T')[0],
-        mealType,
-        recipeId,
-        createdBy: user.id,
-        slotIndex: currentPlansForType.length,
-        isLeftover: false,
-        householdId: currentHousehold.id,
-      };
-
-      if (mealType === 'dinner' && leftoverServings) {
-        await addMealPlanWithLeftovers(mealPlanData, week, leftoverServings);
-      } else {
-        await addMealPlan(mealPlanData, week);
-      }
-      
-      setAddMealModal({ open: false, mealType: null });
-    } catch (error) {
-      console.error("Error adding meal:", error);
-      useToastHook({
-        title: "Error",
-        description: "Failed to add meal. Please try again.",
-        variant: "destructive",
-      });
-    }
+    await operations.performAddMeal(mealType, recipeId, leftoverServings);
+    modals.setAddMealModal({ open: false, mealType: null });
   };
 
   const handleClearAll = async () => {
-    const currentWeekPlans = getMealPlansForWeek(week);
-    if (currentWeekPlans.length === 0) return;
+    const currentWeekPlans = operations.getMealPlansForType('dinner')
+      .concat(operations.getMealPlansForType('lunch'))
+      .concat(operations.getMealPlansForType('breakfast'))
+      .concat(operations.getMealPlansForType('snacks'));
     
-    setClearMealPlanDialog(true);
+    if (currentWeekPlans.length === 0) return;
+    modals.setClearMealPlanDialog(true);
   };
 
   const confirmClearAll = async () => {
-    try {
-      await clearWeek(week);
-      useToastHook({
-        title: "Meal Plan Cleared",
-        description: `Week ${week} meal plan has been cleared.`,
-      });
-    } catch (error) {
-      console.error("Error clearing meal plan:", error);
-      useToastHook({
-        title: "Error",
-        description: "Failed to clear meal plan. Please try again.",
-        variant: "destructive",
-      });
-    }
+    await operations.performClearAll();
   };
 
   const handleShareMealPlan = () => {
-    const currentWeekPlans = getMealPlansForWeek(week);
-    let shareText = `Here's our shared meal plan for Week ${week}!\n\n`;
-    mealTypes.forEach(mealType => {
-      shareText += `--- ${mealType.toUpperCase()} ---\n`;
-      getMealPlansForType(mealType).forEach(plan => {
-        const recipe = recipes.find(r => r.id === plan.recipeId);
-        const servingInfo = plan.isLeftover 
-          ? ` (${plan.leftoverServings} leftover servings)`
-          : ` (${plan.originalServings || recipe?.servings || 1} servings)`;
-        const leftoverPrefix = plan.isLeftover ? "🍽️ " : "";
-        shareText += `- ${leftoverPrefix}${recipe ? recipe.title : "Unknown"}${servingInfo}\n`;
-      });
-      shareText += "\n";
-    });
+    const shareText = operations.generateShareText();
+    
     if (navigator.share) {
       navigator.share({ title: "Meal Plan", text: shareText });
     } else {
       navigator.clipboard.writeText(shareText);
     }
-    useToastHook({
+    
+    toast({
       title: "Copied Meal Plan",
       description: "Meal plan copied to clipboard!",
     });
   };
 
   const handleReorderMeals = async (mealType: MealType, sourceIndex: number, destinationIndex: number) => {
-    if (!user || !currentHousehold) return;
-
-    const mealPlansForType = getMealPlansForType(mealType);
-    
-    if (sourceIndex < 0 || destinationIndex < 0 || 
-        sourceIndex >= mealPlansForType.length || 
-        destinationIndex >= mealPlansForType.length) {
-      return;
-    }
-
-    try {
-      await reorderMealPlans(mealType, week, sourceIndex, destinationIndex);
-      
-      useToastHook({
-        title: "Meals Reordered",
-        description: `${mealType} meals have been reordered.`,
-      });
-    } catch (error) {
-      console.error("Error reordering meals:", error);
-      useToastHook({
-        title: "Error",
-        description: "Failed to reorder meals. Please try again.",
-        variant: "destructive",
-      });
-    }
+    await operations.performReorderMeals(mealType, sourceIndex, destinationIndex);
   };
 
   return {
     mealTypes,
     setMealTypes,
     mealTypeToCategories,
-    addMealModal,
-    setAddMealModal,
-    leftoverModal,
-    setLeftoverModal,
-    clearMealPlanDialog,
-    setClearMealPlanDialog,
-    deleteMealDialog,
-    setDeleteMealDialog,
-    getMealPlansForType,
+    getMealPlansForType: operations.getMealPlansForType,
     handleRemoveMeal,
     confirmRemoveMeal,
     handleAddMeal,
@@ -279,5 +133,6 @@ export const useMealPlanActions = (week: 1 | 2) => {
     handleClearAll,
     confirmClearAll,
     handleShareMealPlan,
+    ...modals,
   };
 };

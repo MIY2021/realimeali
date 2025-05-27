@@ -3,8 +3,8 @@ import { MealPlan, Recipe, MealType } from "@/types";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { mealPlanService } from "@/services/mealPlanService";
 
 export interface HouseholdMealPlan {
   id: string;
@@ -46,7 +46,6 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
   const [mealPlans, setMealPlans] = useState<MealPlan[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Fetch household meal plans from database
   const fetchMealPlans = useCallback(async () => {
     if (!user || !currentHousehold) {
       console.log("No user or household, clearing meal plans");
@@ -56,42 +55,9 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
 
     try {
       setIsLoading(true);
-      console.log("Fetching meal plans for household:", currentHousehold.id);
-      
-      const { data, error } = await supabase
-        .from('household_meal_plans')
-        .select('*')
-        .eq('household_id', currentHousehold.id)
-        .order('created_at', { ascending: true });
-
-      if (error) {
-        console.error("Error fetching meal plans:", error);
-        throw error;
-      }
-
-      console.log("Fetched meal plans data:", data);
-
-      // Transform database format to MealPlan type
-      const transformedPlans: MealPlan[] = (data || []).map(dbPlan => ({
-        id: dbPlan.id,
-        date: dbPlan.date_scheduled,
-        mealType: dbPlan.meal_type as any,
-        recipeId: dbPlan.recipe_id,
-        notes: dbPlan.notes,
-        createdBy: dbPlan.created_by,
-        createdAt: dbPlan.created_at,
-        updatedAt: dbPlan.updated_at,
-        slotIndex: dbPlan.slot_index,
-        weekNumber: dbPlan.week_number,
-        parentMealPlanId: dbPlan.parent_meal_plan_id,
-        isLeftover: dbPlan.is_leftover,
-        leftoverServings: dbPlan.leftover_servings,
-        originalServings: dbPlan.original_servings,
-        householdId: dbPlan.household_id,
-      }));
-
-      console.log("Transformed plans:", transformedPlans);
-      setMealPlans(transformedPlans);
+      const plans = await mealPlanService.fetchMealPlans(currentHousehold.id);
+      console.log("Transformed plans:", plans);
+      setMealPlans(plans);
     } catch (err) {
       console.error("Error fetching meal plans:", err);
       toast({
@@ -145,53 +111,12 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
     try {
       console.log("Adding meal plan:", { mealPlanData, weekNumber, userId: user.id, householdId: currentHousehold.id });
       
-      const insertData = {
-        household_id: currentHousehold.id,
-        recipe_id: mealPlanData.recipeId,
-        meal_type: mealPlanData.mealType,
-        week_number: weekNumber,
-        slot_index: mealPlanData.slotIndex || 0,
-        notes: mealPlanData.notes || null,
-        date_scheduled: mealPlanData.date,
-        created_by: user.id,
-        parent_meal_plan_id: mealPlanData.parentMealPlanId || null,
-        is_leftover: mealPlanData.isLeftover || false,
-        leftover_servings: mealPlanData.leftoverServings || null,
-        original_servings: mealPlanData.originalServings || null,
-      };
-
-      console.log("Insert data:", insertData);
-
-      const { data, error } = await supabase
-        .from('household_meal_plans')
-        .insert([insertData])
-        .select()
-        .single();
-
-      if (error) {
-        console.error("Database error:", error);
-        throw error;
-      }
-
-      console.log("Meal plan added successfully:", data);
-
-      const newMealPlan: MealPlan = {
-        id: data.id,
-        date: data.date_scheduled,
-        mealType: data.meal_type as any,
-        recipeId: data.recipe_id,
-        notes: data.notes,
-        createdBy: data.created_by,
-        createdAt: data.created_at,
-        updatedAt: data.updated_at,
-        slotIndex: data.slot_index,
-        weekNumber: data.week_number,
-        parentMealPlanId: data.parent_meal_plan_id,
-        isLeftover: data.is_leftover,
-        leftoverServings: data.leftover_servings,
-        originalServings: data.original_servings,
-        householdId: data.household_id,
-      } as any;
+      const newMealPlan = await mealPlanService.addMealPlan(
+        mealPlanData, 
+        weekNumber, 
+        currentHousehold.id, 
+        user.id
+      );
 
       setMealPlans(prev => [...prev, newMealPlan]);
       
@@ -221,7 +146,6 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
     if (!recipe) return;
 
     try {
-      // Add the main dinner meal plan
       await addMealPlan({
         ...mealPlanData,
         originalServings: recipe.servings,
@@ -229,13 +153,11 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
         householdId: currentHousehold.id,
       }, weekNumber);
 
-      // If leftover servings specified, add leftover lunch for next day
       if (leftoverServings && leftoverServings > 0) {
         const currentPlans = getMealPlansForWeek(weekNumber);
         const justAddedPlan = currentPlans[currentPlans.length - 1];
         
         if (justAddedPlan) {
-          // Add leftover lunch meal plan
           await addMealPlan({
             date: mealPlanData.date,
             mealType: 'lunch',
@@ -264,9 +186,6 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
     if (!user || !currentHousehold) return;
 
     try {
-      console.log("Removing meal plan:", id);
-      
-      // Check if this meal plan has leftover children
       const childLeftovers = mealPlans.filter(plan => plan.parentMealPlanId === id);
       
       if (childLeftovers.length > 0) {
@@ -275,26 +194,13 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
         );
         
         if (shouldRemoveLeftovers) {
-          // Remove child leftovers first
           for (const leftover of childLeftovers) {
-            await supabase
-              .from('household_meal_plans')
-              .delete()
-              .eq('id', leftover.id)
-              .eq('household_id', currentHousehold.id);
+            await mealPlanService.removeMealPlan(leftover.id, currentHousehold.id);
           }
         }
       }
       
-      const { error } = await supabase
-        .from('household_meal_plans')
-        .delete()
-        .eq('id', id)
-        .eq('household_id', currentHousehold.id);
-
-      if (error) {
-        throw error;
-      }
+      await mealPlanService.removeMealPlan(id, currentHousehold.id);
 
       setMealPlans(prev => prev.filter(plan => 
         plan.id !== id && plan.parentMealPlanId !== id
@@ -318,18 +224,7 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
     if (!user || !currentHousehold) return;
 
     try {
-      console.log("Clearing week:", weekNumber);
-      
-      const { error } = await supabase
-        .from('household_meal_plans')
-        .delete()
-        .eq('household_id', currentHousehold.id)
-        .eq('week_number', weekNumber);
-
-      if (error) {
-        throw error;
-      }
-
+      await mealPlanService.clearWeek(weekNumber, currentHousehold.id);
       setMealPlans(prev => prev.filter(plan => (plan as any).weekNumber !== weekNumber));
       
       toast({
@@ -364,40 +259,18 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
 
-    // Create reordered array
     const reorderedPlans = [...mealPlansForType];
     const [movedPlan] = reorderedPlans.splice(sourceIndex, 1);
     reorderedPlans.splice(destinationIndex, 0, movedPlan);
 
     try {
-      // Update slot indices in database
-      const updatePromises = reorderedPlans.map((plan, index) => 
-        supabase
-          .from('household_meal_plans')
-          .update({ slot_index: index })
-          .eq('id', plan.id)
-          .eq('household_id', currentHousehold.id)
-          .eq('week_number', weekNumber)
-      );
+      await mealPlanService.reorderMealPlans(mealType, weekNumber, currentHousehold.id, reorderedPlans);
 
-      const results = await Promise.all(updatePromises);
-      
-      // Check for errors
-      const hasError = results.some(result => result.error);
-      if (hasError) {
-        throw new Error("Failed to update meal plan order");
-      }
-
-      // Update local state
       setMealPlans(prev => {
         const updated = [...prev];
-        
-        // Remove old plans
         const filteredPlans = updated.filter(
           plan => !(plan.mealType === mealType && (plan as any).weekNumber === weekNumber)
         );
-        
-        // Add reordered plans with updated slot indices
         const updatedReorderedPlans = reorderedPlans.map((plan, index) => ({
           ...plan,
           slotIndex: index
