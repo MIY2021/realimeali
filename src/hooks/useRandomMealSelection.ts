@@ -36,10 +36,17 @@ export const useRandomMealSelection = (week: 1 | 2) => {
     count: number,
     excludeIds: Set<string>
   ) => {
-    const pool = availableRecipes.filter(r =>
-      r.categories.some(cat => categories.includes(cat as RecipeCategory)) &&
-      !excludeIds.has(r.id)
-    );
+    console.log(`Looking for recipes with categories: ${categories.join(', ')}`);
+    console.log(`Total available recipes: ${availableRecipes.length}`);
+    
+    const pool = availableRecipes.filter(r => {
+      const hasCategory = r.categories.some(cat => categories.includes(cat as RecipeCategory));
+      const notExcluded = !excludeIds.has(r.id);
+      console.log(`Recipe "${r.title}": categories=${r.categories}, hasCategory=${hasCategory}, notExcluded=${notExcluded}`);
+      return hasCategory && notExcluded;
+    });
+    
+    console.log(`Filtered recipe pool size: ${pool.length}`);
     
     if (pool.length === 0) {
       console.warn(`No recipes found for categories: ${categories.join(', ')}`);
@@ -61,6 +68,9 @@ export const useRandomMealSelection = (week: 1 | 2) => {
 
   const performMealSelection = async () => {
     console.log("Starting random meal selection...");
+    console.log("Available recipes:", recipes.length);
+    console.log("Recipes:", recipes.map(r => ({ title: r.title, categories: r.categories })));
+    
     setIsLoading(true);
     
     try {
@@ -76,6 +86,8 @@ export const useRandomMealSelection = (week: 1 | 2) => {
         console.log(`Selecting recipes for ${mealType}...`);
         
         const allowedCategories = mealTypeToCategories[mealType];
+        console.log(`Allowed categories for ${mealType}:`, allowedCategories);
+        
         const desiredCount = MEAL_TYPE_QUANTITIES[mealType];
         const unique = getUniqueRandomRecipes(
           recipes,
@@ -169,6 +181,10 @@ export const useRandomMealSelection = (week: 1 | 2) => {
       });
       return;
     }
+
+    console.log("Checking recipes availability...");
+    console.log("Recipes array length:", recipes.length);
+    console.log("Sample recipes:", recipes.slice(0, 3).map(r => ({ title: r.title, categories: r.categories })));
 
     if (recipes.length === 0) {
       toast({

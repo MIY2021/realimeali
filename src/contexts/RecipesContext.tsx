@@ -1,7 +1,8 @@
-
-import { createContext, useContext, useState, ReactNode, useCallback, useMemo } from 'react';
+import { createContext, useContext, useState, ReactNode, useCallback, useMemo, useEffect } from 'react';
 import { Recipe } from '@/types';
 import { useRecipeApi } from '@/hooks/useRecipeApi';
+import { useAuth } from '@/contexts/AuthContext';
+import { useHousehold } from '@/contexts/HouseholdContext';
 
 interface RecipesContextType {
   recipes: Recipe[];
@@ -37,6 +38,19 @@ export const RecipesProvider = ({ children }: RecipesProviderProps) => {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const recipeApi = useRecipeApi();
+  const { user } = useAuth();
+  const { currentHousehold } = useHousehold();
+
+  // Auto-fetch recipes when household changes
+  useEffect(() => {
+    if (user && currentHousehold) {
+      console.log("Auto-fetching recipes for household:", currentHousehold.id);
+      fetchRecipes(currentHousehold.id);
+    } else {
+      console.log("Clearing recipes - no user or household");
+      setRecipes([]);
+    }
+  }, [user?.id, currentHousehold?.id]);
 
   const addRecipe = useCallback((recipe: Recipe) => {
     setRecipes(prev => [recipe, ...prev]);
