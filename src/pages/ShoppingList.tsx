@@ -1,5 +1,6 @@
 
 import { useState, useEffect } from "react";
+import Layout from "@/components/layout/Layout";
 import ShoppingListHeader from "@/components/shopping-list/ShoppingListHeader";
 import ShoppingListWeekSelector from "@/components/shopping-list/ShoppingListWeekSelector";
 import ShoppingListSkeleton from "@/components/shopping-list/ShoppingListSkeleton";
@@ -219,107 +220,111 @@ export default function ShoppingList() {
   // Show loading state while recipes are loading
   if (recipesLoading) {
     return (
-      <div className={`w-full mx-auto px-4 sm:px-6 lg:px-8 ${isMobile ? 'py-4' : 'py-8'} ${!isMobile ? 'max-w-4xl' : ''}`}>
-        <ShoppingListHeader 
-          onShare={handleShare} 
-          weekNumber={weekNumber}
-        />
-        <div className="py-10 text-center">
-          <p className="text-muted-foreground mb-4">Loading recipes...</p>
+      <Layout>
+        <div className="container max-w-7xl py-4 px-4 sm:py-8 sm:px-6">
+          <ShoppingListHeader 
+            onShare={handleShare} 
+            weekNumber={weekNumber}
+          />
+          <div className="py-10 text-center">
+            <p className="text-muted-foreground mb-4">Loading recipes...</p>
+          </div>
         </div>
-      </div>
+      </Layout>
     );
   }
 
   return (
-    <div className={`w-full mx-auto px-4 sm:px-6 lg:px-8 ${isMobile ? 'py-4' : 'py-8'} ${!isMobile ? 'max-w-4xl' : ''}`}>
-      <ShoppingListHeader 
-        onShare={handleShare} 
-        weekNumber={weekNumber}
-      />
+    <Layout>
+      <div className="container max-w-7xl py-4 px-4 sm:py-8 sm:px-6">
+        <ShoppingListHeader 
+          onShare={handleShare} 
+          weekNumber={weekNumber}
+        />
 
-      {!user ? (
-        <div className="py-10 text-center">
-          <p className="text-muted-foreground mb-4">Please log in to view and manage your shopping list.</p>
-        </div>
-      ) : !currentHousehold ? (
-        <div className="py-10 text-center">
-          <div className="max-w-md mx-auto">
-            <h2 className="text-xl font-semibold text-navy mb-2">No Household Selected</h2>
-            <p className="text-muted-foreground mb-6">
-              You need to create or join a household to manage shopping lists.
-            </p>
-            <Button asChild className="bg-terracotta hover:bg-terracotta/90">
-              <Link to="/household">
-                Manage Household
-              </Link>
-            </Button>
+        {!user ? (
+          <div className="py-10 text-center">
+            <p className="text-muted-foreground mb-4">Please log in to view and manage your shopping list.</p>
           </div>
-        </div>
-      ) : (
-        <>
-          <ShoppingListWeekSelector 
-            selectedWeek={weekNumber} 
-            onWeekSelect={setWeekNumber}
-            onGenerate={handleGenerate}
-            isGenerating={isGenerating}
-            hasItems={shoppingList.length > 0}
-          />
+        ) : !currentHousehold ? (
+          <div className="py-10 text-center">
+            <div className="max-w-md mx-auto">
+              <h2 className="text-xl font-semibold text-navy mb-2">No Household Selected</h2>
+              <p className="text-muted-foreground mb-6">
+                You need to create or join a household to manage shopping lists.
+              </p>
+              <Button asChild className="bg-terracotta hover:bg-terracotta/90">
+                <Link to="/household">
+                  Manage Household
+                </Link>
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <>
+            <ShoppingListWeekSelector 
+              selectedWeek={weekNumber} 
+              onWeekSelect={setWeekNumber}
+              onGenerate={handleGenerate}
+              isGenerating={isGenerating}
+              hasItems={shoppingList.length > 0}
+            />
 
-          <ShoppingListProgress
-            step={generationProgress.step}
-            totalSteps={generationProgress.totalSteps}
-            currentAction={generationProgress.currentAction}
-            isVisible={isGenerating}
-          />
+            <ShoppingListProgress
+              step={generationProgress.step}
+              totalSteps={generationProgress.totalSteps}
+              currentAction={generationProgress.currentAction}
+              isVisible={isGenerating}
+            />
 
-          {isLoading ? (
-            <ShoppingListSkeleton />
-          ) : (
-            <div 
-              className={`space-y-${isMobile ? '2' : '3'}`}
-              data-shopping-list-container
-            >
-              {shoppingList.length === 0 ? (
-                <Card>
-                  <CardContent className="p-6 text-center">
-                    <p className="text-muted-foreground mb-4">
-                      {hasMealPlans 
-                        ? `No shopping list generated yet for week ${weekNumber}.`
-                        : `No meal plans found for week ${weekNumber}.`
-                      }
-                    </p>
-                    {!hasMealPlans && (
-                      <p className="text-sm text-muted-foreground">
-                        Add some meal plans first to generate a shopping list.
+            {isLoading ? (
+              <ShoppingListSkeleton />
+            ) : (
+              <div 
+                className={`space-y-${isMobile ? '2' : '3'}`}
+                data-shopping-list-container
+              >
+                {shoppingList.length === 0 ? (
+                  <Card>
+                    <CardContent className="p-6 text-center">
+                      <p className="text-muted-foreground mb-4">
+                        {hasMealPlans 
+                          ? `No shopping list generated yet for week ${weekNumber}.`
+                          : `No meal plans found for week ${weekNumber}.`
+                        }
                       </p>
-                    )}
-                  </CardContent>
-                </Card>
-              ) : (
-                shoppingList.map((item) => (
-                  <Card key={item.id} className="w-full" data-shopping-list-item>
-                    <CardContent className={`${isMobile ? 'p-2' : 'p-3'}`}>
-                      <ShoppingListItem
-                        id={item.id}
-                        name={item.name}
-                        quantity={item.consolidatedQuantity || 1}
-                        unit={item.consolidatedUnit}
-                        isChecked={item.isChecked}
-                        recipeIds={[...new Set(item.recipeIds)]}
-                        copiedItemId={copiedItemId}
-                        onCheck={(checked) => toggleItemChecked(item.id)}
-                        onCopy={() => handleCopyItem(item.id)}
-                        getRecipeNames={getRecipeNames}
-                      />
+                      {!hasMealPlans && (
+                        <p className="text-sm text-muted-foreground">
+                          Add some meal plans first to generate a shopping list.
+                        </p>
+                      )}
                     </CardContent>
                   </Card>
-                ))
-              )}
-            </div>
-          )}
-        </>
-      )}
-    </div>
+                ) : (
+                  shoppingList.map((item) => (
+                    <Card key={item.id} className="w-full" data-shopping-list-item>
+                      <CardContent className={`${isMobile ? 'p-2' : 'p-3'}`}>
+                        <ShoppingListItem
+                          id={item.id}
+                          name={item.name}
+                          quantity={item.consolidatedQuantity || 1}
+                          unit={item.consolidatedUnit}
+                          isChecked={item.isChecked}
+                          recipeIds={[...new Set(item.recipeIds)]}
+                          copiedItemId={copiedItemId}
+                          onCheck={(checked) => toggleItemChecked(item.id)}
+                          onCopy={() => handleCopyItem(item.id)}
+                          getRecipeNames={getRecipeNames}
+                        />
+                      </CardContent>
+                    </Card>
+                  ))
+                )}
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </Layout>
   );
 }
