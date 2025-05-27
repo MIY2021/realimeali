@@ -43,6 +43,7 @@ declare module 'lucide-react' {
   export const Camera: LucideIcon;
   export const AlignJustify: LucideIcon;
   export const RotateCcw: LucideIcon;
+  export const Bell: LucideIcon;
   
   // Grid and layout icons - adding these to prevent future import issues
   export const LayoutGrid: LucideIcon;
