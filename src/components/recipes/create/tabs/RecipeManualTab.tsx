@@ -1,10 +1,9 @@
-
 import { Recipe, RecipeCategory } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { X, Plus, Zap } from "lucide-react";
+import { X, Plus, Lightbulb } from "lucide-react";
 
 interface RecipeManualTabProps {
   isMobile: boolean;
@@ -212,7 +211,7 @@ export function RecipeManualTab({
       {/* Top Tip */}
       <div>
         <label className="block text-sm font-medium mb-2 flex items-center gap-2">
-          <Zap className="h-4 w-4 text-yellow-600" />
+          <Lightbulb className="h-4 w-4 text-yellow-600" />
           Top Tip (Optional)
         </label>
         <Textarea
