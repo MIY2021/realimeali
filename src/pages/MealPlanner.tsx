@@ -18,6 +18,8 @@ import { WeekSelector } from "@/components/meal-planner/WeekSelector";
 import { MealPlannerActions } from "@/components/meal-planner/MealPlannerActions";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { DragDropContext, Droppable, Draggable, DropResult } from "react-beautiful-dnd";
+import { MealType } from "@/types";
 
 export default function MealPlanner() {
   useDocumentTitle("Meal Planner | RealiMeali");
@@ -29,13 +31,12 @@ export default function MealPlanner() {
   const isMobile = useIsMobile();
   
   const [week, setWeek] = useState<1 | 2>(1);
+  const [mealTypeOrder, setMealTypeOrder] = useState<MealType[]>(["dinner", "lunch", "breakfast", "snacks"]);
   
   // Load recipes automatically
   useRecipesLoader();
   
   const {
-    mealTypes,
-    mealTypeToCategories,
     addMealModal,
     setAddMealModal,
     leftoverModal,
@@ -52,10 +53,20 @@ export default function MealPlanner() {
   } = useMealPlanActions(week);
 
   // Updated to use simplified signature
-  const { handleRandomMealSelection } = useRandomMealSelection(week, mealTypes);
+  const { handleRandomMealSelection } = useRandomMealSelection(week, mealTypeOrder);
 
   const isLoading = recipesLoading || mealPlansLoading;
   const getRecipeById = (id: string) => recipes.find(r => r.id === id);
+
+  const handleCategoryReorder = (result: DropResult) => {
+    if (!result.destination) return;
+
+    const newOrder = Array.from(mealTypeOrder);
+    const [reorderedItem] = newOrder.splice(result.source.index, 1);
+    newOrder.splice(result.destination.index, 0, reorderedItem);
+
+    setMealTypeOrder(newOrder);
+  };
 
   return (
     <div className={`w-full mx-auto px-4 sm:px-6 lg:px-8 ${isMobile ? 'py-4' : 'py-8'} ${!isMobile ? 'max-w-2xl' : ''}`}>
@@ -108,18 +119,40 @@ export default function MealPlanner() {
                 </div>
               ) : (
                 <>
-                  {mealTypes.map((mealType) => (
-                    <MealListSection
-                      key={mealType}
-                      mealType={mealType}
-                      mealPlans={getMealPlansForType(mealType)}
-                      getRecipeById={getRecipeById}
-                      onAddMeal={handleAddMeal}
-                      onRemoveMeal={handleRemoveMeal}
-                      onCreateLeftover={handleCreateLeftover}
-                      onReorderMeals={handleReorderMeals}
-                    />
-                  ))}
+                  <DragDropContext onDragEnd={handleCategoryReorder}>
+                    <Droppable droppableId="meal-categories">
+                      {(provided) => (
+                        <div
+                          {...provided.droppableProps}
+                          ref={provided.innerRef}
+                        >
+                          {mealTypeOrder.map((mealType, index) => (
+                            <Draggable key={mealType} draggableId={mealType} index={index}>
+                              {(provided) => (
+                                <div
+                                  ref={provided.innerRef}
+                                  {...provided.draggableProps}
+                                >
+                                  <MealListSection
+                                    key={mealType}
+                                    mealType={mealType}
+                                    mealPlans={getMealPlansForType(mealType)}
+                                    getRecipeById={getRecipeById}
+                                    onAddMeal={handleAddMeal}
+                                    onRemoveMeal={handleRemoveMeal}
+                                    onCreateLeftover={handleCreateLeftover}
+                                    onReorderMeals={handleReorderMeals}
+                                    dragHandleProps={provided.dragHandleProps}
+                                  />
+                                </div>
+                              )}
+                            </Draggable>
+                          ))}
+                          {provided.placeholder}
+                        </div>
+                      )}
+                    </Droppable>
+                  </DragDropContext>
                   
                   {addMealModal.open && addMealModal.mealType && (
                     <AddMealWithLeftoversDialog

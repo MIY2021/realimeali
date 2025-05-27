@@ -27,7 +27,7 @@ export function LeftoverServingsDialog({
   recipe,
   onConfirm,
 }: LeftoverServingsDialogProps) {
-  const [servings, setServings] = useState([1]);
+  const [servings, setServings] = useState([2]);
   
   const maxServings = recipe ? recipe.servings - 1 : 1;
 

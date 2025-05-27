@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Plus, GripVertical } from "lucide-react";
 import { EnhancedMealCard } from "@/components/meal-planner/EnhancedMealCard";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { DragDropContext, Droppable, Draggable, DropResult } from "react-beautiful-dnd";
+import { DragDropContext, Droppable, Draggable, DropResult, DraggableProvidedDragHandleProps } from "react-beautiful-dnd";
 
 interface MealListSectionProps {
   mealType: MealType;
@@ -14,6 +14,7 @@ interface MealListSectionProps {
   onRemoveMeal: (planId: string) => void;
   onCreateLeftover?: (mealPlan: MealPlan, recipe: Recipe) => void;
   onReorderMeals?: (mealType: MealType, sourceIndex: number, destinationIndex: number) => void;
+  dragHandleProps?: DraggableProvidedDragHandleProps | null;
 }
 
 export default function MealListSection({
@@ -24,6 +25,7 @@ export default function MealListSection({
   onRemoveMeal,
   onCreateLeftover,
   onReorderMeals,
+  dragHandleProps,
 }: MealListSectionProps) {
   const isMobile = useIsMobile();
 
@@ -44,7 +46,9 @@ export default function MealListSection({
     <div className={`mb-${isMobile ? '4' : '6'}`}>
       <div className={`flex items-center justify-between mb-3 ${isMobile ? 'px-1' : ''}`}>
         <div className="flex items-center gap-2">
-          <GripVertical className={`${isMobile ? 'h-4 w-4' : 'h-5 w-5'} text-gray-400 cursor-grab active:cursor-grabbing`} />
+          <div {...dragHandleProps}>
+            <GripVertical className={`${isMobile ? 'h-4 w-4' : 'h-5 w-5'} text-gray-400 cursor-grab active:cursor-grabbing`} />
+          </div>
           <h3 className={`${isMobile ? 'text-base' : 'text-lg'} font-semibold capitalize text-navy`}>
             {mealType}
           </h3>
