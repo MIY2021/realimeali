@@ -1,3 +1,4 @@
+
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.8'
@@ -11,11 +12,36 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Helper function to extract text content from HTML
+// Helper function to extract structured recipe data from HTML
+function extractStructuredData(html: string): any {
+  // Look for JSON-LD structured data
+  const jsonLdRegex = /<script[^>]*type=["']application\/ld\+json["'][^>]*>(.*?)<\/script>/gsi;
+  let match = jsonLdRegex.exec(html);
+  
+  while (match) {
+    try {
+      const data = JSON.parse(match[1]);
+      if (data['@type'] === 'Recipe' || (Array.isArray(data) && data.find(item => item['@type'] === 'Recipe'))) {
+        const recipe = Array.isArray(data) ? data.find(item => item['@type'] === 'Recipe') : data;
+        return recipe;
+      }
+    } catch (e) {
+      console.log('Failed to parse JSON-LD:', e);
+    }
+    match = jsonLdRegex.exec(html);
+  }
+  
+  return null;
+}
+
+// Enhanced text extraction with better content preservation
 function extractTextFromHTML(html: string): string {
   // Remove script and style elements
   let cleanedHtml = html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
   cleanedHtml = cleanedHtml.replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '');
+  
+  // Preserve recipe-specific sections better
+  const recipeKeywords = ['recipe', 'ingredient', 'instruction', 'direction', 'method', 'preparation', 'cooking', 'prep', 'cook', 'serve', 'yield'];
   
   // Remove HTML tags and decode entities
   let text = cleanedHtml.replace(/<[^>]*>/g, ' ');
@@ -26,7 +52,7 @@ function extractTextFromHTML(html: string): string {
   text = text.replace(/&quot;/g, '"');
   text = text.replace(/&#39;/g, "'");
   
-  // Clean up whitespace
+  // Clean up whitespace but preserve some structure
   text = text.replace(/\s+/g, ' ').trim();
   
   return text;
@@ -197,6 +223,7 @@ serve(async (req) => {
     let isImageInput = false;
     let websiteImages: string[] = [];
     let storedImages: { originalUrl: string; storedUrl: string; filename: string }[] = [];
+    let structuredData: any = null;
 
     // Handle website URL
     if (websiteUrl) {
@@ -234,6 +261,11 @@ serve(async (req) => {
         }
 
         const htmlContent = await websiteResponse.text();
+        
+        // Try to extract structured data first
+        structuredData = extractStructuredData(htmlContent);
+        console.log('🔍 Structured data found:', !!structuredData);
+        
         processedText = extractTextFromHTML(htmlContent);
         
         // Extract images if requested
@@ -280,9 +312,10 @@ serve(async (req) => {
           });
         }
 
-        if (processedText.length > 8000) {
-          processedText = processedText.substring(0, 8000) + '...';
-          console.log('⚠️ Text truncated to 8000 characters');
+        // Increase text limit to preserve more content
+        if (processedText.length > 12000) {
+          processedText = processedText.substring(0, 12000) + '...';
+          console.log('⚠️ Text truncated to 12000 characters');
         }
 
       } catch (fetchError) {
@@ -319,15 +352,24 @@ serve(async (req) => {
       }
     }
 
+    // Enhanced system prompt for better extraction
     const messages = [
       {
         role: 'system',
-        content: `You are a recipe extraction expert. Extract recipe information and return a JSON object with these exact fields:
+        content: `You are a recipe extraction expert. Your goal is to extract recipe information as faithfully as possible from the source content.
+
+        EXTRACTION PRIORITIES:
+        1. PRESERVE ORIGINAL TEXT: Extract ingredients and instructions exactly as written in the source
+        2. EXTRACT ORIGINAL DESCRIPTIONS: Use the actual description from the website if available
+        3. ESTIMATE ONLY WHEN MISSING: Only estimate prep/cook times and servings if not found in source
+        4. GENERATE DESCRIPTIONS: If no description exists in source, write a brief 1-2 sentence description
+
+        Return a JSON object with these exact fields:
         {
-          "title": "Recipe title",
-          "description": "Brief description", 
-          "ingredients": ["ingredient 1", "ingredient 2"],
-          "instructions": ["step 1", "step 2"],
+          "title": "Exact recipe title from source",
+          "description": "Original description from source, or generate brief 1-2 sentences if missing", 
+          "ingredients": ["exact ingredient text from source"],
+          "instructions": ["exact instruction text from source"],
           "categories": ["category1", "category2"],
           "prepTime": 15,
           "cookTime": 30,
@@ -335,14 +377,13 @@ serve(async (req) => {
         }
 
         Guidelines:
-        - Extract a clear, concise title
-        - Write a 1-2 sentence description
-        - Clean up ingredients (remove extra spaces, standardize format)
-        - Number instructions as separate array items
+        - Extract exact title as written in source
+        - Use original description if found, otherwise generate brief description
+        - Copy ingredients and instructions exactly as written (preserve measurements, formatting)
         - Choose from these categories only: "Bulk", "Easy", "Cheap", "Healthy", "Vegetarian", "Fish", "Super Tasty", "Pasta", "Tapas", "Winter", "BBQ", "Faffy", "Pricey", "Not-Yet-Made", "Snacks", "Breakfast"
-        - Estimate prep/cook times in minutes if not provided
-        - Estimate servings if not provided
-        - For images: ONLY extract text that is clearly visible in the image. Do not make up or assume recipe information that is not visible.
+        - Extract exact prep/cook times if mentioned, otherwise estimate reasonably
+        - Extract exact servings/yield if mentioned, otherwise estimate
+        - For images: ONLY extract text that is clearly visible in the image
         - Return valid JSON only, no additional text`
       }
     ];
@@ -359,20 +400,27 @@ serve(async (req) => {
         ]
       });
     } else {
+      let userContent = processedText;
+      
+      // If we have structured data, include it prominently
+      if (structuredData) {
+        userContent = `STRUCTURED RECIPE DATA (use this as primary source):\n${JSON.stringify(structuredData, null, 2)}\n\nADDITIONAL WEBSITE CONTENT:\n${processedText}`;
+      }
+      
       messages.push({
         role: 'user',
-        content: processedText
+        content: userContent
       });
     }
 
     const openAIRequest = {
       model: isImageInput ? 'gpt-4o' : 'gpt-4o-mini',
       messages,
-      temperature: 0.3,
+      temperature: 0.1, // Lower temperature for more consistent extraction
       max_tokens: 1500,
     };
 
-    console.log('🤖 Calling OpenAI API with model:', openAIRequest.model);
+    console.log('🤖 Calling OpenAI API with model:', openAIRequest.model, 'temperature:', openAIRequest.temperature);
 
     let response;
     try {
@@ -499,7 +547,14 @@ serve(async (req) => {
 
     console.log('🎉 Successfully processed recipe:', parsedRecipe.title);
 
-    const responseData: any = { parsedRecipe };
+    const responseData: any = { 
+      parsedRecipe,
+      extractionInfo: {
+        hasStructuredData: !!structuredData,
+        textLength: processedText.length,
+        temperature: openAIRequest.temperature
+      }
+    };
     
     if (websiteImages.length > 0) {
       responseData.websiteImages = websiteImages;

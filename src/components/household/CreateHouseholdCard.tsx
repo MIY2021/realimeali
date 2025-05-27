@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useHousehold } from "@/contexts/HouseholdContext";
-import { Plus, AlertCircle, CheckCircle } from "lucide-react";
+import { Plus, AlertCircle, Check } from "lucide-react";
 
 export const CreateHouseholdCard = () => {
   const [householdName, setHouseholdName] = useState("");
@@ -107,7 +106,7 @@ export const CreateHouseholdCard = () => {
         
         {success && (
           <Alert className="border-green-200 bg-green-50 text-green-800">
-            <CheckCircle className="h-4 w-4 text-green-600" />
+            <Check className="h-4 w-4 text-green-600" />
             <AlertDescription className="text-green-800">{success}</AlertDescription>
           </Alert>
         )}
