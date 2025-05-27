@@ -7,6 +7,7 @@ import { useHousehold } from "@/contexts/HouseholdContext";
 import { useMealPlan } from "@/contexts/MealPlanContext";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { createMealTypeToCategories } from "@/utils/mealCategoryUtils";
+import { toast } from "sonner";
 
 export const useMealPlanActions = (week: 1 | 2) => {
   const { user } = useAuth();
@@ -20,7 +21,7 @@ export const useMealPlanActions = (week: 1 | 2) => {
     clearWeek,
     reorderMealPlans
   } = useMealPlan();
-  const { toast } = useToast();
+  const { toast: useToastHook } = useToast();
 
   const [addMealModal, setAddMealModal] = useState<{
     open: boolean;
@@ -50,7 +51,7 @@ export const useMealPlanActions = (week: 1 | 2) => {
     console.log("Opening add meal modal for:", mealType);
     
     if (!user) {
-      toast({
+      useToastHook({
         title: "Login Required",
         description: "You need to log in to add meals.",
         variant: "destructive",
@@ -59,7 +60,7 @@ export const useMealPlanActions = (week: 1 | 2) => {
     }
 
     if (!currentHousehold) {
-      toast({
+      useToastHook({
         title: "No Household Selected",
         description: "Please select or create a household to manage meal plans.",
         variant: "destructive",
@@ -72,7 +73,7 @@ export const useMealPlanActions = (week: 1 | 2) => {
 
   const handleCreateLeftover = (mealPlan: MealPlan, recipe: Recipe) => {
     if (!user || !currentHousehold) {
-      toast({
+      useToastHook({
         title: "Login Required",
         description: "You need to log in to create leftovers.",
         variant: "destructive",
@@ -105,7 +106,7 @@ export const useMealPlanActions = (week: 1 | 2) => {
         householdId: currentHousehold.id,
       }, week);
 
-      toast({
+      useToastHook({
         title: "Leftover Lunch Added",
         description: `${servings} servings of ${recipe.title} scheduled for lunch leftovers.`,
       });
@@ -113,7 +114,7 @@ export const useMealPlanActions = (week: 1 | 2) => {
       setLeftoverModal({ open: false, mealPlan: null, recipe: null });
     } catch (error) {
       console.error("Error creating leftover:", error);
-      toast({
+      useToastHook({
         title: "Error",
         description: "Failed to create leftover. Please try again.",
         variant: "destructive",
@@ -148,7 +149,7 @@ export const useMealPlanActions = (week: 1 | 2) => {
       setAddMealModal({ open: false, mealType: null });
     } catch (error) {
       console.error("Error adding meal:", error);
-      toast({
+      useToastHook({
         title: "Error",
         description: "Failed to add meal. Please try again.",
         variant: "destructive",
@@ -159,9 +160,30 @@ export const useMealPlanActions = (week: 1 | 2) => {
   const handleClearAll = async () => {
     const currentWeekPlans = getMealPlansForWeek(week);
     if (currentWeekPlans.length === 0) return;
-    if (!window.confirm("Clear the entire meal plan?")) return;
     
-    await clearWeek(week);
+    toast("Clear the entire meal plan?", {
+      description: "This action cannot be undone.",
+      action: {
+        label: "Clear All",
+        onClick: async () => {
+          try {
+            await clearWeek(week);
+            toast.success("Meal plan cleared", {
+              description: `Week ${week} meal plan has been cleared.`
+            });
+          } catch (error) {
+            console.error("Error clearing meal plan:", error);
+            toast.error("Error", {
+              description: "Failed to clear meal plan. Please try again."
+            });
+          }
+        }
+      },
+      cancel: {
+        label: "Cancel",
+        onClick: () => {}
+      }
+    });
   };
 
   const handleShareMealPlan = () => {
@@ -184,7 +206,7 @@ export const useMealPlanActions = (week: 1 | 2) => {
     } else {
       navigator.clipboard.writeText(shareText);
     }
-    toast({
+    useToastHook({
       title: "Copied Meal Plan",
       description: "Meal plan copied to clipboard!",
     });
@@ -204,13 +226,13 @@ export const useMealPlanActions = (week: 1 | 2) => {
     try {
       await reorderMealPlans(mealType, week, sourceIndex, destinationIndex);
       
-      toast({
+      useToastHook({
         title: "Meals Reordered",
         description: `${mealType} meals have been reordered.`,
       });
     } catch (error) {
       console.error("Error reordering meals:", error);
-      toast({
+      useToastHook({
         title: "Error",
         description: "Failed to reorder meals. Please try again.",
         variant: "destructive",

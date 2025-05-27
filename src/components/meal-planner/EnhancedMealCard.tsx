@@ -1,7 +1,7 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Trash2, UtensilsCrossed, GripVertical } from "lucide-react";
+import { Trash2, GripVertical } from "lucide-react";
 import { Link } from "react-router-dom";
 import { MealPlan, Recipe } from "@/types";
 import { RecipeImage } from "@/components/ui/recipe-image";
@@ -129,16 +129,15 @@ export function EnhancedMealCard({
             )}
           </div>
           
-          <div className={`flex items-center gap-${isMobile ? '0.5' : '1'} flex-shrink-0`}>
+          <div className={`flex items-center gap-${isMobile ? '2' : '3'} flex-shrink-0`}>
             {showLeftoverButton && (
               <Button
                 variant="ghost"
                 size={isMobile ? "sm" : "sm"}
                 onClick={() => onCreateLeftover(mealPlan, displayRecipe)}
-                className={`text-orange-600 hover:text-orange-700 hover:bg-orange-50 flex items-center gap-1 ${isMobile ? 'h-8 px-1.5' : ''}`}
+                className={`text-orange-600 hover:text-orange-700 hover:bg-orange-50 ${isMobile ? 'h-8 px-2' : 'px-2'}`}
                 title="Create lunch leftovers"
               >
-                <UtensilsCrossed className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
                 <span className={`${isMobile ? 'text-xs' : 'text-xs'}`}>+ Lunch</span>
               </Button>
             )}
