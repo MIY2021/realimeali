@@ -1,20 +1,21 @@
+
 import { useState, useEffect } from "react";
 import ShoppingListHeader from "@/components/shopping-list/ShoppingListHeader";
 import ShoppingListWeekSelector from "@/components/shopping-list/ShoppingListWeekSelector";
 import ShoppingListSkeleton from "@/components/shopping-list/ShoppingListSkeleton";
-import ShoppingListItem from "@/components/shopping-list/ShoppingListItem";
-import ShoppingListProgress from "@/components/shopping-list/ShoppingListProgress";
+import ShoppingListGenerationProgress from "@/components/shopping-list/ShoppingListGenerationProgress";
+import ShoppingListCreationInfo from "@/components/shopping-list/ShoppingListCreationInfo";
+import ShoppingListItems from "@/components/shopping-list/ShoppingListItems";
+import ShoppingListEmptyState from "@/components/shopping-list/ShoppingListEmptyState";
 import { useShoppingList } from "@/hooks/useShoppingList";
-import { useShoppingListGenerator } from "@/hooks/useShoppingListGenerator";
+import { useShoppingListGeneration } from "@/hooks/useShoppingListGeneration";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { useMealPlan } from "@/contexts/MealPlanContext";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { useToast } from "@/hooks/use-toast";
 import { useScrollPosition } from "@/hooks/useScrollPosition";
-import { Card, CardContent } from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 
@@ -26,18 +27,9 @@ export default function ShoppingList() {
   const { recipes, isLoading: recipesLoading } = useRecipes();
   const { getMealPlansForWeek } = useMealPlan();
   const { toast } = useToast();
-  const { generateAndSaveFromMealPlans } = useShoppingListGenerator();
   const { setScrollKey, restoreScrollPosition, saveScrollPosition } = useScrollPosition();
-  const isMobile = useIsMobile();
   const [weekNumber, setWeekNumber] = useState<1 | 2>(1);
   const [copiedItemId, setCopiedItemId] = useState<string | null>(null);
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [generationProgress, setGenerationProgress] = useState({
-    step: 0,
-    totalSteps: 5,
-    currentAction: ''
-  });
-  const [lastGenerated, setLastGenerated] = useState<Date | null>(null);
   
   const {
     shoppingList,
@@ -46,6 +38,14 @@ export default function ShoppingList() {
     clearAll,
     refreshList,
   } = useShoppingList(weekNumber);
+
+  const {
+    isGenerating,
+    generationProgress,
+    lastGenerated,
+    setLastGenerated,
+    handleGenerate
+  } = useShoppingListGeneration(weekNumber, clearAll, refreshList);
 
   // Set up scroll position management
   useEffect(() => {
@@ -95,7 +95,7 @@ export default function ShoppingList() {
         setLastGenerated(new Date(oldestItem.createdAt));
       }
     }
-  }, [shoppingList]);
+  }, [shoppingList, setLastGenerated]);
 
   const mealPlans = getMealPlansForWeek(weekNumber);
   const hasMealPlans = mealPlans.length > 0;
@@ -140,98 +140,6 @@ export default function ShoppingList() {
         title: "Copied to clipboard",
         description: "Shopping list has been copied to your clipboard",
       });
-    }
-  };
-
-  const handleGenerate = async () => {
-    if (!user || !currentHousehold) {
-      toast({
-        title: "Error",
-        description: "Please log in and select a household",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (recipesLoading) {
-      toast({
-        title: "Please wait",
-        description: "Recipes are still loading...",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (recipes.length === 0) {
-      toast({
-        title: "No recipes",
-        description: "No recipes found. Please add some recipes first.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!hasMealPlans) {
-      toast({
-        title: "No meal plans",
-        description: `Please add some meal plans for week ${weekNumber} first`,
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsGenerating(true);
-    setGenerationProgress({ step: 1, totalSteps: 5, currentAction: 'Clearing old shopping list...' });
-
-    try {
-      // Clear the UI immediately for better user experience
-      await clearAll();
-      
-      setGenerationProgress({ step: 2, totalSteps: 5, currentAction: 'Collecting ingredients from meal plans...' });
-      
-      setGenerationProgress({ step: 3, totalSteps: 5, currentAction: 'Consolidating similar ingredients...' });
-      
-      const startTime = performance.now();
-      const result = await generateAndSaveFromMealPlans(weekNumber);
-      const endTime = performance.now();
-      const duration = Math.round(endTime - startTime);
-      
-      setGenerationProgress({ step: 4, totalSteps: 5, currentAction: 'Saving to database...' });
-      
-      // Set the generation time
-      setLastGenerated(new Date());
-      
-      // Force refresh the list after generation
-      setTimeout(async () => {
-        setGenerationProgress({ step: 5, totalSteps: 5, currentAction: 'Complete!' });
-        await refreshList();
-        
-        if (result && result.length > 0) {
-          toast({
-            title: "Shopping list generated!",
-            description: `Week ${weekNumber} shopping list created with ${result.length} items in ${duration}ms`,
-          });
-        } else {
-          toast({
-            title: "No items created",
-            description: "No ingredients were found to add to the shopping list",
-            variant: "destructive",
-          });
-        }
-      }, 500);
-      
-    } catch (error) {
-      console.error('Error generating shopping list:', error);
-      toast({
-        title: "Error",
-        description: `Failed to generate shopping list: ${error.message || 'Unknown error'}`,
-        variant: "destructive",
-      });
-    } finally {
-      setTimeout(() => {
-        setIsGenerating(false);
-        setGenerationProgress({ step: 0, totalSteps: 5, currentAction: '' });
-      }, 1000);
     }
   };
 
@@ -285,66 +193,33 @@ export default function ShoppingList() {
             hasItems={shoppingList.length > 0}
           />
 
-          <ShoppingListProgress
-            step={generationProgress.step}
-            totalSteps={generationProgress.totalSteps}
-            currentAction={generationProgress.currentAction}
-            isVisible={isGenerating}
+          <ShoppingListGenerationProgress
+            isGenerating={isGenerating}
+            generationProgress={generationProgress}
           />
 
           {isLoading ? (
             <ShoppingListSkeleton />
           ) : (
-            <div 
-              className={`space-y-${isMobile ? '2' : '3'}`}
-              data-shopping-list-container
-            >
+            <>
               {shoppingList.length === 0 ? (
-                <Card>
-                  <CardContent className="p-6 text-center">
-                    <p className="text-muted-foreground mb-4">
-                      {hasMealPlans 
-                        ? `No shopping list generated yet for week ${weekNumber}.`
-                        : `No meal plans found for week ${weekNumber}.`
-                      }
-                    </p>
-                    {!hasMealPlans && (
-                      <p className="text-sm text-muted-foreground">
-                        Add some meal plans first to generate a shopping list.
-                      </p>
-                    )}
-                  </CardContent>
-                </Card>
+                <ShoppingListEmptyState
+                  weekNumber={weekNumber}
+                  hasMealPlans={hasMealPlans}
+                />
               ) : (
                 <>
-                  {lastGenerated && (
-                    <div className="mb-3">
-                      <p className="text-xs text-muted-foreground">
-                        Shopping list created on {lastGenerated.toLocaleDateString()} at {lastGenerated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </p>
-                    </div>
-                  )}
-                  {shoppingList.map((item) => (
-                    <Card key={item.id} className="w-full" data-shopping-list-item>
-                      <CardContent className={`${isMobile ? 'p-2' : 'p-3'}`}>
-                        <ShoppingListItem
-                          id={item.id}
-                          name={item.name}
-                          quantity={item.consolidatedQuantity || 1}
-                          unit={item.consolidatedUnit}
-                          isChecked={item.isChecked}
-                          recipeIds={[...new Set(item.recipeIds)]}
-                          copiedItemId={copiedItemId}
-                          onCheck={(checked) => toggleItemChecked(item.id)}
-                          onCopy={() => handleCopyItem(item.id)}
-                          getRecipeNames={getRecipeNames}
-                        />
-                      </CardContent>
-                    </Card>
-                  ))}
+                  <ShoppingListCreationInfo lastGenerated={lastGenerated} />
+                  <ShoppingListItems
+                    shoppingList={shoppingList}
+                    copiedItemId={copiedItemId}
+                    onToggleItem={toggleItemChecked}
+                    onCopyItem={handleCopyItem}
+                    getRecipeNames={getRecipeNames}
+                  />
                 </>
               )}
-            </div>
+            </>
           )}
         </>
       )}
