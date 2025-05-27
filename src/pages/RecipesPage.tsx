@@ -72,7 +72,7 @@ export default function RecipesPage() {
       <div className="flex flex-col gap-4 mb-6 sm:flex-row sm:justify-between sm:items-center">
         <div className="space-y-2">
           <h1 className="text-2xl sm:text-3xl font-bold text-navy flex items-center gap-2">
-            <UtensilsCrossed className="h-6 w-6 sm:h-8 sm:w-8" />
+            <UtensilsCrossed className="h-6 w-6 sm:h-8 sm:w-8 text-sage" />
             <span className="truncate">
               {currentHousehold ? `${currentHousehold.name} Recipes` : 'Recipes'}
             </span>
