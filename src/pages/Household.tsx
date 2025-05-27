@@ -5,7 +5,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { JoinHouseholdCard } from "@/components/household/JoinHouseholdCard";
 import { HouseholdDetailsCard } from "@/components/household/HouseholdDetailsCard";
 import { HouseholdMembersCard } from "@/components/household/HouseholdMembersCard";
-import { InviteMembersCard } from "@/components/household/InviteMembersCard";
 import { JoinRequestsCard } from "@/components/household/JoinRequestsCard";
 import { CreateHouseholdCard } from "@/components/household/CreateHouseholdCard";
 
@@ -14,7 +13,6 @@ export default function Household() {
   const { currentHousehold, setCurrentHousehold, householdMembers, isLoadingMembers, removeMember } = useHousehold();
 
   const isOwner = currentHousehold && user && currentHousehold.created_by === user.id;
-  const householdCode = currentHousehold ? currentHousehold.id.slice(0, 6).toUpperCase() : "";
 
   if (!user) {
     return (
@@ -62,13 +60,6 @@ export default function Household() {
           onRemoveMember={removeMember}
           isLoading={isLoadingMembers}
         />
-
-        {isOwner && (
-          <InviteMembersCard
-            household={currentHousehold}
-            householdCode={householdCode}
-          />
-        )}
       </div>
     </div>
   );

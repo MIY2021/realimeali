@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -149,11 +150,6 @@ export const HouseholdMembersCard = ({ members, isOwner, onRemoveMember, isLoadi
                       <p className="text-sm text-muted-foreground truncate">
                         {member.profile?.email || 'No email available'}
                       </p>
-                      {member.profile?.avatar_url && (
-                        <p className="text-xs text-muted-foreground truncate">
-                          Avatar: {imageErrors.has(member.id) ? '❌ Failed' : '✅ Loaded'}
-                        </p>
-                      )}
                     </div>
                   </div>
                   <div className="flex items-center space-x-2 flex-shrink-0">
