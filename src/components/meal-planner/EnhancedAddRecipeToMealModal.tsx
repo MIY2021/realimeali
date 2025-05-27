@@ -1,10 +1,11 @@
 
 import { useState } from "react";
 import { Recipe, MealType, RecipeCategory } from "@/types";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Clock, Users, ChevronDown, ArrowLeft, X } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Clock, Users, ChevronDown, ArrowLeft, X, Search } from "lucide-react";
 import { getAllowedCategoriesForMealType } from "@/utils/mealCategoryUtils";
 
 interface EnhancedAddRecipeToMealModalProps {
@@ -61,78 +62,79 @@ export function EnhancedAddRecipeToMealModal({
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="w-[100vw] h-[100vh] max-w-none max-h-none m-0 p-0 rounded-none">
-        <div className="flex flex-col h-full">
-          {/* Header */}
-          <DialogHeader className="flex-shrink-0 p-6 border-b bg-white">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={handleClose}
-                  className="flex items-center gap-2"
-                >
-                  <ArrowLeft className="h-4 w-4" />
-                  Back
-                </Button>
-                <DialogTitle className="text-xl font-semibold">
-                  Add Recipe to {mealType.charAt(0).toUpperCase() + mealType.slice(1)}
-                </DialogTitle>
-              </div>
+    <Sheet open={open} onOpenChange={handleClose}>
+      <SheetContent side="right" className="w-full sm:max-w-full p-0 flex flex-col">
+        {/* Fixed Header */}
+        <SheetHeader className="flex-shrink-0 p-4 border-b bg-white">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
               <Button 
                 variant="ghost" 
                 size="sm" 
                 onClick={handleClose}
-                className="p-2"
+                className="flex items-center gap-2 hover:bg-gray-100"
               >
-                <X className="h-4 w-4" />
+                <ArrowLeft className="h-4 w-4" />
+                <span className="hidden sm:inline">Back</span>
               </Button>
+              <SheetTitle className="text-lg font-semibold">
+                Add Recipe to {mealType.charAt(0).toUpperCase() + mealType.slice(1)}
+              </SheetTitle>
             </div>
-          </DialogHeader>
-
-          {/* Filters */}
-          <div className="flex-shrink-0 p-6 border-b bg-gray-50">
-            <div className="flex flex-col sm:flex-row gap-4 max-w-4xl">
-              <div className="flex-1">
-                <Input
-                  placeholder="Search recipes..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full"
-                />
-              </div>
-              <div className="w-full sm:w-64 relative">
-                <select
-                  value={categoryFilter}
-                  onChange={e => setCategoryFilter(e.target.value)}
-                  className="w-full border rounded-md p-2 pr-8 appearance-none bg-white"
-                >
-                  <option value="all">All Categories</option>
-                  {availableCategories.map((category) => (
-                    <option key={category} value={category}>{category}</option>
-                  ))}
-                </select>
-                <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 pointer-events-none text-muted-foreground" />
-              </div>
-            </div>
-            
-            {mealTypeFilteredRecipes.length === 0 && (
-              <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-md">
-                <p className="text-sm text-yellow-800">
-                  <strong>No recipes available for {mealType}.</strong> 
-                  {mealType === 'dinner' 
-                    ? " Make sure you have recipes that aren't specifically marked as breakfast, lunch, or snacks."
-                    : ` Please add recipes with the "${mealType}" category.`
-                  }
-                </p>
-              </div>
-            )}
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={handleClose}
+              className="p-2 hover:bg-gray-100"
+            >
+              <X className="h-4 w-4" />
+            </Button>
           </div>
+        </SheetHeader>
 
-          {/* Recipe List */}
-          <div className="flex-1 overflow-y-auto p-6">
+        {/* Fixed Filters */}
+        <div className="flex-shrink-0 p-4 border-b bg-gray-50">
+          <div className="flex flex-col gap-3">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search recipes..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <div className="relative">
+              <select
+                value={categoryFilter}
+                onChange={e => setCategoryFilter(e.target.value)}
+                className="w-full border rounded-md p-2 pr-8 appearance-none bg-white"
+              >
+                <option value="all">All Categories</option>
+                {availableCategories.map((category) => (
+                  <option key={category} value={category}>{category}</option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 pointer-events-none text-muted-foreground" />
+            </div>
+          </div>
+          
+          {mealTypeFilteredRecipes.length === 0 && (
+            <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+              <p className="text-sm text-yellow-800">
+                <strong>No recipes available for {mealType}.</strong> 
+                {mealType === 'dinner' 
+                  ? " Make sure you have recipes that aren't specifically marked as breakfast, lunch, or snacks."
+                  : ` Please add recipes with the "${mealType}" category.`
+                }
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Scrollable Recipe List */}
+        <ScrollArea className="flex-1">
+          <div className="p-4">
             {filteredRecipes.length === 0 ? (
               <div className="text-center py-12">
                 <p className="text-muted-foreground text-lg">
@@ -152,60 +154,60 @@ export function EnhancedAddRecipeToMealModal({
                 )}
               </div>
             ) : (
-              <div className="grid gap-4 max-w-4xl">
+              <div className="space-y-3">
                 {filteredRecipes.map((recipe) => (
                   <div
                     key={recipe.id}
-                    className="border rounded-lg p-6 hover:bg-gray-50 cursor-pointer transition-colors"
+                    className="border rounded-lg p-4 hover:bg-gray-50 cursor-pointer transition-colors"
                     onClick={() => handleSelectRecipe(recipe.id)}
                   >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <h4 className="font-semibold text-lg text-navy mb-2">{recipe.title}</h4>
-                        <p className="text-muted-foreground mb-3 line-clamp-2">
-                          {recipe.description}
-                        </p>
-                        <div className="flex items-center gap-6 text-sm text-muted-foreground mb-3">
-                          <span className="flex items-center gap-1">
-                            <Clock className="h-4 w-4" />
-                            {recipe.prepTime + recipe.cookTime} min
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <Users className="h-4 w-4" />
-                            {recipe.servings} servings
-                          </span>
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                          {recipe.categories.slice(0, 4).map((category) => (
-                            <span
-                              key={category}
-                              className="inline-flex items-center rounded-full bg-sage/20 px-3 py-1 text-sm font-medium text-sage"
-                            >
-                              {category}
-                            </span>
-                          ))}
-                          {recipe.categories.length > 4 && (
-                            <span className="text-sm text-muted-foreground">
-                              +{recipe.categories.length - 4} more
-                            </span>
-                          )}
-                        </div>
-                      </div>
+                    <div className="flex items-start gap-4">
                       {recipe.image && (
                         <img
                           src={recipe.image}
                           alt={recipe.title}
-                          className="w-24 h-24 object-cover rounded-md ml-6 flex-shrink-0"
+                          className="w-16 h-16 object-cover rounded-md flex-shrink-0"
                         />
                       )}
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-semibold text-base text-navy mb-1 truncate">{recipe.title}</h4>
+                        <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
+                          {recipe.description}
+                        </p>
+                        <div className="flex items-center gap-4 text-xs text-muted-foreground mb-2">
+                          <span className="flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            {recipe.prepTime + recipe.cookTime}min
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Users className="h-3 w-3" />
+                            {recipe.servings}
+                          </span>
+                        </div>
+                        <div className="flex flex-wrap gap-1">
+                          {recipe.categories.slice(0, 3).map((category) => (
+                            <span
+                              key={category}
+                              className="inline-flex items-center rounded-full bg-sage/20 px-2 py-0.5 text-xs font-medium text-sage"
+                            >
+                              {category}
+                            </span>
+                          ))}
+                          {recipe.categories.length > 3 && (
+                            <span className="text-xs text-muted-foreground">
+                              +{recipe.categories.length - 3}
+                            </span>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 ))}
               </div>
             )}
           </div>
-        </div>
-      </DialogContent>
-    </Dialog>
+        </ScrollArea>
+      </SheetContent>
+    </Sheet>
   );
 }

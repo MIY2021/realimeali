@@ -28,22 +28,34 @@ export const useRandomMealCore = (week: 1 | 2) => {
   console.log("Current household:", currentHousehold?.id);
 
   const performMealSelection = useCallback(async (quantities: Record<MealType, number>) => {
+    console.log("=== STARTING MEAL SELECTION ===");
+    console.log("User:", user?.id);
+    console.log("Household:", currentHousehold?.id);
+    console.log("Week:", week);
+    console.log("Quantities:", quantities);
+
     if (!user || !currentHousehold) {
       console.error("Missing user or household for meal selection");
+      toast({
+        title: "Error",
+        description: "Missing user or household information.",
+        variant: "destructive",
+      });
       return;
     }
 
     setState(prev => ({ ...prev, isLoading: true }));
-    console.log("Starting meal selection with quantities:", quantities);
 
     try {
-      const mealTypeToCategories = createMealTypeToCategories();
       let totalMealsAdded = 0;
 
       for (const [mealType, quantity] of Object.entries(quantities) as [MealType, number][]) {
-        if (quantity <= 0) continue;
+        if (quantity <= 0) {
+          console.log(`Skipping ${mealType} - quantity is 0`);
+          continue;
+        }
 
-        console.log(`Selecting ${quantity} meals for ${mealType}`);
+        console.log(`Processing ${quantity} meals for ${mealType}`);
         const allowedCategories = getAllowedCategoriesForMealType(mealType);
         console.log(`Allowed categories for ${mealType}:`, allowedCategories);
 
@@ -52,7 +64,6 @@ export const useRandomMealCore = (week: 1 | 2) => {
         );
 
         console.log(`Found ${eligibleRecipes.length} eligible recipes for ${mealType}`);
-        console.log("Sample eligible recipes:", eligibleRecipes.slice(0, 3).map(r => ({ title: r.title, categories: r.categories })));
 
         if (eligibleRecipes.length === 0) {
           console.warn(`No eligible recipes found for ${mealType}`);
@@ -64,6 +75,7 @@ export const useRandomMealCore = (week: 1 | 2) => {
           continue;
         }
 
+        // Select random recipes
         const selectedRecipes = [];
         const usedRecipes = new Set();
 
@@ -71,7 +83,7 @@ export const useRandomMealCore = (week: 1 | 2) => {
           const availableRecipes = eligibleRecipes.filter(recipe => !usedRecipes.has(recipe.id));
           
           if (availableRecipes.length === 0) {
-            console.log(`Reusing recipes for ${mealType} - not enough unique recipes available`);
+            // Reuse recipes if we don't have enough unique ones
             const randomRecipe = eligibleRecipes[Math.floor(Math.random() * eligibleRecipes.length)];
             selectedRecipes.push(randomRecipe);
           } else {
@@ -83,29 +95,44 @@ export const useRandomMealCore = (week: 1 | 2) => {
 
         console.log(`Selected ${selectedRecipes.length} recipes for ${mealType}:`, selectedRecipes.map(r => r.title));
 
+        // Add each selected recipe to the meal plan
         for (const recipe of selectedRecipes) {
-          console.log(`Adding meal plan for recipe: ${recipe.title}`);
+          console.log(`Adding meal plan for recipe: ${recipe.title} (${recipe.id})`);
           
-          await addMealPlanWithLeftovers({
-            date: new Date().toISOString().split('T')[0],
-            mealType,
-            recipeId: recipe.id,
-            createdBy: user.id,
-            slotIndex: 0,
-            isLeftover: false,
-            householdId: currentHousehold.id,
-          }, week, 0, true);
+          try {
+            await addMealPlanWithLeftovers({
+              date: new Date().toISOString().split('T')[0],
+              mealType,
+              recipeId: recipe.id,
+              createdBy: user.id,
+              slotIndex: 0,
+              isLeftover: false,
+              householdId: currentHousehold.id,
+            }, week, 0, true);
 
-          totalMealsAdded++;
+            totalMealsAdded++;
+            console.log(`Successfully added meal ${totalMealsAdded}`);
+          } catch (error) {
+            console.error(`Failed to add meal for recipe ${recipe.title}:`, error);
+          }
         }
       }
 
-      console.log(`Successfully added ${totalMealsAdded} meals to week ${week}`);
+      console.log(`=== MEAL SELECTION COMPLETE ===`);
+      console.log(`Total meals added: ${totalMealsAdded}`);
       
-      toast({
-        title: "Meal Plan Generated",
-        description: `Successfully added ${totalMealsAdded} meals to Week ${week}!`,
-      });
+      if (totalMealsAdded > 0) {
+        toast({
+          title: "Meal Plan Generated",
+          description: `Successfully added ${totalMealsAdded} meals to Week ${week}!`,
+        });
+      } else {
+        toast({
+          title: "No Meals Added",
+          description: "Unable to add any meals. Please check your recipes and try again.",
+          variant: "destructive",
+        });
+      }
 
     } catch (error) {
       console.error("Error during meal selection:", error);

@@ -19,6 +19,7 @@ export function AddMealPlanDialog({
   selectedMealType,
 }: AddMealPlanDialogProps) {
   const handleSelectRecipe = (recipeId: string) => {
+    console.log("Selected recipe for manual add:", recipeId);
     onAddMealPlan(recipeId, "");
   };
 
