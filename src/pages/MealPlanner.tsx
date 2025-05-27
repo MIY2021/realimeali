@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import Layout from "@/components/layout/Layout";
 import { WeekSelector } from "@/components/meal-planner/WeekSelector";
@@ -40,16 +41,18 @@ const MealPlanner = () => {
 
   return (
     <Layout>
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
-        {/* Title with icon at the top */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <Calendar className="h-8 w-8 text-terracotta" />
-            <h1 className="text-3xl font-bold text-navy">Meal Planner</h1>
+      <div className="container max-w-7xl py-4 px-4 sm:py-8 sm:px-6">
+        {/* Title with icon */}
+        <div className="flex flex-col gap-4 mb-6 sm:flex-row sm:justify-between sm:items-center">
+          <div className="space-y-2">
+            <h1 className="text-2xl sm:text-3xl font-bold text-navy flex items-center gap-2">
+              <Calendar className="h-6 w-6 sm:h-8 sm:w-8 text-terracotta" />
+              <span>Meal Planner</span>
+            </h1>
+            <p className="text-sm sm:text-base text-muted-foreground">
+              Plan your meals for the coming weeks and generate shopping lists.
+            </p>
           </div>
-          <p className="text-muted-foreground">
-            Plan your meals for the coming weeks and generate shopping lists.
-          </p>
         </div>
 
         {/* Actions row: Generate meal plan and approval button */}

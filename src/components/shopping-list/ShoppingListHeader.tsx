@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { Share, Plus } from "lucide-react";
+import { Share, Plus, ShoppingCart } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -42,7 +42,8 @@ export default function ShoppingListHeader({
   return (
     <div className={`mb-6 ${isMobile ? 'space-y-4' : ''}`}>
       <div className="flex items-center justify-between">
-        <h1 className={`font-bold text-gray-900 ${isMobile ? 'text-2xl' : 'text-3xl'}`}>
+        <h1 className={`font-bold text-navy flex items-center gap-2 ${isMobile ? 'text-2xl' : 'text-3xl'}`}>
+          <ShoppingCart className={`text-sage ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
           Shopping List
         </h1>
         <div className="flex gap-2">
