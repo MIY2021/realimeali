@@ -1,8 +1,9 @@
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User, Trash2, Refresh } from "lucide-react";
+import { User, Trash2, RefreshCcw } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useState } from "react";
 
@@ -101,7 +102,7 @@ export const HouseholdMembersCard = ({ members, isOwner, onRemoveMember, isLoadi
             disabled={refreshingProfiles}
             className="text-terracotta hover:text-terracotta"
           >
-            <Refresh className={`h-4 w-4 mr-2 ${refreshingProfiles ? 'animate-spin' : ''}`} />
+            <RefreshCcw className={`h-4 w-4 mr-2 ${refreshingProfiles ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
         </div>
