@@ -86,7 +86,7 @@ const Header = () => {
     const handleTouchEnd = (e: TouchEvent) => {
       const touch = e.changedTouches[0];
       const endX = touch.clientX;
-      const endY = Math.abs(startY - endY);
+      const endY = touch.clientY;
       
       const deltaX = startX - endX;
       const deltaY = Math.abs(startY - endY);
