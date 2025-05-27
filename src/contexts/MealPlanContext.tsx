@@ -377,6 +377,7 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
           .update({ slot_index: index })
           .eq('id', plan.id)
           .eq('household_id', currentHousehold.id)
+          .eq('week_number', weekNumber)
       );
 
       const results = await Promise.all(updatePromises);

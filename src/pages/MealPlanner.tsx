@@ -11,6 +11,8 @@ import { useRandomMealSelection } from "@/hooks/useRandomMealSelection";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { Calendar } from "lucide-react";
+import { DragDropContext, Droppable, Draggable, DropResult } from "react-beautiful-dnd";
+import { MealType } from "@/types";
 
 const MealPlanner = () => {
   useDocumentTitle("Meal Planner");
@@ -19,6 +21,7 @@ const MealPlanner = () => {
   
   const {
     mealTypes,
+    setMealTypes,
     mealTypeToCategories,
     addMealModal,
     setAddMealModal,
@@ -38,6 +41,16 @@ const MealPlanner = () => {
   const { handleRandomize, isLoading, showReplaceDialog, setShowReplaceDialog, performMealSelection } = 
     useRandomMealSelection(currentWeek);
 
+  const handleMealTypeDragEnd = (result: DropResult) => {
+    if (!result.destination) return;
+
+    const items = Array.from(mealTypes);
+    const [reorderedItem] = items.splice(result.source.index, 1);
+    items.splice(result.destination.index, 0, reorderedItem);
+
+    setMealTypes(items);
+  };
+
   return (
     <div className="container max-w-7xl py-4 px-4 sm:py-8 sm:px-6">
       {/* Title with icon */}
@@ -53,36 +66,56 @@ const MealPlanner = () => {
         </div>
       </div>
 
-      {/* Actions row: Generate meal plan and approval button */}
+      {/* Actions row: Generate meal plan, share and clear buttons */}
       <MealPlannerActions
         onRandomize={handleRandomize}
+        onShare={handleShareMealPlan}
+        onClearAll={handleClearAll}
         isLoading={isLoading}
         currentWeek={currentWeek}
       />
 
-      {/* Week selector with share and clear buttons */}
+      {/* Week selector */}
       <WeekSelector 
         week={currentWeek} 
         onWeekChange={setCurrentWeek}
-        onShare={handleShareMealPlan}
-        onClearAll={handleClearAll}
         isLoading={isLoading}
       />
 
-      <div className="space-y-8">
-        {mealTypes.map((mealType) => (
-          <MealListSection
-            key={mealType}
-            mealType={mealType}
-            mealPlans={getMealPlansForType(mealType)}
-            getRecipeById={getRecipeById}
-            onRemoveMeal={handleRemoveMeal}
-            onAddMeal={() => handleAddMeal(mealType)}
-            onCreateLeftover={handleCreateLeftover}
-            onReorderMeals={handleReorderMeals}
-          />
-        ))}
-      </div>
+      <DragDropContext onDragEnd={handleMealTypeDragEnd}>
+        <Droppable droppableId="meal-types">
+          {(provided) => (
+            <div
+              {...provided.droppableProps}
+              ref={provided.innerRef}
+              className="space-y-8"
+            >
+              {mealTypes.map((mealType, index) => (
+                <Draggable key={mealType} draggableId={mealType} index={index}>
+                  {(provided) => (
+                    <div
+                      ref={provided.innerRef}
+                      {...provided.draggableProps}
+                    >
+                      <MealListSection
+                        mealType={mealType}
+                        mealPlans={getMealPlansForType(mealType)}
+                        getRecipeById={getRecipeById}
+                        onRemoveMeal={handleRemoveMeal}
+                        onAddMeal={() => handleAddMeal(mealType)}
+                        onCreateLeftover={handleCreateLeftover}
+                        onReorderMeals={handleReorderMeals}
+                        dragHandleProps={provided.dragHandleProps}
+                      />
+                    </div>
+                  )}
+                </Draggable>
+              ))}
+              {provided.placeholder}
+            </div>
+          )}
+        </Droppable>
+      </DragDropContext>
 
       {addMealModal.open && addMealModal.mealType && (
         <AddMealPlanDialog

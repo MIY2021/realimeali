@@ -1,60 +1,22 @@
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ListChecks, FileSpreadsheet, User, Check } from "lucide-react";
+import { ListChecks, FileSpreadsheet, Share, Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { ApprovalRequestDialog } from "@/components/meal-planner/ApprovalRequestDialog";
-import { ApprovalStatusDropdown } from "@/components/meal-planner/ApprovalStatusDropdown";
-import { useMealPlanApproval } from "@/contexts/MealPlanApprovalContext";
 
 interface MealPlannerActionsProps {
   onRandomize: () => void;
+  onShare: () => void;
+  onClearAll: () => void;
   isLoading: boolean;
   currentWeek: 1 | 2;
 }
 
 export const MealPlannerActions = ({ 
   onRandomize, 
-  isLoading,
-  currentWeek 
+  onShare,
+  onClearAll,
+  isLoading
 }: MealPlannerActionsProps) => {
-  const [approvalDialogOpen, setApprovalDialogOpen] = useState(false);
-  const { approvalRequests } = useMealPlanApproval();
-
-  // Find the current week's approval request
-  const currentWeekRequest = approvalRequests.find(
-    request => request.week_number === currentWeek && request.status !== 'expired'
-  );
-
-  const getApprovalButtonContent = () => {
-    if (!currentWeekRequest) {
-      return {
-        text: "Request Approval",
-        icon: <User className="mr-2 h-4 w-4" />,
-        onClick: () => setApprovalDialogOpen(true),
-        showDropdown: false,
-      };
-    }
-
-    if (currentWeekRequest.status === 'approved') {
-      return {
-        text: "Approved",
-        icon: <Check className="mr-2 h-4 w-4" />,
-        onClick: null,
-        showDropdown: true,
-      };
-    }
-
-    return {
-      text: "Pending Approval",
-      icon: <User className="mr-2 h-4 w-4" />,
-      onClick: null,
-      showDropdown: true,
-    };
-  };
-
-  const approvalButton = getApprovalButtonContent();
-
   return (
     <>
       <div className="flex gap-2 flex-wrap mb-4">
@@ -68,23 +30,25 @@ export const MealPlannerActions = ({
           Generate Meal Plan
         </Button>
         
-        {approvalButton.showDropdown && currentWeekRequest ? (
-          <ApprovalStatusDropdown
-            request={currentWeekRequest}
-            buttonText={approvalButton.text}
-            variant={currentWeekRequest.status === 'approved' ? "default" : "outline"}
-          />
-        ) : (
-          <Button
-            onClick={approvalButton.onClick || undefined}
-            size="sm"
-            className="bg-terracotta hover:bg-terracotta/90 flex items-center whitespace-nowrap"
-            disabled={isLoading}
-          >
-            {approvalButton.icon}
-            {approvalButton.text}
-          </Button>
-        )}
+        <Button
+          onClick={onShare}
+          size="sm"
+          variant="outline"
+          className="flex items-center"
+          disabled={isLoading}
+        >
+          <Share className="h-4 w-4" />
+        </Button>
+        
+        <Button
+          variant="outline"
+          size="sm"
+          className="text-terracotta border-terracotta hover:bg-terracotta/10 flex items-center"
+          onClick={onClearAll}
+          disabled={isLoading}
+        >
+          <Trash2 className="h-4 w-4" />
+        </Button>
       </div>
       
       <div className="flex gap-2 items-center mb-4">
@@ -95,12 +59,6 @@ export const MealPlannerActions = ({
           </Link>
         </Button>
       </div>
-
-      <ApprovalRequestDialog
-        open={approvalDialogOpen}
-        onClose={() => setApprovalDialogOpen(false)}
-        weekNumber={currentWeek}
-      />
     </>
   );
 };

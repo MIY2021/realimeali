@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { MealType, MealPlan, Recipe } from "@/types";
 import { useToast } from "@/hooks/use-toast";
@@ -32,7 +33,7 @@ export const useMealPlanActions = (week: 1 | 2) => {
     recipe: Recipe | null;
   }>({ open: false, mealPlan: null, recipe: null });
 
-  const mealTypes: MealType[] = ["dinner", "lunch", "breakfast", "snacks"];
+  const [mealTypes, setMealTypes] = useState<MealType[]>(["dinner", "lunch", "breakfast", "snacks"]);
   
   // Use dynamic category mappings
   const mealTypeToCategories = createMealTypeToCategories();
@@ -219,6 +220,7 @@ export const useMealPlanActions = (week: 1 | 2) => {
 
   return {
     mealTypes,
+    setMealTypes,
     mealTypeToCategories,
     addMealModal,
     setAddMealModal,
