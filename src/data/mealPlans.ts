@@ -15,6 +15,7 @@ export const mockMealPlans: MealPlan[] = [
     slotIndex: 0,
     isLeftover: false,
     householdId: "household-1",
+    weekNumber: 1,
   },
   {
     id: "meal-2",
@@ -28,6 +29,7 @@ export const mockMealPlans: MealPlan[] = [
     slotIndex: 0,
     isLeftover: false,
     householdId: "household-1",
+    weekNumber: 1,
   },
   {
     id: "meal-3",
@@ -41,6 +43,7 @@ export const mockMealPlans: MealPlan[] = [
     slotIndex: 0,
     isLeftover: false,
     householdId: "household-1",
+    weekNumber: 1,
   },
   {
     id: "meal-4",
@@ -54,6 +57,7 @@ export const mockMealPlans: MealPlan[] = [
     slotIndex: 0,
     isLeftover: false,
     householdId: "household-1",
+    weekNumber: 1,
   },
   {
     id: "meal-5",
@@ -67,6 +71,7 @@ export const mockMealPlans: MealPlan[] = [
     slotIndex: 0,
     isLeftover: false,
     householdId: "household-1",
+    weekNumber: 1,
   },
   {
     id: "meal-6",
@@ -80,6 +85,7 @@ export const mockMealPlans: MealPlan[] = [
     slotIndex: 0,
     isLeftover: false,
     householdId: "household-1",
+    weekNumber: 1,
   },
   {
     id: "meal-7",
@@ -93,6 +99,7 @@ export const mockMealPlans: MealPlan[] = [
     slotIndex: 0,
     isLeftover: false,
     householdId: "household-1",
+    weekNumber: 1,
   },
   {
     id: "meal-8",
@@ -106,6 +113,7 @@ export const mockMealPlans: MealPlan[] = [
     slotIndex: 0,
     isLeftover: false,
     householdId: "household-1",
+    weekNumber: 1,
   },
   {
     id: "meal-9",
@@ -119,5 +127,6 @@ export const mockMealPlans: MealPlan[] = [
     slotIndex: 0,
     isLeftover: false,
     householdId: "household-1",
+    weekNumber: 1,
   },
 ];

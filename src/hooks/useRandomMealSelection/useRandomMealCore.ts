@@ -59,6 +59,12 @@ export const useRandomMealCore = (week: 1 | 2) => {
         const allowedCategories = getAllowedCategoriesForMealType(mealType);
         console.log(`Allowed categories for ${mealType}:`, allowedCategories);
 
+        // Get existing meal plans for this meal type and week to avoid duplicates
+        const existingPlans = getMealPlansForWeek(week).filter(plan => plan.mealType === mealType);
+        const existingRecipeIds = new Set(existingPlans.map(plan => plan.recipeId));
+        console.log(`Found ${existingPlans.length} existing plans for ${mealType} in week ${week}`);
+        console.log(`Existing recipe IDs:`, Array.from(existingRecipeIds));
+
         const eligibleRecipes = recipes.filter(recipe => 
           allowedCategories.some(category => recipe.categories.includes(category))
         );
@@ -75,21 +81,34 @@ export const useRandomMealCore = (week: 1 | 2) => {
           continue;
         }
 
-        // Select random recipes
+        // First, try to select unique recipes (not already in the week for this meal type)
+        const uniqueEligibleRecipes = eligibleRecipes.filter(recipe => !existingRecipeIds.has(recipe.id));
+        console.log(`Found ${uniqueEligibleRecipes.length} unique eligible recipes for ${mealType}`);
+
+        // Select random recipes, preferring unique ones
         const selectedRecipes = [];
         const usedRecipes = new Set();
 
         for (let i = 0; i < quantity; i++) {
-          const availableRecipes = eligibleRecipes.filter(recipe => !usedRecipes.has(recipe.id));
+          let availableRecipes = uniqueEligibleRecipes.filter(recipe => !usedRecipes.has(recipe.id));
           
+          // If we don't have enough unique recipes, fall back to all eligible recipes
           if (availableRecipes.length === 0) {
-            // Reuse recipes if we don't have enough unique ones
-            const randomRecipe = eligibleRecipes[Math.floor(Math.random() * eligibleRecipes.length)];
-            selectedRecipes.push(randomRecipe);
-          } else {
-            const randomRecipe = availableRecipes[Math.floor(Math.random() * availableRecipes.length)];
-            selectedRecipes.push(randomRecipe);
-            usedRecipes.add(randomRecipe.id);
+            availableRecipes = eligibleRecipes.filter(recipe => !usedRecipes.has(recipe.id));
+            
+            // If still no available recipes, reuse any recipe
+            if (availableRecipes.length === 0) {
+              availableRecipes = eligibleRecipes;
+            }
+          }
+          
+          const randomRecipe = availableRecipes[Math.floor(Math.random() * availableRecipes.length)];
+          selectedRecipes.push(randomRecipe);
+          usedRecipes.add(randomRecipe.id);
+          
+          // Show warning if we're adding duplicates
+          if (existingRecipeIds.has(randomRecipe.id)) {
+            console.warn(`Adding duplicate recipe ${randomRecipe.title} for ${mealType} in week ${week}`);
           }
         }
 
@@ -108,6 +127,7 @@ export const useRandomMealCore = (week: 1 | 2) => {
               slotIndex: 0,
               isLeftover: false,
               householdId: currentHousehold.id,
+              weekNumber: week,
             }, week, 0, true);
 
             totalMealsAdded++;
@@ -144,7 +164,7 @@ export const useRandomMealCore = (week: 1 | 2) => {
     } finally {
       setState(prev => ({ ...prev, isLoading: false }));
     }
-  }, [user, currentHousehold, recipes, addMealPlanWithLeftovers, week, toast]);
+  }, [user, currentHousehold, recipes, addMealPlanWithLeftovers, week, toast, getMealPlansForWeek]);
 
   return {
     state,

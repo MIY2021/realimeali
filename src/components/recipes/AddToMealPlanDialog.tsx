@@ -61,6 +61,7 @@ export function AddToMealPlanDialog({ recipe, open, onOpenChange }: AddToMealPla
         slotIndex: 0,
         isLeftover: false,
         householdId: recipe.householdId,
+        weekNumber: selectedWeek,
       }, selectedWeek);
 
       // Show confirmation

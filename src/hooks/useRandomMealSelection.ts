@@ -2,6 +2,7 @@
 import { MealType } from "@/types";
 import { useRandomMealCore } from "./useRandomMealSelection/useRandomMealCore";
 import { useRandomMealValidation } from "./useRandomMealSelection/useRandomMealValidation";
+import { useMealPlan } from "@/contexts/MealPlanContext";
 import { MealSelectionCallbacks } from "./useRandomMealSelection/types";
 
 export { DEFAULT_MEAL_QUANTITIES } from "./useRandomMealSelection/types";
@@ -9,6 +10,7 @@ export { DEFAULT_MEAL_QUANTITIES } from "./useRandomMealSelection/types";
 export const useRandomMealSelection = (week: 1 | 2): MealSelectionCallbacks & { isLoading: boolean; showReplaceDialog: boolean; showQuantityDialog: boolean; setShowReplaceDialog: (show: boolean) => void; setShowQuantityDialog: (show: boolean) => void } => {
   const { state, setState, performMealSelection, getMealPlansForWeek, recipes, user, currentHousehold } = useRandomMealCore(week);
   const { validateUserAndHousehold, validateRecipes } = useRandomMealValidation();
+  const { clearWeek } = useMealPlan();
 
   const handleRandomize = async () => {
     console.log("=== HANDLE RANDOMIZE CLICKED ===");
@@ -39,9 +41,18 @@ export const useRandomMealSelection = (week: 1 | 2): MealSelectionCallbacks & { 
     setState(prev => ({ ...prev, showQuantityDialog: true }));
   };
 
-  const handleReplaceConfirm = () => {
-    console.log("Replace confirmed - showing quantity dialog");
-    setState(prev => ({ ...prev, showReplaceDialog: false, showQuantityDialog: true }));
+  const handleReplaceConfirm = async () => {
+    console.log("Replace confirmed - clearing week and showing quantity dialog");
+    setState(prev => ({ ...prev, showReplaceDialog: false }));
+    
+    // Clear the existing week first
+    try {
+      await clearWeek(week);
+      console.log("Week cleared successfully, showing quantity dialog");
+      setState(prev => ({ ...prev, showQuantityDialog: true }));
+    } catch (error) {
+      console.error("Error clearing week:", error);
+    }
   };
 
   const handleQuantityConfirm = async (quantities: Record<MealType, number>) => {
