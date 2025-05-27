@@ -1,16 +1,16 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { Link } from "react-router-dom";
 import { AddMealWithLeftoversDialog } from "@/components/meal-planner/AddMealWithLeftoversDialog";
 import { LeftoverServingsDialog } from "@/components/meal-planner/LeftoverServingsDialog";
-import { ApprovalNotificationBanner } from "@/components/meal-planner/ApprovalNotificationBanner";
+import { MealPlanReplaceDialog } from "@/components/meal-planner/MealPlanReplaceDialog";
 import MealListSection from "@/components/MealListSection";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { useMealPlan } from "@/contexts/MealPlanContext";
-import { useMealPlanApproval } from "@/contexts/MealPlanApprovalContext";
 import { useRecipesLoader } from "@/hooks/useRecipesLoader";
 import { useMealPlanActions } from "@/hooks/useMealPlanActions";
 import { useRandomMealSelection } from "@/hooks/useRandomMealSelection";
@@ -28,12 +28,12 @@ export default function MealPlanner() {
   const { user } = useAuth();
   const { recipes, isLoading: recipesLoading } = useRecipes();
   const { currentHousehold } = useHousehold();
-  const { isLoading: mealPlansLoading } = useMealPlan();
-  const { pendingRequests } = useMealPlanApproval();
+  const { isLoading: mealPlansLoading, getMealPlansForWeek } = useMealPlan();
   const isMobile = useIsMobile();
   
   const [week, setWeek] = useState<1 | 2>(1);
   const [mealTypeOrder, setMealTypeOrder] = useState<MealType[]>(["dinner", "lunch", "breakfast", "snacks"]);
+  const [showReplaceDialog, setShowReplaceDialog] = useState(false);
   
   // Load recipes automatically
   useRecipesLoader();
@@ -54,8 +54,7 @@ export default function MealPlanner() {
     handleShareMealPlan,
   } = useMealPlanActions(week);
 
-  // Updated to use simplified signature
-  const { handleRandomMealSelection } = useRandomMealSelection(week, mealTypeOrder);
+  const { handleRandomMealSelection, performMealSelection } = useRandomMealSelection(week, mealTypeOrder);
 
   const isLoading = recipesLoading || mealPlansLoading;
   const getRecipeById = (id: string) => recipes.find(r => r.id === id);
@@ -70,10 +69,13 @@ export default function MealPlanner() {
     setMealTypeOrder(newOrder);
   };
 
-  // Filter pending requests for current week
-  const currentWeekPendingRequests = pendingRequests.filter(
-    request => request.week_number === week
-  );
+  const handleRandomizeClick = async () => {
+    await handleRandomMealSelection(() => setShowReplaceDialog(true));
+  };
+
+  const handleConfirmReplace = async () => {
+    await performMealSelection();
+  };
 
   return (
     <div className={`w-full mx-auto px-4 sm:px-6 lg:px-8 ${isMobile ? 'py-4' : 'py-8'} ${!isMobile ? 'max-w-2xl' : ''}`}>
@@ -106,7 +108,7 @@ export default function MealPlanner() {
           ) : (
             <>
               <MealPlannerActions
-                onRandomize={handleRandomMealSelection}
+                onRandomize={handleRandomizeClick}
                 onShare={handleShareMealPlan}
                 onClearAll={handleClearAll}
                 isLoading={isLoading}
@@ -114,14 +116,6 @@ export default function MealPlanner() {
               />
               
               <WeekSelector week={week} onWeekChange={setWeek} />
-
-              {/* Show approval notification banners for current week */}
-              {currentWeekPendingRequests.map(request => (
-                <ApprovalNotificationBanner 
-                  key={request.id} 
-                  request={request} 
-                />
-              ))}
               
               {recipes.length === 0 ? (
                 <div className="py-10 text-center">
@@ -188,6 +182,13 @@ export default function MealPlanner() {
                     mealPlan={leftoverModal.mealPlan}
                     recipe={leftoverModal.recipe}
                     onConfirm={onLeftoverConfirm}
+                  />
+
+                  <MealPlanReplaceDialog
+                    open={showReplaceDialog}
+                    onOpenChange={setShowReplaceDialog}
+                    onConfirm={handleConfirmReplace}
+                    weekNumber={week}
                   />
                 </>
               )}

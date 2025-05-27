@@ -57,41 +57,8 @@ export const useRandomMealSelection = (
     return result;
   };
 
-  const handleRandomMealSelection = async () => {
+  const performMealSelection = async () => {
     console.log("Starting random meal selection...");
-    
-    if (!user) {
-      toast({
-        title: "Login Required",
-        description: "You need to log in to randomize meals.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!currentHousehold) {
-      toast({
-        title: "No Household Selected",
-        description: "Please select or create a household to manage meal plans.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (recipes.length === 0) {
-      toast({
-        title: "No Recipes Available",
-        description: "You need to create some recipes first before randomizing meals.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const currentWeekPlans = getMealPlansForWeek(week);
-    if (currentWeekPlans.length > 0) {
-      if (!window.confirm("This will overwrite your current meal list. Continue?"))
-        return;
-    }
     
     try {
       console.log("Clearing week", week);
@@ -146,18 +113,18 @@ export const useRandomMealSelection = (
       
       if (hasNoRecipesWarning) {
         toast({
-          title: "Meal Plan Partially Randomised",
+          title: "Meal Plan Partially Generated",
           description: "Some meal types were skipped due to lack of recipes with appropriate categories. Consider adding more recipes with Breakfast, Lunch, or Snacks categories.",
           variant: "destructive",
         });
       } else if (partialResults.length > 0) {
         toast({
-          title: "Meal Plan Randomised",
+          title: "Meal Plan Generated",
           description: `Your meals have been chosen! Note: ${partialResults.join(', ')} - not enough recipes available for full quantities.`,
         });
       } else {
         toast({
-          title: "Meal Plan Randomised",
+          title: "Meal Plan Generated",
           description: "Your meals have been chosen from your recipe collection based on meal type categories!",
         });
       }
@@ -165,11 +132,54 @@ export const useRandomMealSelection = (
       console.error("Error during random meal selection:", error);
       toast({
         title: "Error",
-        description: "Failed to randomize meal plan. Please try again.",
+        description: "Failed to generate meal plan. Please try again.",
         variant: "destructive",
       });
     }
   };
 
-  return { handleRandomMealSelection };
+  const handleRandomMealSelection = async (onConfirmReplace?: () => void) => {
+    if (!user) {
+      toast({
+        title: "Login Required",
+        description: "You need to log in to generate meals.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!currentHousehold) {
+      toast({
+        title: "No Household Selected",
+        description: "Please select or create a household to manage meal plans.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (recipes.length === 0) {
+      toast({
+        title: "No Recipes Available",
+        description: "You need to create some recipes first before generating meals.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const currentWeekPlans = getMealPlansForWeek(week);
+    if (currentWeekPlans.length > 0) {
+      // Show the replacement dialog via callback
+      if (onConfirmReplace) {
+        onConfirmReplace();
+        return;
+      }
+    }
+    
+    await performMealSelection();
+  };
+
+  return { 
+    handleRandomMealSelection, 
+    performMealSelection 
+  };
 };

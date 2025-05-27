@@ -1,9 +1,11 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ListChecks, Share, FileSpreadsheet, Trash2, User } from "lucide-react";
+import { ListChecks, Share, FileSpreadsheet, Trash2, User, Check } from "lucide-react";
 import { Link } from "react-router-dom";
 import { ApprovalRequestDialog } from "@/components/meal-planner/ApprovalRequestDialog";
+import { ApprovalStatusDropdown } from "@/components/meal-planner/ApprovalStatusDropdown";
+import { useMealPlanApproval } from "@/contexts/MealPlanApprovalContext";
 
 interface MealPlannerActionsProps {
   onRandomize: () => void;
@@ -21,6 +23,41 @@ export const MealPlannerActions = ({
   currentWeek 
 }: MealPlannerActionsProps) => {
   const [approvalDialogOpen, setApprovalDialogOpen] = useState(false);
+  const { approvalRequests } = useMealPlanApproval();
+
+  // Find the current week's approval request
+  const currentWeekRequest = approvalRequests.find(
+    request => request.week_number === currentWeek && request.status !== 'expired'
+  );
+
+  const getApprovalButtonContent = () => {
+    if (!currentWeekRequest) {
+      return {
+        text: "Request Approval",
+        icon: <User className="mr-2 h-4 w-4" />,
+        onClick: () => setApprovalDialogOpen(true),
+        showDropdown: false,
+      };
+    }
+
+    if (currentWeekRequest.status === 'approved') {
+      return {
+        text: "Approved",
+        icon: <Check className="mr-2 h-4 w-4" />,
+        onClick: null,
+        showDropdown: true,
+      };
+    }
+
+    return {
+      text: "Pending Approval",
+      icon: <User className="mr-2 h-4 w-4" />,
+      onClick: null,
+      showDropdown: true,
+    };
+  };
+
+  const approvalButton = getApprovalButtonContent();
 
   return (
     <>
@@ -32,17 +69,27 @@ export const MealPlannerActions = ({
           disabled={isLoading}
         >
           <FileSpreadsheet className="mr-2 h-4 w-4" />
-          Randomise
+          Generate Meal Plan
         </Button>
-        <Button
-          onClick={() => setApprovalDialogOpen(true)}
-          size="sm"
-          className="bg-terracotta hover:bg-terracotta/90 flex items-center whitespace-nowrap"
-          disabled={isLoading}
-        >
-          <User className="mr-2 h-4 w-4" />
-          Request Approval
-        </Button>
+        
+        {approvalButton.showDropdown && currentWeekRequest ? (
+          <ApprovalStatusDropdown
+            request={currentWeekRequest}
+            buttonText={approvalButton.text}
+            variant={currentWeekRequest.status === 'approved' ? "default" : "outline"}
+          />
+        ) : (
+          <Button
+            onClick={approvalButton.onClick || undefined}
+            size="sm"
+            className="bg-terracotta hover:bg-terracotta/90 flex items-center whitespace-nowrap"
+            disabled={isLoading}
+          >
+            {approvalButton.icon}
+            {approvalButton.text}
+          </Button>
+        )}
+        
         <Button
           onClick={onShare}
           size="sm"
