@@ -68,8 +68,9 @@ export const useRandomMealSelection = (week: 1 | 2) => {
       await clearWeek(week);
       
       let allSelectedIds = new Set<string>();
-      let hasNoRecipesWarning = false;
+      let totalMealsAdded = 0;
       let partialResults: string[] = [];
+      let skippedMealTypes: string[] = [];
       
       for (const mealType of mealTypes) {
         console.log(`Selecting recipes for ${mealType}...`);
@@ -85,7 +86,7 @@ export const useRandomMealSelection = (week: 1 | 2) => {
         
         if (unique.length === 0) {
           console.warn(`No recipes available for ${mealType} with categories: ${allowedCategories.join(', ')}`);
-          hasNoRecipesWarning = true;
+          skippedMealTypes.push(mealType);
           continue;
         }
         
@@ -109,26 +110,33 @@ export const useRandomMealSelection = (week: 1 | 2) => {
           }, week);
           
           allSelectedIds.add(recipe.id);
+          totalMealsAdded++;
         }
       }
       
       console.log("Random meal selection completed");
       
-      if (hasNoRecipesWarning) {
+      // Provide appropriate feedback based on results
+      if (totalMealsAdded === 0) {
+        toast({
+          title: "No Meals Generated",
+          description: "No recipes were found with the appropriate categories for meal planning. Try adding more recipes with Breakfast, Lunch, or Snacks categories.",
+          variant: "destructive",
+        });
+      } else if (skippedMealTypes.length > 0) {
         toast({
           title: "Meal Plan Partially Generated",
-          description: "Some meal types were skipped due to lack of recipes with appropriate categories. Consider adding more recipes with Breakfast, Lunch, or Snacks categories.",
-          variant: "destructive",
+          description: `Generated ${totalMealsAdded} meals! Skipped ${skippedMealTypes.join(', ')} due to no available recipes with appropriate categories.`,
         });
       } else if (partialResults.length > 0) {
         toast({
           title: "Meal Plan Generated",
-          description: `Your meals have been chosen! Note: ${partialResults.join(', ')} - not enough recipes available for full quantities.`,
+          description: `Generated ${totalMealsAdded} meals! Note: ${partialResults.join(', ')} - not enough recipes available for full quantities.`,
         });
       } else {
         toast({
           title: "Meal Plan Generated",
-          description: "Your meals have been chosen from your recipe collection based on meal type categories!",
+          description: `Successfully generated ${totalMealsAdded} meals from your recipe collection!`,
         });
       }
     } catch (error) {
