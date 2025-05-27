@@ -36,7 +36,7 @@ export default function CreateRecipePage() {
             isMobile={false}
             onCancel={handleCancel}
             onSave={onSave}
-            showBackButton={true}
+            showBackButton={false}
           />
         </div>
       </div>
