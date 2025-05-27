@@ -15,7 +15,7 @@ import { useRecipes } from "@/contexts/RecipesContext";
 const MealPlanner = () => {
   useDocumentTitle("Meal Planner");
   const [currentWeek, setCurrentWeek] = useState<1 | 2>(1);
-  const { getRecipeById } = useRecipes();
+  const { getRecipeById, recipes } = useRecipes();
   
   const {
     mealTypes,
@@ -77,19 +77,23 @@ const MealPlanner = () => {
           ))}
         </div>
 
-        {addMealModal.open && (
+        {addMealModal.open && addMealModal.mealType && (
           <AddMealPlanDialog
-            mealType={addMealModal.mealType}
-            categories={addMealModal.mealType ? mealTypeToCategories[addMealModal.mealType] : []}
+            isOpen={addMealModal.open}
             onClose={() => setAddMealModal({ ...addMealModal, open: false })}
-            onFinish={onAddMealFinish}
+            onAddMealPlan={(recipeId: string, notes: string) => onAddMealFinish(addMealModal.mealType!, recipeId)}
+            recipes={recipes}
+            selectedDate={new Date()}
+            selectedMealType={addMealModal.mealType}
           />
         )}
 
-        {leftoverModal.open && leftoverModal.recipe && (
+        {leftoverModal.open && leftoverModal.recipe && leftoverModal.mealPlan && (
           <LeftoverServingsDialog
-            recipe={leftoverModal.recipe}
+            open={leftoverModal.open}
             onClose={() => setLeftoverModal({ ...leftoverModal, open: false })}
+            mealPlan={leftoverModal.mealPlan}
+            recipe={leftoverModal.recipe}
             onConfirm={onLeftoverConfirm}
           />
         )}
