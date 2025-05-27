@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { MealType, RecipeCategory } from "@/types";
 import { useToast } from "@/hooks/use-toast";
@@ -6,11 +7,12 @@ import { useHousehold } from "@/contexts/HouseholdContext";
 import { useMealPlan } from "@/contexts/MealPlanContext";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { createMealTypeToCategories } from "@/utils/mealCategoryUtils";
+import { toast } from "sonner";
 
-// Define desired quantities for each meal type
-const MEAL_TYPE_QUANTITIES: Record<MealType, number> = {
+// Define default quantities for each meal type
+export const DEFAULT_MEAL_QUANTITIES: Record<MealType, number> = {
   dinner: 5,
-  lunch: 3,
+  lunch: 2,
   breakfast: 2,
   snacks: 2,
 };
@@ -19,10 +21,11 @@ export const useRandomMealSelection = (week: 1 | 2) => {
   const { user } = useAuth();
   const { recipes } = useRecipes();
   const { currentHousehold } = useHousehold();
-  const { clearWeek, addMealPlan } = useMealPlan();
-  const { toast } = useToast();
+  const { clearWeek, addMealPlan, getMealPlansForWeek } = useMealPlan();
+  const { toast: shadcnToast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [showReplaceDialog, setShowReplaceDialog] = useState(false);
+  const [showQuantityDialog, setShowQuantityDialog] = useState(false);
 
   const mealTypes: MealType[] = ["dinner", "lunch", "breakfast", "snacks"];
   
@@ -65,24 +68,21 @@ export const useRandomMealSelection = (week: 1 | 2) => {
     return result;
   };
 
-  const performMealSelection = async () => {
+  const performMealSelection = async (customQuantities?: Record<MealType, number>) => {
     console.log("Starting random meal selection...");
     console.log("Available recipes:", recipes.length);
     console.log("Recipes:", recipes.map(r => ({ title: r.title, categories: r.categories })));
     
     setIsLoading(true);
     
-    // Show a loading toast that we'll update
-    const loadingToast = toast({
-      title: "Generating Meal Plan",
-      description: "Creating your personalized meal plan...",
-      duration: 0, // Don't auto-dismiss
-    });
+    // Show a loading toast using Sonner
+    const loadingToastId = toast.loading("Generating your personalized meal plan...");
     
     try {
       console.log("Clearing week", week);
       await clearWeek(week);
       
+      const quantities = customQuantities || DEFAULT_MEAL_QUANTITIES;
       let allSelectedIds = new Set<string>();
       let totalMealsAdded = 0;
       let partialResults: string[] = [];
@@ -94,7 +94,7 @@ export const useRandomMealSelection = (week: 1 | 2) => {
         const allowedCategories = mealTypeToCategories[mealType];
         console.log(`Allowed categories for ${mealType}:`, allowedCategories);
         
-        const desiredCount = MEAL_TYPE_QUANTITIES[mealType];
+        const desiredCount = quantities[mealType];
         const unique = getUniqueRandomRecipes(
           recipes,
           allowedCategories,
@@ -134,40 +134,22 @@ export const useRandomMealSelection = (week: 1 | 2) => {
       
       console.log("Random meal selection completed");
       
-      // Dismiss the loading toast
-      loadingToast.dismiss();
+      // Dismiss the loading toast and provide appropriate feedback
+      toast.dismiss(loadingToastId);
       
-      // Provide appropriate feedback based on results
       if (totalMealsAdded === 0) {
-        toast({
-          title: "No Meals Generated",
-          description: "No recipes were found with the appropriate categories for meal planning. Try adding more recipes with Breakfast, Lunch, or Snacks categories.",
-          variant: "destructive",
-        });
+        toast.error("No meals generated. Try adding more recipes with appropriate categories.");
       } else if (skippedMealTypes.length > 0) {
-        toast({
-          title: "Meal Plan Partially Generated",
-          description: `Generated ${totalMealsAdded} meals! Skipped ${skippedMealTypes.join(', ')} due to no available recipes with appropriate categories.`,
-        });
+        toast.success(`Generated ${totalMealsAdded} meals! Skipped ${skippedMealTypes.join(', ')} due to no available recipes.`);
       } else if (partialResults.length > 0) {
-        toast({
-          title: "Meal Plan Generated",
-          description: `Generated ${totalMealsAdded} meals! Note: ${partialResults.join(', ')} - not enough recipes available for full quantities.`,
-        });
+        toast.success(`Generated ${totalMealsAdded} meals! Note: ${partialResults.join(', ')} - not enough recipes available.`);
       } else {
-        toast({
-          title: "Meal Plan Generated Successfully! 🎉",
-          description: `Generated ${totalMealsAdded} delicious meals from your recipe collection!`,
-        });
+        toast.success(`🎉 Generated ${totalMealsAdded} delicious meals from your recipe collection!`);
       }
     } catch (error) {
       console.error("Error during random meal selection:", error);
-      loadingToast.dismiss();
-      toast({
-        title: "Error",
-        description: "Failed to generate meal plan. Please try again.",
-        variant: "destructive",
-      });
+      toast.dismiss(loadingToastId);
+      toast.error("Failed to generate meal plan. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -175,7 +157,7 @@ export const useRandomMealSelection = (week: 1 | 2) => {
 
   const handleRandomize = async () => {
     if (!user) {
-      toast({
+      shadcnToast({
         title: "Login Required",
         description: "You need to log in to generate meals.",
         variant: "destructive",
@@ -184,7 +166,7 @@ export const useRandomMealSelection = (week: 1 | 2) => {
     }
 
     if (!currentHousehold) {
-      toast({
+      shadcnToast({
         title: "No Household Selected",
         description: "Please select or create a household to manage meal plans.",
         variant: "destructive",
@@ -197,7 +179,7 @@ export const useRandomMealSelection = (week: 1 | 2) => {
     console.log("Sample recipes:", recipes.slice(0, 3).map(r => ({ title: r.title, categories: r.categories })));
 
     if (recipes.length === 0) {
-      toast({
+      shadcnToast({
         title: "No Recipes Available",
         description: "You need to create some recipes first before generating meals.",
         variant: "destructive",
@@ -211,7 +193,18 @@ export const useRandomMealSelection = (week: 1 | 2) => {
       return;
     }
     
-    await performMealSelection();
+    // If no existing plans, go straight to quantity selection
+    setShowQuantityDialog(true);
+  };
+
+  const handleReplaceConfirm = () => {
+    setShowReplaceDialog(false);
+    setShowQuantityDialog(true);
+  };
+
+  const handleQuantityConfirm = async (quantities: Record<MealType, number>) => {
+    setShowQuantityDialog(false);
+    await performMealSelection(quantities);
   };
 
   return { 
@@ -219,6 +212,10 @@ export const useRandomMealSelection = (week: 1 | 2) => {
     performMealSelection,
     isLoading,
     showReplaceDialog,
-    setShowReplaceDialog
+    setShowReplaceDialog,
+    showQuantityDialog,
+    setShowQuantityDialog,
+    handleReplaceConfirm,
+    handleQuantityConfirm
   };
 };

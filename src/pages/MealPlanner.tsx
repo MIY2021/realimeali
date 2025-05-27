@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { WeekSelector } from "@/components/meal-planner/WeekSelector";
 import { MealPlannerActions } from "@/components/meal-planner/MealPlannerActions";
@@ -15,6 +14,7 @@ import { useRecipes } from "@/contexts/RecipesContext";
 import { Calendar } from "lucide-react";
 import { DragDropContext, Droppable, Draggable, DropResult } from "react-beautiful-dnd";
 import { MealType } from "@/types";
+import { MealQuantityDialog } from "@/components/meal-planner/MealQuantityDialog";
 
 const MealPlanner = () => {
   useDocumentTitle("Meal Planner");
@@ -48,8 +48,16 @@ const MealPlanner = () => {
     handleShareMealPlan,
   } = useMealPlanActions(currentWeek);
 
-  const { handleRandomize, isLoading, showReplaceDialog, setShowReplaceDialog, performMealSelection } = 
-    useRandomMealSelection(currentWeek);
+  const { 
+    handleRandomize, 
+    isLoading, 
+    showReplaceDialog, 
+    setShowReplaceDialog, 
+    showQuantityDialog,
+    setShowQuantityDialog,
+    handleReplaceConfirm,
+    handleQuantityConfirm
+  } = useRandomMealSelection(currentWeek);
 
   const handleMealTypeDragStart = (result: any) => {
     setIsDraggingCategory(true);
@@ -181,8 +189,14 @@ const MealPlanner = () => {
       <MealPlanReplaceDialog
         open={showReplaceDialog}
         onOpenChange={setShowReplaceDialog}
-        onConfirm={performMealSelection}
+        onConfirm={handleReplaceConfirm}
         weekNumber={currentWeek}
+      />
+
+      <MealQuantityDialog
+        open={showQuantityDialog}
+        onClose={() => setShowQuantityDialog(false)}
+        onConfirm={handleQuantityConfirm}
       />
 
       <ClearMealPlanDialog

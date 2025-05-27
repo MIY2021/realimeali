@@ -25,7 +25,6 @@ export const MealPlanReplaceDialog = ({
 }: MealPlanReplaceDialogProps) => {
   const handleConfirm = () => {
     onConfirm();
-    onOpenChange(false);
   };
 
   return (
@@ -38,6 +37,7 @@ export const MealPlanReplaceDialog = ({
           <AlertDialogDescription className="text-muted-foreground">
             Week {weekNumber} already has meals planned. Generating a new meal plan will 
             replace all current meals with new randomly selected recipes from your collection.
+            You'll be able to customize the number of meals for each category next.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className="flex-col-reverse sm:flex-row gap-2">
@@ -46,7 +46,7 @@ export const MealPlanReplaceDialog = ({
             onClick={handleConfirm}
             className="bg-terracotta hover:bg-terracotta/90"
           >
-            Replace Meal Plan
+            Continue to Customize
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
