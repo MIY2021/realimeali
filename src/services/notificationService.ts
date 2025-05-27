@@ -62,10 +62,6 @@ export class NotificationService {
         body: `${requesterName} requested approval for Week ${weekNumber} meal plan`,
         tag: 'meal-plan-approval',
         requireInteraction: true,
-        actions: [
-          { action: 'view', title: 'View Meal Plan' },
-          { action: 'dismiss', title: 'Dismiss' }
-        ]
       }
     );
   }

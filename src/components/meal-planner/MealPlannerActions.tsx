@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ListChecks, Share, FileSpreadsheet, Trash2, UserCheck } from "lucide-react";
+import { ListChecks, Share, FileSpreadsheet, Trash2, User } from "lucide-react";
 import { Link } from "react-router-dom";
 import { ApprovalRequestDialog } from "@/components/meal-planner/ApprovalRequestDialog";
 
@@ -40,7 +40,7 @@ export const MealPlannerActions = ({
           className="bg-terracotta hover:bg-terracotta/90 flex items-center whitespace-nowrap"
           disabled={isLoading}
         >
-          <UserCheck className="mr-2 h-4 w-4" />
+          <User className="mr-2 h-4 w-4" />
           Request Approval
         </Button>
         <Button

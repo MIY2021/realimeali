@@ -61,7 +61,14 @@ export const MealPlanApprovalProvider = ({ children }: { children: ReactNode }) 
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setApprovalRequests(data || []);
+      
+      // Transform the data to ensure week_number is typed as 1 | 2
+      const transformedData: ApprovalRequest[] = (data || []).map(item => ({
+        ...item,
+        week_number: item.week_number as 1 | 2,
+      }));
+      
+      setApprovalRequests(transformedData);
     } catch (error) {
       console.error('Error fetching approval requests:', error);
       toast({
