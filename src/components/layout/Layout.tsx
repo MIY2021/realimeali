@@ -2,6 +2,7 @@
 import { ReactNode } from "react";
 import Header from "./Header";
 import CustomFooter from "./CustomFooter";
+import { Toaster } from "@/components/ui/sonner";
 
 interface LayoutProps {
   children: ReactNode;
@@ -15,6 +16,7 @@ const Layout = ({ children }: LayoutProps) => {
         {children}
       </main>
       <CustomFooter />
+      <Toaster />
     </div>
   );
 };

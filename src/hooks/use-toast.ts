@@ -1,31 +1,49 @@
 
-import { useRef } from "react";
+import { toast as sonnerToast } from "sonner";
 
 type ToastProps = {
   title?: string;
   description?: string;
-  variant?: "destructive";
+  variant?: "destructive" | "default";
 };
 
-// Simple in-memory toast state + callback for dev
-let listeners: ((data: ToastProps) => void)[] = [];
-
 export function useToast() {
-  const addListener = (cb: (t: ToastProps) => void) => {
-    listeners.push(cb);
-    return () => {
-      listeners = listeners.filter(fn => fn !== cb);
-    };
-  };
-  // No dispatcher implemented, add empty impl
   return {
     toasts: [],
     toast: (data?: ToastProps) => {
-      listeners.forEach(fn => fn(data ? data : {}));
+      if (!data) {
+        sonnerToast.success("Success");
+        return;
+      }
+
+      const { title, description, variant } = data;
+      const message = description || title || "Notification";
+      
+      if (variant === "destructive") {
+        sonnerToast.error(title || "Error", {
+          description: description
+        });
+      } else {
+        sonnerToast.success(title || "Success", {
+          description: description
+        });
+      }
     },
     dismiss: () => {},
   };
 }
+
 export const toast = (data?: ToastProps) => {
-  listeners.forEach(fn => fn(data ? data : {}));
+  const { title, description, variant } = data || {};
+  const message = description || title || "Notification";
+  
+  if (variant === "destructive") {
+    sonnerToast.error(title || "Error", {
+      description: description
+    });
+  } else {
+    sonnerToast.success(title || "Success", {
+      description: description
+    });
+  }
 };

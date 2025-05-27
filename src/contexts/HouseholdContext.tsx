@@ -17,6 +17,7 @@ export interface HouseholdMember {
   user_id: string;
   role: 'owner' | 'member';
   joined_at: string;
+  joined_at: string;
   profile?: {
     full_name: string;
     email: string;
@@ -230,9 +231,6 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
 
   const removeMember = useCallback(async (memberId: string, memberUserId: string): Promise<boolean> => {
     if (!currentHousehold || memberUserId === user?.id) return false;
-
-    const confirmed = window.confirm("Are you sure you want to remove this member?");
-    if (!confirmed) return false;
 
     try {
       const { error } = await supabase

@@ -3,6 +3,17 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { User, Trash2, RotateCcw } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useState } from "react";
@@ -30,6 +41,7 @@ export const HouseholdMembersCard = ({ members, isOwner, onRemoveMember, isLoadi
   const { user } = useAuth();
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
   const [refreshingProfiles, setRefreshingProfiles] = useState(false);
+  const [removingMember, setRemovingMember] = useState<string | null>(null);
 
   const handleImageError = (memberId: string, avatarUrl?: string) => {
     console.error(`Avatar image failed to load for member ${memberId}:`, {
@@ -64,6 +76,20 @@ export const HouseholdMembersCard = ({ members, isOwner, onRemoveMember, isLoadi
       console.error('Error refreshing profile data:', error);
     } finally {
       setRefreshingProfiles(false);
+    }
+  };
+
+  const handleRemoveMember = async (memberId: string, memberUserId: string, memberName: string) => {
+    setRemovingMember(memberId);
+    try {
+      const success = await onRemoveMember(memberId, memberUserId);
+      if (!success) {
+        console.error('Failed to remove member');
+      }
+    } catch (error) {
+      console.error('Error removing member:', error);
+    } finally {
+      setRemovingMember(null);
     }
   };
 
@@ -157,14 +183,35 @@ export const HouseholdMembersCard = ({ members, isOwner, onRemoveMember, isLoadi
                       {member.role}
                     </Badge>
                     {isOwner && member.user_id !== user?.id && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => onRemoveMember(member.id, member.user_id)}
-                        className="text-red-500 hover:text-red-700"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            disabled={removingMember === member.id}
+                            className="text-red-500 hover:text-red-700"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Remove Member</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to remove <strong>{member.profile?.full_name || 'this member'}</strong> from the household? This action cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => handleRemoveMember(member.id, member.user_id, member.profile?.full_name || 'Unknown User')}
+                              className="bg-red-500 hover:bg-red-600"
+                            >
+                              Remove Member
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     )}
                   </div>
                 </div>
