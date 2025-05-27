@@ -3,8 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User, Trash2 } from "lucide-react";
+import { User, Trash2, RefreshCw } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useState } from "react";
 
 interface HouseholdMember {
   id: string;
@@ -27,14 +28,84 @@ interface HouseholdMembersCardProps {
 
 export const HouseholdMembersCard = ({ members, isOwner, onRemoveMember, isLoading }: HouseholdMembersCardProps) => {
   const { user } = useAuth();
+  const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
+  const [refreshingProfiles, setRefreshingProfiles] = useState(false);
+
+  const handleImageError = (memberId: string, avatarUrl?: string) => {
+    console.error(`Avatar image failed to load for member ${memberId}:`, {
+      memberId,
+      avatarUrl,
+      timestamp: new Date().toISOString()
+    });
+    
+    setImageErrors(prev => new Set(prev).add(memberId));
+  };
+
+  const handleImageLoad = (memberId: string, avatarUrl?: string) => {
+    console.log(`Avatar image loaded successfully for member ${memberId}:`, {
+      memberId,
+      avatarUrl,
+      timestamp: new Date().toISOString()
+    });
+    
+    setImageErrors(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(memberId);
+      return newSet;
+    });
+  };
+
+  const refreshProfileData = async () => {
+    setRefreshingProfiles(true);
+    try {
+      // Force a refresh of the household context data
+      window.location.reload();
+    } catch (error) {
+      console.error('Error refreshing profile data:', error);
+    } finally {
+      setRefreshingProfiles(false);
+    }
+  };
+
+  // Log member data for debugging
+  console.log('HouseholdMembersCard - Member data:', {
+    totalMembers: members.length,
+    members: members.map(m => ({
+      id: m.id,
+      user_id: m.user_id,
+      role: m.role,
+      profile: {
+        full_name: m.profile?.full_name,
+        email: m.profile?.email,
+        avatar_url: m.profile?.avatar_url,
+        hasAvatarUrl: !!m.profile?.avatar_url
+      }
+    })),
+    imageErrors: Array.from(imageErrors),
+    timestamp: new Date().toISOString()
+  });
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Household Members</CardTitle>
-        <CardDescription>
-          View and manage household members.
-        </CardDescription>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle>Household Members</CardTitle>
+            <CardDescription>
+              View and manage household members.
+            </CardDescription>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={refreshProfileData}
+            disabled={refreshingProfiles}
+            className="text-terracotta hover:text-terracotta"
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${refreshingProfiles ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+        </div>
       </CardHeader>
       <CardContent>
         {isLoading ? (
@@ -51,18 +122,27 @@ export const HouseholdMembersCard = ({ members, isOwner, onRemoveMember, isLoadi
               members.map((member) => (
                 <div key={member.id} className="flex items-center justify-between p-3 border rounded gap-3">
                   <div className="flex items-center space-x-3 min-w-0 flex-1">
-                    <Avatar className="h-8 w-8 flex-shrink-0">
-                      <AvatarImage 
-                        src={member.profile?.avatar_url} 
-                        alt={member.profile?.full_name || 'User'} 
-                      />
-                      <AvatarFallback className="bg-terracotta/20 text-terracotta">
-                        {member.profile?.full_name 
-                          ? member.profile.full_name.charAt(0).toUpperCase()
-                          : <User className="h-4 w-4" />
-                        }
-                      </AvatarFallback>
-                    </Avatar>
+                    <div className="relative">
+                      <Avatar className="h-8 w-8 flex-shrink-0">
+                        <AvatarImage 
+                          src={member.profile?.avatar_url} 
+                          alt={member.profile?.full_name || 'User'}
+                          onError={() => handleImageError(member.id, member.profile?.avatar_url)}
+                          onLoad={() => handleImageLoad(member.id, member.profile?.avatar_url)}
+                          className="object-cover"
+                        />
+                        <AvatarFallback className="bg-terracotta/20 text-terracotta">
+                          {member.profile?.full_name 
+                            ? member.profile.full_name.charAt(0).toUpperCase()
+                            : <User className="h-4 w-4" />
+                          }
+                        </AvatarFallback>
+                      </Avatar>
+                      {imageErrors.has(member.id) && member.profile?.avatar_url && (
+                        <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border border-white" 
+                             title="Avatar failed to load" />
+                      )}
+                    </div>
                     <div className="min-w-0 flex-1">
                       <p className="font-medium truncate">
                         {member.profile?.full_name || 'Unknown User'}
@@ -70,6 +150,11 @@ export const HouseholdMembersCard = ({ members, isOwner, onRemoveMember, isLoadi
                       <p className="text-sm text-muted-foreground truncate">
                         {member.profile?.email || 'No email available'}
                       </p>
+                      {member.profile?.avatar_url && (
+                        <p className="text-xs text-muted-foreground truncate">
+                          Avatar: {imageErrors.has(member.id) ? '❌ Failed' : '✅ Loaded'}
+                        </p>
+                      )}
                     </div>
                   </div>
                   <div className="flex items-center space-x-2 flex-shrink-0">

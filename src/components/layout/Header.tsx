@@ -26,6 +26,7 @@ const Header = () => {
   const { user, signOut } = useAuth();
   const { currentHousehold } = useHousehold();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [avatarError, setAvatarError] = useState(false);
   const isMobile = useIsMobile();
 
   const navigationItems = [
@@ -33,6 +34,39 @@ const Header = () => {
     { to: "/meal-planner", icon: CalendarDays, label: "Meal Planner" },
     { to: "/shopping-list", icon: ListChecks, label: "Shopping List" },
   ];
+
+  const handleAvatarError = () => {
+    console.error('Header avatar failed to load:', {
+      userId: user?.id,
+      avatarUrl: user?.user_metadata?.avatar_url,
+      userMetadata: user?.user_metadata,
+      timestamp: new Date().toISOString()
+    });
+    setAvatarError(true);
+  };
+
+  const handleAvatarLoad = () => {
+    console.log('Header avatar loaded successfully:', {
+      userId: user?.id,
+      avatarUrl: user?.user_metadata?.avatar_url,
+      timestamp: new Date().toISOString()
+    });
+    setAvatarError(false);
+  };
+
+  // Log user data for debugging
+  useEffect(() => {
+    if (user) {
+      console.log('Header - User data:', {
+        userId: user.id,
+        email: user.email,
+        userMetadata: user.user_metadata,
+        avatarUrl: user.user_metadata?.avatar_url,
+        fullName: user.user_metadata?.full_name,
+        timestamp: new Date().toISOString()
+      });
+    }
+  }, [user]);
 
   // Add swipe gesture detection for mobile
   useEffect(() => {
@@ -52,7 +86,7 @@ const Header = () => {
     const handleTouchEnd = (e: TouchEvent) => {
       const touch = e.changedTouches[0];
       const endX = touch.clientX;
-      const endY = touch.clientY;
+      const endY = Math.abs(startY - endY);
       
       const deltaX = startX - endX;
       const deltaY = Math.abs(startY - endY);
@@ -170,10 +204,24 @@ const Header = () => {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" className="flex items-center space-x-2 p-1">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={user.user_metadata?.avatar_url} alt={user.user_metadata?.full_name || user.email || "User"} />
-                    <AvatarFallback>{(user.user_metadata?.full_name || user.email)?.[0].toUpperCase() || "U"}</AvatarFallback>
-                  </Avatar>
+                  <div className="relative">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage 
+                        src={user.user_metadata?.avatar_url} 
+                        alt={user.user_metadata?.full_name || user.email || "User"}
+                        onError={handleAvatarError}
+                        onLoad={handleAvatarLoad}
+                        className="object-cover"
+                      />
+                      <AvatarFallback>
+                        {(user.user_metadata?.full_name || user.email)?.[0].toUpperCase() || "U"}
+                      </AvatarFallback>
+                    </Avatar>
+                    {avatarError && user.user_metadata?.avatar_url && (
+                      <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border border-white" 
+                           title="Avatar failed to load" />
+                    )}
+                  </div>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
