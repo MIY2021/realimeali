@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { Zap, DollarSign, Crown } from "lucide-react";
+import { Sparkles, DollarSign, Crown } from "lucide-react";
 
 interface RecipeGenerateTabProps {
   aiPrompt: string;
@@ -44,7 +44,7 @@ export function RecipeGenerateTab({
             value="quick-easy" 
             className="flex items-center gap-2 p-3 border rounded-lg hover:bg-accent"
           >
-            <Zap className="h-4 w-4" />
+            <Sparkles className="h-4 w-4" />
             <span className="font-medium">Quick & Easy</span>
           </ToggleGroupItem>
           
