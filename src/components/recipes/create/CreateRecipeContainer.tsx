@@ -5,7 +5,6 @@ import { useRecipeProcessing } from "@/hooks/useRecipeProcessing";
 import { useRecipeSave } from "@/hooks/useRecipeSave";
 import { useImageGeneration } from "@/hooks/useImageGeneration";
 import { CreateRecipeTabsWrapper } from "./CreateRecipeTabsWrapper";
-import { CreateRecipeActions } from "./CreateRecipeActions";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 export function CreateRecipeContainer() {
@@ -53,30 +52,18 @@ export function CreateRecipeContainer() {
     );
   };
 
-  const onSave = () => handleSave(recipeFormHook.newRecipe);
-
   return (
-    <>
-      <CreateRecipeTabsWrapper
-        isMobile={isMobile}
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        recipeFormHook={recipeFormHook}
-        recipeProcessingHook={recipeProcessingHook}
-        onProcessText={onProcessText}
-        onImportFromUrlWithImages={onImportFromUrlWithImages}
-        onProcessImage={onProcessImage}
-        onGenerateRecipe={onGenerateRecipe}
-        onGenerateImage={onGenerateImage}
-      />
-
-      {activeTab === "manual" && (
-        <CreateRecipeActions 
-          isMobile={isMobile}
-          onCancel={handleCancel}
-          onSave={onSave}
-        />
-      )}
-    </>
+    <CreateRecipeTabsWrapper
+      isMobile={isMobile}
+      activeTab={activeTab}
+      setActiveTab={setActiveTab}
+      recipeFormHook={recipeFormHook}
+      recipeProcessingHook={recipeProcessingHook}
+      onProcessText={onProcessText}
+      onImportFromUrlWithImages={onImportFromUrlWithImages}
+      onProcessImage={onProcessImage}
+      onGenerateRecipe={onGenerateRecipe}
+      onGenerateImage={onGenerateImage}
+    />
   );
 }

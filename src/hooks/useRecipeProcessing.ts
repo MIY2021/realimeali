@@ -31,6 +31,8 @@ export function useRecipeProcessing() {
     // AI generation
     aiPrompt: aiGeneration.aiPrompt,
     setAiPrompt: aiGeneration.setAiPrompt,
+    stylePreferences: aiGeneration.stylePreferences,
+    setStylePreferences: aiGeneration.setStylePreferences,
     handleGenerateRecipe: aiGeneration.handleGenerateRecipe,
     
     // Combined processing state

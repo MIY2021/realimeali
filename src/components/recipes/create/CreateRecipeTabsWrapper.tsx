@@ -69,6 +69,8 @@ export function CreateRecipeTabsWrapper({
           <RecipeGenerateTab
             aiPrompt={recipeProcessingHook.aiPrompt}
             setAiPrompt={recipeProcessingHook.setAiPrompt}
+            stylePreferences={recipeProcessingHook.stylePreferences}
+            setStylePreferences={recipeProcessingHook.setStylePreferences}
             isProcessing={recipeProcessingHook.isProcessing}
             onGenerate={onGenerateRecipe}
           />
