@@ -17,7 +17,6 @@ export interface HouseholdMember {
   user_id: string;
   role: 'owner' | 'member';
   joined_at: string;
-  joined_at: string;
   profile?: {
     full_name: string;
     email: string;
