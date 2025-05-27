@@ -48,8 +48,14 @@ export const useMealPlanOperations = (
         console.log("Adding meal plan:", { mealPlanData, weekNumber, userId: user.id, householdId: currentHousehold.id });
       }
       
+      // Ensure weekNumber is included in the meal plan data
+      const mealPlanWithWeek = {
+        ...mealPlanData,
+        weekNumber: weekNumber
+      };
+      
       const newMealPlan = await mealPlanService.addMealPlan(
-        mealPlanData, 
+        mealPlanWithWeek, 
         weekNumber, 
         currentHousehold.id, 
         user.id,
@@ -120,7 +126,7 @@ export const useMealPlanOperations = (
 
     try {
       await mealPlanService.clearWeek(weekNumber, currentHousehold.id);
-      setMealPlans(prev => prev.filter(plan => (plan as any).weekNumber !== weekNumber));
+      setMealPlans(prev => prev.filter(plan => plan.weekNumber !== weekNumber));
       
       toast({
         title: "Week Cleared",

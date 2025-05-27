@@ -1,3 +1,4 @@
+
 export type User = {
   id: string;
   name: string;
@@ -60,4 +61,5 @@ export type MealPlan = {
   leftoverServings?: number; // How many servings from original meal
   originalServings?: number; // Total servings from original recipe
   householdId: string; // household id
+  weekNumber: number; // Added weekNumber property
 };

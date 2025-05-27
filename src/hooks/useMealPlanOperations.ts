@@ -51,6 +51,7 @@ export const useMealPlanOperations = (week: 1 | 2) => {
         slotIndex: currentPlansForType.length,
         isLeftover: false,
         householdId: currentHousehold.id,
+        weekNumber: week, // Include weekNumber in meal plan data
       };
 
       if (mealType === 'dinner' && leftoverServings) {
@@ -88,6 +89,7 @@ export const useMealPlanOperations = (week: 1 | 2) => {
         leftoverServings: servings,
         originalServings: recipe.servings,
         householdId: currentHousehold.id,
+        weekNumber: week, // Include weekNumber in leftover meal plan data
       }, week);
 
       toast({

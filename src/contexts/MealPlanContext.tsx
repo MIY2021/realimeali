@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
 import { MealPlan, Recipe, MealType } from "@/types";
 import { useAuth } from "@/contexts/AuthContext";
@@ -39,6 +40,7 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
       setIsLoading(true);
       const plans = await mealPlanService.fetchMealPlans(currentHousehold.id);
       console.log("Transformed plans:", plans);
+      console.log("Plans with week numbers:", plans.map(p => ({ id: p.id, mealType: p.mealType, weekNumber: p.weekNumber })));
       setMealPlans(plans);
     } catch (err) {
       console.error("Error fetching meal plans:", err);
@@ -59,7 +61,7 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
   const getMealPlansForWeek = useCallback((weekNumber: 1 | 2): MealPlan[] => {
     if (!user || !currentHousehold) return [];
     
-    const weekPlans = mealPlans.filter(plan => (plan as any).weekNumber === weekNumber);
+    const weekPlans = mealPlans.filter(plan => plan.weekNumber === weekNumber);
     console.log(`Getting meal plans for week ${weekNumber}:`, weekPlans);
     return weekPlans;
   }, [mealPlans, user?.id, currentHousehold?.id]);
@@ -85,6 +87,7 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
         originalServings: recipe.servings,
         isLeftover: false,
         householdId: currentHousehold.id,
+        weekNumber: weekNumber, // Include weekNumber in meal plan data
       }, weekNumber, silentMode);
 
       if (leftoverServings && leftoverServings > 0) {
@@ -103,6 +106,7 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
             leftoverServings: leftoverServings,
             originalServings: recipe.servings,
             householdId: currentHousehold.id,
+            weekNumber: weekNumber, // Include weekNumber in leftover meal plan data
           }, weekNumber, silentMode);
 
           if (!silentMode) {
@@ -127,7 +131,7 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
     if (!user || !currentHousehold) return;
 
     const mealPlansForType = mealPlans.filter(
-      plan => plan.mealType === mealType && (plan as any).weekNumber === weekNumber
+      plan => plan.mealType === mealType && plan.weekNumber === weekNumber
     );
 
     if (sourceIndex < 0 || destinationIndex < 0 || 
@@ -146,7 +150,7 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
       setMealPlans(prev => {
         const updated = [...prev];
         const filteredPlans = updated.filter(
-          plan => !(plan.mealType === mealType && (plan as any).weekNumber === weekNumber)
+          plan => !(plan.mealType === mealType && plan.weekNumber === weekNumber)
         );
         const updatedReorderedPlans = reorderedPlans.map((plan, index) => ({
           ...plan,
