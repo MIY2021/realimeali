@@ -10,6 +10,7 @@ export interface ShoppingListItem {
   isChecked: boolean;
   isCustom: boolean;
   recipeIds: string[];
+  createdAt?: string;
 }
 
 export interface ConsolidatedShoppingList {

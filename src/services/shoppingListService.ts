@@ -30,7 +30,8 @@ export class ShoppingListService {
         sourceIngredients: item.source_ingredients || [],
         isChecked: item.is_checked,
         isCustom: item.is_custom,
-        recipeIds: item.recipe_ids || []
+        recipeIds: item.recipe_ids || [],
+        createdAt: item.created_at
       }));
     } catch (error) {
       console.error("Error loading shopping list:", error);
@@ -120,7 +121,8 @@ export class ShoppingListService {
         sourceIngredients: data.source_ingredients || [],
         isChecked: data.is_checked,
         isCustom: data.is_custom,
-        recipeIds: data.recipe_ids || []
+        recipeIds: data.recipe_ids || [],
+        createdAt: data.created_at
       };
     } catch (error) {
       console.error("Error adding item:", error);
@@ -184,7 +186,8 @@ export class ShoppingListService {
         sourceIngredients: data.source_ingredients || [],
         isChecked: data.is_checked,
         isCustom: data.is_custom,
-        recipeIds: data.recipe_ids || []
+        recipeIds: data.recipe_ids || [],
+        createdAt: data.created_at
       };
     } catch (error) {
       console.error("Error adding consolidated item:", error);
