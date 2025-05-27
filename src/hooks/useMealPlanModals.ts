@@ -18,9 +18,8 @@ export const useMealPlanModals = () => {
 
   const [deleteMealDialog, setDeleteMealDialog] = useState<{
     open: boolean;
-    planId: string | null;
     recipe: Recipe | null;
-  }>({ open: false, planId: null, recipe: null });
+  }>({ open: false, recipe: null });
 
   return {
     addMealModal,

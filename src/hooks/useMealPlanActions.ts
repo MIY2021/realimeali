@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { MealType, MealPlan, Recipe } from "@/types";
 import { useToast } from "@/hooks/use-toast";
@@ -16,6 +15,7 @@ export const useMealPlanActions = (week: 1 | 2) => {
   const { toast } = useToast();
 
   const [mealTypes, setMealTypes] = useState<MealType[]>(["dinner", "lunch", "breakfast", "snacks"]);
+  const [pendingDeletion, setPendingDeletion] = useState<string | null>(null);
   const mealTypeToCategories = createMealTypeToCategories();
 
   const modals = useMealPlanModals();
@@ -23,16 +23,22 @@ export const useMealPlanActions = (week: 1 | 2) => {
 
   const handleRemoveMeal = async (planId: string) => {
     const mealPlan = operations.getMealPlansForType(
-      modals.deleteMealDialog.recipe?.categories?.[0] as MealType || 'dinner'
-    ).find(plan => plan.id === planId);
+      'dinner' // fallback, we'll find the actual meal plan below
+    ).find(plan => plan.id === planId) ||
+    operations.getMealPlansForType('lunch').find(plan => plan.id === planId) ||
+    operations.getMealPlansForType('breakfast').find(plan => plan.id === planId) ||
+    operations.getMealPlansForType('snacks').find(plan => plan.id === planId);
+    
     const recipe = mealPlan ? recipes.find(r => r.id === mealPlan.recipeId) : null;
     
-    modals.setDeleteMealDialog({ open: true, planId, recipe });
+    setPendingDeletion(planId);
+    modals.setDeleteMealDialog({ open: true, recipe });
   };
 
   const confirmRemoveMeal = async () => {
-    if (!modals.deleteMealDialog.planId) return;
-    await operations.performRemoveMeal(modals.deleteMealDialog.planId);
+    if (!pendingDeletion) return;
+    await operations.performRemoveMeal(pendingDeletion);
+    setPendingDeletion(null);
   };
 
   const handleAddMeal = (mealType: MealType) => {

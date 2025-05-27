@@ -1,149 +1,123 @@
 
-import { useState } from "react";
-import { MealType, RecipeCategory } from "@/types";
+import { useState, useCallback } from "react";
+import { MealType } from "@/types";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
-import { useMealPlan } from "@/contexts/MealPlanContext";
 import { useRecipes } from "@/contexts/RecipesContext";
-import { createMealTypeToCategories } from "@/utils/mealCategoryUtils";
-import { toast } from "sonner";
-import { MealSelectionState, DEFAULT_MEAL_QUANTITIES } from "./types";
+import { useMealPlan } from "@/contexts/MealPlanContext";
+import { useToast } from "@/hooks/use-toast";
+import { createMealTypeToCategories, getAllowedCategoriesForMealType } from "@/utils/mealCategoryUtils";
+import { MealSelectionState } from "./types";
 
 export const useRandomMealCore = (week: 1 | 2) => {
   const { user } = useAuth();
-  const { recipes } = useRecipes();
   const { currentHousehold } = useHousehold();
-  const { clearWeek, addMealPlan, getMealPlansForWeek } = useMealPlan();
-  
+  const { recipes } = useRecipes();
+  const { getMealPlansForWeek, addMealPlanWithLeftovers } = useMealPlan();
+  const { toast } = useToast();
+
   const [state, setState] = useState<MealSelectionState>({
     isLoading: false,
     showReplaceDialog: false,
     showQuantityDialog: false,
   });
 
-  const mealTypes: MealType[] = ["dinner", "lunch", "breakfast", "snacks"];
-  const mealTypeToCategories = createMealTypeToCategories();
+  console.log("useRandomMealCore initialized for week:", week);
+  console.log("Available recipes count:", recipes.length);
+  console.log("Current user:", user?.id);
+  console.log("Current household:", currentHousehold?.id);
 
-  const getUniqueRandomRecipes = (
-    availableRecipes: typeof recipes,
-    categories: RecipeCategory[],
-    count: number,
-    excludeIds: Set<string>
-  ) => {
-    console.log(`Looking for recipes with categories: ${categories.join(', ')}`);
-    console.log(`Total available recipes: ${availableRecipes.length}`);
-    
-    const pool = availableRecipes.filter(r => {
-      const hasCategory = r.categories.some(cat => categories.includes(cat as RecipeCategory));
-      const notExcluded = !excludeIds.has(r.id);
-      console.log(`Recipe "${r.title}": categories=${r.categories}, hasCategory=${hasCategory}, notExcluded=${notExcluded}`);
-      return hasCategory && notExcluded;
-    });
-    
-    console.log(`Filtered recipe pool size: ${pool.length}`);
-    
-    if (pool.length === 0) {
-      console.warn(`No recipes found for categories: ${categories.join(', ')}`);
-      return [];
+  const performMealSelection = useCallback(async (quantities: Record<MealType, number>) => {
+    if (!user || !currentHousehold) {
+      console.error("Missing user or household for meal selection");
+      return;
     }
-    
-    const shuffled = [...pool].sort(() => Math.random() - 0.5);
-    const result = [];
-    const seen = new Set(excludeIds);
-    for (let recipe of shuffled) {
-      if (!seen.has(recipe.id)) {
-        result.push(recipe);
-        seen.add(recipe.id);
-        if (result.length === count) break;
-      }
-    }
-    return result;
-  };
 
-  const performMealSelection = async (customQuantities?: Record<MealType, number>) => {
-    console.log("Starting random meal selection...");
-    console.log("Available recipes:", recipes.length);
-    console.log("Recipes:", recipes.map(r => ({ title: r.title, categories: r.categories })));
-    
     setState(prev => ({ ...prev, isLoading: true }));
-    
-    const loadingToastId = toast.loading("Generating your personalized meal plan...");
-    
+    console.log("Starting meal selection with quantities:", quantities);
+
     try {
-      console.log("Clearing week", week);
-      await clearWeek(week);
-      
-      const quantities = customQuantities || DEFAULT_MEAL_QUANTITIES;
-      let allSelectedIds = new Set<string>();
+      const mealTypeToCategories = createMealTypeToCategories();
       let totalMealsAdded = 0;
-      let partialResults: string[] = [];
-      let skippedMealTypes: string[] = [];
-      
-      for (const mealType of mealTypes) {
-        console.log(`Selecting recipes for ${mealType}...`);
-        
-        const allowedCategories = mealTypeToCategories[mealType];
+
+      for (const [mealType, quantity] of Object.entries(quantities) as [MealType, number][]) {
+        if (quantity <= 0) continue;
+
+        console.log(`Selecting ${quantity} meals for ${mealType}`);
+        const allowedCategories = getAllowedCategoriesForMealType(mealType);
         console.log(`Allowed categories for ${mealType}:`, allowedCategories);
-        
-        const desiredCount = quantities[mealType];
-        const unique = getUniqueRandomRecipes(
-          recipes,
-          allowedCategories,
-          desiredCount,
-          allSelectedIds
+
+        const eligibleRecipes = recipes.filter(recipe => 
+          allowedCategories.some(category => recipe.categories.includes(category))
         );
-        
-        if (unique.length === 0) {
-          console.warn(`No recipes available for ${mealType} with categories: ${allowedCategories.join(', ')}`);
-          skippedMealTypes.push(mealType);
+
+        console.log(`Found ${eligibleRecipes.length} eligible recipes for ${mealType}`);
+        console.log("Sample eligible recipes:", eligibleRecipes.slice(0, 3).map(r => ({ title: r.title, categories: r.categories })));
+
+        if (eligibleRecipes.length === 0) {
+          console.warn(`No eligible recipes found for ${mealType}`);
+          toast({
+            title: "No Recipes Available",
+            description: `No recipes found for ${mealType}. Please add some recipes with appropriate categories.`,
+            variant: "destructive",
+          });
           continue;
         }
-        
-        if (unique.length < desiredCount) {
-          partialResults.push(`${mealType}: ${unique.length}/${desiredCount} recipes`);
-        }
-        
-        console.log(`Found ${unique.length} recipes for ${mealType}:`, unique.map(r => r.title));
-        
-        for (const [i, recipe] of unique.entries()) {
-          console.log(`Adding ${recipe.title} to ${mealType} slot ${i}`);
+
+        const selectedRecipes = [];
+        const usedRecipes = new Set();
+
+        for (let i = 0; i < quantity; i++) {
+          const availableRecipes = eligibleRecipes.filter(recipe => !usedRecipes.has(recipe.id));
           
-          await addMealPlan({
+          if (availableRecipes.length === 0) {
+            console.log(`Reusing recipes for ${mealType} - not enough unique recipes available`);
+            const randomRecipe = eligibleRecipes[Math.floor(Math.random() * eligibleRecipes.length)];
+            selectedRecipes.push(randomRecipe);
+          } else {
+            const randomRecipe = availableRecipes[Math.floor(Math.random() * availableRecipes.length)];
+            selectedRecipes.push(randomRecipe);
+            usedRecipes.add(randomRecipe.id);
+          }
+        }
+
+        console.log(`Selected ${selectedRecipes.length} recipes for ${mealType}:`, selectedRecipes.map(r => r.title));
+
+        for (const recipe of selectedRecipes) {
+          console.log(`Adding meal plan for recipe: ${recipe.title}`);
+          
+          await addMealPlanWithLeftovers({
             date: new Date().toISOString().split('T')[0],
-            mealType: mealType,
+            mealType,
             recipeId: recipe.id,
             createdBy: user.id,
-            slotIndex: i,
+            slotIndex: 0,
             isLeftover: false,
             householdId: currentHousehold.id,
-          }, week, true);
-          
-          allSelectedIds.add(recipe.id);
+          }, week, 0, true);
+
           totalMealsAdded++;
         }
       }
+
+      console.log(`Successfully added ${totalMealsAdded} meals to week ${week}`);
       
-      console.log("Random meal selection completed");
-      
-      toast.dismiss(loadingToastId);
-      
-      if (totalMealsAdded === 0) {
-        toast.error("No meals generated. Try adding more recipes with appropriate categories.");
-      } else if (skippedMealTypes.length > 0) {
-        toast.success(`Generated ${totalMealsAdded} meals! Skipped ${skippedMealTypes.join(', ')} due to no available recipes.`);
-      } else if (partialResults.length > 0) {
-        toast.success(`Generated ${totalMealsAdded} meals! Note: ${partialResults.join(', ')} - not enough recipes available.`);
-      } else {
-        toast.success(`🎉 Generated ${totalMealsAdded} delicious meals from your recipe collection!`);
-      }
+      toast({
+        title: "Meal Plan Generated",
+        description: `Successfully added ${totalMealsAdded} meals to Week ${week}!`,
+      });
+
     } catch (error) {
-      console.error("Error during random meal selection:", error);
-      toast.dismiss(loadingToastId);
-      toast.error("Failed to generate meal plan. Please try again.");
+      console.error("Error during meal selection:", error);
+      toast({
+        title: "Generation Failed",
+        description: "Failed to generate meal plan. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setState(prev => ({ ...prev, isLoading: false }));
     }
-  };
+  }, [user, currentHousehold, recipes, addMealPlanWithLeftovers, week, toast]);
 
   return {
     state,
@@ -152,6 +126,6 @@ export const useRandomMealCore = (week: 1 | 2) => {
     getMealPlansForWeek,
     recipes,
     user,
-    currentHousehold,
+    currentHousehold
   };
 };

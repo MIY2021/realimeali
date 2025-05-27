@@ -8,7 +8,7 @@ import { mealPlanService } from "@/services/mealPlanService";
 import { MealPlanContextType } from "./MealPlanContext/types";
 import { useMealPlanOperations } from "./MealPlanContext/useMealPlanOperations";
 
-export { HouseholdMealPlan } from "./MealPlanContext/types";
+export type { HouseholdMealPlan } from "./MealPlanContext/types";
 
 const MealPlanContext = createContext<MealPlanContextType | undefined>(undefined);
 
