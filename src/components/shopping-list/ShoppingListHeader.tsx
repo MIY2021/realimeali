@@ -55,7 +55,7 @@ export default function ShoppingListHeader({
                 className="flex items-center gap-2"
               >
                 <Plus className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
-                + Add Item
+                Add Item
               </Button>
             </DialogTrigger>
             <DialogContent>
