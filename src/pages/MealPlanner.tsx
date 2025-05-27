@@ -1,20 +1,16 @@
+
 import { useState } from "react";
 import { WeekSelector } from "@/components/meal-planner/WeekSelector";
 import { MealPlannerActions } from "@/components/meal-planner/MealPlannerActions";
-import MealListSection from "@/components/MealListSection";
-import { AddMealPlanDialog } from "@/components/meal-planner/AddMealPlanDialog";
-import { LeftoverServingsDialog } from "@/components/meal-planner/LeftoverServingsDialog";
-import { MealPlanReplaceDialog } from "@/components/meal-planner/MealPlanReplaceDialog";
-import { ClearMealPlanDialog } from "@/components/meal-planner/ClearMealPlanDialog";
-import { DeleteMealDialog } from "@/components/meal-planner/DeleteMealDialog";
+import { MealPlannerDragAndDrop } from "@/components/meal-planner/MealPlannerDragAndDrop";
+import { MealPlannerModals } from "@/components/meal-planner/MealPlannerModals";
 import { useMealPlanActions } from "@/hooks/useMealPlanActions";
 import { useRandomMealSelection } from "@/hooks/useRandomMealSelection";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { Calendar } from "lucide-react";
-import { DragDropContext, Droppable, Draggable, DropResult } from "react-beautiful-dnd";
+import { DropResult } from "react-beautiful-dnd";
 import { MealType } from "@/types";
-import { MealQuantityDialog } from "@/components/meal-planner/MealQuantityDialog";
 
 const MealPlanner = () => {
   useDocumentTitle("Meal Planner");
@@ -26,7 +22,6 @@ const MealPlanner = () => {
   const {
     mealTypes,
     setMealTypes,
-    mealTypeToCategories,
     addMealModal,
     setAddMealModal,
     leftoverModal,
@@ -108,109 +103,41 @@ const MealPlanner = () => {
         isLoading={isLoading}
       />
 
-      <DragDropContext 
+      <MealPlannerDragAndDrop
+        mealTypes={mealTypes}
+        isDraggingCategory={isDraggingCategory}
+        draggedCategoryId={draggedCategoryId}
         onDragStart={handleMealTypeDragStart}
         onDragEnd={handleMealTypeDragEnd}
-      >
-        <Droppable droppableId="meal-types">
-          {(provided, snapshot) => (
-            <div
-              {...provided.droppableProps}
-              ref={provided.innerRef}
-              className={`space-y-6 transition-all duration-200 ${
-                snapshot.isDraggingOver ? 'bg-blue-50/50 rounded-lg p-4' : ''
-              }`}
-            >
-              {mealTypes.map((mealType, index) => (
-                <Draggable key={mealType} draggableId={mealType} index={index}>
-                  {(provided, snapshot) => (
-                    <div
-                      ref={provided.innerRef}
-                      {...provided.draggableProps}
-                      className={`
-                        transition-all duration-200 ease-in-out
-                        ${snapshot.isDragging ? 
-                          'shadow-2xl scale-105 rotate-1 z-50 bg-white rounded-lg border-2 border-blue-300' : 
-                          isDraggingCategory && draggedCategoryId !== mealType ? 
-                            'opacity-60 scale-95' : 
-                            'opacity-100 scale-100'
-                        }
-                        ${snapshot.isDragging ? 'transform-gpu' : ''}
-                      `}
-                      style={{
-                        ...provided.draggableProps.style,
-                        ...(snapshot.isDragging && {
-                          transform: `${provided.draggableProps.style?.transform} translateY(-8px)`,
-                        }),
-                      }}
-                    >
-                      <MealListSection
-                        mealType={mealType}
-                        mealPlans={getMealPlansForType(mealType)}
-                        getRecipeById={getRecipeById}
-                        onRemoveMeal={handleRemoveMeal}
-                        onAddMeal={() => handleAddMeal(mealType)}
-                        onCreateLeftover={handleCreateLeftover}
-                        onReorderMeals={handleReorderMeals}
-                        dragHandleProps={provided.dragHandleProps}
-                        collapsed={isDraggingCategory && draggedCategoryId !== mealType}
-                      />
-                    </div>
-                  )}
-                </Draggable>
-              ))}
-              {provided.placeholder}
-            </div>
-          )}
-        </Droppable>
-      </DragDropContext>
-
-      {addMealModal.open && addMealModal.mealType && (
-        <AddMealPlanDialog
-          isOpen={addMealModal.open}
-          onClose={() => setAddMealModal({ ...addMealModal, open: false })}
-          onAddMealPlan={(recipeId: string, notes: string) => onAddMealFinish(addMealModal.mealType!, recipeId)}
-          recipes={recipes}
-          selectedDate={new Date()}
-          selectedMealType={addMealModal.mealType}
-        />
-      )}
-
-      {leftoverModal.open && leftoverModal.recipe && leftoverModal.mealPlan && (
-        <LeftoverServingsDialog
-          open={leftoverModal.open}
-          onClose={() => setLeftoverModal({ ...leftoverModal, open: false })}
-          mealPlan={leftoverModal.mealPlan}
-          recipe={leftoverModal.recipe}
-          onConfirm={onLeftoverConfirm}
-        />
-      )}
-
-      <MealPlanReplaceDialog
-        open={showReplaceDialog}
-        onOpenChange={setShowReplaceDialog}
-        onConfirm={handleReplaceConfirm}
-        weekNumber={currentWeek}
+        getMealPlansForType={getMealPlansForType}
+        getRecipeById={getRecipeById}
+        onRemoveMeal={handleRemoveMeal}
+        onAddMeal={handleAddMeal}
+        onCreateLeftover={handleCreateLeftover}
+        onReorderMeals={handleReorderMeals}
       />
 
-      <MealQuantityDialog
-        open={showQuantityDialog}
-        onClose={() => setShowQuantityDialog(false)}
-        onConfirm={handleQuantityConfirm}
-      />
-
-      <ClearMealPlanDialog
-        open={clearMealPlanDialog}
-        onOpenChange={setClearMealPlanDialog}
-        onConfirm={confirmClearAll}
-        weekNumber={currentWeek}
-      />
-
-      <DeleteMealDialog
-        open={deleteMealDialog.open}
-        onOpenChange={(open) => setDeleteMealDialog({ ...deleteMealDialog, open })}
-        onConfirm={confirmRemoveMeal}
-        recipe={deleteMealDialog.recipe}
+      <MealPlannerModals
+        addMealModal={addMealModal}
+        setAddMealModal={setAddMealModal}
+        recipes={recipes}
+        onAddMealFinish={onAddMealFinish}
+        leftoverModal={leftoverModal}
+        setLeftoverModal={setLeftoverModal}
+        onLeftoverConfirm={onLeftoverConfirm}
+        showReplaceDialog={showReplaceDialog}
+        setShowReplaceDialog={setShowReplaceDialog}
+        handleReplaceConfirm={handleReplaceConfirm}
+        currentWeek={currentWeek}
+        showQuantityDialog={showQuantityDialog}
+        setShowQuantityDialog={setShowQuantityDialog}
+        handleQuantityConfirm={handleQuantityConfirm}
+        clearMealPlanDialog={clearMealPlanDialog}
+        setClearMealPlanDialog={setClearMealPlanDialog}
+        confirmClearAll={confirmClearAll}
+        deleteMealDialog={deleteMealDialog}
+        setDeleteMealDialog={setDeleteMealDialog}
+        confirmRemoveMeal={confirmRemoveMeal}
       />
     </div>
   );
