@@ -1,7 +1,6 @@
-
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { Lightbulb, DollarSign, Star } from "lucide-react";
+import { Bulb, DollarSign, Star } from "lucide-react";
 import { useState, useEffect } from "react";
 
 interface RecipeGenerateTabProps {
@@ -91,7 +90,7 @@ export function RecipeGenerateTab({
             value="quick-easy" 
             className="flex items-center gap-2 p-3 border rounded-lg hover:bg-accent"
           >
-            <Lightbulb className="h-4 w-4" />
+            <Bulb className="h-4 w-4" />
             <span className="font-medium">Quick & Easy</span>
           </ToggleGroupItem>
           

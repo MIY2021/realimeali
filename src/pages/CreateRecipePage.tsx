@@ -1,19 +1,9 @@
 
 import { CreateRecipeHeader } from "@/components/recipes/create/CreateRecipeHeader";
 import { CreateRecipeContainer } from "@/components/recipes/create/CreateRecipeContainer";
-import { CreateRecipeActions } from "@/components/recipes/create/CreateRecipeActions";
-import { useRecipeSave } from "@/hooks/useRecipeSave";
-import { useRecipeForm } from "@/hooks/useRecipeForm";
 import { Plus } from "lucide-react";
 
 export default function CreateRecipePage() {
-  const { handleCancel, handleSave } = useRecipeSave();
-  const { newRecipe } = useRecipeForm();
-
-  const onSave = () => {
-    handleSave(newRecipe);
-  };
-
   return (
     <div className="min-h-screen bg-cream sm:bg-cream bg-white">
       <div className="container max-w-7xl py-4 px-4 sm:py-8 sm:px-6">
@@ -29,16 +19,6 @@ export default function CreateRecipePage() {
         </div>
 
         <CreateRecipeContainer />
-
-        {/* Bottom Actions */}
-        <div className="mt-8 pt-6 border-t">
-          <CreateRecipeActions 
-            isMobile={false}
-            onCancel={handleCancel}
-            onSave={onSave}
-            showBackButton={false}
-          />
-        </div>
       </div>
     </div>
   );

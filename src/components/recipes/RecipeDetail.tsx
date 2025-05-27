@@ -1,6 +1,7 @@
+
 import { Recipe } from "@/types";
 import { Button } from "@/components/ui/button";
-import { CalendarDays, Clock, Pencil, Share, Users, Trash2, ArrowLeft, Zap } from "lucide-react";
+import { CalendarDays, Clock, Pencil, Share, Users, Trash2, ArrowLeft, Sparkles } from "lucide-react";
 import { RecipeImage } from "@/components/ui/recipe-image";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -274,7 +275,7 @@ export function RecipeDetail({ recipe, onAddToMealPlan, onEdit, onDelete, isOwne
               <div className="mt-8 p-4 bg-gradient-to-r from-yellow-50 to-amber-50 border-l-4 border-yellow-400 rounded-lg">
                 <div className="flex items-start gap-3">
                   <div className="flex-shrink-0">
-                    <Zap className="h-6 w-6 text-yellow-600" />
+                    <Sparkles className="h-6 w-6 text-yellow-600" />
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-yellow-800 mb-2">💡 Top Tip</h3>
