@@ -21,16 +21,12 @@ interface HouseholdMember {
 interface HouseholdMembersCardProps {
   members: HouseholdMember[];
   isOwner: boolean;
-  onRemoveMember: (memberId: string, memberUserId: string) => void;
+  onRemoveMember: (memberId: string, memberUserId: string) => Promise<boolean>;
   isLoading?: boolean;
 }
 
 export const HouseholdMembersCard = ({ members, isOwner, onRemoveMember, isLoading }: HouseholdMembersCardProps) => {
   const { user } = useAuth();
-
-  console.log("HouseholdMembersCard - members:", members);
-  console.log("HouseholdMembersCard - members length:", members?.length);
-  console.log("HouseholdMembersCard - isLoading:", isLoading);
 
   return (
     <Card>

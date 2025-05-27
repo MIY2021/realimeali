@@ -5,7 +5,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { User, Check, X } from "lucide-react";
 import { useHousehold } from "@/contexts/HouseholdContext";
-import { supabase } from "@/integrations/supabase/client";
 
 interface JoinRequestsCardProps {
   isOwner: boolean;
@@ -22,23 +21,14 @@ interface JoinRequestWithUser {
 }
 
 export const JoinRequestsCard = ({ isOwner }: JoinRequestsCardProps) => {
-  const { joinRequests, approveJoinRequest, rejectJoinRequest, currentHousehold } = useHousehold();
+  const { joinRequests, approveJoinRequest, rejectJoinRequest } = useHousehold();
   const [requestsWithUsers, setRequestsWithUsers] = useState<JoinRequestWithUser[]>([]);
-
-  // Add debug logging
-  console.log("JoinRequestsCard - isOwner:", isOwner);
-  console.log("JoinRequestsCard - joinRequests:", joinRequests);
-  console.log("JoinRequestsCard - currentHousehold:", currentHousehold);
 
   useEffect(() => {
     const fetchUserNames = async () => {
-      console.log("Fetching user names for requests:", joinRequests);
-      
       const requestsWithUserData = await Promise.all(
         joinRequests.map(async (request) => {
           try {
-            // For privacy reasons, we'll just show a generic user identifier
-            // since we can't access other users' auth metadata
             return {
               ...request,
               user_name: `User requesting to join`
@@ -53,7 +43,6 @@ export const JoinRequestsCard = ({ isOwner }: JoinRequestsCardProps) => {
         })
       );
       
-      console.log("Requests with user data:", requestsWithUserData);
       setRequestsWithUsers(requestsWithUserData);
     };
 
@@ -64,18 +53,7 @@ export const JoinRequestsCard = ({ isOwner }: JoinRequestsCardProps) => {
     }
   }, [joinRequests]);
 
-  // Force refresh join requests when component mounts if we're the owner
-  useEffect(() => {
-    if (isOwner && currentHousehold) {
-      console.log("Force refreshing join requests for household:", currentHousehold.id);
-      // We need to call fetchJoinRequests from the context
-    }
-  }, [isOwner, currentHousehold]);
-
-  console.log("Final render - requestsWithUsers:", requestsWithUsers);
-
   if (!isOwner) {
-    console.log("Not owner, not showing join requests card");
     return null;
   }
 

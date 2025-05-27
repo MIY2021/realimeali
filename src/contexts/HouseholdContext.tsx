@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
@@ -17,6 +17,11 @@ export interface HouseholdMember {
   user_id: string;
   role: 'owner' | 'member';
   joined_at: string;
+  profile?: {
+    full_name: string;
+    email: string;
+    avatar_url?: string;
+  };
 }
 
 export interface HouseholdJoinRequest {
@@ -34,16 +39,16 @@ interface HouseholdContextType {
   householdMembers: HouseholdMember[];
   joinRequests: HouseholdJoinRequest[];
   isLoading: boolean;
+  isLoadingMembers: boolean;
   error: string | null;
   createHousehold: (name: string) => Promise<Household | null>;
   setCurrentHousehold: (household: Household | null) => void;
   fetchHouseholds: () => Promise<void>;
-  fetchHouseholdMembers: (householdId: string) => Promise<void>;
   requestToJoinHousehold: (householdCode: string) => Promise<boolean>;
-  fetchJoinRequests: (householdId: string) => Promise<void>;
   approveJoinRequest: (requestId: string) => Promise<boolean>;
   rejectJoinRequest: (requestId: string) => Promise<boolean>;
   leaveHousehold: (householdId: string) => Promise<boolean>;
+  removeMember: (memberId: string, memberUserId: string) => Promise<boolean>;
 }
 
 const HouseholdContext = createContext<HouseholdContextType | undefined>(undefined);
@@ -54,47 +59,39 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
   const [householdMembers, setHouseholdMembers] = useState<HouseholdMember[]>([]);
   const [joinRequests, setJoinRequests] = useState<HouseholdJoinRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingMembers, setIsLoadingMembers] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
   const { user } = useAuth();
 
-  const fetchHouseholds = async () => {
+  const fetchHouseholds = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
       
       if (!user) {
-        console.log("No user, clearing households");
         setHouseholds([]);
         setCurrentHousehold(null);
         setIsLoading(false);
         return;
       }
 
-      console.log("Fetching households for user:", user.id);
-
-      // First get all household memberships for this user
       const { data: membershipData, error: membershipError } = await supabase
         .from('household_members')
         .select('household_id')
         .eq('user_id', user.id);
 
       if (membershipError) {
-        console.error("Error fetching memberships:", membershipError);
         throw membershipError;
       }
 
-      console.log("User memberships:", membershipData);
-
       if (!membershipData || membershipData.length === 0) {
-        console.log("User is not a member of any households");
         setHouseholds([]);
         setCurrentHousehold(null);
         setIsLoading(false);
         return;
       }
 
-      // Get household details for all households user is a member of
       const householdIds = membershipData.map(m => m.household_id);
       
       const { data: householdData, error: householdError } = await supabase
@@ -104,11 +101,8 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
         .order('created_at', { ascending: false });
 
       if (householdError) {
-        console.error("Error fetching households:", householdError);
         throw householdError;
       }
-
-      console.log("Fetched households:", householdData);
 
       const transformedHouseholds: Household[] = (householdData || []).map(item => ({
         id: item.id,
@@ -120,9 +114,7 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
 
       setHouseholds(transformedHouseholds);
       
-      // Set first household as current if none selected
       if (transformedHouseholds.length > 0 && !currentHousehold) {
-        console.log("Setting current household to first available:", transformedHouseholds[0]);
         setCurrentHousehold(transformedHouseholds[0]);
       }
     } catch (err) {
@@ -136,49 +128,79 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [user, toast, currentHousehold]);
 
-  const fetchHouseholdMembers = async (householdId: string) => {
+  const fetchHouseholdMembers = useCallback(async (householdId: string) => {
+    if (!householdId || !user) {
+      setHouseholdMembers([]);
+      return;
+    }
+
     try {
-      const { data, error } = await supabase
+      setIsLoadingMembers(true);
+      
+      const { data: memberData, error: memberError } = await supabase
         .from('household_members')
-        .select('*')
+        .select('id, user_id, role, joined_at')
         .eq('household_id', householdId);
 
-      if (error) {
-        throw error;
+      if (memberError) {
+        throw memberError;
       }
 
-      setHouseholdMembers(data || []);
-    } catch (err) {
-      console.error("Error fetching household members:", err);
+      if (!memberData || memberData.length === 0) {
+        setHouseholdMembers([]);
+        return;
+      }
+
+      const userIds = memberData.map(member => member.user_id);
+
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('id, full_name, email, avatar_url')
+        .in('id', userIds);
+
+      if (profileError) {
+        console.error("Error fetching profiles:", profileError);
+      }
+
+      const membersWithProfiles: HouseholdMember[] = memberData.map((member: any) => {
+        const profile = profileData?.find(p => p.id === member.user_id);
+        
+        return {
+          id: member.id,
+          user_id: member.user_id,
+          role: member.role,
+          joined_at: member.joined_at,
+          household_id: householdId,
+          profile: profile ? {
+            full_name: profile.full_name || 'Unknown User',
+            email: profile.email || 'No email available',
+            avatar_url: profile.avatar_url
+          } : {
+            full_name: 'Unknown User',
+            email: 'No email available',
+            avatar_url: undefined
+          }
+        };
+      });
+
+      setHouseholdMembers(membersWithProfiles);
+    } catch (error) {
+      console.error("Error fetching household members:", error);
       toast({
         title: "Error",
         description: "Failed to fetch household members.",
         variant: "destructive",
       });
+      setHouseholdMembers([]);
+    } finally {
+      setIsLoadingMembers(false);
     }
-  };
+  }, [user, toast]);
 
-  const fetchJoinRequests = async (householdId: string) => {
+  const fetchJoinRequests = useCallback(async (householdId: string) => {
     try {
-      console.log("Fetching join requests for household:", householdId);
-      console.log("Current user:", user?.id);
-      
-      // First, let's check if the current user is the owner of this household
-      const { data: membershipData, error: membershipError } = await supabase
-        .from('household_members')
-        .select('role')
-        .eq('household_id', householdId)
-        .eq('user_id', user?.id)
-        .single();
-
-      if (membershipError) {
-        console.error("Error checking membership:", membershipError);
-      } else {
-        console.log("User membership role:", membershipData?.role);
-      }
-      
       const { data, error } = await supabase
         .from('household_join_requests')
         .select('*')
@@ -187,19 +209,14 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error("Error fetching join requests:", error);
         throw error;
       }
 
-      console.log("Raw join requests data:", data);
-
-      // Type the data properly by casting the status field
       const typedRequests: HouseholdJoinRequest[] = (data || []).map(request => ({
         ...request,
         status: request.status as 'pending' | 'approved' | 'rejected'
       }));
 
-      console.log("Typed join requests:", typedRequests);
       setJoinRequests(typedRequests);
     } catch (err) {
       console.error("Error fetching join requests:", err);
@@ -209,12 +226,45 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
         variant: "destructive",
       });
     }
-  };
+  }, [toast]);
+
+  const removeMember = useCallback(async (memberId: string, memberUserId: string): Promise<boolean> => {
+    if (!currentHousehold || memberUserId === user?.id) return false;
+
+    const confirmed = window.confirm("Are you sure you want to remove this member?");
+    if (!confirmed) return false;
+
+    try {
+      const { error } = await supabase
+        .from('household_members')
+        .delete()
+        .eq('id', memberId)
+        .eq('household_id', currentHousehold.id);
+
+      if (error) throw error;
+
+      setHouseholdMembers(prev => prev.filter(m => m.id !== memberId));
+      
+      toast({
+        title: "Member Removed",
+        description: "Member has been removed from the household.",
+      });
+
+      return true;
+    } catch (error) {
+      console.error("Error removing member:", error);
+      toast({
+        title: "Error",
+        description: "Failed to remove member.",
+        variant: "destructive",
+      });
+      return false;
+    }
+  }, [currentHousehold, user?.id, toast]);
 
   const requestToJoinHousehold = async (householdCode: string): Promise<boolean> => {
     try {
       if (!user) {
-        console.error("DEBUG: No authenticated user");
         toast({
           title: "Authentication Required",
           description: "Please log in to join a household.",
@@ -223,17 +273,11 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
         return false;
       }
 
-      console.log("DEBUG: Starting join request process");
-      console.log("DEBUG: Household code:", householdCode);
-      console.log("DEBUG: Current user ID:", user.id);
-      
-      // Get all households and filter by code in JavaScript
       const { data: households, error: householdError } = await supabase
         .from('households')
         .select('*');
 
       if (householdError) {
-        console.error("DEBUG: Household lookup error:", householdError);
         toast({
           title: "Database Error",
           description: "Failed to search for household. Please try again.",
@@ -242,15 +286,11 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
         return false;
       }
 
-      console.log("DEBUG: Found households:", households?.length || 0);
-
-      // Find household where the first 6 characters of the ID match the code
       const matchingHousehold = households?.find(h => 
         h.id.slice(0, 6).toUpperCase() === householdCode.trim().toUpperCase()
       );
 
       if (!matchingHousehold) {
-        console.log("DEBUG: No matching household found for code:", householdCode);
         toast({
           title: "Invalid Code",
           description: "The household code is invalid. Please check and try again.",
@@ -259,9 +299,6 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
         return false;
       }
 
-      console.log("DEBUG: Found matching household:", matchingHousehold.name, "ID:", matchingHousehold.id);
-
-      // Check if user is already a member
       const { data: existingMember, error: memberCheckError } = await supabase
         .from('household_members')
         .select('id')
@@ -269,7 +306,6 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
         .eq('user_id', user.id);
 
       if (memberCheckError) {
-        console.error("DEBUG: Member check error:", memberCheckError);
         toast({
           title: "Database Error",
           description: "Failed to check membership status. Please try again.",
@@ -279,7 +315,6 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
       }
 
       if (existingMember && existingMember.length > 0) {
-        console.log("DEBUG: User is already a member");
         toast({
           title: "Already a Member",
           description: "You are already a member of this household.",
@@ -288,8 +323,6 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
         return false;
       }
 
-      // Check for any existing request (including rejected ones)
-      console.log("DEBUG: Checking for existing requests...");
       const { data: existingRequest, error: requestCheckError } = await supabase
         .from('household_join_requests')
         .select('*')
@@ -299,7 +332,6 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
         .limit(1);
 
       if (requestCheckError) {
-        console.error("DEBUG: Request check error:", requestCheckError);
         toast({
           title: "Database Error",
           description: "Failed to check existing requests. Please try again.",
@@ -308,15 +340,10 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
         return false;
       }
 
-      console.log("DEBUG: Existing request data:", existingRequest);
-
       if (existingRequest && existingRequest.length > 0) {
         const request = existingRequest[0];
-        console.log("DEBUG: Found existing request with status:", request.status);
-        console.log("DEBUG: Request ID:", request.id);
         
         if (request.status === 'pending') {
-          console.log("DEBUG: Request is already pending");
           toast({
             title: "Request Already Sent",
             description: "You already have a pending request for this household.",
@@ -324,7 +351,6 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
           });
           return false;
         } else if (request.status === 'approved') {
-          console.log("DEBUG: Request was already approved");
           toast({
             title: "Request Already Approved",
             description: "Your request was already approved. You should be a member of this household.",
@@ -332,20 +358,12 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
           });
           return false;
         } else if (request.status === 'rejected') {
-          console.log("DEBUG: Deleting rejected request and creating new one");
-          console.log("DEBUG: Attempting to delete request ID:", request.id);
-        
-          // Delete the existing rejected request and create a new one
-          // This avoids any potential RLS issues with updates
           const { error: deleteError } = await supabase
             .from('household_join_requests')
             .delete()
             .eq('id', request.id);
 
-          console.log("DEBUG: Delete error:", deleteError);
-
           if (deleteError) {
-            console.error("DEBUG: Request delete error:", deleteError);
             toast({
               title: "Failed to Send Request",
               description: "Could not remove old request. Please try again.",
@@ -353,45 +371,9 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
             });
             return false;
           }
-
-          console.log("DEBUG: Successfully deleted old request, now creating new one");
-        
-          // Create new request
-          const { data: insertData, error: insertError } = await supabase
-            .from('household_join_requests')
-            .insert([{
-              household_id: matchingHousehold.id,
-              user_id: user.id,
-              status: 'pending'
-            }])
-            .select('*');
-
-          console.log("DEBUG: Insert response data:", insertData);
-          console.log("DEBUG: Insert error:", insertError);
-
-          if (insertError) {
-            console.error("DEBUG: Request insert error:", insertError);
-            toast({
-              title: "Failed to Send Request",
-              description: "Could not create join request. Please try again.",
-              variant: "destructive",
-            });
-            return false;
-          }
-
-          console.log("DEBUG: Successfully created new request:", insertData);
-          toast({
-            title: "Request Sent Successfully!",
-            description: `Your join request for "${matchingHousehold.name}" has been sent. The household owner will review your request.`,
-          });
-
-          return true;
         }
       }
 
-      // Create new join request (only if no existing request found)
-      console.log("DEBUG: Creating new join request");
-    
       const { data: insertData, error: requestError } = await supabase
         .from('household_join_requests')
         .insert([{
@@ -401,13 +383,7 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
         }])
         .select('*');
 
-      console.log("DEBUG: Insert response data:", insertData);
-      console.log("DEBUG: Insert error:", requestError);
-
       if (requestError) {
-        console.error("DEBUG: Request insert error:", requestError);
-      
-        // Handle the specific duplicate key error
         if (requestError.code === '23505') {
           toast({
             title: "Request Already Exists",
@@ -424,7 +400,6 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
         return false;
       }
 
-      console.log("DEBUG: Successfully created join request:", insertData);
       toast({
         title: "Request Sent Successfully!",
         description: `Your join request for "${matchingHousehold.name}" has been sent. The household owner will review your request.`,
@@ -432,7 +407,7 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
 
       return true;
     } catch (error) {
-      console.error("DEBUG: Unexpected error requesting to join household:", error);
+      console.error("Error requesting to join household:", error);
       toast({
         title: "Unexpected Error",
         description: "An unexpected error occurred. Please try again later.",
@@ -444,7 +419,6 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
 
   const approveJoinRequest = async (requestId: string): Promise<boolean> => {
     try {
-      // Get the request details
       const { data: request, error: fetchError } = await supabase
         .from('household_join_requests')
         .select('*')
@@ -455,7 +429,6 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
         throw fetchError || new Error("Request not found");
       }
 
-      // Add user to household
       const { error: memberError } = await supabase
         .from('household_members')
         .insert([{
@@ -468,7 +441,6 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
         throw memberError;
       }
 
-      // Update request status
       const { error: updateError } = await supabase
         .from('household_join_requests')
         .update({ status: 'approved' })
@@ -478,7 +450,6 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
         throw updateError;
       }
 
-      // Refresh data
       if (currentHousehold) {
         await fetchHouseholdMembers(currentHousehold.id);
         await fetchJoinRequests(currentHousehold.id);
@@ -511,7 +482,6 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
         throw error;
       }
 
-      // Refresh join requests
       if (currentHousehold) {
         await fetchJoinRequests(currentHousehold.id);
       }
@@ -534,13 +504,8 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
 
   const createHousehold = async (name: string): Promise<Household | null> => {
     try {
-      console.log("=== Starting household creation process ===");
-      console.log("User:", user?.id);
-      console.log("Household name:", name);
-
       if (!user) {
         const errorMsg = "You must be logged in to create a household. Please sign in and try again.";
-        console.error("ERROR: No authenticated user");
         throw new Error(errorMsg);
       }
 
@@ -556,22 +521,11 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
         throw new Error("Household name cannot be longer than 50 characters.");
       }
 
-      console.log("Calling create_household_with_owner function...");
-
       const { data, error } = await supabase.rpc('create_household_with_owner', {
         household_name: name.trim()
       });
 
       if (error) {
-        console.error("Database error during household creation:", error);
-        console.error("Error details:", {
-          code: error.code,
-          message: error.message,
-          details: error.details,
-          hint: error.hint
-        });
-        
-        // Provide specific error messages based on error codes
         if (error.code === '23505') {
           throw new Error("A household with this name already exists for your account. Please choose a different name.");
         } else if (error.code === '42501') {
@@ -586,14 +540,9 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
       }
 
       if (!data) {
-        console.error("No data returned from create_household_with_owner");
         throw new Error("Failed to create household. No data returned from server.");
       }
 
-      console.log("Household created successfully with ID:", data);
-
-      // Fetch the created household details
-      console.log("Fetching created household details...");
       const { data: householdData, error: fetchError } = await supabase
         .from('households')
         .select('*')
@@ -601,11 +550,8 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
         .single();
 
       if (fetchError) {
-        console.error("Error fetching created household:", fetchError);
         throw new Error(`Household created but failed to retrieve details: ${fetchError.message}`);
       }
-
-      console.log("Successfully fetched household data:", householdData);
 
       const newHousehold: Household = {
         id: householdData.id,
@@ -618,8 +564,6 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
       setHouseholds(prev => [newHousehold, ...prev]);
       setCurrentHousehold(newHousehold);
       
-      console.log("=== Household creation completed successfully ===");
-      
       toast({
         title: "Household Created",
         description: `${name} has been created successfully.`,
@@ -627,11 +571,6 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
 
       return newHousehold;
     } catch (err) {
-      console.error("=== Error in createHousehold function ===");
-      console.error("Error type:", typeof err);
-      console.error("Error details:", err);
-      
-      // Re-throw the error so the UI component can handle it
       if (err instanceof Error) {
         throw err;
       } else {
@@ -678,20 +617,18 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     fetchHouseholds();
-  }, [user]);
+  }, [user?.id]);
 
   useEffect(() => {
-    if (currentHousehold) {
-      console.log("Current household changed, fetching members and join requests for:", currentHousehold.id);
+    if (currentHousehold && user) {
       fetchHouseholdMembers(currentHousehold.id);
       fetchJoinRequests(currentHousehold.id);
     } else {
-      console.log("No current household, clearing join requests");
+      setHouseholdMembers([]);
       setJoinRequests([]);
     }
-  }, [currentHousehold]);
+  }, [currentHousehold?.id, user?.id]);
 
-  // Set up real-time subscription for household changes
   useEffect(() => {
     if (!user) return;
 
@@ -705,7 +642,6 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
           table: 'households'
         },
         () => {
-          console.log("Household change detected, refetching...");
           fetchHouseholds();
         }
       )
@@ -717,7 +653,6 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
           table: 'household_members'
         },
         () => {
-          console.log("Household member change detected, refetching...");
           fetchHouseholds();
           if (currentHousehold) {
             fetchHouseholdMembers(currentHousehold.id);
@@ -732,7 +667,6 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
           table: 'household_join_requests'
         },
         () => {
-          console.log("Join request change detected, refetching...");
           if (currentHousehold) {
             fetchJoinRequests(currentHousehold.id);
           }
@@ -743,26 +677,43 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user, currentHousehold]);
+  }, [user?.id, currentHousehold?.id]);
+
+  const contextValue = useMemo(() => ({
+    households,
+    currentHousehold,
+    householdMembers,
+    joinRequests,
+    isLoading,
+    isLoadingMembers,
+    error,
+    createHousehold,
+    setCurrentHousehold,
+    fetchHouseholds,
+    requestToJoinHousehold,
+    approveJoinRequest,
+    rejectJoinRequest,
+    leaveHousehold,
+    removeMember
+  }), [
+    households,
+    currentHousehold,
+    householdMembers,
+    joinRequests,
+    isLoading,
+    isLoadingMembers,
+    error,
+    createHousehold,
+    fetchHouseholds,
+    requestToJoinHousehold,
+    approveJoinRequest,
+    rejectJoinRequest,
+    leaveHousehold,
+    removeMember
+  ]);
 
   return (
-    <HouseholdContext.Provider value={{
-      households,
-      currentHousehold,
-      householdMembers,
-      joinRequests,
-      isLoading,
-      error,
-      createHousehold,
-      setCurrentHousehold,
-      fetchHouseholds,
-      fetchHouseholdMembers,
-      requestToJoinHousehold,
-      fetchJoinRequests,
-      approveJoinRequest,
-      rejectJoinRequest,
-      leaveHousehold
-    }}>
+    <HouseholdContext.Provider value={contextValue}>
       {children}
     </HouseholdContext.Provider>
   );

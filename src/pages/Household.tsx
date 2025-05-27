@@ -2,7 +2,6 @@
 import { User } from "lucide-react";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { useAuth } from "@/contexts/AuthContext";
-import { useHouseholdMembers } from "@/hooks/useHouseholdMembers";
 import { JoinHouseholdCard } from "@/components/household/JoinHouseholdCard";
 import { HouseholdDetailsCard } from "@/components/household/HouseholdDetailsCard";
 import { HouseholdMembersCard } from "@/components/household/HouseholdMembersCard";
@@ -12,17 +11,10 @@ import { CreateHouseholdCard } from "@/components/household/CreateHouseholdCard"
 
 export default function Household() {
   const { user } = useAuth();
-  const { currentHousehold, setCurrentHousehold } = useHousehold();
-  const { members, removeMember } = useHouseholdMembers(currentHousehold?.id || null);
+  const { currentHousehold, setCurrentHousehold, householdMembers, isLoadingMembers, removeMember } = useHousehold();
 
-  // Fix: Check if user is owner by comparing user ID with household created_by
-  // This is more reliable than waiting for members array to load
   const isOwner = currentHousehold && user && currentHousehold.created_by === user.id;
   const householdCode = currentHousehold ? currentHousehold.id.slice(0, 6).toUpperCase() : "";
-
-  console.log("Household page - user:", user?.id);
-  console.log("Household page - currentHousehold created_by:", currentHousehold?.created_by);
-  console.log("Household page - isOwner:", isOwner);
 
   if (!user) {
     return (
@@ -65,9 +57,10 @@ export default function Household() {
         <JoinRequestsCard isOwner={!!isOwner} />
 
         <HouseholdMembersCard
-          members={members}
+          members={householdMembers}
           isOwner={!!isOwner}
           onRemoveMember={removeMember}
+          isLoading={isLoadingMembers}
         />
 
         {isOwner && (
