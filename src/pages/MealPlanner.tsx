@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import Layout from "@/components/layout/Layout";
 import { WeekSelector } from "@/components/meal-planner/WeekSelector";
@@ -41,9 +40,9 @@ const MealPlanner = () => {
 
   return (
     <Layout>
-      <div className="container mx-auto px-4 py-6 max-w-4xl">
-        {/* Title with icon at the top - reduced margin */}
-        <div className="mb-6">
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
+        {/* Title with icon at the top */}
+        <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
             <Calendar className="h-8 w-8 text-terracotta" />
             <h1 className="text-3xl font-bold text-navy">Meal Planner</h1>
