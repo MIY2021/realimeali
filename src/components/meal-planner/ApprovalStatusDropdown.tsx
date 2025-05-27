@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,6 +29,7 @@ export const ApprovalStatusDropdown = ({
   variant = "outline",
 }: ApprovalStatusDropdownProps) => {
   const [open, setOpen] = useState(false);
+  const [notificationStates, setNotificationStates] = useState<Record<string, boolean>>({});
   const { getRequestApprovals } = useMealPlanApproval();
   const { householdMembers } = useHousehold();
   const { toast } = useToast();
@@ -66,7 +68,7 @@ export const ApprovalStatusDropdown = ({
     return approval.approved ? "default" : "destructive";
   };
 
-  const handleSendNotification = async (memberName: string) => {
+  const handleSendNotification = async (memberName: string, userId: string) => {
     try {
       // Request permission if not already granted
       const permission = await notificationService.requestPermission();
@@ -76,6 +78,12 @@ export const ApprovalStatusDropdown = ({
           memberName, 
           request.week_number
         );
+        
+        // Update the notification state to show "Request Sent"
+        setNotificationStates(prev => ({
+          ...prev,
+          [userId]: true
+        }));
         
         toast({
           title: "Notification Sent",
@@ -115,6 +123,7 @@ export const ApprovalStatusDropdown = ({
         {householdMembers.map((member) => {
           const approval = getApprovalForMember(member.user_id);
           const memberName = member.profile?.full_name || member.profile?.email || 'Unknown User';
+          const hasNotificationSent = notificationStates[member.user_id];
           
           return (
             <DropdownMenuItem key={member.id} className="flex items-center justify-between p-3">
@@ -132,6 +141,11 @@ export const ApprovalStatusDropdown = ({
                       "{approval.comments}"
                     </p>
                   )}
+                  {hasNotificationSent && (
+                    <p className="text-xs text-green-600 font-medium mt-1">
+                      Request Sent
+                    </p>
+                  )}
                 </div>
               </div>
               
@@ -146,7 +160,7 @@ export const ApprovalStatusDropdown = ({
                   className="h-8 w-8 p-0 hover:bg-muted"
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleSendNotification(memberName);
+                    handleSendNotification(memberName, member.user_id);
                   }}
                   title={`Send reminder to ${memberName}`}
                 >

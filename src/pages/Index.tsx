@@ -28,7 +28,7 @@ export default function Index() {
         </div>
       </section>
 
-      <section className="py-4 md:py-6 bg-gray-50 flex-grow">
+      <section className="py-8 bg-white flex-grow">
         <div className="container px-4 md:px-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-10">
             <div className="group relative overflow-hidden rounded-lg border bg-white p-6 shadow-md transition-all hover:shadow-lg md:min-h-[300px]">

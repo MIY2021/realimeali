@@ -60,7 +60,7 @@ export const useRandomMealSelection = (week: 1 | 2) => {
   };
 
   const performMealSelection = async () => {
-    console.log("Starting random meal selection...");
+    console.log("Starting random meal selection for week", week);
     setIsLoading(true);
     
     try {
@@ -144,6 +144,8 @@ export const useRandomMealSelection = (week: 1 | 2) => {
   };
 
   const handleRandomize = async () => {
+    console.log("handleRandomize called", { user: !!user, currentHousehold: !!currentHousehold, recipesCount: recipes.length });
+    
     if (!user) {
       toast({
         title: "Login Required",
