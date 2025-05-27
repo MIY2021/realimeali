@@ -1,3 +1,4 @@
+
 import { MealType, MealPlan, Recipe } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Plus, GripVertical } from "lucide-react";
@@ -42,9 +43,12 @@ export default function MealListSection({
   return (
     <div className={`mb-${isMobile ? '4' : '6'}`}>
       <div className={`flex items-center justify-between mb-3 ${isMobile ? 'px-1' : ''}`}>
-        <h3 className={`${isMobile ? 'text-base' : 'text-lg'} font-semibold capitalize text-navy`}>
-          {mealType}
-        </h3>
+        <div className="flex items-center gap-2">
+          <GripVertical className={`${isMobile ? 'h-4 w-4' : 'h-5 w-5'} text-gray-400 cursor-grab active:cursor-grabbing`} />
+          <h3 className={`${isMobile ? 'text-base' : 'text-lg'} font-semibold capitalize text-navy`}>
+            {mealType}
+          </h3>
+        </div>
         <Button
           size={isMobile ? "sm" : "sm"}
           variant="outline"
