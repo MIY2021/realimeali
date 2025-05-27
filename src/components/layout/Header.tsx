@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { User, UtensilsCrossed, CalendarDays, Book, ListChecks, Users, AlignJustify } from "lucide-react";
@@ -21,6 +20,7 @@ import {
 } from "@/components/ui/sheet";
 import { useState, useEffect } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { MobileMenuIndicator } from "./MobileMenuIndicator";
 
 const Header = () => {
   const { user, signOut } = useAuth();
@@ -111,149 +111,157 @@ const Header = () => {
   }, [isMobile]);
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-[#FEC6A1] shadow-sm">
-      <div className="container flex h-16 items-center justify-between px-4 sm:px-6">
-        <Link to="/" className="flex items-center space-x-2">
-          <UtensilsCrossed className="h-6 w-6 text-terracotta" />
-          <span className="text-xl font-bold text-navy">RealiMeali</span>
-        </Link>
-        
-        {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center space-x-6">
-          {navigationItems.map((item) => (
-            <Link
-              key={item.to}
-              to={item.to}
-              className="flex items-center space-x-1 text-navy hover:text-terracotta transition-colors"
-            >
-              <item.icon className="h-4 w-4" />
-              <span>{item.label}</span>
-            </Link>
-          ))}
-        </nav>
-
-        <div className="flex items-center space-x-3">
-          {/* Household Selector */}
-          {user && currentHousehold && (
-            <div className="hidden sm:flex items-center text-navy text-sm font-medium">
-              <Users className="h-4 w-4 mr-1" />
-              <span className="truncate max-w-32">{currentHousehold.name}</span>
-            </div>
-          )}
-
-          {/* Mobile Menu */}
-          <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="sm" className="md:hidden p-2">
-                <AlignJustify className="h-5 w-5" />
-                <span className="sr-only">Open menu</span>
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="right" className="w-64">
-              <SheetHeader>
-                <SheetTitle className="text-left">Menu</SheetTitle>
-              </SheetHeader>
-              <div className="flex flex-col space-y-4 mt-6">
-                {navigationItems.map((item) => (
-                  <Link
-                    key={item.to}
-                    to={item.to}
-                    className="flex items-center space-x-2 text-navy hover:text-terracotta transition-colors p-2 rounded"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <item.icon className="h-4 w-4" />
-                    <span>{item.label}</span>
-                  </Link>
-                ))}
-                {user && (
-                  <>
-                    <hr className="my-2" />
-                    <Link
-                      to="/account"
-                      className="flex items-center space-x-2 text-navy hover:text-terracotta transition-colors p-2 rounded"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      <User className="h-4 w-4" />
-                      <span>Manage Account</span>
-                    </Link>
-                    <Link
-                      to="/household"
-                      className="flex items-center space-x-2 text-navy hover:text-terracotta transition-colors p-2 rounded"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      <Users className="h-4 w-4" />
-                      <span>Manage Household</span>
-                    </Link>
-                    <button
-                      onClick={() => {
-                        signOut();
-                        setMobileMenuOpen(false);
-                      }}
-                      className="flex items-center space-x-2 text-navy hover:text-terracotta transition-colors p-2 rounded text-left w-full"
-                    >
-                      <span>Logout</span>
-                    </button>
-                  </>
-                )}
-              </div>
-            </SheetContent>
-          </Sheet>
-
-          {/* User Menu */}
-          {user ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="flex items-center space-x-2 p-1">
-                  <div className="relative">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage 
-                        src={user.user_metadata?.avatar_url} 
-                        alt={user.user_metadata?.full_name || user.email || "User"}
-                        onError={handleAvatarError}
-                        onLoad={handleAvatarLoad}
-                        className="object-cover"
-                      />
-                      <AvatarFallback>
-                        {(user.user_metadata?.full_name || user.email)?.[0].toUpperCase() || "U"}
-                      </AvatarFallback>
-                    </Avatar>
-                    {avatarError && user.user_metadata?.avatar_url && (
-                      <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border border-white" 
-                           title="Avatar failed to load" />
-                    )}
-                  </div>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuItem asChild>
-                  <Link to="/account" className="flex items-center">
-                    <User className="h-4 w-4 mr-2" />
-                    Manage Account
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/household" className="flex items-center">
-                    <Users className="h-4 w-4 mr-2" />
-                    Manage Household
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={signOut}>
-                  Logout
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          ) : (
-            <Button variant="ghost" size="sm" asChild>
-              <Link to="/login" className="flex items-center space-x-1">
-                <User className="h-4 w-4" />
-                <span className="hidden sm:inline">Login</span>
+    <>
+      <header className="fixed top-0 left-0 right-0 z-50 w-full border-b bg-[#FEC6A1]/95 backdrop-blur-sm shadow-sm">
+        <div className="container flex h-16 items-center justify-between px-4 sm:px-6">
+          <Link to="/" className="flex items-center space-x-2">
+            <UtensilsCrossed className="h-6 w-6 text-terracotta" />
+            <span className="text-xl font-bold text-navy">RealiMeali</span>
+          </Link>
+          
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex items-center space-x-6">
+            {navigationItems.map((item) => (
+              <Link
+                key={item.to}
+                to={item.to}
+                className="flex items-center space-x-1 text-navy hover:text-terracotta transition-colors"
+              >
+                <item.icon className="h-4 w-4" />
+                <span>{item.label}</span>
               </Link>
-            </Button>
-          )}
+            ))}
+          </nav>
+
+          <div className="flex items-center space-x-3">
+            {/* Household Selector */}
+            {user && currentHousehold && (
+              <div className="hidden sm:flex items-center text-navy text-sm font-medium">
+                <Users className="h-4 w-4 mr-1" />
+                <span className="truncate max-w-32">{currentHousehold.name}</span>
+              </div>
+            )}
+
+            {/* Mobile Menu */}
+            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="sm" className="md:hidden p-2">
+                  <AlignJustify className="h-5 w-5" />
+                  <span className="sr-only">Open menu</span>
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-64">
+                <SheetHeader>
+                  <SheetTitle className="text-left">Menu</SheetTitle>
+                </SheetHeader>
+                <div className="flex flex-col space-y-4 mt-6">
+                  {navigationItems.map((item) => (
+                    <Link
+                      key={item.to}
+                      to={item.to}
+                      className="flex items-center space-x-2 text-navy hover:text-terracotta transition-colors p-2 rounded"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <item.icon className="h-4 w-4" />
+                      <span>{item.label}</span>
+                    </Link>
+                  ))}
+                  {user && (
+                    <>
+                      <hr className="my-2" />
+                      <Link
+                        to="/account"
+                        className="flex items-center space-x-2 text-navy hover:text-terracotta transition-colors p-2 rounded"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        <User className="h-4 w-4" />
+                        <span>Manage Account</span>
+                      </Link>
+                      <Link
+                        to="/household"
+                        className="flex items-center space-x-2 text-navy hover:text-terracotta transition-colors p-2 rounded"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        <Users className="h-4 w-4" />
+                        <span>Manage Household</span>
+                      </Link>
+                      <button
+                        onClick={() => {
+                          signOut();
+                          setMobileMenuOpen(false);
+                        }}
+                        className="flex items-center space-x-2 text-navy hover:text-terracotta transition-colors p-2 rounded text-left w-full"
+                      >
+                        <span>Logout</span>
+                      </button>
+                    </>
+                  )}
+                </div>
+              </SheetContent>
+            </Sheet>
+
+            {/* User Menu */}
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="flex items-center space-x-2 p-1">
+                    <div className="relative">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage 
+                          src={user.user_metadata?.avatar_url} 
+                          alt={user.user_metadata?.full_name || user.email || "User"}
+                          onError={handleAvatarError}
+                          onLoad={handleAvatarLoad}
+                          className="object-cover"
+                        />
+                        <AvatarFallback>
+                          {(user.user_metadata?.full_name || user.email)?.[0].toUpperCase() || "U"}
+                        </AvatarFallback>
+                      </Avatar>
+                      {avatarError && user.user_metadata?.avatar_url && (
+                        <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border border-white" 
+                             title="Avatar failed to load" />
+                      )}
+                    </div>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuItem asChild>
+                    <Link to="/account" className="flex items-center">
+                      <User className="h-4 w-4 mr-2" />
+                      Manage Account
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/household" className="flex items-center">
+                      <Users className="h-4 w-4 mr-2" />
+                      Manage Household
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={signOut}>
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button variant="ghost" size="sm" asChild>
+                <Link to="/login" className="flex items-center space-x-1">
+                  <User className="h-4 w-4" />
+                  <span className="hidden sm:inline">Login</span>
+                </Link>
+              </Button>
+            )}
+          </div>
         </div>
-      </div>
-    </header>
+      </header>
+
+      {/* Mobile Menu Indicator */}
+      <MobileMenuIndicator 
+        onClick={() => setMobileMenuOpen(true)}
+        isMenuOpen={mobileMenuOpen}
+      />
+    </>
   );
 };
 
