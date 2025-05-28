@@ -74,7 +74,6 @@ export const SaveRecipeDialog = ({ recipe, isOpen, onOpenChange }: SaveRecipeDia
         image: recipe.image,
         topTip: recipe.sourceUrl ? `Original recipe: ${recipe.sourceUrl}` : undefined,
         isFavorite: false,
-        userId: '', // Will be set by the context
         householdId: currentHousehold.id,
       };
 
