@@ -27,7 +27,6 @@ export const MealDBRecipeCard = ({ recipe }: MealDBRecipeCardProps) => {
 
   // Extract source from the recipe data (if available)
   const getRecipeSource = () => {
-    // This would come from the API if available, for now we'll show a generic source
     return "TheMealDB";
   };
 
@@ -51,21 +50,15 @@ export const MealDBRecipeCard = ({ recipe }: MealDBRecipeCardProps) => {
     return "6-8";
   };
 
-  // Handle recipe view - only open source URL if available
-  const handleViewRecipe = () => {
-    if (recipe.sourceUrl) {
-      window.open(recipe.sourceUrl, '_blank');
-    }
-  };
-
   const shortDescription = getShortDescription(recipe.instructions);
   const source = getRecipeSource();
+  const hasExternalSource = recipe.sourceUrl && recipe.sourceUrl.trim() !== '';
 
   return (
     <>
       <Card className="group hover:shadow-lg transition-all duration-200 cursor-pointer h-full flex flex-col">
         <CardHeader className="p-0">
-          <div className="relative overflow-hidden rounded-t-lg" onClick={handleViewRecipe}>
+          <div className="relative overflow-hidden rounded-t-lg">
             <img
               src={recipe.image || "/placeholder.svg"}
               alt={recipe.title}
@@ -80,10 +73,7 @@ export const MealDBRecipeCard = ({ recipe }: MealDBRecipeCardProps) => {
         </CardHeader>
 
         <CardContent className="p-4 flex-1 flex flex-col">
-          <h3 
-            className="font-semibold text-lg mb-2 line-clamp-2 text-navy group-hover:text-terracotta transition-colors cursor-pointer"
-            onClick={handleViewRecipe}
-          >
+          <h3 className="font-semibold text-lg mb-2 line-clamp-2 text-navy group-hover:text-terracotta transition-colors">
             {recipe.title}
           </h3>
 
@@ -127,9 +117,9 @@ export const MealDBRecipeCard = ({ recipe }: MealDBRecipeCardProps) => {
               <Heart className="h-4 w-4 mr-2" />
               Save Recipe
             </Button>
-            {recipe.sourceUrl && (
+            {hasExternalSource && (
               <Button
-                onClick={handleViewRecipe}
+                onClick={() => window.open(recipe.sourceUrl, '_blank')}
                 variant="outline"
                 size="sm"
                 className="flex-1"

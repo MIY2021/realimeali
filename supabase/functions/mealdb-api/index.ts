@@ -124,17 +124,27 @@ function processRecipe(meal: MealDBRecipe): ProcessedRecipe {
   };
 }
 
-function filterRecipesWithValidSources(recipes: ProcessedRecipe[]): ProcessedRecipe[] {
-  console.log(`Filtering ${recipes.length} recipes for valid sources`);
+function filterRecipesWithEssentialData(recipes: ProcessedRecipe[]): ProcessedRecipe[] {
+  console.log(`Filtering ${recipes.length} recipes for essential data`);
   const filtered = recipes.filter(recipe => {
-    // Only include recipes that have a valid source URL (not just YouTube)
-    const hasValidSource = recipe.sourceUrl && recipe.sourceUrl.trim() !== '';
-    if (!hasValidSource) {
-      console.log(`Filtered out recipe "${recipe.title}" - no source URL`);
+    // Check if recipe has essential data: title, ingredients, and instructions
+    const hasTitle = recipe.title && recipe.title.trim() !== '';
+    const hasIngredients = recipe.ingredients && recipe.ingredients.length > 0;
+    const hasInstructions = recipe.instructions && recipe.instructions.length > 0;
+    
+    const isValid = hasTitle && hasIngredients && hasInstructions;
+    
+    if (!isValid) {
+      console.log(`Filtered out recipe "${recipe.title}" - missing essential data:`, {
+        hasTitle,
+        hasIngredients: hasIngredients ? recipe.ingredients.length : 0,
+        hasInstructions: hasInstructions ? recipe.instructions.length : 0
+      });
     }
-    return hasValidSource;
+    
+    return isValid;
   });
-  console.log(`After filtering: ${filtered.length} recipes with valid sources`);
+  console.log(`After filtering: ${filtered.length} recipes with essential data`);
   return filtered;
 }
 
@@ -281,11 +291,11 @@ Deno.serve(async (req) => {
 
         console.log(`Raw meals from search: ${meals.length}`);
 
-        // Process all meals and filter for valid sources
+        // Process all meals and filter for essential data instead of source URLs
         const processedRecipes = meals.map(processRecipe);
         console.log(`Processed recipes: ${processedRecipes.length}`);
 
-        const validRecipes = filterRecipesWithValidSources(processedRecipes);
+        const validRecipes = filterRecipesWithEssentialData(processedRecipes);
         console.log(`Valid recipes after filtering: ${validRecipes.length}`);
 
         const uniqueRecipes = await removeDuplicates(validRecipes);
@@ -324,7 +334,8 @@ Deno.serve(async (req) => {
           const meals = await fetchMealsFromUrl('https://www.themealdb.com/api/json/v1/1/random.php');
           if (meals.length > 0) {
             const processedRecipe = processRecipe(meals[0]);
-            if (processedRecipe.sourceUrl && processedRecipe.sourceUrl.trim() !== '') {
+            // For random recipes, only check for essential data, not source URL
+            if (processedRecipe.title && processedRecipe.ingredients.length > 0 && processedRecipe.instructions.length > 0) {
               randomRecipes.push(processedRecipe);
             }
           }
@@ -347,13 +358,12 @@ Deno.serve(async (req) => {
       
       if (meals.length > 0) {
         const processedRecipe = processRecipe(meals[0]);
-        if (processedRecipe.sourceUrl && processedRecipe.sourceUrl.trim() !== '') {
-          response = {
-            recipes: [processedRecipe],
-            totalCount: 1,
-            hasMore: false
-          };
-        }
+        // For details, return the recipe even without source URL
+        response = {
+          recipes: [processedRecipe],
+          totalCount: 1,
+          hasMore: false
+        };
       }
 
     } else if (action === 'ingredients') {
