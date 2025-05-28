@@ -125,10 +125,17 @@ function processRecipe(meal: MealDBRecipe): ProcessedRecipe {
 }
 
 function filterRecipesWithValidSources(recipes: ProcessedRecipe[]): ProcessedRecipe[] {
-  return recipes.filter(recipe => {
+  console.log(`Filtering ${recipes.length} recipes for valid sources`);
+  const filtered = recipes.filter(recipe => {
     // Only include recipes that have a valid source URL (not just YouTube)
-    return recipe.sourceUrl && recipe.sourceUrl.trim() !== '';
+    const hasValidSource = recipe.sourceUrl && recipe.sourceUrl.trim() !== '';
+    if (!hasValidSource) {
+      console.log(`Filtered out recipe "${recipe.title}" - no source URL`);
+    }
+    return hasValidSource;
   });
+  console.log(`After filtering: ${filtered.length} recipes with valid sources`);
+  return filtered;
 }
 
 async function fetchMealsFromUrl(url: string): Promise<MealDBRecipe[]> {
@@ -136,10 +143,19 @@ async function fetchMealsFromUrl(url: string): Promise<MealDBRecipe[]> {
   const response = await fetch(url);
   
   if (!response.ok) {
+    console.error(`API request failed: ${response.status} for URL: ${url}`);
     throw new Error(`API request failed: ${response.status}`);
   }
   
   const data = await response.json();
+  console.log(`API response data:`, { 
+    mealsCount: data.meals?.length || 0, 
+    firstMeal: data.meals?.[0] ? {
+      id: data.meals[0].idMeal,
+      title: data.meals[0].strMeal,
+      hasSource: !!data.meals[0].strSource
+    } : null 
+  });
   return data.meals || [];
 }
 
@@ -168,24 +184,32 @@ async function fetchAllMealsForSearch(searchParams: {
   query?: string;
 }): Promise<{ meals: MealDBRecipe[], totalAvailable: number }> {
   const { category, area, ingredient, query } = searchParams;
+  console.log('Search params:', searchParams);
   
   let allMeals: MealDBRecipe[] = [];
   let totalAvailable = 0;
 
   // For specific filters, we can get the complete result set
   if (category && category !== 'all') {
+    console.log(`Searching by category: ${category}`);
     const meals = await fetchMealsFromUrl(`https://www.themealdb.com/api/json/v1/1/filter.php?c=${encodeURIComponent(category)}`);
     allMeals = meals;
     totalAvailable = meals.length;
+    console.log(`Category search returned ${meals.length} meals`);
   } else if (area && area !== 'all') {
+    console.log(`Searching by area: ${area}`);
     const meals = await fetchMealsFromUrl(`https://www.themealdb.com/api/json/v1/1/filter.php?a=${encodeURIComponent(area)}`);
     allMeals = meals;
     totalAvailable = meals.length;
+    console.log(`Area search returned ${meals.length} meals`);
   } else if (ingredient && ingredient !== 'all') {
+    console.log(`Searching by ingredient: ${ingredient}`);
     const meals = await fetchMealsFromUrl(`https://www.themealdb.com/api/json/v1/1/filter.php?i=${encodeURIComponent(ingredient)}`);
     allMeals = meals;
     totalAvailable = meals.length;
+    console.log(`Ingredient search returned ${meals.length} meals`);
   } else if (query) {
+    console.log(`Searching by query: ${query}`);
     // For text search, combine name and ingredient searches
     const searchPromises: Promise<MealDBRecipe[]>[] = [];
     
@@ -208,11 +232,14 @@ async function fetchAllMealsForSearch(searchParams: {
     
     allMeals = Array.from(combinedMeals.values());
     totalAvailable = allMeals.length;
+    console.log(`Query search returned ${allMeals.length} meals`);
   } else {
     // If no filters are provided, return empty array - this should trigger random recipes
+    console.log('No search filters provided, returning empty array');
     return { meals: [], totalAvailable: 0 };
   }
 
+  console.log(`Total meals before processing: ${allMeals.length}`);
   return { meals: allMeals, totalAvailable };
 }
 
@@ -242,6 +269,8 @@ Deno.serve(async (req) => {
         (query && query.trim())
       );
 
+      console.log('Has active filters:', hasActiveFilters, { category, area, ingredient, query });
+
       if (hasActiveFilters) {
         const { meals, totalAvailable } = await fetchAllMealsForSearch({
           category: category !== 'all' ? category : undefined,
@@ -250,15 +279,24 @@ Deno.serve(async (req) => {
           query: query?.trim() || undefined
         });
 
+        console.log(`Raw meals from search: ${meals.length}`);
+
         // Process all meals and filter for valid sources
         const processedRecipes = meals.map(processRecipe);
+        console.log(`Processed recipes: ${processedRecipes.length}`);
+
         const validRecipes = filterRecipesWithValidSources(processedRecipes);
+        console.log(`Valid recipes after filtering: ${validRecipes.length}`);
+
         const uniqueRecipes = await removeDuplicates(validRecipes);
+        console.log(`Unique recipes after deduplication: ${uniqueRecipes.length}`);
 
         // Apply client-side pagination
         const startIndex = offset;
         const endIndex = startIndex + number;
         const paginatedRecipes = uniqueRecipes.slice(startIndex, endIndex);
+
+        console.log(`Paginated recipes (${startIndex}-${endIndex}): ${paginatedRecipes.length}`);
 
         response = {
           recipes: paginatedRecipes,
@@ -267,6 +305,7 @@ Deno.serve(async (req) => {
         };
       } else {
         // No active filters - return empty results, frontend should load random recipes
+        console.log('No active filters, returning empty results');
         response = {
           recipes: [],
           totalCount: 0,
@@ -363,7 +402,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    console.log(`Successfully processed ${response.recipes.length} recipes with valid sources (${response.totalCount} total available)`);
+    console.log(`Final response: ${response.recipes.length} recipes, total: ${response.totalCount}, hasMore: ${response.hasMore}`);
 
     return new Response(
       JSON.stringify(response),
