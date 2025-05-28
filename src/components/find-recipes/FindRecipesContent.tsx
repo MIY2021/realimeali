@@ -18,13 +18,24 @@ export const FindRecipesContent = () => {
   const [hasInitialLoad, setHasInitialLoad] = useState(false);
   const [categories, setCategories] = useState<string[]>([]);
   const [categoriesLoading, setCategoriesLoading] = useState(false);
-  const [initialRandomRecipes, setInitialRandomRecipes] = useState<any[]>([]);
+  const [currentSearchFilters, setCurrentSearchFilters] = useState<any>(null);
   const [popularIngredients] = useState([
     "chicken", "beef", "pork", "salmon", "shrimp", "bacon", "cheese", 
     "tomato", "onion", "garlic", "potato", "rice", "pasta", "egg"
   ]);
   
-  const { searchRecipes, getRandomRecipes, getCategories, recipes, isLoading } = useMealDBApi();
+  const { 
+    searchRecipes, 
+    loadMoreRecipes,
+    getRandomRecipes, 
+    loadMoreRandomRecipes,
+    getCategories, 
+    recipes, 
+    totalCount,
+    hasMore,
+    estimatedTotal,
+    isLoading 
+  } = useMealDBApi();
 
   // Load categories on mount
   useEffect(() => {
@@ -51,19 +62,13 @@ export const FindRecipesContent = () => {
     if (user && currentHousehold && !hasInitialLoad) {
       console.log("Loading initial random recipes");
       const loadInitialRecipes = async () => {
-        await getRandomRecipes(20); // Load more initial recipes for better variety
+        await getRandomRecipes(12);
         setHasInitialLoad(true);
+        setCurrentSearchFilters(null); // No search filters for random recipes
       };
       loadInitialRecipes();
     }
   }, [getRandomRecipes, user, currentHousehold, hasInitialLoad]);
-
-  // Cache initial random recipes
-  useEffect(() => {
-    if (hasInitialLoad && recipes.length > 0 && initialRandomRecipes.length === 0) {
-      setInitialRandomRecipes([...recipes]);
-    }
-  }, [recipes, hasInitialLoad, initialRandomRecipes.length]);
 
   // Auto-search when filters change (but not on initial load)
   useEffect(() => {
@@ -72,12 +77,14 @@ export const FindRecipesContent = () => {
       
       if (hasFilters) {
         console.log("Filter changed, triggering search", { selectedCategory, selectedArea, selectedIngredient });
-        searchRecipes({
+        const filters = {
           category: selectedCategory !== "all" ? selectedCategory : undefined,
           area: selectedArea !== "all" ? selectedArea : undefined,
           ingredient: selectedIngredient !== "all" ? selectedIngredient : undefined,
-          number: 20
-        });
+          number: 12
+        };
+        setCurrentSearchFilters(filters);
+        searchRecipes(filters);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -90,13 +97,15 @@ export const FindRecipesContent = () => {
     const hasIngredient = selectedIngredient && selectedIngredient !== "all";
     
     if (hasQuery || hasCategory || hasArea || hasIngredient) {
-      searchRecipes({
+      const filters = {
         query: hasQuery ? searchQuery : undefined,
         category: hasCategory ? selectedCategory : undefined,
         area: hasArea ? selectedArea : undefined,
         ingredient: hasIngredient ? selectedIngredient : undefined,
-        number: 20
-      });
+        number: 12
+      };
+      setCurrentSearchFilters(filters);
+      searchRecipes(filters);
     }
   };
 
@@ -111,17 +120,19 @@ export const FindRecipesContent = () => {
     setSelectedCategory("all");
     setSelectedArea("all");
     setSelectedIngredient("all");
+    setCurrentSearchFilters(null);
+    // Load fresh random recipes
+    getRandomRecipes(12);
   };
 
-  // Determine which recipes to show
-  const displayRecipes = () => {
-    const hasFilters = selectedCategory !== "all" || selectedArea !== "all" || selectedIngredient !== "all" || searchQuery.trim();
-    
-    if (!hasFilters && initialRandomRecipes.length > 0) {
-      return initialRandomRecipes;
+  const handleLoadMore = () => {
+    if (currentSearchFilters) {
+      // Load more search results
+      loadMoreRecipes(currentSearchFilters);
+    } else {
+      // Load more random recipes
+      loadMoreRandomRecipes(12);
     }
-    
-    return recipes;
   };
 
   if (!user) {
@@ -170,8 +181,12 @@ export const FindRecipesContent = () => {
       />
 
       <MealDBRecipeList 
-        recipes={displayRecipes()}
+        recipes={recipes}
         isLoading={isLoading}
+        totalCount={totalCount}
+        hasMore={hasMore}
+        estimatedTotal={estimatedTotal}
+        onLoadMore={handleLoadMore}
       />
     </>
   );

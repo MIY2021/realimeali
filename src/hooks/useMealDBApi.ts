@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -27,14 +26,25 @@ interface SearchFilters {
   ingredient?: string;
   letter?: string;
   number?: number;
+  offset?: number;
+}
+
+interface MealDBApiResponse {
+  recipes: MealDBRecipe[];
+  totalCount: number;
+  hasMore: boolean;
+  estimatedTotal?: number;
 }
 
 export function useMealDBApi() {
   const [recipes, setRecipes] = useState<MealDBRecipe[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
+  const [estimatedTotal, setEstimatedTotal] = useState<number | undefined>();
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  const searchRecipes = useCallback(async (filters: SearchFilters) => {
+  const searchRecipes = useCallback(async (filters: SearchFilters, append = false) => {
     setIsLoading(true);
     try {
       console.log('Searching recipes with filters:', filters);
@@ -51,9 +61,19 @@ export function useMealDBApi() {
       }
 
       console.log('API response:', data);
-      setRecipes(data.recipes || []);
+      const response: MealDBApiResponse = data;
       
-      if (data.recipes?.length === 0) {
+      if (append) {
+        setRecipes(prev => [...prev, ...response.recipes]);
+      } else {
+        setRecipes(response.recipes);
+      }
+      
+      setTotalCount(response.totalCount);
+      setHasMore(response.hasMore);
+      setEstimatedTotal(response.estimatedTotal);
+      
+      if (!append && response.recipes?.length === 0) {
         toast({
           title: "No recipes found",
           description: "Try adjusting your search terms or filters.",
@@ -66,13 +86,25 @@ export function useMealDBApi() {
         description: "Failed to search recipes. Please try again.",
         variant: "destructive",
       });
-      setRecipes([]);
+      if (!append) {
+        setRecipes([]);
+        setTotalCount(0);
+        setHasMore(false);
+        setEstimatedTotal(undefined);
+      }
     } finally {
       setIsLoading(false);
     }
   }, [toast]);
 
-  const getRandomRecipes = useCallback(async (number: number = 12) => {
+  const loadMoreRecipes = useCallback(async (filters: SearchFilters) => {
+    if (!hasMore || isLoading) return;
+    
+    const currentOffset = recipes.length;
+    await searchRecipes({ ...filters, offset: currentOffset }, true);
+  }, [searchRecipes, hasMore, isLoading, recipes.length]);
+
+  const getRandomRecipes = useCallback(async (number: number = 12, append = false) => {
     setIsLoading(true);
     try {
       console.log('Getting random recipes, count:', number);
@@ -89,7 +121,17 @@ export function useMealDBApi() {
       }
 
       console.log('API response:', data);
-      setRecipes(data.recipes || []);
+      const response: MealDBApiResponse = data;
+      
+      if (append) {
+        setRecipes(prev => [...prev, ...response.recipes]);
+      } else {
+        setRecipes(response.recipes);
+      }
+      
+      setTotalCount(response.recipes.length);
+      setHasMore(response.hasMore);
+      setEstimatedTotal(response.estimatedTotal);
     } catch (error) {
       console.error('Error getting random recipes:', error);
       toast({
@@ -97,11 +139,21 @@ export function useMealDBApi() {
         description: "Failed to load recipes. Please try again.",
         variant: "destructive",
       });
-      setRecipes([]);
+      if (!append) {
+        setRecipes([]);
+        setTotalCount(0);
+        setHasMore(false);
+        setEstimatedTotal(undefined);
+      }
     } finally {
       setIsLoading(false);
     }
   }, [toast]);
+
+  const loadMoreRandomRecipes = useCallback(async (number: number = 12) => {
+    if (!hasMore || isLoading) return;
+    await getRandomRecipes(number, true);
+  }, [getRandomRecipes, hasMore, isLoading]);
 
   const getRecipeDetails = useCallback(async (recipeId: string): Promise<MealDBRecipe | null> => {
     try {
@@ -175,9 +227,14 @@ export function useMealDBApi() {
 
   return {
     recipes,
+    totalCount,
+    hasMore,
+    estimatedTotal,
     isLoading,
     searchRecipes,
+    loadMoreRecipes,
     getRandomRecipes,
+    loadMoreRandomRecipes,
     getRecipeDetails,
     getIngredients,
     getCategories,
