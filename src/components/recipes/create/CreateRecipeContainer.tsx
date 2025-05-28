@@ -52,6 +52,11 @@ export function CreateRecipeContainer() {
     );
   };
 
+  const onSave = () => {
+    console.log("🚀 Save button clicked from CreateRecipeContainer");
+    handleSave(recipeFormHook.newRecipe);
+  };
+
   return (
     <CreateRecipeTabsWrapper
       isMobile={isMobile}
@@ -64,7 +69,7 @@ export function CreateRecipeContainer() {
       onProcessImage={onProcessImage}
       onGenerateRecipe={onGenerateRecipe}
       onGenerateImage={onGenerateImage}
-      onSave={() => handleSave(recipeFormHook.newRecipe)}
+      onSave={onSave}
       onCancel={handleCancel}
     />
   );

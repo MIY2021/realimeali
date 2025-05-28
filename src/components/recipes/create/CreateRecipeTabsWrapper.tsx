@@ -169,12 +169,6 @@ export function CreateRecipeTabsWrapper({
           <X className="h-4 w-4 mr-2" />
           Cancel
         </Button>
-
-        {!status.isComplete && (
-          <div className="text-sm text-orange-600 bg-orange-50 p-3 rounded-lg sm:ml-4">
-            💡 Complete the required fields (title, ingredients, instructions) to save your recipe.
-          </div>
-        )}
       </div>
     </div>
   );
