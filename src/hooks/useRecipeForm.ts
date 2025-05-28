@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Recipe, RecipeCategory } from "@/types";
 
@@ -12,7 +13,7 @@ export function useRecipeForm() {
     cookTime: 0,
     servings: 1,
     image: undefined,
-    topTip: "",
+    topTip: "Enjoy cooking this delicious recipe!", // Default top tip
     isFavorite: false,
     householdId: "",
   });

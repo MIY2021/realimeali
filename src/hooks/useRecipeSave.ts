@@ -13,7 +13,17 @@ export function useRecipeSave() {
   const { currentHousehold } = useHousehold();
 
   const handleSave = async (newRecipe: Omit<Recipe, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>) => {
-    console.log("🍳 Save recipe called with:", { newRecipe, user: user?.id, household: currentHousehold?.id });
+    console.log("🍳 Save recipe called with:", { 
+      newRecipe, 
+      user: user?.id, 
+      household: currentHousehold?.id,
+      recipeData: {
+        title: newRecipe.title,
+        ingredients: newRecipe.ingredients?.length || 0,
+        instructions: newRecipe.instructions?.length || 0,
+        topTip: newRecipe.topTip
+      }
+    });
     
     if (!user || !currentHousehold) {
       console.error("❌ Missing user or household:", { user: !!user, household: !!currentHousehold });
@@ -32,7 +42,7 @@ export function useRecipeSave() {
       return;
     }
 
-    if (newRecipe.ingredients.length === 0) {
+    if (!newRecipe.ingredients || newRecipe.ingredients.length === 0) {
       console.error("❌ Missing ingredients");
       toast.error("Error", {
         description: "At least one ingredient is required",
@@ -40,7 +50,7 @@ export function useRecipeSave() {
       return;
     }
 
-    if (newRecipe.instructions.length === 0) {
+    if (!newRecipe.instructions || newRecipe.instructions.length === 0) {
       console.error("❌ Missing instructions");
       toast.error("Error", {
         description: "At least one instruction is required",
@@ -48,12 +58,31 @@ export function useRecipeSave() {
       return;
     }
 
-    console.log("✅ Validation passed, creating recipe...");
+    // Ensure the recipe has a top tip - add a default one if missing
+    const recipeToSave = {
+      ...newRecipe,
+      topTip: newRecipe.topTip && newRecipe.topTip.trim() 
+        ? newRecipe.topTip 
+        : "Enjoy cooking this delicious recipe!"
+    };
+
+    console.log("✅ Validation passed, creating recipe with data:", recipeToSave);
     try {
-      const recipe = await createRecipe(newRecipe, currentHousehold.id);
-      console.log("✅ Recipe created:", recipe?.id);
+      console.log("🔄 Calling createRecipe function...");
+      const recipe = await createRecipe(recipeToSave, currentHousehold.id);
+      console.log("✅ Recipe creation response:", recipe);
+      
       if (recipe) {
+        console.log("🎉 Recipe created successfully, navigating to /my-recipes");
+        toast.success("Recipe saved!", {
+          description: `${recipe.title} has been added to your recipes.`,
+        });
         navigate("/my-recipes");
+      } else {
+        console.error("❌ Recipe creation returned null/undefined");
+        toast.error("Error", {
+          description: "Failed to save recipe. Please try again.",
+        });
       }
     } catch (error) {
       console.error("❌ Error creating recipe:", error);
