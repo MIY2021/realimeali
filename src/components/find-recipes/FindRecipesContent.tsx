@@ -33,14 +33,22 @@ export const FindRecipesContent = () => {
 
   // Auto-search when filters change (but not on initial load)
   useEffect(() => {
-    if (hasInitialLoad && (selectedCategory !== "all" || selectedArea !== "all" || selectedIngredient !== "all")) {
-      console.log("Filter changed, triggering search", { selectedCategory, selectedArea, selectedIngredient });
-      searchRecipes({
-        category: selectedCategory !== "all" ? selectedCategory : undefined,
-        area: selectedArea !== "all" ? selectedArea : undefined,
-        ingredient: selectedIngredient !== "all" ? selectedIngredient : undefined,
-        number: 20
-      });
+    if (hasInitialLoad) {
+      const hasFilters = selectedCategory !== "all" || selectedArea !== "all" || selectedIngredient !== "all";
+      
+      if (hasFilters) {
+        console.log("Filter changed, triggering search", { selectedCategory, selectedArea, selectedIngredient });
+        searchRecipes({
+          category: selectedCategory !== "all" ? selectedCategory : undefined,
+          area: selectedArea !== "all" ? selectedArea : undefined,
+          ingredient: selectedIngredient !== "all" ? selectedIngredient : undefined,
+          number: 20
+        });
+      } else {
+        // All filters are "all", show random recipes
+        console.log("All filters cleared, loading random recipes");
+        getRandomRecipes(12);
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedCategory, selectedArea, selectedIngredient, hasInitialLoad]);
