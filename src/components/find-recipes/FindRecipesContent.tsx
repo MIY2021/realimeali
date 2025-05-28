@@ -51,7 +51,7 @@ export const FindRecipesContent = () => {
     if (user && currentHousehold && !hasInitialLoad) {
       console.log("Loading initial random recipes");
       const loadInitialRecipes = async () => {
-        await getRandomRecipes(12);
+        await getRandomRecipes(20); // Load more initial recipes for better variety
         setHasInitialLoad(true);
       };
       loadInitialRecipes();
@@ -77,17 +77,6 @@ export const FindRecipesContent = () => {
           area: selectedArea !== "all" ? selectedArea : undefined,
           ingredient: selectedIngredient !== "all" ? selectedIngredient : undefined,
           number: 20
-        });
-      } else {
-        // All filters are "all", show cached initial random recipes
-        console.log("All filters cleared, showing cached initial recipes");
-        // Use a custom setter to show cached recipes without triggering API call
-        setInitialRandomRecipes(prev => {
-          if (prev.length > 0) {
-            // Manually set recipes to cached initial recipes
-            return prev;
-          }
-          return prev;
         });
       }
     }
@@ -122,7 +111,6 @@ export const FindRecipesContent = () => {
     setSelectedCategory("all");
     setSelectedArea("all");
     setSelectedIngredient("all");
-    // Don't call getRandomRecipes here, let the useEffect handle showing cached recipes
   };
 
   // Determine which recipes to show

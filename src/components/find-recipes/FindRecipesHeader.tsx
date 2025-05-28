@@ -17,7 +17,7 @@ export const FindRecipesHeader = () => {
         </h1>
         <div className="flex items-start gap-2">
           <p className="text-sm sm:text-base text-muted-foreground">
-            Discover thousands of free recipes from TheMealDB
+            Discover thousands of delicious recipes from around the world
           </p>
           <TooltipProvider>
             <Tooltip>
@@ -25,7 +25,7 @@ export const FindRecipesHeader = () => {
                 <Info className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
               </TooltipTrigger>
               <TooltipContent className="max-w-xs">
-                <p>Search by recipe name, ingredient, or use filters to find recipes. Filters automatically apply when selected.</p>
+                <p>Search by recipe name, ingredient, or use filters to find amazing recipes. Filters automatically apply when selected to help you discover your next favorite dish.</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
