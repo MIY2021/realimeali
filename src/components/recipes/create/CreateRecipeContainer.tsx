@@ -64,6 +64,8 @@ export function CreateRecipeContainer() {
       onProcessImage={onProcessImage}
       onGenerateRecipe={onGenerateRecipe}
       onGenerateImage={onGenerateImage}
+      onSave={() => handleSave(recipeFormHook.newRecipe)}
+      onCancel={handleCancel}
     />
   );
 }

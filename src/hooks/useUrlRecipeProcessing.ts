@@ -17,6 +17,8 @@ export function useUrlRecipeProcessing() {
   const [websiteImages, setWebsiteImages] = useState<string[]>([]);
   const [storedImages, setStoredImages] = useState<StoredImage[]>([]);
   const [isDownloadingImages, setIsDownloadingImages] = useState(false);
+  const [showCommunityDialog, setShowCommunityDialog] = useState(false);
+  const [parsedRecipeData, setParsedRecipeData] = useState<any>(null);
 
   const handleImportFromUrl = async (
     setNewRecipe: (recipe: Omit<Recipe, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>) => void,
@@ -71,6 +73,17 @@ export function useUrlRecipeProcessing() {
       } else if (data.websiteImages && data.websiteImages.length > 0) {
         recipeData.image = data.websiteImages[0];
       }
+      
+      // Store parsed data for potential community submission
+      setParsedRecipeData({
+        title: recipeData.title,
+        description: recipeData.description,
+        source_url: recipeUrl.trim(),
+        image_url: recipeData.image,
+        prep_time: recipeData.prepTime || 0,
+        cook_time: recipeData.cookTime || 0,
+        servings: recipeData.servings || 1,
+      });
       
       setNewRecipe(recipeData);
       setActiveTab("manual");
@@ -155,6 +168,9 @@ export function useUrlRecipeProcessing() {
     websiteImages,
     storedImages,
     isDownloadingImages,
+    showCommunityDialog,
+    setShowCommunityDialog,
+    parsedRecipeData,
     handleImportFromUrl,
     handleDownloadImages,
   };

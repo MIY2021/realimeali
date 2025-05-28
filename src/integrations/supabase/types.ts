@@ -9,6 +9,84 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      community_recipes: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          category: string | null
+          cook_time: number | null
+          created_at: string | null
+          cuisine: string | null
+          description: string | null
+          difficulty_level: string | null
+          id: string
+          image_credit: string | null
+          image_url: string | null
+          is_active: boolean | null
+          is_approved: boolean | null
+          prep_time: number | null
+          reported_count: number | null
+          save_count: number | null
+          servings: number | null
+          source_url: string
+          submitted_by: string
+          submitted_by_name: string | null
+          title: string
+          updated_at: string | null
+          view_count: number | null
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          category?: string | null
+          cook_time?: number | null
+          created_at?: string | null
+          cuisine?: string | null
+          description?: string | null
+          difficulty_level?: string | null
+          id?: string
+          image_credit?: string | null
+          image_url?: string | null
+          is_active?: boolean | null
+          is_approved?: boolean | null
+          prep_time?: number | null
+          reported_count?: number | null
+          save_count?: number | null
+          servings?: number | null
+          source_url: string
+          submitted_by: string
+          submitted_by_name?: string | null
+          title: string
+          updated_at?: string | null
+          view_count?: number | null
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          category?: string | null
+          cook_time?: number | null
+          created_at?: string | null
+          cuisine?: string | null
+          description?: string | null
+          difficulty_level?: string | null
+          id?: string
+          image_credit?: string | null
+          image_url?: string | null
+          is_active?: boolean | null
+          is_approved?: boolean | null
+          prep_time?: number | null
+          reported_count?: number | null
+          save_count?: number | null
+          servings?: number | null
+          source_url?: string
+          submitted_by?: string
+          submitted_by_name?: string | null
+          title?: string
+          updated_at?: string | null
+          view_count?: number | null
+        }
+        Relationships: []
+      }
       feedback_suggestions: {
         Row: {
           created_at: string
@@ -666,6 +744,14 @@ export type Database = {
       get_user_households: {
         Args: { user_id: string }
         Returns: string[]
+      }
+      increment_community_recipe_save_count: {
+        Args: { recipe_id: string }
+        Returns: undefined
+      }
+      increment_community_recipe_view_count: {
+        Args: { recipe_id: string }
+        Returns: undefined
       }
       increment_share_view_count: {
         Args: { share_id: string }
