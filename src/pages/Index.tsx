@@ -1,4 +1,3 @@
-
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { 
@@ -29,7 +28,7 @@ export default function Index() {
 
   return (
     <div className="flex flex-col min-h-[85vh]">
-      <section className="py-8 md:py-12 lg:py-16 bg-cream">
+      <section className="py-8 md:py-12 lg:py-16 bg-cream -mt-16 pt-24 md:pt-28 lg:pt-32">
         <div className="container px-4 md:px-6">
           <div className="flex flex-col items-center space-y-2 text-center">
             <div>
