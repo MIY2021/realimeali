@@ -1,10 +1,8 @@
-
 import { Recipe } from "@/types";
 import { Button } from "@/components/ui/button";
 import { CalendarDays, Clock, Pencil, Share, Users, Trash2, ArrowLeft, Sparkles } from "lucide-react";
 import { RecipeImage } from "@/components/ui/recipe-image";
 import { useAuth } from "@/contexts/AuthContext";
-import { useToast } from "@/hooks/use-toast";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { usePublicRecipeSharing } from "@/hooks/usePublicRecipeSharing";
 import { useState } from "react";
@@ -34,7 +32,6 @@ interface RecipeDetailProps {
 
 export function RecipeDetail({ recipe, onAddToMealPlan, onEdit, onDelete, isOwner }: RecipeDetailProps) {
   const { user } = useAuth();
-  const { toast: useToastHook } = useToast();
   const { profile } = useUserProfile(recipe.createdBy);
   const { createPublicShare, isCreatingShare } = usePublicRecipeSharing();
   const navigate = useNavigate();
@@ -80,11 +77,11 @@ export function RecipeDetail({ recipe, onAddToMealPlan, onEdit, onDelete, isOwne
       // User came from recipes page, restore their scroll position
       console.log('Navigating back with scroll restoration');
       sessionStorage.setItem('restoreRecipesScroll', 'true');
-      navigate('/recipes', { state: { restoreScroll: true } });
+      navigate('/my-recipes', { state: { restoreScroll: true } });
     } else {
       // User entered directly (bookmark, share, etc.), go to top of recipes
       console.log('Navigating back to top of recipes');
-      navigate('/recipes');
+      navigate('/my-recipes');
     }
   };
 
@@ -96,10 +93,8 @@ export function RecipeDetail({ recipe, onAddToMealPlan, onEdit, onDelete, isOwne
 
   const handleDeleteConfirm = async () => {
     if (!user) {
-      useToastHook({
-        title: "Login Required",
+      toast.error("Login Required", {
         description: "You need to log in to delete recipes.",
-        variant: "destructive",
       });
       return;
     }
@@ -114,8 +109,8 @@ export function RecipeDetail({ recipe, onAddToMealPlan, onEdit, onDelete, isOwne
           description: `"${recipe.title}" has been removed from your collection.`,
         });
         
-        // Navigate back to recipes page
-        navigate('/recipes');
+        // Navigate back to my recipes page
+        navigate('/my-recipes');
       } catch (error) {
         console.error('Error deleting recipe:', error);
         toast.error("Failed to delete recipe", {
@@ -127,10 +122,8 @@ export function RecipeDetail({ recipe, onAddToMealPlan, onEdit, onDelete, isOwne
 
   const handleShare = async () => {
     if (!user) {
-      useToastHook({
-        title: "Login Required",
+      toast.error("Login Required", {
         description: "You need to log in to share recipes.",
-        variant: "destructive",
       });
       return;
     }

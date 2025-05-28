@@ -3,7 +3,6 @@ import { RecipeDetail as RecipeDetailComponent } from "@/components/recipes/Reci
 import { useRecipes } from "@/contexts/RecipesContext";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useAuth } from "@/contexts/AuthContext";
-import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
 import { AddToMealPlanDialog } from "@/components/recipes/AddToMealPlanDialog";
 import { EditRecipeDialog } from "@/components/recipes/EditRecipeDialog";
@@ -11,14 +10,16 @@ import { Recipe } from "@/types";
 import { useRecipesLoader } from "@/hooks/useRecipesLoader";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useNavigationState } from "@/hooks/useNavigationState";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 export default function RecipeDetail() {
   const { id, slug } = useParams();
   const { getRecipeById, getRecipeBySlug, updateRecipe, deleteRecipe } = useRecipes();
   const { user } = useAuth();
-  const { toast } = useToast();
   const { isLoading } = useRecipesLoader();
   const { navigationState } = useNavigationState();
+  const navigate = useNavigate();
   
   // State for meal plan dialog
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
@@ -31,10 +32,10 @@ export default function RecipeDetail() {
   // Try to find recipe by slug first, then by ID (for backwards compatibility)
   let recipe;
   if (slug && !id) {
-    // New URL format: /recipes/{slug}
+    // New URL format: /my-recipes/{slug}
     recipe = getRecipeBySlug(slug);
   } else if (id) {
-    // Old URL format: /recipes/{id}/{slug} - find by ID
+    // Old URL format: /my-recipes/{id}/{slug} - find by ID
     recipe = getRecipeById(id);
     if (recipe) {
       // Redirect to new URL format
@@ -44,7 +45,7 @@ export default function RecipeDetail() {
         .replace(/\s+/g, '-')
         .replace(/-+/g, '-')
         .trim();
-      return <Navigate to={`/recipes/${newSlug}`} replace />;
+      return <Navigate to={`/my-recipes/${newSlug}`} replace />;
     }
   }
 
@@ -87,18 +88,15 @@ export default function RecipeDetail() {
     try {
       const success = await deleteRecipe(recipe.id);
       if (success) {
-        toast({
-          title: "Recipe Deleted",
-          description: `"${recipe.title}" has been deleted successfully.`,
+        toast.success("Recipe deleted successfully", {
+          description: `"${recipe.title}" has been removed from your collection.`,
         });
-        // Navigate back to recipes page after deletion
-        window.location.href = '/recipes';
+        // Navigate back to my recipes page
+        navigate('/my-recipes');
       }
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to delete recipe. Please try again.",
-        variant: "destructive",
+      toast.error("Failed to delete recipe", {
+        description: "Please try again later.",
       });
     }
   };
@@ -110,15 +108,12 @@ export default function RecipeDetail() {
       await updateRecipe(editRecipe.id, updatedRecipe);
       setEditDialogOpen(false);
       setEditRecipe(null);
-      toast({
-        title: "Recipe Updated",
-        description: "Recipe has been updated successfully.",
+      toast.success("Recipe updated successfully", {
+        description: "Your recipe has been saved.",
       });
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update recipe. Please try again.",
-        variant: "destructive",
+      toast.error("Failed to update recipe", {
+        description: "Please try again later.",
       });
     }
   };
