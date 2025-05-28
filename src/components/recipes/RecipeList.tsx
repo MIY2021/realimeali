@@ -2,7 +2,7 @@ import { Recipe, RecipeCategory } from "@/types";
 import { RecipeCard } from "./RecipeCard";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useHouseholdShopping } from "@/contexts/HouseholdShoppingContext";
 import { ChevronDown, Columns } from "lucide-react";
 import { AddToMealPlanDialog } from "./AddToMealPlanDialog";
@@ -40,10 +40,11 @@ export function RecipeList({
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const [mealPlanDialogOpen, setMealPlanDialogOpen] = useState(false);
 
-  // Mobile layout state - lifted from RecipesPage
+  // Mobile layout state - force re-render when changed
   const [localMobileLayout, setLocalMobileLayout] = useState<string>(() => {
     return localStorage.getItem('mobileRecipeLayout') || '1';
   });
+  const [layoutKey, setLayoutKey] = useState(0); // Force re-render key
 
   // Use prop layout if provided, otherwise use local state
   const currentMobileLayout = mobileLayout || localMobileLayout;
@@ -52,8 +53,14 @@ export function RecipeList({
     if (value) {
       setLocalMobileLayout(value);
       localStorage.setItem('mobileRecipeLayout', value);
+      setLayoutKey(prev => prev + 1); // Force re-render
     }
   };
+
+  // Force re-render when layout changes
+  useEffect(() => {
+    setLayoutKey(prev => prev + 1);
+  }, [currentMobileLayout]);
 
   const filteredRecipes = recipes.filter((recipe) => {
     const matchesSearch = recipe.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -181,7 +188,7 @@ export function RecipeList({
         </div>
       ) : (
         <>
-          <div className={getGridClasses()} data-testid="recipe-list">
+          <div key={layoutKey} className={getGridClasses()} data-testid="recipe-list">
             {visibleRecipes.map((recipe) => (
               <RecipeCard 
                 key={recipe.id} 
