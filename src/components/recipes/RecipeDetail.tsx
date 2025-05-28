@@ -11,6 +11,18 @@ import { useState } from "react";
 import { format } from "date-fns";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useNavigationState } from "@/hooks/useNavigationState";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
 
 interface RecipeDetailProps {
   recipe: Recipe;
@@ -22,12 +34,13 @@ interface RecipeDetailProps {
 
 export function RecipeDetail({ recipe, onAddToMealPlan, onEdit, onDelete, isOwner }: RecipeDetailProps) {
   const { user } = useAuth();
-  const { toast } = useToast();
+  const { toast: useToastHook } = useToast();
   const { profile } = useUserProfile(recipe.createdBy);
   const { createPublicShare, isCreatingShare } = usePublicRecipeSharing();
   const navigate = useNavigate();
   const location = useLocation();
   const { navigationState } = useNavigationState();
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   
   const { 
     title, 
@@ -81,9 +94,9 @@ export function RecipeDetail({ recipe, onAddToMealPlan, onEdit, onDelete, isOwne
     }
   };
 
-  const handleDelete = () => {
+  const handleDeleteConfirm = async () => {
     if (!user) {
-      toast({
+      useToastHook({
         title: "Login Required",
         description: "You need to log in to delete recipes.",
         variant: "destructive",
@@ -91,15 +104,30 @@ export function RecipeDetail({ recipe, onAddToMealPlan, onEdit, onDelete, isOwne
       return;
     }
 
-    const confirmed = window.confirm(`Are you sure you want to delete "${recipe.title}"? This action cannot be undone.`);
-    if (confirmed && onDelete) {
-      onDelete();
+    if (onDelete) {
+      try {
+        await onDelete();
+        setDeleteDialogOpen(false);
+        
+        // Show success notification
+        toast.success("Recipe deleted successfully", {
+          description: `"${recipe.title}" has been removed from your collection.`,
+        });
+        
+        // Navigate back to recipes page
+        navigate('/recipes');
+      } catch (error) {
+        console.error('Error deleting recipe:', error);
+        toast.error("Failed to delete recipe", {
+          description: "Please try again later.",
+        });
+      }
     }
   };
 
   const handleShare = async () => {
     if (!user) {
-      toast({
+      useToastHook({
         title: "Login Required",
         description: "You need to log in to share recipes.",
         variant: "destructive",
@@ -129,15 +157,12 @@ export function RecipeDetail({ recipe, onAddToMealPlan, onEdit, onDelete, isOwne
     // Fallback to clipboard
     try {
       await navigator.clipboard.writeText(shareUrl);
-      toast({
-        title: "Link Copied!",
+      toast.success("Link copied!", {
         description: "The recipe share link has been copied to your clipboard.",
       });
     } catch (error) {
-      toast({
-        title: "Share Failed",
+      toast.error("Share failed", {
         description: "Failed to copy link to clipboard.",
-        variant: "destructive",
       });
     }
   };
@@ -230,14 +255,34 @@ export function RecipeDetail({ recipe, onAddToMealPlan, onEdit, onDelete, isOwne
                   <span>{isCreatingShare ? 'Creating Link...' : 'Share'}</span>
                 </Button>
                 {user && (
-                  <Button
-                    variant="outline"
-                    className="flex items-center gap-2 text-destructive hover:text-destructive w-full sm:w-auto"
-                    onClick={handleDelete}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                    <span>Delete</span>
-                  </Button>
+                  <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="flex items-center gap-2 text-destructive hover:text-destructive w-full sm:w-auto"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        <span>Delete</span>
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Recipe</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Are you sure you want to delete "{recipe.title}"? This action cannot be undone and the recipe will be permanently removed from your collection.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={handleDeleteConfirm}
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                          Delete Recipe
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 )}
               </div>
             </div>
