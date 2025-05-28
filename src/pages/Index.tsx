@@ -156,7 +156,7 @@ export default function Index() {
             </div>
           </div>
 
-          {/* Popular Recipes Section */}
+          {/* Featured Recipes Section */}
           {user && (
             <section className="mt-12">
               <div className="flex items-center justify-between mb-6">
