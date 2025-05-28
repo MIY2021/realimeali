@@ -55,7 +55,7 @@ export const SaveMealDBRecipeDialog = ({ recipe, isOpen, onOpenChange }: SaveMea
         description: description || `A delicious ${recipe.category} recipe from ${recipe.area}`,
         ingredients: recipe.ingredients,
         instructions: recipe.instructions,
-        categories: [recipe.category as any] || [],
+        categories: recipe.category ? [recipe.category as any] : [],
         prepTime,
         cookTime,
         servings,
