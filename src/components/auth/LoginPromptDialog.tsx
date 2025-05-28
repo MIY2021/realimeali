@@ -45,7 +45,7 @@ export function LoginPromptDialog({ isOpen, onClose, trigger = "timer" }: LoginP
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md rounded-xl border-0 shadow-2xl bg-white max-w-[90vw]">
+      <DialogContent className="sm:max-w-md rounded-xl border-0 shadow-2xl bg-white max-w-[85vw]">
         <button
           onClick={() => handleDismiss("later")}
           className="absolute right-3 top-3 sm:right-4 sm:top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 z-10 p-1"
@@ -55,10 +55,10 @@ export function LoginPromptDialog({ isOpen, onClose, trigger = "timer" }: LoginP
         </button>
         
         <DialogHeader className="text-center space-y-2 sm:space-y-3 pt-2 px-2 sm:px-0">
-          <DialogTitle className="text-xl sm:text-2xl font-bold text-navy leading-tight">
-            Welcome to RealiMeali!
+          <DialogTitle className="text-xl sm:text-2xl font-bold text-navy leading-tight text-center">
+            Welcome to RealiMeali
           </DialogTitle>
-          <p className="text-muted-foreground text-sm sm:text-base leading-relaxed">
+          <p className="text-muted-foreground text-sm sm:text-base leading-relaxed text-center">
             Sign in to unlock all features and save your preferences
           </p>
         </DialogHeader>
