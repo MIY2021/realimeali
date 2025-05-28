@@ -23,11 +23,6 @@ export default function RecipesPage() {
   const { navigationState, clearNavigationState } = useNavigationState();
   const isMobile = useIsMobile();
 
-  // Mobile layout state
-  const [mobileLayout, setMobileLayout] = useState<string>(() => {
-    return localStorage.getItem('mobileRecipeLayout') || '1';
-  });
-
   // Load recipes automatically
   useRecipesLoader();
 
@@ -52,20 +47,6 @@ export default function RecipesPage() {
       }
     }
   }, [setScrollKey, restoreScrollPosition, navigationState.shouldRestoreScroll, isLoading, recipes.length, clearNavigationState]);
-
-  // Clear scroll position when layout changes
-  useEffect(() => {
-    const handleLayoutChange = () => {
-      console.log('Layout changed, clearing scroll position');
-      clearScrollPosition('recipes');
-    };
-
-    // Only clear if layout actually changed
-    const savedLayout = localStorage.getItem('mobileRecipeLayout') || '1';
-    if (savedLayout !== mobileLayout) {
-      handleLayoutChange();
-    }
-  }, [mobileLayout, clearScrollPosition]);
 
   return (
     <div className="container max-w-7xl py-4 px-4 sm:py-8 sm:px-6">
@@ -113,7 +94,6 @@ export default function RecipesPage() {
         <RecipeList 
           recipes={recipes}
           isLoading={isLoading}
-          mobileLayout={isMobile ? mobileLayout : undefined}
         />
       )}
     </div>
