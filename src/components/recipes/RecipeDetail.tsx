@@ -108,9 +108,6 @@ export function RecipeDetail({ recipe, onAddToMealPlan, onEdit, onDelete, isOwne
         toast.success("Recipe deleted successfully", {
           description: `"${recipe.title}" has been removed from your collection.`,
         });
-        
-        // Navigate back to my recipes page
-        navigate('/my-recipes');
       } catch (error) {
         console.error('Error deleting recipe:', error);
         toast.error("Failed to delete recipe", {

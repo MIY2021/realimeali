@@ -17,7 +17,6 @@ export function useToast() {
       }
 
       const { title, description, variant } = data;
-      const message = description || title || "Notification";
       
       if (variant === "destructive") {
         sonnerToast.error(title || "Error", {
@@ -29,13 +28,14 @@ export function useToast() {
         });
       }
     },
-    dismiss: () => {},
+    dismiss: () => {
+      sonnerToast.dismiss();
+    },
   };
 }
 
 export const toast = (data?: ToastProps) => {
   const { title, description, variant } = data || {};
-  const message = description || title || "Notification";
   
   if (variant === "destructive") {
     sonnerToast.error(title || "Error", {

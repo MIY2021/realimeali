@@ -11,7 +11,6 @@ import { useRecipesLoader } from "@/hooks/useRecipesLoader";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useNavigationState } from "@/hooks/useNavigationState";
 import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
 
 export default function RecipeDetail() {
   const { id, slug } = useParams();
@@ -88,16 +87,11 @@ export default function RecipeDetail() {
     try {
       const success = await deleteRecipe(recipe.id);
       if (success) {
-        toast.success("Recipe deleted successfully", {
-          description: `"${recipe.title}" has been removed from your collection.`,
-        });
-        // Navigate back to my recipes page
+        // Navigate back to my recipes page - notification will be handled by the component
         navigate('/my-recipes');
       }
     } catch (error) {
-      toast.error("Failed to delete recipe", {
-        description: "Please try again later.",
-      });
+      // Error handling will be done by the component
     }
   };
 
@@ -108,13 +102,8 @@ export default function RecipeDetail() {
       await updateRecipe(editRecipe.id, updatedRecipe);
       setEditDialogOpen(false);
       setEditRecipe(null);
-      toast.success("Recipe updated successfully", {
-        description: "Your recipe has been saved.",
-      });
     } catch (error) {
-      toast.error("Failed to update recipe", {
-        description: "Please try again later.",
-      });
+      // Error handling will be done by the component
     }
   };
 
