@@ -1,4 +1,3 @@
-
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
@@ -124,6 +123,13 @@ function processRecipe(meal: MealDBRecipe): ProcessedRecipe {
   };
 }
 
+function filterRecipesWithValidSources(recipes: ProcessedRecipe[]): ProcessedRecipe[] {
+  return recipes.filter(recipe => {
+    // Only include recipes that have a valid source URL (not just YouTube)
+    return recipe.sourceUrl && recipe.sourceUrl.trim() !== '';
+  });
+}
+
 async function fetchMealsFromUrl(url: string): Promise<MealDBRecipe[]> {
   console.log('Making request to:', url);
   const response = await fetch(url);
@@ -212,7 +218,8 @@ Deno.serve(async (req) => {
           }
         }
 
-        // Remove duplicates and limit results
+        // Filter recipes with valid sources, then remove duplicates and limit results
+        allRecipes = filterRecipesWithValidSources(allRecipes);
         allRecipes = await removeDuplicates(allRecipes);
         allRecipes = allRecipes.slice(0, number);
       }
@@ -220,15 +227,23 @@ Deno.serve(async (req) => {
     } else if (action === 'random') {
       // Get random recipes
       const randomRecipes = [];
-      for (let i = 0; i < number; i++) {
+      let attempts = 0;
+      const maxAttempts = number * 3; // Try more recipes to account for filtering
+      
+      while (randomRecipes.length < number && attempts < maxAttempts) {
         try {
           const meals = await fetchMealsFromUrl('https://www.themealdb.com/api/json/v1/1/random.php');
           if (meals.length > 0) {
-            randomRecipes.push(processRecipe(meals[0]));
+            const processedRecipe = processRecipe(meals[0]);
+            // Only add recipes with valid source URLs
+            if (processedRecipe.sourceUrl && processedRecipe.sourceUrl.trim() !== '') {
+              randomRecipes.push(processedRecipe);
+            }
           }
         } catch (error) {
           console.error('Error fetching random recipe:', error);
         }
+        attempts++;
       }
       allRecipes = randomRecipes;
 
@@ -238,7 +253,11 @@ Deno.serve(async (req) => {
       const meals = await fetchMealsFromUrl(detailsUrl);
       
       if (meals.length > 0) {
-        allRecipes = [processRecipe(meals[0])];
+        const processedRecipe = processRecipe(meals[0]);
+        // Only return recipe if it has a valid source URL
+        if (processedRecipe.sourceUrl && processedRecipe.sourceUrl.trim() !== '') {
+          allRecipes = [processedRecipe];
+        }
       }
 
     } else if (action === 'ingredients') {
@@ -290,7 +309,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    console.log(`Successfully processed ${allRecipes.length} recipes`);
+    console.log(`Successfully processed ${allRecipes.length} recipes with valid sources`);
 
     return new Response(
       JSON.stringify({ recipes: allRecipes }),

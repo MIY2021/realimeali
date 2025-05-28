@@ -51,15 +51,10 @@ export const MealDBRecipeCard = ({ recipe }: MealDBRecipeCardProps) => {
     return "6-8";
   };
 
-  // Handle recipe view - open external source URL
+  // Handle recipe view - only open source URL if available
   const handleViewRecipe = () => {
     if (recipe.sourceUrl) {
       window.open(recipe.sourceUrl, '_blank');
-    } else if (recipe.videoUrl) {
-      window.open(recipe.videoUrl, '_blank');
-    } else {
-      // Fallback - could show a modal with recipe details or navigate to a preview page
-      console.log('No external URL available for recipe:', recipe.title);
     }
   };
 
@@ -132,7 +127,7 @@ export const MealDBRecipeCard = ({ recipe }: MealDBRecipeCardProps) => {
               <Heart className="h-4 w-4 mr-2" />
               Save Recipe
             </Button>
-            {(recipe.sourceUrl || recipe.videoUrl) && (
+            {recipe.sourceUrl && (
               <Button
                 onClick={handleViewRecipe}
                 variant="outline"
