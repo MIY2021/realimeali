@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -43,7 +42,8 @@ export const FindRecipesContent = () => {
         number: 20
       });
     }
-  }, [selectedCategory, selectedArea, selectedIngredient, hasInitialLoad, searchRecipes]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedCategory, selectedArea, selectedIngredient, hasInitialLoad]);
 
   const handleSearch = () => {
     const hasQuery = searchQuery.trim();
