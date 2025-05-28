@@ -1,10 +1,9 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { RecipeCategory } from "@/types";
-import { X, Plus, Tag } from "lucide-react";
+import { X, Plus, Bookmark } from "lucide-react";
 
 const PREDEFINED_CATEGORIES: RecipeCategory[] = [
   "Bulk", "Easy", "Cheap", "Healthy", "Vegetarian", "Fish", "Super Tasty",
@@ -57,7 +56,7 @@ export function EnhancedCategorySelector({ selectedCategories, onCategoriesChang
     <Card className="p-4 space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-          <Tag className="h-5 w-5 mr-2 text-blue-500" />
+          <Bookmark className="h-5 w-5 mr-2 text-blue-500" />
           Categories
         </h3>
         <Badge variant="secondary" className="bg-purple-50 text-purple-700">

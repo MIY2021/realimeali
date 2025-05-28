@@ -1,8 +1,7 @@
-
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Upload, Camera, Sparkles, X, Image as ImageIcon } from "lucide-react";
+import { Upload, Camera, Sparkles, X, FileImage } from "lucide-react";
 
 interface EnhancedImageUploadProps {
   imagePreview: string | null;
@@ -42,11 +41,20 @@ export function EnhancedImageUpload({
     if (files.length > 0) {
       const file = files[0];
       if (file.type.startsWith('image/')) {
-        // Create a synthetic event
-        const syntheticEvent = {
-          target: { files: [file] }
-        } as React.ChangeEvent<HTMLInputElement>;
-        onImageChange(syntheticEvent);
+        // Create a proper synthetic event by updating the file input
+        if (fileInputRef.current) {
+          const dataTransfer = new DataTransfer();
+          dataTransfer.items.add(file);
+          fileInputRef.current.files = dataTransfer.files;
+          
+          // Create a proper synthetic event
+          const event = new Event('change', { bubbles: true });
+          Object.defineProperty(event, 'target', {
+            writable: false,
+            value: fileInputRef.current
+          });
+          onImageChange(event as React.ChangeEvent<HTMLInputElement>);
+        }
       }
     }
   };
@@ -54,12 +62,14 @@ export function EnhancedImageUpload({
   const handleRemoveImage = () => {
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
+      // Create a proper change event
+      const event = new Event('change', { bubbles: true });
+      Object.defineProperty(event, 'target', {
+        writable: false,
+        value: fileInputRef.current
+      });
+      onImageChange(event as React.ChangeEvent<HTMLInputElement>);
     }
-    // Reset image by creating empty event
-    const syntheticEvent = {
-      target: { files: null }
-    } as React.ChangeEvent<HTMLInputElement>;
-    onImageChange(syntheticEvent);
   };
 
   return (
@@ -96,7 +106,7 @@ export function EnhancedImageUpload({
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
         >
-          <ImageIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+          <FileImage className="h-12 w-12 text-gray-400 mx-auto mb-4" />
           <p className="text-gray-600 mb-4">
             Drag and drop an image here, or click to select
           </p>

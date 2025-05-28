@@ -1,9 +1,8 @@
-
 import { TabsContent } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, AlertCircle, Save, X } from "lucide-react";
+import { Check, AlertCircle, Save, X } from "lucide-react";
 import { CreateRecipeTabNavigation } from "./CreateRecipeTabNavigation";
 import { RecipeTextTab } from "./tabs/RecipeTextTab";
 import { RecipeUrlTab } from "./tabs/RecipeUrlTab";
@@ -174,7 +173,7 @@ export function CreateRecipeTabsWrapper({
             <div className="flex items-center gap-2">
               {status.isComplete ? (
                 <Badge className="bg-green-100 text-green-800">
-                  <CheckCircle className="h-3 w-3 mr-1" />
+                  <Check className="h-3 w-3 mr-1" />
                   Ready to Save
                 </Badge>
               ) : (
