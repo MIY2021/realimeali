@@ -86,7 +86,7 @@ export function ProfileSetupDialog({ isOpen, onComplete }: ProfileSetupDialogPro
 
   return (
     <Dialog open={isOpen} onOpenChange={() => {}}>
-      <DialogContent className="sm:max-w-md" hideCloseButton>
+      <DialogContent className="sm:max-w-md [&>button]:hidden">
         <DialogHeader>
           <DialogTitle className="text-center text-2xl">Welcome to RealiMeali! 🍽️</DialogTitle>
         </DialogHeader>
