@@ -44,11 +44,13 @@ export function RecipeCard({ recipe, onAddToMealPlan, onEdit, onDelete, showActi
   };
 
   const recipeSlug = createSlug(title);
-  const recipeUrl = `/recipes/${recipeSlug}`;
+  const recipeUrl = `/my-recipes/${recipeSlug}`;
 
   const handleRecipeClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    console.log('Recipe card clicked, tracking navigation from recipes');
+    e.stopPropagation();
+    console.log('Recipe card clicked, navigating to:', recipeUrl);
+    console.log('Recipe ID:', id, 'Title:', title);
     
     // Get current layout for layout-aware scroll saving
     const currentLayout = localStorage.getItem('mobileRecipeLayout') || '1';
