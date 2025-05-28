@@ -23,6 +23,8 @@ interface FindRecipesFiltersProps {
   onClearFilters: () => void;
   onKeyPress: (e: React.KeyboardEvent) => void;
   popularIngredients: string[];
+  categories: string[];
+  categoriesLoading: boolean;
 }
 
 export const FindRecipesFilters = ({
@@ -38,6 +40,8 @@ export const FindRecipesFilters = ({
   onClearFilters,
   onKeyPress,
   popularIngredients,
+  categories,
+  categoriesLoading,
 }: FindRecipesFiltersProps) => {
   return (
     <div className="space-y-4 mb-6">
@@ -64,20 +68,15 @@ export const FindRecipesFilters = ({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Any Meal Type</SelectItem>
-            <SelectItem value="Breakfast">Breakfast</SelectItem>
-            <SelectItem value="Starter">Starter</SelectItem>
-            <SelectItem value="Chicken">Chicken</SelectItem>
-            <SelectItem value="Beef">Beef</SelectItem>
-            <SelectItem value="Pork">Pork</SelectItem>
-            <SelectItem value="Lamb">Lamb</SelectItem>
-            <SelectItem value="Seafood">Seafood</SelectItem>
-            <SelectItem value="Pasta">Pasta</SelectItem>
-            <SelectItem value="Vegetarian">Vegetarian</SelectItem>
-            <SelectItem value="Vegan">Vegan</SelectItem>
-            <SelectItem value="Dessert">Dessert</SelectItem>
-            <SelectItem value="Side">Side</SelectItem>
-            <SelectItem value="Miscellaneous">Miscellaneous</SelectItem>
-            <SelectItem value="Goat">Goat</SelectItem>
+            {categoriesLoading ? (
+              <SelectItem value="loading" disabled>Loading categories...</SelectItem>
+            ) : (
+              categories.map((category) => (
+                <SelectItem key={category} value={category}>
+                  {category}
+                </SelectItem>
+              ))
+            )}
           </SelectContent>
         </Select>
 

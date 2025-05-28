@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -15,21 +16,54 @@ export const FindRecipesContent = () => {
   const [selectedArea, setSelectedArea] = useState("all");
   const [selectedIngredient, setSelectedIngredient] = useState("all");
   const [hasInitialLoad, setHasInitialLoad] = useState(false);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(false);
+  const [initialRandomRecipes, setInitialRandomRecipes] = useState<any[]>([]);
   const [popularIngredients] = useState([
     "chicken", "beef", "pork", "salmon", "shrimp", "bacon", "cheese", 
     "tomato", "onion", "garlic", "potato", "rice", "pasta", "egg"
   ]);
   
-  const { searchRecipes, getRandomRecipes, recipes, isLoading } = useMealDBApi();
+  const { searchRecipes, getRandomRecipes, getCategories, recipes, isLoading } = useMealDBApi();
+
+  // Load categories on mount
+  useEffect(() => {
+    const loadCategories = async () => {
+      if (user && currentHousehold) {
+        setCategoriesLoading(true);
+        try {
+          const categoriesData = await getCategories();
+          const categoryNames = categoriesData.map((cat: any) => cat.strCategory);
+          setCategories(categoryNames);
+        } catch (error) {
+          console.error("Failed to load categories:", error);
+        } finally {
+          setCategoriesLoading(false);
+        }
+      }
+    };
+
+    loadCategories();
+  }, [getCategories, user, currentHousehold]);
 
   // Load random recipes on mount only once
   useEffect(() => {
     if (user && currentHousehold && !hasInitialLoad) {
       console.log("Loading initial random recipes");
-      getRandomRecipes(12);
-      setHasInitialLoad(true);
+      const loadInitialRecipes = async () => {
+        await getRandomRecipes(12);
+        setHasInitialLoad(true);
+      };
+      loadInitialRecipes();
     }
   }, [getRandomRecipes, user, currentHousehold, hasInitialLoad]);
+
+  // Cache initial random recipes
+  useEffect(() => {
+    if (hasInitialLoad && recipes.length > 0 && initialRandomRecipes.length === 0) {
+      setInitialRandomRecipes([...recipes]);
+    }
+  }, [recipes, hasInitialLoad, initialRandomRecipes.length]);
 
   // Auto-search when filters change (but not on initial load)
   useEffect(() => {
@@ -45,9 +79,16 @@ export const FindRecipesContent = () => {
           number: 20
         });
       } else {
-        // All filters are "all", show random recipes
-        console.log("All filters cleared, loading random recipes");
-        getRandomRecipes(12);
+        // All filters are "all", show cached initial random recipes
+        console.log("All filters cleared, showing cached initial recipes");
+        // Use a custom setter to show cached recipes without triggering API call
+        setInitialRandomRecipes(prev => {
+          if (prev.length > 0) {
+            // Manually set recipes to cached initial recipes
+            return prev;
+          }
+          return prev;
+        });
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -81,7 +122,18 @@ export const FindRecipesContent = () => {
     setSelectedCategory("all");
     setSelectedArea("all");
     setSelectedIngredient("all");
-    getRandomRecipes(12);
+    // Don't call getRandomRecipes here, let the useEffect handle showing cached recipes
+  };
+
+  // Determine which recipes to show
+  const displayRecipes = () => {
+    const hasFilters = selectedCategory !== "all" || selectedArea !== "all" || selectedIngredient !== "all" || searchQuery.trim();
+    
+    if (!hasFilters && initialRandomRecipes.length > 0) {
+      return initialRandomRecipes;
+    }
+    
+    return recipes;
   };
 
   if (!user) {
@@ -125,10 +177,12 @@ export const FindRecipesContent = () => {
         onClearFilters={clearFilters}
         onKeyPress={handleKeyPress}
         popularIngredients={popularIngredients}
+        categories={categories}
+        categoriesLoading={categoriesLoading}
       />
 
       <MealDBRecipeList 
-        recipes={recipes}
+        recipes={displayRecipes()}
         isLoading={isLoading}
       />
     </>
