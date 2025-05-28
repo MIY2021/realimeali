@@ -24,6 +24,8 @@ interface SearchFilters {
   query?: string;
   category?: string;
   area?: string;
+  ingredient?: string;
+  letter?: string;
   number?: number;
 }
 
@@ -50,6 +52,13 @@ export function useMealDBApi() {
 
       console.log('API response:', data);
       setRecipes(data.recipes || []);
+      
+      if (data.recipes?.length === 0) {
+        toast({
+          title: "No recipes found",
+          description: "Try adjusting your search terms or filters.",
+        });
+      }
     } catch (error) {
       console.error('Error searching recipes:', error);
       toast({
@@ -122,11 +131,56 @@ export function useMealDBApi() {
     }
   }, [toast]);
 
+  const getIngredients = useCallback(async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('mealdb-api', {
+        body: { action: 'ingredients' }
+      });
+
+      if (error) throw error;
+      return data.ingredients || [];
+    } catch (error) {
+      console.error('Error getting ingredients:', error);
+      return [];
+    }
+  }, []);
+
+  const getCategories = useCallback(async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('mealdb-api', {
+        body: { action: 'categories' }
+      });
+
+      if (error) throw error;
+      return data.categories || [];
+    } catch (error) {
+      console.error('Error getting categories:', error);
+      return [];
+    }
+  }, []);
+
+  const getAreas = useCallback(async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('mealdb-api', {
+        body: { action: 'areas' }
+      });
+
+      if (error) throw error;
+      return data.areas || [];
+    } catch (error) {
+      console.error('Error getting areas:', error);
+      return [];
+    }
+  }, []);
+
   return {
     recipes,
     isLoading,
     searchRecipes,
     getRandomRecipes,
     getRecipeDetails,
+    getIngredients,
+    getCategories,
+    getAreas,
   };
 }

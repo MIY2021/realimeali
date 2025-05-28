@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Filter } from "lucide-react";
+import { Search, Filter, Info } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
@@ -16,6 +16,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export default function FindRecipesPage() {
   useDocumentTitle("Find Recipes | RealiMeali");
@@ -25,7 +31,13 @@ export default function FindRecipesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedArea, setSelectedArea] = useState("all");
+  const [selectedIngredient, setSelectedIngredient] = useState("all");
   const [hasInitialLoad, setHasInitialLoad] = useState(false);
+  const [popularIngredients] = useState([
+    "chicken", "beef", "pork", "salmon", "shrimp", "bacon", "cheese", 
+    "tomato", "onion", "garlic", "potato", "rice", "pasta", "egg"
+  ]);
+  
   const { searchRecipes, getRandomRecipes, recipes, isLoading } = useMealDBApi();
 
   // Load random recipes on mount only once
@@ -38,11 +50,17 @@ export default function FindRecipesPage() {
   }, [getRandomRecipes, user, currentHousehold, hasInitialLoad]);
 
   const handleSearch = () => {
-    if (searchQuery.trim() || (selectedCategory && selectedCategory !== "all") || (selectedArea && selectedArea !== "all")) {
+    const hasQuery = searchQuery.trim();
+    const hasCategory = selectedCategory && selectedCategory !== "all";
+    const hasArea = selectedArea && selectedArea !== "all";
+    const hasIngredient = selectedIngredient && selectedIngredient !== "all";
+    
+    if (hasQuery || hasCategory || hasArea || hasIngredient) {
       searchRecipes({
-        query: searchQuery || undefined,
-        category: selectedCategory !== "all" ? selectedCategory : undefined,
-        area: selectedArea !== "all" ? selectedArea : undefined,
+        query: hasQuery ? searchQuery : undefined,
+        category: hasCategory ? selectedCategory : undefined,
+        area: hasArea ? selectedArea : undefined,
+        ingredient: hasIngredient ? selectedIngredient : undefined,
         number: 20
       });
     }
@@ -58,6 +76,7 @@ export default function FindRecipesPage() {
     setSearchQuery("");
     setSelectedCategory("all");
     setSelectedArea("all");
+    setSelectedIngredient("all");
     getRandomRecipes(12);
   };
 
@@ -69,9 +88,21 @@ export default function FindRecipesPage() {
             <Search className="h-6 w-6 sm:h-8 sm:w-8 text-terracotta" />
             <span>Find Recipes</span>
           </h1>
-          <p className="text-sm sm:text-base text-muted-foreground">
-            Discover thousands of free recipes from TheMealDB
-          </p>
+          <div className="flex items-center gap-2">
+            <p className="text-sm sm:text-base text-muted-foreground">
+              Discover thousands of free recipes from TheMealDB
+            </p>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger>
+                  <Info className="h-4 w-4 text-muted-foreground" />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Search by recipe name, ingredient, or use filters to find recipes</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
         </div>
       </div>
 
@@ -100,7 +131,7 @@ export default function FindRecipesPage() {
             <div className="flex gap-2">
               <div className="flex-1">
                 <Input
-                  placeholder="Search for recipes, ingredients, or dishes..."
+                  placeholder="Search by recipe name or ingredient (e.g., 'chicken curry' or 'bacon')..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyPress={handleKeyPress}
@@ -170,6 +201,20 @@ export default function FindRecipesPage() {
                   <SelectItem value="Turkish">Turkish</SelectItem>
                   <SelectItem value="Unknown">Unknown</SelectItem>
                   <SelectItem value="Vietnamese">Vietnamese</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={selectedIngredient} onValueChange={setSelectedIngredient}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Main Ingredient" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Any Ingredient</SelectItem>
+                  {popularIngredients.map((ingredient) => (
+                    <SelectItem key={ingredient} value={ingredient}>
+                      {ingredient.charAt(0).toUpperCase() + ingredient.slice(1)}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
 

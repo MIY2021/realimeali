@@ -96,6 +96,8 @@ function processIngredients(meal: MealDBRecipe): string[] {
 }
 
 function processInstructions(instructions: string): string[] {
+  if (!instructions) return [];
+  
   // Split by common instruction separators
   return instructions
     .split(/\r?\n|\.(?=\s*[A-Z])|(?:\d+\.)\s*/)
@@ -122,6 +124,29 @@ function processRecipe(meal: MealDBRecipe): ProcessedRecipe {
   };
 }
 
+async function fetchMealsFromUrl(url: string): Promise<MealDBRecipe[]> {
+  console.log('Making request to:', url);
+  const response = await fetch(url);
+  
+  if (!response.ok) {
+    throw new Error(`API request failed: ${response.status}`);
+  }
+  
+  const data = await response.json();
+  return data.meals || [];
+}
+
+async function removeDuplicates(recipes: ProcessedRecipe[]): Promise<ProcessedRecipe[]> {
+  const seen = new Set();
+  return recipes.filter(recipe => {
+    if (seen.has(recipe.id)) {
+      return false;
+    }
+    seen.add(recipe.id);
+    return true;
+  });
+}
+
 Deno.serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -129,83 +154,146 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { action, query, number = 12, category, area } = await req.json();
+    const { action, query, number = 12, category, area, ingredient, letter } = await req.json();
 
-    console.log('MealDB API request:', { action, query, number, category, area });
+    console.log('MealDB API request:', { action, query, number, category, area, ingredient, letter });
 
-    let response;
-    let recipes: ProcessedRecipe[] = [];
+    let allRecipes: ProcessedRecipe[] = [];
 
     if (action === 'search') {
-      // Search for recipes by name
+      // Enhanced search that tries multiple strategies
+      const searchPromises: Promise<MealDBRecipe[]>[] = [];
+
+      // 1. Search by meal name if query provided
       if (query) {
-        const searchUrl = `https://www.themealdb.com/api/json/v1/1/search.php?s=${encodeURIComponent(query)}`;
-        console.log('Making request to:', searchUrl);
-        
-        response = await fetch(searchUrl);
-        const data = await response.json();
-        
-        if (data.meals) {
-          recipes = data.meals.slice(0, number).map(processRecipe);
-        }
-      } else if (category) {
+        const nameUrl = `https://www.themealdb.com/api/json/v1/1/search.php?s=${encodeURIComponent(query)}`;
+        searchPromises.push(fetchMealsFromUrl(nameUrl));
+      }
+
+      // 2. Search by ingredient if query provided (fallback search)
+      if (query) {
+        const ingredientUrl = `https://www.themealdb.com/api/json/v1/1/filter.php?i=${encodeURIComponent(query)}`;
+        searchPromises.push(fetchMealsFromUrl(ingredientUrl));
+      }
+
+      // 3. Search by specific ingredient filter
+      if (ingredient) {
+        const ingredientUrl = `https://www.themealdb.com/api/json/v1/1/filter.php?i=${encodeURIComponent(ingredient)}`;
+        searchPromises.push(fetchMealsFromUrl(ingredientUrl));
+      }
+
+      // 4. Filter by category
+      if (category) {
         const categoryUrl = `https://www.themealdb.com/api/json/v1/1/filter.php?c=${encodeURIComponent(category)}`;
-        console.log('Making request to:', categoryUrl);
-        
-        response = await fetch(categoryUrl);
-        const data = await response.json();
-        
-        if (data.meals) {
-          recipes = data.meals.slice(0, number).map(processRecipe);
-        }
-      } else if (area) {
+        searchPromises.push(fetchMealsFromUrl(categoryUrl));
+      }
+
+      // 5. Filter by area
+      if (area) {
         const areaUrl = `https://www.themealdb.com/api/json/v1/1/filter.php?a=${encodeURIComponent(area)}`;
-        console.log('Making request to:', areaUrl);
+        searchPromises.push(fetchMealsFromUrl(areaUrl));
+      }
+
+      // 6. Browse by first letter
+      if (letter) {
+        const letterUrl = `https://www.themealdb.com/api/json/v1/1/search.php?f=${letter}`;
+        searchPromises.push(fetchMealsFromUrl(letterUrl));
+      }
+
+      if (searchPromises.length > 0) {
+        // Execute all searches in parallel
+        const results = await Promise.allSettled(searchPromises);
         
-        response = await fetch(areaUrl);
-        const data = await response.json();
-        
-        if (data.meals) {
-          recipes = data.meals.slice(0, number).map(processRecipe);
+        // Combine successful results
+        for (const result of results) {
+          if (result.status === 'fulfilled' && result.value) {
+            const processedRecipes = result.value.map(processRecipe);
+            allRecipes.push(...processedRecipes);
+          }
         }
+
+        // Remove duplicates and limit results
+        allRecipes = await removeDuplicates(allRecipes);
+        allRecipes = allRecipes.slice(0, number);
       }
 
     } else if (action === 'random') {
       // Get random recipes
       const randomRecipes = [];
       for (let i = 0; i < number; i++) {
-        const randomUrl = 'https://www.themealdb.com/api/json/v1/1/random.php';
-        console.log('Making request to:', randomUrl);
-        
-        const randomResponse = await fetch(randomUrl);
-        const randomData = await randomResponse.json();
-        
-        if (randomData.meals && randomData.meals[0]) {
-          randomRecipes.push(processRecipe(randomData.meals[0]));
+        try {
+          const meals = await fetchMealsFromUrl('https://www.themealdb.com/api/json/v1/1/random.php');
+          if (meals.length > 0) {
+            randomRecipes.push(processRecipe(meals[0]));
+          }
+        } catch (error) {
+          console.error('Error fetching random recipe:', error);
         }
       }
-      recipes = randomRecipes;
+      allRecipes = randomRecipes;
 
     } else if (action === 'details') {
       // Get detailed recipe information
       const detailsUrl = `https://www.themealdb.com/api/json/v1/1/lookup.php?i=${req.recipeId}`;
+      const meals = await fetchMealsFromUrl(detailsUrl);
       
-      response = await fetch(detailsUrl);
+      if (meals.length > 0) {
+        allRecipes = [processRecipe(meals[0])];
+      }
+
+    } else if (action === 'ingredients') {
+      // Get list of ingredients
+      const ingredientsUrl = 'https://www.themealdb.com/api/json/v1/1/list.php?i=list';
+      const response = await fetch(ingredientsUrl);
       const data = await response.json();
       
-      if (data.meals && data.meals[0]) {
-        recipes = [processRecipe(data.meals[0])];
-      }
+      return new Response(
+        JSON.stringify({ ingredients: data.meals || [] }),
+        { 
+          headers: { 
+            ...corsHeaders, 
+            'Content-Type': 'application/json' 
+          } 
+        }
+      );
+
+    } else if (action === 'categories') {
+      // Get list of categories
+      const categoriesUrl = 'https://www.themealdb.com/api/json/v1/1/categories.php';
+      const response = await fetch(categoriesUrl);
+      const data = await response.json();
+      
+      return new Response(
+        JSON.stringify({ categories: data.categories || [] }),
+        { 
+          headers: { 
+            ...corsHeaders, 
+            'Content-Type': 'application/json' 
+          } 
+        }
+      );
+
+    } else if (action === 'areas') {
+      // Get list of areas
+      const areasUrl = 'https://www.themealdb.com/api/json/v1/1/list.php?a=list';
+      const response = await fetch(areasUrl);
+      const data = await response.json();
+      
+      return new Response(
+        JSON.stringify({ areas: data.meals || [] }),
+        { 
+          headers: { 
+            ...corsHeaders, 
+            'Content-Type': 'application/json' 
+          } 
+        }
+      );
     }
 
-    if (response && !response.ok) {
-      throw new Error(`MealDB API error: ${response.status}`);
-    }
-
-    console.log(`Successfully processed ${recipes.length} recipes`);
+    console.log(`Successfully processed ${allRecipes.length} recipes`);
 
     return new Response(
-      JSON.stringify({ recipes }),
+      JSON.stringify({ recipes: allRecipes }),
       { 
         headers: { 
           ...corsHeaders, 
