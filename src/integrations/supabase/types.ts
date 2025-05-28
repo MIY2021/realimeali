@@ -597,6 +597,51 @@ export type Database = {
           },
         ]
       }
+      spoonacular_recipes: {
+        Row: {
+          cached_at: string
+          cuisine_types: string[] | null
+          diet_tags: string[] | null
+          id: number
+          image: string | null
+          ingredients: Json | null
+          instructions: Json | null
+          ready_in_minutes: number | null
+          servings: number | null
+          source_url: string | null
+          summary: string | null
+          title: string
+        }
+        Insert: {
+          cached_at?: string
+          cuisine_types?: string[] | null
+          diet_tags?: string[] | null
+          id: number
+          image?: string | null
+          ingredients?: Json | null
+          instructions?: Json | null
+          ready_in_minutes?: number | null
+          servings?: number | null
+          source_url?: string | null
+          summary?: string | null
+          title: string
+        }
+        Update: {
+          cached_at?: string
+          cuisine_types?: string[] | null
+          diet_tags?: string[] | null
+          id?: number
+          image?: string | null
+          ingredients?: Json | null
+          instructions?: Json | null
+          ready_in_minutes?: number | null
+          servings?: number | null
+          source_url?: string | null
+          summary?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

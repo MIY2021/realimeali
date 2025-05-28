@@ -13,6 +13,7 @@ import Layout from "@/components/layout/Layout";
 import { ScrollToTop } from "@/components/layout/ScrollToTop";
 import Index from "@/pages/Index";
 import RecipesPage from "@/pages/RecipesPage";
+import FindRecipesPage from "@/pages/FindRecipesPage";
 import CreateRecipePage from "@/pages/CreateRecipePage";
 import RecipeDetail from "@/pages/RecipeDetail";
 import PublicRecipe from "@/pages/PublicRecipe";
@@ -49,7 +50,7 @@ const App = () => (
                       <Route path="/share/recipes/:publicShareId" element={<PublicRecipe />} />
                       <Route path="/recipe-meta/:publicShareId" element={<PublicRecipe />} />
                       <Route
-                        path="/recipes"
+                        path="/my-recipes"
                         element={
                           <ProtectedRoute>
                             <RecipesPage />
@@ -57,7 +58,15 @@ const App = () => (
                         }
                       />
                       <Route
-                        path="/recipes/new"
+                        path="/find-recipes"
+                        element={
+                          <ProtectedRoute>
+                            <FindRecipesPage />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/my-recipes/new"
                         element={
                           <ProtectedRoute>
                             <CreateRecipePage />
@@ -65,7 +74,7 @@ const App = () => (
                         }
                       />
                       <Route
-                        path="/recipes/:slug"
+                        path="/my-recipes/:slug"
                         element={
                           <ProtectedRoute>
                             <RecipeDetail />
@@ -73,7 +82,7 @@ const App = () => (
                         }
                       />
                       <Route
-                        path="/recipes/:id/:slug"
+                        path="/my-recipes/:id/:slug"
                         element={
                           <ProtectedRoute>
                             <RecipeDetail />

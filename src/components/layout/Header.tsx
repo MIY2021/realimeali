@@ -1,6 +1,7 @@
+
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { User, UtensilsCrossed, CalendarDays, Book, ListChecks, Users, AlignJustify } from "lucide-react";
+import { User, UtensilsCrossed, CalendarDays, Book, ListChecks, Users, AlignJustify, Search } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -30,7 +31,8 @@ const Header = () => {
   const isMobile = useIsMobile();
 
   const navigationItems = [
-    { to: "/recipes", icon: Book, label: "Recipes" },
+    { to: "/my-recipes", icon: Book, label: "My Recipes" },
+    { to: "/find-recipes", icon: Search, label: "Find Recipes" },
     { to: "/meal-planner", icon: CalendarDays, label: "Meal Planner" },
     { to: "/shopping-list", icon: ListChecks, label: "Shopping List" },
   ];

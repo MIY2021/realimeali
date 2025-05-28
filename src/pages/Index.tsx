@@ -1,19 +1,30 @@
+
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { 
   UtensilsCrossed, 
   CalendarDays, 
   ListChecks,
+  Search,
 } from "lucide-react";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { LoginPromptDialog } from "@/components/auth/LoginPromptDialog";
 import { useLoginPrompt } from "@/hooks/useLoginPrompt";
 import { useAuth } from "@/contexts/AuthContext";
+import { SpoonacularRecipeList } from "@/components/spoonacular/SpoonacularRecipeList";
+import { useSpoonacularApi } from "@/hooks/useSpoonacularApi";
+import { useEffect } from "react";
 
 export default function Index() {
   useDocumentTitle("RealiMeali | All-in-one meal planning");
   const { showPrompt, promptTrigger, triggerPromptOnFeatureClick, closePrompt } = useLoginPrompt();
   const { user } = useAuth();
+  const { getPopularRecipes, recipes, isLoading } = useSpoonacularApi();
+
+  // Load popular recipes for home page
+  useEffect(() => {
+    getPopularRecipes(8);
+  }, [getPopularRecipes]);
 
   const handleFeatureClick = (e: React.MouseEvent, path: string) => {
     if (!user) {
@@ -45,26 +56,50 @@ export default function Index() {
 
       <section className="py-4 md:py-6 bg-gray-50 flex-grow">
         <div className="container px-4 md:px-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 md:gap-10">
             <div className="group relative overflow-hidden rounded-lg border bg-white p-6 shadow-md transition-all hover:shadow-lg md:min-h-[300px]">
               <div className="flex flex-col items-center text-center space-y-4">
                 <div className="rounded-full bg-terracotta/10 p-4">
                   <UtensilsCrossed className="h-10 w-10 text-terracotta" />
                 </div>
-                <h2 className="text-xl font-bold text-navy">Recipes</h2>
+                <h2 className="text-xl font-bold text-navy">My Recipes</h2>
                 <p className="text-muted-foreground mb-4">
                   Browse and manage your favorite recipes all in one place.
                 </p>
                 {user ? (
                   <Button className="mt-auto" asChild>
-                    <Link to="/recipes">View Recipes</Link>
+                    <Link to="/my-recipes">View My Recipes</Link>
                   </Button>
                 ) : (
                   <Button 
                     className="mt-auto" 
-                    onClick={(e) => handleFeatureClick(e, "/recipes")}
+                    onClick={(e) => handleFeatureClick(e, "/my-recipes")}
                   >
-                    View Recipes
+                    View My Recipes
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            <div className="group relative overflow-hidden rounded-lg border bg-white p-6 shadow-md transition-all hover:shadow-lg md:min-h-[300px]">
+              <div className="flex flex-col items-center text-center space-y-4">
+                <div className="rounded-full bg-sage/10 p-4">
+                  <Search className="h-10 w-10 text-sage" />
+                </div>
+                <h2 className="text-xl font-bold text-navy">Find Recipes</h2>
+                <p className="text-muted-foreground mb-4">
+                  Discover thousands of recipes from around the world.
+                </p>
+                {user ? (
+                  <Button className="mt-auto" asChild>
+                    <Link to="/find-recipes">Discover Recipes</Link>
+                  </Button>
+                ) : (
+                  <Button 
+                    className="mt-auto"
+                    onClick={(e) => handleFeatureClick(e, "/find-recipes")}
+                  >
+                    Discover Recipes
                   </Button>
                 )}
               </div>
@@ -118,6 +153,23 @@ export default function Index() {
               </div>
             </div>
           </div>
+
+          {/* Popular Recipes Section */}
+          {user && (
+            <section className="mt-12">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-navy">Popular Recipes</h2>
+                <Button variant="outline" asChild>
+                  <Link to="/find-recipes">View All</Link>
+                </Button>
+              </div>
+              <SpoonacularRecipeList 
+                recipes={recipes}
+                isLoading={isLoading}
+                maxItems={8}
+              />
+            </section>
+          )}
         </div>
       </section>
 

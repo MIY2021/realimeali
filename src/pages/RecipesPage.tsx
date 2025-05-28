@@ -14,7 +14,7 @@ import { useNavigationState } from "@/hooks/useNavigationState";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function RecipesPage() {
-  useDocumentTitle("Recipes | RealiMeali");
+  useDocumentTitle("My Recipes | RealiMeali");
   
   const { user } = useAuth();
   const { currentHousehold } = useHousehold();
@@ -74,16 +74,16 @@ export default function RecipesPage() {
           <h1 className="text-2xl sm:text-3xl font-bold text-navy flex items-center gap-2">
             <UtensilsCrossed className="h-6 w-6 sm:h-8 sm:w-8 text-sage" />
             <span className="truncate">
-              {currentHousehold ? `${currentHousehold.name} Recipes` : 'Recipes'}
+              {currentHousehold ? `${currentHousehold.name} - My Recipes` : 'My Recipes'}
             </span>
           </h1>
           <p className="text-sm sm:text-base text-muted-foreground">
-            Discover and manage your recipe collection
+            Manage your saved recipe collection
           </p>
         </div>
         {user && currentHousehold && (
           <Button asChild className="bg-terracotta hover:bg-terracotta/90 w-full sm:w-auto">
-            <Link to="/recipes/new">
+            <Link to="/my-recipes/new">
               <Plus className="h-4 w-4 mr-2" />
               Add New Recipe
             </Link>
