@@ -1,3 +1,4 @@
+
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
@@ -207,6 +208,9 @@ async function fetchAllMealsForSearch(searchParams: {
     
     allMeals = Array.from(combinedMeals.values());
     totalAvailable = allMeals.length;
+  } else {
+    // If no filters are provided, return empty array - this should trigger random recipes
+    return { meals: [], totalAvailable: 0 };
   }
 
   return { meals: allMeals, totalAvailable };
@@ -230,28 +234,45 @@ Deno.serve(async (req) => {
     };
 
     if (action === 'search') {
-      const { meals, totalAvailable } = await fetchAllMealsForSearch({
-        category: category !== 'all' ? category : undefined,
-        area: area !== 'all' ? area : undefined,
-        ingredient: ingredient !== 'all' ? ingredient : undefined,
-        query: query?.trim() || undefined
-      });
+      // Check if we actually have filters to search with
+      const hasActiveFilters = (
+        (category && category !== 'all') ||
+        (area && area !== 'all') ||
+        (ingredient && ingredient !== 'all') ||
+        (query && query.trim())
+      );
 
-      // Process all meals and filter for valid sources
-      const processedRecipes = meals.map(processRecipe);
-      const validRecipes = filterRecipesWithValidSources(processedRecipes);
-      const uniqueRecipes = await removeDuplicates(validRecipes);
+      if (hasActiveFilters) {
+        const { meals, totalAvailable } = await fetchAllMealsForSearch({
+          category: category !== 'all' ? category : undefined,
+          area: area !== 'all' ? area : undefined,
+          ingredient: ingredient !== 'all' ? ingredient : undefined,
+          query: query?.trim() || undefined
+        });
 
-      // Apply client-side pagination
-      const startIndex = offset;
-      const endIndex = startIndex + number;
-      const paginatedRecipes = uniqueRecipes.slice(startIndex, endIndex);
+        // Process all meals and filter for valid sources
+        const processedRecipes = meals.map(processRecipe);
+        const validRecipes = filterRecipesWithValidSources(processedRecipes);
+        const uniqueRecipes = await removeDuplicates(validRecipes);
 
-      response = {
-        recipes: paginatedRecipes,
-        totalCount: uniqueRecipes.length,
-        hasMore: endIndex < uniqueRecipes.length
-      };
+        // Apply client-side pagination
+        const startIndex = offset;
+        const endIndex = startIndex + number;
+        const paginatedRecipes = uniqueRecipes.slice(startIndex, endIndex);
+
+        response = {
+          recipes: paginatedRecipes,
+          totalCount: uniqueRecipes.length,
+          hasMore: endIndex < uniqueRecipes.length
+        };
+      } else {
+        // No active filters - return empty results, frontend should load random recipes
+        response = {
+          recipes: [],
+          totalCount: 0,
+          hasMore: false
+        };
+      }
 
     } else if (action === 'random') {
       // For random recipes, we can't get an exact count, but we can estimate
