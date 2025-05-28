@@ -6,8 +6,8 @@ import { Search, Filter } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
-import { SpoonacularRecipeList } from "@/components/spoonacular/SpoonacularRecipeList";
-import { useSpoonacularApi } from "@/hooks/useSpoonacularApi";
+import { MealDBRecipeList } from "@/components/mealdb/MealDBRecipeList";
+import { useMealDBApi } from "@/hooks/useMealDBApi";
 import { Link } from "react-router-dom";
 import {
   Select,
@@ -23,23 +23,21 @@ export default function FindRecipesPage() {
   const { user } = useAuth();
   const { currentHousehold } = useHousehold();
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedDiet, setSelectedDiet] = useState("");
-  const [selectedCuisine, setSelectedCuisine] = useState("");
-  const [selectedType, setSelectedType] = useState("");
-  const { searchRecipes, getPopularRecipes, recipes, isLoading } = useSpoonacularApi();
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedArea, setSelectedArea] = useState("");
+  const { searchRecipes, getRandomRecipes, recipes, isLoading } = useMealDBApi();
 
-  // Load popular recipes on mount
+  // Load random recipes on mount
   useEffect(() => {
-    getPopularRecipes(12);
-  }, [getPopularRecipes]);
+    getRandomRecipes(12);
+  }, [getRandomRecipes]);
 
   const handleSearch = () => {
-    if (searchQuery.trim()) {
+    if (searchQuery.trim() || selectedCategory || selectedArea) {
       searchRecipes({
-        query: searchQuery,
-        diet: selectedDiet,
-        cuisine: selectedCuisine,
-        type: selectedType,
+        query: searchQuery || undefined,
+        category: selectedCategory || undefined,
+        area: selectedArea || undefined,
         number: 20
       });
     }
@@ -53,10 +51,9 @@ export default function FindRecipesPage() {
 
   const clearFilters = () => {
     setSearchQuery("");
-    setSelectedDiet("");
-    setSelectedCuisine("");
-    setSelectedType("");
-    getPopularRecipes(12);
+    setSelectedCategory("");
+    setSelectedArea("");
+    getRandomRecipes(12);
   };
 
   return (
@@ -68,7 +65,7 @@ export default function FindRecipesPage() {
             <span>Find Recipes</span>
           </h1>
           <p className="text-sm sm:text-base text-muted-foreground">
-            Discover thousands of recipes from around the world
+            Discover thousands of free recipes from TheMealDB
           </p>
         </div>
       </div>
@@ -112,48 +109,62 @@ export default function FindRecipesPage() {
 
             {/* Filters */}
             <div className="flex flex-wrap gap-4">
-              <Select value={selectedDiet} onValueChange={setSelectedDiet}>
+              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
                 <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Diet" />
+                  <SelectValue placeholder="Category" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Any Diet</SelectItem>
-                  <SelectItem value="vegetarian">Vegetarian</SelectItem>
-                  <SelectItem value="vegan">Vegan</SelectItem>
-                  <SelectItem value="gluten free">Gluten Free</SelectItem>
-                  <SelectItem value="ketogenic">Keto</SelectItem>
-                  <SelectItem value="paleo">Paleo</SelectItem>
+                  <SelectItem value="">Any Category</SelectItem>
+                  <SelectItem value="Beef">Beef</SelectItem>
+                  <SelectItem value="Chicken">Chicken</SelectItem>
+                  <SelectItem value="Dessert">Dessert</SelectItem>
+                  <SelectItem value="Lamb">Lamb</SelectItem>
+                  <SelectItem value="Miscellaneous">Miscellaneous</SelectItem>
+                  <SelectItem value="Pasta">Pasta</SelectItem>
+                  <SelectItem value="Pork">Pork</SelectItem>
+                  <SelectItem value="Seafood">Seafood</SelectItem>
+                  <SelectItem value="Side">Side</SelectItem>
+                  <SelectItem value="Starter">Starter</SelectItem>
+                  <SelectItem value="Vegan">Vegan</SelectItem>
+                  <SelectItem value="Vegetarian">Vegetarian</SelectItem>
+                  <SelectItem value="Breakfast">Breakfast</SelectItem>
+                  <SelectItem value="Goat">Goat</SelectItem>
                 </SelectContent>
               </Select>
 
-              <Select value={selectedCuisine} onValueChange={setSelectedCuisine}>
+              <Select value={selectedArea} onValueChange={setSelectedArea}>
                 <SelectTrigger className="w-[180px]">
                   <SelectValue placeholder="Cuisine" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="">Any Cuisine</SelectItem>
-                  <SelectItem value="italian">Italian</SelectItem>
-                  <SelectItem value="mexican">Mexican</SelectItem>
-                  <SelectItem value="chinese">Chinese</SelectItem>
-                  <SelectItem value="indian">Indian</SelectItem>
-                  <SelectItem value="mediterranean">Mediterranean</SelectItem>
-                  <SelectItem value="american">American</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Select value={selectedType} onValueChange={setSelectedType}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Meal Type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">Any Type</SelectItem>
-                  <SelectItem value="main course">Main Course</SelectItem>
-                  <SelectItem value="breakfast">Breakfast</SelectItem>
-                  <SelectItem value="lunch">Lunch</SelectItem>
-                  <SelectItem value="dinner">Dinner</SelectItem>
-                  <SelectItem value="appetizer">Appetizer</SelectItem>
-                  <SelectItem value="dessert">Dessert</SelectItem>
-                  <SelectItem value="snack">Snack</SelectItem>
+                  <SelectItem value="American">American</SelectItem>
+                  <SelectItem value="British">British</SelectItem>
+                  <SelectItem value="Canadian">Canadian</SelectItem>
+                  <SelectItem value="Chinese">Chinese</SelectItem>
+                  <SelectItem value="Croatian">Croatian</SelectItem>
+                  <SelectItem value="Dutch">Dutch</SelectItem>
+                  <SelectItem value="Egyptian">Egyptian</SelectItem>
+                  <SelectItem value="French">French</SelectItem>
+                  <SelectItem value="Greek">Greek</SelectItem>
+                  <SelectItem value="Indian">Indian</SelectItem>
+                  <SelectItem value="Irish">Irish</SelectItem>
+                  <SelectItem value="Italian">Italian</SelectItem>
+                  <SelectItem value="Jamaican">Jamaican</SelectItem>
+                  <SelectItem value="Japanese">Japanese</SelectItem>
+                  <SelectItem value="Kenyan">Kenyan</SelectItem>
+                  <SelectItem value="Malaysian">Malaysian</SelectItem>
+                  <SelectItem value="Mexican">Mexican</SelectItem>
+                  <SelectItem value="Moroccan">Moroccan</SelectItem>
+                  <SelectItem value="Polish">Polish</SelectItem>
+                  <SelectItem value="Portuguese">Portuguese</SelectItem>
+                  <SelectItem value="Russian">Russian</SelectItem>
+                  <SelectItem value="Spanish">Spanish</SelectItem>
+                  <SelectItem value="Thai">Thai</SelectItem>
+                  <SelectItem value="Tunisian">Tunisian</SelectItem>
+                  <SelectItem value="Turkish">Turkish</SelectItem>
+                  <SelectItem value="Unknown">Unknown</SelectItem>
+                  <SelectItem value="Vietnamese">Vietnamese</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -164,7 +175,7 @@ export default function FindRecipesPage() {
             </div>
           </div>
 
-          <SpoonacularRecipeList 
+          <MealDBRecipeList 
             recipes={recipes}
             isLoading={isLoading}
           />
