@@ -11,22 +11,14 @@ import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { LoginPromptDialog } from "@/components/auth/LoginPromptDialog";
 import { useLoginPrompt } from "@/hooks/useLoginPrompt";
 import { useAuth } from "@/contexts/AuthContext";
-import { MealDBRecipeList } from "@/components/mealdb/MealDBRecipeList";
-import { useMealDBApi } from "@/hooks/useMealDBApi";
-import { useEffect } from "react";
+import { useRecipes } from "@/contexts/RecipesContext";
+import { RecipeList } from "@/components/recipes/RecipeList";
 
 export default function Index() {
   useDocumentTitle("RealiMeali | All-in-one meal planning");
   const { showPrompt, promptTrigger, triggerPromptOnFeatureClick, closePrompt } = useLoginPrompt();
   const { user } = useAuth();
-  const { getRandomRecipes, recipes, isLoading } = useMealDBApi();
-
-  // Load random recipes for home page
-  useEffect(() => {
-    if (user) {
-      getRandomRecipes(8);
-    }
-  }, [getRandomRecipes, user]);
+  const { recipes, isLoading } = useRecipes();
 
   const handleFeatureClick = (e: React.MouseEvent, path: string) => {
     if (!user) {
@@ -38,6 +30,9 @@ export default function Index() {
       }
     }
   };
+
+  // Get latest 8 recipes for featured section
+  const latestRecipes = recipes.slice(0, 8);
 
   return (
     <div className="flex flex-col min-h-[85vh]">
@@ -156,19 +151,19 @@ export default function Index() {
             </div>
           </div>
 
-          {/* Featured Recipes Section */}
-          {user && (
+          {/* Latest Recipes Section */}
+          {user && latestRecipes.length > 0 && (
             <section className="mt-12">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-navy">Featured Recipes</h2>
+                <h2 className="text-2xl font-bold text-navy">Latest Recipes</h2>
                 <Button variant="outline" asChild>
-                  <Link to="/find-recipes">View All</Link>
+                  <Link to="/my-recipes">View All</Link>
                 </Button>
               </div>
-              <MealDBRecipeList 
-                recipes={recipes}
+              <RecipeList 
+                recipes={latestRecipes}
                 isLoading={isLoading}
-                maxItems={8}
+                showActions={false}
               />
             </section>
           )}

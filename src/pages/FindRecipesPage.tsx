@@ -23,21 +23,26 @@ export default function FindRecipesPage() {
   const { user } = useAuth();
   const { currentHousehold } = useHousehold();
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("");
-  const [selectedArea, setSelectedArea] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [selectedArea, setSelectedArea] = useState("all");
+  const [hasInitialLoad, setHasInitialLoad] = useState(false);
   const { searchRecipes, getRandomRecipes, recipes, isLoading } = useMealDBApi();
 
-  // Load random recipes on mount
+  // Load random recipes on mount only once
   useEffect(() => {
-    getRandomRecipes(12);
-  }, [getRandomRecipes]);
+    if (user && currentHousehold && !hasInitialLoad) {
+      console.log("Loading initial random recipes");
+      getRandomRecipes(12);
+      setHasInitialLoad(true);
+    }
+  }, [getRandomRecipes, user, currentHousehold, hasInitialLoad]);
 
   const handleSearch = () => {
-    if (searchQuery.trim() || selectedCategory || selectedArea) {
+    if (searchQuery.trim() || (selectedCategory && selectedCategory !== "all") || (selectedArea && selectedArea !== "all")) {
       searchRecipes({
         query: searchQuery || undefined,
-        category: selectedCategory || undefined,
-        area: selectedArea || undefined,
+        category: selectedCategory !== "all" ? selectedCategory : undefined,
+        area: selectedArea !== "all" ? selectedArea : undefined,
         number: 20
       });
     }
@@ -51,8 +56,8 @@ export default function FindRecipesPage() {
 
   const clearFilters = () => {
     setSearchQuery("");
-    setSelectedCategory("");
-    setSelectedArea("");
+    setSelectedCategory("all");
+    setSelectedArea("all");
     getRandomRecipes(12);
   };
 
