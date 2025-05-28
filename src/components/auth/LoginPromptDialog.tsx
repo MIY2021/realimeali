@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { GoogleLoginButton } from "@/components/auth/GoogleLoginButton";
+import { EmailLoginButton } from "@/components/auth/EmailLoginButton";
 import { X, Heart, Calendar, ShoppingBag } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -74,9 +75,20 @@ export function LoginPromptDialog({ isOpen, onClose, trigger = "timer" }: LoginP
             ))}
           </div>
 
-          {/* Google Login Button */}
+          {/* Authentication Options */}
           <div className="space-y-3 sm:space-y-4">
             <GoogleLoginButton />
+            
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-white px-2 text-muted-foreground">Or</span>
+              </div>
+            </div>
+            
+            <EmailLoginButton onSuccess={() => handleDismiss("later")} />
             
             <p className="text-xs text-center text-muted-foreground px-2 leading-relaxed">
               By signing in, you agree to our Terms & Privacy Policy

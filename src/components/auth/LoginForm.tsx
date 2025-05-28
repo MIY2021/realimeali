@@ -1,5 +1,6 @@
 
 import { GoogleLoginButton } from "@/components/auth/GoogleLoginButton";
+import { EmailLoginButton } from "@/components/auth/EmailLoginButton";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -34,6 +35,17 @@ export function LoginForm() {
       
       <div className="space-y-4">
         <GoogleLoginButton />
+        
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-background px-2 text-muted-foreground">Or</span>
+          </div>
+        </div>
+        
+        <EmailLoginButton />
         
         <div className="text-center text-sm text-muted-foreground">
           By continuing, you agree to our Terms of Service and Privacy Policy.
