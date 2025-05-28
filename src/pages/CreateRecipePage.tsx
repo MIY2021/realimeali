@@ -2,8 +2,11 @@
 import { CreateRecipeHeader } from "@/components/recipes/create/CreateRecipeHeader";
 import { CreateRecipeContainer } from "@/components/recipes/create/CreateRecipeContainer";
 import { Plus } from "lucide-react";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 
 export default function CreateRecipePage() {
+  useDocumentTitle("Add New Recipe | RealiMeali");
+  
   return (
     <div className="min-h-screen bg-cream sm:bg-cream bg-white">
       <div className="container max-w-7xl py-4 px-4 sm:py-8 sm:px-6">

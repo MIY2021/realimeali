@@ -1,4 +1,3 @@
-
 import { User } from "lucide-react";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -7,8 +6,11 @@ import { HouseholdDetailsCard } from "@/components/household/HouseholdDetailsCar
 import { HouseholdMembersCard } from "@/components/household/HouseholdMembersCard";
 import { JoinRequestsCard } from "@/components/household/JoinRequestsCard";
 import { CreateHouseholdCard } from "@/components/household/CreateHouseholdCard";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 
 export default function Household() {
+  useDocumentTitle("Household | RealiMeali");
+  
   const { user } = useAuth();
   const { currentHousehold, setCurrentHousehold, householdMembers, isLoadingMembers, removeMember } = useHousehold();
 

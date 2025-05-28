@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { WeekSelector } from "@/components/meal-planner/WeekSelector";
 import { MealPlannerActions } from "@/components/meal-planner/MealPlannerActions";
@@ -16,7 +15,7 @@ import { DropResult } from "react-beautiful-dnd";
 import { MealType } from "@/types";
 
 const MealPlanner = () => {
-  useDocumentTitle("Meal Planner");
+  useDocumentTitle("Meal Planner | RealiMeali");
   const [currentWeek, setCurrentWeek] = useState<1 | 2>(1);
   const [isDraggingCategory, setIsDraggingCategory] = useState(false);
   const [draggedCategoryId, setDraggedCategoryId] = useState<string | null>(null);
