@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Clock, Users, Heart, ExternalLink } from "lucide-react";
+import { Clock, Users, Heart, Link } from "lucide-react";
 import { MealDBRecipe } from "@/hooks/useMealDBApi";
 import { SaveMealDBRecipeDialog } from "./SaveMealDBRecipeDialog";
 
@@ -65,7 +65,7 @@ export const MealDBRecipeCard = ({ recipe }: MealDBRecipeCardProps) => {
               className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-200"
             />
             <div className="absolute top-2 right-2">
-              <Badge variant="secondary" className="bg-white/95 text-navy text-xs font-medium px-2 py-1">
+              <Badge variant="secondary" className="bg-white/95 text-navy text-sm font-medium px-3 py-1.5 shadow-sm">
                 via {source}
               </Badge>
             </div>
@@ -124,7 +124,7 @@ export const MealDBRecipeCard = ({ recipe }: MealDBRecipeCardProps) => {
                 size="sm"
                 className="flex-1"
               >
-                <ExternalLink className="h-4 w-4 mr-2" />
+                <Link className="h-4 w-4 mr-2" />
                 View Recipe
               </Button>
             )}
