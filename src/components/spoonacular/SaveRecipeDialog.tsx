@@ -16,7 +16,8 @@ import { SpoonacularRecipe } from "@/hooks/useSpoonacularApi";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { useToast } from "@/hooks/use-toast";
-import { Clock, Users, ExternalLink } from "lucide-react";
+import { Clock, Users } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import { Recipe } from "@/types";
 
 interface SaveRecipeDialogProps {

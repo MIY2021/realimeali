@@ -3,7 +3,8 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Clock, Users, Heart, ExternalLink } from "lucide-react";
+import { Clock, Users, Heart } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import { SpoonacularRecipe } from "@/hooks/useSpoonacularApi";
 import { SaveRecipeDialog } from "./SaveRecipeDialog";
 
