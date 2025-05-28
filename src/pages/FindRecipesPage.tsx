@@ -114,7 +114,7 @@ export default function FindRecipesPage() {
                   <SelectValue placeholder="Category" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Any Category</SelectItem>
+                  <SelectItem value="all">Any Category</SelectItem>
                   <SelectItem value="Beef">Beef</SelectItem>
                   <SelectItem value="Chicken">Chicken</SelectItem>
                   <SelectItem value="Dessert">Dessert</SelectItem>
@@ -137,7 +137,7 @@ export default function FindRecipesPage() {
                   <SelectValue placeholder="Cuisine" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Any Cuisine</SelectItem>
+                  <SelectItem value="all">Any Cuisine</SelectItem>
                   <SelectItem value="American">American</SelectItem>
                   <SelectItem value="British">British</SelectItem>
                   <SelectItem value="Canadian">Canadian</SelectItem>

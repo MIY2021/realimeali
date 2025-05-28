@@ -11,20 +11,22 @@ import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { LoginPromptDialog } from "@/components/auth/LoginPromptDialog";
 import { useLoginPrompt } from "@/hooks/useLoginPrompt";
 import { useAuth } from "@/contexts/AuthContext";
-import { SpoonacularRecipeList } from "@/components/spoonacular/SpoonacularRecipeList";
-import { useSpoonacularApi } from "@/hooks/useSpoonacularApi";
+import { MealDBRecipeList } from "@/components/mealdb/MealDBRecipeList";
+import { useMealDBApi } from "@/hooks/useMealDBApi";
 import { useEffect } from "react";
 
 export default function Index() {
   useDocumentTitle("RealiMeali | All-in-one meal planning");
   const { showPrompt, promptTrigger, triggerPromptOnFeatureClick, closePrompt } = useLoginPrompt();
   const { user } = useAuth();
-  const { getPopularRecipes, recipes, isLoading } = useSpoonacularApi();
+  const { getRandomRecipes, recipes, isLoading } = useMealDBApi();
 
-  // Load popular recipes for home page
+  // Load random recipes for home page
   useEffect(() => {
-    getPopularRecipes(8);
-  }, [getPopularRecipes]);
+    if (user) {
+      getRandomRecipes(8);
+    }
+  }, [getRandomRecipes, user]);
 
   const handleFeatureClick = (e: React.MouseEvent, path: string) => {
     if (!user) {
@@ -158,12 +160,12 @@ export default function Index() {
           {user && (
             <section className="mt-12">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-navy">Popular Recipes</h2>
+                <h2 className="text-2xl font-bold text-navy">Featured Recipes</h2>
                 <Button variant="outline" asChild>
                   <Link to="/find-recipes">View All</Link>
                 </Button>
               </div>
-              <SpoonacularRecipeList 
+              <MealDBRecipeList 
                 recipes={recipes}
                 isLoading={isLoading}
                 maxItems={8}
