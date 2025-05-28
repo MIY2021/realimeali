@@ -35,6 +35,7 @@ export function useMealDBApi() {
   const searchRecipes = useCallback(async (filters: SearchFilters) => {
     setIsLoading(true);
     try {
+      console.log('Searching recipes with filters:', filters);
       const { data, error } = await supabase.functions.invoke('mealdb-api', {
         body: {
           action: 'search',
@@ -42,8 +43,12 @@ export function useMealDBApi() {
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase function error:', error);
+        throw error;
+      }
 
+      console.log('API response:', data);
       setRecipes(data.recipes || []);
     } catch (error) {
       console.error('Error searching recipes:', error);
@@ -52,6 +57,7 @@ export function useMealDBApi() {
         description: "Failed to search recipes. Please try again.",
         variant: "destructive",
       });
+      setRecipes([]);
     } finally {
       setIsLoading(false);
     }
@@ -60,6 +66,7 @@ export function useMealDBApi() {
   const getRandomRecipes = useCallback(async (number: number = 12) => {
     setIsLoading(true);
     try {
+      console.log('Getting random recipes, count:', number);
       const { data, error } = await supabase.functions.invoke('mealdb-api', {
         body: {
           action: 'random',
@@ -67,8 +74,12 @@ export function useMealDBApi() {
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase function error:', error);
+        throw error;
+      }
 
+      console.log('API response:', data);
       setRecipes(data.recipes || []);
     } catch (error) {
       console.error('Error getting random recipes:', error);
@@ -77,6 +88,7 @@ export function useMealDBApi() {
         description: "Failed to load recipes. Please try again.",
         variant: "destructive",
       });
+      setRecipes([]);
     } finally {
       setIsLoading(false);
     }
@@ -84,6 +96,7 @@ export function useMealDBApi() {
 
   const getRecipeDetails = useCallback(async (recipeId: string): Promise<MealDBRecipe | null> => {
     try {
+      console.log('Getting recipe details for:', recipeId);
       const { data, error } = await supabase.functions.invoke('mealdb-api', {
         body: {
           action: 'details',
@@ -91,8 +104,12 @@ export function useMealDBApi() {
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase function error:', error);
+        throw error;
+      }
 
+      console.log('Recipe details response:', data);
       return data.recipes?.[0] || null;
     } catch (error) {
       console.error('Error getting recipe details:', error);

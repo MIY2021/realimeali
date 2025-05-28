@@ -129,11 +129,6 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
-
     const { action, query, number = 12, category, area } = await req.json();
 
     console.log('MealDB API request:', { action, query, number, category, area });
@@ -193,8 +188,7 @@ Deno.serve(async (req) => {
 
     } else if (action === 'details') {
       // Get detailed recipe information
-      const { recipeId } = await req.json();
-      const detailsUrl = `https://www.themealdb.com/api/json/v1/1/lookup.php?i=${recipeId}`;
+      const detailsUrl = `https://www.themealdb.com/api/json/v1/1/lookup.php?i=${req.recipeId}`;
       
       response = await fetch(detailsUrl);
       const data = await response.json();
@@ -206,28 +200,6 @@ Deno.serve(async (req) => {
 
     if (response && !response.ok) {
       throw new Error(`MealDB API error: ${response.status}`);
-    }
-
-    // Cache recipes in our database for faster future access
-    if (recipes.length > 0) {
-      const recipesToCache = recipes.map(recipe => ({
-        id: parseInt(recipe.id),
-        title: recipe.title,
-        image: recipe.image,
-        category: recipe.category,
-        area: recipe.area,
-        instructions: JSON.stringify(recipe.instructions),
-        ingredients: JSON.stringify(recipe.ingredients),
-        tags: recipe.tags || [],
-        source_url: recipe.sourceUrl,
-        video_url: recipe.videoUrl,
-        cached_at: new Date().toISOString()
-      }));
-
-      // Insert or update cached recipes
-      await supabase
-        .from('mealdb_recipes')
-        .upsert(recipesToCache, { onConflict: 'id' });
     }
 
     console.log(`Successfully processed ${recipes.length} recipes`);
