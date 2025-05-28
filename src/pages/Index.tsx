@@ -29,7 +29,7 @@ export default function Index() {
 
   return (
     <div className="flex flex-col min-h-[85vh]">
-      <section className="py-8 md:py-12 lg:py-16 bg-white">
+      <section className="py-8 md:py-12 lg:py-16 bg-cream">
         <div className="container px-4 md:px-6">
           <div className="flex flex-col items-center space-y-2 text-center">
             <div>
