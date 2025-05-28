@@ -1,7 +1,8 @@
+
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Upload, Camera, Sparkles, X, FileImage } from "lucide-react";
+import { Upload, Camera, Sparkles, X } from "lucide-react";
 
 interface EnhancedImageUploadProps {
   imagePreview: string | null;
@@ -41,19 +42,14 @@ export function EnhancedImageUpload({
     if (files.length > 0) {
       const file = files[0];
       if (file.type.startsWith('image/')) {
-        // Create a proper synthetic event by updating the file input
+        // Update the file input and trigger change event
         if (fileInputRef.current) {
           const dataTransfer = new DataTransfer();
           dataTransfer.items.add(file);
           fileInputRef.current.files = dataTransfer.files;
           
-          // Create a proper synthetic event
-          const event = new Event('change', { bubbles: true });
-          Object.defineProperty(event, 'target', {
-            writable: false,
-            value: fileInputRef.current
-          });
-          onImageChange(event as React.ChangeEvent<HTMLInputElement>);
+          // Trigger the change event on the actual input element
+          fileInputRef.current.dispatchEvent(new Event('change', { bubbles: true }));
         }
       }
     }
@@ -62,13 +58,8 @@ export function EnhancedImageUpload({
   const handleRemoveImage = () => {
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
-      // Create a proper change event
-      const event = new Event('change', { bubbles: true });
-      Object.defineProperty(event, 'target', {
-        writable: false,
-        value: fileInputRef.current
-      });
-      onImageChange(event as React.ChangeEvent<HTMLInputElement>);
+      // Trigger the change event on the actual input element
+      fileInputRef.current.dispatchEvent(new Event('change', { bubbles: true }));
     }
   };
 
@@ -106,7 +97,7 @@ export function EnhancedImageUpload({
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
         >
-          <FileImage className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+          <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
           <p className="text-gray-600 mb-4">
             Drag and drop an image here, or click to select
           </p>
