@@ -16,8 +16,7 @@ import { MealDBRecipe } from "@/hooks/useMealDBApi";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { useToast } from "@/hooks/use-toast";
-import { Clock, Users } from "lucide-react";
-import { ExternalLink } from "lucide-react";
+import { Clock, Users, Link } from "lucide-react";
 import { Recipe } from "@/types";
 
 interface SaveMealDBRecipeDialogProps {
@@ -130,7 +129,7 @@ export const SaveMealDBRecipeDialog = ({ recipe, isOpen, onOpenChange }: SaveMea
                     size="sm"
                     onClick={() => window.open(recipe.sourceUrl || recipe.videoUrl, '_blank')}
                   >
-                    <ExternalLink className="h-4 w-4 mr-1" />
+                    <Link className="h-4 w-4 mr-1" />
                     Original
                   </Button>
                 )}

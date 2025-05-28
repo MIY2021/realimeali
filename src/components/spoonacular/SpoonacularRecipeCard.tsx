@@ -3,8 +3,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Clock, Users, Heart } from "lucide-react";
-import { ExternalLink } from "lucide-react";
+import { Clock, Users, Heart, Link } from "lucide-react";
 import { SpoonacularRecipe } from "@/hooks/useSpoonacularApi";
 import { SaveRecipeDialog } from "./SaveRecipeDialog";
 
@@ -96,7 +95,7 @@ export const SpoonacularRecipeCard = ({ recipe }: SpoonacularRecipeCardProps) =>
                 variant="outline"
                 size="sm"
               >
-                <ExternalLink className="h-4 w-4" />
+                <Link className="h-4 w-4" />
               </Button>
             )}
           </div>
