@@ -51,20 +51,16 @@ export const MealDBRecipeCard = ({ recipe }: MealDBRecipeCardProps) => {
     return "6-8";
   };
 
-  // Create URL-friendly slug from recipe title
-  const createSlug = (title: string) => {
-    return title
-      .toLowerCase()
-      .replace(/[^a-z0-9 -]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-')
-      .trim();
-  };
-
-  // Generate the correct recipe URL using the new format
-  const getRecipeUrl = () => {
-    const recipeSlug = createSlug(recipe.title);
-    return `/recipes/${recipeSlug}`;
+  // Handle recipe view - open external source URL
+  const handleViewRecipe = () => {
+    if (recipe.sourceUrl) {
+      window.open(recipe.sourceUrl, '_blank');
+    } else if (recipe.videoUrl) {
+      window.open(recipe.videoUrl, '_blank');
+    } else {
+      // Fallback - could show a modal with recipe details or navigate to a preview page
+      console.log('No external URL available for recipe:', recipe.title);
+    }
   };
 
   const shortDescription = getShortDescription(recipe.instructions);
@@ -74,7 +70,7 @@ export const MealDBRecipeCard = ({ recipe }: MealDBRecipeCardProps) => {
     <>
       <Card className="group hover:shadow-lg transition-all duration-200 cursor-pointer h-full flex flex-col">
         <CardHeader className="p-0">
-          <div className="relative overflow-hidden rounded-t-lg">
+          <div className="relative overflow-hidden rounded-t-lg" onClick={handleViewRecipe}>
             <img
               src={recipe.image || "/placeholder.svg"}
               alt={recipe.title}
@@ -89,7 +85,10 @@ export const MealDBRecipeCard = ({ recipe }: MealDBRecipeCardProps) => {
         </CardHeader>
 
         <CardContent className="p-4 flex-1 flex flex-col">
-          <h3 className="font-semibold text-lg mb-2 line-clamp-2 text-navy group-hover:text-terracotta transition-colors">
+          <h3 
+            className="font-semibold text-lg mb-2 line-clamp-2 text-navy group-hover:text-terracotta transition-colors cursor-pointer"
+            onClick={handleViewRecipe}
+          >
             {recipe.title}
           </h3>
 
@@ -135,7 +134,7 @@ export const MealDBRecipeCard = ({ recipe }: MealDBRecipeCardProps) => {
             </Button>
             {(recipe.sourceUrl || recipe.videoUrl) && (
               <Button
-                onClick={() => window.open(recipe.sourceUrl || recipe.videoUrl, '_blank')}
+                onClick={handleViewRecipe}
                 variant="outline"
                 size="sm"
                 className="flex-1"
