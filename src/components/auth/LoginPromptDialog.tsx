@@ -45,7 +45,7 @@ export function LoginPromptDialog({ isOpen, onClose, trigger = "timer" }: LoginP
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md mx-4 sm:mx-auto rounded-xl border-0 shadow-2xl bg-white max-w-[85vw] w-full">
+      <DialogContent className="sm:max-w-md rounded-xl border-0 shadow-2xl bg-white max-w-[90vw]">
         <button
           onClick={() => handleDismiss("later")}
           className="absolute right-3 top-3 sm:right-4 sm:top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 z-10 p-1"
