@@ -80,14 +80,18 @@ export const HouseholdMembersCard = ({ members, isOwner, onRemoveMember, isLoadi
   };
 
   const handleRemoveMember = async (memberId: string, memberUserId: string, memberName: string) => {
+    console.log("HouseholdMembersCard: Attempting to remove member", { memberId, memberUserId, memberName });
+    
     setRemovingMember(memberId);
     try {
       const success = await onRemoveMember(memberId, memberUserId);
+      console.log("Remove member result:", success);
+      
       if (!success) {
-        console.error('Failed to remove member');
+        console.error('Failed to remove member - onRemoveMember returned false');
       }
     } catch (error) {
-      console.error('Error removing member:', error);
+      console.error('Error in handleRemoveMember:', error);
     } finally {
       setRemovingMember(null);
     }
@@ -191,7 +195,11 @@ export const HouseholdMembersCard = ({ members, isOwner, onRemoveMember, isLoadi
                             disabled={removingMember === member.id}
                             className="text-red-500 hover:text-red-700"
                           >
-                            <Trash2 className="h-4 w-4" />
+                            {removingMember === member.id ? (
+                              <RotateCcw className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Trash2 className="h-4 w-4" />
+                            )}
                           </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
@@ -206,8 +214,9 @@ export const HouseholdMembersCard = ({ members, isOwner, onRemoveMember, isLoadi
                             <AlertDialogAction
                               onClick={() => handleRemoveMember(member.id, member.user_id, member.profile?.full_name || 'Unknown User')}
                               className="bg-red-500 hover:bg-red-600"
+                              disabled={removingMember === member.id}
                             >
-                              Remove Member
+                              {removingMember === member.id ? "Removing..." : "Remove Member"}
                             </AlertDialogAction>
                           </AlertDialogFooter>
                         </AlertDialogContent>

@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -229,16 +230,68 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
   }, [toast]);
 
   const removeMember = useCallback(async (memberId: string, memberUserId: string): Promise<boolean> => {
-    if (!currentHousehold || memberUserId === user?.id) return false;
+    console.log("Attempting to remove member:", { memberId, memberUserId, currentHousehold: currentHousehold?.id, currentUserId: user?.id });
+    
+    if (!currentHousehold || !user) {
+      console.error("Missing household or user");
+      toast({
+        title: "Error",
+        description: "Missing household or user information.",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    if (memberUserId === user.id) {
+      console.error("Cannot remove self");
+      toast({
+        title: "Error",
+        description: "You cannot remove yourself from the household.",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    // Check if current user is the owner
+    const isOwner = currentHousehold.created_by === user.id;
+    console.log("Is owner check:", { isOwner, householdCreatedBy: currentHousehold.created_by, userId: user.id });
+    
+    if (!isOwner) {
+      console.error("User is not owner");
+      toast({
+        title: "Permission Denied",
+        description: "Only household owners can remove members.",
+        variant: "destructive",
+      });
+      return false;
+    }
 
     try {
-      const { error } = await supabase
+      console.log("Executing delete query...");
+      const { error, data } = await supabase
         .from('household_members')
         .delete()
         .eq('id', memberId)
-        .eq('household_id', currentHousehold.id);
+        .eq('household_id', currentHousehold.id)
+        .select();
 
-      if (error) throw error;
+      console.log("Delete result:", { error, data });
+
+      if (error) {
+        console.error("Supabase error:", error);
+        throw error;
+      }
+
+      // Check if any rows were actually deleted
+      if (!data || data.length === 0) {
+        console.error("No rows were deleted");
+        toast({
+          title: "Error",
+          description: "Failed to remove member - member not found or already removed.",
+          variant: "destructive",
+        });
+        return false;
+      }
 
       setHouseholdMembers(prev => prev.filter(m => m.id !== memberId));
       
@@ -247,12 +300,13 @@ export const HouseholdProvider = ({ children }: { children: ReactNode }) => {
         description: "Member has been removed from the household.",
       });
 
+      console.log("Member successfully removed");
       return true;
     } catch (error) {
       console.error("Error removing member:", error);
       toast({
         title: "Error",
-        description: "Failed to remove member.",
+        description: `Failed to remove member: ${error instanceof Error ? error.message : 'Unknown error'}`,
         variant: "destructive",
       });
       return false;

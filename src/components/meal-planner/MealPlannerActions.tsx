@@ -19,7 +19,7 @@ export const MealPlannerActions = ({
 }: MealPlannerActionsProps) => {
   return (
     <>
-      {/* Desktop: Generate Meal Plan and Shopping List on same row */}
+      {/* Desktop: All buttons on same row */}
       <div className="hidden sm:flex gap-4 mb-4">
         <Button
           onClick={onRandomize}
@@ -35,6 +35,24 @@ export const MealPlannerActions = ({
             <ListChecks className="mr-2 h-4 w-4" />
             Shopping List
           </Link>
+        </Button>
+
+        <Button
+          onClick={onShare}
+          variant="outline"
+          className="flex items-center"
+          disabled={isLoading}
+        >
+          <Share className="h-4 w-4" />
+        </Button>
+        
+        <Button
+          variant="outline"
+          className="text-terracotta border-terracotta hover:bg-terracotta/10 flex items-center"
+          onClick={onClearAll}
+          disabled={isLoading}
+        >
+          <Trash2 className="h-4 w-4" />
         </Button>
       </div>
 
@@ -56,29 +74,28 @@ export const MealPlannerActions = ({
             Shopping List
           </Link>
         </Button>
-      </div>
-      
-      {/* Share and Clear buttons row */}
-      <div className="flex gap-2 mb-4">
-        <Button
-          onClick={onShare}
-          size="sm"
-          variant="outline"
-          className="flex items-center"
-          disabled={isLoading}
-        >
-          <Share className="h-4 w-4" />
-        </Button>
         
-        <Button
-          variant="outline"
-          size="sm"
-          className="text-terracotta border-terracotta hover:bg-terracotta/10 flex items-center"
-          onClick={onClearAll}
-          disabled={isLoading}
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            onClick={onShare}
+            size="sm"
+            variant="outline"
+            className="flex items-center flex-1"
+            disabled={isLoading}
+          >
+            <Share className="h-4 w-4" />
+          </Button>
+          
+          <Button
+            variant="outline"
+            size="sm"
+            className="text-terracotta border-terracotta hover:bg-terracotta/10 flex items-center flex-1"
+            onClick={onClearAll}
+            disabled={isLoading}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
     </>
   );
