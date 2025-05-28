@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import ShoppingListHeader from "@/components/shopping-list/ShoppingListHeader";
 import ShoppingListWeekSelector from "@/components/shopping-list/ShoppingListWeekSelector";
@@ -146,7 +145,7 @@ export default function ShoppingList() {
   // Show loading state while recipes are loading
   if (recipesLoading) {
     return (
-      <div className="container max-w-7xl py-4 px-4 sm:py-8 sm:px-6">
+      <div className="container max-w-4xl py-4 px-4 sm:py-8 sm:px-6">
         <ShoppingListHeader 
           onShare={handleShare} 
           weekNumber={weekNumber}
@@ -159,7 +158,7 @@ export default function ShoppingList() {
   }
 
   return (
-    <div className="container max-w-7xl py-4 px-4 sm:py-8 sm:px-6">
+    <div className="container max-w-4xl py-4 px-4 sm:py-8 sm:px-6">
       <ShoppingListHeader 
         onShare={handleShare} 
         weekNumber={weekNumber}

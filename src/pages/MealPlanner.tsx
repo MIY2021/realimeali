@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { WeekSelector } from "@/components/meal-planner/WeekSelector";
 import { MealPlannerActions } from "@/components/meal-planner/MealPlannerActions";
@@ -83,7 +82,7 @@ const MealPlanner = () => {
   // Show household management if no household is selected
   if (!currentHousehold) {
     return (
-      <div className="container max-w-6xl py-4 px-4 sm:py-8 sm:px-6">
+      <div className="container max-w-4xl py-4 px-4 sm:py-8 sm:px-6">
         <div className="flex flex-col gap-4 mb-6 sm:flex-row sm:justify-between sm:items-center">
           <div className="space-y-2">
             <h1 className="text-2xl sm:text-3xl font-bold text-navy flex items-center gap-2">
@@ -115,7 +114,7 @@ const MealPlanner = () => {
   }
 
   return (
-    <div className="container max-w-6xl py-4 px-4 sm:py-8 sm:px-6">
+    <div className="container max-w-4xl py-4 px-4 sm:py-8 sm:px-6">
       {/* Title with icon and household members */}
       <div className="flex flex-col gap-4 mb-6 sm:flex-row sm:justify-between sm:items-center">
         <div className="space-y-2">
