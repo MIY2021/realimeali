@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Clock, Users, ExternalLink, Heart, Eye } from "lucide-react";
+import { Clock, Users, Globe, Heart, Eye } from "lucide-react";
 import { CommunityRecipe, useCommunityRecipes } from "@/hooks/useCommunityRecipes";
 import { useUrlRecipeProcessing } from "@/hooks/useUrlRecipeProcessing";
 import { useRecipeForm } from "@/hooks/useRecipeForm";
@@ -140,7 +140,7 @@ export function CommunityRecipeCard({ recipe }: CommunityRecipeCardProps) {
             size="sm"
             className="flex-1"
           >
-            <ExternalLink className="h-4 w-4 mr-2" />
+            <Globe className="h-4 w-4 mr-2" />
             Visit Recipe
           </Button>
         </div>

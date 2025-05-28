@@ -15,6 +15,7 @@ export const FindRecipesContent = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedCuisine, setSelectedCuisine] = useState("all");
+  const [selectedIngredient, setSelectedIngredient] = useState("");
   const [currentPage, setCurrentPage] = useState(0);
   const [allRecipes, setAllRecipes] = useState<any[]>([]);
   
@@ -80,6 +81,7 @@ export const FindRecipesContent = () => {
     setSearchQuery("");
     setSelectedCategory("all");
     setSelectedCuisine("all");
+    setSelectedIngredient("");
     setCurrentPage(0);
     setAllRecipes([]);
     loadRecipes(true);
@@ -139,6 +141,8 @@ export const FindRecipesContent = () => {
         setSelectedCategory={setSelectedCategory}
         selectedArea={selectedCuisine}
         setSelectedArea={setSelectedCuisine}
+        selectedIngredient={selectedIngredient}
+        setSelectedIngredient={setSelectedIngredient}
         onSearch={handleSearch}
         onClearFilters={clearFilters}
         onKeyPress={handleKeyPress}

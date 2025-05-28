@@ -46,22 +46,29 @@ export function RecipeUrlTab({
 
       {parsedRecipeData && (
         <div className="border-t pt-4">
-          <div className="bg-sage/10 p-3 rounded-lg mb-3">
-            <p className="text-sm font-medium text-sage-dark mb-1">
-              Share with RealiMeali Community
-            </p>
-            <p className="text-xs text-muted-foreground">
-              Help other users discover this great recipe by adding it to our community database
-            </p>
+          <div className="bg-gradient-to-r from-green-50 to-blue-50 p-4 rounded-lg mb-3 border border-green-200">
+            <div className="flex items-start gap-3">
+              <Users className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="text-sm font-semibold text-green-800 mb-1">
+                  🎉 Share with RealiMeali Community
+                </p>
+                <p className="text-xs text-green-700 mb-2">
+                  Help other users discover this recipe! It will appear in the <strong>"Find Recipes"</strong> section after our moderation team approves it.
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Only the recipe link and details are shared - the full recipe stays on the original website.
+                </p>
+              </div>
+            </div>
           </div>
           
           <Button
             onClick={() => setShowCommunityDialog(true)}
-            variant="outline"
-            className="w-full flex items-center gap-2"
+            className="w-full flex items-center gap-2 bg-green-600 hover:bg-green-700"
           >
             <Users className="h-4 w-4" />
-            Share with Community
+            Share with Community (appears in Find Recipes)
           </Button>
         </div>
       )}
