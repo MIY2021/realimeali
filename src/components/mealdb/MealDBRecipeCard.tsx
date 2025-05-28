@@ -51,6 +51,22 @@ export const MealDBRecipeCard = ({ recipe }: MealDBRecipeCardProps) => {
     return "6-8";
   };
 
+  // Create URL-friendly slug from recipe title
+  const createSlug = (title: string) => {
+    return title
+      .toLowerCase()
+      .replace(/[^a-z0-9 -]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .trim();
+  };
+
+  // Generate the correct recipe URL using the new format
+  const getRecipeUrl = () => {
+    const recipeSlug = createSlug(recipe.title);
+    return `/recipes/${recipeSlug}`;
+  };
+
   const shortDescription = getShortDescription(recipe.instructions);
   const source = getRecipeSource();
 
