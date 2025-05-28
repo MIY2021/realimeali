@@ -7,9 +7,25 @@ import {
   ListChecks,
 } from "lucide-react";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
+import { LoginPromptDialog } from "@/components/auth/LoginPromptDialog";
+import { useLoginPrompt } from "@/hooks/useLoginPrompt";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Index() {
   useDocumentTitle("RealiMeali | All-in-one meal planning");
+  const { showPrompt, promptTrigger, triggerPromptOnFeatureClick, closePrompt } = useLoginPrompt();
+  const { user } = useAuth();
+
+  const handleFeatureClick = (e: React.MouseEvent, path: string) => {
+    if (!user) {
+      e.preventDefault();
+      const promptShown = triggerPromptOnFeatureClick();
+      if (!promptShown) {
+        // If no prompt shown (user dismissed permanently), redirect normally
+        window.location.href = path;
+      }
+    }
+  };
 
   return (
     <div className="flex flex-col min-h-[85vh]">
@@ -40,9 +56,18 @@ export default function Index() {
                 <p className="text-muted-foreground mb-4">
                   Browse and manage your favorite recipes all in one place.
                 </p>
-                <Button className="mt-auto" asChild>
-                  <Link to="/recipes">View Recipes</Link>
-                </Button>
+                {user ? (
+                  <Button className="mt-auto" asChild>
+                    <Link to="/recipes">View Recipes</Link>
+                  </Button>
+                ) : (
+                  <Button 
+                    className="mt-auto" 
+                    onClick={(e) => handleFeatureClick(e, "/recipes")}
+                  >
+                    View Recipes
+                  </Button>
+                )}
               </div>
             </div>
 
@@ -55,9 +80,18 @@ export default function Index() {
                 <p className="text-muted-foreground mb-4">
                   Plan your meals for the week and simplify your cooking schedule.
                 </p>
-                <Button className="mt-auto" asChild>
-                  <Link to="/meal-planner">Go to Planner</Link>
-                </Button>
+                {user ? (
+                  <Button className="mt-auto" asChild>
+                    <Link to="/meal-planner">Go to Planner</Link>
+                  </Button>
+                ) : (
+                  <Button 
+                    className="mt-auto"
+                    onClick={(e) => handleFeatureClick(e, "/meal-planner")}
+                  >
+                    Go to Planner
+                  </Button>
+                )}
               </div>
             </div>
 
@@ -70,14 +104,29 @@ export default function Index() {
                 <p className="text-muted-foreground mb-4">
                   Generate and manage shopping lists based on your meal plans.
                 </p>
-                <Button className="mt-auto" asChild>
-                  <Link to="/shopping-list">View Shopping List</Link>
-                </Button>
+                {user ? (
+                  <Button className="mt-auto" asChild>
+                    <Link to="/shopping-list">View Shopping List</Link>
+                  </Button>
+                ) : (
+                  <Button 
+                    className="mt-auto"
+                    onClick={(e) => handleFeatureClick(e, "/shopping-list")}
+                  >
+                    View Shopping List
+                  </Button>
+                )}
               </div>
             </div>
           </div>
         </div>
       </section>
+
+      <LoginPromptDialog 
+        isOpen={showPrompt}
+        onClose={closePrompt}
+        trigger={promptTrigger}
+      />
     </div>
   );
 }
