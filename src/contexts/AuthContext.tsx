@@ -3,6 +3,8 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { ProfileSetupDialog } from "@/components/auth/ProfileSetupDialog";
+import { useProfileSetup } from "@/hooks/useProfileSetup";
 
 type AuthContextType = {
   user: User | null;
@@ -51,7 +53,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     signOut,
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+      <ProfileSetupWrapper />
+    </AuthContext.Provider>
+  );
+};
+
+const ProfileSetupWrapper = () => {
+  const { needsSetup, completeSetup } = useProfileSetup();
+  
+  return (
+    <ProfileSetupDialog 
+      isOpen={needsSetup} 
+      onComplete={completeSetup}
+    />
+  );
 };
 
 export const useAuth = () => {

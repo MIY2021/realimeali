@@ -1,14 +1,17 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User } from "lucide-react";
+import { EnhancedAvatar } from "@/components/ui/enhanced-avatar";
+import { User, Upload, Shuffle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
+
+const FRUIT_OPTIONS = ['🍎', '🍊', '🍌', '🍇', '🍓', '🥝', '🍑', '🥭', '🍍', '🥥', '🍒', '🍈', '🥑', '🍐', '🥔'];
 
 export default function Account() {
   useDocumentTitle("Account | RealiMeali");
@@ -17,28 +20,57 @@ export default function Account() {
   const { toast } = useToast();
   const [displayName, setDisplayName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [profile, setProfile] = useState<any>(null);
 
   useEffect(() => {
     if (user) {
-      // Try to fetch from profiles table first, fallback to user metadata
       const fetchProfile = async () => {
         const { data: profile } = await supabase
           .from('profiles')
-          .select('full_name')
+          .select('*')
           .eq('id', user.id)
           .single();
         
-        setDisplayName(
-          profile?.full_name || 
-          user.user_metadata?.full_name || 
-          user.email || 
-          ""
-        );
+        setProfile(profile);
+        setDisplayName(profile?.full_name || user.email || "");
       };
       
       fetchProfile();
     }
   }, [user]);
+
+  const handleRandomizeFruit = async () => {
+    if (!user || !profile || profile.auth_provider === 'google') return;
+
+    const randomIndex = Math.floor(Math.random() * FRUIT_OPTIONS.length);
+    const newFruit = FRUIT_OPTIONS[randomIndex];
+
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ 
+          avatar_type: 'fruit',
+          avatar_data: newFruit 
+        })
+        .eq('id', user.id);
+
+      if (error) throw error;
+
+      setProfile({ ...profile, avatar_type: 'fruit', avatar_data: newFruit });
+      
+      toast({
+        title: "Avatar Updated",
+        description: "Your fruit avatar has been randomized! 🎲",
+      });
+    } catch (error) {
+      console.error("Error updating avatar:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update avatar. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const handleSave = async () => {
     if (!user) return;
@@ -86,6 +118,8 @@ export default function Account() {
     );
   }
 
+  const isGoogleUser = profile?.auth_provider === 'google';
+
   return (
     <div className="container max-w-lg py-8">
       <div className="flex items-center gap-2 mb-6">
@@ -102,15 +136,35 @@ export default function Account() {
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="flex items-center space-x-4">
-            <Avatar className="h-16 w-16">
-              <AvatarImage src={user.user_metadata?.avatar_url} alt={displayName} />
-              <AvatarFallback className="text-lg">
-                {displayName[0]?.toUpperCase() || "U"}
-              </AvatarFallback>
-            </Avatar>
-            <div>
+            <EnhancedAvatar 
+              src={isGoogleUser ? profile?.avatar_url : undefined}
+              alt={displayName}
+              fallbackText={displayName}
+              avatarType={profile?.avatar_type}
+              avatarData={profile?.avatar_data}
+              size="lg"
+            />
+            <div className="flex-1">
               <p className="text-sm text-muted-foreground">Profile Picture</p>
-              <p className="text-sm">Managed by your Google account</p>
+              {isGoogleUser ? (
+                <p className="text-sm">Managed by your Google account</p>
+              ) : (
+                <div className="flex items-center gap-2 mt-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleRandomizeFruit}
+                    className="flex items-center gap-1"
+                  >
+                    <Shuffle className="h-3 w-3" />
+                    Randomize
+                  </Button>
+                  <p className="text-xs text-muted-foreground">
+                    Click to get a new fruit avatar
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 
@@ -136,7 +190,10 @@ export default function Account() {
               className="bg-muted"
             />
             <p className="text-sm text-muted-foreground">
-              Email address is managed by your Google account.
+              {isGoogleUser 
+                ? "Email address is managed by your Google account."
+                : "Email address cannot be changed after registration."
+              }
             </p>
           </div>
 

@@ -423,27 +423,39 @@ export type Database = {
       }
       profiles: {
         Row: {
+          auth_provider: string | null
+          avatar_data: string | null
+          avatar_type: string | null
           avatar_url: string | null
           created_at: string
           email: string | null
           full_name: string | null
           id: string
+          profile_completed: boolean | null
           updated_at: string
         }
         Insert: {
+          auth_provider?: string | null
+          avatar_data?: string | null
+          avatar_type?: string | null
           avatar_url?: string | null
           created_at?: string
           email?: string | null
           full_name?: string | null
           id: string
+          profile_completed?: boolean | null
           updated_at?: string
         }
         Update: {
+          auth_provider?: string | null
+          avatar_data?: string | null
+          avatar_type?: string | null
           avatar_url?: string | null
           created_at?: string
           email?: string | null
           full_name?: string | null
           id?: string
+          profile_completed?: boolean | null
           updated_at?: string
         }
         Relationships: []
@@ -592,6 +604,10 @@ export type Database = {
     Functions: {
       create_household_with_owner: {
         Args: { household_name: string }
+        Returns: string
+      }
+      generate_fruit_avatar: {
+        Args: { user_id_param: string }
         Returns: string
       }
       generate_invitation_code: {
