@@ -65,9 +65,9 @@ export function LoginPromptDialog({ isOpen, onClose, trigger = "timer" }: LoginP
 
         <div className="space-y-4 sm:space-y-6 py-2 sm:py-4 px-2 sm:px-0">
           {/* Benefits List */}
-          <div className="space-y-2 sm:space-y-3">
+          <div className="space-y-2 sm:space-y-3 sm:text-center">
             {benefits.map((benefit, index) => (
-              <div key={index} className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm">
+              <div key={index} className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm sm:justify-center">
                 {benefit.icon}
                 <span className="text-gray-700 leading-tight">{benefit.text}</span>
               </div>
