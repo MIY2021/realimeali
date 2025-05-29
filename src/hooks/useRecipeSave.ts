@@ -112,8 +112,7 @@ export function useRecipeSave() {
               ['Italian', 'Chinese', 'Mexican', 'Indian', 'French', 'Thai', 'Japanese'].includes(cat)
             ) || null,
             difficulty_level: recipe.categories?.includes('Easy') ? 'Easy' : 
-                             recipe.categories?.includes('Medium') ? 'Medium' : 
-                             recipe.categories?.includes('Hard') ? 'Hard' : 'Easy'
+                             recipe.categories?.includes('Faffy') ? 'Hard' : 'Easy'
           };
           
           const submitted = await submitCommunityRecipe(communityData);

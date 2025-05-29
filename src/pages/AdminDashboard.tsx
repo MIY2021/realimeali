@@ -7,7 +7,7 @@ import { useAdminCheck } from "@/hooks/useAdminCheck";
 import { RecipeModerationPanel } from "@/components/admin/RecipeModerationPanel";
 import { AdminStats } from "@/components/admin/AdminStats";
 import { UserManagement } from "@/components/admin/UserManagement";
-import { Shield, AlertTriangle } from "lucide-react";
+import { User, AlertCircle } from "lucide-react";
 
 const AdminDashboard = () => {
   useDocumentTitle("Admin Dashboard");
@@ -33,7 +33,7 @@ const AdminDashboard = () => {
         <Card className="max-w-md mx-auto">
           <CardContent className="pt-6">
             <div className="text-center">
-              <AlertTriangle className="h-12 w-12 text-amber-500 mx-auto mb-4" />
+              <AlertCircle className="h-12 w-12 text-amber-500 mx-auto mb-4" />
               <h2 className="text-xl font-semibold mb-2">Access Denied</h2>
               <p className="text-muted-foreground">
                 You don't have permission to access the admin dashboard.
@@ -49,7 +49,7 @@ const AdminDashboard = () => {
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
         <div className="flex items-center gap-2 mb-2">
-          <Shield className="h-6 w-6 text-terracotta" />
+          <User className="h-6 w-6 text-terracotta" />
           <h1 className="text-3xl font-bold text-navy">Admin Dashboard</h1>
         </div>
         <p className="text-muted-foreground">

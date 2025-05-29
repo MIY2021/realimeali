@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
-import { Users, Book, Clock, CheckCircle, Eye, Save } from "lucide-react";
+import { Users, Book, Clock, Check, Eye, Save } from "lucide-react";
 
 interface Stats {
   totalUsers: number;
@@ -118,7 +118,7 @@ export function AdminStats() {
       <StatCard
         title="Approved Recipes"
         value={stats.approvedCommunityRecipes}
-        icon={CheckCircle}
+        icon={Check}
         description="Published community recipes"
       />
       <StatCard

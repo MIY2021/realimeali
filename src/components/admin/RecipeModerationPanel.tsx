@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Check, X, Eye, ExternalLink, Clock, CheckCircle, XCircle } from "lucide-react";
+import { Check, X, Eye, Link, Clock, Circle } from "lucide-react";
 import { CommunityRecipe } from "@/hooks/useCommunityRecipes";
 
 export function RecipeModerationPanel() {
@@ -151,7 +151,7 @@ export function RecipeModerationPanel() {
               size="sm"
               onClick={() => window.open(recipe.source_url, '_blank')}
             >
-              <ExternalLink className="h-4 w-4 mr-1" />
+              <Link className="h-4 w-4 mr-1" />
               View Source
             </Button>
             <div className="flex items-center gap-1 text-sm text-muted-foreground">
@@ -203,11 +203,11 @@ export function RecipeModerationPanel() {
           Pending ({pendingRecipes.length})
         </TabsTrigger>
         <TabsTrigger value="approved" className="flex items-center gap-2">
-          <CheckCircle className="h-4 w-4" />
+          <Check className="h-4 w-4" />
           Approved ({approvedRecipes.length})
         </TabsTrigger>
         <TabsTrigger value="rejected" className="flex items-center gap-2">
-          <XCircle className="h-4 w-4" />
+          <Circle className="h-4 w-4" />
           Rejected ({rejectedRecipes.length})
         </TabsTrigger>
       </TabsList>
@@ -230,7 +230,7 @@ export function RecipeModerationPanel() {
       <TabsContent value="approved" className="mt-6">
         {approvedRecipes.length === 0 ? (
           <div className="text-center py-8">
-            <CheckCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <Check className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <p className="text-muted-foreground">No approved recipes yet</p>
           </div>
         ) : (
@@ -245,7 +245,7 @@ export function RecipeModerationPanel() {
       <TabsContent value="rejected" className="mt-6">
         {rejectedRecipes.length === 0 ? (
           <div className="text-center py-8">
-            <XCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <Circle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <p className="text-muted-foreground">No rejected recipes</p>
           </div>
         ) : (

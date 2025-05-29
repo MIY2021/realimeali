@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { User, UtensilsCrossed, CalendarDays, Book, ListChecks, Users, AlignJustify, Search, Shield } from "lucide-react";
+import { User, UtensilsCrossed, CalendarDays, Book, ListChecks, Users, AlignJustify, Search, User as UserIcon } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -221,7 +221,7 @@ const Header = () => {
                           className="flex items-center space-x-2 text-terracotta hover:text-red-600 transition-colors p-2 rounded font-medium"
                           onClick={() => setMobileMenuOpen(false)}
                         >
-                          <Shield className="h-4 w-4" />
+                          <UserIcon className="h-4 w-4" />
                           <span>Admin Dashboard</span>
                         </Link>
                       )}
@@ -283,7 +283,7 @@ const Header = () => {
                       <DropdownMenuSeparator />
                       <DropdownMenuItem asChild>
                         <Link to="/admin" className="flex items-center text-terracotta font-medium">
-                          <Shield className="h-4 w-4 mr-2" />
+                          <UserIcon className="h-4 w-4 mr-2" />
                           Admin Dashboard
                         </Link>
                       </DropdownMenuItem>
