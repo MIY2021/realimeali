@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { Link } from "react-router-dom";
-import { PlusCircle, Search } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 
 export const FindRecipesContent = () => {
   const { user } = useAuth();
@@ -47,7 +47,7 @@ export const FindRecipesContent = () => {
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
           <Button asChild className="bg-terracotta hover:bg-terracotta/90">
             <Link to="/create-recipe">
-              <PlusCircle className="h-4 w-4 mr-2" />
+              <Plus className="h-4 w-4 mr-2" />
               Add Your First Recipe
             </Link>
           </Button>

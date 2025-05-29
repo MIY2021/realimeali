@@ -1,45 +1,60 @@
 
-import { useTextRecipeProcessing } from "./useTextRecipeProcessing";
-import { useUrlRecipeProcessing } from "./useUrlRecipeProcessing";
-import { useImageRecipeProcessing } from "./useImageRecipeProcessing";
-import { useAiRecipeGeneration } from "./useAiRecipeGeneration";
+import { useState } from "react";
 
-export function useRecipeProcessing() {
-  const textProcessing = useTextRecipeProcessing();
-  const urlProcessing = useUrlRecipeProcessing();
-  const imageProcessing = useImageRecipeProcessing();
-  const aiGeneration = useAiRecipeGeneration();
+export const useRecipeProcessing = () => {
+  const [recipeText, setRecipeText] = useState("");
+  const [recipeUrl, setRecipeUrl] = useState("");
+  const [aiPrompt, setAiPrompt] = useState("");
+  const [stylePreferences, setStylePreferences] = useState({});
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [importProgress, setImportProgress] = useState("");
+  const [websiteImages, setWebsiteImages] = useState<string[]>([]);
+  const [storedImages, setStoredImages] = useState<string[]>([]);
+  const [isDownloadingImages, setIsDownloadingImages] = useState(false);
+
+  const handleProcessText = async (setNewRecipe: any, newRecipe: any, setActiveTab: any) => {
+    console.log("Processing text...");
+  };
+
+  const handleImportFromUrl = async (setNewRecipe: any, newRecipe: any, setActiveTab: any, downloadImages?: boolean) => {
+    console.log("Importing from URL...");
+  };
+
+  const handleProcessImage = async (file: File, setNewRecipe: any, newRecipe: any, setActiveTab: any) => {
+    console.log("Processing image...");
+  };
+
+  const handleGenerateRecipe = async (setNewRecipe: any, newRecipe: any, setActiveTab: any) => {
+    console.log("Generating recipe...");
+  };
+
+  const handleDownloadImages = async () => {
+    console.log("Downloading images...");
+  };
 
   return {
-    // Text processing
-    recipeText: textProcessing.recipeText,
-    setRecipeText: textProcessing.setRecipeText,
-    handleProcessText: textProcessing.handleProcessText,
-    
-    // URL processing
-    recipeUrl: urlProcessing.recipeUrl,
-    setRecipeUrl: urlProcessing.setRecipeUrl,
-    websiteImages: urlProcessing.websiteImages,
-    storedImages: urlProcessing.storedImages,
-    isDownloadingImages: urlProcessing.isDownloadingImages,
-    showCommunityDialog: urlProcessing.showCommunityDialog,
-    setShowCommunityDialog: urlProcessing.setShowCommunityDialog,
-    parsedRecipeData: urlProcessing.parsedRecipeData,
-    importProgress: urlProcessing.importProgress,
-    handleImportFromUrl: urlProcessing.handleImportFromUrl,
-    handleDownloadImages: urlProcessing.handleDownloadImages,
-    
-    // Image processing
-    handleProcessImage: imageProcessing.handleProcessImage,
-    
-    // AI generation
-    aiPrompt: aiGeneration.aiPrompt,
-    setAiPrompt: aiGeneration.setAiPrompt,
-    stylePreferences: aiGeneration.stylePreferences,
-    setStylePreferences: aiGeneration.setStylePreferences,
-    handleGenerateRecipe: aiGeneration.handleGenerateRecipe,
-    
-    // Combined processing state
-    isProcessing: textProcessing.isProcessing || urlProcessing.isProcessing || imageProcessing.isProcessing || aiGeneration.isProcessing,
+    recipeText,
+    setRecipeText,
+    recipeUrl,
+    setRecipeUrl,
+    aiPrompt,
+    setAiPrompt,
+    stylePreferences,
+    setStylePreferences,
+    isProcessing,
+    setIsProcessing,
+    importProgress,
+    setImportProgress,
+    websiteImages,
+    setWebsiteImages,
+    storedImages,
+    setStoredImages,
+    isDownloadingImages,
+    setIsDownloadingImages,
+    handleProcessText,
+    handleImportFromUrl,
+    handleProcessImage,
+    handleGenerateRecipe,
+    handleDownloadImages,
   };
-}
+};

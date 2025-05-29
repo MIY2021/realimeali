@@ -1,3 +1,4 @@
+
 export type Recipe = {
   id: string;
   title: string;
@@ -22,7 +23,7 @@ export type Recipe = {
 
 export type MealType = "breakfast" | "lunch" | "dinner" | "snacks";
 export type Cuisine = "italian" | "mexican" | "chinese" | "indian" | "american" | "french" | "greek" | "thai" | "japanese" | "mediterranean" | "other";
-export type ComplexityLevel = "easy" | "intermediate" | "advanced";
+export type ComplexityLevel = "easy" | "intermediate" | "difficult";
 
 export type DietLifestyle = 
   | "vegetarian" 
@@ -54,6 +55,8 @@ export type MealPlan = {
   householdId: string;
   weekNumber: 1 | 2;
   originalServings: number;
+  leftoverServings?: number;
+  parentMealPlanId?: string;
 };
 
 export type Household = {
@@ -71,4 +74,13 @@ export type UserProfile = {
   full_name?: string;
   avatar_url?: string;
   updated_at?: string;
+};
+
+export type PublicRecipeShare = {
+  id: string;
+  recipe_id: string;
+  public_share_id: string;
+  is_active: boolean;
+  view_count: number;
+  created_at: string;
 };

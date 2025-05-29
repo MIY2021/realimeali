@@ -1,4 +1,3 @@
-
 import { Recipe } from "@/types";
 
 export const mockRecipes: Recipe[] = [
@@ -36,7 +35,8 @@ export const mockRecipes: Recipe[] = [
     mealType: "dinner",
     cuisine: "italian",
     dietLifestyle: [],
-    complexityLevel: "standard"
+    complexityLevel: "intermediate",
+    slug: "classic-spaghetti-carbonara"
   },
   {
     id: "2",
@@ -72,7 +72,8 @@ export const mockRecipes: Recipe[] = [
     mealType: "breakfast",
     cuisine: "american",
     dietLifestyle: ["vegetarian", "high_protein"],
-    complexityLevel: "quick_easy"
+    complexityLevel: "easy",
+    slug: "healthy-avocado-toast"
   },
   {
     id: "3",
@@ -111,7 +112,8 @@ export const mockRecipes: Recipe[] = [
     mealType: "dinner",
     cuisine: "indian",
     dietLifestyle: ["gluten_free"],
-    complexityLevel: "standard"
+    complexityLevel: "intermediate",
+    slug: "chicken-tikka-masala"
   },
   {
     id: "4",
@@ -147,312 +149,10 @@ export const mockRecipes: Recipe[] = [
     updatedAt: "2024-01-18T14:00:00Z",
     createdBy: "user1",
     householdId: "household1",
-    mealType: "desserts",
+    mealType: "snacks",
     cuisine: "american",
     dietLifestyle: ["kid_friendly"],
-    complexityLevel: "quick_easy"
-  },
-  {
-    id: "5",
-    title: "Mediterranean Quinoa Salad",
-    description: "Fresh and healthy salad with quinoa, vegetables, and feta cheese",
-    ingredients: [
-      "1 cup quinoa",
-      "1 cucumber, diced",
-      "1 cup cherry tomatoes, halved",
-      "1/2 red onion, diced",
-      "1/2 cup kalamata olives",
-      "1/2 cup feta cheese, crumbled",
-      "1/4 cup olive oil",
-      "2 tbsp lemon juice",
-      "1 tsp dried oregano",
-      "Salt and pepper to taste"
-    ],
-    instructions: [
-      "Cook quinoa according to package directions and let cool",
-      "Dice cucumber, tomatoes, and red onion",
-      "Whisk together olive oil, lemon juice, oregano, salt, and pepper",
-      "Combine quinoa with vegetables in a large bowl",
-      "Add olives and feta cheese",
-      "Drizzle with dressing and toss gently",
-      "Chill for 30 minutes before serving"
-    ],
-    prepTime: 25,
-    cookTime: 15,
-    servings: 6,
-    image: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=500",
-    isFavorite: false,
-    createdAt: "2024-01-19T12:00:00Z",
-    updatedAt: "2024-01-19T12:00:00Z",
-    createdBy: "user2",
-    householdId: "household1",
-    mealType: "lunch",
-    cuisine: "mediterranean",
-    dietLifestyle: ["vegetarian", "gluten_free", "high_protein"],
-    complexityLevel: "quick_easy"
-  },
-  {
-    id: "6",
-    title: "Beef Stir Fry",
-    description: "Quick and flavorful Asian-inspired stir fry with tender beef and vegetables",
-    ingredients: [
-      "1 lb beef sirloin, sliced thin",
-      "2 cups mixed vegetables (bell peppers, broccoli, carrots)",
-      "3 cloves garlic, minced",
-      "2 tbsp soy sauce",
-      "1 tbsp oyster sauce",
-      "1 tsp sesame oil",
-      "2 tbsp vegetable oil",
-      "1 tsp cornstarch",
-      "Green onions for garnish"
-    ],
-    instructions: [
-      "Slice beef thin and toss with cornstarch",
-      "Heat oil in a wok or large skillet over high heat",
-      "Stir-fry beef until browned, then remove",
-      "Add vegetables and garlic, stir-fry for 3-4 minutes",
-      "Return beef to pan",
-      "Add soy sauce, oyster sauce, and sesame oil",
-      "Stir-fry for another 2 minutes",
-      "Garnish with green onions and serve over rice"
-    ],
-    prepTime: 15,
-    cookTime: 10,
-    servings: 4,
-    image: "https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=500",
-    isFavorite: true,
-    createdAt: "2024-01-20T19:00:00Z",
-    updatedAt: "2024-01-20T19:00:00Z",
-    createdBy: "user1",
-    householdId: "household1",
-    mealType: "dinner",
-    cuisine: "asian",
-    dietLifestyle: ["high_protein"],
-    complexityLevel: "quick_easy"
-  },
-  {
-    id: "7",
-    title: "Classic Caesar Salad",
-    description: "Crisp romaine lettuce with homemade caesar dressing and parmesan",
-    ingredients: [
-      "2 large romaine lettuce heads",
-      "1/2 cup parmesan cheese, grated",
-      "1/4 cup mayonnaise",
-      "2 tbsp lemon juice",
-      "2 cloves garlic, minced",
-      "1 tbsp worcestershire sauce",
-      "1 cup croutons",
-      "Salt and pepper to taste"
-    ],
-    instructions: [
-      "Wash and chop romaine lettuce",
-      "Make dressing by whisking mayo, lemon juice, garlic, and worcestershire",
-      "Toss lettuce with dressing",
-      "Top with parmesan and croutons",
-      "Season with salt and pepper",
-      "Serve immediately"
-    ],
-    prepTime: 15,
-    cookTime: 0,
-    servings: 4,
-    image: "https://images.unsplash.com/photo-1551248429-40975aa4de74?w=500",
-    isFavorite: false,
-    createdAt: "2024-01-21T12:00:00Z",
-    updatedAt: "2024-01-21T12:00:00Z",
-    createdBy: "user1",
-    householdId: "household1",
-    mealType: "lunch",
-    cuisine: "american",
-    dietLifestyle: ["vegetarian"],
-    complexityLevel: "quick_easy"
-  },
-  {
-    id: "8",
-    title: "Homemade Pizza Margherita",
-    description: "Traditional Italian pizza with fresh tomatoes, mozzarella, and basil",
-    ingredients: [
-      "1 pizza dough ball",
-      "1/2 cup pizza sauce",
-      "8 oz fresh mozzarella, sliced",
-      "2 large tomatoes, sliced",
-      "Fresh basil leaves",
-      "2 tbsp olive oil",
-      "Salt and pepper to taste",
-      "Cornmeal for dusting"
-    ],
-    instructions: [
-      "Preheat oven to 475°F (245°C)",
-      "Roll out pizza dough on floured surface",
-      "Transfer to pizza stone or baking sheet",
-      "Brush with olive oil and spread sauce evenly",
-      "Add mozzarella and tomato slices",
-      "Season with salt and pepper",
-      "Bake for 12-15 minutes until crust is golden",
-      "Top with fresh basil before serving"
-    ],
-    prepTime: 20,
-    cookTime: 15,
-    servings: 4,
-    image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=500",
-    isFavorite: true,
-    createdAt: "2024-01-22T18:00:00Z",
-    updatedAt: "2024-01-22T18:00:00Z",
-    createdBy: "user2",
-    householdId: "household1",
-    mealType: "dinner",
-    cuisine: "italian",
-    dietLifestyle: ["vegetarian"],
-    complexityLevel: "standard"
-  },
-  {
-    id: "9",
-    title: "Banana Pancakes",
-    description: "Fluffy breakfast pancakes with fresh banana and maple syrup",
-    ingredients: [
-      "2 cups all-purpose flour",
-      "2 tbsp sugar",
-      "2 tsp baking powder",
-      "1 tsp salt",
-      "2 large eggs",
-      "1 3/4 cups milk",
-      "1/4 cup melted butter",
-      "2 ripe bananas, sliced",
-      "Maple syrup for serving"
-    ],
-    instructions: [
-      "Mix dry ingredients in a large bowl",
-      "Whisk eggs, milk, and melted butter in separate bowl",
-      "Combine wet and dry ingredients until just mixed",
-      "Heat griddle or large skillet over medium heat",
-      "Pour batter to form pancakes",
-      "Add banana slices to each pancake",
-      "Cook until bubbles form, then flip",
-      "Serve hot with maple syrup"
-    ],
-    prepTime: 10,
-    cookTime: 20,
-    servings: 6,
-    image: "https://images.unsplash.com/photo-1506084868230-bb9d95c24759?w=500",
-    isFavorite: false,
-    createdAt: "2024-01-23T08:00:00Z",
-    updatedAt: "2024-01-23T08:00:00Z",
-    createdBy: "user1",
-    householdId: "household1",
-    mealType: "breakfast",
-    cuisine: "american",
-    dietLifestyle: ["vegetarian", "kid_friendly"],
-    complexityLevel: "quick_easy"
-  },
-  {
-    id: "10",
-    title: "Grilled Salmon with Lemon",
-    description: "Perfectly grilled salmon fillet with fresh lemon and herbs",
-    ingredients: [
-      "4 salmon fillets",
-      "2 lemons, sliced",
-      "3 tbsp olive oil",
-      "2 cloves garlic, minced",
-      "1 tbsp fresh dill",
-      "1 tbsp fresh parsley",
-      "Salt and pepper to taste",
-      "Lemon wedges for serving"
-    ],
-    instructions: [
-      "Preheat grill to medium-high heat",
-      "Brush salmon with olive oil and season with salt and pepper",
-      "Mix garlic, dill, and parsley",
-      "Grill salmon for 4-5 minutes per side",
-      "Top with herb mixture during last minute",
-      "Serve with lemon slices and wedges"
-    ],
-    prepTime: 10,
-    cookTime: 10,
-    servings: 4,
-    image: "https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=500",
-    isFavorite: true,
-    createdAt: "2024-01-24T19:00:00Z",
-    updatedAt: "2024-01-24T19:00:00Z",
-    createdBy: "user2",
-    householdId: "household1",
-    mealType: "dinner",
-    cuisine: "american",
-    dietLifestyle: ["gluten_free", "high_protein"],
-    complexityLevel: "quick_easy"
-  },
-  {
-    id: "11",
-    title: "Vegetable Curry",
-    description: "Aromatic Indian vegetable curry with coconut milk and spices",
-    ingredients: [
-      "2 cups mixed vegetables (cauliflower, potatoes, peas)",
-      "1 can coconut milk",
-      "1 onion, diced",
-      "3 cloves garlic, minced",
-      "1 inch ginger, grated",
-      "2 tbsp curry powder",
-      "1 tsp cumin",
-      "1 tsp turmeric",
-      "2 tbsp vegetable oil",
-      "Fresh cilantro for garnish"
-    ],
-    instructions: [
-      "Heat oil in large pot over medium heat",
-      "Sauté onion until softened",
-      "Add garlic, ginger, and spices, cook 1 minute",
-      "Add vegetables and stir to coat",
-      "Pour in coconut milk and bring to simmer",
-      "Cook 20 minutes until vegetables are tender",
-      "Garnish with cilantro and serve with rice"
-    ],
-    prepTime: 15,
-    cookTime: 25,
-    servings: 4,
-    image: "https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=500",
-    isFavorite: false,
-    createdAt: "2024-01-25T18:30:00Z",
-    updatedAt: "2024-01-25T18:30:00Z",
-    createdBy: "user1",
-    householdId: "household1",
-    mealType: "dinner",
-    cuisine: "indian",
-    dietLifestyle: ["vegetarian", "vegan", "gluten_free"],
-    complexityLevel: "standard"
-  },
-  {
-    id: "12",
-    title: "Energy Smoothie Bowl",
-    description: "Nutritious breakfast bowl packed with fruits and superfoods",
-    ingredients: [
-      "1 frozen banana",
-      "1/2 cup frozen berries",
-      "1/2 cup almond milk",
-      "1 tbsp almond butter",
-      "1 tsp chia seeds",
-      "1/2 cup granola",
-      "Fresh berries for topping",
-      "Coconut flakes",
-      "Honey for drizzling"
-    ],
-    instructions: [
-      "Blend frozen banana, berries, almond milk, and almond butter",
-      "Pour into bowl",
-      "Top with granola, fresh berries, and coconut flakes",
-      "Sprinkle with chia seeds",
-      "Drizzle with honey",
-      "Serve immediately"
-    ],
-    prepTime: 10,
-    cookTime: 0,
-    servings: 1,
-    image: "https://images.unsplash.com/photo-1511690743698-d9d85f2fbf38?w=500",
-    isFavorite: true,
-    createdAt: "2024-01-26T08:15:00Z",
-    updatedAt: "2024-01-26T08:15:00Z",
-    createdBy: "user2",
-    householdId: "household1",
-    mealType: "breakfast",
-    cuisine: "american",
-    dietLifestyle: ["vegetarian", "gluten_free", "high_protein"],
-    complexityLevel: "quick_easy"
+    complexityLevel: "easy",
+    slug: "chocolate-chip-cookies"
   }
 ];

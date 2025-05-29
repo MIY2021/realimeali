@@ -1,34 +1,45 @@
 
 import { Button } from "@/components/ui/button";
+import { Upload } from "lucide-react";
 
 interface RecipeImageTabProps {
   isProcessing: boolean;
   onProcessImage: (file: File) => void;
 }
 
-export function RecipeImageTab({ isProcessing, onProcessImage }: RecipeImageTabProps) {
+export function RecipeImageTab({
+  isProcessing,
+  onProcessImage
+}: RecipeImageTabProps) {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      onProcessImage(file);
+    }
+  };
+
   return (
-    <div className="space-y-3 sm:space-y-4">
-      <div>
-        <label className="block text-sm font-medium mb-2">Upload Recipe Photo</label>
+    <div className="space-y-4">
+      <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+        <Upload className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+        <h3 className="text-lg font-semibold mb-2">Upload Recipe Image</h3>
+        <p className="text-gray-600 mb-4">
+          Upload an image of a recipe to extract the text
+        </p>
         <input
           type="file"
           accept="image/*"
-          onChange={(e) => {
-            const file = e.target.files?.[0];
-            if (file) {
-              onProcessImage(file);
-            }
-          }}
-          className="w-full p-3 sm:p-4 border rounded-lg text-sm sm:text-base"
+          onChange={handleFileChange}
+          disabled={isProcessing}
+          className="hidden"
+          id="recipe-image"
         />
+        <Button asChild>
+          <label htmlFor="recipe-image" className="cursor-pointer">
+            {isProcessing ? "Processing..." : "Choose Image"}
+          </label>
+        </Button>
       </div>
-      <Button 
-        disabled={isProcessing}
-        className="w-full h-11 sm:h-10"
-      >
-        {isProcessing ? "Extracting..." : "Choose Photo to Extract Recipe"}
-      </Button>
     </div>
   );
 }
