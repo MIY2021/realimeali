@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useState, ReactNode, useCallback, useMemo, useEffect } from 'react';
 import { Recipe } from '@/types';
 import { useRecipeApi } from '@/hooks/useRecipeApi';
@@ -14,10 +15,12 @@ interface RecipesContextType {
   getRecipeBySlug: (slug: string) => Recipe | undefined;
   isLoading: boolean;
   setIsLoading: (loading: boolean) => void;
+  error: string | null;
   // Add missing methods
   fetchRecipes: (householdId: string | null) => Promise<void>;
   createRecipe: (recipe: Omit<Recipe, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>, householdId: string) => Promise<Recipe | null>;
   deleteRecipe: (id: string) => Promise<boolean>;
+  toggleFavorite: (id: string, isFavorite: boolean) => Promise<void>;
 }
 
 const RecipesContext = createContext<RecipesContextType | undefined>(undefined);
@@ -37,6 +40,7 @@ interface RecipesProviderProps {
 export const RecipesProvider = ({ children }: RecipesProviderProps) => {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const recipeApi = useRecipeApi();
   const { user } = useAuth();
   const { currentHousehold } = useHousehold();
@@ -58,6 +62,7 @@ export const RecipesProvider = ({ children }: RecipesProviderProps) => {
 
   const updateRecipe = useCallback(async (id: string, updatedRecipe: Recipe) => {
     try {
+      setError(null);
       const result = await recipeApi.updateRecipe(id, updatedRecipe);
       if (result) {
         setRecipes(prev => prev.map(recipe => 
@@ -66,6 +71,7 @@ export const RecipesProvider = ({ children }: RecipesProviderProps) => {
       }
     } catch (error) {
       console.error('Error updating recipe:', error);
+      setError('Failed to update recipe');
       throw error;
     }
   }, [recipeApi]);
@@ -96,11 +102,13 @@ export const RecipesProvider = ({ children }: RecipesProviderProps) => {
     if (!householdId) return;
     
     setIsLoading(true);
+    setError(null);
     try {
       const fetchedRecipes = await recipeApi.fetchRecipes(householdId);
       setRecipes(fetchedRecipes);
     } catch (error) {
       console.error('Error fetching recipes:', error);
+      setError('Failed to fetch recipes');
     } finally {
       setIsLoading(false);
     }
@@ -111,6 +119,7 @@ export const RecipesProvider = ({ children }: RecipesProviderProps) => {
     householdId: string
   ) => {
     try {
+      setError(null);
       const newRecipe = await recipeApi.createRecipe(recipeData, householdId);
       if (newRecipe) {
         addRecipe(newRecipe);
@@ -118,12 +127,14 @@ export const RecipesProvider = ({ children }: RecipesProviderProps) => {
       return newRecipe;
     } catch (error) {
       console.error('Error creating recipe:', error);
+      setError('Failed to create recipe');
       return null;
     }
   }, [recipeApi, addRecipe]);
 
   const deleteRecipe = useCallback(async (id: string) => {
     try {
+      setError(null);
       const success = await recipeApi.deleteRecipe(id);
       if (success) {
         removeRecipe(id);
@@ -131,9 +142,25 @@ export const RecipesProvider = ({ children }: RecipesProviderProps) => {
       return success;
     } catch (error) {
       console.error('Error deleting recipe:', error);
+      setError('Failed to delete recipe');
       return false;
     }
   }, [recipeApi, removeRecipe]);
+
+  const toggleFavorite = useCallback(async (id: string, isFavorite: boolean) => {
+    try {
+      setError(null);
+      const recipe = getRecipeById(id);
+      if (!recipe) return;
+      
+      const updatedRecipe = { ...recipe, isFavorite };
+      await updateRecipe(id, updatedRecipe);
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+      setError('Failed to update favorite status');
+      throw error;
+    }
+  }, [getRecipeById, updateRecipe]);
 
   const value = useMemo(() => ({
     recipes,
@@ -145,10 +172,12 @@ export const RecipesProvider = ({ children }: RecipesProviderProps) => {
     getRecipeBySlug,
     isLoading,
     setIsLoading,
+    error,
     fetchRecipes,
     createRecipe,
     deleteRecipe,
-  }), [recipes, addRecipe, updateRecipe, removeRecipe, getRecipeById, getRecipeBySlug, isLoading, fetchRecipes, createRecipe, deleteRecipe]);
+    toggleFavorite,
+  }), [recipes, addRecipe, updateRecipe, removeRecipe, getRecipeById, getRecipeBySlug, isLoading, error, fetchRecipes, createRecipe, deleteRecipe, toggleFavorite]);
 
   return (
     <RecipesContext.Provider value={value}>

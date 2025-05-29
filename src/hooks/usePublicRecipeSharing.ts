@@ -29,8 +29,7 @@ export function usePublicRecipeSharing() {
           servings: recipe.servings,
           image: recipe.image,
           expires_at: expiresAt.toISOString(),
-          original_household_id: recipe.householdId,
-          meal_type: recipe.mealType
+          original_household_id: recipe.householdId
         })
         .select()
         .single();
