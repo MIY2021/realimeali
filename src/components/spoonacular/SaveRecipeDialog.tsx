@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -34,7 +35,7 @@ export function SaveRecipeDialog({ recipe, open, onOpenChange }: SaveRecipeDialo
         title: editedTitle,
         description: editedDescription || recipe.summary?.replace(/<[^>]*>/g, '').substring(0, 200) || "",
         ingredients: recipe.extendedIngredients?.map(ing => ing.original) || [],
-        instructions: recipe.analyzedInstructions?.[0]?.steps?.map(step => step.step) || [],
+        instructions: recipe.instructions ? [recipe.instructions] : [],
         prepTime: 0,
         cookTime: recipe.readyInMinutes || 0,
         servings: recipe.servings || 4,

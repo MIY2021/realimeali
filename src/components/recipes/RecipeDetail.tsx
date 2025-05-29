@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Recipe } from "@/types";
 import { Badge } from "@/components/ui/badge";
@@ -7,7 +8,7 @@ import { RecipeImage } from "@/components/ui/recipe-image";
 import { EditRecipeDialog } from "./EditRecipeDialog";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { useToast } from "@/hooks/use-toast";
-import { Utensils, Clock, Users, Share, Heart } from "lucide-react";
+import { ChefHat, Clock, Users, Share, Heart } from "lucide-react";
 import { usePublicRecipeSharing } from "@/hooks/usePublicRecipeSharing";
 
 interface RecipeDetailProps {
@@ -16,16 +17,22 @@ interface RecipeDetailProps {
 
 export function RecipeDetail({ recipe }: RecipeDetailProps) {
   const [open, setOpen] = useState(false);
-  const { updateRecipe, toggleFavorite } = useRecipes();
+  const { updateRecipe, deleteRecipe } = useRecipes();
   const { toast } = useToast();
   const { shareRecipe, isSharing } = usePublicRecipeSharing();
 
   const handleFavoriteToggle = async () => {
     try {
-      await toggleFavorite(recipe.id, !recipe.isFavorite);
-      toast({
-        title: recipe.isFavorite ? "Removed from favorites" : "Added to favorites",
+      const updatedRecipe = await updateRecipe(recipe.id, { 
+        ...recipe,
+        isFavorite: !recipe.isFavorite 
       });
+      
+      if (updatedRecipe) {
+        toast({
+          title: recipe.isFavorite ? "Removed from favorites" : "Added to favorites",
+        });
+      }
     } catch (error) {
       toast({
         title: "Error",
@@ -64,7 +71,7 @@ export function RecipeDetail({ recipe }: RecipeDetailProps) {
                 <span className="sr-only">Share Recipe</span>
               </Button>
               <Button variant="ghost" size="sm" onClick={() => setOpen(true)}>
-                <Utensils className="h-5 w-5 text-muted-foreground" />
+                <ChefHat className="h-5 w-5 text-muted-foreground" />
                 <span className="sr-only">Edit Recipe</span>
               </Button>
             </div>
@@ -73,12 +80,10 @@ export function RecipeDetail({ recipe }: RecipeDetailProps) {
         </CardHeader>
         <CardContent className="py-4">
           <div className="grid sm:grid-cols-2 gap-4">
-            {/* Recipe Image */}
             <div className="sm:col-span-1">
               <RecipeImage recipe={recipe} className="rounded-md aspect-video object-cover w-full" />
             </div>
 
-            {/* Recipe Details */}
             <div className="sm:col-span-1 space-y-3">
               <div className="flex items-center space-x-4">
                 <Badge variant="secondary">
@@ -95,7 +100,6 @@ export function RecipeDetail({ recipe }: RecipeDetailProps) {
                 </Badge>
               </div>
 
-              {/* Ingredients */}
               <div>
                 <h4 className="text-lg font-semibold mb-2">Ingredients</h4>
                 <ul className="list-disc list-inside text-sm">
@@ -105,7 +109,6 @@ export function RecipeDetail({ recipe }: RecipeDetailProps) {
                 </ul>
               </div>
 
-              {/* Instructions */}
               <div>
                 <h4 className="text-lg font-semibold mb-2">Instructions</h4>
                 <ol className="list-decimal list-inside text-sm">
@@ -119,7 +122,7 @@ export function RecipeDetail({ recipe }: RecipeDetailProps) {
         </CardContent>
       </Card>
 
-      <EditRecipeDialog open={open} onClose={() => setOpen(false)} recipe={recipe} />
+      <EditRecipeDialog open={open} onOpenChange={setOpen} recipe={recipe} />
     </>
   );
 }

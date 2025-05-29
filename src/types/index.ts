@@ -1,134 +1,105 @@
-
-export type User = {
-  id: string;
-  name: string;
-  email: string;
-  avatar?: string;
-};
-
-// New recipe classification types based on database enums
-export type MealType =
-  | "breakfast"
-  | "lunch" 
-  | "dinner"
-  | "snacks"
-  | "sides"
-  | "desserts"
-  | "drinks"
-  | "sauces_dips"
-  | "soups_stews"
-  | "salads"
-  | "baking_breads";
-
-export type CuisineRegion =
-  | "british"
-  | "american"
-  | "italian"
-  | "french"
-  | "mexican"
-  | "indian"
-  | "chinese"
-  | "japanese"
-  | "thai"
-  | "mediterranean"
-  | "middle_eastern"
-  | "african"
-  | "korean"
-  | "caribbean"
-  | "nordic"
-  | "eastern_european";
-
-export type CookingMethod =
-  | "one_pot"
-  | "oven_baked"
-  | "air_fryer"
-  | "slow_cooker"
-  | "pressure_cooker"
-  | "bbq_grilled"
-  | "stir_fried"
-  | "roasted"
-  | "raw_no_cook";
-
-export type DietLifestyle =
-  | "vegetarian"
-  | "vegan" 
-  | "pescatarian"
-  | "gluten_free"
-  | "dairy_free"
-  | "low_carb_keto"
-  | "high_protein"
-  | "paleo"
-  | "diabetic_friendly"
-  | "budget_meals"
-  | "kid_friendly"
-  | "pregnancy_safe";
-
-export type ComplexityLevel =
-  | "quick_easy"
-  | "standard"
-  | "complex";
-
-export type MainIngredient =
-  | "chicken"
-  | "beef"
-  | "pork"
-  | "lamb"
-  | "fish"
-  | "tofu_tempeh"
-  | "eggs"
-  | "cheese"
-  | "pasta"
-  | "rice"
-  | "lentils_beans"
-  | "vegetables"
-  | "potatoes"
-  | "fruit"
-  | "nuts_seeds"
-  | "chocolate";
-
-// Updated Recipe type with new classification fields
-export type Recipe = {
+export interface Recipe {
   id: string;
   title: string;
   description: string;
   ingredients: string[];
   instructions: string[];
-  // New structured classification fields
-  mealType?: MealType;
-  cuisineRegion?: CuisineRegion;
-  cookingMethod?: CookingMethod;
-  dietLifestyle?: DietLifestyle[];
-  complexityLevel?: ComplexityLevel;
-  mainIngredient?: MainIngredient;
-  prepTime: number; // in minutes
-  cookTime: number; // in minutes
+  prepTime: number;
+  cookTime: number;
   servings: number;
   image?: string;
-  topTip?: string;
-  createdBy: string; // user id
-  createdAt: string; // ISO date string
-  updatedAt: string; // ISO date string
   isFavorite: boolean;
-  householdId: string; // household id
-};
-
-// Meal plan uses only core meal types (simplified subset)
-export type MealPlanMealType = "dinner" | "lunch" | "breakfast" | "snacks";
-
-export type MealPlan = {
-  id: string;
-  date: string;
-  mealType: MealPlanMealType; // Limited to core 4 types
-  recipeId: string;
-  notes?: string;
-  createdBy: string;
   createdAt: string;
   updatedAt: string;
+  createdBy: string;
+  householdId: string;
+  mealType?: string;
+  cuisineRegion?: string;
+  cookingMethod?: string;
+  complexityLevel?: string;
+  mainIngredient?: string;
+  dietLifestyle?: string[];
+  slug?: string;
+}
+
+export interface MealPlan {
+  id: string;
+  date: string;
+  mealType: string;
+  recipeId: string;
   slotIndex: number;
-  parentMealPlanId?: string; // Links to the original dinner
   isLeftover: boolean;
-  leftoverServings?: number; // How many servings from original meal
-  originalServings?: number; // Total servings from original recipe
-  householdId: string; // household id
-  weekNumber: number; // Added weekNumber property
-};
+  leftoverServings?: number;
+  originalServings: number;
+  createdAt: string;
+  updatedAt: string;
+  householdId: string;
+  prepTime?: number;
+  cookTime?: number;
+  servings?: number;
+  weekNumber: 1 | 2;
+  parentMealPlanId?: string;
+  createdBy: string;
+}
+
+export interface Household {
+  id: string;
+  name: string;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: string;
+}
+
+export interface HouseholdMember {
+  id: string;
+  userId: string;
+  householdId: string;
+  role: 'owner' | 'member';
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PublicRecipeShare {
+  public_share_id: string;
+  recipe_id: string;
+  shared_by: string;
+  shared_by_name: string;
+  shared_by_household_name: string;
+  title: string;
+  description: string;
+  ingredients: string[];
+  instructions: string[];
+  prep_time: number;
+  cook_time: number;
+  servings: number;
+  image?: string;
+  expires_at: string;
+  created_at: string;
+  meal_type?: string;
+  cuisine_region?: string;
+  cooking_method?: string;
+  complexity_level?: string;
+  main_ingredient?: string;
+  diet_lifestyle?: string[];
+  original_recipe_id: string;
+}
+
+export interface UserProfile {
+  id: string;
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  avatarUrl?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface HouseholdMealPlan {
+  [date: string]: {
+    [mealType: string]: Recipe[];
+  };
+}
+
+// Align meal type definitions
+export type MealType = "breakfast" | "lunch" | "dinner" | "snacks";
+export type MealPlanMealType = MealType;

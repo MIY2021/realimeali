@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
@@ -16,7 +17,7 @@ export default function MealPlanner() {
   const { user } = useAuth();
   const { currentHousehold } = useHousehold();
   const { recipes } = useRecipes();
-  const { mealPlans, fetchMealPlans, createMealPlan, updateMealPlan, deleteMealPlan } = useMealPlan();
+  const { mealPlans, getMealPlansForWeek, getRecipeForMealPlan } = useMealPlan();
   const { generateRandomMealPlan, isGenerating } = useRandomMealSelection();
   const { toast } = useToast();
   const { addMealPlan, editMealPlan, removeMealPlan } = useMealPlanOperations();
@@ -27,12 +28,6 @@ export default function MealPlanner() {
   const [removeMealDialog, setRemoveMealDialog] = useState({ open: false, mealPlanId: null as string | null, recipe: null as Recipe | null });
   const [showReplaceDialog, setShowReplaceDialog] = useState(false);
   const [isCalendarView, setIsCalendarView] = useState(false);
-
-  useEffect(() => {
-    if (user && currentHousehold) {
-      fetchMealPlans(currentHousehold.id);
-    }
-  }, [user, currentHousehold, fetchMealPlans]);
 
   const handleWeekChange = (week: 1 | 2) => {
     setWeekNumber(week);
@@ -51,7 +46,6 @@ export default function MealPlanner() {
   };
 
   const confirmReplaceMealPlan = async () => {
-    // Define the desired quantities for each meal type
     const quantities = {
       dinner: 7,
       lunch: 7,
@@ -60,14 +54,10 @@ export default function MealPlanner() {
     };
 
     try {
-      // Generate the random meal plan
       const newMealPlans = await generateRandomMealPlan(quantities);
-
-      // Delete existing meal plans for the current week
-      const mealPlansToDelete = mealPlans.filter(mealPlan => mealPlan.weekNumber === weekNumber);
+      const mealPlansToDelete = getMealPlansForWeek(weekNumber);
       await Promise.all(mealPlansToDelete.map(mealPlan => removeMealPlan(mealPlan.id)));
 
-      // Add the new meal plans
       if (newMealPlans && currentHousehold) {
         await Promise.all(
           newMealPlans.map(async (meal) => {
@@ -80,10 +70,9 @@ export default function MealPlanner() {
                   householdId: currentHousehold.id,
                   slotIndex: 0,
                   isLeftover: false,
-                  prepTime: meal.recipe.prepTime,
-                  cookTime: meal.recipe.cookTime,
                   servings: meal.recipe.servings,
                   weekNumber: weekNumber,
+                  createdBy: user?.id || "",
                 },
                 weekNumber
               );
@@ -108,7 +97,6 @@ export default function MealPlanner() {
   };
 
   const handleShare = () => {
-    // Implement share functionality here
     toast({
       title: "Share Meal Plan",
       description: "Sharing functionality is not yet implemented.",
@@ -120,8 +108,7 @@ export default function MealPlanner() {
   };
 
   const confirmClearAll = async () => {
-    // Delete all meal plans for the current week
-    const mealPlansToDelete = mealPlans.filter(mealPlan => mealPlan.weekNumber === weekNumber);
+    const mealPlansToDelete = getMealPlansForWeek(weekNumber);
     await Promise.all(mealPlansToDelete.map(mealPlan => removeMealPlan(mealPlan.id)));
 
     toast({
@@ -144,10 +131,9 @@ export default function MealPlanner() {
           householdId: currentHousehold.id,
           slotIndex: 0,
           isLeftover: false,
-          prepTime: recipe.prepTime,
-          cookTime: recipe.cookTime,
           servings: recipe.servings,
           weekNumber: weekNumber,
+          createdBy: user?.id || "",
         },
         weekNumber
       );
@@ -195,10 +181,9 @@ export default function MealPlanner() {
           isLeftover: true,
           leftoverServings: servings,
           originalServings: leftoverModal.recipe.servings,
-          prepTime: 5,
-          cookTime: 0,
           servings: servings,
           weekNumber: weekNumber,
+          createdBy: user?.id || "",
         },
         weekNumber
       );
@@ -212,7 +197,7 @@ export default function MealPlanner() {
   };
 
   const getMealPlansForDate = (date: string): MealPlan[] => {
-    return mealPlans.filter((mealPlan) => mealPlan.date === date);
+    return getMealPlansForWeek(weekNumber).filter((mealPlan) => mealPlan.date === date);
   };
 
   const getRecipeById = (recipeId: string): Recipe | undefined => {
@@ -224,7 +209,7 @@ export default function MealPlanner() {
   return (
     <div className="container py-6">
       <MealPlannerHeader
-        weekNumber={weekNumber}
+        currentWeek={weekNumber}
         onWeekChange={handleWeekChange}
         isCalendarView={isCalendarView}
         setIsCalendarView={setIsCalendarView}
@@ -242,18 +227,25 @@ export default function MealPlanner() {
         addMealModal={addMealModal}
         setAddMealModal={setAddMealModal}
         recipes={recipes}
-        onAddMealFinish={handleAddMealFinish}
+        onAddMealFinish={(mealType: MealPlanMealType, recipeId: string) => {
+          const recipe = recipes.find(r => r.id === recipeId);
+          if (recipe) handleAddMealFinish(recipe);
+        }}
         leftoverModal={leftoverModal}
         setLeftoverModal={setLeftoverModal}
         onLeftoverConfirm={handleLeftoverConfirm}
         showReplaceDialog={showReplaceDialog}
         setShowReplaceDialog={setShowReplaceDialog}
-        confirmReplaceMealPlan={confirmReplaceMealPlan}
-        clearAllDialog={clearAllDialog}
-        setClearAllDialog={setClearAllDialog}
+        handleReplaceConfirm={confirmReplaceMealPlan}
+        currentWeek={weekNumber}
+        showQuantityDialog={false}
+        setShowQuantityDialog={() => {}}
+        handleQuantitySubmit={() => {}}
+        clearMealPlanDialog={clearAllDialog}
+        setClearMealPlanDialog={setClearAllDialog}
         confirmClearAll={confirmClearAll}
-        removeMealDialog={removeMealDialog}
-        setRemoveMealDialog={setRemoveMealDialog}
+        deleteMealDialog={removeMealDialog}
+        setDeleteMealDialog={setRemoveMealDialog}
         confirmRemoveMeal={confirmRemoveMeal}
       />
 

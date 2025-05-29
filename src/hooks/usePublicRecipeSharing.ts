@@ -12,45 +12,29 @@ export function usePublicRecipeSharing() {
   const { currentHousehold } = useHousehold();
   const { toast } = useToast();
 
-  const shareRecipe = async (recipe: Recipe, expirationDays?: number) => {
+  const shareRecipe = async (recipe: Recipe, expirationDays: number = 30): Promise<string> => {
     if (!user || !currentHousehold) {
       toast({
-        title: "Authentication Required",
+        title: "Error",
         description: "You must be logged in to share recipes.",
-        variant: "destructive"
+        variant: "destructive",
       });
-      return null;
-    }
-
-    if (recipe.createdBy !== user.id && recipe.householdId !== currentHousehold.id) {
-      toast({
-        title: "Permission Denied",
-        description: "You can only share recipes from your household.",
-        variant: "destructive"
-      });
-      return null;
+      return "";
     }
 
     setIsSharing(true);
+    
     try {
-      const publicShareId = generateShareId();
-      const expiresAt = expirationDays 
-        ? new Date(Date.now() + expirationDays * 24 * 60 * 60 * 1000).toISOString()
-        : null;
-
-      const slug = recipe.title
-        .toLowerCase()
-        .replace(/[^a-z0-9 -]/g, '')
-        .replace(/\s+/g, '-')
-        .replace(/-+/g, '-')
-        .trim();
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + expirationDays);
 
       const { data, error } = await supabase
         .from('public_recipe_shares')
         .insert({
-          public_share_id: publicShareId,
-          original_recipe_id: recipe.id,
-          original_household_id: recipe.householdId,
+          recipe_id: recipe.id,
+          shared_by: user.id,
+          shared_by_name: user.email || "Unknown User",
+          shared_by_household_name: currentHousehold.name,
           title: recipe.title,
           description: recipe.description,
           ingredients: recipe.ingredients,
@@ -59,56 +43,43 @@ export function usePublicRecipeSharing() {
           cook_time: recipe.cookTime,
           servings: recipe.servings,
           image: recipe.image,
-          shared_by_user_id: user.id,
-          shared_by_name: user.email, // Use email as fallback for name
-          shared_by_household_name: currentHousehold.name,
-          expires_at: expiresAt,
-          slug: slug
+          expires_at: expiresAt.toISOString(),
+          meal_type: recipe.mealType,
+          cuisine_region: recipe.cuisineRegion,
+          cooking_method: recipe.cookingMethod,
+          complexity_level: recipe.complexityLevel,
+          main_ingredient: recipe.mainIngredient,
+          diet_lifestyle: recipe.dietLifestyle,
+          original_recipe_id: recipe.id
         })
-        .select()
+        .select('public_share_id')
         .single();
 
-      if (error) {
-        console.error('Error sharing recipe:', error);
-        toast({
-          title: "Sharing Failed",
-          description: "Failed to share recipe. Please try again.",
-          variant: "destructive"
-        });
-        return null;
-      }
+      if (error) throw error;
 
-      const shareUrl = `${window.location.origin}/shared/${publicShareId}`;
+      const shareUrl = `${window.location.origin}/public/recipe/${data.public_share_id}`;
       
       toast({
         title: "Recipe Shared!",
-        description: "Share link copied to clipboard.",
+        description: "Share link created successfully.",
       });
 
-      // Copy to clipboard
-      await navigator.clipboard.writeText(shareUrl);
-      
       return shareUrl;
     } catch (error) {
-      console.error('Error sharing recipe:', error);
+      console.error("Error sharing recipe:", error);
       toast({
-        title: "Sharing Failed",
+        title: "Error",
         description: "Failed to share recipe. Please try again.",
-        variant: "destructive"
+        variant: "destructive",
       });
-      return null;
+      return "";
     } finally {
       setIsSharing(false);
     }
   };
 
-  const generateShareId = (): string => {
-    return Math.random().toString(36).substring(2, 15) + 
-           Math.random().toString(36).substring(2, 15);
-  };
-
   return {
     shareRecipe,
-    isSharing
+    isSharing,
   };
 }

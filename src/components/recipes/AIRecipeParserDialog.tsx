@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Utensils } from "lucide-react";
+import { ChefHat } from "lucide-react";
 
 interface AIRecipeParserDialogProps {
   open: boolean;
@@ -30,7 +30,7 @@ export function AIRecipeParserDialog({ open, onClose, onParse }: AIRecipeParserD
       <DialogContent className="sm:max-w-[550px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Utensils className="h-5 w-5 text-sage" />
+            <ChefHat className="h-5 w-5 text-sage" />
             AI Recipe Parser
           </DialogTitle>
         </DialogHeader>

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -5,11 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { RecipeImage } from "@/components/ui/recipe-image";
 import { supabase } from "@/integrations/supabase/client";
-import { Utensils, Clock, Users, Share } from "lucide-react";
+import { ChefHat, Clock, Users, Share } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface PublicRecipeViewProps {
-  recipe?: any; // Recipe type here
+  recipe?: any;
 }
 
 export function PublicRecipeView({ recipe }: PublicRecipeViewProps) {
@@ -65,7 +66,7 @@ export function PublicRecipeView({ recipe }: PublicRecipeViewProps) {
       <Card className="max-w-3xl mx-auto">
         <CardHeader>
           <CardTitle className="text-2xl font-bold flex items-center gap-2">
-            <Utensils className="h-6 w-6 text-muted-foreground" />
+            <ChefHat className="h-6 w-6 text-muted-foreground" />
             {publicRecipe.title}
           </CardTitle>
           <p className="text-sm text-muted-foreground">

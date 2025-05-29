@@ -3,7 +3,7 @@ export interface SpoonacularRecipe {
   id: number;
   title: string;
   image: string;
-  imageType: string;
+  imageType?: string;
   readyInMinutes: number;
   servings: number;
   summary: string;

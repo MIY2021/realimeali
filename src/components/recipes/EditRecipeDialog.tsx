@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -5,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Recipe } from "@/types";
-import { Utensils, Plus, X } from "lucide-react";
+import { ChefHat, Plus, X } from "lucide-react";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { useToast } from "@/hooks/use-toast";
 import { RecipeClassificationSelector } from "./create/RecipeClassificationSelector";
@@ -85,7 +86,7 @@ export function EditRecipeDialog({ open, onOpenChange, recipe }: EditRecipeDialo
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Utensils className="h-5 w-5 text-sage" />
+            <ChefHat className="h-5 w-5 text-sage" />
             Edit Recipe
           </DialogTitle>
         </DialogHeader>

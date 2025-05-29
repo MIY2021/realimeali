@@ -1,4 +1,3 @@
-
 import { useParams, Link } from "react-router-dom";
 import { RecipeCard } from "@/components/recipes/RecipeCard";
 import { useRecipes } from "@/contexts/RecipesContext";
@@ -144,8 +143,6 @@ export default function CategoryPage() {
               key={recipe.id} 
               recipe={recipe}
               onAddToMealPlan={() => handleAddToMealPlan(recipe)}
-              onEdit={() => handleEditRecipe(recipe)}
-              onDelete={() => handleDeleteRecipe(recipe)}
               showActions={true}
             />
           ))}
@@ -163,7 +160,6 @@ export default function CategoryPage() {
           recipe={editRecipe}
           open={editDialogOpen}
           onOpenChange={setEditDialogOpen}
-          onSave={handleSaveEdit}
         />
       )}
     </div>

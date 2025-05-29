@@ -27,11 +27,11 @@ export function RecipeList({
   const {
     searchTerm,
     setSearchTerm,
-    categoryFilter,
-    setCategoryFilter,
-    sortType,
-    setSortType,
-    sortedRecipes,
+    sortBy,
+    setSortBy,
+    sortOrder,
+    setSortOrder,
+    filteredAndSortedRecipes,
     visibleRecipes,
     hasMoreRecipes,
     handleLoadMore,
@@ -58,15 +58,15 @@ export function RecipeList({
       <RecipeFilters
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
-        categoryFilter={categoryFilter}
-        onCategoryChange={setCategoryFilter}
-        sortType={sortType}
-        onSortChange={setSortType}
+        sortBy={sortBy}
+        onSortChange={setSortBy}
+        sortOrder={sortOrder}
+        onSortOrderChange={setSortOrder}
         mobileLayout={mobileLayout}
         onMobileLayoutChange={handleMobileLayoutChange}
       />
       
-      {sortedRecipes.length === 0 ? (
+      {filteredAndSortedRecipes.length === 0 ? (
         <div className="text-center py-8 px-4">
           <p className="text-muted-foreground">No recipes found. Try adjusting your search.</p>
         </div>
@@ -85,7 +85,7 @@ export function RecipeList({
               </Button>
             )}
             <p className="text-sm text-muted-foreground text-center">
-              Showing {visibleRecipes.length} of {sortedRecipes.length} recipes
+              Showing {visibleRecipes.length} of {filteredAndSortedRecipes.length} recipes
             </p>
           </div>
         </>

@@ -1,8 +1,9 @@
+
 import { useState } from "react";
 import { Recipe } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Heart, Clock, Users, Share, Plus } from "lucide-react";
 import { RecipeImage } from "@/components/ui/recipe-image";
 import { AddToMealPlanDialog } from "./AddToMealPlanDialog";
@@ -18,7 +19,7 @@ interface RecipeCardProps {
 
 export function RecipeCard({ recipe, showActions = true, onAddToMealPlan }: RecipeCardProps) {
   const [showAddToMealPlan, setShowAddToMealPlan] = useState(false);
-  const { toggleFavorite } = useRecipes();
+  const { updateRecipe } = useRecipes();
   const { toast } = useToast();
   const { shareRecipe, isSharing } = usePublicRecipeSharing();
 
@@ -43,7 +44,7 @@ export function RecipeCard({ recipe, showActions = true, onAddToMealPlan }: Reci
 
   const handleFavorite = async () => {
     try {
-      await toggleFavorite(recipe.id, !recipe.isFavorite);
+      await updateRecipe(recipe.id, { ...recipe, isFavorite: !recipe.isFavorite });
     } catch (error) {
       toast({
         title: "Error",

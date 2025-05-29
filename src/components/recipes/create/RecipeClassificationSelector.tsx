@@ -1,133 +1,197 @@
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Recipe, MealType, CuisineRegion, CookingMethod, DietLifestyle, ComplexityLevel, MainIngredient } from "@/types";
-import { MEAL_TYPE_OPTIONS, CUISINE_REGION_OPTIONS, COOKING_METHOD_OPTIONS, DIET_LIFESTYLE_OPTIONS, COMPLEXITY_LEVEL_OPTIONS, MAIN_INGREDIENT_OPTIONS } from "@/utils/recipeClassification";
-import { Utensils } from "lucide-react";
+
+import { Recipe } from "@/types";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ChefHat } from "lucide-react";
 
 interface RecipeClassificationSelectorProps {
-  recipe: Omit<Recipe, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>;
-  onRecipeChange: (recipe: Omit<Recipe, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>) => void;
+  recipe: Recipe | Omit<Recipe, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>;
+  onRecipeChange: (recipe: Recipe | Omit<Recipe, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>) => void;
 }
 
+const MEAL_TYPES = [
+  { value: "breakfast", label: "Breakfast" },
+  { value: "lunch", label: "Lunch" },
+  { value: "dinner", label: "Dinner" },
+  { value: "snacks", label: "Snacks" },
+];
+
+const CUISINE_REGIONS = [
+  { value: "italian", label: "Italian" },
+  { value: "mexican", label: "Mexican" },
+  { value: "asian", label: "Asian" },
+  { value: "american", label: "American" },
+  { value: "mediterranean", label: "Mediterranean" },
+  { value: "indian", label: "Indian" },
+  { value: "french", label: "French" },
+  { value: "thai", label: "Thai" },
+  { value: "chinese", label: "Chinese" },
+  { value: "japanese", label: "Japanese" },
+];
+
+const COOKING_METHODS = [
+  { value: "grilled", label: "Grilled" },
+  { value: "baked", label: "Baked" },
+  { value: "fried", label: "Fried" },
+  { value: "steamed", label: "Steamed" },
+  { value: "roasted", label: "Roasted" },
+  { value: "sauteed", label: "Sautéed" },
+  { value: "boiled", label: "Boiled" },
+  { value: "slow_cooked", label: "Slow Cooked" },
+  { value: "no_cook", label: "No Cook" },
+];
+
+const COMPLEXITY_LEVELS = [
+  { value: "easy", label: "Easy" },
+  { value: "medium", label: "Medium" },
+  { value: "hard", label: "Hard" },
+];
+
+const MAIN_INGREDIENTS = [
+  { value: "chicken", label: "Chicken" },
+  { value: "beef", label: "Beef" },
+  { value: "pork", label: "Pork" },
+  { value: "fish", label: "Fish" },
+  { value: "seafood", label: "Seafood" },
+  { value: "vegetables", label: "Vegetables" },
+  { value: "pasta", label: "Pasta" },
+  { value: "rice", label: "Rice" },
+  { value: "beans", label: "Beans" },
+  { value: "eggs", label: "Eggs" },
+];
+
+const DIET_LIFESTYLES = [
+  { value: "vegetarian", label: "Vegetarian" },
+  { value: "vegan", label: "Vegan" },
+  { value: "gluten_free", label: "Gluten Free" },
+  { value: "dairy_free", label: "Dairy Free" },
+  { value: "keto", label: "Keto" },
+  { value: "paleo", label: "Paleo" },
+  { value: "low_carb", label: "Low Carb" },
+  { value: "high_protein", label: "High Protein" },
+];
+
 export function RecipeClassificationSelector({ recipe, onRecipeChange }: RecipeClassificationSelectorProps) {
-  const handleDietLifestyleChange = (lifestyle: DietLifestyle, checked: boolean) => {
-    const current = recipe.dietLifestyle || [];
-    const updated = checked 
-      ? [...current, lifestyle]
-      : current.filter(item => item !== lifestyle);
-    onRecipeChange({ ...recipe, dietLifestyle: updated });
+  const handleSelectChange = (field: keyof Recipe, value: string) => {
+    onRecipeChange({ ...recipe, [field]: value });
+  };
+
+  const handleDietLifestyleChange = (diet: string, checked: boolean) => {
+    const currentDiets = recipe.dietLifestyle || [];
+    const updatedDiets = checked
+      ? [...currentDiets, diet]
+      : currentDiets.filter(d => d !== diet);
+    
+    onRecipeChange({ ...recipe, dietLifestyle: updatedDiets });
   };
 
   return (
-    <Card className="p-4 space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-          <Utensils className="h-5 w-5 mr-2 text-blue-500" />
-          Recipe Classification
-        </h3>
-        <Badge variant="secondary" className="bg-purple-50 text-purple-700">
-          Optional but recommended
-        </Badge>
+    <div className="space-y-6">
+      <div className="flex items-center gap-2 mb-4">
+        <ChefHat className="h-5 w-5 text-sage" />
+        <h3 className="text-lg font-semibold">Recipe Classification</h3>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Meal Type */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Meal Type</label>
-          <select
-            value={recipe.mealType || ''}
-            onChange={(e) => onRecipeChange({ ...recipe, mealType: (e.target.value || undefined) as MealType })}
-            className="w-full p-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            <option value="">Select meal type...</option>
-            {MEAL_TYPE_OPTIONS.map(option => (
-              <option key={option.value} value={option.value}>{option.label}</option>
-            ))}
-          </select>
+          <Label htmlFor="mealType">Meal Type</Label>
+          <Select value={recipe.mealType || ""} onValueChange={(value) => handleSelectChange("mealType", value)}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select meal type" />
+            </SelectTrigger>
+            <SelectContent>
+              {MEAL_TYPES.map((type) => (
+                <SelectItem key={type.value} value={type.value}>
+                  {type.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
-        {/* Cuisine Region */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Cuisine</label>
-          <select
-            value={recipe.cuisineRegion || ''}
-            onChange={(e) => onRecipeChange({ ...recipe, cuisineRegion: (e.target.value || undefined) as CuisineRegion })}
-            className="w-full p-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            <option value="">Select cuisine...</option>
-            {CUISINE_REGION_OPTIONS.map(option => (
-              <option key={option.value} value={option.value}>{option.label}</option>
-            ))}
-          </select>
+          <Label htmlFor="cuisineRegion">Cuisine Region</Label>
+          <Select value={recipe.cuisineRegion || ""} onValueChange={(value) => handleSelectChange("cuisineRegion", value)}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select cuisine" />
+            </SelectTrigger>
+            <SelectContent>
+              {CUISINE_REGIONS.map((cuisine) => (
+                <SelectItem key={cuisine.value} value={cuisine.value}>
+                  {cuisine.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
-        {/* Cooking Method */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Cooking Method</label>
-          <select
-            value={recipe.cookingMethod || ''}
-            onChange={(e) => onRecipeChange({ ...recipe, cookingMethod: (e.target.value || undefined) as CookingMethod })}
-            className="w-full p-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            <option value="">Select method...</option>
-            {COOKING_METHOD_OPTIONS.map(option => (
-              <option key={option.value} value={option.value}>{option.label}</option>
-            ))}
-          </select>
+          <Label htmlFor="cookingMethod">Cooking Method</Label>
+          <Select value={recipe.cookingMethod || ""} onValueChange={(value) => handleSelectChange("cookingMethod", value)}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select cooking method" />
+            </SelectTrigger>
+            <SelectContent>
+              {COOKING_METHODS.map((method) => (
+                <SelectItem key={method.value} value={method.value}>
+                  {method.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
-        {/* Complexity Level */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Complexity</label>
-          <select
-            value={recipe.complexityLevel || ''}
-            onChange={(e) => onRecipeChange({ ...recipe, complexityLevel: (e.target.value || undefined) as ComplexityLevel })}
-            className="w-full p-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            <option value="">Select complexity...</option>
-            {COMPLEXITY_LEVEL_OPTIONS.map(option => (
-              <option key={option.value} value={option.value}>{option.label}</option>
-            ))}
-          </select>
+          <Label htmlFor="complexityLevel">Complexity Level</Label>
+          <Select value={recipe.complexityLevel || ""} onValueChange={(value) => handleSelectChange("complexityLevel", value)}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select complexity" />
+            </SelectTrigger>
+            <SelectContent>
+              {COMPLEXITY_LEVELS.map((level) => (
+                <SelectItem key={level.value} value={level.value}>
+                  {level.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
-        {/* Main Ingredient */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Main Ingredient</label>
-          <select
-            value={recipe.mainIngredient || ''}
-            onChange={(e) => onRecipeChange({ ...recipe, mainIngredient: (e.target.value || undefined) as MainIngredient })}
-            className="w-full p-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            <option value="">Select main ingredient...</option>
-            {MAIN_INGREDIENT_OPTIONS.map(option => (
-              <option key={option.value} value={option.value}>{option.label}</option>
-            ))}
-          </select>
+          <Label htmlFor="mainIngredient">Main Ingredient</Label>
+          <Select value={recipe.mainIngredient || ""} onValueChange={(value) => handleSelectChange("mainIngredient", value)}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select main ingredient" />
+            </SelectTrigger>
+            <SelectContent>
+              {MAIN_INGREDIENTS.map((ingredient) => (
+                <SelectItem key={ingredient.value} value={ingredient.value}>
+                  {ingredient.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
-      {/* Diet & Lifestyle */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Diet & Lifestyle</label>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-          {DIET_LIFESTYLE_OPTIONS.map(option => (
-            <label key={option.value} className="flex items-center space-x-2 text-sm">
-              <input
-                type="checkbox"
-                checked={(recipe.dietLifestyle || []).includes(option.value)}
-                onChange={(e) => handleDietLifestyleChange(option.value, e.target.checked)}
-                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+        <Label>Diet & Lifestyle</Label>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
+          {DIET_LIFESTYLES.map((diet) => (
+            <div key={diet.value} className="flex items-center space-x-2">
+              <Checkbox
+                id={diet.value}
+                checked={recipe.dietLifestyle?.includes(diet.value) || false}
+                onCheckedChange={(checked) => handleDietLifestyleChange(diet.value, !!checked)}
               />
-              <span>{option.label}</span>
-            </label>
+              <Label htmlFor={diet.value} className="text-sm">
+                {diet.label}
+              </Label>
+            </div>
           ))}
         </div>
       </div>
-
-      <p className="text-xs text-gray-500">
-        💡 Tip: Classifications help users find your recipes and get better recommendations.
-      </p>
-    </Card>
+    </div>
   );
 }
