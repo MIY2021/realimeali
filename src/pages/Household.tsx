@@ -1,3 +1,4 @@
+
 import { User } from "lucide-react";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -14,7 +15,7 @@ export default function Household() {
   const { user } = useAuth();
   const { currentHousehold, setCurrentHousehold, householdMembers, isLoadingMembers, removeMember } = useHousehold();
 
-  const isOwner = currentHousehold && user && currentHousehold.created_by === user.id;
+  const isOwner = currentHousehold && user && currentHousehold.createdBy === user.id;
 
   if (!user) {
     return (

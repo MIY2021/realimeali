@@ -7,38 +7,29 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { User, Check, X } from "lucide-react";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { useUserProfile } from "@/hooks/useUserProfile";
+import { HouseholdJoinRequest } from "@/types";
 
 interface JoinRequestsCardProps {
   isOwner: boolean;
 }
 
-interface JoinRequestWithUser {
-  id: string;
-  household_id: string;
-  user_id: string;
-  status: string;
-  created_at: string;
-  updated_at: string;
-  user_name?: string;
-}
-
-const JoinRequestUserCard = ({ request }: { request: JoinRequestWithUser }) => {
-  const { profile, isLoading } = useUserProfile(request.user_id);
+const JoinRequestUserCard = ({ request }: { request: HouseholdJoinRequest }) => {
+  const { profile, isLoading } = useUserProfile(request.userId);
   const [imageError, setImageError] = useState(false);
 
   const handleImageError = () => {
-    console.error(`Avatar image failed to load for join request user ${request.user_id}:`, {
-      userId: request.user_id,
-      avatarUrl: profile?.avatar_url,
+    console.error(`Avatar image failed to load for join request user ${request.userId}:`, {
+      userId: request.userId,
+      avatarUrl: profile?.avatarUrl,
       timestamp: new Date().toISOString()
     });
     setImageError(true);
   };
 
   const handleImageLoad = () => {
-    console.log(`Avatar image loaded successfully for join request user ${request.user_id}:`, {
-      userId: request.user_id,
-      avatarUrl: profile?.avatar_url,
+    console.log(`Avatar image loaded successfully for join request user ${request.userId}:`, {
+      userId: request.userId,
+      avatarUrl: profile?.avatarUrl,
       timestamp: new Date().toISOString()
     });
     setImageError(false);
@@ -61,30 +52,30 @@ const JoinRequestUserCard = ({ request }: { request: JoinRequestWithUser }) => {
       <div className="relative">
         <Avatar className="h-8 w-8">
           <AvatarImage 
-            src={profile?.avatar_url} 
-            alt={profile?.full_name || 'User'}
+            src={profile?.avatarUrl} 
+            alt={profile?.firstName || 'User'}
             onError={handleImageError}
             onLoad={handleImageLoad}
             className="object-cover"
           />
           <AvatarFallback className="bg-terracotta/20 text-terracotta">
-            {profile?.full_name 
-              ? profile.full_name.charAt(0).toUpperCase()
+            {profile?.firstName 
+              ? profile.firstName.charAt(0).toUpperCase()
               : <User className="h-4 w-4" />
             }
           </AvatarFallback>
         </Avatar>
-        {imageError && profile?.avatar_url && (
+        {imageError && profile?.avatarUrl && (
           <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border border-white" 
                title="Avatar failed to load" />
         )}
       </div>
       <div>
-        <p className="font-medium">{profile?.full_name || 'Unknown User'}</p>
+        <p className="font-medium">{profile?.firstName || 'Unknown User'}</p>
         <p className="text-sm text-muted-foreground">
-          Requested on {new Date(request.created_at).toLocaleDateString()}
+          Requested on {new Date(request.createdAt).toLocaleDateString()}
         </p>
-        {profile?.avatar_url && (
+        {profile?.avatarUrl && (
           <p className="text-xs text-muted-foreground">
             Avatar: {imageError ? '❌ Failed' : '✅ Loaded'}
           </p>
@@ -101,9 +92,9 @@ export const JoinRequestsCard = ({ isOwner }: JoinRequestsCardProps) => {
     totalRequests: joinRequests.length,
     requests: joinRequests.map(r => ({
       id: r.id,
-      user_id: r.user_id,
+      userId: r.userId,
       status: r.status,
-      created_at: r.created_at
+      createdAt: r.createdAt
     })),
     timestamp: new Date().toISOString()
   });

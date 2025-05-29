@@ -53,7 +53,22 @@ export interface HouseholdMember {
   id: string;
   userId: string;
   householdId: string;
-  role: 'owner' | 'member';
+  role: 'owner' | 'admin' | 'member';
+  createdAt: string;
+  updatedAt: string;
+  joinedAt: string;
+  profile?: {
+    fullName: string;
+    email: string;
+    avatarUrl?: string;
+  };
+}
+
+export interface HouseholdJoinRequest {
+  id: string;
+  householdId: string;
+  userId: string;
+  status: 'pending' | 'approved' | 'rejected';
   createdAt: string;
   updatedAt: string;
 }

@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Users } from "lucide-react";
+import { ArrowRight, Users, Eye, Book } from "lucide-react";
 import { CommunityRecipeSubmissionDialog } from "@/components/recipes/CommunityRecipeSubmissionDialog";
 
 interface RecipeUrlTabProps {

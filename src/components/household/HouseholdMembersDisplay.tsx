@@ -54,11 +54,11 @@ export const HouseholdMembersDisplay = () => {
     totalMembers: members.length,
     members: members.map(m => ({
       id: m.id,
-      user_id: m.user_id,
+      userId: m.userId,
       profile: {
-        full_name: m.profile?.full_name,
-        avatar_url: m.profile?.avatar_url,
-        hasAvatarUrl: !!m.profile?.avatar_url
+        fullName: m.profile?.fullName,
+        avatarUrl: m.profile?.avatarUrl,
+        hasAvatarUrl: !!m.profile?.avatarUrl
       }
     })),
     imageErrors: Array.from(imageErrors),
@@ -79,20 +79,20 @@ export const HouseholdMembersDisplay = () => {
                 <div className="relative">
                   <Avatar className="h-8 w-8 border-2 border-background hover:scale-105 transition-transform">
                     <AvatarImage 
-                      src={member.profile?.avatar_url} 
-                      alt={member.profile?.full_name || 'User'}
-                      onError={() => handleImageError(member.id, member.profile?.avatar_url)}
-                      onLoad={() => handleImageLoad(member.id, member.profile?.avatar_url)}
+                      src={member.profile?.avatarUrl} 
+                      alt={member.profile?.fullName || 'User'}
+                      onError={() => handleImageError(member.id, member.profile?.avatarUrl)}
+                      onLoad={() => handleImageLoad(member.id, member.profile?.avatarUrl)}
                       className="object-cover"
                     />
                     <AvatarFallback className="bg-terracotta/20 text-terracotta text-xs">
-                      {member.profile?.full_name 
-                        ? member.profile.full_name.charAt(0).toUpperCase()
+                      {member.profile?.fullName 
+                        ? member.profile.fullName.charAt(0).toUpperCase()
                         : <User className="h-3 w-3" />
                       }
                     </AvatarFallback>
                   </Avatar>
-                  {imageErrors.has(member.id) && member.profile?.avatar_url && (
+                  {imageErrors.has(member.id) && member.profile?.avatarUrl && (
                     <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-red-500 rounded-full border border-white" 
                          title="Avatar failed to load" />
                   )}
@@ -100,9 +100,9 @@ export const HouseholdMembersDisplay = () => {
               </TooltipTrigger>
               <TooltipContent>
                 <div className="text-center">
-                  <p className="font-medium">{member.profile?.full_name}</p>
+                  <p className="font-medium">{member.profile?.fullName}</p>
                   <p className="text-xs text-muted-foreground capitalize">{member.role}</p>
-                  {member.profile?.avatar_url && (
+                  {member.profile?.avatarUrl && (
                     <p className="text-xs text-muted-foreground">
                       Avatar: {imageErrors.has(member.id) ? '❌ Failed' : '✅ Loaded'}
                     </p>
