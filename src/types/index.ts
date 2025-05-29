@@ -15,9 +15,12 @@ export interface Recipe {
   createdBy: string;
   householdId: string;
   mealType?: MealType;
-  cuisine?: Cuisine;
+  cuisineRegion?: CuisineRegion;
+  cookingMethod?: CookingMethod;
   dietLifestyle?: DietLifestyle[];
   complexityLevel?: ComplexityLevel;
+  mainIngredient?: MainIngredient;
+  topTip?: string;
   slug?: string;
 }
 
@@ -95,12 +98,19 @@ export interface HouseholdMealPlan {
   };
 }
 
-// New simplified category types
+// New classification types
 export type MealType = "breakfast" | "lunch" | "dinner" | "snacks" | "sides" | "desserts" | "drinks";
 export type MealPlanMealType = "breakfast" | "lunch" | "dinner" | "snacks";
 
-export type Cuisine = "british" | "italian" | "asian" | "mexican" | "indian" | "mediterranean" | "american" | "french" | "middle_eastern" | "other";
+export type CuisineRegion = "british" | "italian" | "asian" | "mexican" | "indian" | "mediterranean" | "american" | "french" | "middle_eastern" | "other";
+
+export type CookingMethod = "one_pot" | "oven_baked" | "air_fryer" | "slow_cooker" | "pressure_cooker" | "bbq_grilled" | "stir_fried" | "roasted" | "raw_no_cook";
 
 export type DietLifestyle = "vegetarian" | "vegan" | "gluten_free" | "dairy_free" | "low_carb" | "high_protein" | "budget_friendly" | "kid_friendly";
 
 export type ComplexityLevel = "quick_easy" | "standard" | "complex";
+
+export type MainIngredient = "chicken" | "beef" | "pork" | "fish" | "seafood" | "vegetarian" | "pasta" | "rice" | "beans" | "eggs" | "dairy" | "other";
+
+// Legacy type for backward compatibility
+export type Cuisine = CuisineRegion;

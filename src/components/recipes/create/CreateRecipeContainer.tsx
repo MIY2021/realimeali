@@ -62,7 +62,7 @@ export function CreateRecipeContainer() {
     handleGenerateRecipe,
   } = useRecipeProcessing();
 
-  const { saveRecipe } = useRecipeSave();
+  const { handleSave, handleCancel } = useRecipeSave();
   const { handleGenerateImage } = useImageGeneration();
 
   const onGenerateImage = () => {
@@ -121,15 +121,7 @@ export function CreateRecipeContainer() {
         householdId: currentHousehold.id,
       };
 
-      const savedRecipe = await createRecipe(recipeToSave, currentHousehold.id);
-      
-      if (savedRecipe) {
-        toast({
-          title: "Success",
-          description: "Recipe saved successfully!",
-        });
-        navigate("/my-recipes");
-      }
+      await handleSave(recipeToSave, shareWithCommunity);
     } catch (error) {
       console.error("Error saving recipe:", error);
       toast({
@@ -142,9 +134,28 @@ export function CreateRecipeContainer() {
     }
   };
 
+  const onProcessText = () => {
+    handleProcessText(setNewRecipe, newRecipe, setActiveTab);
+  };
+
+  const onImportFromUrl = () => {
+    handleImportFromUrl(setNewRecipe, newRecipe, setActiveTab);
+  };
+
+  const onProcessImage = (file: File) => {
+    handleProcessImage(file, setNewRecipe, newRecipe, setActiveTab);
+  };
+
+  const onGenerateRecipe = () => {
+    handleGenerateRecipe(setNewRecipe, newRecipe, setActiveTab);
+  };
+
   return (
     <div className="container max-w-5xl mx-auto py-6 px-4 space-y-6">
-      <CreateRecipeHeader />
+      <CreateRecipeHeader 
+        onCancel={() => navigate("/my-recipes")}
+        showBackButton={false}
+      />
       
       <CreateRecipeTabsWrapper
         activeTab={activeTab}
@@ -173,10 +184,10 @@ export function CreateRecipeContainer() {
         stylePreferences={stylePreferences}
         setStylePreferences={setStylePreferences}
         isProcessing={isProcessing}
-        onProcessText={handleProcessText}
-        onImportFromUrl={handleImportFromUrl}
-        onProcessImage={handleProcessImage}
-        onGenerateRecipe={handleGenerateRecipe}
+        onProcessText={onProcessText}
+        onImportFromUrl={onImportFromUrl}
+        onProcessImage={onProcessImage}
+        onGenerateRecipe={onGenerateRecipe}
       />
 
       <CreateRecipeActions
