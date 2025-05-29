@@ -9,6 +9,84 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      community_recipes: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          category: string | null
+          cook_time: number | null
+          created_at: string | null
+          cuisine: string | null
+          description: string | null
+          difficulty_level: string | null
+          id: string
+          image_credit: string | null
+          image_url: string | null
+          is_active: boolean | null
+          is_approved: boolean | null
+          prep_time: number | null
+          reported_count: number | null
+          save_count: number | null
+          servings: number | null
+          source_url: string
+          submitted_by: string
+          submitted_by_name: string | null
+          title: string
+          updated_at: string | null
+          view_count: number | null
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          category?: string | null
+          cook_time?: number | null
+          created_at?: string | null
+          cuisine?: string | null
+          description?: string | null
+          difficulty_level?: string | null
+          id?: string
+          image_credit?: string | null
+          image_url?: string | null
+          is_active?: boolean | null
+          is_approved?: boolean | null
+          prep_time?: number | null
+          reported_count?: number | null
+          save_count?: number | null
+          servings?: number | null
+          source_url: string
+          submitted_by: string
+          submitted_by_name?: string | null
+          title: string
+          updated_at?: string | null
+          view_count?: number | null
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          category?: string | null
+          cook_time?: number | null
+          created_at?: string | null
+          cuisine?: string | null
+          description?: string | null
+          difficulty_level?: string | null
+          id?: string
+          image_credit?: string | null
+          image_url?: string | null
+          is_active?: boolean | null
+          is_approved?: boolean | null
+          prep_time?: number | null
+          reported_count?: number | null
+          save_count?: number | null
+          servings?: number | null
+          source_url?: string
+          submitted_by?: string
+          submitted_by_name?: string | null
+          title?: string
+          updated_at?: string | null
+          view_count?: number | null
+        }
+        Relationships: []
+      }
       feedback_suggestions: {
         Row: {
           created_at: string
@@ -534,16 +612,23 @@ export type Database = {
       }
       recipes: {
         Row: {
-          categories: Database["public"]["Enums"]["recipe_category"][] | null
+          complexity_level:
+            | Database["public"]["Enums"]["complexity_level"]
+            | null
           cook_time: number | null
+          cooking_method: Database["public"]["Enums"]["cooking_method"] | null
           created_at: string | null
+          cuisine_region: Database["public"]["Enums"]["cuisine_region"] | null
           description: string | null
+          diet_lifestyle: Database["public"]["Enums"]["diet_lifestyle"][] | null
           household_id: string
           id: string
           image: string | null
           ingredients: string[]
           instructions: string[]
           is_favorite: boolean | null
+          main_ingredient: Database["public"]["Enums"]["main_ingredient"] | null
+          meal_type: Database["public"]["Enums"]["meal_type"] | null
           prep_time: number | null
           servings: number | null
           title: string
@@ -552,16 +637,27 @@ export type Database = {
           user_id: string
         }
         Insert: {
-          categories?: Database["public"]["Enums"]["recipe_category"][] | null
+          complexity_level?:
+            | Database["public"]["Enums"]["complexity_level"]
+            | null
           cook_time?: number | null
+          cooking_method?: Database["public"]["Enums"]["cooking_method"] | null
           created_at?: string | null
+          cuisine_region?: Database["public"]["Enums"]["cuisine_region"] | null
           description?: string | null
+          diet_lifestyle?:
+            | Database["public"]["Enums"]["diet_lifestyle"][]
+            | null
           household_id: string
           id?: string
           image?: string | null
           ingredients?: string[]
           instructions?: string[]
           is_favorite?: boolean | null
+          main_ingredient?:
+            | Database["public"]["Enums"]["main_ingredient"]
+            | null
+          meal_type?: Database["public"]["Enums"]["meal_type"] | null
           prep_time?: number | null
           servings?: number | null
           title: string
@@ -570,16 +666,27 @@ export type Database = {
           user_id: string
         }
         Update: {
-          categories?: Database["public"]["Enums"]["recipe_category"][] | null
+          complexity_level?:
+            | Database["public"]["Enums"]["complexity_level"]
+            | null
           cook_time?: number | null
+          cooking_method?: Database["public"]["Enums"]["cooking_method"] | null
           created_at?: string | null
+          cuisine_region?: Database["public"]["Enums"]["cuisine_region"] | null
           description?: string | null
+          diet_lifestyle?:
+            | Database["public"]["Enums"]["diet_lifestyle"][]
+            | null
           household_id?: string
           id?: string
           image?: string | null
           ingredients?: string[]
           instructions?: string[]
           is_favorite?: boolean | null
+          main_ingredient?:
+            | Database["public"]["Enums"]["main_ingredient"]
+            | null
+          meal_type?: Database["public"]["Enums"]["meal_type"] | null
           prep_time?: number | null
           servings?: number | null
           title?: string
@@ -642,11 +749,39 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          role: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      approve_community_recipe: {
+        Args: { recipe_id: string }
+        Returns: undefined
+      }
       create_household_with_owner: {
         Args: { household_name: string }
         Returns: string
@@ -667,9 +802,25 @@ export type Database = {
         Args: { user_id: string }
         Returns: string[]
       }
+      has_role: {
+        Args: { _user_id: string; _role: string }
+        Returns: boolean
+      }
+      increment_community_recipe_save_count: {
+        Args: { recipe_id: string }
+        Returns: undefined
+      }
+      increment_community_recipe_view_count: {
+        Args: { recipe_id: string }
+        Returns: undefined
+      }
       increment_share_view_count: {
         Args: { share_id: string }
         Returns: undefined
+      }
+      is_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
       }
       is_household_member: {
         Args: { household_id: string; user_id: string }
@@ -691,11 +842,85 @@ export type Database = {
         Args: { check_household_id: string; check_user_id: string }
         Returns: boolean
       }
+      reject_community_recipe: {
+        Args: { recipe_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       approval_request_status: "pending" | "approved" | "rejected" | "expired"
+      complexity_level: "quick_easy" | "standard" | "complex"
+      cooking_method:
+        | "one_pot"
+        | "oven_baked"
+        | "air_fryer"
+        | "slow_cooker"
+        | "pressure_cooker"
+        | "bbq_grilled"
+        | "stir_fried"
+        | "roasted"
+        | "raw_no_cook"
+      cuisine_region:
+        | "british"
+        | "american"
+        | "italian"
+        | "french"
+        | "mexican"
+        | "indian"
+        | "chinese"
+        | "japanese"
+        | "thai"
+        | "mediterranean"
+        | "middle_eastern"
+        | "african"
+        | "korean"
+        | "caribbean"
+        | "nordic"
+        | "eastern_european"
+      diet_lifestyle:
+        | "vegetarian"
+        | "vegan"
+        | "pescatarian"
+        | "gluten_free"
+        | "dairy_free"
+        | "low_carb_keto"
+        | "high_protein"
+        | "paleo"
+        | "diabetic_friendly"
+        | "budget_meals"
+        | "kid_friendly"
+        | "pregnancy_safe"
       household_role: "owner" | "member"
       invitation_status: "pending" | "accepted" | "declined" | "expired"
+      main_ingredient:
+        | "chicken"
+        | "beef"
+        | "pork"
+        | "lamb"
+        | "fish"
+        | "tofu_tempeh"
+        | "eggs"
+        | "cheese"
+        | "pasta"
+        | "rice"
+        | "lentils_beans"
+        | "vegetables"
+        | "potatoes"
+        | "fruit"
+        | "nuts_seeds"
+        | "chocolate"
+      meal_type:
+        | "breakfast"
+        | "lunch"
+        | "dinner"
+        | "snacks"
+        | "sides"
+        | "desserts"
+        | "drinks"
+        | "sauces_dips"
+        | "soups_stews"
+        | "salads"
+        | "baking_breads"
       recipe_category:
         | "Bulk"
         | "Easy"
@@ -830,8 +1055,83 @@ export const Constants = {
   public: {
     Enums: {
       approval_request_status: ["pending", "approved", "rejected", "expired"],
+      complexity_level: ["quick_easy", "standard", "complex"],
+      cooking_method: [
+        "one_pot",
+        "oven_baked",
+        "air_fryer",
+        "slow_cooker",
+        "pressure_cooker",
+        "bbq_grilled",
+        "stir_fried",
+        "roasted",
+        "raw_no_cook",
+      ],
+      cuisine_region: [
+        "british",
+        "american",
+        "italian",
+        "french",
+        "mexican",
+        "indian",
+        "chinese",
+        "japanese",
+        "thai",
+        "mediterranean",
+        "middle_eastern",
+        "african",
+        "korean",
+        "caribbean",
+        "nordic",
+        "eastern_european",
+      ],
+      diet_lifestyle: [
+        "vegetarian",
+        "vegan",
+        "pescatarian",
+        "gluten_free",
+        "dairy_free",
+        "low_carb_keto",
+        "high_protein",
+        "paleo",
+        "diabetic_friendly",
+        "budget_meals",
+        "kid_friendly",
+        "pregnancy_safe",
+      ],
       household_role: ["owner", "member"],
       invitation_status: ["pending", "accepted", "declined", "expired"],
+      main_ingredient: [
+        "chicken",
+        "beef",
+        "pork",
+        "lamb",
+        "fish",
+        "tofu_tempeh",
+        "eggs",
+        "cheese",
+        "pasta",
+        "rice",
+        "lentils_beans",
+        "vegetables",
+        "potatoes",
+        "fruit",
+        "nuts_seeds",
+        "chocolate",
+      ],
+      meal_type: [
+        "breakfast",
+        "lunch",
+        "dinner",
+        "snacks",
+        "sides",
+        "desserts",
+        "drinks",
+        "sauces_dips",
+        "soups_stews",
+        "salads",
+        "baking_breads",
+      ],
       recipe_category: [
         "Bulk",
         "Easy",

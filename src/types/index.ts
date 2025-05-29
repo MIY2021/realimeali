@@ -1,8 +1,14 @@
+
 export type User = {
   id: string;
   name: string;
   email: string;
   avatar?: string;
+  user_metadata?: {
+    name?: string;
+    avatar_url?: string;
+    full_name?: string;
+  };
 };
 
 // Updated to match the database schema exactly
@@ -62,4 +68,31 @@ export type MealPlan = {
   originalServings?: number; // Total servings from original recipe
   householdId: string; // household id
   weekNumber: number; // Added weekNumber property
+};
+
+export type Household = {
+  id: string;
+  name: string;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type HouseholdMember = {
+  id: string;
+  householdId: string;
+  userId: string;
+  role: 'admin' | 'member';
+  joinedAt: string;
+  user?: User;
+};
+
+export type JoinRequest = {
+  id: string;
+  householdId: string;
+  userId: string;
+  status: 'pending' | 'approved' | 'rejected';
+  createdAt: string;
+  user?: User;
+  household?: Household;
 };

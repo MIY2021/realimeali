@@ -1,81 +1,104 @@
 
-import { createContext, useContext, useEffect, useState } from "react";
-import { Session, User } from "@supabase/supabase-js";
-import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
-import { ProfileSetupDialog } from "@/components/auth/ProfileSetupDialog";
-import { useProfileSetup } from "@/hooks/useProfileSetup";
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { User } from '@/types';
 
-type AuthContextType = {
+interface AuthContextType {
   user: User | null;
-  session: Session | null;
   isLoading: boolean;
+  signIn: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string, name: string) => Promise<void>;
   signOut: () => Promise<void>;
-};
+}
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const navigate = useNavigate();
 
+  // Mock user for development
   useEffect(() => {
-    // Set up auth state listener FIRST
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        setIsLoading(false);
-      }
-    );
-
-    // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
+    // Simulate loading and set mock user
+    setTimeout(() => {
+      setUser({
+        id: 'mock-user-1',
+        name: 'Mock User',
+        email: 'mock@example.com',
+        avatar: undefined,
+        user_metadata: {
+          name: 'Mock User',
+          full_name: 'Mock User',
+          avatar_url: undefined,
+        }
+      });
       setIsLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
+    }, 1000);
   }, []);
 
-  const signOut = async () => {
-    await supabase.auth.signOut();
-    navigate("/login");
+  const signIn = async (email: string, password: string) => {
+    setIsLoading(true);
+    // Mock sign in
+    setTimeout(() => {
+      setUser({
+        id: 'mock-user-1',
+        name: 'Mock User',
+        email: email,
+        avatar: undefined,
+        user_metadata: {
+          name: 'Mock User',
+          full_name: 'Mock User',
+          avatar_url: undefined,
+        }
+      });
+      setIsLoading(false);
+    }, 1000);
   };
 
-  const value = {
-    user,
-    session,
-    isLoading,
-    signOut,
+  const signUp = async (email: string, password: string, name: string) => {
+    setIsLoading(true);
+    // Mock sign up
+    setTimeout(() => {
+      setUser({
+        id: 'mock-user-1',
+        name: name,
+        email: email,
+        avatar: undefined,
+        user_metadata: {
+          name: name,
+          full_name: name,
+          avatar_url: undefined,
+        }
+      });
+      setIsLoading(false);
+    }, 1000);
+  };
+
+  const signOut = async () => {
+    setIsLoading(true);
+    // Mock sign out
+    setTimeout(() => {
+      setUser(null);
+      setIsLoading(false);
+    }, 500);
   };
 
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider value={{
+      user,
+      isLoading,
+      signIn,
+      signUp,
+      signOut,
+    }}>
       {children}
-      <ProfileSetupWrapper />
     </AuthContext.Provider>
   );
-};
+}
 
-const ProfileSetupWrapper = () => {
-  const { needsSetup, completeSetup } = useProfileSetup();
-  
-  return (
-    <ProfileSetupDialog 
-      isOpen={needsSetup} 
-      onComplete={completeSetup}
-    />
-  );
-};
-
-export const useAuth = () => {
+export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider");
+    throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
-};
+}

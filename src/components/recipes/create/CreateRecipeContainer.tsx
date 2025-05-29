@@ -9,7 +9,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 
 export function CreateRecipeContainer() {
   const isMobile = useIsMobile();
-  const [activeTab, setActiveTab] = useState("text");
+  const [activeTab, setActiveTab] = useState("url"); // Start with URL tab as suggested
 
   const recipeFormHook = useRecipeForm();
   const recipeProcessingHook = useRecipeProcessing();
