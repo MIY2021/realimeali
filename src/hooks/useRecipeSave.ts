@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
+import { useCommunityRecipes } from "@/hooks/useCommunityRecipes";
 import { Recipe } from "@/types";
 
 export function useRecipeSave() {
@@ -11,6 +12,7 @@ export function useRecipeSave() {
   const { createRecipe } = useRecipes();
   const { user } = useAuth();
   const { currentHousehold } = useHousehold();
+  const { submitCommunityRecipe } = useCommunityRecipes();
 
   const handleSave = async (
     newRecipe: Omit<Recipe, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>, 
@@ -89,17 +91,51 @@ export function useRecipeSave() {
       console.log("✅ Recipe creation response:", recipe);
       
       if (recipe) {
-        // If user wants to share with community, handle that here
+        // If user wants to share with community, submit it
         if (shareWithCommunity) {
-          console.log("🌍 User wants to share with community - this would trigger community submission");
-          // Note: Community sharing logic would be implemented here
-          // For now, just log the intent
+          console.log("🌍 Submitting recipe to community...");
+          
+          // Try to extract source URL from description or other fields
+          const sourceUrl = newRecipe.description?.match(/https?:\/\/[^\s]+/)?.[0] || 
+                           window.location.origin + `/my-recipes/${recipe.id}`;
+          
+          const communityData = {
+            title: recipe.title,
+            description: recipe.description,
+            source_url: sourceUrl,
+            image_url: recipe.image,
+            prep_time: recipe.prepTime,
+            cook_time: recipe.cookTime,
+            servings: recipe.servings,
+            category: recipe.categories?.[0] || null,
+            cuisine: recipe.categories?.find(cat => 
+              ['Italian', 'Chinese', 'Mexican', 'Indian', 'French', 'Thai', 'Japanese'].includes(cat)
+            ) || null,
+            difficulty_level: recipe.categories?.includes('Easy') ? 'Easy' : 
+                             recipe.categories?.includes('Medium') ? 'Medium' : 
+                             recipe.categories?.includes('Hard') ? 'Hard' : 'Easy'
+          };
+          
+          const submitted = await submitCommunityRecipe(communityData);
+          
+          if (submitted) {
+            console.log("✅ Recipe successfully submitted to community");
+            toast.success("Recipe saved and shared!", {
+              description: `${recipe.title} has been added to your recipes and submitted to the community for review.`,
+            });
+          } else {
+            console.log("❌ Community submission failed, but recipe was saved");
+            toast.success("Recipe saved!", {
+              description: `${recipe.title} has been added to your recipes. Community sharing failed but recipe is saved.`,
+            });
+          }
+        } else {
+          console.log("🎉 Recipe created successfully, no community sharing requested");
+          toast.success("Recipe saved!", {
+            description: `${recipe.title} has been added to your recipes.`,
+          });
         }
         
-        console.log("🎉 Recipe created successfully, navigating to /my-recipes");
-        toast.success("Recipe saved!", {
-          description: `${recipe.title} has been added to your recipes.${shareWithCommunity ? ' Community sharing request noted!' : ''}`,
-        });
         navigate("/my-recipes");
       } else {
         console.error("❌ Recipe creation returned null/undefined");

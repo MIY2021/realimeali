@@ -720,11 +720,39 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          role: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      approve_community_recipe: {
+        Args: { recipe_id: string }
+        Returns: undefined
+      }
       create_household_with_owner: {
         Args: { household_name: string }
         Returns: string
@@ -745,6 +773,10 @@ export type Database = {
         Args: { user_id: string }
         Returns: string[]
       }
+      has_role: {
+        Args: { _user_id: string; _role: string }
+        Returns: boolean
+      }
       increment_community_recipe_save_count: {
         Args: { recipe_id: string }
         Returns: undefined
@@ -756,6 +788,10 @@ export type Database = {
       increment_share_view_count: {
         Args: { share_id: string }
         Returns: undefined
+      }
+      is_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
       }
       is_household_member: {
         Args: { household_id: string; user_id: string }
@@ -776,6 +812,10 @@ export type Database = {
       is_user_household_owner: {
         Args: { check_household_id: string; check_user_id: string }
         Returns: boolean
+      }
+      reject_community_recipe: {
+        Args: { recipe_id: string }
+        Returns: undefined
       }
     }
     Enums: {
