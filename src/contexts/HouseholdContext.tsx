@@ -1,3 +1,4 @@
+
 import React, {
   createContext,
   useContext,
@@ -6,7 +7,7 @@ import React, {
   useCallback,
 } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { AuthContext } from './AuthContext';
+import { useAuth } from './AuthContext';
 import { Household, HouseholdMember, HouseholdJoinRequest } from '@/types';
 
 interface HouseholdContextType {
@@ -16,11 +17,13 @@ interface HouseholdContextType {
   setHouseholdMembers: React.Dispatch<React.SetStateAction<HouseholdMember[]>>;
   joinRequests: HouseholdJoinRequest[];
   setJoinRequests: React.Dispatch<React.SetStateAction<HouseholdJoinRequest[]>>;
+  households: Household[];
   isLoadingHousehold: boolean;
   isLoadingMembers: boolean;
   createHousehold: (name: string) => Promise<Household | null>;
   updateHousehold: (id: string, updates: Partial<Household>) => Promise<Household | null>;
   joinHousehold: (householdId: string) => Promise<boolean>;
+  requestToJoinHousehold: (householdCode: string) => Promise<boolean>;
   leaveHousehold: (householdId: string) => Promise<boolean>;
   removeMember: (memberId: string, memberUserId: string) => Promise<boolean>;
   fetchJoinRequests: () => Promise<void>;
@@ -41,12 +44,31 @@ export function useHousehold(): HouseholdContextType {
 }
 
 export function HouseholdProvider({ children }: { children: React.ReactNode }) {
-  const { user } = useContext(AuthContext);
+  const { user } = useAuth();
   const [currentHousehold, setCurrentHousehold] = useState<Household | null>(null);
   const [householdMembers, setHouseholdMembers] = useState<HouseholdMember[]>([]);
   const [joinRequests, setJoinRequests] = useState<HouseholdJoinRequest[]>([]);
+  const [households, setHouseholds] = useState<Household[]>([]);
   const [isLoadingHousehold, setIsLoadingHousehold] = useState(false);
   const [isLoadingMembers, setIsLoadingMembers] = useState(false);
+
+  // Transform database response to frontend format
+  const transformHousehold = (dbHousehold: any): Household => ({
+    id: dbHousehold.id,
+    name: dbHousehold.name,
+    createdAt: dbHousehold.created_at,
+    updatedAt: dbHousehold.updated_at,
+    createdBy: dbHousehold.created_by,
+  });
+
+  const transformJoinRequest = (dbRequest: any): HouseholdJoinRequest => ({
+    id: dbRequest.id,
+    householdId: dbRequest.household_id,
+    userId: dbRequest.user_id,
+    status: dbRequest.status,
+    createdAt: dbRequest.created_at,
+    updatedAt: dbRequest.updated_at,
+  });
 
   const fetchJoinRequests = useCallback(async () => {
     if (!currentHousehold) return;
@@ -60,7 +82,7 @@ export function HouseholdProvider({ children }: { children: React.ReactNode }) {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setJoinRequests(data || []);
+      setJoinRequests((data || []).map(transformJoinRequest));
     } catch (error) {
       console.error('Error fetching join requests:', error);
       setJoinRequests([]);
@@ -104,7 +126,7 @@ export function HouseholdProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      setCurrentHousehold(householdData);
+      setCurrentHousehold(transformHousehold(householdData));
     } catch (error) {
       console.error('Error fetching household:', error);
       setCurrentHousehold(null);
@@ -126,6 +148,7 @@ export function HouseholdProvider({ children }: { children: React.ReactNode }) {
         .select(`
           id,
           user_id,
+          household_id,
           role,
           joined_at,
           profiles (
@@ -141,8 +164,11 @@ export function HouseholdProvider({ children }: { children: React.ReactNode }) {
       const membersWithProfiles = data.map((member) => ({
         id: member.id,
         userId: member.user_id,
+        householdId: member.household_id,
         role: member.role,
         joinedAt: member.joined_at,
+        createdAt: member.joined_at, // Use joined_at as createdAt
+        updatedAt: member.joined_at, // Use joined_at as updatedAt
         profile: member.profiles
           ? {
               fullName: member.profiles.full_name,
@@ -190,7 +216,7 @@ export function HouseholdProvider({ children }: { children: React.ReactNode }) {
 
       await fetchHousehold();
       await fetchHouseholdMembers();
-      return householdData;
+      return transformHousehold(householdData);
     } catch (error) {
       console.error('Error creating household:', error);
       return null;
@@ -211,23 +237,25 @@ export function HouseholdProvider({ children }: { children: React.ReactNode }) {
 
       if (error) throw error;
 
-      setCurrentHousehold(data);
-      return data;
+      const transformed = transformHousehold(data);
+      setCurrentHousehold(transformed);
+      return transformed;
     } catch (error) {
       console.error('Error updating household:', error);
       return null;
     }
   };
 
-  const joinHousehold = async (householdId: string): Promise<boolean> => {
+  const requestToJoinHousehold = async (householdCode: string): Promise<boolean> => {
     if (!user) return false;
 
     try {
-      // Check if the user already has a pending join request for this household
+      // For now, treat householdCode as household ID
+      // In a real implementation, you'd look up the household by code
       const { data: existingRequest, error: existingRequestError } = await supabase
         .from('household_join_requests')
         .select('*')
-        .eq('household_id', householdId)
+        .eq('household_id', householdCode)
         .eq('user_id', user.id)
         .eq('status', 'pending')
         .maybeSingle();
@@ -246,7 +274,7 @@ export function HouseholdProvider({ children }: { children: React.ReactNode }) {
         .from('household_join_requests')
         .insert([
           {
-            household_id: householdId,
+            household_id: householdCode,
             user_id: user.id,
             status: 'pending',
           },
@@ -258,6 +286,10 @@ export function HouseholdProvider({ children }: { children: React.ReactNode }) {
       console.error('Error requesting to join household:', error);
       return false;
     }
+  };
+
+  const joinHousehold = async (householdId: string): Promise<boolean> => {
+    return requestToJoinHousehold(householdId);
   };
 
   const leaveHousehold = async (householdId: string): Promise<boolean> => {
@@ -350,11 +382,13 @@ export function HouseholdProvider({ children }: { children: React.ReactNode }) {
     setHouseholdMembers,
     joinRequests,
     setJoinRequests,
+    households,
     isLoadingHousehold,
     isLoadingMembers,
     createHousehold,
     updateHousehold,
     joinHousehold,
+    requestToJoinHousehold,
     leaveHousehold,
     removeMember,
     fetchJoinRequests,

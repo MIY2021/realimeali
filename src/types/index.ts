@@ -97,6 +97,7 @@ export interface PublicRecipeShare {
 export interface UserProfile {
   id: string;
   email: string;
+  fullName?: string;
   firstName?: string;
   lastName?: string;
   avatarUrl?: string;

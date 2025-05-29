@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import {
   MealPlanReplaceDialog,
@@ -21,7 +22,7 @@ interface MealPlannerModalsProps {
   weekNumber: 1 | 2;
   onReplaceMealPlan: () => void;
   mealSlot:
-    | { date: string; mealType: string; slotIndex: number }
+    | { date: string; mealType: MealType; slotIndex: number }
     | undefined;
   onAddRecipe: (recipeId: string, servings: number) => Promise<void>;
   onAddMeal: (mealType: MealType, servings: number) => void;
@@ -38,6 +39,7 @@ export function MealPlannerModals({
   onReplaceMealPlan,
   mealSlot,
   onAddRecipe,
+  onAddMeal,
 }: MealPlannerModalsProps) {
   const [isQuantityDialogOpen, setIsQuantityDialogOpen] = useState(false);
   const [pendingMeal, setPendingMeal] = useState<{ mealType: MealType; recipeName: string } | null>(null);

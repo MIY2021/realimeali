@@ -79,3 +79,6 @@ export const useAuth = () => {
   }
   return context;
 };
+
+// Export the context itself
+export { AuthContext };

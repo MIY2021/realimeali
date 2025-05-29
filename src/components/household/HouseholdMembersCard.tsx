@@ -102,13 +102,13 @@ export const HouseholdMembersCard = ({ members, isOwner, onRemoveMember, isLoadi
     totalMembers: members.length,
     members: members.map(m => ({
       id: m.id,
-      user_id: m.user_id,
+      userId: m.userId,
       role: m.role,
       profile: {
-        full_name: m.profile?.full_name,
+        fullName: m.profile?.fullName,
         email: m.profile?.email,
-        avatar_url: m.profile?.avatar_url,
-        hasAvatarUrl: !!m.profile?.avatar_url
+        avatarUrl: m.profile?.avatarUrl,
+        hasAvatarUrl: !!m.profile?.avatarUrl
       }
     })),
     imageErrors: Array.from(imageErrors),
@@ -155,27 +155,27 @@ export const HouseholdMembersCard = ({ members, isOwner, onRemoveMember, isLoadi
                     <div className="relative">
                       <Avatar className="h-8 w-8 flex-shrink-0">
                         <AvatarImage 
-                          src={member.profile?.avatar_url} 
-                          alt={member.profile?.full_name || 'User'}
-                          onError={() => handleImageError(member.id, member.profile?.avatar_url)}
-                          onLoad={() => handleImageLoad(member.id, member.profile?.avatar_url)}
+                          src={member.profile?.avatarUrl} 
+                          alt={member.profile?.fullName || 'User'}
+                          onError={() => handleImageError(member.id, member.profile?.avatarUrl)}
+                          onLoad={() => handleImageLoad(member.id, member.profile?.avatarUrl)}
                           className="object-cover"
                         />
                         <AvatarFallback className="bg-terracotta/20 text-terracotta">
-                          {member.profile?.full_name 
-                            ? member.profile.full_name.charAt(0).toUpperCase()
+                          {member.profile?.fullName 
+                            ? member.profile.fullName.charAt(0).toUpperCase()
                             : <User className="h-4 w-4" />
                           }
                         </AvatarFallback>
                       </Avatar>
-                      {imageErrors.has(member.id) && member.profile?.avatar_url && (
+                      {imageErrors.has(member.id) && member.profile?.avatarUrl && (
                         <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border border-white" 
                              title="Avatar failed to load" />
                       )}
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="font-medium truncate">
-                        {member.profile?.full_name || 'Unknown User'}
+                        {member.profile?.fullName || 'Unknown User'}
                       </p>
                       <p className="text-sm text-muted-foreground truncate">
                         {member.profile?.email || 'No email available'}
@@ -186,7 +186,7 @@ export const HouseholdMembersCard = ({ members, isOwner, onRemoveMember, isLoadi
                     <Badge variant={member.role === 'owner' ? 'default' : 'secondary'}>
                       {member.role}
                     </Badge>
-                    {isOwner && member.user_id !== user?.id && (
+                    {isOwner && member.userId !== user?.id && (
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <Button
@@ -206,13 +206,13 @@ export const HouseholdMembersCard = ({ members, isOwner, onRemoveMember, isLoadi
                           <AlertDialogHeader>
                             <AlertDialogTitle>Remove Member</AlertDialogTitle>
                             <AlertDialogDescription>
-                              Are you sure you want to remove <strong>{member.profile?.full_name || 'this member'}</strong> from the household? This action cannot be undone.
+                              Are you sure you want to remove <strong>{member.profile?.fullName || 'this member'}</strong> from the household? This action cannot be undone.
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
                             <AlertDialogCancel>Cancel</AlertDialogCancel>
                             <AlertDialogAction
-                              onClick={() => handleRemoveMember(member.id, member.user_id, member.profile?.full_name || 'Unknown User')}
+                              onClick={() => handleRemoveMember(member.id, member.userId, member.profile?.fullName || 'Unknown User')}
                               className="bg-red-500 hover:bg-red-600"
                               disabled={removingMember === member.id}
                             >
