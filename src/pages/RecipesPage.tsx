@@ -12,6 +12,7 @@ import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useScrollPosition } from "@/hooks/useScrollPosition";
 import { useNavigationState } from "@/hooks/useNavigationState";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { mockRecipes } from "@/data/mockRecipes";
 
 export default function RecipesPage() {
   useDocumentTitle("My Recipes | RealiMeali");
@@ -26,6 +27,9 @@ export default function RecipesPage() {
   // Load recipes automatically
   useRecipesLoader();
 
+  // Use mock recipes if no real recipes are available
+  const displayRecipes = recipes.length > 0 ? recipes : mockRecipes;
+
   // Set up scroll position tracking for this page with enhanced restoration
   useEffect(() => {
     setScrollKey('recipes');
@@ -36,7 +40,7 @@ export default function RecipesPage() {
       console.log('Restoring scroll position on recipes page');
       
       // Wait for recipes to load before attempting scroll restoration
-      if (!isLoading && recipes.length > 0) {
+      if (!isLoading && displayRecipes.length > 0) {
         const currentLayout = localStorage.getItem('mobileRecipeLayout') || '1';
         restoreScrollPosition('recipes', currentLayout);
         
@@ -46,7 +50,7 @@ export default function RecipesPage() {
         clearNavigationState();
       }
     }
-  }, [setScrollKey, restoreScrollPosition, navigationState.shouldRestoreScroll, isLoading, recipes.length, clearNavigationState]);
+  }, [setScrollKey, restoreScrollPosition, navigationState.shouldRestoreScroll, isLoading, displayRecipes.length, clearNavigationState]);
 
   return (
     <div className="container max-w-7xl py-4 px-4 sm:py-8 sm:px-6">
@@ -92,7 +96,7 @@ export default function RecipesPage() {
         </div>
       ) : (
         <RecipeList 
-          recipes={recipes}
+          recipes={displayRecipes}
           isLoading={isLoading}
         />
       )}

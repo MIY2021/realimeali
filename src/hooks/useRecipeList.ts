@@ -1,6 +1,7 @@
 
 import { useState, useMemo } from "react";
-import { Recipe } from "@/types";
+import { Recipe, MealType, Cuisine, DietLifestyle, ComplexityLevel } from "@/types";
+import { ToggleRecipeFilters } from "@/components/recipes/ToggleRecipeFilters";
 
 interface UseRecipeListProps {
   recipes: Recipe[];
@@ -11,18 +12,57 @@ export function useRecipeList({ recipes }: UseRecipeListProps) {
   const [sortBy, setSortBy] = useState<"title" | "prepTime" | "cookTime">("title");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [visibleCount, setVisibleCount] = useState(12);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [filters, setFilters] = useState<ToggleRecipeFilters>({
+    searchTerm: "",
+    mealTypes: [],
+    cuisines: [],
+    dietLifestyle: [],
+    complexityLevels: [],
+  });
 
   const filteredAndSortedRecipes = useMemo(() => {
     let filtered = recipes;
 
     // Filter by search term
-    if (searchTerm) {
+    const searchQuery = searchTerm || filters.searchTerm;
+    if (searchQuery) {
       filtered = recipes.filter(recipe =>
-        recipe.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        recipe.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        recipe.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        recipe.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
         recipe.ingredients.some(ingredient => 
-          ingredient.toLowerCase().includes(searchTerm.toLowerCase())
+          ingredient.toLowerCase().includes(searchQuery.toLowerCase())
         )
+      );
+    }
+
+    // Filter by meal types
+    if (filters.mealTypes.length > 0) {
+      filtered = filtered.filter(recipe => 
+        recipe.mealType && filters.mealTypes.includes(recipe.mealType)
+      );
+    }
+
+    // Filter by cuisines
+    if (filters.cuisines.length > 0) {
+      filtered = filtered.filter(recipe => 
+        recipe.cuisine && filters.cuisines.includes(recipe.cuisine)
+      );
+    }
+
+    // Filter by diet/lifestyle
+    if (filters.dietLifestyle.length > 0) {
+      filtered = filtered.filter(recipe => 
+        recipe.dietLifestyle && recipe.dietLifestyle.some(diet => 
+          filters.dietLifestyle.includes(diet)
+        )
+      );
+    }
+
+    // Filter by complexity levels
+    if (filters.complexityLevels.length > 0) {
+      filtered = filtered.filter(recipe => 
+        recipe.complexityLevel && filters.complexityLevels.includes(recipe.complexityLevel)
       );
     }
 
@@ -54,13 +94,22 @@ export function useRecipeList({ recipes }: UseRecipeListProps) {
     });
 
     return filtered;
-  }, [recipes, searchTerm, sortBy, sortOrder]);
+  }, [recipes, searchTerm, filters, sortBy, sortOrder]);
 
   const visibleRecipes = filteredAndSortedRecipes.slice(0, visibleCount);
   const hasMoreRecipes = visibleCount < filteredAndSortedRecipes.length;
 
   const handleLoadMore = () => {
     setVisibleCount(prev => prev + 12);
+  };
+
+  const handleFiltersChange = (newFilters: ToggleRecipeFilters) => {
+    setFilters(newFilters);
+    setVisibleCount(12); // Reset visible count when filters change
+  };
+
+  const toggleFilters = () => {
+    setFiltersOpen(!filtersOpen);
   };
 
   return {
@@ -70,6 +119,10 @@ export function useRecipeList({ recipes }: UseRecipeListProps) {
     setSortBy,
     sortOrder,
     setSortOrder,
+    filters,
+    handleFiltersChange,
+    filtersOpen,
+    toggleFilters,
     filteredAndSortedRecipes,
     visibleRecipes,
     hasMoreRecipes,

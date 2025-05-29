@@ -1,3 +1,4 @@
+
 export interface Recipe {
   id: string;
   title: string;
@@ -13,12 +14,10 @@ export interface Recipe {
   updatedAt: string;
   createdBy: string;
   householdId: string;
-  mealType?: string;
-  cuisineRegion?: string;
-  cookingMethod?: string;
-  complexityLevel?: string;
-  mainIngredient?: string;
-  dietLifestyle?: string[];
+  mealType?: MealType;
+  cuisine?: Cuisine;
+  dietLifestyle?: DietLifestyle[];
+  complexityLevel?: ComplexityLevel;
   slug?: string;
 }
 
@@ -100,6 +99,12 @@ export interface HouseholdMealPlan {
   };
 }
 
-// Align meal type definitions
-export type MealType = "breakfast" | "lunch" | "dinner" | "snacks";
+// New simplified category types
+export type MealType = "breakfast" | "lunch" | "dinner" | "snacks" | "sides" | "desserts" | "drinks";
 export type MealPlanMealType = MealType;
+
+export type Cuisine = "british" | "italian" | "asian" | "mexican" | "indian" | "mediterranean" | "american" | "french" | "middle_eastern" | "other";
+
+export type DietLifestyle = "vegetarian" | "vegan" | "gluten_free" | "dairy_free" | "low_carb" | "high_protein" | "budget_friendly" | "kid_friendly";
+
+export type ComplexityLevel = "quick_easy" | "standard" | "complex";

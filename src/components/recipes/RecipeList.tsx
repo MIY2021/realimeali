@@ -1,12 +1,20 @@
 
 import { Recipe } from "@/types";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { AddToMealPlanDialog } from "./AddToMealPlanDialog";
 import { useRecipeList } from "@/hooks/useRecipeList";
 import { useMobileLayout } from "@/hooks/useMobileLayout";
-import { RecipeFilters } from "./RecipeFilters";
 import { RecipeGrid } from "./RecipeGrid";
+import { ToggleRecipeFiltersComponent } from "./ToggleRecipeFilters";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface RecipeListProps {
   recipes: Recipe[];
@@ -31,6 +39,10 @@ export function RecipeList({
     setSortBy,
     sortOrder,
     setSortOrder,
+    filters,
+    handleFiltersChange,
+    filtersOpen,
+    toggleFilters,
     filteredAndSortedRecipes,
     visibleRecipes,
     hasMoreRecipes,
@@ -55,20 +67,49 @@ export function RecipeList({
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      <RecipeFilters
-        searchTerm={searchTerm}
-        onSearchChange={setSearchTerm}
-        sortBy={sortBy}
-        onSortChange={setSortBy}
-        sortOrder={sortOrder}
-        onSortOrderChange={setSortOrder}
-        mobileLayout={mobileLayout}
-        onMobileLayoutChange={handleMobileLayoutChange}
+      {/* Search and Sort Controls */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
+        <div className="flex-1">
+          <Input
+            placeholder="Search recipes..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full"
+          />
+        </div>
+        
+        <div className="w-full sm:w-48">
+          <Select value={`${sortBy}-${sortOrder}`} onValueChange={(value) => {
+            const [newSortBy, newSortOrder] = value.split('-');
+            setSortBy(newSortBy as "title" | "prepTime" | "cookTime");
+            setSortOrder(newSortOrder as "asc" | "desc");
+          }}>
+            <SelectTrigger className="text-sm sm:text-base">
+              <SelectValue placeholder="Sort by" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="title-asc">Title A-Z</SelectItem>
+              <SelectItem value="title-desc">Title Z-A</SelectItem>
+              <SelectItem value="prepTime-asc">Prep Time (Low to High)</SelectItem>
+              <SelectItem value="prepTime-desc">Prep Time (High to Low)</SelectItem>
+              <SelectItem value="cookTime-asc">Cook Time (Low to High)</SelectItem>
+              <SelectItem value="cookTime-desc">Cook Time (High to Low)</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {/* Toggle-based Filters */}
+      <ToggleRecipeFiltersComponent
+        filters={filters}
+        onFiltersChange={handleFiltersChange}
+        isOpen={filtersOpen}
+        onToggle={toggleFilters}
       />
       
       {filteredAndSortedRecipes.length === 0 ? (
         <div className="text-center py-8 px-4">
-          <p className="text-muted-foreground">No recipes found. Try adjusting your search.</p>
+          <p className="text-muted-foreground">No recipes found. Try adjusting your search or filters.</p>
         </div>
       ) : (
         <>
