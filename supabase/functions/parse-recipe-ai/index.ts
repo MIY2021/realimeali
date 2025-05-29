@@ -7,9 +7,68 @@ const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
 const supabaseUrl = Deno.env.get('SUPABASE_URL');
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
-const corsHeaders = {
+// Security headers
+const securityHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'X-Frame-Options': 'DENY',
+  'X-Content-Type-Options': 'nosniff',
+  'Referrer-Policy': 'strict-origin-when-cross-origin'
+};
+
+// Rate limiting
+const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
+const RATE_LIMIT = 10; // requests per minute
+const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
+
+// Input validation
+const validateUrl = (url: string): boolean => {
+  try {
+    const parsed = new URL(url);
+    return ['http:', 'https:'].includes(parsed.protocol) && url.length <= 2048;
+  } catch {
+    return false;
+  }
+};
+
+const validateText = (text: string): boolean => {
+  if (!text || text.length < 10 || text.length > 50000) return false;
+  
+  // Check for suspicious patterns
+  const suspiciousPatterns = [
+    /<script[^>]*>.*?<\/script>/gi,
+    /javascript:/gi,
+    /on\w+\s*=/gi,
+    /data:text\/html/gi
+  ];
+  
+  return !suspiciousPatterns.some(pattern => pattern.test(text));
+};
+
+const sanitizeText = (text: string): string => {
+  return text
+    .replace(/<script[^>]*>.*?<\/script>/gi, '')
+    .replace(/javascript:/gi, '')
+    .replace(/on\w+\s*=/gi, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+};
+
+const checkRateLimit = (identifier: string): boolean => {
+  const now = Date.now();
+  const userLimit = rateLimitMap.get(identifier);
+  
+  if (!userLimit || now > userLimit.resetTime) {
+    rateLimitMap.set(identifier, { count: 1, resetTime: now + RATE_LIMIT_WINDOW });
+    return true;
+  }
+  
+  if (userLimit.count >= RATE_LIMIT) {
+    return false;
+  }
+  
+  userLimit.count++;
+  return true;
 };
 
 // Helper function to extract structured recipe data from HTML
@@ -39,9 +98,6 @@ function extractTextFromHTML(html: string): string {
   // Remove script and style elements
   let cleanedHtml = html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
   cleanedHtml = cleanedHtml.replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '');
-  
-  // Preserve recipe-specific sections better
-  const recipeKeywords = ['recipe', 'ingredient', 'instruction', 'direction', 'method', 'preparation', 'cooking', 'prep', 'cook', 'serve', 'yield'];
   
   // Remove HTML tags and decode entities
   let text = cleanedHtml.replace(/<[^>]*>/g, ' ');
@@ -150,70 +206,87 @@ async function downloadAndStoreImage(imageUrl: string, filename: string): Promis
   }
 }
 
-// Helper function to validate and normalize URLs
-function isValidUrl(string: string): boolean {
-  try {
-    new URL(string);
-    return true;
-  } catch (_) {
-    return false;
-  }
-}
-
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: securityHeaders });
   }
 
   try {
     console.log('🚀 Recipe AI function called');
-    console.log('📝 OpenAI API key configured:', !!openAIApiKey);
     
-    if (!openAIApiKey) {
-      console.error('❌ No OpenAI API key found');
+    // Rate limiting check
+    const clientIp = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
+    if (!checkRateLimit(clientIp)) {
       return new Response(JSON.stringify({ 
-        error: 'OpenAI API key not configured. Please add your API key in the Supabase secrets.',
-        code: 'NO_API_KEY'
+        error: 'Rate limit exceeded. Please try again later.',
+        code: 'RATE_LIMIT_EXCEEDED'
       }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 429,
+        headers: { ...securityHeaders, 'Content-Type': 'application/json' },
       });
     }
 
+    // Validate API key
+    if (!openAIApiKey) {
+      console.error('❌ No OpenAI API key found');
+      return new Response(JSON.stringify({ 
+        error: 'Service temporarily unavailable',
+        code: 'SERVICE_ERROR'
+      }), {
+        status: 500,
+        headers: { ...securityHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Validate and sanitize request body
     let requestBody;
     try {
-      requestBody = await req.json();
-      console.log('📦 Request body received:', { 
-        hasRecipeText: !!requestBody.recipeText, 
-        hasImageUrl: !!requestBody.imageUrl,
-        hasWebsiteUrl: !!requestBody.websiteUrl,
-        extractImages: !!requestBody.extractImages,
-        downloadImages: !!requestBody.downloadImages,
-        recipeTextLength: requestBody.recipeText?.length || 0,
-        imageUrlLength: requestBody.imageUrl?.length || 0,
-        websiteUrlLength: requestBody.websiteUrl?.length || 0
-      });
+      const rawBody = await req.text();
+      if (rawBody.length > 100000) { // 100KB limit
+        throw new Error('Request too large');
+      }
+      requestBody = JSON.parse(rawBody);
     } catch (parseError) {
-      console.error('❌ Failed to parse request body:', parseError);
+      console.error('❌ Invalid request body:', parseError);
       return new Response(JSON.stringify({ 
-        error: 'Invalid request body format',
-        code: 'INVALID_REQUEST_BODY'
+        error: 'Invalid request format',
+        code: 'INVALID_REQUEST'
       }), {
         status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...securityHeaders, 'Content-Type': 'application/json' },
       });
     }
 
     const { recipeText, imageUrl, websiteUrl, extractImages, downloadImages } = requestBody;
     
-    if (!recipeText && !imageUrl && !websiteUrl) {
-      console.error('❌ No input provided');
+    // Input validation
+    if (websiteUrl && !validateUrl(websiteUrl)) {
       return new Response(JSON.stringify({ 
-        error: 'Please provide recipe text, an image URL, or a website URL',
+        error: 'Invalid website URL',
+        code: 'INVALID_URL'
+      }), {
+        status: 400,
+        headers: { ...securityHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (recipeText && !validateText(recipeText)) {
+      return new Response(JSON.stringify({ 
+        error: 'Invalid recipe text content',
+        code: 'INVALID_TEXT'
+      }), {
+        status: 400,
+        headers: { ...securityHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (!recipeText && !imageUrl && !websiteUrl) {
+      return new Response(JSON.stringify({ 
+        error: 'No input provided',
         code: 'NO_INPUT'
       }), {
         status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...securityHeaders, 'Content-Type': 'application/json' },
       });
     }
 
@@ -229,17 +302,6 @@ serve(async (req) => {
     if (websiteUrl) {
       console.log('🌐 Website URL provided:', websiteUrl.substring(0, 50) + '...');
       
-      if (!isValidUrl(websiteUrl)) {
-        console.error('❌ Invalid website URL format');
-        return new Response(JSON.stringify({ 
-          error: 'Please provide a valid website URL',
-          code: 'INVALID_URL'
-        }), {
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-
       try {
         console.log('📡 Fetching website content...');
         const websiteResponse = await fetch(websiteUrl, {
@@ -252,21 +314,32 @@ serve(async (req) => {
         if (!websiteResponse.ok) {
           console.error('❌ Failed to fetch website:', websiteResponse.status);
           return new Response(JSON.stringify({ 
-            error: `Could not access the website (${websiteResponse.status}). Please check the URL and try again.`,
+            error: `Could not access the website (${websiteResponse.status})`,
             code: 'WEBSITE_FETCH_ERROR'
           }), {
             status: 400,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            headers: { ...securityHeaders, 'Content-Type': 'application/json' },
           });
         }
 
         const htmlContent = await websiteResponse.text();
         
+        // Security: Limit HTML content size
+        if (htmlContent.length > 5000000) { // 5MB limit
+          return new Response(JSON.stringify({ 
+            error: 'Website content too large',
+            code: 'CONTENT_TOO_LARGE'
+          }), {
+            status: 400,
+            headers: { ...securityHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+        
         // Try to extract structured data first
         structuredData = extractStructuredData(htmlContent);
         console.log('🔍 Structured data found:', !!structuredData);
         
-        processedText = extractTextFromHTML(htmlContent);
+        processedText = sanitizeText(extractTextFromHTML(htmlContent));
         
         // Extract images if requested
         if (extractImages) {
@@ -277,7 +350,7 @@ serve(async (req) => {
           if (downloadImages && websiteImages.length > 0) {
             console.log('📥 Starting image downloads...');
             
-            for (let i = 0; i < websiteImages.length; i++) {
+            for (let i = 0; i < Math.min(websiteImages.length, 3); i++) { // Limit to 3 images
               const imageUrl = websiteImages[i];
               const timestamp = Date.now();
               const imageIndex = i + 1;
@@ -304,15 +377,15 @@ serve(async (req) => {
         if (processedText.length < 50) {
           console.error('❌ Insufficient content extracted from website');
           return new Response(JSON.stringify({ 
-            error: 'Could not extract enough content from the website. Please try a different URL or use the text input instead.',
+            error: 'Could not extract enough content from the website',
             code: 'INSUFFICIENT_CONTENT'
           }), {
             status: 400,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            headers: { ...securityHeaders, 'Content-Type': 'application/json' },
           });
         }
 
-        // Increase text limit to preserve more content
+        // Limit processed text to prevent token overflow
         if (processedText.length > 12000) {
           processedText = processedText.substring(0, 12000) + '...';
           console.log('⚠️ Text truncated to 12000 characters');
@@ -321,19 +394,18 @@ serve(async (req) => {
       } catch (fetchError) {
         console.error('❌ Error fetching website:', fetchError);
         return new Response(JSON.stringify({ 
-          error: 'Could not access the website. Please check the URL and try again.',
-          code: 'NETWORK_ERROR',
-          details: fetchError.message
+          error: 'Could not access the website',
+          code: 'NETWORK_ERROR'
         }), {
           status: 500,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          headers: { ...securityHeaders, 'Content-Type': 'application/json' },
         });
       }
     }
     // Handle text input
     else if (recipeText) {
       console.log('📝 Text input length:', recipeText.length);
-      processedText = recipeText;
+      processedText = sanitizeText(recipeText);
     }
     // Handle image input
     else if (imageUrl) {
@@ -343,11 +415,11 @@ serve(async (req) => {
       if (!imageUrl.startsWith('data:image/')) {
         console.error('❌ Invalid image format - must be base64 data URL');
         return new Response(JSON.stringify({ 
-          error: 'Invalid image format. Please upload a valid image file.',
+          error: 'Invalid image format',
           code: 'INVALID_IMAGE_FORMAT'
         }), {
           status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          headers: { ...securityHeaders, 'Content-Type': 'application/json' },
         });
       }
     }
@@ -356,13 +428,7 @@ serve(async (req) => {
     const messages = [
       {
         role: 'system',
-        content: `You are a recipe extraction expert. Your goal is to extract recipe information as faithfully as possible from the source content.
-
-        EXTRACTION PRIORITIES:
-        1. PRESERVE ORIGINAL TEXT: Extract ingredients and instructions exactly as written in the source
-        2. EXTRACT ORIGINAL DESCRIPTIONS: Use the actual description from the website if available
-        3. ESTIMATE ONLY WHEN MISSING: Only estimate prep/cook times and servings if not found in source
-        4. GENERATE DESCRIPTIONS: If no description exists in source, write a brief 1-2 sentence description
+        content: `You are a recipe extraction expert. Extract recipe information faithfully from the source content.
 
         Return a JSON object with these exact fields:
         {
@@ -379,11 +445,9 @@ serve(async (req) => {
         Guidelines:
         - Extract exact title as written in source
         - Use original description if found, otherwise generate brief description
-        - Copy ingredients and instructions exactly as written (preserve measurements, formatting)
+        - Copy ingredients and instructions exactly as written
         - Choose from these categories only: "Bulk", "Easy", "Cheap", "Healthy", "Vegetarian", "Fish", "Super Tasty", "Pasta", "Tapas", "Winter", "BBQ", "Faffy", "Pricey", "Not-Yet-Made", "Snacks", "Breakfast"
         - Extract exact prep/cook times if mentioned, otherwise estimate reasonably
-        - Extract exact servings/yield if mentioned, otherwise estimate
-        - For images: ONLY extract text that is clearly visible in the image
         - Return valid JSON only, no additional text`
       }
     ];
@@ -394,7 +458,7 @@ serve(async (req) => {
         content: [
           { 
             type: 'text', 
-            text: 'Please extract ONLY the recipe information that is clearly visible and readable in this image. Do not create or assume any recipe details that are not explicitly shown in the image. If the image does not contain enough recipe information, please indicate that in the response.' 
+            text: 'Extract ONLY the recipe information clearly visible in this image. Do not create or assume details not shown.' 
           },
           { type: 'image_url', image_url: { url: imageUrl } }
         ]
@@ -416,11 +480,11 @@ serve(async (req) => {
     const openAIRequest = {
       model: isImageInput ? 'gpt-4o' : 'gpt-4o-mini',
       messages,
-      temperature: 0.1, // Lower temperature for more consistent extraction
+      temperature: 0.1,
       max_tokens: 1500,
     };
 
-    console.log('🤖 Calling OpenAI API with model:', openAIRequest.model, 'temperature:', openAIRequest.temperature);
+    console.log('🤖 Calling OpenAI API with model:', openAIRequest.model);
 
     let response;
     try {
@@ -435,12 +499,11 @@ serve(async (req) => {
     } catch (fetchError) {
       console.error('❌ Network error calling OpenAI:', fetchError);
       return new Response(JSON.stringify({ 
-        error: 'Network error while calling OpenAI API',
-        code: 'NETWORK_ERROR',
-        details: fetchError.message
+        error: 'Service temporarily unavailable',
+        code: 'SERVICE_ERROR'
       }), {
         status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...securityHeaders, 'Content-Type': 'application/json' },
       });
     }
 
@@ -458,28 +521,19 @@ serve(async (req) => {
 
       if (response.status === 429) {
         return new Response(JSON.stringify({ 
-          error: 'OpenAI API rate limit exceeded. Please try again in a moment.',
-          code: 'RATE_LIMIT'
+          error: 'Service temporarily overloaded. Please try again later.',
+          code: 'SERVICE_OVERLOADED'
         }), {
           status: 429,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      } else if (response.status === 401) {
-        return new Response(JSON.stringify({ 
-          error: 'OpenAI API key is invalid or expired.',
-          code: 'INVALID_API_KEY'
-        }), {
-          status: 500,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          headers: { ...securityHeaders, 'Content-Type': 'application/json' },
         });
       } else {
         return new Response(JSON.stringify({ 
-          error: `OpenAI API error: ${response.status}`,
-          code: 'OPENAI_API_ERROR',
-          details: errorText
+          error: 'Service temporarily unavailable',
+          code: 'SERVICE_ERROR'
         }), {
           status: 500,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          headers: { ...securityHeaders, 'Content-Type': 'application/json' },
         });
       }
     }
@@ -491,22 +545,22 @@ serve(async (req) => {
     } catch (jsonError) {
       console.error('❌ Failed to parse OpenAI JSON response:', jsonError);
       return new Response(JSON.stringify({ 
-        error: 'Invalid JSON response from OpenAI',
-        code: 'INVALID_JSON_RESPONSE'
+        error: 'Invalid response from AI service',
+        code: 'SERVICE_ERROR'
       }), {
         status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...securityHeaders, 'Content-Type': 'application/json' },
       });
     }
     
     if (!data.choices || !data.choices[0] || !data.choices[0].message) {
       console.error('❌ Invalid response structure from OpenAI:', data);
       return new Response(JSON.stringify({ 
-        error: 'Invalid response structure from OpenAI',
-        code: 'INVALID_RESPONSE_STRUCTURE'
+        error: 'Invalid response from AI service',
+        code: 'SERVICE_ERROR'
       }), {
         status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...securityHeaders, 'Content-Type': 'application/json' },
       });
     }
 
@@ -519,36 +573,46 @@ serve(async (req) => {
       console.log('✅ Successfully parsed recipe JSON');
     } catch (parseError) {
       console.error('❌ Failed to parse JSON:', parseError);
-      console.error('🔍 Content that failed to parse:', content);
       return new Response(JSON.stringify({ 
-        error: 'AI returned invalid format. Please try again with clearer recipe text or image.',
-        code: 'INVALID_AI_RESPONSE',
-        details: content
+        error: 'AI returned invalid format. Please try again.',
+        code: 'INVALID_AI_RESPONSE'
       }), {
         status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...securityHeaders, 'Content-Type': 'application/json' },
       });
     }
 
+    // Validate required fields
     const requiredFields = ['title', 'ingredients', 'instructions'];
     for (const field of requiredFields) {
       if (!parsedRecipe[field] || (Array.isArray(parsedRecipe[field]) && parsedRecipe[field].length === 0)) {
         console.error(`❌ Missing or empty required field: ${field}`);
         return new Response(JSON.stringify({ 
-          error: `The image or text does not contain enough ${field} information to create a complete recipe. Please try with a clearer image or more detailed text.`,
-          code: 'INSUFFICIENT_RECIPE_DATA',
-          field: field
+          error: `Insufficient ${field} information to create a complete recipe`,
+          code: 'INSUFFICIENT_RECIPE_DATA'
         }), {
           status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          headers: { ...securityHeaders, 'Content-Type': 'application/json' },
         });
       }
     }
 
-    console.log('🎉 Successfully processed recipe:', parsedRecipe.title);
+    // Sanitize the parsed recipe data
+    const sanitizedRecipe = {
+      title: sanitizeText(parsedRecipe.title),
+      description: parsedRecipe.description ? sanitizeText(parsedRecipe.description) : undefined,
+      ingredients: parsedRecipe.ingredients.map((ing: string) => sanitizeText(ing)),
+      instructions: parsedRecipe.instructions.map((inst: string) => sanitizeText(inst)),
+      categories: parsedRecipe.categories || [],
+      prepTime: Math.max(0, Math.min(1440, parsedRecipe.prepTime || 0)),
+      cookTime: Math.max(0, Math.min(1440, parsedRecipe.cookTime || 0)),
+      servings: Math.max(1, Math.min(100, parsedRecipe.servings || 1))
+    };
+
+    console.log('🎉 Successfully processed recipe:', sanitizedRecipe.title);
 
     const responseData: any = { 
-      parsedRecipe,
+      parsedRecipe: sanitizedRecipe,
       extractionInfo: {
         hasStructuredData: !!structuredData,
         textLength: processedText.length,
@@ -567,19 +631,17 @@ serve(async (req) => {
     }
 
     return new Response(JSON.stringify(responseData), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...securityHeaders, 'Content-Type': 'application/json' },
     });
 
   } catch (error) {
     console.error('💥 Unexpected error in recipe AI function:', error);
-    console.error('🔍 Error stack:', error.stack);
     return new Response(JSON.stringify({ 
-      error: error.message || 'An unexpected error occurred',
-      code: 'UNEXPECTED_ERROR',
-      details: 'Check the function logs for more information'
+      error: 'Service temporarily unavailable',
+      code: 'SERVICE_ERROR'
     }), {
       status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...securityHeaders, 'Content-Type': 'application/json' },
     });
   }
 });

@@ -3,6 +3,8 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Recipe } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
+import { validateInput, recipeTextSchema } from "@/utils/inputValidation";
+import { sanitizeRecipeData } from "@/utils/contentSanitizer";
 
 export function useTextRecipeProcessing() {
   const { toast } = useToast();
@@ -14,10 +16,12 @@ export function useTextRecipeProcessing() {
     currentRecipe: Omit<Recipe, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>,
     setActiveTab: (tab: string) => void
   ) => {
-    if (!recipeText.trim()) {
+    // Validate input
+    const validation = validateInput(recipeTextSchema, recipeText.trim());
+    if (!validation.success) {
       toast({
-        title: "Error",
-        description: "Please enter some recipe text first",
+        title: "Invalid Input",
+        description: validation.error,
         variant: "destructive",
       });
       return;
@@ -28,21 +32,49 @@ export function useTextRecipeProcessing() {
       console.log('Processing recipe text:', recipeText.substring(0, 100) + '...');
       
       const { data, error } = await supabase.functions.invoke('parse-recipe-ai', {
-        body: { recipeText: recipeText.trim() }
+        body: { recipeText: validation.data }
       });
 
       if (error) {
         console.error('Error calling parse-recipe-ai function:', error);
-        throw new Error(error.message || 'Failed to process recipe text');
+        
+        // Handle specific error codes
+        if (error.message?.includes('RATE_LIMIT')) {
+          toast({
+            title: "Rate Limit Exceeded",
+            description: "Please wait a moment before trying again.",
+            variant: "destructive",
+          });
+        } else if (error.message?.includes('INVALID_TEXT')) {
+          toast({
+            title: "Invalid Content",
+            description: "The text contains invalid or suspicious content.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Processing Error",
+            description: "Failed to process recipe text. Please try again.",
+            variant: "destructive",
+          });
+        }
+        return;
       }
 
       if (!data?.parsedRecipe) {
-        throw new Error('No recipe data received from AI');
+        toast({
+          title: "No Recipe Found",
+          description: "Could not extract recipe information from the text.",
+          variant: "destructive",
+        });
+        return;
       }
 
       console.log('Received parsed recipe:', data.parsedRecipe);
       
-      setNewRecipe({ ...currentRecipe, ...data.parsedRecipe });
+      // Sanitize the recipe data before setting
+      const sanitizedRecipe = sanitizeRecipeData(data.parsedRecipe);
+      setNewRecipe({ ...currentRecipe, ...sanitizedRecipe });
       setActiveTab("manual");
       
       toast({
@@ -52,8 +84,8 @@ export function useTextRecipeProcessing() {
     } catch (error) {
       console.error('Error processing recipe text:', error);
       toast({
-        title: "Error",
-        description: error.message || "Failed to process recipe text. Please try again.",
+        title: "Unexpected Error",
+        description: "An unexpected error occurred. Please try again.",
         variant: "destructive",
       });
     } finally {
