@@ -10,7 +10,6 @@ import { AddToMealPlanDialog } from "./AddToMealPlanDialog";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
-import { getDisplayLabel, getIcon } from "@/utils/recipeClassification";
 
 interface RecipeCardProps {
   recipe: Recipe;
@@ -35,7 +34,8 @@ export function RecipeCard({ recipe, showActions = true, onAddToMealPlan }: Reci
     e.preventDefault();
     e.stopPropagation();
     try {
-      await updateRecipe(recipe.id, { isFavorite: !recipe.isFavorite });
+      const updatedRecipe = { ...recipe, isFavorite: !recipe.isFavorite };
+      await updateRecipe(recipe.id, updatedRecipe);
       toast({
         title: recipe.isFavorite ? "Removed from favorites" : "Added to favorites",
       });
@@ -72,8 +72,9 @@ export function RecipeCard({ recipe, showActions = true, onAddToMealPlan }: Reci
               variant="secondary" 
               className="absolute top-2 right-2 bg-white/90 text-gray-700 backdrop-blur-sm border-0 shadow-sm flex items-center gap-1"
             >
-              <span className="text-sm">{getIcon(recipe.mealType, 'mealType')}</span>
-              <span className="text-xs font-medium">{getDisplayLabel(recipe.mealType, 'mealType')}</span>
+              <span className="text-xs font-medium">
+                {recipe.mealType.charAt(0).toUpperCase() + recipe.mealType.slice(1)}
+              </span>
             </Badge>
           )}
         </div>

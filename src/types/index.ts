@@ -1,4 +1,3 @@
-
 export interface Recipe {
   id: string;
   title: string;
@@ -19,6 +18,7 @@ export interface Recipe {
   dietLifestyle?: DietLifestyle[];
   complexityLevel?: ComplexityLevel;
   slug?: string;
+  topTip?: string;
 }
 
 export interface MealPlan {
