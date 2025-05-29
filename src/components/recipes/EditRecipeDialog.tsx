@@ -20,14 +20,14 @@ interface EditRecipeDialogProps {
   recipe: Recipe;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSave: (recipe: Recipe) => void;
+  onRecipeUpdate: (recipe: Recipe) => void;
 }
 
 export function EditRecipeDialog({
   recipe,
   open,
   onOpenChange,
-  onSave,
+  onRecipeUpdate,
 }: EditRecipeDialogProps) {
   const [editedRecipe, setEditedRecipe] = useState<Recipe>(recipe);
   const [newIngredient, setNewIngredient] = useState("");
@@ -69,7 +69,7 @@ export function EditRecipeDialog({
 
     setIsLoading(true);
     try {
-      await onSave(editedRecipe);
+      onRecipeUpdate(editedRecipe);
       onOpenChange(false);
       toast({
         title: "Success",
@@ -169,11 +169,11 @@ export function EditRecipeDialog({
               <Input
                 id="prepTime"
                 type="number"
-                value={editedRecipe.prepTime || ""}
+                value={editedRecipe.prep_time || ""}
                 onChange={(e) =>
                   setEditedRecipe({
                     ...editedRecipe,
-                    prepTime: parseInt(e.target.value) || 0,
+                    prep_time: parseInt(e.target.value) || 0,
                   })
                 }
                 min="0"
@@ -188,11 +188,11 @@ export function EditRecipeDialog({
               <Input
                 id="cookTime"
                 type="number"
-                value={editedRecipe.cookTime || ""}
+                value={editedRecipe.cook_time || ""}
                 onChange={(e) =>
                   setEditedRecipe({
                     ...editedRecipe,
-                    cookTime: parseInt(e.target.value) || 0,
+                    cook_time: parseInt(e.target.value) || 0,
                   })
                 }
                 min="0"

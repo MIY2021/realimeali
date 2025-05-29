@@ -13,8 +13,8 @@ import {
 } from "@/utils/recipeClassification";
 
 interface RecipeClassificationSelectorProps {
-  recipe: Recipe | Omit<Recipe, "id" | "createdAt" | "updatedAt" | "createdBy">;
-  onRecipeChange: (recipe: Recipe | Omit<Recipe, "id" | "createdAt" | "updatedAt" | "createdBy">) => void;
+  recipe: Recipe | Omit<Recipe, "id" | "created_at" | "updated_at" | "created_by">;
+  onRecipeChange: (recipe: Recipe | Omit<Recipe, "id" | "created_at" | "updated_at" | "created_by">) => void;
 }
 
 export function RecipeClassificationSelector({ recipe, onRecipeChange }: RecipeClassificationSelectorProps) {
@@ -23,15 +23,15 @@ export function RecipeClassificationSelector({ recipe, onRecipeChange }: RecipeC
   };
 
   const addDietLifestyle = (diet: string) => {
-    const currentDiets = recipe.dietLifestyle || [];
+    const currentDiets = recipe.diet_lifestyle || [];
     if (!currentDiets.includes(diet as any)) {
-      updateRecipeField('dietLifestyle', [...currentDiets, diet]);
+      updateRecipeField('diet_lifestyle', [...currentDiets, diet]);
     }
   };
 
   const removeDietLifestyle = (diet: string) => {
-    const currentDiets = recipe.dietLifestyle || [];
-    updateRecipeField('dietLifestyle', currentDiets.filter(d => d !== diet));
+    const currentDiets = recipe.diet_lifestyle || [];
+    updateRecipeField('diet_lifestyle', currentDiets.filter(d => d !== diet));
   };
 
   return (
@@ -47,8 +47,8 @@ export function RecipeClassificationSelector({ recipe, onRecipeChange }: RecipeC
           <div>
             <label className="text-sm font-medium mb-2 block">Meal Type</label>
             <Select 
-              value={recipe.mealType || ""} 
-              onValueChange={(value) => updateRecipeField('mealType', value)}
+              value={recipe.meal_type || ""} 
+              onValueChange={(value) => updateRecipeField('meal_type', value)}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select meal type" />
@@ -91,8 +91,8 @@ export function RecipeClassificationSelector({ recipe, onRecipeChange }: RecipeC
           <div>
             <label className="text-sm font-medium mb-2 block">Complexity Level</label>
             <Select 
-              value={recipe.complexityLevel || ""} 
-              onValueChange={(value) => updateRecipeField('complexityLevel', value)}
+              value={recipe.complexity_level || ""} 
+              onValueChange={(value) => updateRecipeField('complexity_level', value)}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select complexity" />
@@ -130,11 +130,11 @@ export function RecipeClassificationSelector({ recipe, onRecipeChange }: RecipeC
           </div>
         </div>
 
-        {recipe.dietLifestyle && recipe.dietLifestyle.length > 0 && (
+        {recipe.diet_lifestyle && recipe.diet_lifestyle.length > 0 && (
           <div>
             <label className="text-sm font-medium mb-2 block">Selected Diet & Lifestyle Tags</label>
             <div className="flex flex-wrap gap-2">
-              {recipe.dietLifestyle.map((diet) => {
+              {recipe.diet_lifestyle.map((diet) => {
                 const option = DIET_LIFESTYLE_OPTIONS.find(opt => opt.value === diet);
                 return (
                   <Badge key={diet} variant="secondary" className="flex items-center gap-1">

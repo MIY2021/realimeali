@@ -46,18 +46,18 @@ export const RecipeDetail = ({ recipe, onEdit, onDelete, isOwner }: RecipeDetail
             <div className="flex items-center gap-1">
               <Clock className="h-4 w-4 text-gray-500" />
               <span className="text-sm text-gray-600">
-                {recipe.prepTime + recipe.cookTime} mins total
+                {recipe.prep_time + recipe.cook_time} mins total
               </span>
             </div>
             <div className="flex items-center gap-1">
               <Users className="h-4 w-4 text-gray-500" />
               <span className="text-sm text-gray-600">{recipe.servings} servings</span>
             </div>
-            {recipe.mealType && (
-              <Badge variant="secondary">{recipe.mealType}</Badge>
+            {recipe.meal_type && (
+              <Badge variant="secondary">{recipe.meal_type}</Badge>
             )}
-            {recipe.complexityLevel && (
-              <Badge variant="outline">{recipe.complexityLevel}</Badge>
+            {recipe.complexity_level && (
+              <Badge variant="outline">{recipe.complexity_level}</Badge>
             )}
           </div>
         </div>
@@ -65,8 +65,8 @@ export const RecipeDetail = ({ recipe, onEdit, onDelete, isOwner }: RecipeDetail
         {/* Actions */}
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm">
-            <Heart className={`h-4 w-4 mr-2 ${recipe.isFavorite ? 'fill-red-500 text-red-500' : ''}`} />
-            {recipe.isFavorite ? 'Favorited' : 'Favorite'}
+            <Heart className={`h-4 w-4 mr-2 ${recipe.is_favorite ? 'fill-red-500 text-red-500' : ''}`} />
+            {recipe.is_favorite ? 'Favorited' : 'Favorite'}
           </Button>
           
           <Button variant="outline" size="sm">
@@ -156,10 +156,10 @@ export const RecipeDetail = ({ recipe, onEdit, onDelete, isOwner }: RecipeDetail
                 <User className="h-3 w-3" />
               </AvatarFallback>
             </Avatar>
-            <span>Created {new Date(recipe.createdAt).toLocaleDateString()}</span>
+            <span>Created {new Date(recipe.created_at).toLocaleDateString()}</span>
           </div>
           <div>
-            Last updated {new Date(recipe.updatedAt).toLocaleDateString()}
+            Last updated {new Date(recipe.updated_at).toLocaleDateString()}
           </div>
         </div>
       </div>

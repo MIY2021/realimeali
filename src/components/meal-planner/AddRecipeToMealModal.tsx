@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useMemo } from "react";
 import {
   Dialog,
@@ -29,7 +30,7 @@ interface AddRecipeToMealModalProps {
     date: string;
     mealType: MealType;
   };
-  onAddRecipe: (recipe: Recipe) => void;
+  onAddRecipe: (recipeId: string, servings: number) => Promise<void>;
 }
 
 export function AddRecipeToMealModal({
@@ -59,12 +60,17 @@ export function AddRecipeToMealModal({
         return false;
       }
 
-      if (selectedMealType && recipe.mealType !== selectedMealType) return false;
+      if (selectedMealType && recipe.meal_type !== selectedMealType) return false;
       if (selectedCuisine && recipe.cuisine !== selectedCuisine) return false;
 
       return true;
     });
   }, [recipes, searchTerm, selectedMealType, selectedCuisine]);
+
+  const handleRecipeSelect = async (recipe: Recipe) => {
+    await onAddRecipe(recipe.id, recipe.servings);
+    onClose();
+  };
 
   if (isLoading) {
     return (
@@ -161,7 +167,7 @@ export function AddRecipeToMealModal({
                     <RecipeCard
                       key={recipe.id}
                       recipe={recipe}
-                      onAddToMealPlan={() => onAddRecipe(recipe)}
+                      onAddToMealPlan={() => handleRecipeSelect(recipe)}
                       showActions={false}
                     />
                   ))}

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import {
   Dialog,
@@ -16,7 +17,7 @@ import { useRecipes } from "@/contexts/RecipesContext";
 interface AddMealWithLeftoversDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onAddMeal: (recipe: Recipe) => void;
+  onAddMeal: (mealType: string, recipeName: string) => void;
 }
 
 export function AddMealWithLeftoversDialog({
@@ -33,7 +34,7 @@ export function AddMealWithLeftoversDialog({
     const searchRegex = new RegExp(searchTerm, "i");
     if (!searchRegex.test(recipe.title) && !searchRegex.test(recipe.description)) return false;
 
-    if (selectedMealType && recipe.mealType !== selectedMealType) return false;
+    if (selectedMealType && recipe.meal_type !== selectedMealType) return false;
     if (selectedCuisine && recipe.cuisine !== selectedCuisine) return false;
 
     return true;
@@ -104,7 +105,7 @@ export function AddMealWithLeftoversDialog({
             {filteredRecipes.map((recipe) => (
               <button
                 key={recipe.id}
-                onClick={() => onAddMeal(recipe)}
+                onClick={() => onAddMeal(selectedMealType || "dinner", recipe.title)}
                 className="group flex w-full items-center justify-between p-3 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {recipe.title}

@@ -56,21 +56,16 @@ export function MealPlannerModals({
       <AddRecipeToMealModal
         open={isAddToMealModalOpen}
         onClose={() => setIsAddToMealModalOpen(false)}
-        mealSlot={mealSlot}
-        onAddRecipe={async (recipeId: string, servings: number) => {
-          if (mealSlot) {
-            await onAddRecipe(recipeId, servings);
-            setIsAddToMealModalOpen(false);
-          }
-        }}
+        mealSlot={mealSlot || { date: "", mealType: "dinner" }}
+        onAddRecipe={onAddRecipe}
       />
 
       <AddMealWithLeftoversDialog
         open={isAddLeftoversModalOpen}
         onOpenChange={setIsAddLeftoversModalOpen}
-        onAddMeal={(mealType: MealPlanMealType, recipeName: string) => {
+        onAddMeal={(mealType: string, recipeName: string) => {
           setIsAddLeftoversModalOpen(false);
-          setPendingMeal({ mealType, recipeName });
+          setPendingMeal({ mealType: mealType as MealPlanMealType, recipeName });
           setIsQuantityDialogOpen(true);
         }}
       />

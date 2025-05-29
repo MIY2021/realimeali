@@ -40,7 +40,7 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
       setIsLoading(true);
       const plans = await mealPlanService.fetchMealPlans(currentHousehold.id);
       console.log("Transformed plans:", plans);
-      console.log("Plans with week numbers:", plans.map(p => ({ id: p.id, mealType: p.mealType, weekNumber: p.weekNumber })));
+      console.log("Plans with week numbers:", plans.map(p => ({ id: p.id, meal_type: p.meal_type, week_number: p.week_number })));
       setMealPlans(plans);
     } catch (err) {
       console.error("Error fetching meal plans:", err);
@@ -61,33 +61,33 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
   const getMealPlansForWeek = useCallback((weekNumber: 1 | 2): MealPlan[] => {
     if (!user || !currentHousehold) return [];
     
-    const weekPlans = mealPlans.filter(plan => plan.weekNumber === weekNumber);
+    const weekPlans = mealPlans.filter(plan => plan.week_number === weekNumber);
     console.log(`Getting meal plans for week ${weekNumber}:`, weekPlans);
     return weekPlans;
   }, [mealPlans, user?.id, currentHousehold?.id]);
 
   const getRecipeForMealPlan = useCallback((mealPlan: MealPlan): Recipe | undefined => {
-    return recipes.find(recipe => recipe.id === mealPlan.recipeId);
+    return recipes.find(recipe => recipe.id === mealPlan.recipe_id);
   }, [recipes]);
 
   const addMealPlanWithLeftovers = useCallback(async (
-    mealPlanData: Omit<MealPlan, 'id' | 'createdAt' | 'updatedAt'>, 
+    mealPlanData: Omit<MealPlan, 'id' | 'created_at' | 'updated_at'>, 
     weekNumber: 1 | 2, 
     leftoverServings?: number,
     silentMode = false
   ) => {
     if (!user || !currentHousehold) return;
 
-    const recipe = recipes.find(r => r.id === mealPlanData.recipeId);
+    const recipe = recipes.find(r => r.id === mealPlanData.recipe_id);
     if (!recipe) return;
 
     try {
       await addMealPlan({
         ...mealPlanData,
-        originalServings: recipe.servings,
-        isLeftover: false,
-        householdId: currentHousehold.id,
-        weekNumber: weekNumber, // Include weekNumber in meal plan data
+        original_servings: recipe.servings,
+        is_leftover: false,
+        household_id: currentHousehold.id,
+        week_number: weekNumber,
       }, weekNumber, silentMode);
 
       if (leftoverServings && leftoverServings > 0) {
@@ -97,16 +97,18 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
         if (justAddedPlan) {
           await addMealPlan({
             date: mealPlanData.date,
-            mealType: 'lunch',
-            recipeId: mealPlanData.recipeId,
-            createdBy: user.id,
-            slotIndex: 0,
-            parentMealPlanId: justAddedPlan.id,
-            isLeftover: true,
-            leftoverServings: leftoverServings,
-            originalServings: recipe.servings,
-            householdId: currentHousehold.id,
-            weekNumber: weekNumber, // Include weekNumber in leftover meal plan data
+            meal_type: 'lunch',
+            recipe_id: mealPlanData.recipe_id,
+            created_by: user.id,
+            slot_index: 0,
+            parent_meal_plan_id: justAddedPlan.id,
+            is_leftover: true,
+            leftover_servings: leftoverServings,
+            original_servings: recipe.servings,
+            household_id: currentHousehold.id,
+            week_number: weekNumber,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
           }, weekNumber, silentMode);
 
           if (!silentMode) {
@@ -131,7 +133,7 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
     if (!user || !currentHousehold) return;
 
     const mealPlansForType = mealPlans.filter(
-      plan => plan.mealType === mealType && plan.weekNumber === weekNumber
+      plan => plan.meal_type === mealType && plan.week_number === weekNumber
     );
 
     if (sourceIndex < 0 || destinationIndex < 0 || 
@@ -150,11 +152,11 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
       setMealPlans(prev => {
         const updated = [...prev];
         const filteredPlans = updated.filter(
-          plan => !(plan.mealType === mealType && plan.weekNumber === weekNumber)
+          plan => !(plan.meal_type === mealType && plan.week_number === weekNumber)
         );
         const updatedReorderedPlans = reorderedPlans.map((plan, index) => ({
           ...plan,
-          slotIndex: index
+          slot_index: index
         }));
         
         return [...filteredPlans, ...updatedReorderedPlans];
