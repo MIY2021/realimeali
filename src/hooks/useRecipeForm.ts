@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Recipe, RecipeCategory } from "@/types";
 
@@ -24,6 +23,8 @@ export function useRecipeForm() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [generationProgress, setGenerationProgress] = useState("");
+  const [shareWithCommunity, setShareWithCommunity] = useState(false);
+  const [wasImportedFromWebsite, setWasImportedFromWebsite] = useState(false);
 
   const handleAddCategory = () => {
     if (newCategory.trim() && !newRecipe.categories.includes(newCategory as RecipeCategory)) {
@@ -110,6 +111,10 @@ export function useRecipeForm() {
     setIsGeneratingImage,
     generationProgress,
     setGenerationProgress,
+    shareWithCommunity,
+    setShareWithCommunity,
+    wasImportedFromWebsite,
+    setWasImportedFromWebsite,
     handleAddCategory,
     handleRemoveCategory,
     handleAddIngredient,

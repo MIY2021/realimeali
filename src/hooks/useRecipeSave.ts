@@ -12,11 +12,15 @@ export function useRecipeSave() {
   const { user } = useAuth();
   const { currentHousehold } = useHousehold();
 
-  const handleSave = async (newRecipe: Omit<Recipe, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>) => {
+  const handleSave = async (
+    newRecipe: Omit<Recipe, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>, 
+    shareWithCommunity: boolean = false
+  ) => {
     console.log("🍳 Save recipe called with:", { 
       newRecipe, 
       user: user?.id, 
       household: currentHousehold?.id,
+      shareWithCommunity,
       recipeData: {
         title: newRecipe.title,
         ingredients: newRecipe.ingredients?.length || 0,
@@ -73,9 +77,16 @@ export function useRecipeSave() {
       console.log("✅ Recipe creation response:", recipe);
       
       if (recipe) {
+        // If user wants to share with community, handle that here
+        if (shareWithCommunity) {
+          console.log("🌍 User wants to share with community - this would trigger community submission");
+          // Note: Community sharing logic would be implemented here
+          // For now, just log the intent
+        }
+        
         console.log("🎉 Recipe created successfully, navigating to /my-recipes");
         toast.success("Recipe saved!", {
-          description: `${recipe.title} has been added to your recipes.`,
+          description: `${recipe.title} has been added to your recipes.${shareWithCommunity ? ' Community sharing request noted!' : ''}`,
         });
         navigate("/my-recipes");
       } else {

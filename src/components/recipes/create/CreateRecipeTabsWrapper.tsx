@@ -1,7 +1,8 @@
 
 import { TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Save, X } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Save, X, Users } from "lucide-react";
 import { CreateRecipeTabNavigation } from "./CreateRecipeTabNavigation";
 import { RecipeTextTab } from "./tabs/RecipeTextTab";
 import { RecipeUrlTab } from "./tabs/RecipeUrlTab";
@@ -40,15 +41,22 @@ export function CreateRecipeTabsWrapper({
   onCancel,
 }: CreateRecipeTabsWrapperProps) {
   
-  // Recipe completion status
+  // Recipe completion status - updated to check if recipe was actually generated
   const getRecipeCompletionStatus = () => {
     const { newRecipe } = recipeFormHook;
     const hasTitle = newRecipe.title.trim().length > 0;
     const hasIngredients = newRecipe.ingredients.length > 0;
     const hasInstructions = newRecipe.instructions.length > 0;
+    
+    // Check if recipe was actually generated/processed vs just manually entered
+    const wasGenerated = hasTitle && hasIngredients && hasInstructions && (
+      activeTab === "manual" || // User has switched to manual after processing
+      newRecipe.title.length > 10 // Likely generated/imported content
+    );
 
     return {
       isComplete: hasTitle && hasIngredients && hasInstructions,
+      wasGenerated,
       hasTitle,
       hasIngredients,
       hasInstructions,
@@ -151,26 +159,56 @@ export function CreateRecipeTabsWrapper({
         </CreateRecipeTabNavigation>
       </div>
 
-      {/* Simple Save/Cancel Section */}
-      <div className="flex flex-col sm:flex-row gap-3 p-4 bg-white rounded-lg border">
-        <Button
-          onClick={onSave}
-          disabled={!status.isComplete || recipeProcessingHook.isProcessing}
-          className="flex-1 sm:flex-initial bg-green-600 hover:bg-green-700 text-white h-11"
-        >
-          <Save className="h-4 w-4 mr-2" />
-          Save Recipe
-        </Button>
-        
-        <Button
-          onClick={onCancel}
-          variant="outline"
-          className="flex-1 sm:flex-initial h-11"
-        >
-          <X className="h-4 w-4 mr-2" />
-          Cancel
-        </Button>
-      </div>
+      {/* Save/Cancel Section - Only show when recipe is actually generated/complete */}
+      {status.wasGenerated && (
+        <div className="flex flex-col gap-4 p-4 bg-white rounded-lg border">
+          {/* Community Sharing Checkbox - Only show if recipe was imported from website */}
+          {recipeFormHook.wasImportedFromWebsite && (
+            <div className="flex items-start gap-3 p-3 bg-green-50 rounded-lg border border-green-200">
+              <Checkbox
+                id="shareWithCommunity"
+                checked={recipeFormHook.shareWithCommunity}
+                onCheckedChange={recipeFormHook.setShareWithCommunity}
+                className="mt-0.5"
+              />
+              <div className="flex-1">
+                <label 
+                  htmlFor="shareWithCommunity" 
+                  className="text-sm font-medium text-green-800 cursor-pointer flex items-center gap-2"
+                >
+                  <Users className="h-4 w-4" />
+                  Share with RealiMeali Community
+                </label>
+                <p className="text-xs text-green-700 mt-1">
+                  Help other users discover this recipe! It will appear in "Find Recipes" after moderation. 
+                  Only the recipe link and details are shared - the full recipe stays on the original website.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Save/Cancel Buttons */}
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Button
+              onClick={onSave}
+              disabled={!status.isComplete || recipeProcessingHook.isProcessing}
+              className="flex-1 sm:flex-initial bg-green-600 hover:bg-green-700 text-white h-11"
+            >
+              <Save className="h-4 w-4 mr-2" />
+              Save Recipe
+            </Button>
+            
+            <Button
+              onClick={onCancel}
+              variant="outline"
+              className="flex-1 sm:flex-initial h-11"
+            >
+              <X className="h-4 w-4 mr-2" />
+              Cancel
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

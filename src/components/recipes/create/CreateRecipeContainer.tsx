@@ -22,12 +22,16 @@ export function CreateRecipeContainer() {
     setActiveTab
   );
   
-  const onImportFromUrlWithImages = () => recipeProcessingHook.handleImportFromUrl(
-    recipeFormHook.setNewRecipe, 
-    recipeFormHook.newRecipe, 
-    setActiveTab,
-    true // Always download images
-  );
+  const onImportFromUrlWithImages = () => {
+    // Set flag that recipe was imported from website
+    recipeFormHook.setWasImportedFromWebsite(true);
+    recipeProcessingHook.handleImportFromUrl(
+      recipeFormHook.setNewRecipe, 
+      recipeFormHook.newRecipe, 
+      setActiveTab,
+      true // Always download images
+    );
+  };
   
   const onProcessImage = (file: File) => recipeProcessingHook.handleProcessImage(
     file, 
@@ -54,7 +58,8 @@ export function CreateRecipeContainer() {
 
   const onSave = () => {
     console.log("🚀 Save button clicked from CreateRecipeContainer");
-    handleSave(recipeFormHook.newRecipe);
+    // Pass community sharing preference to save function
+    handleSave(recipeFormHook.newRecipe, recipeFormHook.shareWithCommunity);
   };
 
   return (
