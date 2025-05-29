@@ -27,7 +27,15 @@ export function useRecipeSave() {
         title: newRecipe.title,
         ingredients: newRecipe.ingredients?.length || 0,
         instructions: newRecipe.instructions?.length || 0,
-        topTip: newRecipe.topTip
+        topTip: newRecipe.topTip,
+        classification: {
+          mealType: newRecipe.mealType,
+          cuisineRegion: newRecipe.cuisineRegion,
+          cookingMethod: newRecipe.cookingMethod,
+          dietLifestyle: newRecipe.dietLifestyle,
+          complexityLevel: newRecipe.complexityLevel,
+          mainIngredient: newRecipe.mainIngredient,
+        }
       }
     });
     
@@ -79,7 +87,7 @@ export function useRecipeSave() {
       // Ensure arrays are valid
       ingredients: newRecipe.ingredients.filter(ing => ing.trim()),
       instructions: newRecipe.instructions.filter(inst => inst.trim()),
-      categories: newRecipe.categories || [],
+      dietLifestyle: newRecipe.dietLifestyle || [],
       // Remove householdId if present (will be set by createRecipe)
       householdId: undefined as any
     };
@@ -107,12 +115,10 @@ export function useRecipeSave() {
             prep_time: recipe.prepTime,
             cook_time: recipe.cookTime,
             servings: recipe.servings,
-            category: recipe.categories?.[0] || null,
-            cuisine: recipe.categories?.find(cat => 
-              ['Italian', 'Chinese', 'Mexican', 'Indian', 'French', 'Thai', 'Japanese'].includes(cat)
-            ) || null,
-            difficulty_level: recipe.categories?.includes('Easy') ? 'Easy' : 
-                             recipe.categories?.includes('Faffy') ? 'Hard' : 'Easy'
+            category: recipe.mealType || null,
+            cuisine: recipe.cuisineRegion || null,
+            difficulty_level: recipe.complexityLevel === 'quick_easy' ? 'Easy' : 
+                             recipe.complexityLevel === 'complex' ? 'Hard' : 'Standard'
           };
           
           const submitted = await submitCommunityRecipe(communityData);

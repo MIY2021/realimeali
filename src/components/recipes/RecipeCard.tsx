@@ -1,3 +1,4 @@
+
 import { Recipe } from "@/types";
 import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
@@ -9,6 +10,7 @@ import { usePublicRecipeSharing } from "@/hooks/usePublicRecipeSharing";
 import { RecipeImage } from "@/components/ui/recipe-image";
 import { useScrollPosition } from "@/hooks/useScrollPosition";
 import { useNavigationState } from "@/hooks/useNavigationState";
+import { getDisplayLabel, getIcon } from "@/utils/recipeClassification";
 
 interface RecipeCardProps {
   recipe: Recipe;
@@ -25,7 +27,7 @@ export function RecipeCard({ recipe, onAddToMealPlan, onEdit, onDelete, showActi
   const { saveScrollPosition } = useScrollPosition();
   const { markCameFromRecipes } = useNavigationState();
   const navigate = useNavigate();
-  const { id, title, description, prepTime, cookTime, servings, categories } = recipe;
+  const { id, title, description, prepTime, cookTime, servings } = recipe;
   const totalTime = prepTime + cookTime;
 
   // Allow editing/deleting if user is part of the same household as the recipe
@@ -100,15 +102,27 @@ export function RecipeCard({ recipe, onAddToMealPlan, onEdit, onDelete, showActi
             {title}
           </button>
         </div>
-        <div className="flex flex-wrap gap-2 mt-1">
-          {categories.map((category) => (
-            <span
-              key={category}
-              className="inline-flex items-center rounded-full bg-sage/20 px-2 py-1 text-xs font-medium text-sage"
-            >
-              {category.charAt(0).toUpperCase() + category.slice(1)}
+        
+        {/* New classification badges */}
+        <div className="flex flex-wrap gap-1 mt-2">
+          {recipe.mealType && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 text-blue-800 px-2 py-1 text-xs font-medium">
+              <span>{getIcon(recipe.mealType, 'mealType')}</span>
+              <span>{getDisplayLabel(recipe.mealType, 'mealType')}</span>
             </span>
-          ))}
+          )}
+          {recipe.complexityLevel && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-green-100 text-green-800 px-2 py-1 text-xs font-medium">
+              <span>{getIcon(recipe.complexityLevel, 'complexityLevel')}</span>
+              <span>{getDisplayLabel(recipe.complexityLevel, 'complexityLevel')}</span>
+            </span>
+          )}
+          {recipe.cuisineRegion && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-purple-100 text-purple-800 px-2 py-1 text-xs font-medium">
+              <span>{getIcon(recipe.cuisineRegion, 'cuisineRegion')}</span>
+              <span>{getDisplayLabel(recipe.cuisineRegion, 'cuisineRegion')}</span>
+            </span>
+          )}
         </div>
       </CardHeader>
       <CardContent className="p-4 pt-2 flex-grow">

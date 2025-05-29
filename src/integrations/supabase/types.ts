@@ -612,16 +612,23 @@ export type Database = {
       }
       recipes: {
         Row: {
-          categories: Database["public"]["Enums"]["recipe_category"][] | null
+          complexity_level:
+            | Database["public"]["Enums"]["complexity_level"]
+            | null
           cook_time: number | null
+          cooking_method: Database["public"]["Enums"]["cooking_method"] | null
           created_at: string | null
+          cuisine_region: Database["public"]["Enums"]["cuisine_region"] | null
           description: string | null
+          diet_lifestyle: Database["public"]["Enums"]["diet_lifestyle"][] | null
           household_id: string
           id: string
           image: string | null
           ingredients: string[]
           instructions: string[]
           is_favorite: boolean | null
+          main_ingredient: Database["public"]["Enums"]["main_ingredient"] | null
+          meal_type: Database["public"]["Enums"]["meal_type"] | null
           prep_time: number | null
           servings: number | null
           title: string
@@ -630,16 +637,27 @@ export type Database = {
           user_id: string
         }
         Insert: {
-          categories?: Database["public"]["Enums"]["recipe_category"][] | null
+          complexity_level?:
+            | Database["public"]["Enums"]["complexity_level"]
+            | null
           cook_time?: number | null
+          cooking_method?: Database["public"]["Enums"]["cooking_method"] | null
           created_at?: string | null
+          cuisine_region?: Database["public"]["Enums"]["cuisine_region"] | null
           description?: string | null
+          diet_lifestyle?:
+            | Database["public"]["Enums"]["diet_lifestyle"][]
+            | null
           household_id: string
           id?: string
           image?: string | null
           ingredients?: string[]
           instructions?: string[]
           is_favorite?: boolean | null
+          main_ingredient?:
+            | Database["public"]["Enums"]["main_ingredient"]
+            | null
+          meal_type?: Database["public"]["Enums"]["meal_type"] | null
           prep_time?: number | null
           servings?: number | null
           title: string
@@ -648,16 +666,27 @@ export type Database = {
           user_id: string
         }
         Update: {
-          categories?: Database["public"]["Enums"]["recipe_category"][] | null
+          complexity_level?:
+            | Database["public"]["Enums"]["complexity_level"]
+            | null
           cook_time?: number | null
+          cooking_method?: Database["public"]["Enums"]["cooking_method"] | null
           created_at?: string | null
+          cuisine_region?: Database["public"]["Enums"]["cuisine_region"] | null
           description?: string | null
+          diet_lifestyle?:
+            | Database["public"]["Enums"]["diet_lifestyle"][]
+            | null
           household_id?: string
           id?: string
           image?: string | null
           ingredients?: string[]
           instructions?: string[]
           is_favorite?: boolean | null
+          main_ingredient?:
+            | Database["public"]["Enums"]["main_ingredient"]
+            | null
+          meal_type?: Database["public"]["Enums"]["meal_type"] | null
           prep_time?: number | null
           servings?: number | null
           title?: string
@@ -820,8 +849,78 @@ export type Database = {
     }
     Enums: {
       approval_request_status: "pending" | "approved" | "rejected" | "expired"
+      complexity_level: "quick_easy" | "standard" | "complex"
+      cooking_method:
+        | "one_pot"
+        | "oven_baked"
+        | "air_fryer"
+        | "slow_cooker"
+        | "pressure_cooker"
+        | "bbq_grilled"
+        | "stir_fried"
+        | "roasted"
+        | "raw_no_cook"
+      cuisine_region:
+        | "british"
+        | "american"
+        | "italian"
+        | "french"
+        | "mexican"
+        | "indian"
+        | "chinese"
+        | "japanese"
+        | "thai"
+        | "mediterranean"
+        | "middle_eastern"
+        | "african"
+        | "korean"
+        | "caribbean"
+        | "nordic"
+        | "eastern_european"
+      diet_lifestyle:
+        | "vegetarian"
+        | "vegan"
+        | "pescatarian"
+        | "gluten_free"
+        | "dairy_free"
+        | "low_carb_keto"
+        | "high_protein"
+        | "paleo"
+        | "diabetic_friendly"
+        | "budget_meals"
+        | "kid_friendly"
+        | "pregnancy_safe"
       household_role: "owner" | "member"
       invitation_status: "pending" | "accepted" | "declined" | "expired"
+      main_ingredient:
+        | "chicken"
+        | "beef"
+        | "pork"
+        | "lamb"
+        | "fish"
+        | "tofu_tempeh"
+        | "eggs"
+        | "cheese"
+        | "pasta"
+        | "rice"
+        | "lentils_beans"
+        | "vegetables"
+        | "potatoes"
+        | "fruit"
+        | "nuts_seeds"
+        | "chocolate"
+      meal_type:
+        | "breakfast"
+        | "lunch"
+        | "dinner"
+        | "snacks"
+        | "sides"
+        | "desserts"
+        | "drinks"
+        | "sauces_dips"
+        | "soups_stews"
+        | "salads"
+        | "baking_breads"
       recipe_category:
         | "Bulk"
         | "Easy"
@@ -956,8 +1055,83 @@ export const Constants = {
   public: {
     Enums: {
       approval_request_status: ["pending", "approved", "rejected", "expired"],
+      complexity_level: ["quick_easy", "standard", "complex"],
+      cooking_method: [
+        "one_pot",
+        "oven_baked",
+        "air_fryer",
+        "slow_cooker",
+        "pressure_cooker",
+        "bbq_grilled",
+        "stir_fried",
+        "roasted",
+        "raw_no_cook",
+      ],
+      cuisine_region: [
+        "british",
+        "american",
+        "italian",
+        "french",
+        "mexican",
+        "indian",
+        "chinese",
+        "japanese",
+        "thai",
+        "mediterranean",
+        "middle_eastern",
+        "african",
+        "korean",
+        "caribbean",
+        "nordic",
+        "eastern_european",
+      ],
+      diet_lifestyle: [
+        "vegetarian",
+        "vegan",
+        "pescatarian",
+        "gluten_free",
+        "dairy_free",
+        "low_carb_keto",
+        "high_protein",
+        "paleo",
+        "diabetic_friendly",
+        "budget_meals",
+        "kid_friendly",
+        "pregnancy_safe",
+      ],
       household_role: ["owner", "member"],
       invitation_status: ["pending", "accepted", "declined", "expired"],
+      main_ingredient: [
+        "chicken",
+        "beef",
+        "pork",
+        "lamb",
+        "fish",
+        "tofu_tempeh",
+        "eggs",
+        "cheese",
+        "pasta",
+        "rice",
+        "lentils_beans",
+        "vegetables",
+        "potatoes",
+        "fruit",
+        "nuts_seeds",
+        "chocolate",
+      ],
+      meal_type: [
+        "breakfast",
+        "lunch",
+        "dinner",
+        "snacks",
+        "sides",
+        "desserts",
+        "drinks",
+        "sauces_dips",
+        "soups_stews",
+        "salads",
+        "baking_breads",
+      ],
       recipe_category: [
         "Bulk",
         "Easy",
