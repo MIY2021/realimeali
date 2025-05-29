@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { MealType, Recipe } from "@/types";
+import { Recipe } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import { useMealPlan } from "@/contexts/MealPlanContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -14,6 +14,9 @@ interface AddToMealPlanDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
+// Use meal plan meal types (limited subset)
+type MealPlanMealType = "breakfast" | "lunch" | "dinner" | "snacks";
+
 export function AddToMealPlanDialog({ recipe, open, onOpenChange }: AddToMealPlanDialogProps) {
   const [selectedWeek, setSelectedWeek] = useState<1 | 2 | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -23,9 +26,9 @@ export function AddToMealPlanDialog({ recipe, open, onOpenChange }: AddToMealPla
   const { user } = useAuth();
   const { toast } = useToast();
 
-  const mealTypes: MealType[] = ["breakfast", "lunch", "dinner", "snacks"];
+  const mealTypes: MealPlanMealType[] = ["breakfast", "lunch", "dinner", "snacks"];
 
-  const handleSelectMealType = async (mealType: MealType) => {
+  const handleSelectMealType = async (mealType: MealPlanMealType) => {
     if (!selectedWeek) {
       toast({
         title: "Select Week",

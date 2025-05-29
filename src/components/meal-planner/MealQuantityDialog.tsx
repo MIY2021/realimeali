@@ -1,104 +1,92 @@
 
 import { useState } from "react";
-import { MealType } from "@/types";
-import { DEFAULT_MEAL_QUANTITIES } from "@/hooks/useRandomMealSelection";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Slider } from "@/components/ui/slider";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { MealType } from "@/types";
 
 interface MealQuantityDialogProps {
   open: boolean;
   onClose: () => void;
-  onConfirm: (quantities: Record<MealType, number>) => void;
+  onSubmit: (mealType: MealType, quantity: number) => void;
 }
 
-export const MealQuantityDialog = ({
-  open,
-  onClose,
-  onConfirm,
-}: MealQuantityDialogProps) => {
-  const [quantities, setQuantities] = useState<Record<MealType, number>>(DEFAULT_MEAL_QUANTITIES);
+const mealTypeLabels: Record<MealType, string> = {
+  breakfast: "Breakfast",
+  lunch: "Lunch", 
+  dinner: "Dinner",
+  snacks: "Snacks",
+  sides: "Sides",
+  desserts: "Desserts",
+  drinks: "Drinks",
+  sauces_dips: "Sauces & Dips",
+  soups_stews: "Soups & Stews",
+  salads: "Salads",
+  baking_breads: "Baking & Breads"
+};
 
-  const handleQuantityChange = (mealType: MealType, value: number[]) => {
-    setQuantities(prev => ({
-      ...prev,
-      [mealType]: value[0]
-    }));
+export function MealQuantityDialog({ open, onClose, onSubmit }: MealQuantityDialogProps) {
+  const [selectedMealType, setSelectedMealType] = useState<MealType>("dinner");
+  const [quantity, setQuantity] = useState(1);
+
+  const handleSubmit = () => {
+    onSubmit(selectedMealType, quantity);
+    onClose();
+    setQuantity(1);
+    setSelectedMealType("dinner");
   };
 
-  const handleConfirm = () => {
-    onConfirm(quantities);
-  };
-
-  const mealTypeLabels: Record<MealType, string> = {
-    dinner: "Dinners",
-    lunch: "Lunches", 
-    breakfast: "Breakfasts",
-    snacks: "Snacks"
-  };
-
-  const mealTypeOrder: MealType[] = ["dinner", "lunch", "breakfast", "snacks"];
+  // Most common meal types for meal planning
+  const commonMealTypes: MealType[] = ["breakfast", "lunch", "dinner", "snacks"];
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-xl font-semibold text-navy">
-            Customize Meal Plan
-          </DialogTitle>
-          <DialogDescription className="text-muted-foreground">
-            Choose how many meals to generate for each category. You can generate up to 7 meals per category.
-          </DialogDescription>
+          <DialogTitle>Add Meal Slot</DialogTitle>
         </DialogHeader>
         
-        <div className="space-y-6 py-4">
-          {mealTypeOrder.map((mealType) => (
-            <div key={mealType} className="space-y-3">
-              <div className="flex items-center justify-between">
-                <Label htmlFor={`${mealType}-slider`} className="text-sm font-medium capitalize">
-                  {mealTypeLabels[mealType]}
-                </Label>
-                <span className="text-lg font-semibold text-terracotta bg-terracotta/10 px-3 py-1 rounded-full min-w-[3rem] text-center">
-                  {quantities[mealType]}
-                </span>
-              </div>
-              <Slider
-                id={`${mealType}-slider`}
-                min={0}
-                max={7}
-                step={1}
-                value={[quantities[mealType]]}
-                onValueChange={(value) => handleQuantityChange(mealType, value)}
-                className="w-full"
-              />
-              <div className="flex justify-between text-xs text-muted-foreground">
-                <span>0</span>
-                <span>7</span>
-              </div>
-            </div>
-          ))}
-        </div>
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="mealType">Meal Type</Label>
+            <select
+              id="mealType"
+              value={selectedMealType}
+              onChange={(e) => setSelectedMealType(e.target.value as MealType)}
+              className="w-full mt-1 p-2 border rounded-md"
+            >
+              {commonMealTypes.map((type) => (
+                <option key={type} value={type}>
+                  {mealTypeLabels[type]}
+                </option>
+              ))}
+            </select>
+          </div>
 
-        <DialogFooter className="flex-col-reverse sm:flex-row gap-2">
-          <Button variant="outline" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button
-            onClick={handleConfirm}
-            className="bg-terracotta hover:bg-terracotta/90"
-          >
-            Generate Meal Plan
-          </Button>
-        </DialogFooter>
+          <div>
+            <Label htmlFor="quantity">Number of Meals</Label>
+            <Input
+              id="quantity"
+              type="number"
+              min="1"
+              max="10"
+              value={quantity}
+              onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
+              className="mt-1"
+            />
+          </div>
+
+          <div className="flex justify-end space-x-2 pt-4">
+            <Button variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button onClick={handleSubmit}>
+              Add Meals
+            </Button>
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
   );
-};
+}
