@@ -11,6 +11,7 @@ import { HouseholdShoppingProvider } from "@/contexts/HouseholdShoppingContext";
 import Layout from "@/components/layout/Layout";
 import { ScrollToTop } from "@/components/layout/ScrollToTop";
 import Index from "@/pages/Index";
+import About from "@/pages/About";
 import RecipesPage from "@/pages/RecipesPage";
 import FindRecipesPage from "@/pages/FindRecipesPage";
 import CreateRecipePage from "@/pages/CreateRecipePage";
@@ -41,6 +42,7 @@ const App = () => (
                   <Layout>
                     <Routes>
                       <Route path="/" element={<Index />} />
+                      <Route path="/about" element={<About />} />
                       <Route path="/login" element={<Login />} />
                       <Route path="/signup" element={<Signup />} />
                       <Route path="/share/:slug" element={<PublicRecipe />} />
