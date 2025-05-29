@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useRecipeForm } from "@/hooks/useRecipeForm";
 import { useRecipeProcessing } from "@/hooks/useRecipeProcessing";
@@ -62,7 +61,8 @@ export function CreateRecipeContainer() {
       title: recipeFormHook.newRecipe.title,
       ingredients: recipeFormHook.newRecipe.ingredients,
       instructions: recipeFormHook.newRecipe.instructions,
-      categories: recipeFormHook.newRecipe.categories,
+      mealType: recipeFormHook.newRecipe.mealType,
+      cuisineRegion: recipeFormHook.newRecipe.cuisineRegion,
       prepTime: recipeFormHook.newRecipe.prepTime,
       cookTime: recipeFormHook.newRecipe.cookTime,
       servings: recipeFormHook.newRecipe.servings,

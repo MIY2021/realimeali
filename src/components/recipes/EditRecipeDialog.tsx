@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Plus, Minus, Lightbulb, Clock, Users } from "lucide-react";
+import { ChefHat, Clock, Users } from "lucide-react";
 import { Recipe, MealType, CuisineRegion, CookingMethod, DietLifestyle, ComplexityLevel, MainIngredient } from "@/types";
 import { MEAL_TYPE_OPTIONS, CUISINE_REGION_OPTIONS, COOKING_METHOD_OPTIONS, DIET_LIFESTYLE_OPTIONS, COMPLEXITY_LEVEL_OPTIONS, MAIN_INGREDIENT_OPTIONS } from "@/utils/recipeClassification";
 
@@ -107,7 +107,7 @@ export function EditRecipeDialog({ recipe, open, onOpenChange, onSave }: EditRec
                     id="prepTime"
                     type="number"
                     value={editedRecipe.prepTime}
-                    onChange={(e) => updateRecipe('prepTime', parseInt(e.target.value) || 0)}
+                    onChange={(e) => updateRecipe('prepTime', Number(e.target.value))}
                     min={0}
                   />
                 </div>
@@ -117,7 +117,7 @@ export function EditRecipeDialog({ recipe, open, onOpenChange, onSave }: EditRec
                     id="cookTime"
                     type="number"
                     value={editedRecipe.cookTime}
-                    onChange={(e) => updateRecipe('cookTime', parseInt(e.target.value) || 0)}
+                    onChange={(e) => updateRecipe('cookTime', Number(e.target.value))}
                     min={0}
                   />
                 </div>
@@ -127,28 +127,26 @@ export function EditRecipeDialog({ recipe, open, onOpenChange, onSave }: EditRec
                     id="servings"
                     type="number"
                     value={editedRecipe.servings}
-                    onChange={(e) => updateRecipe('servings', parseInt(e.target.value) || 1)}
+                    onChange={(e) => updateRecipe('servings', Number(e.target.value))}
                     min={1}
                   />
                 </div>
               </div>
             </div>
 
-            {/* Classification */}
+            {/* Classification Fields */}
             <div className="space-y-4">
               <div>
                 <Label htmlFor="mealType">Meal Type</Label>
                 <select
                   id="mealType"
-                  value={editedRecipe.mealType || ""}
-                  onChange={(e) => updateRecipe('mealType', e.target.value as MealType || undefined)}
-                  className="w-full mt-1 p-2 border rounded-md"
+                  value={editedRecipe.mealType || ''}
+                  onChange={(e) => updateRecipe('mealType', e.target.value || undefined)}
+                  className="w-full p-2 border rounded"
                 >
                   <option value="">Select meal type...</option>
-                  {MEAL_TYPE_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.icon} {option.label}
-                    </option>
+                  {MEAL_TYPE_OPTIONS.map(option => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
                   ))}
                 </select>
               </div>
@@ -157,15 +155,13 @@ export function EditRecipeDialog({ recipe, open, onOpenChange, onSave }: EditRec
                 <Label htmlFor="cuisineRegion">Cuisine</Label>
                 <select
                   id="cuisineRegion"
-                  value={editedRecipe.cuisineRegion || ""}
-                  onChange={(e) => updateRecipe('cuisineRegion', e.target.value as CuisineRegion || undefined)}
-                  className="w-full mt-1 p-2 border rounded-md"
+                  value={editedRecipe.cuisineRegion || ''}
+                  onChange={(e) => updateRecipe('cuisineRegion', e.target.value || undefined)}
+                  className="w-full p-2 border rounded"
                 >
                   <option value="">Select cuisine...</option>
-                  {CUISINE_REGION_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.icon} {option.label}
-                    </option>
+                  {CUISINE_REGION_OPTIONS.map(option => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
                   ))}
                 </select>
               </div>
@@ -174,15 +170,13 @@ export function EditRecipeDialog({ recipe, open, onOpenChange, onSave }: EditRec
                 <Label htmlFor="cookingMethod">Cooking Method</Label>
                 <select
                   id="cookingMethod"
-                  value={editedRecipe.cookingMethod || ""}
-                  onChange={(e) => updateRecipe('cookingMethod', e.target.value as CookingMethod || undefined)}
-                  className="w-full mt-1 p-2 border rounded-md"
+                  value={editedRecipe.cookingMethod || ''}
+                  onChange={(e) => updateRecipe('cookingMethod', e.target.value || undefined)}
+                  className="w-full p-2 border rounded"
                 >
-                  <option value="">Select cooking method...</option>
-                  {COOKING_METHOD_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.icon} {option.label}
-                    </option>
+                  <option value="">Select method...</option>
+                  {COOKING_METHOD_OPTIONS.map(option => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
                   ))}
                 </select>
               </div>
@@ -191,15 +185,13 @@ export function EditRecipeDialog({ recipe, open, onOpenChange, onSave }: EditRec
                 <Label htmlFor="complexityLevel">Complexity</Label>
                 <select
                   id="complexityLevel"
-                  value={editedRecipe.complexityLevel || ""}
-                  onChange={(e) => updateRecipe('complexityLevel', e.target.value as ComplexityLevel || undefined)}
-                  className="w-full mt-1 p-2 border rounded-md"
+                  value={editedRecipe.complexityLevel || ''}
+                  onChange={(e) => updateRecipe('complexityLevel', e.target.value || undefined)}
+                  className="w-full p-2 border rounded"
                 >
                   <option value="">Select complexity...</option>
-                  {COMPLEXITY_LEVEL_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.icon} {option.label}
-                    </option>
+                  {COMPLEXITY_LEVEL_OPTIONS.map(option => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
                   ))}
                 </select>
               </div>
@@ -208,15 +200,13 @@ export function EditRecipeDialog({ recipe, open, onOpenChange, onSave }: EditRec
                 <Label htmlFor="mainIngredient">Main Ingredient</Label>
                 <select
                   id="mainIngredient"
-                  value={editedRecipe.mainIngredient || ""}
-                  onChange={(e) => updateRecipe('mainIngredient', e.target.value as MainIngredient || undefined)}
-                  className="w-full mt-1 p-2 border rounded-md"
+                  value={editedRecipe.mainIngredient || ''}
+                  onChange={(e) => updateRecipe('mainIngredient', e.target.value || undefined)}
+                  className="w-full p-2 border rounded"
                 >
                   <option value="">Select main ingredient...</option>
-                  {MAIN_INGREDIENT_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.icon} {option.label}
-                    </option>
+                  {MAIN_INGREDIENT_OPTIONS.map(option => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
                   ))}
                 </select>
               </div>
@@ -226,16 +216,15 @@ export function EditRecipeDialog({ recipe, open, onOpenChange, onSave }: EditRec
           {/* Diet & Lifestyle */}
           <div>
             <Label>Diet & Lifestyle</Label>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 mt-2">
-              {DIET_LIFESTYLE_OPTIONS.map((option) => (
-                <label key={option.value} className="flex items-center space-x-2 text-sm">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
+              {DIET_LIFESTYLE_OPTIONS.map(option => (
+                <label key={option.value} className="flex items-center space-x-2">
                   <input
                     type="checkbox"
                     checked={(editedRecipe.dietLifestyle || []).includes(option.value)}
                     onChange={(e) => handleDietLifestyleChange(option.value, e.target.checked)}
-                    className="rounded"
                   />
-                  <span>{option.icon} {option.label}</span>
+                  <span className="text-sm">{option.label}</span>
                 </label>
               ))}
             </div>
@@ -244,7 +233,7 @@ export function EditRecipeDialog({ recipe, open, onOpenChange, onSave }: EditRec
           {/* Ingredients */}
           <div>
             <Label>Ingredients</Label>
-            <div className="space-y-2 mt-2">
+            <div className="space-y-2 max-h-48 overflow-y-auto">
               {editedRecipe.ingredients.map((ingredient, index) => (
                 <div key={index} className="flex gap-2">
                   <Input
@@ -262,7 +251,7 @@ export function EditRecipeDialog({ recipe, open, onOpenChange, onSave }: EditRec
                     onClick={() => removeIngredient(index)}
                     className="text-red-600 hover:text-red-700"
                   >
-                    <Minus className="h-4 w-4" />
+                    ×
                   </Button>
                 </div>
               ))}
@@ -272,11 +261,8 @@ export function EditRecipeDialog({ recipe, open, onOpenChange, onSave }: EditRec
                   onChange={(e) => setNewIngredient(e.target.value)}
                   placeholder="Add ingredient..."
                   className="flex-1"
-                  onKeyPress={(e) => e.key === 'Enter' && addIngredient()}
                 />
-                <Button onClick={addIngredient} size="sm">
-                  <Plus className="h-4 w-4" />
-                </Button>
+                <Button onClick={addIngredient}>Add</Button>
               </div>
             </div>
           </div>
@@ -284,10 +270,10 @@ export function EditRecipeDialog({ recipe, open, onOpenChange, onSave }: EditRec
           {/* Instructions */}
           <div>
             <Label>Instructions</Label>
-            <div className="space-y-2 mt-2">
+            <div className="space-y-2 max-h-48 overflow-y-auto">
               {editedRecipe.instructions.map((instruction, index) => (
                 <div key={index} className="flex gap-2">
-                  <span className="text-sm font-medium text-sage mt-2 min-w-[20px]">{index + 1}.</span>
+                  <span className="text-sm font-medium text-gray-500 mt-2 min-w-[20px]">{index + 1}.</span>
                   <Textarea
                     value={instruction}
                     onChange={(e) => {
@@ -304,7 +290,7 @@ export function EditRecipeDialog({ recipe, open, onOpenChange, onSave }: EditRec
                     onClick={() => removeInstruction(index)}
                     className="text-red-600 hover:text-red-700 mt-2"
                   >
-                    <Minus className="h-4 w-4" />
+                    ×
                   </Button>
                 </div>
               ))}
@@ -316,35 +302,16 @@ export function EditRecipeDialog({ recipe, open, onOpenChange, onSave }: EditRec
                   className="flex-1"
                   rows={2}
                 />
-                <Button onClick={addInstruction} size="sm" className="mt-2">
-                  <Plus className="h-4 w-4" />
-                </Button>
+                <Button onClick={addInstruction} className="mt-2">Add</Button>
               </div>
             </div>
           </div>
 
-          {/* Top Tip */}
-          <div>
-            <Label htmlFor="topTip" className="flex items-center gap-2">
-              <Lightbulb className="h-4 w-4 text-yellow-500" />
-              Chef's Tip
-            </Label>
-            <Textarea
-              id="topTip"
-              value={editedRecipe.topTip || ""}
-              onChange={(e) => updateRecipe('topTip', e.target.value)}
-              placeholder="Share a helpful cooking tip..."
-              rows={2}
-              className="mt-1"
-            />
-          </div>
-
-          {/* Actions */}
-          <div className="flex justify-end space-x-2 pt-4 border-t">
+          <div className="flex justify-end space-x-2">
             <Button variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button onClick={handleSave} className="bg-terracotta hover:bg-terracotta/90">
+            <Button onClick={handleSave}>
               Save Changes
             </Button>
           </div>

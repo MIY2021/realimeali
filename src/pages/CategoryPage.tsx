@@ -1,6 +1,5 @@
 
 import { useParams, Link } from "react-router-dom";
-import { RecipeCategory } from "@/types";
 import { RecipeCard } from "@/components/recipes/RecipeCard";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -11,13 +10,6 @@ import { EditRecipeDialog } from "@/components/recipes/EditRecipeDialog";
 import { useToast } from "@/hooks/use-toast";
 import { Recipe } from "@/types";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
-
-const isValidCategory = (cat: string): cat is RecipeCategory =>
-  [
-    "Bulk", "Easy", "Cheap", "Healthy", "Vegetarian", "Fish", "Super Tasty",
-    "Pasta", "Tapas", "Winter", "BBQ", "Faffy", "Pricey!", "Not Yet Made",
-    "Snacks", "Breakfast"
-  ].includes(cat);
 
 export default function CategoryPage() {
   const { category = "" } = useParams();
@@ -35,17 +27,19 @@ export default function CategoryPage() {
   const [editRecipe, setEditRecipe] = useState<Recipe | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
 
-  if (!isValidCategory(decoded)) {
+  // Filter recipes by category using new classification system
+  const filteredRecipes = recipes.filter(r => {
+    // Check if recipe matches the category in any classification field
+    const categoryLower = decoded.toLowerCase();
     return (
-      <div className="container max-w-2xl py-6">
-        <h1 className="text-2xl font-bold text-navy mb-4">Not found</h1>
-        <p className="text-muted-foreground mb-2">No such category.</p>
-        <Link to="/recipes" className="underline text-terracotta">Back to recipes</Link>
-      </div>
+      r.mealType?.toLowerCase().includes(categoryLower) ||
+      r.cuisineRegion?.toLowerCase().includes(categoryLower) ||
+      r.cookingMethod?.toLowerCase().includes(categoryLower) ||
+      r.complexityLevel?.toLowerCase().includes(categoryLower) ||
+      r.mainIngredient?.toLowerCase().includes(categoryLower) ||
+      r.dietLifestyle?.some(diet => diet.toLowerCase().includes(categoryLower))
     );
-  }
-
-  const filteredRecipes = recipes.filter(r => r.categories.includes(decoded as RecipeCategory));
+  });
 
   const handleAddToMealPlan = (recipe: Recipe) => {
     setSelectedRecipe(recipe);
@@ -137,11 +131,11 @@ export default function CategoryPage() {
 
   return (
     <div className="container max-w-4xl py-8">
-      <h1 className="text-2xl font-bold text-navy mb-4">My Recipes: {decoded}</h1>
+      <h1 className="text-2xl font-bold text-navy mb-4">Recipes: {decoded}</h1>
       {filteredRecipes.length === 0 ? (
         <div className="text-center py-8">
           <p className="text-muted-foreground mb-4">You don't have any recipes in this category yet.</p>
-          <Link to="/recipes" className="underline text-terracotta">Create your first recipe</Link>
+          <Link to="/my-recipes/new" className="underline text-terracotta">Create your first recipe</Link>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">

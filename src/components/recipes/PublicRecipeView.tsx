@@ -1,253 +1,243 @@
-
-import { useState, useEffect } from "react";
-import { useParams, Navigate } from "react-router-dom";
+import { useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Clock, Users, CalendarDays, Book } from "lucide-react";
-import { RecipeImage } from "@/components/ui/recipe-image";
-import { usePublicRecipeSharing, PublicRecipeShare } from "@/hooks/usePublicRecipeSharing";
+import { Recipe } from "@/types";
 import { useAuth } from "@/contexts/AuthContext";
-import { useDocumentTitle } from "@/hooks/useDocumentTitle";
-import { Skeleton } from "@/components/ui/skeleton";
-import { format } from "date-fns";
+import { useHousehold } from "@/contexts/HouseholdContext";
+import { useRecipes } from "@/contexts/RecipesContext";
+import { useToast } from "@/hooks/use-toast";
+import { ChefHat, Clock, Users, ExternalLink, Plus } from "lucide-react";
 
-export function PublicRecipeView() {
-  const { slug, publicShareId } = useParams();
+interface PublicRecipeViewProps {
+  recipe: Recipe;
+  sourceUrl?: string;
+  sourceName?: string;
+}
+
+export function PublicRecipeView({ recipe, sourceUrl, sourceName }: PublicRecipeViewProps) {
   const { user } = useAuth();
-  const { getPublicShare, trackView, saveToMyRecipes, isSavingRecipe } = usePublicRecipeSharing();
-  const [publicShare, setPublicShare] = useState<PublicRecipeShare | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [notFound, setNotFound] = useState(false);
+  const { currentHousehold } = useHousehold();
+  const { createRecipe } = useRecipes();
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const [saving, setSaving] = useState(false);
+  const [hasSaved, setHasSaved] = useState(false);
 
-  // Use slug if available, otherwise fall back to publicShareId for backward compatibility
-  const identifier = slug || publicShareId;
-
-  useDocumentTitle(publicShare ? `${publicShare.title} | RealiMeali` : "Shared Recipe");
-
-  useEffect(() => {
-    const fetchPublicShare = async () => {
-      if (!identifier) {
-        setNotFound(true);
-        setIsLoading(false);
-        return;
-      }
-
-      const share = await getPublicShare(identifier);
-      if (share) {
-        setPublicShare(share);
-        // Track view separately after fetching data
-        trackView(identifier);
-      } else {
-        setNotFound(true);
-      }
-      setIsLoading(false);
-    };
-
-    fetchPublicShare();
-  }, [identifier, getPublicShare, trackView]);
-
-  const handleSaveRecipe = async () => {
-    if (!publicShare) return;
+  const handleSaveToMyRecipes = async () => {
+    if (!user || !currentHousehold || !recipe) return;
     
-    const success = await saveToMyRecipes(publicShare);
-    if (success) {
-      // Optionally redirect to recipes page or show success message
+    setSaving(true);
+    try {
+      const newRecipe = {
+        title: recipe.title,
+        description: recipe.description,
+        ingredients: recipe.ingredients,
+        instructions: recipe.instructions,
+        prepTime: recipe.prepTime,
+        cookTime: recipe.cookTime,
+        servings: recipe.servings,
+        image: recipe.image,
+        isFavorite: false,
+        householdId: currentHousehold.id,
+      };
+
+      const savedRecipe = await createRecipe(newRecipe, currentHousehold.id);
+      
+      if (savedRecipe) {
+        toast({
+          title: "Recipe Saved",
+          description: `${recipe.title} has been added to your recipes.`,
+        });
+        setHasSaved(true);
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to save recipe. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setSaving(false);
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="container max-w-4xl mx-auto px-4 py-4 sm:px-6 sm:py-8">
-        <div className="space-y-6 sm:space-y-8">
-          <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
-            <div className="lg:w-1/2">
-              <Skeleton className="aspect-video w-full rounded-lg" />
-            </div>
-            <div className="lg:w-1/2 space-y-4">
-              <Skeleton className="h-8 w-3/4" />
-              <div className="flex flex-wrap gap-2">
-                <Skeleton className="h-6 w-16 rounded-full" />
-                <Skeleton className="h-6 w-20 rounded-full" />
-              </div>
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-2/3" />
-              <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-4 sm:gap-6">
-                <Skeleton className="h-4 w-20" />
-                <Skeleton className="h-4 w-20" />
-                <Skeleton className="h-4 w-20" />
-                <Skeleton className="h-4 w-20" />
-              </div>
-              <Skeleton className="h-10 w-full sm:w-48" />
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (notFound || !publicShare) {
-    return (
-      <div className="container max-w-4xl py-8 px-4 sm:px-6">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Recipe Not Found</h1>
-          <p className="text-gray-600 mb-6">This shared recipe doesn't exist or may have expired.</p>
-          <Button asChild variant="outline">
-            <a href="/">Go to Homepage</a>
-          </Button>
-        </div>
-      </div>
-    );
-  }
+  const handleViewSource = () => {
+    if (sourceUrl) {
+      window.open(sourceUrl, '_blank');
+    }
+  };
 
   return (
     <div className="container max-w-4xl mx-auto px-4 py-4 sm:px-6 sm:py-8">
       <div className="space-y-6 sm:space-y-8">
-        {/* Header Banner */}
-        <div className="bg-gradient-to-r from-terracotta/10 to-sage/10 rounded-lg p-4 border border-terracotta/20">
-          <div className="flex items-center justify-between flex-wrap gap-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-terracotta/20 rounded-full">
-                <Users className="h-5 w-5 text-terracotta" />
-              </div>
-              <div>
-                <p className="font-medium text-navy">Shared Recipe</p>
-                <p className="text-sm text-muted-foreground">
-                  From {publicShare.shared_by_name || 'Unknown user'} 
-                  {publicShare.shared_by_household_name && ` (${publicShare.shared_by_household_name})`}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-4 text-sm text-muted-foreground">
-              <div className="flex items-center gap-1">
-                <span className="inline-block w-2 h-2 bg-sage rounded-full"></span>
-                <span>{publicShare.view_count} views</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <CalendarDays className="h-4 w-4" />
-                <span>Shared {format(new Date(publicShare.created_at), 'MMM d, yyyy')}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
+        {/* Recipe Header */}
         <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
-          <div className="lg:w-1/2">
-            <div className="aspect-video overflow-hidden rounded-lg">
-              <RecipeImage 
-                recipe={{
-                  id: publicShare.id,
-                  title: publicShare.title,
-                  image: publicShare.image,
-                  // Add other required Recipe properties with fallbacks
-                  description: publicShare.description || '',
-                  ingredients: publicShare.ingredients,
-                  instructions: publicShare.instructions,
-                  categories: publicShare.categories as any[],
-                  prepTime: publicShare.prep_time,
-                  cookTime: publicShare.cook_time,
-                  servings: publicShare.servings,
-                  createdBy: publicShare.shared_by_user_id,
-                  createdAt: publicShare.created_at,
-                  updatedAt: publicShare.created_at,
-                  isFavorite: false,
-                  householdId: publicShare.original_household_id,
-                }} 
-                className="h-full w-full" 
-                iconSize="h-16 w-16" 
+          {/* Recipe Image */}
+          {recipe.image && (
+            <div className="lg:w-1/2">
+              <img
+                src={recipe.image}
+                alt={recipe.title}
+                className="w-full aspect-video object-cover rounded-lg"
               />
             </div>
-          </div>
-          
-          <div className="lg:w-1/2 space-y-4">
-            <h1 className="text-2xl sm:text-3xl font-bold text-navy">{publicShare.title}</h1>
-            <div className="flex flex-wrap gap-2">
-              {publicShare.categories.map((category) => (
-                <span 
-                  key={category} 
-                  className="inline-flex items-center rounded-full bg-sage/20 px-2.5 py-1 text-xs font-medium text-sage"
-                >
-                  {category.charAt(0).toUpperCase() + category.slice(1)}
-                </span>
-              ))}
+          )}
+
+          {/* Recipe Info */}
+          <div className={`${recipe.image ? 'lg:w-1/2' : 'w-full'} space-y-4`}>
+            <div>
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-navy leading-tight">
+                {recipe.title}
+              </h1>
+              {recipe.description && (
+                <p className="text-gray-600 mt-2 sm:mt-3 text-base sm:text-lg">
+                  {recipe.description}
+                </p>
+              )}
             </div>
-            {publicShare.description && (
-              <p className="text-muted-foreground">{publicShare.description}</p>
-            )}
-            
+
+            {/* Classification Tags */}
+            <div className="flex flex-wrap gap-2">
+              {recipe.mealType && (
+                <span className="inline-flex items-center rounded-full bg-sage/20 px-3 py-1 text-sm font-medium text-sage">
+                  {recipe.mealType.replace('_', ' ')}
+                </span>
+              )}
+              {recipe.cuisineRegion && (
+                <span className="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-800">
+                  {recipe.cuisineRegion.replace('_', ' ')}
+                </span>
+              )}
+              {recipe.complexityLevel && (
+                <span className="inline-flex items-center rounded-full bg-green-100 px-3 py-1 text-sm font-medium text-green-800">
+                  {recipe.complexityLevel.replace('_', ' ')}
+                </span>
+              )}
+            </div>
+
             {/* Recipe Stats */}
-            <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-4 sm:gap-6 text-sm">
-              <div className="flex items-center gap-1">
-                <Clock className="h-4 w-4 text-terracotta" />
-                <span>Prep: {publicShare.prep_time} min</span>
+            <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-4 sm:gap-6 text-sm sm:text-base">
+              <div className="flex items-center text-gray-600">
+                <Clock className="h-4 w-4 sm:h-5 sm:w-5 mr-2 text-terracotta" />
+                <span><strong>Prep:</strong> {recipe.prepTime}m</span>
               </div>
-              <div className="flex items-center gap-1">
-                <Clock className="h-4 w-4 text-terracotta" />
-                <span>Cook: {publicShare.cook_time} min</span>
+              <div className="flex items-center text-gray-600">
+                <Clock className="h-4 w-4 sm:h-5 sm:w-5 mr-2 text-sage" />
+                <span><strong>Cook:</strong> {recipe.cookTime}m</span>
               </div>
-              <div className="flex items-center gap-1">
-                <Clock className="h-4 w-4 text-terracotta" />
-                <span>Total: {publicShare.prep_time + publicShare.cook_time} min</span>
+              <div className="flex items-center text-gray-600">
+                <Users className="h-4 w-4 sm:h-5 sm:w-5 mr-2 text-navy" />
+                <span><strong>Serves:</strong> {recipe.servings}</span>
               </div>
-              <div className="flex items-center gap-1">
-                <Users className="h-4 w-4 text-terracotta" />
-                <span>Serves: {publicShare.servings}</span>
+              <div className="flex items-center text-gray-600">
+                <Clock className="h-4 w-4 sm:h-5 sm:w-5 mr-2 text-purple-600" />
+                <span><strong>Total:</strong> {recipe.prepTime + recipe.cookTime}m</span>
               </div>
             </div>
 
-            {/* Save Button */}
-            {user && (
-              <div className="pt-4">
-                <Button 
-                  onClick={handleSaveRecipe}
-                  disabled={isSavingRecipe}
-                  className="w-full sm:w-auto"
-                  style={{ backgroundColor: '#e38165' }}
-                >
-                  <Book className="h-4 w-4 mr-2" />
-                  {isSavingRecipe ? 'Saving...' : '📖 Add To My Recipes'}
-                </Button>
+            {/* Source Info */}
+            {sourceName && (
+              <div className="text-sm text-gray-500">
+                <span>Source: {sourceName}</span>
+                {sourceUrl && (
+                  <Button
+                    variant="link"
+                    size="sm"
+                    className="p-0 h-auto text-blue-600"
+                    onClick={handleViewSource}
+                  >
+                    <ExternalLink className="h-3 w-3 mr-1" />
+                    View Original
+                  </Button>
+                )}
               </div>
             )}
-            
-            {!user && (
-              <div className="pt-4">
-                <p className="text-sm text-muted-foreground mb-2">
-                  Sign in to add this recipe to your collection
-                </p>
-                <Button asChild variant="outline" className="w-full sm:w-auto">
-                  <a href="/login">📖 Add To My Recipes</a>
-                </Button>
-              </div>
-            )}
+
+            {/* Action Buttons */}
+            <div className="pt-2">
+              {user && currentHousehold ? (
+                hasSaved ? (
+                  <div className="flex flex-col gap-2">
+                    <div className="text-green-600 text-sm font-medium">
+                      ✓ Added to your recipes
+                    </div>
+                    <Button
+                      onClick={() => navigate('/my-recipes')}
+                      variant="outline"
+                      className="w-full sm:w-auto"
+                    >
+                      View My Recipes
+                    </Button>
+                  </div>
+                ) : (
+                  <Button
+                    onClick={handleSaveToMyRecipes}
+                    className="w-full sm:w-auto bg-terracotta hover:bg-terracotta/90 text-white"
+                    disabled={saving}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    {saving ? 'Saving...' : 'Save to My Recipes'}
+                  </Button>
+                )
+              ) : (
+                <div className="text-sm text-gray-500">
+                  Please log in to save this recipe to your collection.
+                </div>
+              )}
+            </div>
           </div>
         </div>
-        
+
+        {/* Recipe Content */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+          {/* Ingredients */}
           <div className="space-y-4">
-            <h2 className="text-xl font-semibold text-navy">Ingredients</h2>
-            <ul className="space-y-2">
-              {publicShare.ingredients.map((ingredient, index) => (
-                <li key={index} className="flex items-start gap-2">
-                  <span className="mt-1.5 block h-2 w-2 rounded-full bg-terracotta flex-shrink-0" />
-                  <span className="text-sm sm:text-base">{ingredient}</span>
-                </li>
+            <h2 className="text-xl sm:text-2xl font-bold text-navy flex items-center">
+              <ChefHat className="h-5 w-5 sm:h-6 sm:w-6 mr-2 text-sage" />
+              Ingredients
+            </h2>
+            <div className="space-y-2">
+              {recipe.ingredients.map((ingredient, index) => (
+                <div key={index} className="flex items-start">
+                  <span className="inline-block w-2 h-2 bg-sage rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                  <span className="text-gray-700">{ingredient}</span>
+                </div>
               ))}
-            </ul>
+            </div>
           </div>
-          
+
+          {/* Instructions */}
           <div className="lg:col-span-2 space-y-4">
-            <h2 className="text-xl font-semibold text-navy">Instructions</h2>
-            <ol className="space-y-4">
-              {publicShare.instructions.map((instruction, index) => (
-                <li key={index} className="flex items-start gap-3">
-                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-sage text-white text-sm font-medium">
+            <h2 className="text-xl sm:text-2xl font-bold text-navy">Instructions</h2>
+            <div className="space-y-4">
+              {recipe.instructions.map((instruction, index) => (
+                <div key={index} className="flex items-start">
+                  <span className="inline-flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 bg-terracotta text-white text-sm sm:text-base font-bold rounded-full mr-3 sm:mr-4 flex-shrink-0 mt-0.5">
                     {index + 1}
                   </span>
-                  <span className="text-sm sm:text-base">{instruction}</span>
-                </li>
+                  <p className="text-gray-700 leading-relaxed">{instruction}</p>
+                </div>
               ))}
-            </ol>
+            </div>
           </div>
         </div>
+
+        {/* Chef's Tip */}
+        {recipe.topTip && (
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 sm:p-6">
+            <div className="flex items-start">
+              <div className="flex-shrink-0">
+                <div className="flex items-center justify-center w-8 h-8 bg-amber-100 rounded-lg">
+                  <span className="text-amber-600 text-lg">💡</span>
+                </div>
+              </div>
+              <div className="ml-3">
+                <h3 className="text-lg font-semibold text-amber-800 mb-1">Chef's Tip</h3>
+                <p className="text-amber-700">{recipe.topTip}</p>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -1,76 +1,63 @@
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { Recipe } from "@/types";
 
-interface UseRecipeListProps {
-  recipes: Recipe[];
-}
-
-export function useRecipeList({ recipes }: UseRecipeListProps) {
+export function useRecipeList(recipes: Recipe[]) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState<string>("all");
-  const [sortType, setSortType] = useState<string>("date-newest");
-  const [displayCount, setDisplayCount] = useState(12);
+  const [sortBy, setSortBy] = useState<"title" | "prepTime" | "cookTime">("title");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
-  const filteredRecipes = useMemo(() => {
-    return recipes.filter((recipe) => {
-      const matchesSearch = recipe.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                           recipe.description.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredAndSortedRecipes = useMemo(() => {
+    let filtered = recipes;
 
-      const matchesCategory = categoryFilter === "all" || 
-                            recipe.categories.includes(categoryFilter as any);
+    // Filter by search term
+    if (searchTerm) {
+      filtered = recipes.filter(recipe =>
+        recipe.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        recipe.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        recipe.ingredients.some(ingredient => 
+          ingredient.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+      );
+    }
 
-      return matchesSearch && matchesCategory;
-    });
-  }, [recipes, searchTerm, categoryFilter]);
+    // Sort recipes
+    filtered.sort((a, b) => {
+      let valueA, valueB;
+      
+      switch (sortBy) {
+        case "title":
+          valueA = a.title.toLowerCase();
+          valueB = b.title.toLowerCase();
+          break;
+        case "prepTime":
+          valueA = a.prepTime;
+          valueB = b.prepTime;
+          break;
+        case "cookTime":
+          valueA = a.cookTime;
+          valueB = b.cookTime;
+          break;
+        default:
+          valueA = a.title.toLowerCase();
+          valueB = b.title.toLowerCase();
+      }
 
-  const sortedRecipes = useMemo(() => {
-    return [...filteredRecipes].sort((a, b) => {
-      if (sortType === "title-asc") {
-        return a.title.localeCompare(b.title);
-      }
-      if (sortType === "title-desc") {
-        return b.title.localeCompare(a.title);
-      }
-      if (sortType === "prep-asc") {
-        return a.prepTime - b.prepTime;
-      }
-      if (sortType === "prep-desc") {
-        return b.prepTime - a.prepTime;
-      }
-      if (sortType === "date-newest") {
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-      }
-      if (sortType === "date-oldest") {
-        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-      }
+      if (valueA < valueB) return sortOrder === "asc" ? -1 : 1;
+      if (valueA > valueB) return sortOrder === "asc" ? 1 : -1;
       return 0;
     });
-  }, [filteredRecipes, sortType]);
 
-  const visibleRecipes = useMemo(() => {
-    return sortedRecipes.slice(0, displayCount);
-  }, [sortedRecipes, displayCount]);
-
-  const hasMoreRecipes = displayCount < sortedRecipes.length;
-
-  const handleLoadMore = useCallback(() => {
-    setDisplayCount(prev => prev + 8);
-  }, []);
+    return filtered;
+  }, [recipes, searchTerm, sortBy, sortOrder]);
 
   return {
     searchTerm,
     setSearchTerm,
-    categoryFilter,
-    setCategoryFilter,
-    sortType,
-    setSortType,
-    displayCount,
-    setDisplayCount,
-    filteredRecipes,
-    sortedRecipes,
-    visibleRecipes,
-    hasMoreRecipes,
-    handleLoadMore,
+    sortBy,
+    setSortBy,
+    sortOrder,
+    setSortOrder,
+    filteredAndSortedRecipes,
   };
 }

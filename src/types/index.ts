@@ -112,12 +112,13 @@ export type Recipe = {
   householdId: string; // household id
 };
 
+// Meal plan uses only core meal types (simplified subset)
 export type MealPlanMealType = "dinner" | "lunch" | "breakfast" | "snacks";
 
 export type MealPlan = {
   id: string;
   date: string;
-  mealType: MealPlanMealType;
+  mealType: MealPlanMealType; // Limited to core 4 types
   recipeId: string;
   notes?: string;
   createdBy: string;

@@ -58,7 +58,7 @@ export function AddToMealPlanDialog({ recipe, open, onOpenChange }: AddToMealPla
 
       await addMealPlan({
         date: new Date().toISOString().split('T')[0],
-        mealType,
+        mealType, // This is already MealPlanMealType
         recipeId: recipe.id,
         createdBy: user.id,
         slotIndex: 0,

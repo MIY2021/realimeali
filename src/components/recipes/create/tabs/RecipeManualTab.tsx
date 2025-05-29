@@ -7,7 +7,7 @@ import { Lightbulb, Clock, Users } from "lucide-react";
 import { EnhancedIngredientManager } from "../EnhancedIngredientManager";
 import { EnhancedInstructionManager } from "../EnhancedInstructionManager";
 import { EnhancedImageUpload } from "../EnhancedImageUpload";
-import { EnhancedCategorySelector } from "../EnhancedCategorySelector";
+import { RecipeClassificationSelector } from "../RecipeClassificationSelector";
 
 interface RecipeManualTabProps {
   isMobile: boolean;
@@ -48,10 +48,6 @@ export function RecipeManualTab({
 
   const handleInstructionsChange = (instructions: string[]) => {
     setNewRecipe({ ...newRecipe, instructions });
-  };
-
-  const handleCategoriesChange = (categories: any[]) => {
-    setNewRecipe({ ...newRecipe, categories });
   };
 
   return (
@@ -151,10 +147,10 @@ export function RecipeManualTab({
         )}
       </Card>
 
-      {/* Categories */}
-      <EnhancedCategorySelector
-        selectedCategories={newRecipe.categories}
-        onCategoriesChange={handleCategoriesChange}
+      {/* Recipe Classification */}
+      <RecipeClassificationSelector
+        recipe={newRecipe}
+        onRecipeChange={setNewRecipe}
       />
 
       {/* Ingredients */}
