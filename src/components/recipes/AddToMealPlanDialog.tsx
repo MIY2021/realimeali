@@ -2,14 +2,12 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Recipe, MealPlanMealType } from "@/types";
 import { useMealPlan } from "@/contexts/MealPlanContext";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
-import { format } from "date-fns";
 
 interface AddToMealPlanDialogProps {
   recipe: Recipe | null;
@@ -18,7 +16,7 @@ interface AddToMealPlanDialogProps {
 }
 
 export function AddToMealPlanDialog({ recipe, open, onOpenChange }: AddToMealPlanDialogProps) {
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  const [selectedWeek, setSelectedWeek] = useState<1 | 2>(1);
   const [selectedMealType, setSelectedMealType] = useState<MealPlanMealType>("dinner");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -28,25 +26,28 @@ export function AddToMealPlanDialog({ recipe, open, onOpenChange }: AddToMealPla
   const { currentHousehold } = useHousehold();
 
   const handleAddToMealPlan = async () => {
-    if (!recipe || !selectedDate || !user || !currentHousehold) return;
+    if (!recipe || !user || !currentHousehold) return;
 
     setIsLoading(true);
     try {
+      // Use current date as default
+      const currentDate = new Date().toISOString().split('T')[0];
+      
       await addMealPlan({
-        date: format(selectedDate, "yyyy-MM-dd"),
+        date: currentDate,
         mealType: selectedMealType,
         recipeId: recipe.id,
         createdBy: user.id,
         slotIndex: 0,
         isLeftover: false,
         householdId: currentHousehold.id,
-        weekNumber: 1,
+        weekNumber: selectedWeek,
         originalServings: recipe.servings,
-      });
+      }, selectedWeek);
 
       toast({
         title: "Added to Meal Plan",
-        description: `${recipe.title} has been added to your meal plan.`,
+        description: `${recipe.title} has been added to Week ${selectedWeek}.`,
       });
 
       onOpenChange(false);
@@ -73,14 +74,16 @@ export function AddToMealPlanDialog({ recipe, open, onOpenChange }: AddToMealPla
 
         <div className="space-y-4">
           <div>
-            <label className="text-sm font-medium mb-2 block">Select Date</label>
-            <Calendar
-              mode="single"
-              selected={selectedDate}
-              onSelect={setSelectedDate}
-              disabled={(date) => date < new Date()}
-              className="rounded-md border"
-            />
+            <label className="text-sm font-medium mb-2 block">Select Week</label>
+            <Select value={selectedWeek.toString()} onValueChange={(value) => setSelectedWeek(parseInt(value) as 1 | 2)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="1">Week 1</SelectItem>
+                <SelectItem value="2">Week 2</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div>
@@ -102,7 +105,7 @@ export function AddToMealPlanDialog({ recipe, open, onOpenChange }: AddToMealPla
             <Button variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button onClick={handleAddToMealPlan} disabled={!selectedDate || isLoading}>
+            <Button onClick={handleAddToMealPlan} disabled={isLoading}>
               {isLoading ? "Adding..." : "Add to Meal Plan"}
             </Button>
           </div>

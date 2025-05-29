@@ -60,8 +60,8 @@ export interface HouseholdMember {
 
 export interface PublicRecipeShare {
   public_share_id: string;
-  recipe_id: string;
-  shared_by: string;
+  original_recipe_id: string;
+  shared_by_user_id: string;
   shared_by_name: string;
   shared_by_household_name: string;
   title: string;
@@ -75,12 +75,8 @@ export interface PublicRecipeShare {
   expires_at: string;
   created_at: string;
   meal_type?: string;
-  cuisine_region?: string;
-  cooking_method?: string;
-  complexity_level?: string;
-  main_ingredient?: string;
-  diet_lifestyle?: string[];
-  original_recipe_id: string;
+  original_household_id: string;
+  view_count: number;
 }
 
 export interface UserProfile {
@@ -101,7 +97,7 @@ export interface HouseholdMealPlan {
 
 // New simplified category types
 export type MealType = "breakfast" | "lunch" | "dinner" | "snacks" | "sides" | "desserts" | "drinks";
-export type MealPlanMealType = MealType;
+export type MealPlanMealType = "breakfast" | "lunch" | "dinner" | "snacks";
 
 export type Cuisine = "british" | "italian" | "asian" | "mexican" | "indian" | "mediterranean" | "american" | "french" | "middle_eastern" | "other";
 

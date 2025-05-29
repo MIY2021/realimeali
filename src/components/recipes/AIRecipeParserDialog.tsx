@@ -4,9 +4,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { UtensilsCrossed, Loader2, Wand2 } from "lucide-react";
+import { UtensilsCrossed, Loader, Wand } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useAiRecipeGeneration } from "@/hooks/useAiRecipeGeneration";
 
 interface AIRecipeParserDialogProps {
   open: boolean;
@@ -18,7 +17,6 @@ export function AIRecipeParserDialog({ open, onOpenChange, onRecipeParsed }: AIR
   const [recipeText, setRecipeText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const { parseRecipeWithAI } = useAiRecipeGeneration();
 
   const handleParseRecipe = async () => {
     if (!recipeText.trim()) {
@@ -32,14 +30,10 @@ export function AIRecipeParserDialog({ open, onOpenChange, onRecipeParsed }: AIR
 
     setIsLoading(true);
     try {
-      const parsedRecipe = await parseRecipeWithAI(recipeText);
-      onRecipeParsed(parsedRecipe);
-      onOpenChange(false);
-      setRecipeText("");
-      
+      // TODO: Implement AI recipe parsing
       toast({
-        title: "Recipe Parsed",
-        description: "The recipe has been successfully parsed and added to the form.",
+        title: "Feature Coming Soon",
+        description: "AI recipe parsing will be available soon.",
       });
     } catch (error) {
       console.error("Error parsing recipe:", error);
@@ -84,12 +78,12 @@ export function AIRecipeParserDialog({ open, onOpenChange, onRecipeParsed }: AIR
             <Button onClick={handleParseRecipe} disabled={isLoading || !recipeText.trim()}>
               {isLoading ? (
                 <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  <Loader className="h-4 w-4 mr-2 animate-spin" />
                   Parsing...
                 </>
               ) : (
                 <>
-                  <Wand2 className="h-4 w-4 mr-2" />
+                  <Wand className="h-4 w-4 mr-2" />
                   Parse Recipe
                 </>
               )}

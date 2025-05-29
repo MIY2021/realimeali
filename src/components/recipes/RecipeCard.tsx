@@ -35,7 +35,7 @@ export function RecipeCard({ recipe, showActions = true, onAddToMealPlan }: Reci
     e.preventDefault();
     e.stopPropagation();
     try {
-      await updateRecipe(recipe.id, { ...recipe, isFavorite: !recipe.isFavorite });
+      await updateRecipe(recipe.id, { isFavorite: !recipe.isFavorite });
       toast({
         title: recipe.isFavorite ? "Removed from favorites" : "Added to favorites",
       });
@@ -105,7 +105,7 @@ export function RecipeCard({ recipe, showActions = true, onAddToMealPlan }: Reci
 
             <Button size="sm" onClick={handleAddToMealPlanClick} className="flex-1 text-xs">
               <Plus className="h-3 w-3 mr-1" />
-              Add to Plan
+              Add to Meal Plan
             </Button>
           </div>
         )}
