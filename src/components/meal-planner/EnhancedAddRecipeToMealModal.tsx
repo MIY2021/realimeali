@@ -28,12 +28,12 @@ export function EnhancedAddRecipeToMealModal({
 
   // Get meal types that exist in the recipes
   const availableMealTypes = [...new Set(
-    recipes.filter(r => r.mealType).map(r => r.mealType!)
+    recipes.filter(r => r.meal_type).map(r => r.meal_type!)
   )];
 
   const filteredRecipes = recipes.filter((recipe) => {
     const matchesSearch = recipe.title.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesMealType = mealTypeFilter === "all" || recipe.mealType === mealTypeFilter;
+    const matchesMealType = mealTypeFilter === "all" || recipe.meal_type === mealTypeFilter;
     return matchesSearch && matchesMealType;
   });
 
@@ -146,7 +146,7 @@ export function EnhancedAddRecipeToMealModal({
                         <div className="flex items-center gap-4 text-xs text-gray-500 mb-2">
                           <span className="flex items-center gap-1">
                             <Clock className="h-3 w-3" />
-                            {recipe.prepTime + recipe.cookTime} min
+                            {recipe.prep_time + recipe.cook_time} min
                           </span>
                           <span className="flex items-center gap-1">
                             <Users className="h-3 w-3" />
@@ -155,14 +155,14 @@ export function EnhancedAddRecipeToMealModal({
                         </div>
                         
                         <div className="flex flex-wrap gap-1">
-                          {recipe.mealType && (
+                          {recipe.meal_type && (
                             <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                              {getDisplayLabel(recipe.mealType, 'mealType')}
+                              {getDisplayLabel(recipe.meal_type, 'mealType')}
                             </span>
                           )}
-                          {recipe.complexityLevel && (
+                          {recipe.complexity_level && (
                             <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                              {getDisplayLabel(recipe.complexityLevel, 'complexityLevel')}
+                              {getDisplayLabel(recipe.complexity_level, 'complexityLevel')}
                             </span>
                           )}
                         </div>

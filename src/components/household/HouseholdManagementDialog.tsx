@@ -95,7 +95,7 @@ export const HouseholdManagementDialog = ({
                 <div className="space-y-2">
                   {householdMembers.map((member) => (
                     <div key={member.id} className="flex items-center justify-between p-2 border rounded">
-                      <span className="text-sm">{member.userId}</span>
+                      <span className="text-sm">{member.user_id}</span>
                       <span className={`text-xs px-2 py-1 rounded ${
                         member.role === 'owner' ? 'bg-terracotta/20 text-terracotta' : 'bg-sage/20 text-sage'
                       }`}>

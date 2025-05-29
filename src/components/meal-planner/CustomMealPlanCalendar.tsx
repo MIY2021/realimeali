@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Calendar, ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -66,12 +67,12 @@ export function CustomMealPlanCalendar({
   const getMealPlansForDateAndType = (date: Date, mealType: MealType): MealPlan[] => {
     const dateString = date.toISOString().split("T")[0];
     return mealPlans.filter(
-      (plan) => plan.date === dateString && plan.mealType === mealType && plan.weekNumber === currentWeek
+      (plan) => plan.date === dateString && plan.meal_type === mealType && plan.week_number === currentWeek
     );
   };
 
   const getRecipeForMealPlan = (mealPlan: MealPlan): Recipe | undefined => {
-    return recipes.find((recipe) => recipe.id === mealPlan.recipeId);
+    return recipes.find((recipe) => recipe.id === mealPlan.recipe_id);
   };
 
   const handleRemove = (planId: string) => {
@@ -145,7 +146,7 @@ export function CustomMealPlanCalendar({
                         ) : (
                           mealPlansForType.map((mealPlan) => {
                             const recipe = getRecipeForMealPlan(mealPlan);
-                            const parentRecipe = mealPlan.parentMealPlanId ? recipes.find(r => r.id === mealPlan.parentMealPlanId) : undefined;
+                            const parentRecipe = mealPlan.parent_meal_plan_id ? recipes.find(r => r.id === mealPlan.parent_meal_plan_id) : undefined;
 
                             return (
                               <EnhancedMealCard

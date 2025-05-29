@@ -114,13 +114,13 @@ export const ApprovalStatusDropdown = ({
         <DropdownMenuSeparator />
         
         {householdMembers.map((member) => {
-          const approval = getApprovalForMember(member.userId);
-          const memberName = member.profile?.fullName || member.profile?.email || 'Unknown User';
+          const approval = getApprovalForMember(member.user_id);
+          const memberName = member.profile?.full_name || member.profile?.email || 'Unknown User';
           
           return (
             <DropdownMenuItem key={member.id} className="flex items-center justify-between p-3">
               <div className="flex items-center gap-3 flex-1">
-                {getStatusIcon(member.userId)}
+                {getStatusIcon(member.user_id)}
                 <div className="flex-1">
                   <p className="font-medium">{memberName}</p>
                   {approval && approval.responded_at && (
@@ -137,8 +137,8 @@ export const ApprovalStatusDropdown = ({
               </div>
               
               <div className="flex items-center gap-2">
-                <Badge variant={getStatusBadgeVariant(member.userId)}>
-                  {getStatusText(member.userId)}
+                <Badge variant={getStatusBadgeVariant(member.user_id)}>
+                  {getStatusText(member.user_id)}
                 </Badge>
                 
                 <Button

@@ -35,14 +35,14 @@ export function AddToMealPlanDialog({ recipe, open, onOpenChange }: AddToMealPla
       
       await addMealPlan({
         date: currentDate,
-        mealType: selectedMealType,
-        recipeId: recipe.id,
-        createdBy: user.id,
-        slotIndex: 0,
-        isLeftover: false,
-        householdId: currentHousehold.id,
-        weekNumber: selectedWeek,
-        originalServings: recipe.servings,
+        meal_type: selectedMealType,
+        recipe_id: recipe.id,
+        created_by: user.id,
+        slot_index: 0,
+        is_leftover: false,
+        household_id: currentHousehold.id,
+        week_number: selectedWeek,
+        original_servings: recipe.servings,
       }, selectedWeek);
 
       toast({

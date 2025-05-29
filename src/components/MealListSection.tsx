@@ -99,11 +99,11 @@ export default function MealListSection({
                     }`}
                   >
                     {mealPlans.map((plan, index) => {
-                      const recipe = getRecipeById(plan.recipeId);
+                      const recipe = getRecipeById(plan.recipe_id);
                       
                       // For leftover meals, get the parent recipe if the current recipe is not found
-                      const parentRecipe = plan.isLeftover && plan.parentMealPlanId 
-                        ? getRecipeById(plan.recipeId) 
+                      const parentRecipe = plan.is_leftover && plan.parent_meal_plan_id 
+                        ? getRecipeById(plan.recipe_id) 
                         : undefined;
 
                       return (

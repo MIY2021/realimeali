@@ -73,10 +73,10 @@ export function EnhancedMealCard({
     );
   }
 
-  const showLeftoverButton = mealPlan.mealType === 'dinner' && !mealPlan.isLeftover && onCreateLeftover;
+  const showLeftoverButton = mealPlan.meal_type === 'dinner' && !mealPlan.is_leftover && onCreateLeftover;
 
   return (
-    <Card className={`mb-${isMobile ? '1.5' : '2'} ${mealPlan.isLeftover ? 'bg-orange-50 border-orange-200' : ''}`}>
+    <Card className={`mb-${isMobile ? '1.5' : '2'} ${mealPlan.is_leftover ? 'bg-orange-50 border-orange-200' : ''}`}>
       <CardContent className={`${isMobile ? 'p-2.5' : 'p-3'}`}>
         <div className={`flex items-center gap-${isMobile ? '2' : '3'}`}>
           {/* Recipe thumbnail */}
@@ -85,7 +85,7 @@ export function EnhancedMealCard({
           </div>
 
           <div className="flex-1 min-w-0">
-            {mealPlan.isLeftover ? (
+            {mealPlan.is_leftover ? (
               <div className={`space-y-${isMobile ? '0.5' : '1'}`}>
                 <div className={`flex items-center gap-${isMobile ? '1.5' : '2'} ${isMobile ? 'text-xs' : 'text-sm'}`}>
                   <span className="text-orange-600">🍽️</span>
@@ -97,7 +97,7 @@ export function EnhancedMealCard({
                   </Link>
                 </div>
                 <div className={`${isMobile ? 'text-xs' : 'text-xs'} text-orange-600`}>
-                  {mealPlan.leftoverServings} servings from dinner
+                  {mealPlan.leftover_servings} servings from dinner
                 </div>
               </div>
             ) : (
@@ -110,12 +110,12 @@ export function EnhancedMealCard({
                 </Link>
                 <div className={`flex items-center gap-${isMobile ? '1.5' : '2'} flex-wrap`}>
                   <span className={`${isMobile ? 'text-xs' : 'text-xs'} text-muted-foreground`}>
-                    {displayRecipe.prepTime + displayRecipe.cookTime} min
+                    {displayRecipe.prep_time + displayRecipe.cook_time} min
                   </span>
                   <span className={`${isMobile ? 'text-xs' : 'text-xs'} text-muted-foreground`}>
-                    • {mealPlan.originalServings || displayRecipe.servings} servings
+                    • {mealPlan.original_servings || displayRecipe.servings} servings
                   </span>
-                  {mealPlan.originalServings && mealPlan.originalServings !== displayRecipe.servings && (
+                  {mealPlan.original_servings && mealPlan.original_servings !== displayRecipe.servings && (
                     <span className={`${isMobile ? 'text-xs' : 'text-xs'} text-orange-600`}>
                       (some saved for leftovers)
                     </span>
