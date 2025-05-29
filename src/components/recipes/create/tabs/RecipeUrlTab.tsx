@@ -7,6 +7,7 @@ interface RecipeUrlTabProps {
   recipeUrl: string;
   setRecipeUrl: (url: string) => void;
   isProcessing: boolean;
+  importProgress: string;
   onImportWithImages: () => void;
   showCommunityDialog: boolean;
   setShowCommunityDialog: (show: boolean) => void;
@@ -16,7 +17,8 @@ interface RecipeUrlTabProps {
 export function RecipeUrlTab({ 
   recipeUrl, 
   setRecipeUrl, 
-  isProcessing, 
+  isProcessing,
+  importProgress,
   onImportWithImages,
   showCommunityDialog,
   setShowCommunityDialog,
@@ -34,6 +36,19 @@ export function RecipeUrlTab({
           className="w-full p-3 sm:p-4 border rounded-lg text-sm sm:text-base"
         />
       </div>
+      
+      {/* Progress indicator with funny messages */}
+      {isProcessing && importProgress && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="flex items-center gap-3">
+            <div className="animate-spin h-5 w-5 border-2 border-blue-500 border-t-transparent rounded-full"></div>
+            <div>
+              <p className="text-sm font-medium text-blue-800">{importProgress}</p>
+              <p className="text-xs text-blue-600">This might take a few moments...</p>
+            </div>
+          </div>
+        </div>
+      )}
       
       <Button 
         onClick={onImportWithImages} 

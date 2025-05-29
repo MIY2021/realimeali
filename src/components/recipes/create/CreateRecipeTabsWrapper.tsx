@@ -80,6 +80,7 @@ export function CreateRecipeTabsWrapper({
                 recipeUrl={recipeProcessingHook.recipeUrl}
                 setRecipeUrl={recipeProcessingHook.setRecipeUrl}
                 isProcessing={recipeProcessingHook.isProcessing}
+                importProgress={recipeProcessingHook.importProgress}
                 onImportWithImages={onImportFromUrlWithImages}
                 showCommunityDialog={recipeProcessingHook.showCommunityDialog}
                 setShowCommunityDialog={recipeProcessingHook.setShowCommunityDialog}

@@ -19,6 +19,20 @@ export function useUrlRecipeProcessing() {
   const [isDownloadingImages, setIsDownloadingImages] = useState(false);
   const [showCommunityDialog, setShowCommunityDialog] = useState(false);
   const [parsedRecipeData, setParsedRecipeData] = useState<any>(null);
+  const [importProgress, setImportProgress] = useState("");
+
+  const funnyMessages = [
+    "🕵️ Sneaking into the kitchen...",
+    "🔍 Analyzing secret ingredients...",
+    "🧠 Teaching AI what delicious looks like...",
+    "📝 Copying the chef's homework...",
+    "🎭 Pretending to be a food critic...",
+    "🔬 Extracting flavor molecules...",
+    "📸 Taking sneaky recipe photos...",
+    "🎪 Performing culinary magic tricks...",
+    "🦸 Unleashing recipe superpowers...",
+    "🎯 Hunting down those instructions..."
+  ];
 
   const handleImportFromUrl = async (
     setNewRecipe: (recipe: Omit<Recipe, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>) => void,
@@ -38,6 +52,15 @@ export function useUrlRecipeProcessing() {
     setIsProcessing(true);
     setWebsiteImages([]);
     setStoredImages([]);
+    
+    // Show funny progress messages
+    let messageIndex = 0;
+    const progressInterval = setInterval(() => {
+      if (messageIndex < funnyMessages.length) {
+        setImportProgress(funnyMessages[messageIndex]);
+        messageIndex++;
+      }
+    }, 800);
     
     try {
       console.log('Importing recipe from URL:', recipeUrl);
@@ -106,6 +129,8 @@ export function useUrlRecipeProcessing() {
         variant: "destructive",
       });
     } finally {
+      clearInterval(progressInterval);
+      setImportProgress("");
       setIsProcessing(false);
     }
   };
@@ -171,6 +196,7 @@ export function useUrlRecipeProcessing() {
     showCommunityDialog,
     setShowCommunityDialog,
     parsedRecipeData,
+    importProgress,
     handleImportFromUrl,
     handleDownloadImages,
   };

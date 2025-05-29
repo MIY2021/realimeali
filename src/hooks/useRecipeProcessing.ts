@@ -25,6 +25,7 @@ export function useRecipeProcessing() {
     showCommunityDialog: urlProcessing.showCommunityDialog,
     setShowCommunityDialog: urlProcessing.setShowCommunityDialog,
     parsedRecipeData: urlProcessing.parsedRecipeData,
+    importProgress: urlProcessing.importProgress,
     handleImportFromUrl: urlProcessing.handleImportFromUrl,
     handleDownloadImages: urlProcessing.handleDownloadImages,
     
