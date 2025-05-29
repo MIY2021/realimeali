@@ -3,27 +3,28 @@ import { useState } from "react";
 import { Recipe, MealType, CuisineRegion, CookingMethod, DietLifestyle, ComplexityLevel, MainIngredient } from "@/types";
 
 export function useRecipeForm() {
-  const [newRecipe, setNewRecipe] = useState<Omit<Recipe, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>>({
+  const [newRecipe, setNewRecipe] = useState<Omit<Recipe, 'id' | 'created_at' | 'updated_at' | 'created_by'>>({
     title: "",
     description: "",
     ingredients: [],
     instructions: [],
     // New classification fields
-    mealType: undefined,
-    cuisineRegion: undefined,
-    cookingMethod: undefined,
-    dietLifestyle: [],
-    complexityLevel: undefined,
-    mainIngredient: undefined,
-    prepTime: 0,
-    cookTime: 0,
+    meal_type: undefined,
+    cuisine_region: undefined,
+    cooking_method: undefined,
+    diet_lifestyle: [],
+    complexity_level: undefined,
+    main_ingredient: undefined,
+    prep_time: 0,
+    cook_time: 0,
     servings: 1,
     image: undefined,
-    topTip: "Enjoy cooking this delicious recipe!", // Default top tip
-    isFavorite: false,
-    householdId: "",
+    top_tip: "Enjoy cooking this delicious recipe!", // Default top tip
+    is_favorite: false,
+    household_id: "",
   });
 
+  const [newCategory, setNewCategory] = useState("");
   const [newIngredient, setNewIngredient] = useState("");
   const [newInstruction, setNewInstruction] = useState("");
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -31,6 +32,17 @@ export function useRecipeForm() {
   const [generationProgress, setGenerationProgress] = useState("");
   const [shareWithCommunity, setShareWithCommunity] = useState(false);
   const [wasImportedFromWebsite, setWasImportedFromWebsite] = useState(false);
+
+  const handleAddCategory = () => {
+    if (newCategory.trim()) {
+      // Add category logic here if needed
+      setNewCategory("");
+    }
+  };
+
+  const handleRemoveCategory = (index: number) => {
+    // Remove category logic here if needed
+  };
 
   const handleAddIngredient = () => {
     if (newIngredient.trim()) {
@@ -87,27 +99,27 @@ export function useRecipeForm() {
 
   // Helper functions for new classification fields
   const handleMealTypeChange = (mealType: MealType | undefined) => {
-    setNewRecipe({ ...newRecipe, mealType });
+    setNewRecipe({ ...newRecipe, meal_type: mealType });
   };
 
   const handleCuisineRegionChange = (cuisineRegion: CuisineRegion | undefined) => {
-    setNewRecipe({ ...newRecipe, cuisineRegion });
+    setNewRecipe({ ...newRecipe, cuisine_region: cuisineRegion });
   };
 
   const handleCookingMethodChange = (cookingMethod: CookingMethod | undefined) => {
-    setNewRecipe({ ...newRecipe, cookingMethod });
+    setNewRecipe({ ...newRecipe, cooking_method: cookingMethod });
   };
 
   const handleDietLifestyleChange = (dietLifestyle: DietLifestyle[]) => {
-    setNewRecipe({ ...newRecipe, dietLifestyle });
+    setNewRecipe({ ...newRecipe, diet_lifestyle: dietLifestyle });
   };
 
   const handleComplexityLevelChange = (complexityLevel: ComplexityLevel | undefined) => {
-    setNewRecipe({ ...newRecipe, complexityLevel });
+    setNewRecipe({ ...newRecipe, complexity_level: complexityLevel });
   };
 
   const handleMainIngredientChange = (mainIngredient: MainIngredient | undefined) => {
-    setNewRecipe({ ...newRecipe, mainIngredient });
+    setNewRecipe({ ...newRecipe, main_ingredient: mainIngredient });
   };
 
   // Function to mark recipe as imported from website and enable community sharing by default
@@ -119,6 +131,8 @@ export function useRecipeForm() {
   return {
     newRecipe,
     setNewRecipe,
+    newCategory,
+    setNewCategory,
     newIngredient,
     setNewIngredient,
     newInstruction,
@@ -133,6 +147,8 @@ export function useRecipeForm() {
     setShareWithCommunity,
     wasImportedFromWebsite,
     setWasImportedFromWebsite,
+    handleAddCategory,
+    handleRemoveCategory,
     handleAddIngredient,
     handleRemoveIngredient,
     handleAddInstruction,

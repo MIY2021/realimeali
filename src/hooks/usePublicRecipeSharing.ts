@@ -16,6 +16,7 @@ export function usePublicRecipeSharing() {
       const { data, error } = await supabase
         .from('public_recipe_shares')
         .insert({
+          public_share_id: crypto.randomUUID().slice(0, 12), // Generate a 12-char ID
           original_recipe_id: recipe.id,
           shared_by_user_id: recipe.created_by,
           shared_by_name,

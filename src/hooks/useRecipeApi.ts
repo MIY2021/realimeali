@@ -1,53 +1,55 @@
 
-import { Recipe } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/contexts/AuthContext";
-import { useMemo } from "react";
-import { 
-  transformDbRecipeToRecipe, 
-  transformRecipeToDbInsert, 
-  transformRecipeToDbUpdate 
-} from "@/utils/recipeTransformers";
+import { Recipe } from "@/types";
 
 export const useRecipeApi = () => {
-  const { toast } = useToast();
-  const { user } = useAuth();
-
-  // Use useMemo instead of useCallback to create stable functions
-  return useMemo(() => ({
-    fetchRecipes: async (householdId: string | null): Promise<Recipe[]> => {
-      if (!user || !householdId) {
-        return [];
-      }
-
+  const fetchRecipes = async (householdId: string): Promise<Recipe[]> => {
+    try {
       const { data, error } = await supabase
         .from('recipes')
         .select('*')
         .eq('household_id', householdId)
         .order('created_at', { ascending: false });
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
+      
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching recipes:', error);
+      throw error;
+    }
+  };
 
-      return (data || []).map(transformDbRecipeToRecipe);
-    },
+  const createRecipe = async (
+    recipeData: Omit<Recipe, 'id' | 'created_at' | 'updated_at' | 'created_by'>, 
+    householdId: string
+  ): Promise<Recipe | null> => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
 
-    createRecipe: async (
-      recipeData: Omit<Recipe, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>, 
-      householdId: string
-    ): Promise<Recipe | null> => {
-      if (!user) {
-        toast({
-          title: "Authentication Required",
-          description: "You must be logged in to create recipes.",
-          variant: "destructive",
-        });
-        return null;
-      }
-
-      const insertData = transformRecipeToDbInsert(recipeData, user.id, householdId);
+      // Map the data to match database schema
+      const insertData = {
+        user_id: user.id,
+        household_id: householdId,
+        title: recipeData.title,
+        description: recipeData.description,
+        ingredients: recipeData.ingredients,
+        instructions: recipeData.instructions,
+        prep_time: recipeData.prep_time,
+        cook_time: recipeData.cook_time,
+        servings: recipeData.servings,
+        image: recipeData.image,
+        is_favorite: recipeData.is_favorite,
+        meal_type: recipeData.meal_type,
+        cuisine_region: recipeData.cuisine_region,
+        cooking_method: recipeData.cooking_method,
+        diet_lifestyle: recipeData.diet_lifestyle,
+        complexity_level: recipeData.complexity_level,
+        main_ingredient: recipeData.main_ingredient,
+        top_tip: recipeData.top_tip,
+        slug: recipeData.slug,
+      };
 
       const { data, error } = await supabase
         .from('recipes')
@@ -55,81 +57,70 @@ export const useRecipeApi = () => {
         .select()
         .single();
 
-      if (error) {
-        console.error("Error creating recipe:", error);
-        throw error;
-      }
-
-      const newRecipe = transformDbRecipeToRecipe(data);
+      if (error) throw error;
       
-      toast({
-        title: "Recipe Created",
-        description: `${newRecipe.title} has been saved to your household collection.`,
-      });
+      return data;
+    } catch (error) {
+      console.error('Error creating recipe:', error);
+      throw error;
+    }
+  };
 
-      return newRecipe;
-    },
-
-    updateRecipe: async (id: string, recipeData: Partial<Recipe>): Promise<Recipe | null> => {
-      if (!user) {
-        toast({
-          title: "Authentication Required",
-          description: "You must be logged in to update recipes.",
-          variant: "destructive",
-        });
-        return null;
-      }
-
-      const updateData = transformRecipeToDbUpdate(recipeData);
-
+  const updateRecipe = async (id: string, recipe: Recipe): Promise<Recipe | null> => {
+    try {
       const { data, error } = await supabase
         .from('recipes')
-        .update(updateData)
+        .update({
+          title: recipe.title,
+          description: recipe.description,
+          ingredients: recipe.ingredients,
+          instructions: recipe.instructions,
+          prep_time: recipe.prep_time,
+          cook_time: recipe.cook_time,
+          servings: recipe.servings,
+          image: recipe.image,
+          is_favorite: recipe.is_favorite,
+          meal_type: recipe.meal_type,
+          cuisine_region: recipe.cuisine_region,
+          cooking_method: recipe.cooking_method,
+          diet_lifestyle: recipe.diet_lifestyle,
+          complexity_level: recipe.complexity_level,
+          main_ingredient: recipe.main_ingredient,
+          top_tip: recipe.top_tip,
+        })
         .eq('id', id)
-        .eq('user_id', user.id)
         .select()
         .single();
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
+      
+      return data;
+    } catch (error) {
+      console.error('Error updating recipe:', error);
+      throw error;
+    }
+  };
 
-      const updatedRecipe = transformDbRecipeToRecipe(data);
-
-      toast({
-        title: "Recipe Updated",
-        description: `${updatedRecipe.title} has been updated.`,
-      });
-
-      return updatedRecipe;
-    },
-
-    deleteRecipe: async (id: string): Promise<boolean> => {
-      if (!user) {
-        toast({
-          title: "Authentication Required",
-          description: "You must be logged in to delete recipes.",
-          variant: "destructive",
-        });
-        return false;
-      }
-
+  const deleteRecipe = async (id: string): Promise<boolean> => {
+    try {
       const { error } = await supabase
         .from('recipes')
         .delete()
-        .eq('id', id)
-        .eq('user_id', user.id);
+        .eq('id', id);
 
-      if (error) {
-        throw error;
-      }
-
-      toast({
-        title: "Recipe Deleted",
-        description: "Recipe has been removed from your collection.",
-      });
-
+      if (error) throw error;
+      
       return true;
-    },
-  }), [user?.id]); // Only depend on user.id, not the full user object or toast
+    } catch (error) {
+      console.error('Error deleting recipe:', error);
+      return false;
+    }
+  };
+
+  return {
+    fetchRecipes,
+    createRecipe,
+    updateRecipe,
+    deleteRecipe,
+  };
 };

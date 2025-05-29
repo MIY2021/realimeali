@@ -19,6 +19,10 @@ export interface Recipe {
   diet_lifestyle?: DietLifestyle[];
   complexity_level?: ComplexityLevel;
   slug?: string;
+  top_tip?: string;
+  cuisine_region?: CuisineRegion;
+  cooking_method?: CookingMethod;
+  main_ingredient?: MainIngredient;
 }
 
 export interface MealPlan {
@@ -117,6 +121,12 @@ export type MealPlanMealType = "breakfast" | "lunch" | "dinner" | "snacks";
 
 export type Cuisine = "british" | "italian" | "asian" | "mexican" | "indian" | "mediterranean" | "american" | "french" | "middle_eastern" | "other";
 
-export type DietLifestyle = "vegetarian" | "vegan" | "gluten_free" | "dairy_free" | "low_carb" | "high_protein" | "budget_friendly" | "kid_friendly";
+export type DietLifestyle = "vegetarian" | "vegan" | "gluten_free" | "dairy_free" | "high_protein" | "kid_friendly" | "pescatarian" | "low_carb_keto" | "paleo" | "diabetic_friendly" | "budget_meals" | "pregnancy_safe";
 
 export type ComplexityLevel = "quick_easy" | "standard" | "complex";
+
+export type CuisineRegion = "british" | "italian" | "asian" | "mexican" | "indian" | "mediterranean" | "american" | "french" | "middle_eastern" | "other";
+
+export type CookingMethod = "one_pot" | "oven_baked" | "air_fryer" | "slow_cooker" | "pressure_cooker" | "bbq_grilled" | "stir_fried" | "roasted" | "raw_no_cook";
+
+export type MainIngredient = "chicken" | "beef" | "pork" | "fish" | "seafood" | "lamb" | "turkey" | "vegetables" | "beans_legumes" | "grains" | "pasta" | "rice" | "eggs" | "dairy";

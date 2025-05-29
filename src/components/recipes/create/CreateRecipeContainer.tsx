@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -8,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useRecipeForm } from "@/hooks/useRecipeForm";
 import { useRecipeProcessing } from "@/hooks/useRecipeProcessing";
 import { useImageGeneration } from "@/hooks/useImageGeneration";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { CreateRecipeHeader } from "./CreateRecipeHeader";
 import { CreateRecipeTabsWrapper } from "./CreateRecipeTabsWrapper";
 import { CreateRecipeActions } from "./CreateRecipeActions";
@@ -18,58 +18,24 @@ export function CreateRecipeContainer() {
   const { currentHousehold } = useHousehold();
   const { createRecipe } = useRecipes();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
 
   const [activeTab, setActiveTab] = useState("manual");
   const [isSaving, setIsSaving] = useState(false);
 
-  const {
-    newRecipe,
-    setNewRecipe,
-    newIngredient,
-    setNewIngredient,
-    newInstruction,
-    setNewInstruction,
-    imagePreview,
-    setImagePreview,
-    isGeneratingImage,
-    setIsGeneratingImage,
-    generationProgress,
-    setGenerationProgress,
-    shareWithCommunity,
-    setShareWithCommunity,
-    wasImportedFromWebsite,
-    handleAddIngredient,
-    handleRemoveIngredient,
-    handleAddInstruction,
-    handleRemoveInstruction,
-    handleImageChange,
-  } = useRecipeForm();
-
-  const {
-    recipeText,
-    setRecipeText,
-    recipeUrl,
-    setRecipeUrl,
-    aiPrompt,
-    setAiPrompt,
-    stylePreferences,
-    setStylePreferences,
-    isProcessing,
-    handleProcessText,
-    handleImportFromUrl,
-    handleProcessImage,
-    handleGenerateRecipe,
-  } = useRecipeProcessing();
+  // Keep hooks as objects instead of destructuring
+  const recipeFormHook = useRecipeForm();
+  const recipeProcessingHook = useRecipeProcessing();
 
   const { handleGenerateImage } = useImageGeneration();
 
   const onGenerateImage = () => {
     handleGenerateImage(
-      newRecipe.title,
-      setImagePreview,
-      (url: string) => setNewRecipe({ ...newRecipe, image: url }),
-      setIsGeneratingImage,
-      setGenerationProgress
+      recipeFormHook.newRecipe.title,
+      recipeFormHook.setImagePreview,
+      (url: string) => recipeFormHook.setNewRecipe({ ...recipeFormHook.newRecipe, image: url }),
+      recipeFormHook.setIsGeneratingImage,
+      recipeFormHook.setGenerationProgress
     );
   };
 
@@ -83,7 +49,7 @@ export function CreateRecipeContainer() {
       return;
     }
 
-    if (!newRecipe.title.trim()) {
+    if (!recipeFormHook.newRecipe.title.trim()) {
       toast({
         title: "Error",
         description: "Recipe title is required",
@@ -92,7 +58,7 @@ export function CreateRecipeContainer() {
       return;
     }
 
-    if (newRecipe.ingredients.length === 0) {
+    if (recipeFormHook.newRecipe.ingredients.length === 0) {
       toast({
         title: "Error",
         description: "At least one ingredient is required",
@@ -101,7 +67,7 @@ export function CreateRecipeContainer() {
       return;
     }
 
-    if (newRecipe.instructions.length === 0) {
+    if (recipeFormHook.newRecipe.instructions.length === 0) {
       toast({
         title: "Error",
         description: "At least one instruction is required",
@@ -113,7 +79,7 @@ export function CreateRecipeContainer() {
     setIsSaving(true);
     try {
       const recipeToSave = {
-        ...newRecipe,
+        ...recipeFormHook.newRecipe,
         householdId: currentHousehold.id,
       };
 
@@ -143,55 +109,37 @@ export function CreateRecipeContainer() {
   };
 
   // Wrapper functions to match expected signatures
-  const wrappedProcessText = () => handleProcessText(setNewRecipe, newRecipe, setActiveTab);
-  const wrappedProcessImage = (file: File) => handleProcessImage(file, setNewRecipe, newRecipe, setActiveTab);
-  const wrappedGenerateRecipe = () => handleGenerateRecipe(setNewRecipe, newRecipe, setActiveTab);
+  const wrappedProcessText = () => recipeProcessingHook.handleProcessText(recipeFormHook.setNewRecipe, recipeFormHook.newRecipe, setActiveTab);
+  const wrappedProcessImage = (file: File) => recipeProcessingHook.handleProcessImage(file, recipeFormHook.setNewRecipe, recipeFormHook.newRecipe, setActiveTab);
+  const wrappedGenerateRecipe = () => recipeProcessingHook.handleGenerateRecipe(recipeFormHook.setNewRecipe, recipeFormHook.newRecipe, setActiveTab);
 
   return (
     <div className="container max-w-5xl mx-auto py-6 px-4 space-y-6">
       <CreateRecipeHeader onCancel={handleCancel} />
       
       <CreateRecipeTabsWrapper
+        isMobile={isMobile}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
-        newRecipe={newRecipe}
-        setNewRecipe={setNewRecipe}
-        newIngredient={newIngredient}
-        setNewIngredient={setNewIngredient}
-        newInstruction={newInstruction}
-        setNewInstruction={setNewInstruction}
-        imagePreview={imagePreview}
-        isGeneratingImage={isGeneratingImage}
-        generationProgress={generationProgress}
-        onImageChange={handleImageChange}
-        onGenerateImage={onGenerateImage}
-        onAddIngredient={handleAddIngredient}
-        onRemoveIngredient={handleRemoveIngredient}
-        onAddInstruction={handleAddInstruction}
-        onRemoveInstruction={handleRemoveInstruction}
-        recipeText={recipeText}
-        setRecipeText={setRecipeText}
-        recipeUrl={recipeUrl}
-        setRecipeUrl={setRecipeUrl}
-        aiPrompt={aiPrompt}
-        setAiPrompt={setAiPrompt}
-        stylePreferences={stylePreferences}
-        setStylePreferences={setStylePreferences}
-        isProcessing={isProcessing}
+        recipeFormHook={recipeFormHook}
+        recipeProcessingHook={recipeProcessingHook}
         onProcessText={wrappedProcessText}
-        onImportFromUrl={handleImportFromUrl}
+        onImportFromUrlWithImages={recipeProcessingHook.handleImportFromUrl}
         onProcessImage={wrappedProcessImage}
         onGenerateRecipe={wrappedGenerateRecipe}
+        onGenerateImage={onGenerateImage}
+        onSave={handleSaveRecipe}
+        onCancel={handleCancel}
       />
 
       <CreateRecipeActions
         onSave={handleSaveRecipe}
         onCancel={handleCancel}
         isLoading={isSaving}
-        isValid={!!(newRecipe.title.trim() && newRecipe.ingredients.length > 0 && newRecipe.instructions.length > 0)}
-        shareWithCommunity={shareWithCommunity}
-        setShareWithCommunity={setShareWithCommunity}
-        wasImportedFromWebsite={wasImportedFromWebsite}
+        isValid={!!(recipeFormHook.newRecipe.title.trim() && recipeFormHook.newRecipe.ingredients.length > 0 && recipeFormHook.newRecipe.instructions.length > 0)}
+        shareWithCommunity={recipeFormHook.shareWithCommunity}
+        setShareWithCommunity={recipeFormHook.setShareWithCommunity}
+        wasImportedFromWebsite={recipeFormHook.wasImportedFromWebsite}
       />
     </div>
   );

@@ -30,7 +30,7 @@ export function useRandomMealSelection() {
       mealTypes.forEach(mealType => {
         const count = quantities[mealType];
         const availableRecipes = recipes.filter(recipe => 
-          recipe.mealType === mealType || !recipe.mealType
+          recipe.meal_type === mealType || !recipe.meal_type
         );
         
         for (let i = 0; i < count; i++) {

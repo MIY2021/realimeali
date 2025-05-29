@@ -14,7 +14,7 @@ export const useMealPlanOperations = (
   const { toast } = useToast();
 
   const addMealPlan = useCallback(async (
-    mealPlanData: Omit<MealPlan, 'id' | 'createdAt' | 'updatedAt'>, 
+    mealPlanData: Omit<MealPlan, 'id' | 'created_at' | 'updated_at'>, 
     weekNumber: 1 | 2, 
     silentMode = false
   ) => {
@@ -30,10 +30,10 @@ export const useMealPlanOperations = (
       return;
     }
 
-    const recipeExists = recipes.some(recipe => recipe.id === mealPlanData.recipeId);
+    const recipeExists = recipes.some(recipe => recipe.id === mealPlanData.recipe_id);
     if (!recipeExists) {
       if (!silentMode) {
-        console.error("Recipe not found in collection:", mealPlanData.recipeId);
+        console.error("Recipe not found in collection:", mealPlanData.recipe_id);
         toast({
           title: "Error",
           description: "Recipe not found in your collection.",
@@ -51,7 +51,7 @@ export const useMealPlanOperations = (
       // Ensure weekNumber is included in the meal plan data
       const mealPlanWithWeek = {
         ...mealPlanData,
-        weekNumber: weekNumber
+        week_number: weekNumber
       };
       
       const newMealPlan = await mealPlanService.addMealPlan(
@@ -65,7 +65,7 @@ export const useMealPlanOperations = (
       setMealPlans(prev => [...prev, newMealPlan]);
       
       if (!silentMode) {
-        const recipe = recipes.find(r => r.id === mealPlanData.recipeId);
+        const recipe = recipes.find(r => r.id === mealPlanData.recipe_id);
         toast({
           title: "Recipe Added",
           description: `${recipe?.title || 'Recipe'} has been added to your meal plan for Week ${weekNumber}.`,
@@ -87,7 +87,7 @@ export const useMealPlanOperations = (
     if (!user || !currentHousehold) return;
 
     try {
-      const childLeftovers = mealPlans.filter(plan => plan.parentMealPlanId === id);
+      const childLeftovers = mealPlans.filter(plan => plan.parent_meal_plan_id === id);
       
       if (childLeftovers.length > 0) {
         const shouldRemoveLeftovers = window.confirm(
@@ -104,7 +104,7 @@ export const useMealPlanOperations = (
       await mealPlanService.removeMealPlan(id, currentHousehold.id);
 
       setMealPlans(prev => prev.filter(plan => 
-        plan.id !== id && plan.parentMealPlanId !== id
+        plan.id !== id && plan.parent_meal_plan_id !== id
       ));
       
       toast({
@@ -126,7 +126,7 @@ export const useMealPlanOperations = (
 
     try {
       await mealPlanService.clearWeek(weekNumber, currentHousehold.id);
-      setMealPlans(prev => prev.filter(plan => plan.weekNumber !== weekNumber));
+      setMealPlans(prev => prev.filter(plan => plan.week_number !== weekNumber));
       
       toast({
         title: "Week Cleared",
