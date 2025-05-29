@@ -1,180 +1,299 @@
 
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Recipe } from "@/types";
-import { UtensilsCrossed, Plus, X } from "lucide-react";
-import { useRecipes } from "@/contexts/RecipesContext";
 import { useToast } from "@/hooks/use-toast";
-import { RecipeClassificationSelector } from "./create/RecipeClassificationSelector";
+import { Clock, Users, Plus, X } from "lucide-react";
 
 interface EditRecipeDialogProps {
+  recipe: Recipe;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  recipe: Recipe;
+  onSave: (recipe: Recipe) => void;
 }
 
-export function EditRecipeDialog({ open, onOpenChange, recipe }: EditRecipeDialogProps) {
-  const [editedRecipe, setEditedRecipe] = useState<Recipe>({ ...recipe });
-  const [saving, setSaving] = useState(false);
-  const { updateRecipe } = useRecipes();
+export function EditRecipeDialog({
+  recipe,
+  open,
+  onOpenChange,
+  onSave,
+}: EditRecipeDialogProps) {
+  const [editedRecipe, setEditedRecipe] = useState<Recipe>(recipe);
+  const [newIngredient, setNewIngredient] = useState("");
+  const [newInstruction, setNewInstruction] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
-    if (recipe) {
-      setEditedRecipe({ ...recipe });
-    }
+    setEditedRecipe(recipe);
   }, [recipe]);
 
   const handleSave = async () => {
-    setSaving(true);
-    try {
-      await updateRecipe(editedRecipe.id, editedRecipe);
+    if (!editedRecipe.title.trim()) {
       toast({
-        title: "Recipe Updated",
-        description: `${editedRecipe.title} has been updated.`,
+        title: "Error",
+        description: "Recipe title is required",
+        variant: "destructive",
       });
+      return;
+    }
+
+    if (editedRecipe.ingredients.length === 0) {
+      toast({
+        title: "Error",
+        description: "At least one ingredient is required",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (editedRecipe.instructions.length === 0) {
+      toast({
+        title: "Error",
+        description: "At least one instruction is required",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await onSave(editedRecipe);
       onOpenChange(false);
+      toast({
+        title: "Success",
+        description: "Recipe updated successfully!",
+      });
     } catch (error) {
+      console.error('Error saving recipe:', error);
       toast({
         title: "Error",
         description: "Failed to update recipe. Please try again.",
         variant: "destructive",
       });
     } finally {
-      setSaving(false);
+      setIsLoading(false);
     }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, field: keyof Recipe) => {
-    setEditedRecipe({ ...editedRecipe, [field]: e.target.value });
-  };
-
-  const handleIngredientsChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
-    const newIngredients = [...editedRecipe.ingredients];
-    newIngredients[index] = e.target.value;
-    setEditedRecipe({ ...editedRecipe, ingredients: newIngredients });
-  };
-
   const addIngredient = () => {
-    setEditedRecipe({ ...editedRecipe, ingredients: [...editedRecipe.ingredients, ""] });
+    if (newIngredient.trim()) {
+      setEditedRecipe({
+        ...editedRecipe,
+        ingredients: [...editedRecipe.ingredients, newIngredient.trim()],
+      });
+      setNewIngredient("");
+    }
   };
 
   const removeIngredient = (index: number) => {
-    const newIngredients = [...editedRecipe.ingredients];
-    newIngredients.splice(index, 1);
-    setEditedRecipe({ ...editedRecipe, ingredients: newIngredients });
+    setEditedRecipe({
+      ...editedRecipe,
+      ingredients: editedRecipe.ingredients.filter((_, i) => i !== index),
+    });
   };
 
-  const handleInstructionsChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setEditedRecipe({ ...editedRecipe, instructions: [e.target.value] });
+  const addInstruction = () => {
+    if (newInstruction.trim()) {
+      setEditedRecipe({
+        ...editedRecipe,
+        instructions: [...editedRecipe.instructions, newInstruction.trim()],
+      });
+      setNewInstruction("");
+    }
+  };
+
+  const removeInstruction = (index: number) => {
+    setEditedRecipe({
+      ...editedRecipe,
+      instructions: editedRecipe.instructions.filter((_, i) => i !== index),
+    });
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <UtensilsCrossed className="h-5 w-5 text-sage" />
-            Edit Recipe
-          </DialogTitle>
+          <DialogTitle>Edit Recipe</DialogTitle>
+          <DialogDescription>
+            Make changes to your recipe. Click save when you're done.
+          </DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="title">Title</Label>
-              <Input
-                id="title"
-                value={editedRecipe.title}
-                onChange={(e) => handleInputChange(e, "title")}
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="servings">Servings</Label>
-              <Input
-                id="servings"
-                type="number"
-                value={editedRecipe.servings}
-                onChange={(e) => handleInputChange(e, "servings")}
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="prepTime">Prep Time (minutes)</Label>
-              <Input
-                id="prepTime"
-                type="number"
-                value={editedRecipe.prepTime}
-                onChange={(e) => handleInputChange(e, "prepTime")}
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="cookTime">Cook Time (minutes)</Label>
-              <Input
-                id="cookTime"
-                type="number"
-                value={editedRecipe.cookTime}
-                onChange={(e) => handleInputChange(e, "cookTime")}
-              />
-            </div>
+          {/* Title */}
+          <div className="grid gap-2">
+            <Label htmlFor="title">Title</Label>
+            <Input
+              id="title"
+              value={editedRecipe.title}
+              onChange={(e) =>
+                setEditedRecipe({ ...editedRecipe, title: e.target.value })
+              }
+              placeholder="Recipe title"
+            />
           </div>
 
-          <div>
+          {/* Description */}
+          <div className="grid gap-2">
             <Label htmlFor="description">Description</Label>
             <Textarea
               id="description"
               value={editedRecipe.description}
-              onChange={(e) => handleInputChange(e, "description")}
+              onChange={(e) =>
+                setEditedRecipe({ ...editedRecipe, description: e.target.value })
+              }
+              placeholder="Brief description of your recipe"
+              className="min-h-[80px]"
             />
           </div>
 
-          <div>
+          {/* Recipe Details */}
+          <div className="grid grid-cols-3 gap-4">
+            <div className="grid gap-2">
+              <Label htmlFor="prepTime">
+                <Clock className="h-4 w-4 inline mr-1" />
+                Prep Time (min)
+              </Label>
+              <Input
+                id="prepTime"
+                type="number"
+                value={editedRecipe.prepTime || ""}
+                onChange={(e) =>
+                  setEditedRecipe({
+                    ...editedRecipe,
+                    prepTime: parseInt(e.target.value) || 0,
+                  })
+                }
+                min="0"
+              />
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="cookTime">
+                <Clock className="h-4 w-4 inline mr-1" />
+                Cook Time (min)
+              </Label>
+              <Input
+                id="cookTime"
+                type="number"
+                value={editedRecipe.cookTime || ""}
+                onChange={(e) =>
+                  setEditedRecipe({
+                    ...editedRecipe,
+                    cookTime: parseInt(e.target.value) || 0,
+                  })
+                }
+                min="0"
+              />
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="servings">
+                <Users className="h-4 w-4 inline mr-1" />
+                Servings
+              </Label>
+              <Input
+                id="servings"
+                type="number"
+                value={editedRecipe.servings || ""}
+                onChange={(e) =>
+                  setEditedRecipe({
+                    ...editedRecipe,
+                    servings: parseInt(e.target.value) || 1,
+                  })
+                }
+                min="1"
+              />
+            </div>
+          </div>
+
+          {/* Ingredients */}
+          <div className="grid gap-2">
             <Label>Ingredients</Label>
-            {editedRecipe.ingredients.map((ingredient, index) => (
-              <div key={index} className="flex items-center space-x-2 mb-1">
+            <div className="space-y-2">
+              {editedRecipe.ingredients.map((ingredient, index) => (
+                <div key={index} className="flex items-center gap-2">
+                  <span className="text-sm flex-1 p-2 bg-gray-50 rounded">
+                    {ingredient}
+                  </span>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => removeIngredient(index)}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+              <div className="flex gap-2">
                 <Input
-                  type="text"
-                  value={ingredient}
-                  onChange={(e) => handleIngredientsChange(e, index)}
-                  className="flex-grow"
+                  value={newIngredient}
+                  onChange={(e) => setNewIngredient(e.target.value)}
+                  placeholder="Add new ingredient"
+                  onKeyPress={(e) => e.key === "Enter" && addIngredient()}
                 />
-                <Button type="button" variant="ghost" size="sm" onClick={() => removeIngredient(index)}>
-                  <X className="h-4 w-4" />
+                <Button type="button" onClick={addIngredient} size="sm">
+                  <Plus className="h-4 w-4" />
                 </Button>
               </div>
-            ))}
-            <Button type="button" variant="secondary" size="sm" onClick={addIngredient}>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Ingredient
-            </Button>
+            </div>
           </div>
 
-          <div>
-            <Label htmlFor="instructions">Instructions</Label>
-            <Textarea
-              id="instructions"
-              value={editedRecipe.instructions[0] || ""}
-              onChange={handleInstructionsChange}
-            />
+          {/* Instructions */}
+          <div className="grid gap-2">
+            <Label>Instructions</Label>
+            <div className="space-y-2">
+              {editedRecipe.instructions.map((instruction, index) => (
+                <div key={index} className="flex items-start gap-2">
+                  <span className="text-sm flex-1 p-2 bg-gray-50 rounded min-h-[40px]">
+                    {instruction}
+                  </span>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => removeInstruction(index)}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+              <div className="flex gap-2">
+                <Textarea
+                  value={newInstruction}
+                  onChange={(e) => setNewInstruction(e.target.value)}
+                  placeholder="Add new instruction"
+                  className="min-h-[60px]"
+                />
+                <Button type="button" onClick={addInstruction} size="sm">
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
           </div>
-
-          <RecipeClassificationSelector
-            recipe={editedRecipe}
-            onRecipeChange={(updatedRecipe) => setEditedRecipe(updatedRecipe)}
-          />
         </div>
 
-        <div className="flex justify-end">
-          <Button type="submit" onClick={handleSave} disabled={saving}>
-            {saving ? "Saving..." : "Update Recipe"}
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancel
           </Button>
-        </div>
+          <Button onClick={handleSave} disabled={isLoading}>
+            {isLoading ? "Saving..." : "Save Recipe"}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
