@@ -22,6 +22,10 @@ export function useRecipeProcessing() {
     websiteImages: urlProcessing.websiteImages,
     storedImages: urlProcessing.storedImages,
     isDownloadingImages: urlProcessing.isDownloadingImages,
+    showCommunityDialog: urlProcessing.showCommunityDialog,
+    setShowCommunityDialog: urlProcessing.setShowCommunityDialog,
+    parsedRecipeData: urlProcessing.parsedRecipeData,
+    importProgress: urlProcessing.importProgress,
     handleImportFromUrl: urlProcessing.handleImportFromUrl,
     handleDownloadImages: urlProcessing.handleDownloadImages,
     

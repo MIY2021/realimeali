@@ -1,10 +1,11 @@
 
 import { useState } from "react";
-import { Recipe, MealType, RecipeCategory } from "@/types";
+import { Recipe, MealType } from "@/types";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Clock, Users, ChevronDown } from "lucide-react";
+import { getDisplayLabel } from "@/utils/recipeClassification";
 
 interface AddRecipeToMealModalProps {
   open: boolean;
@@ -14,13 +15,6 @@ interface AddRecipeToMealModalProps {
   onSelectRecipe: (recipeId: string) => void;
 }
 
-// All available categories - ensures all categories show even if no recipes exist
-const ALL_RECIPE_CATEGORIES: RecipeCategory[] = [
-  "Bulk", "Easy", "Cheap", "Healthy", "Vegetarian", "Fish", 
-  "Super Tasty", "Pasta", "Tapas", "Winter", "BBQ", 
-  "Faffy", "Pricey!", "Not Yet Made", "Snacks", "Breakfast"
-];
-
 export function AddRecipeToMealModal({
   open,
   onClose,
@@ -29,17 +23,15 @@ export function AddRecipeToMealModal({
   onSelectRecipe,
 }: AddRecipeToMealModalProps) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [mealTypeFilter, setMealTypeFilter] = useState<string>("all");
 
-  // Get all categories that exist in recipes plus all standard categories
-  const usedCategories = [...new Set(recipes.flatMap(r => r.categories))];
-  const allCategories = [...new Set([...ALL_RECIPE_CATEGORIES, ...usedCategories])];
+  // Get all meal types from recipes for filtering
+  const availableMealTypes = [...new Set(recipes.filter(r => r.mealType).map(r => r.mealType!))];
 
   const filteredRecipes = recipes.filter((recipe) => {
     const matchesSearch = recipe.title.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = categoryFilter === "all" || 
-                          recipe.categories.includes(categoryFilter as RecipeCategory);
-    return matchesSearch && matchesCategory;
+    const matchesMealType = mealTypeFilter === "all" || recipe.mealType === mealTypeFilter;
+    return matchesSearch && matchesMealType;
   });
 
   const handleSelectRecipe = (recipeId: string) => {
@@ -65,13 +57,15 @@ export function AddRecipeToMealModal({
           </div>
           <div className="w-full sm:w-48 relative">
             <select
-              value={categoryFilter}
-              onChange={e => setCategoryFilter(e.target.value)}
+              value={mealTypeFilter}
+              onChange={e => setMealTypeFilter(e.target.value)}
               className="w-full border rounded p-2 pr-8 appearance-none bg-white"
             >
-              <option value="all">All Categories</option>
-              {allCategories.map((category) => (
-                <option key={category} value={category}>{category}</option>
+              <option value="all">All Meal Types</option>
+              {availableMealTypes.map((type) => (
+                <option key={type} value={type}>
+                  {getDisplayLabel(type, 'mealType')}
+                </option>
               ))}
             </select>
             <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 pointer-events-none text-muted-foreground" />
@@ -108,17 +102,19 @@ export function AddRecipeToMealModal({
                         </span>
                       </div>
                       <div className="flex flex-wrap gap-1 mt-2">
-                        {recipe.categories.slice(0, 3).map((category) => (
-                          <span
-                            key={category}
-                            className="inline-flex items-center rounded-full bg-sage/20 px-2 py-1 text-xs font-medium text-sage"
-                          >
-                            {category}
+                        {recipe.mealType && (
+                          <span className="inline-flex items-center rounded-full bg-sage/20 px-2 py-1 text-xs font-medium text-sage">
+                            {getDisplayLabel(recipe.mealType, 'mealType')}
                           </span>
-                        ))}
-                        {recipe.categories.length > 3 && (
-                          <span className="text-xs text-muted-foreground">
-                            +{recipe.categories.length - 3} more
+                        )}
+                        {recipe.cuisineRegion && (
+                          <span className="inline-flex items-center rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800">
+                            {getDisplayLabel(recipe.cuisineRegion, 'cuisineRegion')}
+                          </span>
+                        )}
+                        {recipe.complexityLevel && (
+                          <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-800">
+                            {getDisplayLabel(recipe.complexityLevel, 'complexityLevel')}
                           </span>
                         )}
                       </div>

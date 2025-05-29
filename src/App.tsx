@@ -11,6 +11,7 @@ import { HouseholdShoppingProvider } from "@/contexts/HouseholdShoppingContext";
 import Layout from "@/components/layout/Layout";
 import { ScrollToTop } from "@/components/layout/ScrollToTop";
 import Index from "@/pages/Index";
+import About from "@/pages/About";
 import RecipesPage from "@/pages/RecipesPage";
 import FindRecipesPage from "@/pages/FindRecipesPage";
 import CreateRecipePage from "@/pages/CreateRecipePage";
@@ -23,6 +24,7 @@ import Login from "@/pages/Login";
 import Signup from "@/pages/Signup";
 import Account from "@/pages/Account";
 import Household from "@/pages/Household";
+import AdminDashboard from "@/pages/AdminDashboard";
 import NotFound from "@/pages/NotFound";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 
@@ -41,6 +43,7 @@ const App = () => (
                   <Layout>
                     <Routes>
                       <Route path="/" element={<Index />} />
+                      <Route path="/about" element={<About />} />
                       <Route path="/login" element={<Login />} />
                       <Route path="/signup" element={<Signup />} />
                       <Route path="/share/:slug" element={<PublicRecipe />} />
@@ -125,6 +128,14 @@ const App = () => (
                         element={
                           <ProtectedRoute>
                             <Household />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/admin"
+                        element={
+                          <ProtectedRoute>
+                            <AdminDashboard />
                           </ProtectedRoute>
                         }
                       />

@@ -7,7 +7,13 @@ export const transformDbRecipeToRecipe = (dbRecipe: any): Recipe => ({
   description: dbRecipe.description || '',
   ingredients: dbRecipe.ingredients || [],
   instructions: dbRecipe.instructions || [],
-  categories: dbRecipe.categories || [],
+  // Map new classification fields
+  mealType: dbRecipe.meal_type,
+  cuisineRegion: dbRecipe.cuisine_region,
+  cookingMethod: dbRecipe.cooking_method,
+  dietLifestyle: dbRecipe.diet_lifestyle || [],
+  complexityLevel: dbRecipe.complexity_level,
+  mainIngredient: dbRecipe.main_ingredient,
   prepTime: dbRecipe.prep_time || 0,
   cookTime: dbRecipe.cook_time || 0,
   servings: dbRecipe.servings || 1,
@@ -29,7 +35,13 @@ export const transformRecipeToDbInsert = (
   description: recipeData.description,
   ingredients: recipeData.ingredients,
   instructions: recipeData.instructions,
-  categories: recipeData.categories,
+  // Map new classification fields to database columns
+  meal_type: recipeData.mealType,
+  cuisine_region: recipeData.cuisineRegion,
+  cooking_method: recipeData.cookingMethod,
+  diet_lifestyle: recipeData.dietLifestyle || [],
+  complexity_level: recipeData.complexityLevel,
+  main_ingredient: recipeData.mainIngredient,
   prep_time: recipeData.prepTime,
   cook_time: recipeData.cookTime,
   servings: recipeData.servings,
@@ -46,7 +58,12 @@ export const transformRecipeToDbUpdate = (recipeData: Partial<Recipe>) => {
   if (recipeData.description !== undefined) updateData.description = recipeData.description;
   if (recipeData.ingredients !== undefined) updateData.ingredients = recipeData.ingredients;
   if (recipeData.instructions !== undefined) updateData.instructions = recipeData.instructions;
-  if (recipeData.categories !== undefined) updateData.categories = recipeData.categories;
+  if (recipeData.mealType !== undefined) updateData.meal_type = recipeData.mealType;
+  if (recipeData.cuisineRegion !== undefined) updateData.cuisine_region = recipeData.cuisineRegion;
+  if (recipeData.cookingMethod !== undefined) updateData.cooking_method = recipeData.cookingMethod;
+  if (recipeData.dietLifestyle !== undefined) updateData.diet_lifestyle = recipeData.dietLifestyle;
+  if (recipeData.complexityLevel !== undefined) updateData.complexity_level = recipeData.complexityLevel;
+  if (recipeData.mainIngredient !== undefined) updateData.main_ingredient = recipeData.mainIngredient;
   if (recipeData.prepTime !== undefined) updateData.prep_time = recipeData.prepTime;
   if (recipeData.cookTime !== undefined) updateData.cook_time = recipeData.cookTime;
   if (recipeData.servings !== undefined) updateData.servings = recipeData.servings;

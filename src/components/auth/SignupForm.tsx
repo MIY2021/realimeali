@@ -3,18 +3,80 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { useSecureAuth } from "@/hooks/useSecureAuth";
 
 export function SignupForm() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
+  const { validatePassword } = useSecureAuth();
   
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Mock signup functionality - will be replaced with Supabase integration
-    console.log("Signup attempt with:", { name, email, password });
-    alert("This is a mock signup. Authentication will be implemented with Supabase.");
+    
+    // Validate inputs
+    if (!name.trim()) {
+      toast.error("Please enter your full name");
+      return;
+    }
+    
+    if (!email.trim()) {
+      toast.error("Please enter your email");
+      return;
+    }
+    
+    // Validate password strength
+    const passwordValidation = validatePassword(password);
+    if (!passwordValidation.isValid) {
+      toast.error(passwordValidation.error || "Invalid password");
+      return;
+    }
+    
+    if (password !== confirmPassword) {
+      toast.error("Passwords do not match");
+      return;
+    }
+    
+    setIsLoading(true);
+    
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email: email.trim(),
+        password,
+        options: {
+          data: {
+            full_name: name.trim(),
+          },
+        },
+      });
+
+      if (error) {
+        if (error.message.includes('already registered')) {
+          toast.error("An account with this email already exists. Please sign in instead.");
+        } else if (error.message.includes('password')) {
+          toast.error("Password does not meet security requirements");
+        } else {
+          toast.error(error.message);
+        }
+        return;
+      }
+
+      if (data.user) {
+        toast.success("Account created successfully! Please check your email to verify your account.");
+        navigate("/login");
+      }
+    } catch (error) {
+      console.error("Signup error:", error);
+      toast.error("An unexpected error occurred. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
   
   return (
@@ -35,6 +97,7 @@ export function SignupForm() {
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
+            disabled={isLoading}
           />
         </div>
         
@@ -47,6 +110,7 @@ export function SignupForm() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
+            disabled={isLoading}
           />
         </div>
         
@@ -59,14 +123,28 @@ export function SignupForm() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
+            disabled={isLoading}
           />
           <p className="text-xs text-muted-foreground">
-            Password must be at least 8 characters long
+            Password must be at least 8 characters with uppercase, lowercase, number and special character
           </p>
         </div>
         
-        <Button type="submit" className="w-full bg-terracotta hover:bg-terracotta/90">
-          Create Account
+        <div className="space-y-2">
+          <Label htmlFor="confirmPassword">Confirm Password</Label>
+          <Input
+            id="confirmPassword"
+            type="password"
+            placeholder="Confirm your password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            required
+            disabled={isLoading}
+          />
+        </div>
+        
+        <Button type="submit" className="w-full bg-terracotta hover:bg-terracotta/90" disabled={isLoading}>
+          {isLoading ? "Creating Account..." : "Create Account"}
         </Button>
       </form>
       

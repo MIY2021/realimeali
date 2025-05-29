@@ -1,8 +1,8 @@
 
 import { TabsContent } from "@/components/ui/tabs";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Save, X } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Save, X, Users } from "lucide-react";
 import { CreateRecipeTabNavigation } from "./CreateRecipeTabNavigation";
 import { RecipeTextTab } from "./tabs/RecipeTextTab";
 import { RecipeUrlTab } from "./tabs/RecipeUrlTab";
@@ -10,7 +10,6 @@ import { RecipeImageTab } from "./tabs/RecipeImageTab";
 import { RecipeGenerateTab } from "./tabs/RecipeGenerateTab";
 import { RecipeManualTab } from "./tabs/RecipeManualTab";
 import { EnhancedImageSelection } from "../dialog/EnhancedImageSelection";
-import { useRecipeSave } from "@/hooks/useRecipeSave";
 
 interface CreateRecipeTabsWrapperProps {
   isMobile: boolean;
@@ -23,6 +22,8 @@ interface CreateRecipeTabsWrapperProps {
   onProcessImage: (file: File) => void;
   onGenerateRecipe: () => void;
   onGenerateImage: () => void;
+  onSave: () => void;
+  onCancel: () => void;
 }
 
 export function CreateRecipeTabsWrapper({
@@ -36,33 +37,36 @@ export function CreateRecipeTabsWrapper({
   onProcessImage,
   onGenerateRecipe,
   onGenerateImage,
+  onSave,
+  onCancel,
 }: CreateRecipeTabsWrapperProps) {
-  const { handleCancel, handleSave } = useRecipeSave();
-
-  const onSave = () => {
-    // Basic validation before save
+  
+  // Recipe completion status - updated to check if recipe was actually generated
+  const getRecipeCompletionStatus = () => {
     const { newRecipe } = recipeFormHook;
+    const hasTitle = newRecipe.title.trim().length > 0;
+    const hasIngredients = newRecipe.ingredients.length > 0;
+    const hasInstructions = newRecipe.instructions.length > 0;
     
-    if (!newRecipe.title.trim()) {
-      alert("Recipe title is required");
-      return;
-    }
-    
-    if (newRecipe.ingredients.length === 0) {
-      alert("At least one ingredient is required");
-      return;
-    }
-    
-    if (newRecipe.instructions.length === 0) {
-      alert("At least one instruction is required");
-      return;
-    }
+    // Check if recipe was actually generated/processed vs just manually entered
+    const wasGenerated = hasTitle && hasIngredients && hasInstructions && (
+      activeTab === "manual" || // User has switched to manual after processing
+      newRecipe.title.length > 10 // Likely generated/imported content
+    );
 
-    handleSave(newRecipe);
+    return {
+      isComplete: hasTitle && hasIngredients && hasInstructions,
+      wasGenerated,
+      hasTitle,
+      hasIngredients,
+      hasInstructions,
+    };
   };
 
+  const status = getRecipeCompletionStatus();
+
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6">
       <div className="bg-white rounded-none sm:rounded-lg shadow-none sm:shadow-sm border-0 sm:border">
         <CreateRecipeTabNavigation 
           isMobile={isMobile}
@@ -70,7 +74,7 @@ export function CreateRecipeTabsWrapper({
           setActiveTab={setActiveTab}
         >
           <div className="p-4 sm:p-6">
-            <TabsContent value="text" className="animate-scale-in">
+            <TabsContent value="text">
               <RecipeTextTab
                 recipeText={recipeProcessingHook.recipeText}
                 setRecipeText={recipeProcessingHook.setRecipeText}
@@ -79,23 +83,27 @@ export function CreateRecipeTabsWrapper({
               />
             </TabsContent>
 
-            <TabsContent value="url" className="animate-scale-in">
+            <TabsContent value="url">
               <RecipeUrlTab
                 recipeUrl={recipeProcessingHook.recipeUrl}
                 setRecipeUrl={recipeProcessingHook.setRecipeUrl}
                 isProcessing={recipeProcessingHook.isProcessing}
+                importProgress={recipeProcessingHook.importProgress}
                 onImportWithImages={onImportFromUrlWithImages}
+                showCommunityDialog={recipeProcessingHook.showCommunityDialog}
+                setShowCommunityDialog={recipeProcessingHook.setShowCommunityDialog}
+                parsedRecipeData={recipeProcessingHook.parsedRecipeData}
               />
             </TabsContent>
 
-            <TabsContent value="image" className="animate-scale-in">
+            <TabsContent value="image">
               <RecipeImageTab
                 isProcessing={recipeProcessingHook.isProcessing}
                 onProcessImage={onProcessImage}
               />
             </TabsContent>
 
-            <TabsContent value="generate" className="animate-scale-in">
+            <TabsContent value="generate">
               <RecipeGenerateTab
                 aiPrompt={recipeProcessingHook.aiPrompt}
                 setAiPrompt={recipeProcessingHook.setAiPrompt}
@@ -106,7 +114,7 @@ export function CreateRecipeTabsWrapper({
               />
             </TabsContent>
 
-            <TabsContent value="manual" className="animate-scale-in">
+            <TabsContent value="manual">
               <div className="space-y-4 sm:space-y-6">
                 {/* Show image selection if images are available from website import */}
                 {(recipeProcessingHook.websiteImages.length > 0 || recipeProcessingHook.storedImages.length > 0) && (
@@ -127,11 +135,23 @@ export function CreateRecipeTabsWrapper({
                   isMobile={isMobile}
                   newRecipe={recipeFormHook.newRecipe}
                   setNewRecipe={recipeFormHook.setNewRecipe}
+                  newCategory={recipeFormHook.newCategory}
+                  setNewCategory={recipeFormHook.setNewCategory}
+                  newIngredient={recipeFormHook.newIngredient}
+                  setNewIngredient={recipeFormHook.setNewIngredient}
+                  newInstruction={recipeFormHook.newInstruction}
+                  setNewInstruction={recipeFormHook.setNewInstruction}
                   imagePreview={recipeFormHook.imagePreview}
                   isGeneratingImage={recipeFormHook.isGeneratingImage}
                   generationProgress={recipeFormHook.generationProgress}
                   onImageChange={recipeFormHook.handleImageChange}
                   onGenerateImage={onGenerateImage}
+                  onAddCategory={recipeFormHook.handleAddCategory}
+                  onRemoveCategory={recipeFormHook.handleRemoveCategory}
+                  onAddIngredient={recipeFormHook.handleAddIngredient}
+                  onRemoveIngredient={recipeFormHook.handleRemoveIngredient}
+                  onAddInstruction={recipeFormHook.handleAddInstruction}
+                  onRemoveInstruction={recipeFormHook.handleRemoveInstruction}
                 />
               </div>
             </TabsContent>
@@ -139,34 +159,56 @@ export function CreateRecipeTabsWrapper({
         </CreateRecipeTabNavigation>
       </div>
 
-      {/* Simplified Save/Cancel Section */}
-      <Card className="p-4 sm:p-6 bg-gradient-to-r from-green-50 to-blue-50 border-2 border-dashed border-green-200 animate-fade-in">
-        <div className="flex flex-col sm:flex-row gap-3 items-center justify-center">
-          <Button
-            onClick={onSave}
-            disabled={recipeProcessingHook.isProcessing}
-            className="flex-1 sm:flex-initial bg-green-600 hover:bg-green-700 text-white h-11 transition-all duration-200 hover:scale-105"
-          >
-            <Save className="h-4 w-4 mr-2" />
-            Save Recipe
-          </Button>
-          
-          <Button
-            onClick={handleCancel}
-            variant="outline"
-            className="flex-1 sm:flex-initial h-11 transition-all duration-200 hover:scale-105"
-          >
-            <X className="h-4 w-4 mr-2" />
-            Cancel
-          </Button>
-        </div>
+      {/* Save/Cancel Section - Only show when recipe is actually generated/complete */}
+      {status.wasGenerated && (
+        <div className="flex flex-col gap-4 p-4 bg-white rounded-lg border">
+          {/* Community Sharing Checkbox - Only show if recipe was imported from website */}
+          {recipeFormHook.wasImportedFromWebsite && (
+            <div className="flex items-start gap-3 p-3 bg-green-50 rounded-lg border border-green-200">
+              <Checkbox
+                id="shareWithCommunity"
+                checked={recipeFormHook.shareWithCommunity}
+                onCheckedChange={recipeFormHook.setShareWithCommunity}
+                className="mt-0.5"
+              />
+              <div className="flex-1">
+                <label 
+                  htmlFor="shareWithCommunity" 
+                  className="text-sm font-medium text-green-800 cursor-pointer flex items-center gap-2"
+                >
+                  <Users className="h-4 w-4" />
+                  Share with RealiMeali Community
+                </label>
+                <p className="text-xs text-green-700 mt-1">
+                  Help other users discover this recipe! It will appear in "Find Recipes" after moderation. 
+                  Only the recipe link and details are shared - the full recipe stays on the original website.
+                </p>
+              </div>
+            </div>
+          )}
 
-        <div className="text-center mt-3">
-          <p className="text-sm text-gray-600">
-            🎉 Ready to save your delicious recipe?
-          </p>
+          {/* Save/Cancel Buttons */}
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Button
+              onClick={onSave}
+              disabled={!status.isComplete || recipeProcessingHook.isProcessing}
+              className="flex-1 sm:flex-initial bg-green-600 hover:bg-green-700 text-white h-11"
+            >
+              <Save className="h-4 w-4 mr-2" />
+              Save Recipe
+            </Button>
+            
+            <Button
+              onClick={onCancel}
+              variant="outline"
+              className="flex-1 sm:flex-initial h-11"
+            >
+              <X className="h-4 w-4 mr-2" />
+              Cancel
+            </Button>
+          </div>
         </div>
-      </Card>
+      )}
     </div>
   );
 }

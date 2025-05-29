@@ -1,7 +1,6 @@
-
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { User, UtensilsCrossed, CalendarDays, Book, ListChecks, Users, AlignJustify, Search } from "lucide-react";
+import { User, UtensilsCrossed, CalendarDays, Book, ListChecks, Users, AlignJustify, Search, User as UserIcon } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -22,6 +21,7 @@ import {
 import { useState, useEffect } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileMenuIndicator } from "./MobileMenuIndicator";
+import { supabase } from "@/integrations/supabase/client";
 
 const Header = () => {
   const { user, signOut } = useAuth();
@@ -29,6 +29,34 @@ const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [avatarError, setAvatarError] = useState(false);
   const isMobile = useIsMobile();
+
+  // Add admin check
+  const [isAdmin, setIsAdmin] = useState(false);
+  
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      if (!user) {
+        setIsAdmin(false);
+        return;
+      }
+
+      try {
+        const { data } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', user.id)
+          .eq('role', 'admin')
+          .single();
+
+        setIsAdmin(!!data);
+      } catch (error) {
+        // User is not admin or error occurred
+        setIsAdmin(false);
+      }
+    };
+
+    checkAdminStatus();
+  }, [user]);
 
   const navigationItems = [
     { to: "/my-recipes", icon: Book, label: "My Recipes" },
@@ -187,6 +215,16 @@ const Header = () => {
                         <Users className="h-4 w-4" />
                         <span>Manage Household</span>
                       </Link>
+                      {isAdmin && (
+                        <Link
+                          to="/admin"
+                          className="flex items-center space-x-2 text-terracotta hover:text-red-600 transition-colors p-2 rounded font-medium"
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          <UserIcon className="h-4 w-4" />
+                          <span>Admin Dashboard</span>
+                        </Link>
+                      )}
                       <button
                         onClick={() => {
                           signOut();
@@ -240,6 +278,17 @@ const Header = () => {
                       Manage Household
                     </Link>
                   </DropdownMenuItem>
+                  {isAdmin && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem asChild>
+                        <Link to="/admin" className="flex items-center text-terracotta font-medium">
+                          <UserIcon className="h-4 w-4 mr-2" />
+                          Admin Dashboard
+                        </Link>
+                      </DropdownMenuItem>
+                    </>
+                  )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={signOut}>
                     Logout

@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
 import { Recipe, MealType } from "@/types";
-import { getAllowedCategoriesForMealType } from "@/utils/mealCategoryUtils";
+import { getDisplayLabel } from "@/utils/recipeClassification";
 
 interface AddMealWithLeftoversDialogProps {
   open: boolean;
@@ -16,6 +16,11 @@ interface AddMealWithLeftoversDialogProps {
   recipes: Recipe[];
   onSelectRecipe: (recipeId: string, leftoverServings?: number) => void;
 }
+
+const getMealTypeFilterForRecipes = (mealType: MealType): boolean => {
+  // For meal planning, we can use any recipe type but prioritize appropriate ones
+  return true;
+};
 
 export function AddMealWithLeftoversDialog({
   open,
@@ -32,21 +37,12 @@ export function AddMealWithLeftoversDialog({
   const selectedRecipe = recipes.find(r => r.id === selectedRecipeId);
   const maxLeftoverServings = selectedRecipe ? selectedRecipe.servings - 1 : 1;
 
-  // Get allowed categories dynamically
-  const allowedCategories = getAllowedCategoriesForMealType(mealType);
-  
-  // Filter recipes based on meal type categories and search term
+  // Filter recipes based on search term and meal type appropriateness
   const filteredRecipes = recipes.filter(recipe => {
-    // Check if recipe has any category that's allowed for this meal type
-    const hasAllowedCategory = recipe.categories.some(cat => 
-      allowedCategories.includes(cat)
-    );
-    
-    // Check search term
     const matchesSearch = recipe.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      recipe.categories.some(cat => cat.toLowerCase().includes(searchTerm.toLowerCase()));
+      (recipe.mealType && getDisplayLabel(recipe.mealType, 'mealType').toLowerCase().includes(searchTerm.toLowerCase()));
     
-    return hasAllowedCategory && matchesSearch;
+    return matchesSearch && getMealTypeFilterForRecipes(mealType);
   });
 
   const handleSubmit = () => {
@@ -76,7 +72,7 @@ export function AddMealWithLeftoversDialog({
             <Label htmlFor="search" className="text-sm font-medium">Search recipes</Label>
             <Input
               id="search"
-              placeholder="Search by name or category..."
+              placeholder="Search by name or meal type..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="mt-1"
@@ -88,7 +84,7 @@ export function AddMealWithLeftoversDialog({
             {filteredRecipes.length === 0 ? (
               <div className="text-center text-gray-500 py-6 px-4">
                 <p className="text-sm">
-                  No {mealType} recipes found. Try adjusting your search or create recipes with appropriate categories.
+                  No recipes found. Try adjusting your search.
                 </p>
               </div>
             ) : (
@@ -104,8 +100,9 @@ export function AddMealWithLeftoversDialog({
                 >
                   <div className="font-medium text-sm leading-tight">{recipe.title}</div>
                   <div className="text-xs text-gray-600 mt-1 leading-tight">
-                    {recipe.servings} servings • {recipe.categories.slice(0, 2).join(", ")}
-                    {recipe.categories.length > 2 && " +more"}
+                    {recipe.servings} servings
+                    {recipe.mealType && ` • ${getDisplayLabel(recipe.mealType, 'mealType')}`}
+                    {recipe.cuisineRegion && ` • ${getDisplayLabel(recipe.cuisineRegion, 'cuisineRegion')}`}
                   </div>
                 </div>
               ))

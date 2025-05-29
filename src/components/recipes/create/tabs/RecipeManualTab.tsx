@@ -7,7 +7,7 @@ import { Lightbulb, Clock, Users } from "lucide-react";
 import { EnhancedIngredientManager } from "../EnhancedIngredientManager";
 import { EnhancedInstructionManager } from "../EnhancedInstructionManager";
 import { EnhancedImageUpload } from "../EnhancedImageUpload";
-import { EnhancedCategorySelector } from "../EnhancedCategorySelector";
+import { RecipeClassificationSelector } from "../RecipeClassificationSelector";
 
 interface RecipeManualTabProps {
   isMobile: boolean;
@@ -38,14 +38,10 @@ export function RecipeManualTab({
     setNewRecipe({ ...newRecipe, instructions });
   };
 
-  const handleCategoriesChange = (categories: any[]) => {
-    setNewRecipe({ ...newRecipe, categories });
-  };
-
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6">
       {/* Recipe Title & Description */}
-      <Card className="p-4 space-y-4 animate-scale-in">
+      <Card className="p-4 space-y-4">
         <h3 className="text-lg font-semibold text-gray-900">Basic Information</h3>
         
         <div className="space-y-4">
@@ -57,10 +53,10 @@ export function RecipeManualTab({
               value={newRecipe.title}
               onChange={(e) => setNewRecipe({ ...newRecipe, title: e.target.value })}
               placeholder="Enter a descriptive recipe title..."
-              className="text-lg font-medium transition-all duration-200 focus:scale-105"
+              className="text-lg font-medium"
             />
             {!newRecipe.title.trim() && (
-              <p className="text-xs text-red-500 mt-1 animate-pulse">Recipe title is required</p>
+              <p className="text-xs text-red-500 mt-1">Recipe title is required</p>
             )}
           </div>
 
@@ -72,14 +68,14 @@ export function RecipeManualTab({
               value={newRecipe.description}
               onChange={(e) => setNewRecipe({ ...newRecipe, description: e.target.value })}
               placeholder="Brief description of your recipe, what makes it special?"
-              className="h-20 resize-none transition-all duration-200 focus:scale-105"
+              className="h-20 resize-none"
             />
           </div>
         </div>
       </Card>
 
       {/* Recipe Details */}
-      <Card className="p-4 space-y-4 animate-scale-in">
+      <Card className="p-4 space-y-4">
         <h3 className="text-lg font-semibold text-gray-900">Recipe Details</h3>
         
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -94,7 +90,6 @@ export function RecipeManualTab({
               onChange={(e) => setNewRecipe({ ...newRecipe, prepTime: parseInt(e.target.value) || 0 })}
               placeholder="15"
               min="0"
-              className="transition-all duration-200 focus:scale-105"
             />
           </div>
 
@@ -109,7 +104,6 @@ export function RecipeManualTab({
               onChange={(e) => setNewRecipe({ ...newRecipe, cookTime: parseInt(e.target.value) || 0 })}
               placeholder="30"
               min="0"
-              className="transition-all duration-200 focus:scale-105"
             />
           </div>
 
@@ -124,13 +118,12 @@ export function RecipeManualTab({
               onChange={(e) => setNewRecipe({ ...newRecipe, servings: parseInt(e.target.value) || 1 })}
               placeholder="4"
               min="1"
-              className="transition-all duration-200 focus:scale-105"
             />
           </div>
         </div>
 
         {(newRecipe.prepTime > 0 || newRecipe.cookTime > 0) && (
-          <div className="text-sm text-gray-600 bg-blue-50 p-3 rounded-lg animate-fade-in">
+          <div className="text-sm text-gray-600 bg-blue-50 p-3 rounded-lg">
             <strong>Total Time: </strong>
             {(newRecipe.prepTime || 0) + (newRecipe.cookTime || 0)} minutes
             {newRecipe.prepTime > 0 && newRecipe.cookTime > 0 && (
@@ -142,32 +135,26 @@ export function RecipeManualTab({
         )}
       </Card>
 
-      {/* Categories */}
-      <div className="animate-scale-in">
-        <EnhancedCategorySelector
-          selectedCategories={newRecipe.categories}
-          onCategoriesChange={handleCategoriesChange}
-        />
-      </div>
+      {/* Recipe Classification */}
+      <RecipeClassificationSelector
+        recipe={newRecipe}
+        onRecipeChange={setNewRecipe}
+      />
 
       {/* Ingredients */}
-      <div className="animate-scale-in">
-        <EnhancedIngredientManager
-          ingredients={newRecipe.ingredients}
-          onIngredientsChange={handleIngredientsChange}
-        />
-      </div>
+      <EnhancedIngredientManager
+        ingredients={newRecipe.ingredients}
+        onIngredientsChange={handleIngredientsChange}
+      />
 
       {/* Instructions */}
-      <div className="animate-scale-in">
-        <EnhancedInstructionManager
-          instructions={newRecipe.instructions}
-          onInstructionsChange={handleInstructionsChange}
-        />
-      </div>
+      <EnhancedInstructionManager
+        instructions={newRecipe.instructions}
+        onInstructionsChange={handleInstructionsChange}
+      />
 
       {/* Top Tip */}
-      <Card className="p-4 space-y-4 animate-scale-in">
+      <Card className="p-4 space-y-4">
         <h3 className="text-lg font-semibold text-gray-900 flex items-center">
           <Lightbulb className="h-5 w-5 mr-2 text-yellow-500" />
           Chef's Tip (Optional)
@@ -176,7 +163,7 @@ export function RecipeManualTab({
           value={newRecipe.topTip || ""}
           onChange={(e) => setNewRecipe({ ...newRecipe, topTip: e.target.value })}
           placeholder="Share a helpful cooking tip, secret ingredient, or pro technique that makes this recipe special..."
-          className="h-20 resize-none transition-all duration-200 focus:scale-105"
+          className="h-20 resize-none"
         />
         <p className="text-xs text-gray-500">
           💡 Add a pro tip, cooking secret, or helpful advice to make this recipe even better!
@@ -184,16 +171,14 @@ export function RecipeManualTab({
       </Card>
 
       {/* Image Upload */}
-      <div className="animate-scale-in">
-        <EnhancedImageUpload
-          imagePreview={imagePreview}
-          isGeneratingImage={isGeneratingImage}
-          generationProgress={generationProgress}
-          onImageChange={onImageChange}
-          onGenerateImage={onGenerateImage}
-          recipeTitle={newRecipe.title}
-        />
-      </div>
+      <EnhancedImageUpload
+        imagePreview={imagePreview}
+        isGeneratingImage={isGeneratingImage}
+        generationProgress={generationProgress}
+        onImageChange={onImageChange}
+        onGenerateImage={onGenerateImage}
+        recipeTitle={newRecipe.title}
+      />
     </div>
   );
 }
