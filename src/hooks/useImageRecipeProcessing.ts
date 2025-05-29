@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Recipe } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
+import { sanitizeRecipeData } from "@/utils/contentSanitizer";
 
 export function useImageRecipeProcessing() {
   const { toast } = useToast();
@@ -10,8 +11,8 @@ export function useImageRecipeProcessing() {
 
   const handleProcessImage = async (
     file: File,
-    setNewRecipe: (recipe: Omit<Recipe, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>) => void,
-    currentRecipe: Omit<Recipe, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>,
+    setNewRecipe: (recipe: Omit<Recipe, 'id' | 'created_at' | 'updated_at' | 'created_by'>) => void,
+    currentRecipe: Omit<Recipe, 'id' | 'created_at' | 'updated_at' | 'created_by'>,
     setActiveTab: (tab: string) => void
   ) => {
     setIsProcessing(true);

@@ -1,6 +1,5 @@
-
 import { useState } from "react";
-import { Recipe, MealType, CuisineRegion, CookingMethod, DietLifestyle, ComplexityLevel, MainIngredient } from "@/types";
+import { Recipe } from "@/types";
 
 export function useRecipeForm() {
   const [newRecipe, setNewRecipe] = useState<Omit<Recipe, 'id' | 'created_at' | 'updated_at' | 'created_by'>>({
@@ -8,20 +7,21 @@ export function useRecipeForm() {
     description: "",
     ingredients: [],
     instructions: [],
-    // New classification fields
-    meal_type: undefined,
-    cuisine_region: undefined,
-    cooking_method: undefined,
-    diet_lifestyle: [],
-    complexity_level: undefined,
-    main_ingredient: undefined,
     prep_time: 0,
     cook_time: 0,
     servings: 1,
-    image: undefined,
-    top_tip: "Enjoy cooking this delicious recipe!", // Default top tip
+    image: "",
     is_favorite: false,
     household_id: "",
+    meal_type: undefined,
+    cuisine: undefined,
+    diet_lifestyle: [],
+    complexity_level: undefined,
+    slug: undefined,
+    top_tip: undefined,
+    cuisine_region: undefined,
+    cooking_method: undefined,
+    main_ingredient: undefined,
   });
 
   const [newCategory, setNewCategory] = useState("");
@@ -33,99 +33,73 @@ export function useRecipeForm() {
   const [shareWithCommunity, setShareWithCommunity] = useState(false);
   const [wasImportedFromWebsite, setWasImportedFromWebsite] = useState(false);
 
-  const handleAddCategory = () => {
-    if (newCategory.trim()) {
-      // Add category logic here if needed
-      setNewCategory("");
-    }
-  };
-
-  const handleRemoveCategory = (index: number) => {
-    // Remove category logic here if needed
-  };
-
-  const handleAddIngredient = () => {
-    if (newIngredient.trim()) {
-      setNewRecipe({
-        ...newRecipe,
-        ingredients: [...newRecipe.ingredients, newIngredient],
-      });
-      setNewIngredient("");
-    }
-  };
-
-  const handleRemoveIngredient = (index: number) => {
-    const updatedIngredients = [...newRecipe.ingredients];
-    updatedIngredients.splice(index, 1);
-    setNewRecipe({
-      ...newRecipe,
-      ingredients: updatedIngredients,
-    });
-  };
-
-  const handleAddInstruction = () => {
-    if (newInstruction.trim()) {
-      setNewRecipe({
-        ...newRecipe,
-        instructions: [...newRecipe.instructions, newInstruction],
-      });
-      setNewInstruction("");
-    }
-  };
-
-  const handleRemoveInstruction = (index: number) => {
-    const updatedInstructions = [...newRecipe.instructions];
-    updatedInstructions.splice(index, 1);
-    setNewRecipe({
-      ...newRecipe,
-      instructions: updatedInstructions,
-    });
-  };
-
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onload = () => {
+      reader.onloadend = () => {
         setImagePreview(reader.result as string);
-        setNewRecipe({
-          ...newRecipe,
-          image: reader.result as string,
-        });
+        setNewRecipe({ ...newRecipe, image: reader.result as string });
       };
       reader.readAsDataURL(file);
     }
   };
 
-  // Helper functions for new classification fields
-  const handleMealTypeChange = (mealType: MealType | undefined) => {
-    setNewRecipe({ ...newRecipe, meal_type: mealType });
+  const handleAddCategory = () => {
+    if (newCategory.trim() !== "") {
+      setNewRecipe((prevRecipe) => {
+        const updatedCategories = [...(prevRecipe.diet_lifestyle || []), newCategory.trim()];
+        return { ...prevRecipe, diet_lifestyle: updatedCategories };
+      });
+      setNewCategory("");
+    }
   };
 
-  const handleCuisineRegionChange = (cuisineRegion: CuisineRegion | undefined) => {
-    setNewRecipe({ ...newRecipe, cuisine_region: cuisineRegion });
+  const handleRemoveCategory = (categoryToRemove: string) => {
+    setNewRecipe((prevRecipe) => {
+      const updatedCategories = (prevRecipe.diet_lifestyle || []).filter(
+        (category) => category !== categoryToRemove
+      );
+      return { ...prevRecipe, diet_lifestyle: updatedCategories };
+    });
   };
 
-  const handleCookingMethodChange = (cookingMethod: CookingMethod | undefined) => {
-    setNewRecipe({ ...newRecipe, cooking_method: cookingMethod });
+  const handleAddIngredient = () => {
+    if (newIngredient.trim() !== "") {
+      setNewRecipe((prevRecipe) => {
+        const updatedIngredients = [...prevRecipe.ingredients, newIngredient.trim()];
+        return { ...prevRecipe, ingredients: updatedIngredients };
+      });
+      setNewIngredient("");
+    }
   };
 
-  const handleDietLifestyleChange = (dietLifestyle: DietLifestyle[]) => {
-    setNewRecipe({ ...newRecipe, diet_lifestyle: dietLifestyle });
+  const handleRemoveIngredient = (ingredientToRemove: string) => {
+    setNewRecipe((prevRecipe) => {
+      const updatedIngredients = prevRecipe.ingredients.filter(
+        (ingredient) => ingredient !== ingredientToRemove
+      );
+      return { ...prevRecipe, ingredients: updatedIngredients };
+    });
   };
 
-  const handleComplexityLevelChange = (complexityLevel: ComplexityLevel | undefined) => {
-    setNewRecipe({ ...newRecipe, complexity_level: complexityLevel });
+  const handleAddInstruction = () => {
+    if (newInstruction.trim() !== "") {
+      setNewRecipe((prevRecipe) => {
+        const updatedInstructions = [...prevRecipe.instructions, newInstruction.trim()];
+        return { ...prevRecipe, instructions: updatedInstructions };
+      });
+      setNewInstruction("");
+    }
   };
 
-  const handleMainIngredientChange = (mainIngredient: MainIngredient | undefined) => {
-    setNewRecipe({ ...newRecipe, main_ingredient: mainIngredient });
-  };
-
-  // Function to mark recipe as imported from website and enable community sharing by default
-  const markAsWebsiteImport = () => {
-    setWasImportedFromWebsite(true);
-    setShareWithCommunity(true); // Default to checked for website imports
+  const handleRemoveInstruction = (instructionToRemove: string) => {
+    setNewRecipe((prevRecipe) => {
+      const updatedInstructions = prevRecipe.instructions.filter(
+        (instruction) => instruction !== instructionToRemove
+      );
+      return { ...prevRecipe, instructions: updatedInstructions };
+    });
   };
 
   return {
@@ -147,19 +121,12 @@ export function useRecipeForm() {
     setShareWithCommunity,
     wasImportedFromWebsite,
     setWasImportedFromWebsite,
+    handleImageChange,
     handleAddCategory,
     handleRemoveCategory,
     handleAddIngredient,
     handleRemoveIngredient,
     handleAddInstruction,
     handleRemoveInstruction,
-    handleImageChange,
-    handleMealTypeChange,
-    handleCuisineRegionChange,
-    handleCookingMethodChange,
-    handleDietLifestyleChange,
-    handleComplexityLevelChange,
-    handleMainIngredientChange,
-    markAsWebsiteImport,
   };
 }

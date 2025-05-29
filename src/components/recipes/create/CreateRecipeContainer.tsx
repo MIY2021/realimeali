@@ -80,7 +80,7 @@ export function CreateRecipeContainer() {
     try {
       const recipeToSave = {
         ...recipeFormHook.newRecipe,
-        householdId: currentHousehold.id,
+        household_id: currentHousehold.id,
       };
 
       const savedRecipe = await createRecipe(recipeToSave, currentHousehold.id);
@@ -112,6 +112,7 @@ export function CreateRecipeContainer() {
   const wrappedProcessText = () => recipeProcessingHook.handleProcessText(recipeFormHook.setNewRecipe, recipeFormHook.newRecipe, setActiveTab);
   const wrappedProcessImage = (file: File) => recipeProcessingHook.handleProcessImage(file, recipeFormHook.setNewRecipe, recipeFormHook.newRecipe, setActiveTab);
   const wrappedGenerateRecipe = () => recipeProcessingHook.handleGenerateRecipe(recipeFormHook.setNewRecipe, recipeFormHook.newRecipe, setActiveTab);
+  const wrappedImportFromUrl = () => recipeProcessingHook.handleImportFromUrl(recipeFormHook.setNewRecipe, recipeFormHook.newRecipe, setActiveTab);
 
   return (
     <div className="container max-w-5xl mx-auto py-6 px-4 space-y-6">
@@ -124,7 +125,7 @@ export function CreateRecipeContainer() {
         recipeFormHook={recipeFormHook}
         recipeProcessingHook={recipeProcessingHook}
         onProcessText={wrappedProcessText}
-        onImportFromUrlWithImages={recipeProcessingHook.handleImportFromUrl}
+        onImportFromUrlWithImages={wrappedImportFromUrl}
         onProcessImage={wrappedProcessImage}
         onGenerateRecipe={wrappedGenerateRecipe}
         onGenerateImage={onGenerateImage}

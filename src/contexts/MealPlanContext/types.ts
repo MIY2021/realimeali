@@ -23,8 +23,8 @@ export interface MealPlanContextType {
   mealPlans: MealPlan[];
   getMealPlansForWeek: (weekNumber: 1 | 2) => MealPlan[];
   getRecipeForMealPlan: (mealPlan: MealPlan) => Recipe | undefined;
-  addMealPlan: (mealPlan: Omit<MealPlan, 'id' | 'createdAt' | 'updatedAt'>, weekNumber: 1 | 2, silentMode?: boolean) => Promise<void>;
-  addMealPlanWithLeftovers: (mealPlan: Omit<MealPlan, 'id' | 'createdAt' | 'updatedAt'>, weekNumber: 1 | 2, leftoverServings?: number, silentMode?: boolean) => Promise<void>;
+  addMealPlan: (mealPlan: Omit<MealPlan, 'id' | 'created_at' | 'updated_at'>, weekNumber: 1 | 2, silentMode?: boolean) => Promise<void>;
+  addMealPlanWithLeftovers: (mealPlan: Omit<MealPlan, 'id' | 'created_at' | 'updated_at'>, weekNumber: 1 | 2, leftoverServings?: number, silentMode?: boolean) => Promise<void>;
   removeMealPlan: (id: string) => Promise<void>;
   clearWeek: (weekNumber: 1 | 2) => Promise<void>;
   reorderMealPlans: (mealType: MealType, weekNumber: 1 | 2, sourceIndex: number, destinationIndex: number) => Promise<void>;

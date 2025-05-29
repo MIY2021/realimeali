@@ -12,8 +12,8 @@ export function useTextRecipeProcessing() {
   const [isProcessing, setIsProcessing] = useState(false);
 
   const handleProcessText = async (
-    setNewRecipe: (recipe: Omit<Recipe, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>) => void,
-    currentRecipe: Omit<Recipe, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>,
+    setNewRecipe: (recipe: Omit<Recipe, 'id' | 'created_at' | 'updated_at' | 'created_by'>) => void,
+    currentRecipe: Omit<Recipe, 'id' | 'created_at' | 'updated_at' | 'created_by'>,
     setActiveTab: (tab: string) => void
   ) => {
     // Validate input

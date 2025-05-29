@@ -13,7 +13,11 @@ export const useRecipeApi = () => {
 
       if (error) throw error;
       
-      return data || [];
+      // Transform database response to match Recipe interface
+      return (data || []).map(recipe => ({
+        ...recipe,
+        created_by: recipe.user_id, // Map user_id to created_by
+      }));
     } catch (error) {
       console.error('Error fetching recipes:', error);
       throw error;
@@ -59,7 +63,10 @@ export const useRecipeApi = () => {
 
       if (error) throw error;
       
-      return data;
+      return {
+        ...data,
+        created_by: data.user_id, // Map user_id to created_by
+      };
     } catch (error) {
       console.error('Error creating recipe:', error);
       throw error;
@@ -94,7 +101,10 @@ export const useRecipeApi = () => {
 
       if (error) throw error;
       
-      return data;
+      return {
+        ...data,
+        created_by: data.user_id, // Map user_id to created_by
+      };
     } catch (error) {
       console.error('Error updating recipe:', error);
       throw error;

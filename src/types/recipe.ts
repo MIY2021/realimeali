@@ -8,7 +8,7 @@ export interface RecipesContextType {
   fetchRecipes: (householdId: string | null) => Promise<void>;
   getRecipeById: (id: string) => Recipe | undefined;
   getRecipeBySlug: (slug: string) => Recipe | undefined;
-  createRecipe: (recipe: Omit<Recipe, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>, householdId: string) => Promise<Recipe | null>;
+  createRecipe: (recipe: Omit<Recipe, 'id' | 'created_at' | 'updated_at' | 'created_by'>, householdId: string) => Promise<Recipe | null>;
   updateRecipe: (id: string, recipe: Partial<Recipe>) => Promise<Recipe | null>;
   deleteRecipe: (id: string) => Promise<boolean>;
   toggleFavorite: (id: string, isFavorite: boolean) => Promise<Recipe | null>;

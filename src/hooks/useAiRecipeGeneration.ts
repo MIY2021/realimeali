@@ -1,88 +1,87 @@
-
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Recipe } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
+import { sanitizeRecipeData } from "@/utils/contentSanitizer";
 
 export function useAiRecipeGeneration() {
   const { toast } = useToast();
   const [aiPrompt, setAiPrompt] = useState("");
-  const [stylePreferences, setStylePreferences] = useState<string[]>([]);
+  const [stylePreferences, setStylePreferences] = useState({
+    cuisine: "",
+    difficulty: "",
+    dietaryRestrictions: "",
+    cookingTime: "",
+  });
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const buildEnhancedPrompt = (basePrompt: string, styles: string[]) => {
-    let enhancedPrompt = `Generate a complete recipe based on this request: ${basePrompt.trim()}`;
-    
-    if (styles.length > 0) {
-      enhancedPrompt += "\n\nPlease tailor the recipe according to these style preferences:\n";
-      
-      if (styles.includes("quick-easy")) {
-        enhancedPrompt += "- QUICK & EASY: Focus on simple techniques, minimal prep time (under 30 minutes total), and readily available ingredients. Avoid complex cooking methods.\n";
-      }
-      
-      if (styles.includes("cheap-cheerful")) {
-        enhancedPrompt += "- CHEAP & CHEERFUL: Use budget-friendly ingredients, larger portions, and cost-effective cooking methods. Focus on hearty, satisfying meals that don't break the bank.\n";
-      }
-      
-      if (styles.includes("michelin-star")) {
-        enhancedPrompt += "- MICHELIN STAR: Create an elevated, restaurant-quality dish with sophisticated techniques, premium ingredients, and elegant presentation. Include detailed plating instructions.\n";
-      }
-    }
-    
-    enhancedPrompt += "\n\nIMPORTANT: Please also include a helpful 'topTip' - a cooking tip, secret, or pro advice that will help make this recipe even better. This could be about technique, ingredient substitutions, timing, or any insider knowledge that would elevate the dish.";
-    
-    return enhancedPrompt;
-  };
-
   const handleGenerateRecipe = async (
-    setNewRecipe: (recipe: Omit<Recipe, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>) => void,
-    currentRecipe: Omit<Recipe, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>,
+    setNewRecipe: (recipe: Omit<Recipe, 'id' | 'created_at' | 'updated_at' | 'created_by'>) => void,
+    currentRecipe: Omit<Recipe, 'id' | 'created_at' | 'updated_at' | 'created_by'>,
     setActiveTab: (tab: string) => void
   ) => {
-    if (!aiPrompt.trim()) {
-      toast({
-        title: "Error",
-        description: "Please describe what kind of recipe you want",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setIsProcessing(true);
     try {
-      console.log('Generating recipe with AI prompt:', aiPrompt);
-      console.log('Style preferences:', stylePreferences);
+      console.log('Generating recipe with prompt:', aiPrompt, 'and style preferences:', stylePreferences);
       
-      const enhancedPrompt = buildEnhancedPrompt(aiPrompt, stylePreferences);
-      console.log('Enhanced prompt:', enhancedPrompt);
-      
-      const { data, error } = await supabase.functions.invoke('parse-recipe-ai', {
-        body: { recipeText: enhancedPrompt }
+      const { data, error } = await supabase.functions.invoke('generate-recipe-ai', {
+        body: { 
+          prompt: aiPrompt,
+          stylePreferences: stylePreferences
+        }
       });
 
       if (error) {
-        console.error('Error calling parse-recipe-ai function:', error);
-        throw new Error(error.message || 'Failed to generate recipe');
+        console.error('Error calling generate-recipe-ai function:', error);
+        
+        // Handle specific error codes
+        if (error.message?.includes('RATE_LIMIT')) {
+          toast({
+            title: "Rate Limit Exceeded",
+            description: "Please wait a moment before trying again.",
+            variant: "destructive",
+          });
+        } else if (error.message?.includes('INVALID_PROMPT')) {
+          toast({
+            title: "Invalid Prompt",
+            description: "The prompt contains invalid or suspicious content.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Generation Failed",
+            description: "Failed to generate recipe. Please try again.",
+            variant: "destructive",
+          });
+        }
+        return;
       }
 
-      if (!data?.parsedRecipe) {
-        throw new Error('No recipe was generated from your request');
+      if (!data?.generatedRecipe) {
+        toast({
+          title: "No Recipe Generated",
+          description: "Could not generate recipe information from the prompt.",
+          variant: "destructive",
+        });
+        return;
       }
 
-      console.log('Received generated recipe:', data.parsedRecipe);
+      console.log('Received generated recipe:', data.generatedRecipe);
       
-      setNewRecipe({ ...currentRecipe, ...data.parsedRecipe });
+      // Sanitize the recipe data before setting
+      const sanitizedRecipe = sanitizeRecipeData(data.generatedRecipe);
+      setNewRecipe({ ...currentRecipe, ...sanitizedRecipe });
       setActiveTab("manual");
       
       toast({
         title: "Recipe Generated!",
-        description: "Your AI-generated recipe is ready for review",
+        description: "Review and edit your recipe in the Manual Entry tab",
       });
     } catch (error) {
       console.error('Error generating recipe:', error);
       toast({
-        title: "Error",
-        description: error.message || "Failed to generate recipe. Please try again with a different prompt.",
+        title: "Generation Error",
+        description: "An unexpected error occurred. Please try again.",
         variant: "destructive",
       });
     } finally {

@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
 import { MealPlan, Recipe, MealType } from "@/types";
 import { useAuth } from "@/contexts/AuthContext";
