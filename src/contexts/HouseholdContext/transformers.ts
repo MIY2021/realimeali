@@ -1,36 +1,18 @@
 
 import { Household, HouseholdJoinRequest, HouseholdMember } from '@/types';
 
-export const transformHousehold = (dbHousehold: any): Household => ({
-  id: dbHousehold.id,
-  name: dbHousehold.name,
-  createdAt: dbHousehold.created_at,
-  updatedAt: dbHousehold.updated_at,
-  createdBy: dbHousehold.created_by,
-});
+// No more transformations needed - use snake_case directly from database
+export const transformHousehold = (dbHousehold: any): Household => dbHousehold;
 
-export const transformJoinRequest = (dbRequest: any): HouseholdJoinRequest => ({
-  id: dbRequest.id,
-  householdId: dbRequest.household_id,
-  userId: dbRequest.user_id,
-  status: dbRequest.status,
-  createdAt: dbRequest.created_at,
-  updatedAt: dbRequest.updated_at,
-});
+export const transformJoinRequest = (dbRequest: any): HouseholdJoinRequest => dbRequest;
 
 export const transformHouseholdMember = (member: any): HouseholdMember => ({
-  id: member.id,
-  userId: member.user_id,
-  householdId: member.household_id,
-  role: member.role,
-  joinedAt: member.joined_at,
-  createdAt: member.joined_at,
-  updatedAt: member.joined_at,
+  ...member,
   profile: member.profiles
     ? {
-        fullName: member.profiles.full_name,
+        full_name: member.profiles.full_name,
         email: member.profiles.email,
-        avatarUrl: member.profiles.avatar_url,
+        avatar_url: member.profiles.avatar_url,
       }
     : undefined,
 });

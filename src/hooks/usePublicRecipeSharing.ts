@@ -5,31 +5,31 @@ import { Recipe } from "@/types";
 export function usePublicRecipeSharing() {
   const shareRecipePublicly = async (
     recipe: Recipe,
-    sharedByName: string,
-    sharedByHouseholdName: string,
-    expiresInDays: number = 30
+    shared_by_name: string,
+    shared_by_household_name: string,
+    expires_in_days: number = 30
   ) => {
     try {
-      const expiresAt = new Date();
-      expiresAt.setDate(expiresAt.getDate() + expiresInDays);
+      const expires_at = new Date();
+      expires_at.setDate(expires_at.getDate() + expires_in_days);
 
       const { data, error } = await supabase
         .from('public_recipe_shares')
         .insert({
           original_recipe_id: recipe.id,
-          shared_by_user_id: recipe.createdBy,
-          shared_by_name: sharedByName,
-          shared_by_household_name: sharedByHouseholdName,
+          shared_by_user_id: recipe.created_by,
+          shared_by_name,
+          shared_by_household_name,
           title: recipe.title,
           description: recipe.description,
           ingredients: recipe.ingredients,
           instructions: recipe.instructions,
-          prep_time: recipe.prepTime,
-          cook_time: recipe.cookTime,
+          prep_time: recipe.prep_time,
+          cook_time: recipe.cook_time,
           servings: recipe.servings,
           image: recipe.image,
-          expires_at: expiresAt.toISOString(),
-          original_household_id: recipe.householdId
+          expires_at: expires_at.toISOString(),
+          original_household_id: recipe.household_id
         })
         .select()
         .single();

@@ -12,12 +12,12 @@ interface UserProfile {
   avatar_data?: string;
 }
 
-export const useUserProfile = (userId: string | null) => {
+export const useUserProfile = (user_id: string | null) => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (!userId) {
+    if (!user_id) {
       setProfile(null);
       return;
     }
@@ -28,7 +28,7 @@ export const useUserProfile = (userId: string | null) => {
         const { data, error } = await supabase
           .from('profiles')
           .select('id, full_name, email, avatar_url, auth_provider, avatar_type, avatar_data')
-          .eq('id', userId)
+          .eq('id', user_id)
           .single();
 
         if (error) {
@@ -46,7 +46,7 @@ export const useUserProfile = (userId: string | null) => {
     };
 
     fetchProfile();
-  }, [userId]);
+  }, [user_id]);
 
   return { profile, isLoading };
 };

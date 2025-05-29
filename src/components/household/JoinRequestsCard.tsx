@@ -14,22 +14,22 @@ interface JoinRequestsCardProps {
 }
 
 const JoinRequestUserCard = ({ request }: { request: HouseholdJoinRequest }) => {
-  const { profile, isLoading } = useUserProfile(request.userId);
+  const { profile, isLoading } = useUserProfile(request.user_id);
   const [imageError, setImageError] = useState(false);
 
   const handleImageError = () => {
-    console.error(`Avatar image failed to load for join request user ${request.userId}:`, {
-      userId: request.userId,
-      avatarUrl: profile?.avatarUrl,
+    console.error(`Avatar image failed to load for join request user ${request.user_id}:`, {
+      user_id: request.user_id,
+      avatar_url: profile?.avatar_url,
       timestamp: new Date().toISOString()
     });
     setImageError(true);
   };
 
   const handleImageLoad = () => {
-    console.log(`Avatar image loaded successfully for join request user ${request.userId}:`, {
-      userId: request.userId,
-      avatarUrl: profile?.avatarUrl,
+    console.log(`Avatar image loaded successfully for join request user ${request.user_id}:`, {
+      user_id: request.user_id,
+      avatar_url: profile?.avatar_url,
       timestamp: new Date().toISOString()
     });
     setImageError(false);
@@ -52,30 +52,30 @@ const JoinRequestUserCard = ({ request }: { request: HouseholdJoinRequest }) => 
       <div className="relative">
         <Avatar className="h-8 w-8">
           <AvatarImage 
-            src={profile?.avatarUrl} 
-            alt={profile?.fullName || 'User'}
+            src={profile?.avatar_url} 
+            alt={profile?.full_name || 'User'}
             onError={handleImageError}
             onLoad={handleImageLoad}
             className="object-cover"
           />
           <AvatarFallback className="bg-terracotta/20 text-terracotta">
-            {profile?.fullName 
-              ? profile.fullName.charAt(0).toUpperCase()
+            {profile?.full_name 
+              ? profile.full_name.charAt(0).toUpperCase()
               : <User className="h-4 w-4" />
             }
           </AvatarFallback>
         </Avatar>
-        {imageError && profile?.avatarUrl && (
+        {imageError && profile?.avatar_url && (
           <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border border-white" 
                title="Avatar failed to load" />
         )}
       </div>
       <div>
-        <p className="font-medium">{profile?.fullName || 'Unknown User'}</p>
+        <p className="font-medium">{profile?.full_name || 'Unknown User'}</p>
         <p className="text-sm text-muted-foreground">
-          Requested on {new Date(request.createdAt).toLocaleDateString()}
+          Requested on {new Date(request.created_at).toLocaleDateString()}
         </p>
-        {profile?.avatarUrl && (
+        {profile?.avatar_url && (
           <p className="text-xs text-muted-foreground">
             Avatar: {imageError ? '❌ Failed' : '✅ Loaded'}
           </p>
@@ -92,9 +92,9 @@ export const JoinRequestsCard = ({ isOwner }: JoinRequestsCardProps) => {
     totalRequests: joinRequests.length,
     requests: joinRequests.map(r => ({
       id: r.id,
-      userId: r.userId,
+      user_id: r.user_id,
       status: r.status,
-      createdAt: r.createdAt
+      created_at: r.created_at
     })),
     timestamp: new Date().toISOString()
   });

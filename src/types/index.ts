@@ -5,72 +5,72 @@ export interface Recipe {
   description: string;
   ingredients: string[];
   instructions: string[];
-  prepTime: number;
-  cookTime: number;
+  prep_time: number;
+  cook_time: number;
   servings: number;
   image?: string;
-  isFavorite: boolean;
-  createdAt: string;
-  updatedAt: string;
-  createdBy: string;
-  householdId: string;
-  mealType?: MealType;
+  is_favorite: boolean;
+  created_at: string;
+  updated_at: string;
+  created_by: string;
+  household_id: string;
+  meal_type?: MealType;
   cuisine?: Cuisine;
-  dietLifestyle?: DietLifestyle[];
-  complexityLevel?: ComplexityLevel;
+  diet_lifestyle?: DietLifestyle[];
+  complexity_level?: ComplexityLevel;
   slug?: string;
 }
 
 export interface MealPlan {
   id: string;
   date: string;
-  mealType: string;
-  recipeId: string;
-  slotIndex: number;
-  isLeftover: boolean;
-  leftoverServings?: number;
-  originalServings: number;
-  createdAt: string;
-  updatedAt: string;
-  householdId: string;
-  prepTime?: number;
-  cookTime?: number;
+  meal_type: string;
+  recipe_id: string;
+  slot_index: number;
+  is_leftover: boolean;
+  leftover_servings?: number;
+  original_servings: number;
+  created_at: string;
+  updated_at: string;
+  household_id: string;
+  prep_time?: number;
+  cook_time?: number;
   servings?: number;
-  weekNumber: 1 | 2;
-  parentMealPlanId?: string;
-  createdBy: string;
+  week_number: 1 | 2;
+  parent_meal_plan_id?: string;
+  created_by: string;
 }
 
 export interface Household {
   id: string;
   name: string;
-  createdAt: string;
-  updatedAt: string;
-  createdBy: string;
+  created_at: string;
+  updated_at: string;
+  created_by: string;
 }
 
 export interface HouseholdMember {
   id: string;
-  userId: string;
-  householdId: string;
+  user_id: string;
+  household_id: string;
   role: 'owner' | 'admin' | 'member';
-  createdAt: string;
-  updatedAt: string;
-  joinedAt: string;
+  created_at: string;
+  updated_at: string;
+  joined_at: string;
   profile?: {
-    fullName: string;
+    full_name: string;
     email: string;
-    avatarUrl?: string;
+    avatar_url?: string;
   };
 }
 
 export interface HouseholdJoinRequest {
   id: string;
-  householdId: string;
-  userId: string;
+  household_id: string;
+  user_id: string;
   status: 'pending' | 'approved' | 'rejected';
-  createdAt: string;
-  updatedAt: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface PublicRecipeShare {
@@ -97,17 +97,17 @@ export interface PublicRecipeShare {
 export interface UserProfile {
   id: string;
   email: string;
-  fullName?: string;
-  firstName?: string;
-  lastName?: string;
-  avatarUrl?: string;
-  createdAt: string;
-  updatedAt: string;
+  full_name?: string;
+  first_name?: string;
+  last_name?: string;
+  avatar_url?: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface HouseholdMealPlan {
   [date: string]: {
-    [mealType: string]: Recipe[];
+    [meal_type: string]: Recipe[];
   };
 }
 

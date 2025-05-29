@@ -43,20 +43,20 @@ export const HouseholdMembersCard = ({ members, isOwner, onRemoveMember, isLoadi
   const [refreshingProfiles, setRefreshingProfiles] = useState(false);
   const [removingMember, setRemovingMember] = useState<string | null>(null);
 
-  const handleImageError = (memberId: string, avatarUrl?: string) => {
+  const handleImageError = (memberId: string, avatar_url?: string) => {
     console.error(`Avatar image failed to load for member ${memberId}:`, {
       memberId,
-      avatarUrl,
+      avatar_url,
       timestamp: new Date().toISOString()
     });
     
     setImageErrors(prev => new Set(prev).add(memberId));
   };
 
-  const handleImageLoad = (memberId: string, avatarUrl?: string) => {
+  const handleImageLoad = (memberId: string, avatar_url?: string) => {
     console.log(`Avatar image loaded successfully for member ${memberId}:`, {
       memberId,
-      avatarUrl,
+      avatar_url,
       timestamp: new Date().toISOString()
     });
     
@@ -102,13 +102,13 @@ export const HouseholdMembersCard = ({ members, isOwner, onRemoveMember, isLoadi
     totalMembers: members.length,
     members: members.map(m => ({
       id: m.id,
-      userId: m.userId,
+      user_id: m.user_id,
       role: m.role,
       profile: {
-        fullName: m.profile?.fullName,
+        full_name: m.profile?.full_name,
         email: m.profile?.email,
-        avatarUrl: m.profile?.avatarUrl,
-        hasAvatarUrl: !!m.profile?.avatarUrl
+        avatar_url: m.profile?.avatar_url,
+        hasAvatarUrl: !!m.profile?.avatar_url
       }
     })),
     imageErrors: Array.from(imageErrors),
@@ -155,27 +155,27 @@ export const HouseholdMembersCard = ({ members, isOwner, onRemoveMember, isLoadi
                     <div className="relative">
                       <Avatar className="h-8 w-8 flex-shrink-0">
                         <AvatarImage 
-                          src={member.profile?.avatarUrl} 
-                          alt={member.profile?.fullName || 'User'}
-                          onError={() => handleImageError(member.id, member.profile?.avatarUrl)}
-                          onLoad={() => handleImageLoad(member.id, member.profile?.avatarUrl)}
+                          src={member.profile?.avatar_url} 
+                          alt={member.profile?.full_name || 'User'}
+                          onError={() => handleImageError(member.id, member.profile?.avatar_url)}
+                          onLoad={() => handleImageLoad(member.id, member.profile?.avatar_url)}
                           className="object-cover"
                         />
                         <AvatarFallback className="bg-terracotta/20 text-terracotta">
-                          {member.profile?.fullName 
-                            ? member.profile.fullName.charAt(0).toUpperCase()
+                          {member.profile?.full_name 
+                            ? member.profile.full_name.charAt(0).toUpperCase()
                             : <User className="h-4 w-4" />
                           }
                         </AvatarFallback>
                       </Avatar>
-                      {imageErrors.has(member.id) && member.profile?.avatarUrl && (
+                      {imageErrors.has(member.id) && member.profile?.avatar_url && (
                         <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border border-white" 
                              title="Avatar failed to load" />
                       )}
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="font-medium truncate">
-                        {member.profile?.fullName || 'Unknown User'}
+                        {member.profile?.full_name || 'Unknown User'}
                       </p>
                       <p className="text-sm text-muted-foreground truncate">
                         {member.profile?.email || 'No email available'}
@@ -186,7 +186,7 @@ export const HouseholdMembersCard = ({ members, isOwner, onRemoveMember, isLoadi
                     <Badge variant={member.role === 'owner' ? 'default' : 'secondary'}>
                       {member.role}
                     </Badge>
-                    {isOwner && member.userId !== user?.id && (
+                    {isOwner && member.user_id !== user?.id && (
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <Button
@@ -206,13 +206,13 @@ export const HouseholdMembersCard = ({ members, isOwner, onRemoveMember, isLoadi
                           <AlertDialogHeader>
                             <AlertDialogTitle>Remove Member</AlertDialogTitle>
                             <AlertDialogDescription>
-                              Are you sure you want to remove <strong>{member.profile?.fullName || 'this member'}</strong> from the household? This action cannot be undone.
+                              Are you sure you want to remove <strong>{member.profile?.full_name || 'this member'}</strong> from the household? This action cannot be undone.
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
                             <AlertDialogCancel>Cancel</AlertDialogCancel>
                             <AlertDialogAction
-                              onClick={() => handleRemoveMember(member.id, member.userId, member.profile?.fullName || 'Unknown User')}
+                              onClick={() => handleRemoveMember(member.id, member.user_id, member.profile?.full_name || 'Unknown User')}
                               className="bg-red-500 hover:bg-red-600"
                               disabled={removingMember === member.id}
                             >

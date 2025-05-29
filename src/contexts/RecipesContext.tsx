@@ -18,9 +18,9 @@ interface RecipesContextType {
   error: string | null;
   // Add missing methods
   fetchRecipes: (householdId: string | null) => Promise<void>;
-  createRecipe: (recipe: Omit<Recipe, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>, householdId: string) => Promise<Recipe | null>;
+  createRecipe: (recipe: Omit<Recipe, 'id' | 'created_at' | 'updated_at' | 'created_by'>, householdId: string) => Promise<Recipe | null>;
   deleteRecipe: (id: string) => Promise<boolean>;
-  toggleFavorite: (id: string, isFavorite: boolean) => Promise<void>;
+  toggleFavorite: (id: string, is_favorite: boolean) => Promise<void>;
 }
 
 const RecipesContext = createContext<RecipesContextType | undefined>(undefined);
@@ -115,7 +115,7 @@ export const RecipesProvider = ({ children }: RecipesProviderProps) => {
   }, [recipeApi]);
 
   const createRecipe = useCallback(async (
-    recipeData: Omit<Recipe, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>, 
+    recipeData: Omit<Recipe, 'id' | 'created_at' | 'updated_at' | 'created_by'>, 
     householdId: string
   ) => {
     try {
@@ -147,13 +147,13 @@ export const RecipesProvider = ({ children }: RecipesProviderProps) => {
     }
   }, [recipeApi, removeRecipe]);
 
-  const toggleFavorite = useCallback(async (id: string, isFavorite: boolean) => {
+  const toggleFavorite = useCallback(async (id: string, is_favorite: boolean) => {
     try {
       setError(null);
       const recipe = getRecipeById(id);
       if (!recipe) return;
       
-      const updatedRecipe = { ...recipe, isFavorite };
+      const updatedRecipe = { ...recipe, is_favorite };
       await updateRecipe(id, updatedRecipe);
     } catch (error) {
       console.error('Error toggling favorite:', error);

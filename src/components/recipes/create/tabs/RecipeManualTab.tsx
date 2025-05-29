@@ -11,8 +11,8 @@ import { RecipeClassificationSelector } from "../RecipeClassificationSelector";
 
 interface RecipeManualTabProps {
   isMobile: boolean;
-  newRecipe: Omit<Recipe, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>;
-  setNewRecipe: (recipe: Omit<Recipe, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>) => void;
+  newRecipe: Omit<Recipe, 'id' | 'created_at' | 'updated_at' | 'created_by'>;
+  setNewRecipe: (recipe: Omit<Recipe, 'id' | 'created_at' | 'updated_at' | 'created_by'>) => void;
   imagePreview: string | null;
   isGeneratingImage: boolean;
   generationProgress: string;
@@ -86,8 +86,8 @@ export function RecipeManualTab({
             </label>
             <Input
               type="number"
-              value={newRecipe.prepTime || ''}
-              onChange={(e) => setNewRecipe({ ...newRecipe, prepTime: parseInt(e.target.value) || 0 })}
+              value={newRecipe.prep_time || ''}
+              onChange={(e) => setNewRecipe({ ...newRecipe, prep_time: parseInt(e.target.value) || 0 })}
               placeholder="15"
               min="0"
             />
@@ -100,8 +100,8 @@ export function RecipeManualTab({
             </label>
             <Input
               type="number"
-              value={newRecipe.cookTime || ''}
-              onChange={(e) => setNewRecipe({ ...newRecipe, cookTime: parseInt(e.target.value) || 0 })}
+              value={newRecipe.cook_time || ''}
+              onChange={(e) => setNewRecipe({ ...newRecipe, cook_time: parseInt(e.target.value) || 0 })}
               placeholder="30"
               min="0"
             />
@@ -122,13 +122,13 @@ export function RecipeManualTab({
           </div>
         </div>
 
-        {(newRecipe.prepTime > 0 || newRecipe.cookTime > 0) && (
+        {(newRecipe.prep_time > 0 || newRecipe.cook_time > 0) && (
           <div className="text-sm text-gray-600 bg-blue-50 p-3 rounded-lg">
             <strong>Total Time: </strong>
-            {(newRecipe.prepTime || 0) + (newRecipe.cookTime || 0)} minutes
-            {newRecipe.prepTime > 0 && newRecipe.cookTime > 0 && (
+            {(newRecipe.prep_time || 0) + (newRecipe.cook_time || 0)} minutes
+            {newRecipe.prep_time > 0 && newRecipe.cook_time > 0 && (
               <span className="ml-2">
-                ({newRecipe.prepTime} prep + {newRecipe.cookTime} cook)
+                ({newRecipe.prep_time} prep + {newRecipe.cook_time} cook)
               </span>
             )}
           </div>

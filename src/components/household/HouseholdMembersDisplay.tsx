@@ -9,20 +9,20 @@ export const HouseholdMembersDisplay = () => {
   const { currentHousehold, householdMembers, isLoadingMembers } = useHousehold();
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
 
-  const handleImageError = (memberId: string, avatarUrl?: string) => {
+  const handleImageError = (memberId: string, avatar_url?: string) => {
     console.error(`Avatar image failed to load in HouseholdMembersDisplay for member ${memberId}:`, {
       memberId,
-      avatarUrl,
+      avatar_url,
       timestamp: new Date().toISOString()
     });
     
     setImageErrors(prev => new Set(prev).add(memberId));
   };
 
-  const handleImageLoad = (memberId: string, avatarUrl?: string) => {
+  const handleImageLoad = (memberId: string, avatar_url?: string) => {
     console.log(`Avatar image loaded successfully in HouseholdMembersDisplay for member ${memberId}:`, {
       memberId,
-      avatarUrl,
+      avatar_url,
       timestamp: new Date().toISOString()
     });
     
@@ -52,11 +52,11 @@ export const HouseholdMembersDisplay = () => {
     totalMembers: householdMembers.length,
     members: householdMembers.map(m => ({
       id: m.id,
-      userId: m.userId,
+      user_id: m.user_id,
       profile: {
-        fullName: m.profile?.fullName,
-        avatarUrl: m.profile?.avatarUrl,
-        hasAvatarUrl: !!m.profile?.avatarUrl
+        full_name: m.profile?.full_name,
+        avatar_url: m.profile?.avatar_url,
+        hasAvatarUrl: !!m.profile?.avatar_url
       }
     })),
     imageErrors: Array.from(imageErrors),
@@ -77,20 +77,20 @@ export const HouseholdMembersDisplay = () => {
                 <div className="relative">
                   <Avatar className="h-8 w-8 border-2 border-background hover:scale-105 transition-transform">
                     <AvatarImage 
-                      src={member.profile?.avatarUrl} 
-                      alt={member.profile?.fullName || 'User'}
-                      onError={() => handleImageError(member.id, member.profile?.avatarUrl)}
-                      onLoad={() => handleImageLoad(member.id, member.profile?.avatarUrl)}
+                      src={member.profile?.avatar_url} 
+                      alt={member.profile?.full_name || 'User'}
+                      onError={() => handleImageError(member.id, member.profile?.avatar_url)}
+                      onLoad={() => handleImageLoad(member.id, member.profile?.avatar_url)}
                       className="object-cover"
                     />
                     <AvatarFallback className="bg-terracotta/20 text-terracotta text-xs">
-                      {member.profile?.fullName 
-                        ? member.profile.fullName.charAt(0).toUpperCase()
+                      {member.profile?.full_name 
+                        ? member.profile.full_name.charAt(0).toUpperCase()
                         : <User className="h-3 w-3" />
                       }
                     </AvatarFallback>
                   </Avatar>
-                  {imageErrors.has(member.id) && member.profile?.avatarUrl && (
+                  {imageErrors.has(member.id) && member.profile?.avatar_url && (
                     <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-red-500 rounded-full border border-white" 
                          title="Avatar failed to load" />
                   )}
@@ -98,9 +98,9 @@ export const HouseholdMembersDisplay = () => {
               </TooltipTrigger>
               <TooltipContent>
                 <div className="text-center">
-                  <p className="font-medium">{member.profile?.fullName}</p>
+                  <p className="font-medium">{member.profile?.full_name}</p>
                   <p className="text-xs text-muted-foreground capitalize">{member.role}</p>
-                  {member.profile?.avatarUrl && (
+                  {member.profile?.avatar_url && (
                     <p className="text-xs text-muted-foreground">
                       Avatar: {imageErrors.has(member.id) ? '❌ Failed' : '✅ Loaded'}
                     </p>
