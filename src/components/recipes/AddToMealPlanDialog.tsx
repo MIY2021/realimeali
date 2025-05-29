@@ -43,8 +43,6 @@ export function AddToMealPlanDialog({ recipe, open, onOpenChange }: AddToMealPla
         household_id: currentHousehold.id,
         week_number: selectedWeek,
         original_servings: recipe.servings,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
       }, selectedWeek);
 
       toast({
