@@ -9,7 +9,7 @@ import { useMealPlan } from "@/contexts/MealPlanContext";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
-import { Coffee, Sandwich, UtensilsCrossed, Cookie } from "lucide-react";
+import { Coffee, Sandwich, UtensilsCrossed, Snack } from "lucide-react";
 
 interface AddToMealPlanDialogProps {
   recipe: Recipe | null;
@@ -21,7 +21,7 @@ const mealTypeButtons = [
   { value: "breakfast" as MealPlanMealType, label: "Breakfast", icon: Coffee },
   { value: "lunch" as MealPlanMealType, label: "Lunch", icon: Sandwich },
   { value: "dinner" as MealPlanMealType, label: "Dinner", icon: UtensilsCrossed },
-  { value: "snacks" as MealPlanMealType, label: "Snacks", icon: Cookie },
+  { value: "snacks" as MealPlanMealType, label: "Snacks", icon: Snack },
 ];
 
 export function AddToMealPlanDialog({ recipe, open, onOpenChange }: AddToMealPlanDialogProps) {

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -28,13 +27,19 @@ export function CommunityRecipeCard({ recipe }: CommunityRecipeCardProps) {
   const handleSaveRecipe = async () => {
     setIsSaving(true);
     try {
-      // Import the recipe from URL and save it directly
-      await handleImportFromUrl(
-        setNewRecipe,
-        newRecipe,
-        () => {}, // No tab switching needed
-        false // Don't download images, just hotlink
-      );
+      // Create a basic recipe from the community recipe data
+      const basicRecipe = {
+        ...newRecipe,
+        title: recipe.title,
+        description: recipe.description || '',
+        prepTime: recipe.prep_time || 0,
+        cookTime: recipe.cook_time || 0,
+        servings: recipe.servings || 4,
+        image: recipe.image_url,
+      };
+      
+      // Save the recipe directly
+      await handleSave(basicRecipe);
       
       // Increment save count
       await incrementSaveCount(recipe.id);
