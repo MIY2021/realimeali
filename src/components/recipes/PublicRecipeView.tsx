@@ -2,122 +2,157 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { RecipeImage } from "@/components/ui/recipe-image";
-import { supabase } from "@/integrations/supabase/client";
-import { ChefHat, Clock, Users, Share } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { PublicRecipeShare } from "@/types";
+import { UtensilsCrossed, Clock, Users, Copy, Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
-interface PublicRecipeViewProps {
-  recipe?: any;
-}
-
-export function PublicRecipeView({ recipe }: PublicRecipeViewProps) {
+export function PublicRecipeView() {
   const { shareId } = useParams<{ shareId: string }>();
-  const [publicRecipe, setPublicRecipe] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [recipe, setRecipe] = useState<PublicRecipeShare | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
     const fetchPublicRecipe = async () => {
-      setIsLoading(true);
-      try {
-        if (!shareId) {
-          console.error("No shareId provided");
-          return;
-        }
+      if (!shareId) {
+        setError("Invalid share link");
+        setLoading(false);
+        return;
+      }
 
+      try {
         const { data, error } = await supabase
           .from('public_recipe_shares')
           .select('*')
           .eq('public_share_id', shareId)
           .single();
 
-        if (error) {
-          console.error("Error fetching public recipe:", error);
-          toast({
-            title: "Error",
-            description: "Failed to load recipe. Please try again.",
-            variant: "destructive"
-          });
+        if (error) throw error;
+
+        if (!data) {
+          setError("Recipe not found or link has expired");
+          setLoading(false);
           return;
         }
 
-        setPublicRecipe(data);
+        setRecipe(data);
+      } catch (error) {
+        console.error('Error fetching public recipe:', error);
+        setError("Failed to load recipe");
       } finally {
-        setIsLoading(false);
+        setLoading(false);
       }
     };
 
     fetchPublicRecipe();
-  }, [shareId, toast]);
+  }, [shareId]);
 
-  if (isLoading) {
-    return <div className="text-center py-10">Loading recipe...</div>;
+  const copyToClipboard = async () => {
+    if (!recipe) return;
+    
+    const recipeText = `${recipe.title}\n\nIngredients:\n${recipe.ingredients.join('\n')}\n\nInstructions:\n${recipe.instructions.join('\n')}`;
+    
+    try {
+      await navigator.clipboard.writeText(recipeText);
+      setCopied(true);
+      toast({
+        title: "Recipe copied!",
+        description: "The recipe has been copied to your clipboard.",
+      });
+      setTimeout(() => setCopied(false), 2000);
+    } catch (error) {
+      toast({
+        title: "Failed to copy",
+        description: "Could not copy recipe to clipboard.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="container max-w-4xl mx-auto px-4 py-8">
+        <div className="text-center">Loading recipe...</div>
+      </div>
+    );
   }
 
-  if (!publicRecipe) {
-    return <div className="text-center py-10">Recipe not found.</div>;
+  if (error || !recipe) {
+    return (
+      <div className="container max-w-4xl mx-auto px-4 py-8">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Recipe Not Found</h1>
+          <p className="text-muted-foreground">{error || "This recipe share link is invalid or has expired."}</p>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="container py-10">
-      <Card className="max-w-3xl mx-auto">
+    <div className="container max-w-4xl mx-auto px-4 py-8">
+      <Card>
         <CardHeader>
-          <CardTitle className="text-2xl font-bold flex items-center gap-2">
-            <ChefHat className="h-6 w-6 text-muted-foreground" />
-            {publicRecipe.title}
-          </CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Shared by {publicRecipe.shared_by_name} from {publicRecipe.shared_by_household_name}
-          </p>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {publicRecipe.image && (
-            <div className="relative rounded-md overflow-hidden">
-              <RecipeImage recipe={publicRecipe} className="w-full h-64 object-cover" iconSize="h-5 w-5" />
-            </div>
-          )}
-
-          <div className="flex items-center gap-2">
-            <Badge variant="secondary">
-              <Clock className="h-4 w-4 mr-1" />
-              {publicRecipe.prep_time + publicRecipe.cook_time} min
-            </Badge>
-            <Badge variant="secondary">
-              <Users className="h-4 w-4 mr-1" />
-              {publicRecipe.servings} servings
-            </Badge>
-          </div>
-
-          <p className="text-md">{publicRecipe.description}</p>
-
-          <div className="space-y-2">
-            <h4 className="text-lg font-semibold">Ingredients</h4>
-            <ul className="list-disc pl-5">
-              {publicRecipe.ingredients.map((ingredient: string, index: number) => (
-                <li key={index}>{ingredient}</li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="space-y-2">
-            <h4 className="text-lg font-semibold">Instructions</h4>
-            <ol className="list-decimal pl-5">
-              {publicRecipe.instructions.map((instruction: string, index: number) => (
-                <li key={index}>{instruction}</li>
-              ))}
-            </ol>
-          </div>
-
-          <div className="flex justify-end">
-            <Button variant="secondary" asChild>
-              <a href={`https://realimeali.com/recipes/${publicRecipe.original_recipe_id}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
-                View Original Recipe
-                <Share className="h-4 w-4" />
-              </a>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-2xl font-semibold flex items-center gap-2">
+              <UtensilsCrossed className="h-6 w-6 text-sage" />
+              {recipe.title}
+            </CardTitle>
+            <Button variant="outline" size="sm" onClick={copyToClipboard}>
+              {copied ? (
+                <Check className="h-4 w-4 mr-2" />
+              ) : (
+                <Copy className="h-4 w-4 mr-2" />
+              )}
+              {copied ? "Copied!" : "Copy Recipe"}
             </Button>
+          </div>
+          
+          <p className="text-muted-foreground">{recipe.description}</p>
+          
+          <div className="flex items-center gap-4 mt-4">
+            <Badge variant="secondary">
+              <Clock className="h-4 w-4 mr-2" />
+              Prep: {recipe.prep_time}m
+            </Badge>
+            <Badge variant="secondary">
+              <Clock className="h-4 w-4 mr-2" />
+              Cook: {recipe.cook_time}m
+            </Badge>
+            <Badge variant="secondary">
+              <Users className="h-4 w-4 mr-2" />
+              Serves: {recipe.servings}
+            </Badge>
+          </div>
+          
+          <div className="text-sm text-muted-foreground mt-4">
+            Shared by {recipe.shared_by_name} from {recipe.shared_by_household_name}
+          </div>
+        </CardHeader>
+        
+        <CardContent>
+          <div className="grid md:grid-cols-2 gap-6">
+            <div>
+              <h3 className="text-lg font-semibold mb-3">Ingredients</h3>
+              <ul className="list-disc list-inside space-y-1">
+                {recipe.ingredients.map((ingredient, index) => (
+                  <li key={index} className="text-sm">{ingredient}</li>
+                ))}
+              </ul>
+            </div>
+            
+            <div>
+              <h3 className="text-lg font-semibold mb-3">Instructions</h3>
+              <ol className="list-decimal list-inside space-y-2">
+                {recipe.instructions.map((instruction, index) => (
+                  <li key={index} className="text-sm">{instruction}</li>
+                ))}
+              </ol>
+            </div>
           </div>
         </CardContent>
       </Card>

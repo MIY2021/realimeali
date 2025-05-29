@@ -1,60 +1,100 @@
 
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { ChefHat } from "lucide-react";
+import { UtensilsCrossed, Loader2, Wand2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { useAiRecipeGeneration } from "@/hooks/useAiRecipeGeneration";
 
 interface AIRecipeParserDialogProps {
   open: boolean;
-  onClose: () => void;
-  onParse: (recipeText: string) => void;
+  onOpenChange: (open: boolean) => void;
+  onRecipeParsed: (parsedRecipe: any) => void;
 }
 
-export function AIRecipeParserDialog({ open, onClose, onParse }: AIRecipeParserDialogProps) {
+export function AIRecipeParserDialog({ open, onOpenChange, onRecipeParsed }: AIRecipeParserDialogProps) {
   const [recipeText, setRecipeText] = useState("");
-  const [isParsing, setIsParsing] = useState(false);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
+  const { parseRecipeWithAI } = useAiRecipeGeneration();
 
-  const handleParse = () => {
-    setIsParsing(true);
-    onParse(recipeText);
-    setIsParsing(false);
-    onClose();
+  const handleParseRecipe = async () => {
+    if (!recipeText.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter a recipe to parse.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const parsedRecipe = await parseRecipeWithAI(recipeText);
+      onRecipeParsed(parsedRecipe);
+      onOpenChange(false);
+      setRecipeText("");
+      
+      toast({
+        title: "Recipe Parsed",
+        description: "The recipe has been successfully parsed and added to the form.",
+      });
+    } catch (error) {
+      console.error("Error parsing recipe:", error);
+      toast({
+        title: "Error",
+        description: "Failed to parse the recipe. Please try again or enter the recipe manually.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[550px]">
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <ChefHat className="h-5 w-5 text-sage" />
+            <UtensilsCrossed className="h-5 w-5 text-sage" />
             AI Recipe Parser
           </DialogTitle>
         </DialogHeader>
 
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="recipeText" className="text-right">
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="recipe-text" className="text-sm font-medium">
               Recipe Text
             </Label>
             <Textarea
-              id="recipeText"
-              className="col-span-3"
+              id="recipe-text"
+              placeholder="Paste your recipe text here. Include ingredients, instructions, and any other details..."
               value={recipeText}
               onChange={(e) => setRecipeText(e.target.value)}
-              placeholder="Paste recipe text here..."
-              ref={textareaRef}
+              className="min-h-[200px] mt-2"
             />
           </div>
-        </div>
 
-        <div className="flex justify-end">
-          <Button type="submit" onClick={handleParse} disabled={isParsing}>
-            {isParsing ? "Parsing..." : "Parse Recipe"}
-          </Button>
+          <div className="flex justify-end space-x-2">
+            <Button variant="outline" onClick={() => onOpenChange(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleParseRecipe} disabled={isLoading || !recipeText.trim()}>
+              {isLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Parsing...
+                </>
+              ) : (
+                <>
+                  <Wand2 className="h-4 w-4 mr-2" />
+                  Parse Recipe
+                </>
+              )}
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>

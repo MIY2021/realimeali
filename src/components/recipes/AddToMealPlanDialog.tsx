@@ -2,11 +2,14 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Recipe } from "@/types";
-import { useToast } from "@/hooks/use-toast";
+import { Calendar } from "@/components/ui/calendar";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Recipe, MealPlanMealType } from "@/types";
 import { useMealPlan } from "@/contexts/MealPlanContext";
+import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
-import { Check } from "lucide-react";
+import { useHousehold } from "@/contexts/HouseholdContext";
+import { format } from "date-fns";
 
 interface AddToMealPlanDialogProps {
   recipe: Recipe | null;
@@ -14,157 +17,96 @@ interface AddToMealPlanDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-// Use meal plan meal types (limited subset)
-type MealPlanMealType = "breakfast" | "lunch" | "dinner" | "snacks";
-
 export function AddToMealPlanDialog({ recipe, open, onOpenChange }: AddToMealPlanDialogProps) {
-  const [selectedWeek, setSelectedWeek] = useState<1 | 2 | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showConfirmation, setShowConfirmation] = useState(false);
-  const [addedDetails, setAddedDetails] = useState<{ mealType: string; week: number } | null>(null);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  const [selectedMealType, setSelectedMealType] = useState<MealPlanMealType>("dinner");
+  const [isLoading, setIsLoading] = useState(false);
+
   const { addMealPlan } = useMealPlan();
-  const { user } = useAuth();
   const { toast } = useToast();
+  const { user } = useAuth();
+  const { currentHousehold } = useHousehold();
 
-  const mealTypes: MealPlanMealType[] = ["breakfast", "lunch", "dinner", "snacks"];
+  const handleAddToMealPlan = async () => {
+    if (!recipe || !selectedDate || !user || !currentHousehold) return;
 
-  const handleSelectMealType = async (mealType: MealPlanMealType) => {
-    if (!selectedWeek) {
-      toast({
-        title: "Select Week",
-        description: "Please select which week to add this meal to.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    if (!recipe || !user) {
-      toast({
-        title: "Error",
-        description: "Please log in to add recipes to your meal plan.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    setIsSubmitting(true);
-
+    setIsLoading(true);
     try {
-      console.log("Adding recipe to meal plan:", {
-        recipe: recipe.title,
-        mealType,
-        week: selectedWeek
-      });
-
       await addMealPlan({
-        date: new Date().toISOString().split('T')[0],
-        mealType, // This is already MealPlanMealType
+        date: format(selectedDate, "yyyy-MM-dd"),
+        mealType: selectedMealType,
         recipeId: recipe.id,
         createdBy: user.id,
         slotIndex: 0,
         isLeftover: false,
-        householdId: recipe.householdId,
-        weekNumber: selectedWeek,
-      }, selectedWeek);
+        householdId: currentHousehold.id,
+        weekNumber: 1,
+        originalServings: recipe.servings,
+      });
 
-      // Show confirmation
-      setAddedDetails({ mealType, week: selectedWeek });
-      setShowConfirmation(true);
+      toast({
+        title: "Added to Meal Plan",
+        description: `${recipe.title} has been added to your meal plan.`,
+      });
 
-      // Auto-close after 2 seconds
-      setTimeout(() => {
-        handleClose();
-      }, 2000);
-
+      onOpenChange(false);
     } catch (error) {
-      console.error("Error adding recipe to meal plan:", error);
+      console.error("Error adding to meal plan:", error);
       toast({
         title: "Error",
         description: "Failed to add recipe to meal plan. Please try again.",
         variant: "destructive",
       });
-      setIsSubmitting(false);
+    } finally {
+      setIsLoading(false);
     }
-  };
-
-  const handleClose = () => {
-    setSelectedWeek(null);
-    setIsSubmitting(false);
-    setShowConfirmation(false);
-    setAddedDetails(null);
-    onOpenChange(false);
   };
 
   if (!recipe) return null;
 
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="w-[95vw] max-w-md">
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-lg">
-            {showConfirmation ? "Added to Meal Plan!" : "Add to Meal Plan"}
-          </DialogTitle>
+          <DialogTitle>Add {recipe.title} to Meal Plan</DialogTitle>
         </DialogHeader>
 
-        {showConfirmation && addedDetails ? (
-          <div className="flex flex-col items-center gap-4 py-6">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
-              <Check className="w-8 h-8 text-green-600" />
-            </div>
-            <div className="text-center">
-              <div className="font-semibold text-base">{recipe.title}</div>
-              <div className="text-sm text-muted-foreground mt-1">
-                Added to {addedDetails.mealType.charAt(0).toUpperCase() + addedDetails.mealType.slice(1)} • Week {addedDetails.week}
-              </div>
-            </div>
+        <div className="space-y-4">
+          <div>
+            <label className="text-sm font-medium mb-2 block">Select Date</label>
+            <Calendar
+              mode="single"
+              selected={selectedDate}
+              onSelect={setSelectedDate}
+              disabled={(date) => date < new Date()}
+              className="rounded-md border"
+            />
           </div>
-        ) : (
-          <>
-            <div className="mb-4">
-              <div className="text-base font-semibold mb-1">{recipe.title}</div>
-              <div className="text-sm text-muted-foreground">{recipe.description}</div>
-            </div>
 
-            <div className="flex flex-col gap-3 mb-3">
-              <label className="font-semibold text-sm">Select Week</label>
-              <div className="grid grid-cols-2 gap-2">
-                {[1, 2].map((wk) => (
-                  <Button
-                    key={wk}
-                    variant={selectedWeek === wk ? "default" : "outline"}
-                    className={selectedWeek === wk ? "bg-terracotta text-white" : ""}
-                    onClick={() => setSelectedWeek(wk as 1 | 2)}
-                    disabled={isSubmitting}
-                  >
-                    Week {wk}
-                  </Button>
-                ))}
-              </div>
-            </div>
+          <div>
+            <label className="text-sm font-medium mb-2 block">Meal Type</label>
+            <Select value={selectedMealType} onValueChange={(value) => setSelectedMealType(value as MealPlanMealType)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="breakfast">Breakfast</SelectItem>
+                <SelectItem value="lunch">Lunch</SelectItem>
+                <SelectItem value="dinner">Dinner</SelectItem>
+                <SelectItem value="snacks">Snacks</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-            <div className="grid grid-cols-2 gap-2">
-              {mealTypes.map(type => (
-                <Button 
-                  key={type} 
-                  onClick={() => handleSelectMealType(type)}
-                  className="capitalize"
-                  variant="outline"
-                  disabled={isSubmitting}
-                >
-                  {type}
-                </Button>
-              ))}
-              <Button 
-                variant="outline" 
-                onClick={handleClose}
-                className="col-span-2"
-                disabled={isSubmitting}
-              >
-                Cancel
-              </Button>
-            </div>
-          </>
-        )}
+          <div className="flex justify-end space-x-2">
+            <Button variant="outline" onClick={() => onOpenChange(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleAddToMealPlan} disabled={!selectedDate || isLoading}>
+              {isLoading ? "Adding..." : "Add to Meal Plan"}
+            </Button>
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
   );

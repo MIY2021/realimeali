@@ -36,7 +36,11 @@ export function RecipeCard({ recipe, showActions = true, onAddToMealPlan }: Reci
     e.stopPropagation();
     try {
       await updateRecipe(recipe.id, { ...recipe, isFavorite: !recipe.isFavorite });
+      toast({
+        title: recipe.isFavorite ? "Removed from favorites" : "Added to favorites",
+      });
     } catch (error) {
+      console.error("Error updating favorite:", error);
       toast({
         title: "Error",
         description: "Failed to update favorite status. Please try again.",
@@ -46,7 +50,7 @@ export function RecipeCard({ recipe, showActions = true, onAddToMealPlan }: Reci
   };
 
   return (
-    <Card className="bg-card text-card-foreground h-full flex flex-col">
+    <Card className="bg-card text-card-foreground h-full flex flex-col overflow-hidden">
       <CardHeader className="p-0 overflow-hidden">
         <div className="relative">
           <RecipeImage recipe={recipe} className="object-cover w-full h-48" iconSize="h-5 w-5" />
@@ -75,7 +79,7 @@ export function RecipeCard({ recipe, showActions = true, onAddToMealPlan }: Reci
         </div>
       </CardHeader>
       
-      <CardContent className="flex flex-col gap-3 py-4 px-4 sm:px-6 flex-1">
+      <CardContent className="flex flex-col gap-3 py-4 px-4 flex-1">
         <div className="flex items-center justify-between">
           <h3 className="font-semibold text-lg truncate">{recipe.title}</h3>
         </div>
@@ -91,17 +95,17 @@ export function RecipeCard({ recipe, showActions = true, onAddToMealPlan }: Reci
         </div>
 
         {showActions && (
-          <div className="flex items-center gap-2 mt-auto">
-            <Button asChild variant="outline" size="sm" className="flex-1">
+          <div className="flex items-center gap-2 mt-auto pt-2">
+            <Button asChild variant="outline" size="sm" className="flex-1 text-xs">
               <Link to={`/recipe/${recipe.id}`}>
-                <Eye className="h-4 w-4 mr-2" />
-                View Recipe
+                <Eye className="h-3 w-3 mr-1" />
+                View
               </Link>
             </Button>
 
-            <Button size="sm" onClick={handleAddToMealPlanClick} className="flex-1">
-              <Plus className="h-4 w-4 mr-2" />
-              Add to Meal Plan
+            <Button size="sm" onClick={handleAddToMealPlanClick} className="flex-1 text-xs">
+              <Plus className="h-3 w-3 mr-1" />
+              Add to Plan
             </Button>
           </div>
         )}

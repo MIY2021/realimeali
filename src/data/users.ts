@@ -1,11 +1,23 @@
 
-import { User } from "@/types";
+import { UserProfile } from "@/types";
 
-export const currentUser: User = {
-  id: "user-1",
-  name: "Jane Smith",
-  email: "jane@example.com",
-  avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=120&h=120&q=80",
-};
-
-// ... you can expand User array here if you have more users in future
+export const mockUsers: UserProfile[] = [
+  {
+    id: "user-1",
+    email: "john@example.com",
+    firstName: "John",
+    lastName: "Doe",
+    avatarUrl: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
+    createdAt: "2024-01-01T00:00:00Z",
+    updatedAt: "2024-01-01T00:00:00Z"
+  },
+  {
+    id: "user-2", 
+    email: "jane@example.com",
+    firstName: "Jane",
+    lastName: "Smith",
+    avatarUrl: "https://images.unsplash.com/photo-1494790108755-2616b612b1e5?w=150&h=150&fit=crop&crop=face",
+    createdAt: "2024-01-01T00:00:00Z",
+    updatedAt: "2024-01-01T00:00:00Z"
+  }
+];
