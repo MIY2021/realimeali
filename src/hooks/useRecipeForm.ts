@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Recipe, RecipeCategory } from "@/types";
 
@@ -96,6 +97,12 @@ export function useRecipeForm() {
     }
   };
 
+  // Function to mark recipe as imported from website and enable community sharing by default
+  const markAsWebsiteImport = () => {
+    setWasImportedFromWebsite(true);
+    setShareWithCommunity(true); // Default to checked for website imports
+  };
+
   return {
     newRecipe,
     setNewRecipe,
@@ -122,5 +129,6 @@ export function useRecipeForm() {
     handleAddInstruction,
     handleRemoveInstruction,
     handleImageChange,
+    markAsWebsiteImport,
   };
 }

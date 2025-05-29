@@ -23,8 +23,8 @@ export function CreateRecipeContainer() {
   );
   
   const onImportFromUrlWithImages = () => {
-    // Set flag that recipe was imported from website
-    recipeFormHook.setWasImportedFromWebsite(true);
+    // Set flag that recipe was imported from website and enable community sharing by default
+    recipeFormHook.markAsWebsiteImport();
     recipeProcessingHook.handleImportFromUrl(
       recipeFormHook.setNewRecipe, 
       recipeFormHook.newRecipe, 
@@ -58,6 +58,17 @@ export function CreateRecipeContainer() {
 
   const onSave = () => {
     console.log("🚀 Save button clicked from CreateRecipeContainer");
+    console.log("Recipe data being saved:", {
+      title: recipeFormHook.newRecipe.title,
+      ingredients: recipeFormHook.newRecipe.ingredients,
+      instructions: recipeFormHook.newRecipe.instructions,
+      categories: recipeFormHook.newRecipe.categories,
+      prepTime: recipeFormHook.newRecipe.prepTime,
+      cookTime: recipeFormHook.newRecipe.cookTime,
+      servings: recipeFormHook.newRecipe.servings,
+      hasImage: !!recipeFormHook.newRecipe.image,
+      topTip: recipeFormHook.newRecipe.topTip
+    });
     // Pass community sharing preference to save function
     handleSave(recipeFormHook.newRecipe, recipeFormHook.shareWithCommunity);
   };

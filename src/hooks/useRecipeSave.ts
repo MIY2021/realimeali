@@ -62,15 +62,27 @@ export function useRecipeSave() {
       return;
     }
 
-    // Ensure the recipe has a top tip - add a default one if missing
+    // Clean and prepare recipe data
     const recipeToSave = {
       ...newRecipe,
+      title: newRecipe.title.trim(),
+      description: newRecipe.description?.trim() || "",
       topTip: newRecipe.topTip && newRecipe.topTip.trim() 
-        ? newRecipe.topTip 
-        : "Enjoy cooking this delicious recipe!"
+        ? newRecipe.topTip.trim()
+        : "Enjoy cooking this delicious recipe!",
+      // Ensure numeric values are valid
+      prepTime: Math.max(0, newRecipe.prepTime || 0),
+      cookTime: Math.max(0, newRecipe.cookTime || 0),
+      servings: Math.max(1, newRecipe.servings || 1),
+      // Ensure arrays are valid
+      ingredients: newRecipe.ingredients.filter(ing => ing.trim()),
+      instructions: newRecipe.instructions.filter(inst => inst.trim()),
+      categories: newRecipe.categories || [],
+      // Remove householdId if present (will be set by createRecipe)
+      householdId: undefined as any
     };
 
-    console.log("✅ Validation passed, creating recipe with data:", recipeToSave);
+    console.log("✅ Validation passed, creating recipe with cleaned data:", recipeToSave);
     try {
       console.log("🔄 Calling createRecipe function...");
       const recipe = await createRecipe(recipeToSave, currentHousehold.id);
@@ -98,7 +110,7 @@ export function useRecipeSave() {
     } catch (error) {
       console.error("❌ Error creating recipe:", error);
       toast.error("Error", {
-        description: "Failed to save recipe. Please try again.",
+        description: "Failed to save recipe. Please check your input and try again.",
       });
     }
   };
