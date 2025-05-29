@@ -7,7 +7,7 @@ import { AddToMealPlanDialog } from "./AddToMealPlanDialog";
 import { useRecipeList } from "@/hooks/useRecipeList";
 import { useMobileLayout } from "@/hooks/useMobileLayout";
 import { RecipeGrid } from "./RecipeGrid";
-import { ToggleRecipeFiltersComponent } from "./ToggleRecipeFilters";
+import { SimpleRecipeFiltersComponent } from "./filters/SimpleRecipeFilters";
 import {
   Select,
   SelectContent,
@@ -99,8 +99,8 @@ export function RecipeList({
         </div>
       </div>
 
-      {/* Toggle-based Filters */}
-      <ToggleRecipeFiltersComponent
+      {/* Dropdown-based Filters */}
+      <SimpleRecipeFiltersComponent
         filters={filters}
         onFiltersChange={handleFiltersChange}
         isOpen={filtersOpen}

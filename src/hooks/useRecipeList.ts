@@ -1,7 +1,7 @@
 
 import { useState, useMemo } from "react";
 import { Recipe, MealType, Cuisine, DietLifestyle, ComplexityLevel } from "@/types";
-import { ToggleRecipeFilters } from "@/components/recipes/ToggleRecipeFilters";
+import { SimpleRecipeFilters } from "@/components/recipes/filters/SimpleRecipeFilters";
 
 interface UseRecipeListProps {
   recipes: Recipe[];
@@ -13,7 +13,7 @@ export function useRecipeList({ recipes }: UseRecipeListProps) {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [visibleCount, setVisibleCount] = useState(12);
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [filters, setFilters] = useState<ToggleRecipeFilters>({
+  const [filters, setFilters] = useState<SimpleRecipeFilters>({
     searchTerm: "",
     mealTypes: [],
     cuisines: [],
@@ -103,7 +103,7 @@ export function useRecipeList({ recipes }: UseRecipeListProps) {
     setVisibleCount(prev => prev + 12);
   };
 
-  const handleFiltersChange = (newFilters: ToggleRecipeFilters) => {
+  const handleFiltersChange = (newFilters: SimpleRecipeFilters) => {
     setFilters(newFilters);
     setVisibleCount(12); // Reset visible count when filters change
   };

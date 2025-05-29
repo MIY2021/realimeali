@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { FilterHeader } from "./FilterHeader";
-import { FilterSection } from "./FilterSection";
+import { DropdownFilterSection } from "./DropdownFilterSection";
 import {
   MealType,
   Cuisine,
@@ -92,39 +92,36 @@ export function SimpleRecipeFiltersComponent({
           isOpen={true}
         />
       </CardHeader>
-      <CardContent className="space-y-6">
-        <FilterSection
-          title="🕒 Meal Type"
-          options={MEAL_TYPE_OPTIONS}
-          selectedValues={filters.mealTypes}
-          onToggle={(value) => toggleArrayFilter('mealTypes', value)}
-          multiSelect={true}
-        />
+      <CardContent className="space-y-4">
+        <div className="flex flex-wrap gap-3">
+          <DropdownFilterSection
+            title="🕒 Meal Type"
+            options={MEAL_TYPE_OPTIONS}
+            selectedValues={filters.mealTypes}
+            onToggle={(value) => toggleArrayFilter('mealTypes', value)}
+          />
 
-        <FilterSection
-          title="🌍 Cuisine"
-          options={CUISINE_OPTIONS}
-          selectedValues={filters.cuisines}
-          onToggle={(value) => toggleArrayFilter('cuisines', value)}
-          multiSelect={true}
-        />
+          <DropdownFilterSection
+            title="🌍 Cuisine"
+            options={CUISINE_OPTIONS}
+            selectedValues={filters.cuisines}
+            onToggle={(value) => toggleArrayFilter('cuisines', value)}
+          />
 
-        <FilterSection
-          title="🍎 Diet & Lifestyle"
-          options={DIET_LIFESTYLE_OPTIONS}
-          selectedValues={filters.dietLifestyle}
-          onToggle={(value) => toggleArrayFilter('dietLifestyle', value)}
-          multiSelect={true}
-        />
+          <DropdownFilterSection
+            title="🍎 Diet & Lifestyle"
+            options={DIET_LIFESTYLE_OPTIONS}
+            selectedValues={filters.dietLifestyle}
+            onToggle={(value) => toggleArrayFilter('dietLifestyle', value)}
+          />
 
-        <FilterSection
-          title="⚡ Complexity"
-          options={COMPLEXITY_LEVEL_OPTIONS}
-          selectedValues={filters.complexityLevels}
-          onToggle={(value) => toggleArrayFilter('complexityLevels', value)}
-          multiSelect={true}
-          gridCols="flex gap-2"
-        />
+          <DropdownFilterSection
+            title="⚡ Complexity"
+            options={COMPLEXITY_LEVEL_OPTIONS}
+            selectedValues={filters.complexityLevels}
+            onToggle={(value) => toggleArrayFilter('complexityLevels', value)}
+          />
+        </div>
       </CardContent>
     </Card>
   );
