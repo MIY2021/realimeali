@@ -2,18 +2,27 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 import { Recipe, MealPlanMealType } from "@/types";
 import { useMealPlan } from "@/contexts/MealPlanContext";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
+import { Coffee, Sandwich, UtensilsCrossed, Cookie } from "lucide-react";
 
 interface AddToMealPlanDialogProps {
   recipe: Recipe | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
+
+const mealTypeButtons = [
+  { value: "breakfast" as MealPlanMealType, label: "Breakfast", icon: Coffee },
+  { value: "lunch" as MealPlanMealType, label: "Lunch", icon: Sandwich },
+  { value: "dinner" as MealPlanMealType, label: "Dinner", icon: UtensilsCrossed },
+  { value: "snacks" as MealPlanMealType, label: "Snacks", icon: Cookie },
+];
 
 export function AddToMealPlanDialog({ recipe, open, onOpenChange }: AddToMealPlanDialogProps) {
   const [selectedWeek, setSelectedWeek] = useState<1 | 2>(1);
@@ -72,36 +81,46 @@ export function AddToMealPlanDialog({ recipe, open, onOpenChange }: AddToMealPla
           <DialogTitle>Add {recipe.title} to Meal Plan</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="space-y-6">
+          {/* Week Selection */}
           <div>
-            <label className="text-sm font-medium mb-2 block">Select Week</label>
-            <Select value={selectedWeek.toString()} onValueChange={(value) => setSelectedWeek(parseInt(value) as 1 | 2)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="1">Week 1</SelectItem>
-                <SelectItem value="2">Week 2</SelectItem>
-              </SelectContent>
-            </Select>
+            <Label className="text-sm font-medium mb-3 block">Select Week</Label>
+            <RadioGroup 
+              value={selectedWeek.toString()} 
+              onValueChange={(value) => setSelectedWeek(parseInt(value) as 1 | 2)}
+              className="flex gap-4"
+            >
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="1" id="week1" />
+                <Label htmlFor="week1" className="cursor-pointer">Week 1</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="2" id="week2" />
+                <Label htmlFor="week2" className="cursor-pointer">Week 2</Label>
+              </div>
+            </RadioGroup>
           </div>
 
+          {/* Meal Type Selection */}
           <div>
-            <label className="text-sm font-medium mb-2 block">Meal Type</label>
-            <Select value={selectedMealType} onValueChange={(value) => setSelectedMealType(value as MealPlanMealType)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="breakfast">Breakfast</SelectItem>
-                <SelectItem value="lunch">Lunch</SelectItem>
-                <SelectItem value="dinner">Dinner</SelectItem>
-                <SelectItem value="snacks">Snacks</SelectItem>
-              </SelectContent>
-            </Select>
+            <Label className="text-sm font-medium mb-3 block">Meal Type</Label>
+            <div className="grid grid-cols-2 gap-2">
+              {mealTypeButtons.map(({ value, label, icon: Icon }) => (
+                <Button
+                  key={value}
+                  variant={selectedMealType === value ? "default" : "outline"}
+                  className="h-12 flex flex-col items-center gap-1"
+                  onClick={() => setSelectedMealType(value)}
+                  type="button"
+                >
+                  <Icon className="h-4 w-4" />
+                  <span className="text-xs">{label}</span>
+                </Button>
+              ))}
+            </div>
           </div>
 
-          <div className="flex justify-end space-x-2">
+          <div className="flex justify-end space-x-2 pt-4">
             <Button variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
