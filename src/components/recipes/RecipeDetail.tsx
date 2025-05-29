@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Utensils, Clock, Users, Heart, Share2, MoreHorizontal, Pencil, Trash2, User } from "lucide-react";
+import { User, Clock, Users, Heart, Share, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -70,7 +70,7 @@ export const RecipeDetail = ({ recipe, onEdit, onDelete, isOwner }: RecipeDetail
           </Button>
           
           <Button variant="outline" size="sm">
-            <Share2 className="h-4 w-4 mr-2" />
+            <Share className="h-4 w-4 mr-2" />
             Share
           </Button>
 
@@ -116,7 +116,7 @@ export const RecipeDetail = ({ recipe, onEdit, onDelete, isOwner }: RecipeDetail
         {/* Ingredients */}
         <div className="lg:col-span-1">
           <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-            <Utensils className="h-5 w-5" />
+            <User className="h-5 w-5" />
             Ingredients
           </h2>
           <div className="bg-gray-50 rounded-lg p-4">

@@ -1,7 +1,8 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Utensils, Clock, Users, Heart, Share, ArrowLeft } from "lucide-react";
+import { User, Clock, Users, Heart, Share, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { PublicRecipeShare } from "@/types";
 
@@ -62,7 +63,7 @@ export const PublicRecipeView = ({ recipe }: PublicRecipeViewProps) => {
               <span className="text-sm text-gray-600">{recipe.servings} servings</span>
             </div>
             <div className="flex items-center gap-1">
-              <Utensils className="h-4 w-4 text-gray-500" />
+              <User className="h-4 w-4 text-gray-500" />
               <span className="text-sm text-gray-600">{recipe.meal_type}</span>
             </div>
           </div>

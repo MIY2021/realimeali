@@ -1,161 +1,128 @@
-
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Slider } from "@/components/ui/slider";
-import { Recipe, MealType } from "@/types";
-import { getDisplayLabel } from "@/utils/recipeClassification";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Recipe } from "@/types";
+import { useRecipes } from "@/contexts/RecipesContext";
 
 interface AddMealWithLeftoversDialogProps {
   open: boolean;
-  onClose: () => void;
-  mealType: MealType;
-  recipes: Recipe[];
-  onSelectRecipe: (recipeId: string, leftoverServings?: number) => void;
+  onOpenChange: (open: boolean) => void;
+  onAddMeal: (recipe: Recipe) => void;
 }
-
-const getMealTypeFilterForRecipes = (mealType: MealType): boolean => {
-  // For meal planning, we can use any recipe type but prioritize appropriate ones
-  return true;
-};
 
 export function AddMealWithLeftoversDialog({
   open,
-  onClose,
-  mealType,
-  recipes,
-  onSelectRecipe,
+  onOpenChange,
+  onAddMeal,
 }: AddMealWithLeftoversDialogProps) {
-  const [selectedRecipeId, setSelectedRecipeId] = useState("");
-  const [useLeftovers, setUseLeftovers] = useState(false);
-  const [leftoverServings, setLeftoverServings] = useState([2]);
+  const { recipes } = useRecipes();
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedMealType, setSelectedMealType] = useState("");
+  const [selectedCuisine, setSelectedCuisine] = useState("");
 
-  const selectedRecipe = recipes.find(r => r.id === selectedRecipeId);
-  const maxLeftoverServings = selectedRecipe ? selectedRecipe.servings - 1 : 1;
+  const filteredRecipes = recipes.filter((recipe) => {
+    const searchRegex = new RegExp(searchTerm, "i");
+    if (!searchRegex.test(recipe.title) && !searchRegex.test(recipe.description)) return false;
 
-  // Filter recipes based on search term and meal type appropriateness
-  const filteredRecipes = recipes.filter(recipe => {
-    const matchesSearch = recipe.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (recipe.mealType && getDisplayLabel(recipe.mealType, 'mealType').toLowerCase().includes(searchTerm.toLowerCase()));
-    
-    return matchesSearch && getMealTypeFilterForRecipes(mealType);
+    if (selectedMealType && recipe.mealType !== selectedMealType) return false;
+    if (selectedCuisine && recipe.cuisine !== selectedCuisine) return false;
+
+    return true;
   });
 
-  const handleSubmit = () => {
-    if (selectedRecipeId) {
-      const leftoverAmount = mealType === 'dinner' && useLeftovers ? leftoverServings[0] : undefined;
-      onSelectRecipe(selectedRecipeId, leftoverAmount);
-      
-      // Reset form
-      setSelectedRecipeId("");
-      setUseLeftovers(false);
-      setLeftoverServings([2]);
-      setSearchTerm("");
-    }
-  };
-
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="w-[95vw] max-w-md max-h-[85vh] overflow-y-auto">
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle className="text-lg">
-            Add {mealType.charAt(0).toUpperCase() + mealType.slice(1)}
-          </DialogTitle>
+          <DialogTitle>Add Meal with Leftovers</DialogTitle>
+          <DialogDescription>
+            Select a recipe to add as a meal with leftovers.
+          </DialogDescription>
         </DialogHeader>
-        
-        <div className="space-y-4">
-          <div>
-            <Label htmlFor="search" className="text-sm font-medium">Search recipes</Label>
+
+        <div className="grid gap-4 py-4">
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="search" className="text-right">
+              Search
+            </Label>
             <Input
+              type="search"
               id="search"
-              placeholder="Search by name or meal type..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="mt-1"
-              autoFocus={false}
+              placeholder="Search recipes..."
+              className="col-span-3"
             />
           </div>
 
-          <div className="space-y-2 max-h-64 overflow-y-auto">
-            {filteredRecipes.length === 0 ? (
-              <div className="text-center text-gray-500 py-6 px-4">
-                <p className="text-sm">
-                  No recipes found. Try adjusting your search.
-                </p>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="mealType" className="text-right">
+              Meal Type
+            </Label>
+            <Select onValueChange={setSelectedMealType}>
+              <SelectTrigger className="col-span-3">
+                <SelectValue placeholder="Select meal type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">Any</SelectItem>
+                <SelectItem value="breakfast">Breakfast</SelectItem>
+                <SelectItem value="lunch">Lunch</SelectItem>
+                <SelectItem value="dinner">Dinner</SelectItem>
+                <SelectItem value="snacks">Snacks</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="cuisine" className="text-right">
+              Cuisine
+            </Label>
+            <Select onValueChange={setSelectedCuisine}>
+              <SelectTrigger className="col-span-3">
+                <SelectValue placeholder="Select cuisine" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">Any</SelectItem>
+                <SelectItem value="italian">Italian</SelectItem>
+                <SelectItem value="mexican">Mexican</SelectItem>
+                <SelectItem value="indian">Indian</SelectItem>
+                <SelectItem value="asian">Asian</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="divide-y divide-border rounded-md border">
+            {filteredRecipes.map((recipe) => (
+              <button
+                key={recipe.id}
+                onClick={() => onAddMeal(recipe)}
+                className="group flex w-full items-center justify-between p-3 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {recipe.title}
+              </button>
+            ))}
+            {filteredRecipes.length === 0 && (
+              <div className="p-3 text-sm text-muted-foreground">
+                No recipes found.
               </div>
-            ) : (
-              filteredRecipes.map((recipe) => (
-                <div
-                  key={recipe.id}
-                  className={`p-3 border rounded-lg cursor-pointer transition-colors touch-manipulation ${
-                    selectedRecipeId === recipe.id
-                      ? "border-primary bg-primary/10"
-                      : "border-gray-200 hover:border-gray-300 active:bg-gray-50"
-                  }`}
-                  onClick={() => setSelectedRecipeId(recipe.id)}
-                >
-                  <div className="font-medium text-sm leading-tight">{recipe.title}</div>
-                  <div className="text-xs text-gray-600 mt-1 leading-tight">
-                    {recipe.servings} servings
-                    {recipe.mealType && ` • ${getDisplayLabel(recipe.mealType, 'mealType')}`}
-                    {recipe.cuisineRegion && ` • ${getDisplayLabel(recipe.cuisineRegion, 'cuisineRegion')}`}
-                  </div>
-                </div>
-              ))
             )}
           </div>
+        </div>
 
-          {mealType === 'dinner' && selectedRecipe && (
-            <div className="space-y-3 p-3 bg-gray-50 rounded-lg">
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="useLeftovers"
-                  checked={useLeftovers}
-                  onCheckedChange={(checked) => setUseLeftovers(checked as boolean)}
-                />
-                <Label htmlFor="useLeftovers" className="text-sm font-medium">
-                  Use some servings for lunch tomorrow?
-                </Label>
-              </div>
-              
-              {useLeftovers && (
-                <div className="space-y-2">
-                  <Label className="text-sm">
-                    Leftover servings for lunch: {leftoverServings[0]}
-                  </Label>
-                  <Slider
-                    value={leftoverServings}
-                    onValueChange={setLeftoverServings}
-                    max={maxLeftoverServings}
-                    min={1}
-                    step={1}
-                    className="w-full"
-                  />
-                  <div className="text-xs text-gray-600">
-                    Dinner: {selectedRecipe.servings - leftoverServings[0]} servings, 
-                    Lunch: {leftoverServings[0]} servings
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          <div className="flex gap-2 pt-4">
-            <Button variant="outline" onClick={onClose} className="flex-1 h-11">
-              Cancel
-            </Button>
-            <Button 
-              onClick={handleSubmit} 
-              disabled={!selectedRecipeId}
-              className="flex-1 h-11"
-            >
-              Add {mealType.charAt(0).toUpperCase() + mealType.slice(1)}
-            </Button>
-          </div>
+        {/* Action buttons */}
+        <div className="flex justify-end gap-2">
+          <Button type="button" variant="secondary" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

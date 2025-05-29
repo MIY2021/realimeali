@@ -1,143 +1,181 @@
-
-import { useState } from "react";
-import { Recipe, MealType } from "@/types";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { useState, useEffect, useMemo } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Clock, Users, ChevronDown } from "lucide-react";
-import { getDisplayLabel } from "@/utils/recipeClassification";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Select } from "@/components/ui/select";
+import {
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+} from "@/components/ui/select";
+import { Recipe } from "@/types";
+import { useRecipes } from "@/contexts/RecipesContext";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { RecipeCard } from "@/components/recipes/RecipeCard";
+import { MealType, Cuisine } from "@/types";
 
 interface AddRecipeToMealModalProps {
   open: boolean;
   onClose: () => void;
-  mealType: MealType;
-  recipes: Recipe[];
-  onSelectRecipe: (recipeId: string) => void;
+  mealSlot: {
+    date: string;
+    mealType: MealType;
+  };
+  onAddRecipe: (recipe: Recipe) => void;
 }
 
 export function AddRecipeToMealModal({
   open,
   onClose,
-  mealType,
-  recipes,
-  onSelectRecipe,
+  mealSlot,
+  onAddRecipe,
 }: AddRecipeToMealModalProps) {
+  const { recipes, isLoading, error } = useRecipes();
   const [searchTerm, setSearchTerm] = useState("");
-  const [mealTypeFilter, setMealTypeFilter] = useState<string>("all");
+  const [selectedMealType, setSelectedMealType] = useState<MealType | null>(null);
+  const [selectedCuisine, setSelectedCuisine] = useState<Cuisine | null>(null);
 
-  // Get all meal types from recipes for filtering
-  const availableMealTypes = [...new Set(recipes.filter(r => r.mealType).map(r => r.mealType!))];
+  const mealTypes: MealType[] = ["breakfast", "lunch", "dinner", "snacks", "sides", "desserts", "drinks"];
+  const cuisines: Cuisine[] = ["british", "italian", "asian", "mexican", "indian", "mediterranean", "american", "french", "middle_eastern", "other"];
 
-  const filteredRecipes = recipes.filter((recipe) => {
-    const matchesSearch = recipe.title.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesMealType = mealTypeFilter === "all" || recipe.mealType === mealTypeFilter;
-    return matchesSearch && matchesMealType;
-  });
+  useEffect(() => {
+    if (error) {
+      console.error("Error fetching recipes:", error);
+    }
+  }, [error]);
 
-  const handleSelectRecipe = (recipeId: string) => {
-    onSelectRecipe(recipeId);
-    onClose();
-  };
+  const filteredRecipes = useMemo(() => {
+    return recipes.filter((recipe) => {
+      const searchRegex = new RegExp(searchTerm, "i");
+      if (!searchRegex.test(recipe.title) && !searchRegex.test(recipe.description)) {
+        return false;
+      }
+
+      if (selectedMealType && recipe.mealType !== selectedMealType) return false;
+      if (selectedCuisine && recipe.cuisine !== selectedCuisine) return false;
+
+      return true;
+    });
+  }, [recipes, searchTerm, selectedMealType, selectedCuisine]);
+
+  if (isLoading) {
+    return (
+      <Dialog open={open} onOpenChange={onClose}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add Recipe to {mealSlot.mealType}</DialogTitle>
+            <DialogDescription>Loading recipes...</DialogDescription>
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
+      <DialogContent className="sm:max-w-[90%] sm:max-h-[90%]">
         <DialogHeader>
-          <DialogTitle>Add Recipe to {mealType.charAt(0).toUpperCase() + mealType.slice(1)}</DialogTitle>
+          <DialogTitle>Add Recipe to {mealSlot.mealType}</DialogTitle>
+          <DialogDescription>
+            Choose a recipe to add to your meal plan for {mealSlot.date}.
+          </DialogDescription>
         </DialogHeader>
 
-        <div className="flex flex-col sm:flex-row gap-4 mb-4">
-          <div className="flex-1">
-            <Input
-              placeholder="Search recipes..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full"
-            />
-          </div>
-          <div className="w-full sm:w-48 relative">
-            <select
-              value={mealTypeFilter}
-              onChange={e => setMealTypeFilter(e.target.value)}
-              className="w-full border rounded p-2 pr-8 appearance-none bg-white"
-            >
-              <option value="all">All Meal Types</option>
-              {availableMealTypes.map((type) => (
-                <option key={type} value={type}>
-                  {getDisplayLabel(type, 'mealType')}
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 pointer-events-none text-muted-foreground" />
-          </div>
-        </div>
-
-        <div className="flex-1 overflow-y-auto">
-          {filteredRecipes.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground">No recipes found. Try adjusting your search.</p>
+        <div className="grid gap-4 py-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="search">Search Recipes</Label>
+              <Input
+                type="search"
+                id="search"
+                placeholder="Search by title or description..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
             </div>
-          ) : (
-            <div className="grid gap-3">
-              {filteredRecipes.map((recipe) => (
-                <div
-                  key={recipe.id}
-                  className="border rounded-lg p-4 hover:bg-gray-50 cursor-pointer transition-colors"
-                  onClick={() => handleSelectRecipe(recipe.id)}
+
+            <div className="flex items-center gap-4">
+              <div>
+                <Label htmlFor="meal-type">Meal Type</Label>
+                <Select
+                  value={selectedMealType || undefined}
+                  onValueChange={(value) =>
+                    setSelectedMealType(value === "all" ? null : (value as MealType))
+                  }
                 >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <h4 className="font-medium text-navy mb-1">{recipe.title}</h4>
-                      <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
-                        {recipe.description}
-                      </p>
-                      <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <Clock className="h-3 w-3" />
-                          {recipe.prepTime + recipe.cookTime} min
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Users className="h-3 w-3" />
-                          {recipe.servings} servings
-                        </span>
-                      </div>
-                      <div className="flex flex-wrap gap-1 mt-2">
-                        {recipe.mealType && (
-                          <span className="inline-flex items-center rounded-full bg-sage/20 px-2 py-1 text-xs font-medium text-sage">
-                            {getDisplayLabel(recipe.mealType, 'mealType')}
-                          </span>
-                        )}
-                        {recipe.cuisineRegion && (
-                          <span className="inline-flex items-center rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800">
-                            {getDisplayLabel(recipe.cuisineRegion, 'cuisineRegion')}
-                          </span>
-                        )}
-                        {recipe.complexityLevel && (
-                          <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-800">
-                            {getDisplayLabel(recipe.complexityLevel, 'complexityLevel')}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    {recipe.image && (
-                      <img
-                        src={recipe.image}
-                        alt={recipe.title}
-                        className="w-16 h-16 object-cover rounded ml-4"
-                      />
-                    )}
-                  </div>
-                </div>
-              ))}
+                  <SelectTrigger className="w-[180px]">
+                    {selectedMealType ? selectedMealType : "All Meal Types"}
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Meal Types</SelectItem>
+                    {mealTypes.map((type) => (
+                      <SelectItem key={type} value={type}>
+                        {type}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="cuisine">Cuisine</Label>
+                <Select
+                  value={selectedCuisine || undefined}
+                  onValueChange={(value) =>
+                    setSelectedCuisine(value === "all" ? null : (value as Cuisine))
+                  }
+                >
+                  <SelectTrigger className="w-[180px]">
+                    {selectedCuisine ? selectedCuisine : "All Cuisines"}
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Cuisines</SelectItem>
+                    {cuisines.map((cuisine) => (
+                      <SelectItem key={cuisine} value={cuisine}>
+                        {cuisine}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-          )}
+          </div>
+
+          <div className="border rounded-md">
+            <ScrollArea className="h-[400px] sm:h-[500px] p-4">
+              {filteredRecipes.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  No recipes found matching your criteria.
+                </p>
+              ) : (
+                <div className="grid sm:grid-cols-2 gap-4">
+                  {filteredRecipes.map((recipe) => (
+                    <RecipeCard
+                      key={recipe.id}
+                      recipe={recipe}
+                      onAddToMealPlan={() => onAddRecipe(recipe)}
+                      showActions={false}
+                    />
+                  ))}
+                </div>
+              )}
+            </ScrollArea>
+          </div>
         </div>
 
-        <div className="flex justify-end pt-4 border-t">
-          <Button variant="outline" onClick={onClose}>
+        <DialogFooter>
+          <Button type="button" variant="secondary" onClick={onClose}>
             Cancel
           </Button>
-        </div>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

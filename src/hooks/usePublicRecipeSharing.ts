@@ -1,40 +1,25 @@
 
-import { useState } from "react";
-import { Recipe } from "@/types";
-import { useAuth } from "@/contexts/AuthContext";
-import { useHousehold } from "@/contexts/HouseholdContext";
-import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { Recipe } from "@/types";
 
 export function usePublicRecipeSharing() {
-  const [isSharing, setIsSharing] = useState(false);
-  const { user } = useAuth();
-  const { currentHousehold } = useHousehold();
-  const { toast } = useToast();
-
-  const shareRecipe = async (recipe: Recipe, expirationDays: number = 30): Promise<string> => {
-    if (!user || !currentHousehold) {
-      toast({
-        title: "Error",
-        description: "You must be logged in to share recipes.",
-        variant: "destructive",
-      });
-      return "";
-    }
-
-    setIsSharing(true);
-    
+  const shareRecipePublicly = async (
+    recipe: Recipe,
+    sharedByName: string,
+    sharedByHouseholdName: string,
+    expiresInDays: number = 30
+  ) => {
     try {
       const expiresAt = new Date();
-      expiresAt.setDate(expiresAt.getDate() + expirationDays);
+      expiresAt.setDate(expiresAt.getDate() + expiresInDays);
 
       const { data, error } = await supabase
         .from('public_recipe_shares')
         .insert({
-          recipe_id: recipe.id,
-          shared_by: user.id,
-          shared_by_name: user.email || "Unknown User",
-          shared_by_household_name: currentHousehold.name,
+          original_recipe_id: recipe.id,
+          shared_by_user_id: recipe.createdBy,
+          shared_by_name: sharedByName,
+          shared_by_household_name: sharedByHouseholdName,
           title: recipe.title,
           description: recipe.description,
           ingredients: recipe.ingredients,
@@ -44,42 +29,22 @@ export function usePublicRecipeSharing() {
           servings: recipe.servings,
           image: recipe.image,
           expires_at: expiresAt.toISOString(),
-          meal_type: recipe.mealType,
-          cuisine_region: recipe.cuisineRegion,
-          cooking_method: recipe.cookingMethod,
-          complexity_level: recipe.complexityLevel,
-          main_ingredient: recipe.mainIngredient,
-          diet_lifestyle: recipe.dietLifestyle,
-          original_recipe_id: recipe.id
+          original_household_id: recipe.householdId,
+          meal_type: recipe.mealType
         })
-        .select('public_share_id')
+        .select()
         .single();
 
       if (error) throw error;
-
-      const shareUrl = `${window.location.origin}/public/recipe/${data.public_share_id}`;
       
-      toast({
-        title: "Recipe Shared!",
-        description: "Share link created successfully.",
-      });
-
-      return shareUrl;
+      return { success: true, data };
     } catch (error) {
-      console.error("Error sharing recipe:", error);
-      toast({
-        title: "Error",
-        description: "Failed to share recipe. Please try again.",
-        variant: "destructive",
-      });
-      return "";
-    } finally {
-      setIsSharing(false);
+      console.error('Error sharing recipe publicly:', error);
+      return { success: false, error };
     }
   };
 
   return {
-    shareRecipe,
-    isSharing,
+    shareRecipePublicly
   };
 }

@@ -7,7 +7,6 @@ import { useRecipes } from "@/contexts/RecipesContext";
 import { useToast } from "@/hooks/use-toast";
 import { useRecipeForm } from "@/hooks/useRecipeForm";
 import { useRecipeProcessing } from "@/hooks/useRecipeProcessing";
-import { useRecipeSave } from "@/hooks/useRecipeSave";
 import { useImageGeneration } from "@/hooks/useImageGeneration";
 import { CreateRecipeHeader } from "./CreateRecipeHeader";
 import { CreateRecipeTabsWrapper } from "./CreateRecipeTabsWrapper";
@@ -62,7 +61,6 @@ export function CreateRecipeContainer() {
     handleGenerateRecipe,
   } = useRecipeProcessing();
 
-  const { saveRecipe } = useRecipeSave();
   const { handleGenerateImage } = useImageGeneration();
 
   const onGenerateImage = () => {
@@ -114,10 +112,8 @@ export function CreateRecipeContainer() {
 
     setIsSaving(true);
     try {
-      // Set default values for missing properties
       const recipeToSave = {
         ...newRecipe,
-        topTip: newRecipe.topTip || "Enjoy cooking this delicious recipe!",
         householdId: currentHousehold.id,
       };
 
@@ -142,9 +138,18 @@ export function CreateRecipeContainer() {
     }
   };
 
+  const handleCancel = () => {
+    navigate("/my-recipes");
+  };
+
+  // Wrapper functions to match expected signatures
+  const wrappedProcessText = () => handleProcessText(setNewRecipe, newRecipe, setActiveTab);
+  const wrappedProcessImage = (file: File) => handleProcessImage(file, setNewRecipe, newRecipe, setActiveTab);
+  const wrappedGenerateRecipe = () => handleGenerateRecipe(setNewRecipe, newRecipe, setActiveTab);
+
   return (
     <div className="container max-w-5xl mx-auto py-6 px-4 space-y-6">
-      <CreateRecipeHeader />
+      <CreateRecipeHeader onCancel={handleCancel} />
       
       <CreateRecipeTabsWrapper
         activeTab={activeTab}
@@ -173,16 +178,16 @@ export function CreateRecipeContainer() {
         stylePreferences={stylePreferences}
         setStylePreferences={setStylePreferences}
         isProcessing={isProcessing}
-        onProcessText={handleProcessText}
+        onProcessText={wrappedProcessText}
         onImportFromUrl={handleImportFromUrl}
-        onProcessImage={handleProcessImage}
-        onGenerateRecipe={handleGenerateRecipe}
+        onProcessImage={wrappedProcessImage}
+        onGenerateRecipe={wrappedGenerateRecipe}
       />
 
       <CreateRecipeActions
         onSave={handleSaveRecipe}
-        onCancel={() => navigate("/my-recipes")}
-        isSaving={isSaving}
+        onCancel={handleCancel}
+        isLoading={isSaving}
         isValid={!!(newRecipe.title.trim() && newRecipe.ingredients.length > 0 && newRecipe.instructions.length > 0)}
         shareWithCommunity={shareWithCommunity}
         setShareWithCommunity={setShareWithCommunity}

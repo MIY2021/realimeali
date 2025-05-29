@@ -1,117 +1,91 @@
-
-import { AddMealPlanDialog } from "@/components/meal-planner/AddMealPlanDialog";
-import { LeftoverServingsDialog } from "@/components/meal-planner/LeftoverServingsDialog";
-import { MealPlanReplaceDialog } from "@/components/meal-planner/MealPlanReplaceDialog";
-import { ClearMealPlanDialog } from "@/components/meal-planner/ClearMealPlanDialog";
-import { DeleteMealDialog } from "@/components/meal-planner/DeleteMealDialog";
-import { MealQuantityDialog } from "@/components/meal-planner/MealQuantityDialog";
+import { useState } from "react";
+import {
+  MealPlanReplaceDialog,
+} from "@/components/meal-planner/MealPlanReplaceDialog";
+import {
+  AddRecipeToMealModal,
+} from "@/components/meal-planner/AddRecipeToMealModal";
+import {
+  AddMealWithLeftoversDialog,
+} from "@/components/meal-planner/AddMealWithLeftoversDialog";
+import { MealQuantityDialog } from "./MealQuantityDialog";
 import { MealType } from "@/types";
 
 interface MealPlannerModalsProps {
-  // Add meal modal
-  addMealModal: { open: boolean; mealType: MealType | null };
-  setAddMealModal: (modal: { open: boolean; mealType: MealType | null }) => void;
-  recipes: any[];
-  onAddMealFinish: (mealType: MealType, recipeId: string) => void;
-
-  // Leftover modal
-  leftoverModal: { open: boolean; mealPlan: any; recipe: any };
-  setLeftoverModal: (modal: { open: boolean; mealPlan: any; recipe: any }) => void;
-  onLeftoverConfirm: (servings: number) => void;
-
-  // Replace dialog
-  showReplaceDialog: boolean;
-  setShowReplaceDialog: (show: boolean) => void;
-  handleReplaceConfirm: () => void;
-  currentWeek: 1 | 2;
-
-  // Quantity dialog
-  showQuantityDialog: boolean;
-  setShowQuantityDialog: (show: boolean) => void;
-  handleQuantitySubmit: (mealType: MealType, quantity: number) => void;
-
-  // Clear dialog
-  clearMealPlanDialog: boolean;
-  setClearMealPlanDialog: (show: boolean) => void;
-  confirmClearAll: () => void;
-
-  // Delete dialog
-  deleteMealDialog: { open: boolean; recipe: any };
-  setDeleteMealDialog: (dialog: { open: boolean; recipe: any }) => void;
-  confirmRemoveMeal: () => void;
+  isReplaceDialogOpen: boolean;
+  setIsReplaceDialogOpen: (open: boolean) => void;
+  isAddToMealModalOpen: boolean;
+  setIsAddToMealModalOpen: (open: boolean) => void;
+  isAddLeftoversModalOpen: boolean;
+  setIsAddLeftoversModalOpen: (open: boolean) => void;
+  weekNumber: 1 | 2;
+  onReplaceMealPlan: () => void;
+  mealSlot:
+    | { date: string; mealType: string; slotIndex: number }
+    | undefined;
+  onAddRecipe: (recipeId: string, servings: number) => Promise<void>;
+  onAddMeal: (mealType: MealType, servings: number) => void;
 }
 
-export const MealPlannerModals = ({
-  addMealModal,
-  setAddMealModal,
-  recipes,
-  onAddMealFinish,
-  leftoverModal,
-  setLeftoverModal,
-  onLeftoverConfirm,
-  showReplaceDialog,
-  setShowReplaceDialog,
-  handleReplaceConfirm,
-  currentWeek,
-  showQuantityDialog,
-  setShowQuantityDialog,
-  handleQuantitySubmit,
-  clearMealPlanDialog,
-  setClearMealPlanDialog,
-  confirmClearAll,
-  deleteMealDialog,
-  setDeleteMealDialog,
-  confirmRemoveMeal,
-}: MealPlannerModalsProps) => {
+export function MealPlannerModals({
+  isReplaceDialogOpen,
+  setIsReplaceDialogOpen,
+  isAddToMealModalOpen,
+  setIsAddToMealModalOpen,
+  isAddLeftoversModalOpen,
+  setIsAddLeftoversModalOpen,
+  weekNumber,
+  onReplaceMealPlan,
+  mealSlot,
+  onAddRecipe,
+}: MealPlannerModalsProps) {
+  const [isQuantityDialogOpen, setIsQuantityDialogOpen] = useState(false);
+  const [pendingMeal, setPendingMeal] = useState<{ mealType: MealType; recipeName: string } | null>(null);
+
   return (
     <>
-      {addMealModal.open && addMealModal.mealType && (
-        <AddMealPlanDialog
-          isOpen={addMealModal.open}
-          onClose={() => setAddMealModal({ ...addMealModal, open: false })}
-          onAddMealPlan={(recipeId: string, notes: string) => onAddMealFinish(addMealModal.mealType!, recipeId)}
-          recipes={recipes}
-          selectedDate={new Date()}
-          selectedMealType={addMealModal.mealType}
-        />
-      )}
-
-      {leftoverModal.open && leftoverModal.recipe && leftoverModal.mealPlan && (
-        <LeftoverServingsDialog
-          open={leftoverModal.open}
-          onClose={() => setLeftoverModal({ ...leftoverModal, open: false })}
-          mealPlan={leftoverModal.mealPlan}
-          recipe={leftoverModal.recipe}
-          onConfirm={onLeftoverConfirm}
-        />
-      )}
-
       <MealPlanReplaceDialog
-        open={showReplaceDialog}
-        onOpenChange={setShowReplaceDialog}
-        onConfirm={handleReplaceConfirm}
-        weekNumber={currentWeek}
+        open={isReplaceDialogOpen}
+        onOpenChange={setIsReplaceDialogOpen}
+        onConfirm={onReplaceMealPlan}
+        weekNumber={weekNumber}
       />
 
+      <AddRecipeToMealModal
+        open={isAddToMealModalOpen}
+        onClose={() => setIsAddToMealModalOpen(false)}
+        mealSlot={mealSlot}
+        onAddRecipe={async (recipeId: string, servings: number) => {
+          if (mealSlot) {
+            await onAddRecipe(recipeId, servings);
+            setIsAddToMealModalOpen(false);
+          }
+        }}
+      />
+
+      <AddMealWithLeftoversDialog
+        open={isAddLeftoversModalOpen}
+        onOpenChange={setIsAddLeftoversModalOpen}
+        onAddMeal={(mealType: MealType, recipeName: string) => {
+          setIsAddLeftoversModalOpen(false);
+          setPendingMeal({ mealType, recipeName });
+          setIsQuantityDialogOpen(true);
+        }}
+      />
+      
       <MealQuantityDialog
-        open={showQuantityDialog}
-        onClose={() => setShowQuantityDialog(false)}
-        onSubmit={handleQuantitySubmit}
-      />
-
-      <ClearMealPlanDialog
-        open={clearMealPlanDialog}
-        onOpenChange={setClearMealPlanDialog}
-        onConfirm={confirmClearAll}
-        weekNumber={currentWeek}
-      />
-
-      <DeleteMealDialog
-        open={deleteMealDialog.open}
-        onOpenChange={(open) => setDeleteMealDialog({ ...deleteMealDialog, open })}
-        onConfirm={confirmRemoveMeal}
-        recipe={deleteMealDialog.recipe}
+        isOpen={isQuantityDialogOpen}
+        onClose={() => setIsQuantityDialogOpen(false)}
+        onConfirm={(quantity: number) => {
+          if (pendingMeal) {
+            onAddMeal(pendingMeal.mealType, quantity);
+          }
+          setIsQuantityDialogOpen(false);
+          setPendingMeal(null);
+        }}
+        mealType={pendingMeal?.mealType || 'dinner'}
+        recipeName={pendingMeal?.recipeName || ''}
       />
     </>
   );
-};
+}

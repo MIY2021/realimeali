@@ -3,7 +3,7 @@ import { Recipe } from "@/types";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
-import { Lightbulb, Clock, Users } from "lucide-react";
+import { Clock, Users } from "lucide-react";
 import { EnhancedIngredientManager } from "../EnhancedIngredientManager";
 import { EnhancedInstructionManager } from "../EnhancedInstructionManager";
 import { EnhancedImageUpload } from "../EnhancedImageUpload";
@@ -152,23 +152,6 @@ export function RecipeManualTab({
         instructions={newRecipe.instructions}
         onInstructionsChange={handleInstructionsChange}
       />
-
-      {/* Top Tip */}
-      <Card className="p-4 space-y-4">
-        <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-          <Lightbulb className="h-5 w-5 mr-2 text-yellow-500" />
-          Chef's Tip (Optional)
-        </h3>
-        <Textarea
-          value={newRecipe.topTip || ""}
-          onChange={(e) => setNewRecipe({ ...newRecipe, topTip: e.target.value })}
-          placeholder="Share a helpful cooking tip, secret ingredient, or pro technique that makes this recipe special..."
-          className="h-20 resize-none"
-        />
-        <p className="text-xs text-gray-500">
-          💡 Add a pro tip, cooking secret, or helpful advice to make this recipe even better!
-        </p>
-      </Card>
 
       {/* Image Upload */}
       <EnhancedImageUpload

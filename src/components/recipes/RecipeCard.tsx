@@ -1,121 +1,79 @@
-
 import { useState } from "react";
-import { Recipe } from "@/types";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Heart, Clock, Users, Eye, Plus } from "lucide-react";
-import { RecipeImage } from "@/components/ui/recipe-image";
-import { AddToMealPlanDialog } from "./AddToMealPlanDialog";
-import { useRecipes } from "@/contexts/RecipesContext";
-import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
-import { getDisplayLabel, getIcon } from "@/utils/recipeClassification";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Heart } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Recipe } from "@/types";
+import { useRecipes } from "@/contexts/RecipesContext";
+import { RecipeImage } from "@/components/ui/recipe-image";
 
 interface RecipeCardProps {
   recipe: Recipe;
+  onAddToMealPlan: (recipe: Recipe) => void;
   showActions?: boolean;
-  onAddToMealPlan?: (recipe: Recipe) => void;
 }
 
-export function RecipeCard({ recipe, showActions = true, onAddToMealPlan }: RecipeCardProps) {
-  const [showAddToMealPlan, setShowAddToMealPlan] = useState(false);
-  const { updateRecipe } = useRecipes();
-  const { toast } = useToast();
+export function RecipeCard({ recipe, onAddToMealPlan, showActions = true }: RecipeCardProps) {
+  const { toggleFavorite } = useRecipes();
+  const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
 
-  const handleAddToMealPlanClick = () => {
-    if (onAddToMealPlan) {
-      onAddToMealPlan(recipe);
-    } else {
-      setShowAddToMealPlan(true);
-    }
-  };
-
-  const handleFavorite = async (e: React.MouseEvent) => {
+  const handleToggleFavorite = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    
+    setIsTogglingFavorite(true);
     try {
-      await updateRecipe(recipe.id, { isFavorite: !recipe.isFavorite });
-      toast({
-        title: recipe.isFavorite ? "Removed from favorites" : "Added to favorites",
-      });
+      await toggleFavorite(recipe.id, !recipe.isFavorite);
     } catch (error) {
-      console.error("Error updating favorite:", error);
-      toast({
-        title: "Error",
-        description: "Failed to update favorite status. Please try again.",
-        variant: "destructive",
-      });
+      console.error('Failed to toggle favorite:', error);
+    } finally {
+      setIsTogglingFavorite(false);
     }
   };
 
   return (
-    <Card className="bg-card text-card-foreground h-full flex flex-col overflow-hidden">
-      <CardHeader className="p-0 overflow-hidden">
+    <Card className="bg-card rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200">
+      <Link to={`/recipes/${recipe.id}`} className="block h-full">
         <div className="relative">
-          <RecipeImage recipe={recipe} className="object-cover w-full h-48" iconSize="h-5 w-5" />
-          
-          {/* Heart overlay in top-left */}
-          <button
-            onClick={handleFavorite}
-            className="absolute top-2 left-2 p-1.5 bg-white/90 hover:bg-white rounded-full shadow-sm transition-all duration-200 hover:scale-110"
+          <RecipeImage recipe={recipe} className="w-full h-48 object-cover rounded-t-lg" iconSize="h-5 w-5" />
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleToggleFavorite}
+            disabled={isTogglingFavorite}
+            className="absolute top-2 right-2 text-gray-500 hover:text-red-500 transition-colors duration-200"
           >
-            <Heart 
-              className="h-4 w-4 text-red-500" 
-              fill={recipe.isFavorite ? "currentColor" : "none"}
-            />
-          </button>
-
-          {/* Meal type badge in top-right */}
-          {recipe.mealType && (
-            <Badge 
-              variant="secondary" 
-              className="absolute top-2 right-2 bg-white/90 text-gray-700 backdrop-blur-sm border-0 shadow-sm flex items-center gap-1"
-            >
-              <span className="text-sm">{getIcon(recipe.mealType, 'mealType')}</span>
-              <span className="text-xs font-medium">{getDisplayLabel(recipe.mealType, 'mealType')}</span>
-            </Badge>
-          )}
+            <Heart className={`h-5 w-5 ${recipe.isFavorite ? 'fill-red-500 text-red-500' : ''}`} />
+          </Button>
         </div>
-      </CardHeader>
-      
-      <CardContent className="flex flex-col gap-3 py-4 px-4 flex-1">
-        <div className="flex items-center justify-between">
-          <h3 className="font-semibold text-lg truncate">{recipe.title}</h3>
-        </div>
-
-        <p className="text-sm text-muted-foreground line-clamp-2 flex-1">{recipe.description}</p>
-
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <Clock className="h-4 w-4" />
-          {recipe.prepTime + recipe.cookTime} mins
-          <span className="mx-1">•</span>
-          <Users className="h-4 w-4" />
-          {recipe.servings} servings
-        </div>
-
-        {showActions && (
-          <div className="flex items-center gap-2 mt-auto pt-2">
-            <Button asChild variant="outline" size="sm" className="flex-1 text-xs">
-              <Link to={`/recipe/${recipe.id}`}>
-                <Eye className="h-3 w-3 mr-1" />
-                View
-              </Link>
-            </Button>
-
-            <Button size="sm" onClick={handleAddToMealPlanClick} className="flex-1 text-xs">
-              <Plus className="h-3 w-3 mr-1" />
-              Add to Meal Plan
-            </Button>
+        
+        <CardContent className="p-4">
+          <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-1">{recipe.title}</h3>
+          <p className="text-sm text-gray-600 line-clamp-2">{recipe.description}</p>
+          
+          <div className="flex items-center gap-2 mt-3">
+            {recipe.mealType && (
+              <Badge variant="secondary">{recipe.mealType}</Badge>
+            )}
+            {recipe.complexityLevel && (
+              <Badge variant="outline">{recipe.complexityLevel}</Badge>
+            )}
           </div>
-        )}
-      </CardContent>
+        </CardContent>
+      </Link>
 
-      <AddToMealPlanDialog
-        recipe={recipe}
-        open={showAddToMealPlan}
-        onOpenChange={setShowAddToMealPlan}
-      />
+      {showActions && (
+        <div className="p-4 border-t bg-muted/50 last:rounded-b-lg">
+          <Button
+            variant="outline"
+            className="w-full"
+            onClick={() => onAddToMealPlan(recipe)}
+          >
+            Add to Meal Plan
+          </Button>
+        </div>
+      )}
     </Card>
   );
 }
