@@ -1,10 +1,11 @@
+
 import { useState, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { ChefHat } from "lucide-react";
+import { Utensils } from "lucide-react";
 
 interface AIRecipeParserDialogProps {
   open: boolean;
@@ -29,7 +30,7 @@ export function AIRecipeParserDialog({ open, onClose, onParse }: AIRecipeParserD
       <DialogContent className="sm:max-w-[550px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <ChefHat className="h-5 w-5 text-sage" />
+            <Utensils className="h-5 w-5 text-sage" />
             AI Recipe Parser
           </DialogTitle>
         </DialogHeader>

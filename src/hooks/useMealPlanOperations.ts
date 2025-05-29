@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useMealPlans } from "@/contexts/MealPlanContext";
+import { useMealPlan } from "@/contexts/MealPlanContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { MealPlan, MealPlanMealType } from "@/types";
@@ -7,7 +7,7 @@ import { MealPlan, MealPlanMealType } from "@/types";
 export function useMealPlanOperations() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { mealPlans, fetchMealPlans, createMealPlan, updateMealPlan, deleteMealPlan } = useMealPlans();
+  const { mealPlans, fetchMealPlans, createMealPlan, updateMealPlan, deleteMealPlan } = useMealPlan();
   const { user } = useAuth();
   const { currentHousehold } = useHousehold();
 
@@ -42,13 +42,6 @@ export function useMealPlanOperations() {
         householdId: currentHousehold.id,
         weekNumber,
       });
-      
-      await createMealPlan({
-        ...mealPlanData,
-        mealType, // Use converted type
-        householdId: currentHousehold.id,
-        weekNumber,
-      });
 
       await fetchMealPlans(currentHousehold.id);
       
@@ -59,46 +52,42 @@ export function useMealPlanOperations() {
     }
   };
 
-  const editMealPlan = async (id: string, updates: Partial<MealPlan>) => {
-    if (!user || !currentHousehold) {
-      throw new Error('User must be logged in and have a household');
-    }
-
-    try {
-      setLoading(true);
-      const updatedMealPlan = await updateMealPlan(id, updates);
-      await fetchMealPlans(currentHousehold.id);
-      setLoading(false);
-      return updatedMealPlan;
-    } catch (error) {
-      setErrorState('Failed to update meal plan');
-      throw error;
-    }
-  };
-
-  const removeMealPlan = async (id: string) => {
-    if (!user || !currentHousehold) {
-      throw new Error('User must be logged in and have a household');
-    }
-
-    try {
-      setLoading(true);
-      await deleteMealPlan(id);
-      await fetchMealPlans(currentHousehold.id);
-      setLoading(false);
-    } catch (error) {
-      setErrorState('Failed to remove meal plan');
-      throw error;
-    }
-  };
-
   return {
     mealPlans,
     isLoading,
     error,
     addMealPlan,
-    editMealPlan,
-    removeMealPlan,
+    editMealPlan: async (id: string, updates: Partial<MealPlan>) => {
+      if (!user || !currentHousehold) {
+        throw new Error('User must be logged in and have a household');
+      }
+
+      try {
+        setLoading(true);
+        const updatedMealPlan = await updateMealPlan(id, updates);
+        await fetchMealPlans(currentHousehold.id);
+        setLoading(false);
+        return updatedMealPlan;
+      } catch (error) {
+        setErrorState('Failed to update meal plan');
+        throw error;
+      }
+    },
+    removeMealPlan: async (id: string) => {
+      if (!user || !currentHousehold) {
+        throw new Error('User must be logged in and have a household');
+      }
+
+      try {
+        setLoading(true);
+        await deleteMealPlan(id);
+        await fetchMealPlans(currentHousehold.id);
+        setLoading(false);
+      } catch (error) {
+        setErrorState('Failed to remove meal plan');
+        throw error;
+      }
+    },
     fetchMealPlans
   };
 }

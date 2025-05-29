@@ -1,9 +1,8 @@
-
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Recipe, MealType, CuisineRegion, CookingMethod, DietLifestyle, ComplexityLevel, MainIngredient } from "@/types";
 import { MEAL_TYPE_OPTIONS, CUISINE_REGION_OPTIONS, COOKING_METHOD_OPTIONS, DIET_LIFESTYLE_OPTIONS, COMPLEXITY_LEVEL_OPTIONS, MAIN_INGREDIENT_OPTIONS } from "@/utils/recipeClassification";
-import { Tags } from "lucide-react";
+import { Utensils } from "lucide-react";
 
 interface RecipeClassificationSelectorProps {
   recipe: Omit<Recipe, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>;
@@ -23,7 +22,7 @@ export function RecipeClassificationSelector({ recipe, onRecipeChange }: RecipeC
     <Card className="p-4 space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-          <Tags className="h-5 w-5 mr-2 text-blue-500" />
+          <Utensils className="h-5 w-5 mr-2 text-blue-500" />
           Recipe Classification
         </h3>
         <Badge variant="secondary" className="bg-purple-50 text-purple-700">

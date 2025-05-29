@@ -1,217 +1,118 @@
-
+import { useState } from "react";
 import { Recipe } from "@/types";
-import { Link, useNavigate } from "react-router-dom";
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { Clock, Users, Plus, Pencil, Share, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/contexts/AuthContext";
-import { useHousehold } from "@/contexts/HouseholdContext";
-import { usePublicRecipeSharing } from "@/hooks/usePublicRecipeSharing";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { Heart, Clock, Users, Share, Plus } from "lucide-react";
 import { RecipeImage } from "@/components/ui/recipe-image";
-import { useScrollPosition } from "@/hooks/useScrollPosition";
-import { useNavigationState } from "@/hooks/useNavigationState";
-import { getDisplayLabel, getIcon } from "@/utils/recipeClassification";
+import { AddToMealPlanDialog } from "./AddToMealPlanDialog";
+import { useRecipes } from "@/contexts/RecipesContext";
+import { useToast } from "@/hooks/use-toast";
+import { usePublicRecipeSharing } from "@/hooks/usePublicRecipeSharing";
 
 interface RecipeCardProps {
   recipe: Recipe;
-  onAddToMealPlan?: (recipe: Recipe) => void;
-  onEdit?: (recipe: Recipe) => void;
-  onDelete?: (recipe: Recipe) => void;
   showActions?: boolean;
+  onAddToMealPlan?: (recipe: Recipe) => void;
 }
 
-export function RecipeCard({ recipe, onAddToMealPlan, onEdit, onDelete, showActions = true }: RecipeCardProps) {
-  const { user } = useAuth();
-  const { currentHousehold } = useHousehold();
-  const { createPublicShare, isCreatingShare } = usePublicRecipeSharing();
-  const { saveScrollPosition } = useScrollPosition();
-  const { markCameFromRecipes } = useNavigationState();
-  const navigate = useNavigate();
-  const { id, title, description, prepTime, cookTime, servings } = recipe;
-  const totalTime = prepTime + cookTime;
+export function RecipeCard({ recipe, showActions = true, onAddToMealPlan }: RecipeCardProps) {
+  const [showAddToMealPlan, setShowAddToMealPlan] = useState(false);
+  const { toggleFavorite } = useRecipes();
+  const { toast } = useToast();
+  const { shareRecipe, isSharing } = usePublicRecipeSharing();
 
-  // Allow editing/deleting if user is part of the same household as the recipe
-  const canEdit = user && currentHousehold && recipe.householdId === currentHousehold.id && onEdit && showActions;
-  const canDelete = user && currentHousehold && recipe.householdId === currentHousehold.id && onDelete && showActions;
-  const canShare = user && showActions;
-
-  // Create URL-friendly slug from recipe title - use new format without ID
-  const createSlug = (title: string) => {
-    return title
-      .toLowerCase()
-      .replace(/[^a-z0-9 -]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-')
-      .trim();
+  const handleAddToMealPlanClick = () => {
+    if (onAddToMealPlan) {
+      onAddToMealPlan(recipe);
+    } else {
+      setShowAddToMealPlan(true);
+    }
   };
 
-  const recipeSlug = createSlug(title);
-  const recipeUrl = `/my-recipes/${recipeSlug}`;
-
-  const handleRecipeClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    console.log('Recipe card clicked, navigating to:', recipeUrl);
-    console.log('Recipe ID:', id, 'Title:', title);
-    
-    // Get current layout for layout-aware scroll saving
-    const currentLayout = localStorage.getItem('mobileRecipeLayout') || '1';
-    
-    // Save current scroll position with layout information
-    saveScrollPosition('recipes', currentLayout);
-    
-    // Mark that we're navigating from recipes page
-    markCameFromRecipes();
-    
-    // Set session storage flags for reliable tracking
-    sessionStorage.setItem('restoreRecipesScroll', 'true');
-    
-    // Navigate with state to indicate scroll should be restored
-    navigate(recipeUrl, { 
-      state: { 
-        restoreScroll: true,
-        fromRecipes: true 
-      } 
-    });
+  const handleShare = async () => {
+    const shareUrl = await shareRecipe(recipe);
+    if (shareUrl) {
+      navigator.clipboard.writeText(shareUrl);
+      toast({
+        title: "Recipe Shared!",
+        description: "Share link copied to clipboard.",
+      });
+    }
   };
 
-  const handleShare = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    await createPublicShare(recipe);
+  const handleFavorite = async () => {
+    try {
+      await toggleFavorite(recipe.id, !recipe.isFavorite);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update favorite status. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
-    <Card className="overflow-hidden transition-all hover:shadow-md relative flex flex-col h-full" data-recipe-card>
-      <div onClick={handleRecipeClick} className="cursor-pointer">
-        <div className="aspect-video w-full overflow-hidden bg-muted relative">
-          <RecipeImage 
-            recipe={recipe} 
-            className="h-full w-full transition-transform hover:scale-105" 
-            iconSize="h-12 w-12"
-          />
-        </div>
-      </div>
-      <CardHeader className="p-4 pb-2">
-        <div className="flex justify-between items-start">
-          <button
-            onClick={handleRecipeClick}
-            className="text-lg font-semibold hover:text-terracotta transition-colors text-left"
-            title={title}
-          >
-            {title}
-          </button>
-        </div>
-        
-        {/* New classification badges */}
-        <div className="flex flex-wrap gap-1 mt-2">
-          {recipe.mealType && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 text-blue-800 px-2 py-1 text-xs font-medium">
-              <span>{getIcon(recipe.mealType, 'mealType')}</span>
-              <span>{getDisplayLabel(recipe.mealType, 'mealType')}</span>
-            </span>
-          )}
-          {recipe.complexityLevel && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-green-100 text-green-800 px-2 py-1 text-xs font-medium">
-              <span>{getIcon(recipe.complexityLevel, 'complexityLevel')}</span>
-              <span>{getDisplayLabel(recipe.complexityLevel, 'complexityLevel')}</span>
-            </span>
-          )}
-          {recipe.cuisineRegion && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-purple-100 text-purple-800 px-2 py-1 text-xs font-medium">
-              <span>{getIcon(recipe.cuisineRegion, 'cuisineRegion')}</span>
-              <span>{getDisplayLabel(recipe.cuisineRegion, 'cuisineRegion')}</span>
-            </span>
-          )}
-        </div>
+    <Card className="bg-card text-card-foreground">
+      <CardHeader className="p-0 overflow-hidden">
+        <RecipeImage recipe={recipe} className="object-cover w-full h-48" iconSize="h-5 w-5" />
       </CardHeader>
-      <CardContent className="p-4 pt-2 flex-grow">
-        <p className="text-sm text-muted-foreground line-clamp-2">{description}</p>
-        <div className="mt-3">
-          <div className="flex items-center gap-4 mb-2">
-            <span className="flex items-center gap-1">
-              <Clock className="h-3.5 w-3.5" />
-              <span>{totalTime} min</span>
-            </span>
-            <span className="flex items-center gap-1">
-              <Users className="h-3.5 w-3.5" />
-              <span>{servings}</span>
-            </span>
-          </div>
+      
+      <CardContent className="flex flex-col gap-3 py-4 px-4 sm:px-6">
+        <div className="flex items-center justify-between">
+          <h3 className="font-semibold text-lg truncate">{recipe.title}</h3>
+          {recipe.mealType && (
+            <Badge variant="secondary" className="uppercase">{recipe.mealType.replace(/_/g, ' ')}</Badge>
+          )}
         </div>
-      </CardContent>
-      <CardFooter className="flex flex-col items-start justify-between p-4 pt-0 text-sm text-muted-foreground space-y-2">
-        <Button
-          variant="outline"
-          size="sm"
-          className="w-full text-xs hover:bg-terracotta hover:text-white"
-          onClick={handleRecipeClick}
-        >
-          View Recipe
-        </Button>
-        
-        {onAddToMealPlan && (
-          <Button
-            variant="outline"
-            size="sm"
-            className="w-full text-xs hover:bg-terracotta hover:text-white flex items-center justify-center"
-            onClick={(e) => { e.preventDefault(); onAddToMealPlan(recipe); }}
-          >
-            <Plus className="h-4 w-4 mr-1" />
-            <span>Add to Meal Plan</span>
-          </Button>
-        )}
 
-        {/* Action buttons for edit, share, delete */}
-        {showActions && (canEdit || canShare || canDelete) && (
-          <div className="flex w-full gap-1">
-            {canEdit && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex-1 text-xs hover:bg-sage hover:text-white flex items-center justify-center"
-                onClick={(e) => { 
-                  e.preventDefault(); 
-                  e.stopPropagation(); 
-                  onEdit(recipe); 
-                }}
-                title="Edit recipe"
-              >
-                <Pencil className="h-3 w-3" />
-              </Button>
-            )}
+        <p className="text-sm text-muted-foreground truncate">{recipe.description}</p>
+
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <Clock className="h-4 w-4" />
+          {recipe.prepTime + recipe.cookTime} mins
+          <span className="mx-1">•</span>
+          <Users className="h-4 w-4" />
+          {recipe.servings} servings
+        </div>
+
+        {showActions && (
+          <div className="flex items-center justify-end gap-2 mt-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleFavorite}
+              className="px-2.5"
+            >
+              <Heart className="h-4 w-4 mr-2" fill={recipe.isFavorite ? "currentColor" : "none"} />
+              {recipe.isFavorite ? "Unfavorite" : "Favorite"}
+            </Button>
             
-            {canShare && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex-1 text-xs hover:bg-blue-500 hover:text-white flex items-center justify-center"
-                onClick={handleShare}
-                disabled={isCreatingShare}
-                title="Share recipe"
-              >
-                <Share className="h-3 w-3" />
-              </Button>
-            )}
-            
-            {canDelete && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex-1 text-xs hover:bg-red-500 hover:text-white flex items-center justify-center"
-                onClick={(e) => { 
-                  e.preventDefault(); 
-                  e.stopPropagation(); 
-                  onDelete(recipe); 
-                }}
-                title="Delete recipe"
-              >
-                <Trash2 className="h-3 w-3" />
-              </Button>
-            )}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleShare}
+              disabled={isSharing}
+              className="px-2.5"
+            >
+              <Share className="h-4 w-4 mr-2" />
+              Share
+            </Button>
+
+            <Button size="sm" onClick={handleAddToMealPlanClick}>
+              <Plus className="h-4 w-4 mr-2" />
+              Add to Meal Plan
+            </Button>
           </div>
         )}
-      </CardFooter>
+      </CardContent>
+
+      <AddToMealPlanDialog
+        recipe={recipe}
+        open={showAddToMealPlan}
+        onOpenChange={setShowAddToMealPlan}
+      />
     </Card>
   );
 }

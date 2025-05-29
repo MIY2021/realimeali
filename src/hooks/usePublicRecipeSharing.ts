@@ -60,7 +60,7 @@ export function usePublicRecipeSharing() {
           servings: recipe.servings,
           image: recipe.image,
           shared_by_user_id: user.id,
-          shared_by_name: user.name || user.email,
+          shared_by_name: user.email, // Use email as fallback for name
           shared_by_household_name: currentHousehold.name,
           expires_at: expiresAt,
           slug: slug

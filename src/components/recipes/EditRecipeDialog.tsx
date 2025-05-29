@@ -1,320 +1,186 @@
-
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { ChefHat, Clock, Users } from "lucide-react";
-import { Recipe, MealType, CuisineRegion, CookingMethod, DietLifestyle, ComplexityLevel, MainIngredient } from "@/types";
-import { MEAL_TYPE_OPTIONS, CUISINE_REGION_OPTIONS, COOKING_METHOD_OPTIONS, DIET_LIFESTYLE_OPTIONS, COMPLEXITY_LEVEL_OPTIONS, MAIN_INGREDIENT_OPTIONS } from "@/utils/recipeClassification";
+import { Recipe } from "@/types";
+import { Utensils, Plus, X } from "lucide-react";
+import { useRecipes } from "@/contexts/RecipesContext";
+import { useToast } from "@/hooks/use-toast";
+import { RecipeClassificationSelector } from "./create/RecipeClassificationSelector";
 
 interface EditRecipeDialogProps {
-  recipe: Recipe;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSave: (recipe: Recipe) => void;
+  recipe: Recipe;
 }
 
-export function EditRecipeDialog({ recipe, open, onOpenChange, onSave }: EditRecipeDialogProps) {
-  const [editedRecipe, setEditedRecipe] = useState<Recipe>(recipe);
-  const [newIngredient, setNewIngredient] = useState("");
-  const [newInstruction, setNewInstruction] = useState("");
+export function EditRecipeDialog({ open, onOpenChange, recipe }: EditRecipeDialogProps) {
+  const [editedRecipe, setEditedRecipe] = useState<Recipe>({ ...recipe });
+  const [saving, setSaving] = useState(false);
+  const { updateRecipe } = useRecipes();
+  const { toast } = useToast();
 
   useEffect(() => {
-    setEditedRecipe(recipe);
+    if (recipe) {
+      setEditedRecipe({ ...recipe });
+    }
   }, [recipe]);
 
-  const updateRecipe = (field: keyof Recipe, value: any) => {
-    setEditedRecipe(prev => ({
-      ...prev,
-      [field]: value
-    }));
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const updatedRecipe = await updateRecipe(editedRecipe.id, editedRecipe);
+      if (updatedRecipe) {
+        toast({
+          title: "Recipe Updated",
+          description: `${editedRecipe.title} has been updated.`,
+        });
+        onOpenChange(false);
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to update recipe. Please try again.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update recipe. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, field: keyof Recipe) => {
+    setEditedRecipe({ ...editedRecipe, [field]: e.target.value });
+  };
+
+  const handleIngredientsChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
+    const newIngredients = [...editedRecipe.ingredients];
+    newIngredients[index] = e.target.value;
+    setEditedRecipe({ ...editedRecipe, ingredients: newIngredients });
   };
 
   const addIngredient = () => {
-    if (newIngredient.trim()) {
-      updateRecipe('ingredients', [...editedRecipe.ingredients, newIngredient.trim()]);
-      setNewIngredient("");
-    }
+    setEditedRecipe({ ...editedRecipe, ingredients: [...editedRecipe.ingredients, ""] });
   };
 
   const removeIngredient = (index: number) => {
-    const newIngredients = editedRecipe.ingredients.filter((_, i) => i !== index);
-    updateRecipe('ingredients', newIngredients);
+    const newIngredients = [...editedRecipe.ingredients];
+    newIngredients.splice(index, 1);
+    setEditedRecipe({ ...editedRecipe, ingredients: newIngredients });
   };
 
-  const addInstruction = () => {
-    if (newInstruction.trim()) {
-      updateRecipe('instructions', [...editedRecipe.instructions, newInstruction.trim()]);
-      setNewInstruction("");
-    }
-  };
-
-  const removeInstruction = (index: number) => {
-    const newInstructions = editedRecipe.instructions.filter((_, i) => i !== index);
-    updateRecipe('instructions', newInstructions);
-  };
-
-  const handleDietLifestyleChange = (lifestyle: DietLifestyle, checked: boolean) => {
-    const current = editedRecipe.dietLifestyle || [];
-    if (checked) {
-      updateRecipe('dietLifestyle', [...current, lifestyle]);
-    } else {
-      updateRecipe('dietLifestyle', current.filter(item => item !== lifestyle));
-    }
-  };
-
-  const handleSave = () => {
-    onSave(editedRecipe);
-    onOpenChange(false);
+  const handleInstructionsChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setEditedRecipe({ ...editedRecipe, instructions: [e.target.value] });
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Edit Recipe</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            <Utensils className="h-5 w-5 text-sage" />
+            Edit Recipe
+          </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6">
-          {/* Basic Information */}
+        <div className="grid gap-4 py-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="title">Recipe Title</Label>
-                <Input
-                  id="title"
-                  value={editedRecipe.title}
-                  onChange={(e) => updateRecipe('title', e.target.value)}
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="description">Description</Label>
-                <Textarea
-                  id="description"
-                  value={editedRecipe.description}
-                  onChange={(e) => updateRecipe('description', e.target.value)}
-                  rows={3}
-                />
-              </div>
-
-              <div className="grid grid-cols-3 gap-2">
-                <div>
-                  <Label htmlFor="prepTime">Prep Time (min)</Label>
-                  <Input
-                    id="prepTime"
-                    type="number"
-                    value={editedRecipe.prepTime}
-                    onChange={(e) => updateRecipe('prepTime', Number(e.target.value))}
-                    min={0}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="cookTime">Cook Time (min)</Label>
-                  <Input
-                    id="cookTime"
-                    type="number"
-                    value={editedRecipe.cookTime}
-                    onChange={(e) => updateRecipe('cookTime', Number(e.target.value))}
-                    min={0}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="servings">Servings</Label>
-                  <Input
-                    id="servings"
-                    type="number"
-                    value={editedRecipe.servings}
-                    onChange={(e) => updateRecipe('servings', Number(e.target.value))}
-                    min={1}
-                  />
-                </div>
-              </div>
+            <div>
+              <Label htmlFor="title">Title</Label>
+              <Input
+                id="title"
+                value={editedRecipe.title}
+                onChange={(e) => handleInputChange(e, "title")}
+              />
             </div>
 
-            {/* Classification Fields */}
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="mealType">Meal Type</Label>
-                <select
-                  id="mealType"
-                  value={editedRecipe.mealType || ''}
-                  onChange={(e) => updateRecipe('mealType', e.target.value || undefined)}
-                  className="w-full p-2 border rounded"
-                >
-                  <option value="">Select meal type...</option>
-                  {MEAL_TYPE_OPTIONS.map(option => (
-                    <option key={option.value} value={option.value}>{option.label}</option>
-                  ))}
-                </select>
-              </div>
+            <div>
+              <Label htmlFor="servings">Servings</Label>
+              <Input
+                id="servings"
+                type="number"
+                value={editedRecipe.servings}
+                onChange={(e) => handleInputChange(e, "servings")}
+              />
+            </div>
 
-              <div>
-                <Label htmlFor="cuisineRegion">Cuisine</Label>
-                <select
-                  id="cuisineRegion"
-                  value={editedRecipe.cuisineRegion || ''}
-                  onChange={(e) => updateRecipe('cuisineRegion', e.target.value || undefined)}
-                  className="w-full p-2 border rounded"
-                >
-                  <option value="">Select cuisine...</option>
-                  {CUISINE_REGION_OPTIONS.map(option => (
-                    <option key={option.value} value={option.value}>{option.label}</option>
-                  ))}
-                </select>
-              </div>
+            <div>
+              <Label htmlFor="prepTime">Prep Time (minutes)</Label>
+              <Input
+                id="prepTime"
+                type="number"
+                value={editedRecipe.prepTime}
+                onChange={(e) => handleInputChange(e, "prepTime")}
+              />
+            </div>
 
-              <div>
-                <Label htmlFor="cookingMethod">Cooking Method</Label>
-                <select
-                  id="cookingMethod"
-                  value={editedRecipe.cookingMethod || ''}
-                  onChange={(e) => updateRecipe('cookingMethod', e.target.value || undefined)}
-                  className="w-full p-2 border rounded"
-                >
-                  <option value="">Select method...</option>
-                  {COOKING_METHOD_OPTIONS.map(option => (
-                    <option key={option.value} value={option.value}>{option.label}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <Label htmlFor="complexityLevel">Complexity</Label>
-                <select
-                  id="complexityLevel"
-                  value={editedRecipe.complexityLevel || ''}
-                  onChange={(e) => updateRecipe('complexityLevel', e.target.value || undefined)}
-                  className="w-full p-2 border rounded"
-                >
-                  <option value="">Select complexity...</option>
-                  {COMPLEXITY_LEVEL_OPTIONS.map(option => (
-                    <option key={option.value} value={option.value}>{option.label}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <Label htmlFor="mainIngredient">Main Ingredient</Label>
-                <select
-                  id="mainIngredient"
-                  value={editedRecipe.mainIngredient || ''}
-                  onChange={(e) => updateRecipe('mainIngredient', e.target.value || undefined)}
-                  className="w-full p-2 border rounded"
-                >
-                  <option value="">Select main ingredient...</option>
-                  {MAIN_INGREDIENT_OPTIONS.map(option => (
-                    <option key={option.value} value={option.value}>{option.label}</option>
-                  ))}
-                </select>
-              </div>
+            <div>
+              <Label htmlFor="cookTime">Cook Time (minutes)</Label>
+              <Input
+                id="cookTime"
+                type="number"
+                value={editedRecipe.cookTime}
+                onChange={(e) => handleInputChange(e, "cookTime")}
+              />
             </div>
           </div>
 
-          {/* Diet & Lifestyle */}
           <div>
-            <Label>Diet & Lifestyle</Label>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
-              {DIET_LIFESTYLE_OPTIONS.map(option => (
-                <label key={option.value} className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    checked={(editedRecipe.dietLifestyle || []).includes(option.value)}
-                    onChange={(e) => handleDietLifestyleChange(option.value, e.target.checked)}
-                  />
-                  <span className="text-sm">{option.label}</span>
-                </label>
-              ))}
-            </div>
+            <Label htmlFor="description">Description</Label>
+            <Textarea
+              id="description"
+              value={editedRecipe.description}
+              onChange={(e) => handleInputChange(e, "description")}
+            />
           </div>
 
-          {/* Ingredients */}
           <div>
             <Label>Ingredients</Label>
-            <div className="space-y-2 max-h-48 overflow-y-auto">
-              {editedRecipe.ingredients.map((ingredient, index) => (
-                <div key={index} className="flex gap-2">
-                  <Input
-                    value={ingredient}
-                    onChange={(e) => {
-                      const newIngredients = [...editedRecipe.ingredients];
-                      newIngredients[index] = e.target.value;
-                      updateRecipe('ingredients', newIngredients);
-                    }}
-                    className="flex-1"
-                  />
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => removeIngredient(index)}
-                    className="text-red-600 hover:text-red-700"
-                  >
-                    ×
-                  </Button>
-                </div>
-              ))}
-              <div className="flex gap-2">
+            {editedRecipe.ingredients.map((ingredient, index) => (
+              <div key={index} className="flex items-center space-x-2 mb-1">
                 <Input
-                  value={newIngredient}
-                  onChange={(e) => setNewIngredient(e.target.value)}
-                  placeholder="Add ingredient..."
-                  className="flex-1"
+                  type="text"
+                  value={ingredient}
+                  onChange={(e) => handleIngredientsChange(e, index)}
+                  className="flex-grow"
                 />
-                <Button onClick={addIngredient}>Add</Button>
+                <Button type="button" variant="ghost" size="sm" onClick={() => removeIngredient(index)}>
+                  <X className="h-4 w-4" />
+                </Button>
               </div>
-            </div>
+            ))}
+            <Button type="button" variant="secondary" size="sm" onClick={addIngredient}>
+              <Plus className="h-4 w-4 mr-2" />
+              Add Ingredient
+            </Button>
           </div>
 
-          {/* Instructions */}
           <div>
-            <Label>Instructions</Label>
-            <div className="space-y-2 max-h-48 overflow-y-auto">
-              {editedRecipe.instructions.map((instruction, index) => (
-                <div key={index} className="flex gap-2">
-                  <span className="text-sm font-medium text-gray-500 mt-2 min-w-[20px]">{index + 1}.</span>
-                  <Textarea
-                    value={instruction}
-                    onChange={(e) => {
-                      const newInstructions = [...editedRecipe.instructions];
-                      newInstructions[index] = e.target.value;
-                      updateRecipe('instructions', newInstructions);
-                    }}
-                    className="flex-1"
-                    rows={2}
-                  />
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => removeInstruction(index)}
-                    className="text-red-600 hover:text-red-700 mt-2"
-                  >
-                    ×
-                  </Button>
-                </div>
-              ))}
-              <div className="flex gap-2">
-                <Textarea
-                  value={newInstruction}
-                  onChange={(e) => setNewInstruction(e.target.value)}
-                  placeholder="Add instruction..."
-                  className="flex-1"
-                  rows={2}
-                />
-                <Button onClick={addInstruction} className="mt-2">Add</Button>
-              </div>
-            </div>
+            <Label htmlFor="instructions">Instructions</Label>
+            <Textarea
+              id="instructions"
+              value={editedRecipe.instructions[0] || ""}
+              onChange={handleInstructionsChange}
+            />
           </div>
 
-          <div className="flex justify-end space-x-2">
-            <Button variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleSave}>
-              Save Changes
-            </Button>
-          </div>
+          <RecipeClassificationSelector
+            recipe={editedRecipe}
+            onRecipeChange={(updatedRecipe) => setEditedRecipe(updatedRecipe)}
+          />
+        </div>
+
+        <div className="flex justify-end">
+          <Button type="submit" onClick={handleSave} disabled={saving}>
+            {saving ? "Saving..." : "Update Recipe"}
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

@@ -2,10 +2,15 @@
 import { useState, useMemo } from "react";
 import { Recipe } from "@/types";
 
-export function useRecipeList(recipes: Recipe[]) {
+interface UseRecipeListProps {
+  recipes: Recipe[];
+}
+
+export function useRecipeList({ recipes }: UseRecipeListProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState<"title" | "prepTime" | "cookTime">("title");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  const [visibleCount, setVisibleCount] = useState(12);
 
   const filteredAndSortedRecipes = useMemo(() => {
     let filtered = recipes;
@@ -51,6 +56,13 @@ export function useRecipeList(recipes: Recipe[]) {
     return filtered;
   }, [recipes, searchTerm, sortBy, sortOrder]);
 
+  const visibleRecipes = filteredAndSortedRecipes.slice(0, visibleCount);
+  const hasMoreRecipes = visibleCount < filteredAndSortedRecipes.length;
+
+  const handleLoadMore = () => {
+    setVisibleCount(prev => prev + 12);
+  };
+
   return {
     searchTerm,
     setSearchTerm,
@@ -59,5 +71,8 @@ export function useRecipeList(recipes: Recipe[]) {
     sortOrder,
     setSortOrder,
     filteredAndSortedRecipes,
+    visibleRecipes,
+    hasMoreRecipes,
+    handleLoadMore,
   };
 }
