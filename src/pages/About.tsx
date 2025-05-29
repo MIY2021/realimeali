@@ -1,6 +1,6 @@
 
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
-import { UtensilsCrossed, Search, CalendarDays, ListChecks, Users, Brain, Share2 } from "lucide-react";
+import { UtensilsCrossed, Search, CalendarDays, ListChecks, Users, Lightbulb, Share } from "lucide-react";
 
 export default function About() {
   useDocumentTitle("About RealiMeali");
@@ -117,7 +117,7 @@ export default function About() {
             <div className="bg-white p-6 rounded-lg shadow-md">
               <div className="flex items-center mb-4">
                 <div className="rounded-full bg-sage/10 p-3 mr-4">
-                  <Brain className="h-6 w-6 text-sage" />
+                  <Lightbulb className="h-6 w-6 text-sage" />
                 </div>
                 <h3 className="text-lg font-bold text-navy">🤖 AI-Powered Features</h3>
               </div>
@@ -132,7 +132,7 @@ export default function About() {
             <div className="bg-white p-6 rounded-lg shadow-md">
               <div className="flex items-center mb-4">
                 <div className="rounded-full bg-navy/10 p-3 mr-4">
-                  <Share2 className="h-6 w-6 text-navy" />
+                  <Share className="h-6 w-6 text-navy" />
                 </div>
                 <h3 className="text-lg font-bold text-navy">🔗 Integration & Sharing</h3>
               </div>
