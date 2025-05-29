@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MultiSelect } from "@/components/ui/multi-select";
-import { RecipeComplexityLevel, RecipeCuisine, RecipeDietLifestyle, RecipeMealType } from "@/types";
+import { ComplexityLevel, Cuisine, DietLifestyle, MealType } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -84,10 +84,10 @@ export const RecipeManualTab: React.FC<RecipeManualTabProps> = ({ setNewRecipe }
         prepTime: parseInt(values.prepTime || "0"),
         cookTime: parseInt(values.cookTime || "0"),
         servings: parseInt(values.servings || "1"),
-        mealType: values.mealType as RecipeMealType | undefined,
-        cuisine: values.cuisine as RecipeCuisine | undefined,
-        complexityLevel: values.complexityLevel as RecipeComplexityLevel | undefined,
-        dietLifestyle: values.dietLifestyle as RecipeDietLifestyle[] | undefined,
+        mealType: values.mealType as MealType | undefined,
+        cuisine: values.cuisine as Cuisine | undefined,
+        complexityLevel: values.complexityLevel as ComplexityLevel | undefined,
+        dietLifestyle: values.dietLifestyle as DietLifestyle[] | undefined,
         slug: newSlug
       };
 
@@ -390,6 +390,7 @@ export const RecipeManualTab: React.FC<RecipeManualTabProps> = ({ setNewRecipe }
           {isLoading ? "Creating Recipe..." : "Create Recipe"}
         </Button>
       </form>
+      </Form>
     </div>
   );
 };

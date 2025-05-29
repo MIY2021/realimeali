@@ -10,12 +10,6 @@ verify_jwt = false
 [functions.send-magic-link]
 verify_jwt = false
 
-[functions.spoonacular-api]
-verify_jwt = false
-
-[functions.mealdb-api]
-verify_jwt = false
-
 # Handle all share routes at the function level
 [[functions.recipe-meta.routes]]
 path = "/share/*"
