@@ -99,12 +99,13 @@ export function RecipeList({
         </div>
       </div>
 
-      {/* Dropdown-based Filters */}
+      {/* Filters directly under search bar */}
       <SimpleRecipeFiltersComponent
         filters={filters}
         onFiltersChange={handleFiltersChange}
         isOpen={filtersOpen}
         onToggle={toggleFilters}
+        alwaysVisible={true}
       />
       
       {filteredAndSortedRecipes.length === 0 ? (

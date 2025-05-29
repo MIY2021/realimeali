@@ -63,7 +63,7 @@ export default function RecipesPage() {
             </span>
           </h1>
           <p className="text-sm sm:text-base text-muted-foreground">
-            Manage your saved recipe collection
+            Welcome to your personal recipe book! Explore, create, and share delicious meals that bring joy to your table. Every great dish starts with a treasured recipe.
           </p>
         </div>
         {user && currentHousehold && (

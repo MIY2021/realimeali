@@ -28,13 +28,15 @@ interface SimpleRecipeFiltersProps {
   onFiltersChange: (filters: SimpleRecipeFilters) => void;
   isOpen: boolean;
   onToggle: () => void;
+  alwaysVisible?: boolean;
 }
 
 export function SimpleRecipeFiltersComponent({ 
   filters, 
   onFiltersChange, 
   isOpen, 
-  onToggle 
+  onToggle,
+  alwaysVisible = false
 }: SimpleRecipeFiltersProps) {
   const hasActiveFilters = Object.entries(filters).some(([key, value]) => {
     if (key === 'searchTerm') return false; // Don't count search term
@@ -68,6 +70,53 @@ export function SimpleRecipeFiltersComponent({
       : [...currentArray, value];
     updateFilter(key, updatedArray);
   };
+
+  // If alwaysVisible is true, render without card wrapper and header
+  if (alwaysVisible) {
+    return (
+      <div className="mb-4">
+        <div className="flex flex-wrap gap-3">
+          <DropdownFilterSection
+            title="🕒 Meal Type"
+            options={MEAL_TYPE_OPTIONS}
+            selectedValues={filters.mealTypes}
+            onToggle={(value) => toggleArrayFilter('mealTypes', value)}
+          />
+
+          <DropdownFilterSection
+            title="🌍 Cuisine"
+            options={CUISINE_OPTIONS}
+            selectedValues={filters.cuisines}
+            onToggle={(value) => toggleArrayFilter('cuisines', value)}
+          />
+
+          <DropdownFilterSection
+            title="🍎 Diet & Lifestyle"
+            options={DIET_LIFESTYLE_OPTIONS}
+            selectedValues={filters.dietLifestyle}
+            onToggle={(value) => toggleArrayFilter('dietLifestyle', value)}
+          />
+
+          <DropdownFilterSection
+            title="⚡ Complexity"
+            options={COMPLEXITY_LEVEL_OPTIONS}
+            selectedValues={filters.complexityLevels}
+            onToggle={(value) => toggleArrayFilter('complexityLevels', value)}
+          />
+        </div>
+        {hasActiveFilters && (
+          <div className="mt-3">
+            <button
+              onClick={clearAllFilters}
+              className="text-sm text-muted-foreground hover:text-foreground underline"
+            >
+              Clear all filters ({activeFilterCount})
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   if (!isOpen) {
     return (
