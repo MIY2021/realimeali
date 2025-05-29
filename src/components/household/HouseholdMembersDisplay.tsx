@@ -2,13 +2,11 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { User, Users } from "lucide-react";
-import { useHouseholdMembers } from "@/hooks/useHouseholdMembers";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { useState } from "react";
 
 export const HouseholdMembersDisplay = () => {
-  const { currentHousehold } = useHousehold();
-  const { members, isLoading } = useHouseholdMembers(currentHousehold?.id || null);
+  const { currentHousehold, householdMembers, isLoadingMembers } = useHousehold();
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
 
   const handleImageError = (memberId: string, avatarUrl?: string) => {
@@ -35,11 +33,11 @@ export const HouseholdMembersDisplay = () => {
     });
   };
 
-  if (!currentHousehold || isLoading) {
+  if (!currentHousehold || isLoadingMembers) {
     return null;
   }
 
-  if (members.length === 0) {
+  if (householdMembers.length === 0) {
     return (
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
         <User className="h-4 w-4" />
@@ -51,8 +49,8 @@ export const HouseholdMembersDisplay = () => {
   // Log member data for debugging
   console.log('HouseholdMembersDisplay - Member data:', {
     householdId: currentHousehold.id,
-    totalMembers: members.length,
-    members: members.map(m => ({
+    totalMembers: householdMembers.length,
+    members: householdMembers.map(m => ({
       id: m.id,
       userId: m.userId,
       profile: {
@@ -70,10 +68,10 @@ export const HouseholdMembersDisplay = () => {
       <div className="flex items-center gap-2">
         <div className="flex items-center gap-1">
           <Users className="h-4 w-4 text-muted-foreground" />
-          <span className="text-sm text-muted-foreground">{members.length}</span>
+          <span className="text-sm text-muted-foreground">{householdMembers.length}</span>
         </div>
         <div className="flex -space-x-2">
-          {members.slice(0, 4).map((member) => (
+          {householdMembers.slice(0, 4).map((member) => (
             <Tooltip key={member.id}>
               <TooltipTrigger>
                 <div className="relative">
@@ -111,15 +109,15 @@ export const HouseholdMembersDisplay = () => {
               </TooltipContent>
             </Tooltip>
           ))}
-          {members.length > 4 && (
+          {householdMembers.length > 4 && (
             <Tooltip>
               <TooltipTrigger>
                 <div className="h-8 w-8 rounded-full border-2 border-background bg-muted flex items-center justify-center text-xs font-medium">
-                  +{members.length - 4}
+                  +{householdMembers.length - 4}
                 </div>
               </TooltipTrigger>
               <TooltipContent>
-                <p>{members.length - 4} more member{members.length - 4 > 1 ? 's' : ''}</p>
+                <p>{householdMembers.length - 4} more member{householdMembers.length - 4 > 1 ? 's' : ''}</p>
               </TooltipContent>
             </Tooltip>
           )}

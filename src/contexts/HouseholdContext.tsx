@@ -6,30 +6,13 @@ import React, {
   useEffect,
   useCallback,
 } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './AuthContext';
 import { Household, HouseholdMember, HouseholdJoinRequest } from '@/types';
-
-interface HouseholdContextType {
-  currentHousehold: Household | null;
-  setCurrentHousehold: React.Dispatch<React.SetStateAction<Household | null>>;
-  householdMembers: HouseholdMember[];
-  setHouseholdMembers: React.Dispatch<React.SetStateAction<HouseholdMember[]>>;
-  joinRequests: HouseholdJoinRequest[];
-  setJoinRequests: React.Dispatch<React.SetStateAction<HouseholdJoinRequest[]>>;
-  households: Household[];
-  isLoadingHousehold: boolean;
-  isLoadingMembers: boolean;
-  createHousehold: (name: string) => Promise<Household | null>;
-  updateHousehold: (id: string, updates: Partial<Household>) => Promise<Household | null>;
-  joinHousehold: (householdId: string) => Promise<boolean>;
-  requestToJoinHousehold: (householdCode: string) => Promise<boolean>;
-  leaveHousehold: (householdId: string) => Promise<boolean>;
-  removeMember: (memberId: string, memberUserId: string) => Promise<boolean>;
-  fetchJoinRequests: () => Promise<void>;
-  approveJoinRequest: (requestId: string) => Promise<boolean>;
-  rejectJoinRequest: (requestId: string) => Promise<boolean>;
-}
+import { HouseholdContextType } from './HouseholdContext/types';
+import { useHouseholdData } from './HouseholdContext/useHouseholdData';
+import { useHouseholdOperations } from './HouseholdContext/useHouseholdOperations';
+import { useJoinRequests } from './HouseholdContext/useJoinRequests';
+import { useMemberOperations } from './HouseholdContext/useMemberOperations';
 
 const HouseholdContext = createContext<HouseholdContextType | undefined>(
   undefined
@@ -49,333 +32,67 @@ export function HouseholdProvider({ children }: { children: React.ReactNode }) {
   const [householdMembers, setHouseholdMembers] = useState<HouseholdMember[]>([]);
   const [joinRequests, setJoinRequests] = useState<HouseholdJoinRequest[]>([]);
   const [households, setHouseholds] = useState<Household[]>([]);
-  const [isLoadingHousehold, setIsLoadingHousehold] = useState(false);
-  const [isLoadingMembers, setIsLoadingMembers] = useState(false);
 
-  // Transform database response to frontend format
-  const transformHousehold = (dbHousehold: any): Household => ({
-    id: dbHousehold.id,
-    name: dbHousehold.name,
-    createdAt: dbHousehold.created_at,
-    updatedAt: dbHousehold.updated_at,
-    createdBy: dbHousehold.created_by,
-  });
-
-  const transformJoinRequest = (dbRequest: any): HouseholdJoinRequest => ({
-    id: dbRequest.id,
-    householdId: dbRequest.household_id,
-    userId: dbRequest.user_id,
-    status: dbRequest.status,
-    createdAt: dbRequest.created_at,
-    updatedAt: dbRequest.updated_at,
-  });
-
-  const fetchJoinRequests = useCallback(async () => {
-    if (!currentHousehold) return;
-
-    try {
-      const { data, error } = await supabase
-        .from('household_join_requests')
-        .select('*')
-        .eq('household_id', currentHousehold.id)
-        .eq('status', 'pending')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setJoinRequests((data || []).map(transformJoinRequest));
-    } catch (error) {
-      console.error('Error fetching join requests:', error);
-      setJoinRequests([]);
-    }
-  }, [currentHousehold]);
-
-  const fetchHousehold = useCallback(async () => {
-    if (!user) {
-      setCurrentHousehold(null);
-      return;
-    }
-
-    setIsLoadingHousehold(true);
-    try {
-      const { data: memberData, error: memberError } = await supabase
-        .from('household_members')
-        .select('household_id')
-        .eq('user_id', user.id)
-        .single();
-
-      if (memberError) {
-        console.error('Error fetching household member data:', memberError);
-        setCurrentHousehold(null);
-        return;
-      }
-
-      if (!memberData) {
-        setCurrentHousehold(null);
-        return;
-      }
-
-      const { data: householdData, error: householdError } = await supabase
-        .from('households')
-        .select('*')
-        .eq('id', memberData.household_id)
-        .single();
-
-      if (householdError) {
-        console.error('Error fetching household data:', householdError);
-        setCurrentHousehold(null);
-        return;
-      }
-
-      setCurrentHousehold(transformHousehold(householdData));
-    } catch (error) {
-      console.error('Error fetching household:', error);
-      setCurrentHousehold(null);
-    } finally {
-      setIsLoadingHousehold(false);
-    }
-  }, [user]);
+  // Use our custom hooks
+  const {
+    fetchHousehold,
+    fetchHouseholdMembers: fetchMembersData,
+    fetchJoinRequests: fetchRequestsData,
+    isLoadingHousehold,
+    isLoadingMembers,
+  } = useHouseholdData(user, currentHousehold);
 
   const fetchHouseholdMembers = useCallback(async () => {
-    if (!currentHousehold) {
-      setHouseholdMembers([]);
-      return;
-    }
+    const members = await fetchMembersData();
+    setHouseholdMembers(members);
+  }, [fetchMembersData]);
 
-    setIsLoadingMembers(true);
-    try {
-      const { data, error } = await supabase
-        .from('household_members')
-        .select(`
-          id,
-          user_id,
-          household_id,
-          role,
-          joined_at,
-          profiles (
-            full_name,
-            email,
-            avatar_url
-          )
-        `)
-        .eq('household_id', currentHousehold.id);
+  const fetchJoinRequestsCallback = useCallback(async () => {
+    const requests = await fetchRequestsData();
+    setJoinRequests(requests);
+  }, [fetchRequestsData]);
 
-      if (error) throw error;
+  const {
+    createHousehold,
+    updateHousehold,
+    leaveHousehold,
+  } = useHouseholdOperations(user, setCurrentHousehold, fetchHouseholdMembers);
 
-      const membersWithProfiles = data.map((member) => ({
-        id: member.id,
-        userId: member.user_id,
-        householdId: member.household_id,
-        role: member.role,
-        joinedAt: member.joined_at,
-        createdAt: member.joined_at, // Use joined_at as createdAt
-        updatedAt: member.joined_at, // Use joined_at as updatedAt
-        profile: member.profiles
-          ? {
-              fullName: member.profiles.full_name,
-              email: member.profiles.email,
-              avatarUrl: member.profiles.avatar_url,
-            }
-          : undefined,
-      }));
+  const {
+    requestToJoinHousehold,
+    joinHousehold,
+    approveJoinRequest,
+    rejectJoinRequest,
+  } = useJoinRequests(user, fetchJoinRequestsCallback);
 
-      setHouseholdMembers(membersWithProfiles);
-    } catch (error) {
-      console.error('Error fetching household members:', error);
-      setHouseholdMembers([]);
-    } finally {
-      setIsLoadingMembers(false);
-    }
-  }, [currentHousehold]);
+  const { removeMember } = useMemberOperations(setHouseholdMembers);
 
-  const createHousehold = async (name: string): Promise<Household | null> => {
-    if (!user) return null;
-
-    try {
-      const { data: householdData, error: householdError } = await supabase
-        .from('households')
-        .insert([{ name, created_by: user.id }])
-        .select('*')
-        .single();
-
-      if (householdError) throw householdError;
-
-      const { data: memberData, error: memberError } = await supabase
-        .from('household_members')
-        .insert([
-          {
-            user_id: user.id,
-            household_id: householdData.id,
-            role: 'owner',
-            joined_at: new Date().toISOString(),
-          },
-        ])
-        .select('*')
-        .single();
-
-      if (memberError) throw memberError;
-
-      await fetchHousehold();
-      await fetchHouseholdMembers();
-      return transformHousehold(householdData);
-    } catch (error) {
-      console.error('Error creating household:', error);
-      return null;
-    }
-  };
-
-  const updateHousehold = async (
-    id: string,
-    updates: Partial<Household>
-  ): Promise<Household | null> => {
-    try {
-      const { data, error } = await supabase
-        .from('households')
-        .update(updates)
-        .eq('id', id)
-        .select('*')
-        .single();
-
-      if (error) throw error;
-
-      const transformed = transformHousehold(data);
-      setCurrentHousehold(transformed);
-      return transformed;
-    } catch (error) {
-      console.error('Error updating household:', error);
-      return null;
-    }
-  };
-
-  const requestToJoinHousehold = async (householdCode: string): Promise<boolean> => {
-    if (!user) return false;
-
-    try {
-      // For now, treat householdCode as household ID
-      // In a real implementation, you'd look up the household by code
-      const { data: existingRequest, error: existingRequestError } = await supabase
-        .from('household_join_requests')
-        .select('*')
-        .eq('household_id', householdCode)
-        .eq('user_id', user.id)
-        .eq('status', 'pending')
-        .maybeSingle();
-
-      if (existingRequestError) {
-        console.error('Error checking existing join request:', existingRequestError);
-        return false;
-      }
-
-      if (existingRequest) {
-        console.log('Pending join request already exists for this household.');
-        return false;
-      }
-
-      const { error } = await supabase
-        .from('household_join_requests')
-        .insert([
-          {
-            household_id: householdCode,
-            user_id: user.id,
-            status: 'pending',
-          },
-        ]);
-
-      if (error) throw error;
-      return true;
-    } catch (error) {
-      console.error('Error requesting to join household:', error);
-      return false;
-    }
-  };
-
-  const joinHousehold = async (householdId: string): Promise<boolean> => {
-    return requestToJoinHousehold(householdId);
-  };
-
-  const leaveHousehold = async (householdId: string): Promise<boolean> => {
-    if (!user) return false;
-
-    try {
-      const { error } = await supabase
-        .from('household_members')
-        .delete()
-        .eq('household_id', householdId)
-        .eq('user_id', user.id);
-
-      if (error) throw error;
-
-      setCurrentHousehold(null);
-      setHouseholdMembers([]);
-      return true;
-    } catch (error) {
-      console.error('Error leaving household:', error);
-      return false;
-    }
-  };
-
-  const removeMember = async (memberId: string, memberUserId: string): Promise<boolean> => {
-    try {
-      const { error } = await supabase
-        .from('household_members')
-        .delete()
-        .eq('id', memberId);
-
-      if (error) throw error;
-
-      setHouseholdMembers((prevMembers) =>
-        prevMembers.filter((member) => member.id !== memberId)
-      );
-      return true;
-    } catch (error) {
-      console.error('Error removing member:', error);
-      return false;
-    }
-  };
-
-  const approveJoinRequest = async (requestId: string): Promise<boolean> => {
-    try {
-      const { error } = await supabase
-        .from('household_join_requests')
-        .update({ status: 'approved' })
-        .eq('id', requestId);
-
-      if (error) throw error;
-      
-      fetchJoinRequests();
-      return true;
-    } catch (error) {
-      console.error('Error approving join request:', error);
-      return false;
-    }
-  };
-
-  const rejectJoinRequest = async (requestId: string): Promise<boolean> => {
-    try {
-      const { error } = await supabase
-        .from('household_join_requests')
-        .update({ status: 'rejected' })
-        .eq('id', requestId);
-
-      if (error) throw error;
-      
-      fetchJoinRequests();
-      return true;
-    } catch (error) {
-      console.error('Error rejecting join request:', error);
-      return false;
-    }
-  };
-
+  // Fetch household on user change
   useEffect(() => {
-    fetchHousehold();
+    const loadHousehold = async () => {
+      const household = await fetchHousehold();
+      setCurrentHousehold(household);
+    };
+
+    if (user) {
+      loadHousehold();
+    } else {
+      setCurrentHousehold(null);
+    }
   }, [user, fetchHousehold]);
 
+  // Fetch members and join requests when household changes
   useEffect(() => {
-    fetchHouseholdMembers();
-    fetchJoinRequests();
-  }, [currentHousehold, fetchHouseholdMembers, fetchJoinRequests]);
+    if (currentHousehold) {
+      fetchHouseholdMembers();
+      fetchJoinRequestsCallback();
+    } else {
+      setHouseholdMembers([]);
+      setJoinRequests([]);
+    }
+  }, [currentHousehold, fetchHouseholdMembers, fetchJoinRequestsCallback]);
 
-  const value = {
+  const value: HouseholdContextType = {
     currentHousehold,
     setCurrentHousehold,
     householdMembers,
@@ -391,7 +108,7 @@ export function HouseholdProvider({ children }: { children: React.ReactNode }) {
     requestToJoinHousehold,
     leaveHousehold,
     removeMember,
-    fetchJoinRequests,
+    fetchJoinRequests: fetchJoinRequestsCallback,
     approveJoinRequest,
     rejectJoinRequest,
   };

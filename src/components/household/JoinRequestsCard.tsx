@@ -1,5 +1,4 @@
 
-import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +7,7 @@ import { User, Check, X } from "lucide-react";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { HouseholdJoinRequest } from "@/types";
+import { useState } from "react";
 
 interface JoinRequestsCardProps {
   isOwner: boolean;
@@ -53,14 +53,14 @@ const JoinRequestUserCard = ({ request }: { request: HouseholdJoinRequest }) => 
         <Avatar className="h-8 w-8">
           <AvatarImage 
             src={profile?.avatarUrl} 
-            alt={profile?.firstName || 'User'}
+            alt={profile?.fullName || 'User'}
             onError={handleImageError}
             onLoad={handleImageLoad}
             className="object-cover"
           />
           <AvatarFallback className="bg-terracotta/20 text-terracotta">
-            {profile?.firstName 
-              ? profile.firstName.charAt(0).toUpperCase()
+            {profile?.fullName 
+              ? profile.fullName.charAt(0).toUpperCase()
               : <User className="h-4 w-4" />
             }
           </AvatarFallback>
@@ -71,7 +71,7 @@ const JoinRequestUserCard = ({ request }: { request: HouseholdJoinRequest }) => 
         )}
       </div>
       <div>
-        <p className="font-medium">{profile?.firstName || 'Unknown User'}</p>
+        <p className="font-medium">{profile?.fullName || 'Unknown User'}</p>
         <p className="text-sm text-muted-foreground">
           Requested on {new Date(request.createdAt).toLocaleDateString()}
         </p>
