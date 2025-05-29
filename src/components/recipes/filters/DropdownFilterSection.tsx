@@ -42,7 +42,7 @@ export function DropdownFilterSection({
             <ChevronDown className="h-4 w-4 opacity-50" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-56 max-h-96 overflow-y-auto bg-popover z-50" align="start">
+        <DropdownMenuContent className="w-56 max-h-96 overflow-y-auto bg-popover border border-border shadow-lg z-50" align="start">
           {options.map((option) => (
             <DropdownMenuCheckboxItem
               key={option.value}

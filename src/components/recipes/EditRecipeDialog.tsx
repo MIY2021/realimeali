@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Recipe } from "@/types";
-import { ChefHat, Plus, X } from "lucide-react";
+import { UtensilsCrossed, Plus, X } from "lucide-react";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { useToast } from "@/hooks/use-toast";
 import { RecipeClassificationSelector } from "./create/RecipeClassificationSelector";
@@ -32,20 +32,12 @@ export function EditRecipeDialog({ open, onOpenChange, recipe }: EditRecipeDialo
   const handleSave = async () => {
     setSaving(true);
     try {
-      const updatedRecipe = await updateRecipe(editedRecipe.id, editedRecipe);
-      if (updatedRecipe) {
-        toast({
-          title: "Recipe Updated",
-          description: `${editedRecipe.title} has been updated.`,
-        });
-        onOpenChange(false);
-      } else {
-        toast({
-          title: "Error",
-          description: "Failed to update recipe. Please try again.",
-          variant: "destructive",
-        });
-      }
+      await updateRecipe(editedRecipe.id, editedRecipe);
+      toast({
+        title: "Recipe Updated",
+        description: `${editedRecipe.title} has been updated.`,
+      });
+      onOpenChange(false);
     } catch (error) {
       toast({
         title: "Error",
@@ -86,7 +78,7 @@ export function EditRecipeDialog({ open, onOpenChange, recipe }: EditRecipeDialo
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <ChefHat className="h-5 w-5 text-sage" />
+            <UtensilsCrossed className="h-5 w-5 text-sage" />
             Edit Recipe
           </DialogTitle>
         </DialogHeader>

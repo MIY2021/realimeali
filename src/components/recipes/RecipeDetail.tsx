@@ -8,7 +8,7 @@ import { RecipeImage } from "@/components/ui/recipe-image";
 import { EditRecipeDialog } from "./EditRecipeDialog";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { useToast } from "@/hooks/use-toast";
-import { ChefHat, Clock, Users, Share, Heart } from "lucide-react";
+import { UtensilsCrossed, Clock, Users, Share, Heart } from "lucide-react";
 import { usePublicRecipeSharing } from "@/hooks/usePublicRecipeSharing";
 
 interface RecipeDetailProps {
@@ -17,22 +17,20 @@ interface RecipeDetailProps {
 
 export function RecipeDetail({ recipe }: RecipeDetailProps) {
   const [open, setOpen] = useState(false);
-  const { updateRecipe, deleteRecipe } = useRecipes();
+  const { updateRecipe } = useRecipes();
   const { toast } = useToast();
   const { shareRecipe, isSharing } = usePublicRecipeSharing();
 
   const handleFavoriteToggle = async () => {
     try {
-      const updatedRecipe = await updateRecipe(recipe.id, { 
+      await updateRecipe(recipe.id, { 
         ...recipe,
         isFavorite: !recipe.isFavorite 
       });
       
-      if (updatedRecipe) {
-        toast({
-          title: recipe.isFavorite ? "Removed from favorites" : "Added to favorites",
-        });
-      }
+      toast({
+        title: recipe.isFavorite ? "Removed from favorites" : "Added to favorites",
+      });
     } catch (error) {
       toast({
         title: "Error",
@@ -71,7 +69,7 @@ export function RecipeDetail({ recipe }: RecipeDetailProps) {
                 <span className="sr-only">Share Recipe</span>
               </Button>
               <Button variant="ghost" size="sm" onClick={() => setOpen(true)}>
-                <ChefHat className="h-5 w-5 text-muted-foreground" />
+                <UtensilsCrossed className="h-5 w-5 text-muted-foreground" />
                 <span className="sr-only">Edit Recipe</span>
               </Button>
             </div>

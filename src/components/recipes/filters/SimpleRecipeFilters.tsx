@@ -1,5 +1,6 @@
 
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { FilterHeader } from "./FilterHeader";
 import { DropdownFilterSection } from "./DropdownFilterSection";
 import {
@@ -21,6 +22,7 @@ export interface SimpleRecipeFilters {
   cuisines: Cuisine[];
   dietLifestyle: DietLifestyle[];
   complexityLevels: ComplexityLevel[];
+  showFavoritesOnly: boolean;
 }
 
 interface SimpleRecipeFiltersProps {
@@ -40,6 +42,7 @@ export function SimpleRecipeFiltersComponent({
 }: SimpleRecipeFiltersProps) {
   const hasActiveFilters = Object.entries(filters).some(([key, value]) => {
     if (key === 'searchTerm') return false; // Don't count search term
+    if (key === 'showFavoritesOnly') return value === true;
     if (Array.isArray(value)) return value.length > 0;
     return false;
   });
@@ -47,7 +50,8 @@ export function SimpleRecipeFiltersComponent({
   const activeFilterCount = filters.mealTypes.length + 
                            filters.cuisines.length + 
                            filters.dietLifestyle.length + 
-                           filters.complexityLevels.length;
+                           filters.complexityLevels.length +
+                           (filters.showFavoritesOnly ? 1 : 0);
 
   const clearAllFilters = () => {
     onFiltersChange({
@@ -56,6 +60,7 @@ export function SimpleRecipeFiltersComponent({
       cuisines: [],
       dietLifestyle: [],
       complexityLevels: [],
+      showFavoritesOnly: false,
     });
   };
 
@@ -69,6 +74,10 @@ export function SimpleRecipeFiltersComponent({
       ? currentArray.filter(item => item !== value)
       : [...currentArray, value];
     updateFilter(key, updatedArray);
+  };
+
+  const toggleFavorites = () => {
+    updateFilter('showFavoritesOnly', !filters.showFavoritesOnly);
   };
 
   // If alwaysVisible is true, render without card wrapper and header
@@ -103,6 +112,14 @@ export function SimpleRecipeFiltersComponent({
             selectedValues={filters.complexityLevels}
             onToggle={(value) => toggleArrayFilter('complexityLevels', value)}
           />
+
+          <Button
+            variant={filters.showFavoritesOnly ? "default" : "outline"}
+            onClick={toggleFavorites}
+            className="flex items-center gap-2 min-w-[140px]"
+          >
+            ❤️ Favorites Only
+          </Button>
         </div>
         {hasActiveFilters && (
           <div className="mt-3">
@@ -170,6 +187,14 @@ export function SimpleRecipeFiltersComponent({
             selectedValues={filters.complexityLevels}
             onToggle={(value) => toggleArrayFilter('complexityLevels', value)}
           />
+
+          <Button
+            variant={filters.showFavoritesOnly ? "default" : "outline"}
+            onClick={toggleFavorites}
+            className="flex items-center gap-2 min-w-[140px]"
+          >
+            ❤️ Favorites Only
+          </Button>
         </div>
       </CardContent>
     </Card>

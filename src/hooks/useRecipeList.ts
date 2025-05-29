@@ -19,6 +19,7 @@ export function useRecipeList({ recipes }: UseRecipeListProps) {
     cuisines: [],
     dietLifestyle: [],
     complexityLevels: [],
+    showFavoritesOnly: false,
   });
 
   const filteredAndSortedRecipes = useMemo(() => {
@@ -34,6 +35,11 @@ export function useRecipeList({ recipes }: UseRecipeListProps) {
           ingredient.toLowerCase().includes(searchQuery.toLowerCase())
         )
       );
+    }
+
+    // Filter by favorites only
+    if (filters.showFavoritesOnly) {
+      filtered = filtered.filter(recipe => recipe.isFavorite);
     }
 
     // Filter by meal types
