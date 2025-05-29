@@ -9,6 +9,7 @@ import { RecipeUrlTab } from "./tabs/RecipeUrlTab";
 import { RecipeImageTab } from "./tabs/RecipeImageTab";
 import { RecipeGenerateTab } from "./tabs/RecipeGenerateTab";
 import { RecipeManualTab } from "./tabs/RecipeManualTab";
+import { EnhancedImageSelection } from "../dialog/EnhancedImageSelection";
 
 interface CreateRecipeTabsWrapperProps {
   isMobile: boolean;
@@ -89,6 +90,9 @@ export function CreateRecipeTabsWrapper({
                 isProcessing={recipeProcessingHook.isProcessing}
                 importProgress={recipeProcessingHook.importProgress}
                 onImportWithImages={onImportFromUrlWithImages}
+                showCommunityDialog={recipeProcessingHook.showCommunityDialog}
+                setShowCommunityDialog={recipeProcessingHook.setShowCommunityDialog}
+                parsedRecipeData={recipeProcessingHook.parsedRecipeData}
               />
             </TabsContent>
 
@@ -112,8 +116,42 @@ export function CreateRecipeTabsWrapper({
 
             <TabsContent value="manual">
               <div className="space-y-4 sm:space-y-6">
+                {/* Show image selection if images are available from website import */}
+                {(recipeProcessingHook.websiteImages.length > 0 || recipeProcessingHook.storedImages.length > 0) && (
+                  <EnhancedImageSelection
+                    images={recipeProcessingHook.websiteImages}
+                    storedImages={recipeProcessingHook.storedImages}
+                    selectedImage={recipeFormHook.newRecipe.image || ""}
+                    onImageSelect={(url) => recipeFormHook.setNewRecipe({ 
+                      ...recipeFormHook.newRecipe, 
+                      image: url 
+                    })}
+                    onDownloadImages={recipeProcessingHook.handleDownloadImages}
+                    isDownloading={recipeProcessingHook.isDownloadingImages}
+                  />
+                )}
+                
                 <RecipeManualTab
+                  isMobile={isMobile}
+                  newRecipe={recipeFormHook.newRecipe}
                   setNewRecipe={recipeFormHook.setNewRecipe}
+                  newCategory={recipeFormHook.newCategory}
+                  setNewCategory={recipeFormHook.setNewCategory}
+                  newIngredient={recipeFormHook.newIngredient}
+                  setNewIngredient={recipeFormHook.setNewIngredient}
+                  newInstruction={recipeFormHook.newInstruction}
+                  setNewInstruction={recipeFormHook.setNewInstruction}
+                  imagePreview={recipeFormHook.imagePreview}
+                  isGeneratingImage={recipeFormHook.isGeneratingImage}
+                  generationProgress={recipeFormHook.generationProgress}
+                  onImageChange={recipeFormHook.handleImageChange}
+                  onGenerateImage={onGenerateImage}
+                  onAddCategory={recipeFormHook.handleAddCategory}
+                  onRemoveCategory={recipeFormHook.handleRemoveCategory}
+                  onAddIngredient={recipeFormHook.handleAddIngredient}
+                  onRemoveIngredient={recipeFormHook.handleRemoveIngredient}
+                  onAddInstruction={recipeFormHook.handleAddInstruction}
+                  onRemoveInstruction={recipeFormHook.handleRemoveInstruction}
                 />
               </div>
             </TabsContent>

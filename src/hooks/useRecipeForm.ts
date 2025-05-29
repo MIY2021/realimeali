@@ -1,97 +1,128 @@
 
 import { useState } from "react";
-import { Recipe } from "@/types";
+import { Recipe, MealType, CuisineRegion, CookingMethod, DietLifestyle, ComplexityLevel, MainIngredient } from "@/types";
 
-export interface RecipeFormData extends Omit<Recipe, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'> {}
-
-export const useRecipeForm = () => {
-  const [newRecipe, setNewRecipe] = useState<RecipeFormData>({
+export function useRecipeForm() {
+  const [newRecipe, setNewRecipe] = useState<Omit<Recipe, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>>({
     title: "",
     description: "",
     ingredients: [],
     instructions: [],
+    // New classification fields
     mealType: undefined,
-    cuisine: undefined,
+    cuisineRegion: undefined,
+    cookingMethod: undefined,
     dietLifestyle: [],
     complexityLevel: undefined,
+    mainIngredient: undefined,
     prepTime: 0,
     cookTime: 0,
-    servings: 4,
+    servings: 1,
     image: undefined,
+    topTip: "Enjoy cooking this delicious recipe!", // Default top tip
     isFavorite: false,
     householdId: "",
-    slug: ""
   });
 
-  const [imagePreview, setImagePreview] = useState<string>("");
+  const [newIngredient, setNewIngredient] = useState("");
+  const [newInstruction, setNewInstruction] = useState("");
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [generationProgress, setGenerationProgress] = useState("");
   const [shareWithCommunity, setShareWithCommunity] = useState(false);
   const [wasImportedFromWebsite, setWasImportedFromWebsite] = useState(false);
 
-  const resetForm = () => {
-    setNewRecipe({
-      title: "",
-      description: "",
-      ingredients: [],
-      instructions: [],
-      mealType: undefined,
-      cuisine: undefined,
-      dietLifestyle: [],
-      complexityLevel: undefined,
-      prepTime: 0,
-      cookTime: 0,
-      servings: 4,
-      image: undefined,
-      isFavorite: false,
-      householdId: "",
-      slug: ""
-    });
-    setImagePreview("");
-    setIsGeneratingImage(false);
-    setGenerationProgress("");
-    setShareWithCommunity(false);
-    setWasImportedFromWebsite(false);
-  };
-
-  const markAsWebsiteImport = () => {
-    setWasImportedFromWebsite(true);
-    setShareWithCommunity(true);
-  };
-
-  const handleImageChange = (url: string) => {
-    setNewRecipe({ ...newRecipe, image: url });
-    setImagePreview(url);
-  };
-
-  const handleAddCategory = () => {
-    // Implement category addition logic
-  };
-
-  const handleRemoveCategory = () => {
-    // Implement category removal logic
-  };
-
   const handleAddIngredient = () => {
-    // Implement ingredient addition logic
+    if (newIngredient.trim()) {
+      setNewRecipe({
+        ...newRecipe,
+        ingredients: [...newRecipe.ingredients, newIngredient],
+      });
+      setNewIngredient("");
+    }
   };
 
-  const handleRemoveIngredient = () => {
-    // Implement ingredient removal logic
+  const handleRemoveIngredient = (index: number) => {
+    const updatedIngredients = [...newRecipe.ingredients];
+    updatedIngredients.splice(index, 1);
+    setNewRecipe({
+      ...newRecipe,
+      ingredients: updatedIngredients,
+    });
   };
 
   const handleAddInstruction = () => {
-    // Implement instruction addition logic
+    if (newInstruction.trim()) {
+      setNewRecipe({
+        ...newRecipe,
+        instructions: [...newRecipe.instructions, newInstruction],
+      });
+      setNewInstruction("");
+    }
   };
 
-  const handleRemoveInstruction = () => {
-    // Implement instruction removal logic
+  const handleRemoveInstruction = (index: number) => {
+    const updatedInstructions = [...newRecipe.instructions];
+    updatedInstructions.splice(index, 1);
+    setNewRecipe({
+      ...newRecipe,
+      instructions: updatedInstructions,
+    });
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setImagePreview(reader.result as string);
+        setNewRecipe({
+          ...newRecipe,
+          image: reader.result as string,
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Helper functions for new classification fields
+  const handleMealTypeChange = (mealType: MealType | undefined) => {
+    setNewRecipe({ ...newRecipe, mealType });
+  };
+
+  const handleCuisineRegionChange = (cuisineRegion: CuisineRegion | undefined) => {
+    setNewRecipe({ ...newRecipe, cuisineRegion });
+  };
+
+  const handleCookingMethodChange = (cookingMethod: CookingMethod | undefined) => {
+    setNewRecipe({ ...newRecipe, cookingMethod });
+  };
+
+  const handleDietLifestyleChange = (dietLifestyle: DietLifestyle[]) => {
+    setNewRecipe({ ...newRecipe, dietLifestyle });
+  };
+
+  const handleComplexityLevelChange = (complexityLevel: ComplexityLevel | undefined) => {
+    setNewRecipe({ ...newRecipe, complexityLevel });
+  };
+
+  const handleMainIngredientChange = (mainIngredient: MainIngredient | undefined) => {
+    setNewRecipe({ ...newRecipe, mainIngredient });
+  };
+
+  // Function to mark recipe as imported from website and enable community sharing by default
+  const markAsWebsiteImport = () => {
+    setWasImportedFromWebsite(true);
+    setShareWithCommunity(true); // Default to checked for website imports
   };
 
   return {
     newRecipe,
     setNewRecipe,
-    resetForm,
+    newIngredient,
+    setNewIngredient,
+    newInstruction,
+    setNewInstruction,
     imagePreview,
     setImagePreview,
     isGeneratingImage,
@@ -101,19 +132,18 @@ export const useRecipeForm = () => {
     shareWithCommunity,
     setShareWithCommunity,
     wasImportedFromWebsite,
-    markAsWebsiteImport,
-    handleImageChange,
-    handleAddCategory,
-    handleRemoveCategory,
+    setWasImportedFromWebsite,
     handleAddIngredient,
     handleRemoveIngredient,
     handleAddInstruction,
     handleRemoveInstruction,
-    newCategory: "",
-    setNewCategory: () => {},
-    newIngredient: "",
-    setNewIngredient: () => {},
-    newInstruction: "",
-    setNewInstruction: () => {},
+    handleImageChange,
+    handleMealTypeChange,
+    handleCuisineRegionChange,
+    handleCookingMethodChange,
+    handleDietLifestyleChange,
+    handleComplexityLevelChange,
+    handleMainIngredientChange,
+    markAsWebsiteImport,
   };
-};
+}

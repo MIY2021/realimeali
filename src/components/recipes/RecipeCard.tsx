@@ -35,9 +35,7 @@ export function RecipeCard({ recipe, showActions = true, onAddToMealPlan }: Reci
     e.preventDefault();
     e.stopPropagation();
     try {
-      // Pass the full recipe object with updated isFavorite property
-      const updatedRecipe = { ...recipe, isFavorite: !recipe.isFavorite };
-      await updateRecipe(recipe.id, updatedRecipe);
+      await updateRecipe(recipe.id, { isFavorite: !recipe.isFavorite });
       toast({
         title: recipe.isFavorite ? "Removed from favorites" : "Added to favorites",
       });
@@ -98,14 +96,14 @@ export function RecipeCard({ recipe, showActions = true, onAddToMealPlan }: Reci
 
         {showActions && (
           <div className="flex items-center gap-2 mt-auto pt-2">
-            <Button asChild variant="outline" size="sm" className="flex-1 text-xs h-8">
+            <Button asChild variant="outline" size="sm" className="flex-1 text-xs">
               <Link to={`/recipe/${recipe.id}`}>
                 <Eye className="h-3 w-3 mr-1" />
                 View
               </Link>
             </Button>
 
-            <Button size="sm" onClick={handleAddToMealPlanClick} className="flex-1 text-xs h-8">
+            <Button size="sm" onClick={handleAddToMealPlanClick} className="flex-1 text-xs">
               <Plus className="h-3 w-3 mr-1" />
               Add to Meal Plan
             </Button>
