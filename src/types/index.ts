@@ -1,106 +1,65 @@
-export interface Recipe {
-  id: string;
-  title: string;
-  description: string;
-  ingredients: string[];
-  instructions: string[];
-  prepTime: number;
-  cookTime: number;
-  servings: number;
-  image?: string;
-  isFavorite: boolean;
-  createdAt: string;
-  updatedAt: string;
-  createdBy: string;
-  householdId: string;
-  mealType?: MealType;
-  cuisine?: Cuisine;
-  dietLifestyle?: DietLifestyle[];
-  complexityLevel?: ComplexityLevel;
-  slug?: string;
-  topTip?: string;
-}
-
-export interface MealPlan {
-  id: string;
-  date: string;
-  mealType: string;
-  recipeId: string;
-  slotIndex: number;
-  isLeftover: boolean;
-  leftoverServings?: number;
-  originalServings: number;
-  createdAt: string;
-  updatedAt: string;
-  householdId: string;
-  prepTime?: number;
-  cookTime?: number;
-  servings?: number;
-  weekNumber: 1 | 2;
-  parentMealPlanId?: string;
-  createdBy: string;
-}
-
-export interface Household {
+export type User = {
   id: string;
   name: string;
-  createdAt: string;
-  updatedAt: string;
-  createdBy: string;
-}
+  email: string;
+  avatar?: string;
+};
 
-export interface HouseholdMember {
+// Updated to match the database schema exactly
+export type RecipeCategory =
+  | "Bulk"
+  | "Easy"
+  | "Cheap"
+  | "Healthy"
+  | "Vegetarian"
+  | "Fish"
+  | "Super Tasty"
+  | "Pasta"
+  | "Tapas"
+  | "Winter"
+  | "BBQ"
+  | "Faffy"
+  | "Pricey!"
+  | "Not Yet Made"
+  | "Snacks"
+  | "Breakfast"
+  | "Lunch";
+
+export type Recipe = {
   id: string;
-  userId: string;
-  householdId: string;
-  role: 'owner' | 'member';
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface PublicRecipeShare {
-  public_share_id: string;
-  original_recipe_id: string;
-  shared_by_user_id: string;
-  shared_by_name: string;
-  shared_by_household_name: string;
   title: string;
   description: string;
   ingredients: string[];
   instructions: string[];
-  prep_time: number;
-  cook_time: number;
+  categories: RecipeCategory[];
+  prepTime: number; // in minutes
+  cookTime: number; // in minutes
   servings: number;
   image?: string;
-  expires_at: string;
-  created_at: string;
-  meal_type?: string;
-  original_household_id: string;
-  view_count: number;
-}
+  topTip?: string; // New field for cooking tips
+  createdBy: string; // user id
+  createdAt: string; // ISO date string
+  updatedAt: string; // ISO date string
+  isFavorite: boolean;
+  householdId: string; // household id
+};
 
-export interface UserProfile {
+export type MealType = "dinner" | "lunch" | "breakfast" | "snacks";
+
+export type MealPlan = {
   id: string;
-  email: string;
-  firstName?: string;
-  lastName?: string;
-  avatarUrl?: string;
+  date: string;
+  mealType: MealType;
+  recipeId: string;
+  notes?: string;
+  createdBy: string;
   createdAt: string;
   updatedAt: string;
-}
-
-export interface HouseholdMealPlan {
-  [date: string]: {
-    [mealType: string]: Recipe[];
-  };
-}
-
-// New simplified category types
-export type MealType = "breakfast" | "lunch" | "dinner" | "snacks" | "sides" | "desserts" | "drinks";
-export type MealPlanMealType = "breakfast" | "lunch" | "dinner" | "snacks";
-
-export type Cuisine = "british" | "italian" | "asian" | "mexican" | "indian" | "mediterranean" | "american" | "french" | "middle_eastern" | "other";
-
-export type DietLifestyle = "vegetarian" | "vegan" | "gluten_free" | "dairy_free" | "low_carb" | "high_protein" | "budget_friendly" | "kid_friendly";
-
-export type ComplexityLevel = "quick_easy" | "standard" | "complex";
+  slotIndex: number;
+  parentMealPlanId?: string; // Links to the original dinner
+  isLeftover: boolean;
+  leftoverServings?: number; // How many servings from original meal
+  originalServings?: number; // Total servings from original recipe
+  householdId: string; // household id
+  weekNumber: number; // Added weekNumber property
+};

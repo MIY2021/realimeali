@@ -123,6 +123,10 @@ export function EnhancedMealCard({
                 </div>
               </div>
             )}
+            
+            {mealPlan.notes && (
+              <div className={`${isMobile ? 'text-xs' : 'text-xs'} text-gray-500 mt-1 truncate`}>{mealPlan.notes}</div>
+            )}
           </div>
           
           <div className={`flex items-center gap-${isMobile ? '2' : '3'} flex-shrink-0`}>

@@ -1,4 +1,3 @@
-
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
@@ -124,28 +123,11 @@ function processRecipe(meal: MealDBRecipe): ProcessedRecipe {
   };
 }
 
-function filterRecipesWithEssentialData(recipes: ProcessedRecipe[]): ProcessedRecipe[] {
-  console.log(`Filtering ${recipes.length} recipes for essential data`);
-  const filtered = recipes.filter(recipe => {
-    // Check if recipe has essential data: title, ingredients, and instructions
-    const hasTitle = recipe.title && recipe.title.trim() !== '';
-    const hasIngredients = recipe.ingredients && recipe.ingredients.length > 0;
-    const hasInstructions = recipe.instructions && recipe.instructions.length > 0;
-    
-    const isValid = hasTitle && hasIngredients && hasInstructions;
-    
-    if (!isValid) {
-      console.log(`Filtered out recipe "${recipe.title}" - missing essential data:`, {
-        hasTitle,
-        hasIngredients: hasIngredients ? recipe.ingredients.length : 0,
-        hasInstructions: hasInstructions ? recipe.instructions.length : 0
-      });
-    }
-    
-    return isValid;
+function filterRecipesWithValidSources(recipes: ProcessedRecipe[]): ProcessedRecipe[] {
+  return recipes.filter(recipe => {
+    // Only include recipes that have a valid source URL (not just YouTube)
+    return recipe.sourceUrl && recipe.sourceUrl.trim() !== '';
   });
-  console.log(`After filtering: ${filtered.length} recipes with essential data`);
-  return filtered;
 }
 
 async function fetchMealsFromUrl(url: string): Promise<MealDBRecipe[]> {
@@ -153,19 +135,10 @@ async function fetchMealsFromUrl(url: string): Promise<MealDBRecipe[]> {
   const response = await fetch(url);
   
   if (!response.ok) {
-    console.error(`API request failed: ${response.status} for URL: ${url}`);
     throw new Error(`API request failed: ${response.status}`);
   }
   
   const data = await response.json();
-  console.log(`API response data:`, { 
-    mealsCount: data.meals?.length || 0, 
-    firstMeal: data.meals?.[0] ? {
-      id: data.meals[0].idMeal,
-      title: data.meals[0].strMeal,
-      hasSource: !!data.meals[0].strSource
-    } : null 
-  });
   return data.meals || [];
 }
 
@@ -180,79 +153,6 @@ async function removeDuplicates(recipes: ProcessedRecipe[]): Promise<ProcessedRe
   });
 }
 
-interface MealDBApiResponse {
-  recipes: ProcessedRecipe[];
-  totalCount: number;
-  hasMore: boolean;
-  estimatedTotal?: number;
-}
-
-async function fetchAllMealsForSearch(searchParams: {
-  category?: string;
-  area?: string;
-  ingredient?: string;
-  query?: string;
-}): Promise<{ meals: MealDBRecipe[], totalAvailable: number }> {
-  const { category, area, ingredient, query } = searchParams;
-  console.log('Search params:', searchParams);
-  
-  let allMeals: MealDBRecipe[] = [];
-  let totalAvailable = 0;
-
-  // For specific filters, we can get the complete result set
-  if (category && category !== 'all') {
-    console.log(`Searching by category: ${category}`);
-    const meals = await fetchMealsFromUrl(`https://www.themealdb.com/api/json/v1/1/filter.php?c=${encodeURIComponent(category)}`);
-    allMeals = meals;
-    totalAvailable = meals.length;
-    console.log(`Category search returned ${meals.length} meals`);
-  } else if (area && area !== 'all') {
-    console.log(`Searching by area: ${area}`);
-    const meals = await fetchMealsFromUrl(`https://www.themealdb.com/api/json/v1/1/filter.php?a=${encodeURIComponent(area)}`);
-    allMeals = meals;
-    totalAvailable = meals.length;
-    console.log(`Area search returned ${meals.length} meals`);
-  } else if (ingredient && ingredient !== 'all') {
-    console.log(`Searching by ingredient: ${ingredient}`);
-    const meals = await fetchMealsFromUrl(`https://www.themealdb.com/api/json/v1/1/filter.php?i=${encodeURIComponent(ingredient)}`);
-    allMeals = meals;
-    totalAvailable = meals.length;
-    console.log(`Ingredient search returned ${meals.length} meals`);
-  } else if (query) {
-    console.log(`Searching by query: ${query}`);
-    // For text search, combine name and ingredient searches
-    const searchPromises: Promise<MealDBRecipe[]>[] = [];
-    
-    // Search by name
-    const nameUrl = `https://www.themealdb.com/api/json/v1/1/search.php?s=${encodeURIComponent(query)}`;
-    searchPromises.push(fetchMealsFromUrl(nameUrl));
-    
-    // Search by ingredient as fallback
-    const ingredientUrl = `https://www.themealdb.com/api/json/v1/1/filter.php?i=${encodeURIComponent(query)}`;
-    searchPromises.push(fetchMealsFromUrl(ingredientUrl));
-    
-    const results = await Promise.allSettled(searchPromises);
-    const combinedMeals = new Map<string, MealDBRecipe>();
-    
-    for (const result of results) {
-      if (result.status === 'fulfilled' && result.value) {
-        result.value.forEach(meal => combinedMeals.set(meal.idMeal, meal));
-      }
-    }
-    
-    allMeals = Array.from(combinedMeals.values());
-    totalAvailable = allMeals.length;
-    console.log(`Query search returned ${allMeals.length} meals`);
-  } else {
-    // If no filters are provided, return empty array - this should trigger random recipes
-    console.log('No search filters provided, returning empty array');
-    return { meals: [], totalAvailable: 0 };
-  }
-
-  console.log(`Total meals before processing: ${allMeals.length}`);
-  return { meals: allMeals, totalAvailable };
-}
-
 Deno.serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -260,82 +160,83 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { action, query, number = 12, category, area, ingredient, letter, offset = 0 } = await req.json();
+    const { action, query, number = 12, category, area, ingredient, letter } = await req.json();
 
-    console.log('MealDB API request:', { action, query, number, category, area, ingredient, letter, offset });
+    console.log('MealDB API request:', { action, query, number, category, area, ingredient, letter });
 
-    let response: MealDBApiResponse = {
-      recipes: [],
-      totalCount: 0,
-      hasMore: false
-    };
+    let allRecipes: ProcessedRecipe[] = [];
 
     if (action === 'search') {
-      // Check if we actually have filters to search with
-      const hasActiveFilters = (
-        (category && category !== 'all') ||
-        (area && area !== 'all') ||
-        (ingredient && ingredient !== 'all') ||
-        (query && query.trim())
-      );
+      // Enhanced search that tries multiple strategies
+      const searchPromises: Promise<MealDBRecipe[]>[] = [];
 
-      console.log('Has active filters:', hasActiveFilters, { category, area, ingredient, query });
+      // 1. Search by meal name if query provided
+      if (query) {
+        const nameUrl = `https://www.themealdb.com/api/json/v1/1/search.php?s=${encodeURIComponent(query)}`;
+        searchPromises.push(fetchMealsFromUrl(nameUrl));
+      }
 
-      if (hasActiveFilters) {
-        const { meals, totalAvailable } = await fetchAllMealsForSearch({
-          category: category !== 'all' ? category : undefined,
-          area: area !== 'all' ? area : undefined,
-          ingredient: ingredient !== 'all' ? ingredient : undefined,
-          query: query?.trim() || undefined
-        });
+      // 2. Search by ingredient if query provided (fallback search)
+      if (query) {
+        const ingredientUrl = `https://www.themealdb.com/api/json/v1/1/filter.php?i=${encodeURIComponent(query)}`;
+        searchPromises.push(fetchMealsFromUrl(ingredientUrl));
+      }
 
-        console.log(`Raw meals from search: ${meals.length}`);
+      // 3. Search by specific ingredient filter
+      if (ingredient) {
+        const ingredientUrl = `https://www.themealdb.com/api/json/v1/1/filter.php?i=${encodeURIComponent(ingredient)}`;
+        searchPromises.push(fetchMealsFromUrl(ingredientUrl));
+      }
 
-        // Process all meals and filter for essential data instead of source URLs
-        const processedRecipes = meals.map(processRecipe);
-        console.log(`Processed recipes: ${processedRecipes.length}`);
+      // 4. Filter by category
+      if (category) {
+        const categoryUrl = `https://www.themealdb.com/api/json/v1/1/filter.php?c=${encodeURIComponent(category)}`;
+        searchPromises.push(fetchMealsFromUrl(categoryUrl));
+      }
 
-        const validRecipes = filterRecipesWithEssentialData(processedRecipes);
-        console.log(`Valid recipes after filtering: ${validRecipes.length}`);
+      // 5. Filter by area
+      if (area) {
+        const areaUrl = `https://www.themealdb.com/api/json/v1/1/filter.php?a=${encodeURIComponent(area)}`;
+        searchPromises.push(fetchMealsFromUrl(areaUrl));
+      }
 
-        const uniqueRecipes = await removeDuplicates(validRecipes);
-        console.log(`Unique recipes after deduplication: ${uniqueRecipes.length}`);
+      // 6. Browse by first letter
+      if (letter) {
+        const letterUrl = `https://www.themealdb.com/api/json/v1/1/search.php?f=${letter}`;
+        searchPromises.push(fetchMealsFromUrl(letterUrl));
+      }
 
-        // Apply client-side pagination
-        const startIndex = offset;
-        const endIndex = startIndex + number;
-        const paginatedRecipes = uniqueRecipes.slice(startIndex, endIndex);
+      if (searchPromises.length > 0) {
+        // Execute all searches in parallel
+        const results = await Promise.allSettled(searchPromises);
+        
+        // Combine successful results
+        for (const result of results) {
+          if (result.status === 'fulfilled' && result.value) {
+            const processedRecipes = result.value.map(processRecipe);
+            allRecipes.push(...processedRecipes);
+          }
+        }
 
-        console.log(`Paginated recipes (${startIndex}-${endIndex}): ${paginatedRecipes.length}`);
-
-        response = {
-          recipes: paginatedRecipes,
-          totalCount: uniqueRecipes.length,
-          hasMore: endIndex < uniqueRecipes.length
-        };
-      } else {
-        // No active filters - return empty results, frontend should load random recipes
-        console.log('No active filters, returning empty results');
-        response = {
-          recipes: [],
-          totalCount: 0,
-          hasMore: false
-        };
+        // Filter recipes with valid sources, then remove duplicates and limit results
+        allRecipes = filterRecipesWithValidSources(allRecipes);
+        allRecipes = await removeDuplicates(allRecipes);
+        allRecipes = allRecipes.slice(0, number);
       }
 
     } else if (action === 'random') {
-      // For random recipes, we can't get an exact count, but we can estimate
+      // Get random recipes
       const randomRecipes = [];
       let attempts = 0;
-      const maxAttempts = number * 3;
+      const maxAttempts = number * 3; // Try more recipes to account for filtering
       
       while (randomRecipes.length < number && attempts < maxAttempts) {
         try {
           const meals = await fetchMealsFromUrl('https://www.themealdb.com/api/json/v1/1/random.php');
           if (meals.length > 0) {
             const processedRecipe = processRecipe(meals[0]);
-            // For random recipes, only check for essential data, not source URL
-            if (processedRecipe.title && processedRecipe.ingredients.length > 0 && processedRecipe.instructions.length > 0) {
+            // Only add recipes with valid source URLs
+            if (processedRecipe.sourceUrl && processedRecipe.sourceUrl.trim() !== '') {
               randomRecipes.push(processedRecipe);
             }
           }
@@ -344,32 +245,26 @@ Deno.serve(async (req) => {
         }
         attempts++;
       }
-
-      response = {
-        recipes: randomRecipes,
-        totalCount: randomRecipes.length,
-        hasMore: true, // Always more random recipes available
-        estimatedTotal: 1000 // Estimate for random recipes
-      };
+      allRecipes = randomRecipes;
 
     } else if (action === 'details') {
+      // Get detailed recipe information
       const detailsUrl = `https://www.themealdb.com/api/json/v1/1/lookup.php?i=${req.recipeId}`;
       const meals = await fetchMealsFromUrl(detailsUrl);
       
       if (meals.length > 0) {
         const processedRecipe = processRecipe(meals[0]);
-        // For details, return the recipe even without source URL
-        response = {
-          recipes: [processedRecipe],
-          totalCount: 1,
-          hasMore: false
-        };
+        // Only return recipe if it has a valid source URL
+        if (processedRecipe.sourceUrl && processedRecipe.sourceUrl.trim() !== '') {
+          allRecipes = [processedRecipe];
+        }
       }
 
     } else if (action === 'ingredients') {
+      // Get list of ingredients
       const ingredientsUrl = 'https://www.themealdb.com/api/json/v1/1/list.php?i=list';
-      const ingredientResponse = await fetch(ingredientsUrl);
-      const data = await ingredientResponse.json();
+      const response = await fetch(ingredientsUrl);
+      const data = await response.json();
       
       return new Response(
         JSON.stringify({ ingredients: data.meals || [] }),
@@ -382,9 +277,10 @@ Deno.serve(async (req) => {
       );
 
     } else if (action === 'categories') {
+      // Get list of categories
       const categoriesUrl = 'https://www.themealdb.com/api/json/v1/1/categories.php';
-      const categoriesResponse = await fetch(categoriesUrl);
-      const data = await categoriesResponse.json();
+      const response = await fetch(categoriesUrl);
+      const data = await response.json();
       
       return new Response(
         JSON.stringify({ categories: data.categories || [] }),
@@ -397,9 +293,10 @@ Deno.serve(async (req) => {
       );
 
     } else if (action === 'areas') {
+      // Get list of areas
       const areasUrl = 'https://www.themealdb.com/api/json/v1/1/list.php?a=list';
-      const areasResponse = await fetch(areasUrl);
-      const data = await areasResponse.json();
+      const response = await fetch(areasUrl);
+      const data = await response.json();
       
       return new Response(
         JSON.stringify({ areas: data.meals || [] }),
@@ -412,10 +309,10 @@ Deno.serve(async (req) => {
       );
     }
 
-    console.log(`Final response: ${response.recipes.length} recipes, total: ${response.totalCount}, hasMore: ${response.hasMore}`);
+    console.log(`Successfully processed ${allRecipes.length} recipes with valid sources`);
 
     return new Response(
-      JSON.stringify(response),
+      JSON.stringify({ recipes: allRecipes }),
       { 
         headers: { 
           ...corsHeaders, 

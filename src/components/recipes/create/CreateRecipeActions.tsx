@@ -3,51 +3,44 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 
 interface CreateRecipeActionsProps {
+  isMobile: boolean;
   onCancel: () => void;
   onSave: () => void;
-  isSaving?: boolean;
-  isValid?: boolean;
-  shareWithCommunity?: boolean;
-  setShareWithCommunity?: (value: boolean) => void;
-  wasImportedFromWebsite?: boolean;
+  showBackButton?: boolean;
 }
 
 export function CreateRecipeActions({ 
+  isMobile, 
   onCancel, 
   onSave,
-  isSaving = false,
-  isValid = true,
-  shareWithCommunity = false,
-  setShareWithCommunity,
-  wasImportedFromWebsite = false
+  showBackButton = false 
 }: CreateRecipeActionsProps) {
   return (
-    <div className="flex flex-col gap-3 sm:flex-row sm:justify-between">
-      <Button 
-        variant="ghost" 
-        onClick={onCancel} 
-        className="flex items-center gap-2"
-        disabled={isSaving}
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Back to Recipes
-      </Button>
+    <div className={`flex ${isMobile ? 'flex-col gap-3' : 'justify-between items-center'}`}>
+      {showBackButton && (
+        <Button variant="ghost" onClick={onCancel} className="flex items-center gap-2">
+          <ArrowLeft className="h-4 w-4" />
+          Back to Recipes
+        </Button>
+      )}
       
-      <div className="flex gap-3">
-        <Button 
-          variant="outline" 
-          onClick={onCancel}
-          disabled={isSaving}
-        >
-          Cancel
-        </Button>
-        <Button 
-          onClick={onSave}
-          disabled={isSaving || !isValid}
-        >
-          {isSaving ? "Saving..." : "Save Recipe"}
-        </Button>
-      </div>
+      {!showBackButton && (
+        <div className={`flex gap-3 ${isMobile ? 'w-full' : ''}`}>
+          <Button 
+            variant="outline" 
+            onClick={onCancel}
+            className={isMobile ? 'flex-1' : ''}
+          >
+            Cancel
+          </Button>
+          <Button 
+            onClick={onSave}
+            className={isMobile ? 'flex-1' : ''}
+          >
+            Save Recipe
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,263 +1,190 @@
-
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { WeekSelector } from "@/components/meal-planner/WeekSelector";
+import { MealPlannerActions } from "@/components/meal-planner/MealPlannerActions";
+import { MealPlannerDragAndDrop } from "@/components/meal-planner/MealPlannerDragAndDrop";
+import { MealPlannerModals } from "@/components/meal-planner/MealPlannerModals";
+import { HouseholdMembersDisplay } from "@/components/household/HouseholdMembersDisplay";
+import { HouseholdSelector } from "@/components/household/HouseholdSelector";
+import { useMealPlanActions } from "@/hooks/useMealPlanActions";
+import { useRandomMealSelection } from "@/hooks/useRandomMealSelection";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
+import { useRecipes } from "@/contexts/RecipesContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
-import { useMealPlan } from "@/contexts/MealPlanContext";
-import { useRecipes } from "@/contexts/RecipesContext";
-import { MealPlannerHeader } from "@/components/meal-planner/MealPlannerHeader";
-import { MealPlannerActions } from "@/components/meal-planner/MealPlannerActions";
-import { useRandomMealSelection } from "@/hooks/useRandomMealSelection";
-import { MealPlannerModals } from "@/components/meal-planner/MealPlannerModals";
-import { Recipe, MealPlan, MealPlanMealType } from "@/types";
-import { useToast } from "@/hooks/use-toast";
-import { useMealPlanOperations } from "@/hooks/useMealPlanOperations";
-import { CustomMealPlanCalendar } from "@/components/meal-planner/CustomMealPlanCalendar";
+import { Button } from "@/components/ui/button";
+import { Calendar, User } from "lucide-react";
+import { Link } from "react-router-dom";
+import { DropResult } from "react-beautiful-dnd";
+import { MealType } from "@/types";
 
-export default function MealPlanner() {
+const MealPlanner = () => {
+  useDocumentTitle("Meal Planner | RealiMeali");
+  const [currentWeek, setCurrentWeek] = useState<1 | 2>(1);
+  const [isDraggingCategory, setIsDraggingCategory] = useState(false);
+  const [draggedCategoryId, setDraggedCategoryId] = useState<string | null>(null);
+  const { getRecipeById, recipes } = useRecipes();
   const { user } = useAuth();
   const { currentHousehold } = useHousehold();
-  const { recipes } = useRecipes();
-  const { mealPlans, getMealPlansForWeek, getRecipeForMealPlan } = useMealPlan();
-  const { generateRandomMealPlan, isGenerating } = useRandomMealSelection();
-  const { toast } = useToast();
-  const { addMealPlan, editMealPlan, removeMealPlan } = useMealPlanOperations();
+  
+  const {
+    mealTypes,
+    setMealTypes,
+    addMealModal,
+    setAddMealModal,
+    leftoverModal,
+    setLeftoverModal,
+    clearMealPlanDialog,
+    setClearMealPlanDialog,
+    deleteMealDialog,
+    setDeleteMealDialog,
+    getMealPlansForType,
+    handleRemoveMeal,
+    confirmRemoveMeal,
+    handleAddMeal,
+    handleCreateLeftover,
+    handleReorderMeals,
+    onLeftoverConfirm,
+    onAddMealFinish,
+    handleClearAll,
+    confirmClearAll,
+    handleShareMealPlan,
+  } = useMealPlanActions(currentWeek);
 
-  const [weekNumber, setWeekNumber] = useState<1 | 2>(1);
-  const [addMealModal, setAddMealModal] = useState({ open: false, mealType: null as MealPlanMealType | null, date: null as string | null });
-  const [leftoverModal, setLeftoverModal] = useState({ open: false, mealPlan: null as MealPlan | null, recipe: null as Recipe | null });
-  const [removeMealDialog, setRemoveMealDialog] = useState({ open: false, mealPlanId: null as string | null, recipe: null as Recipe | null });
-  const [showReplaceDialog, setShowReplaceDialog] = useState(false);
-  const [isCalendarView, setIsCalendarView] = useState(false);
+  const { 
+    handleRandomize, 
+    isLoading, 
+    showReplaceDialog, 
+    setShowReplaceDialog, 
+    showQuantityDialog,
+    setShowQuantityDialog,
+    handleReplaceConfirm,
+    handleQuantityConfirm
+  } = useRandomMealSelection(currentWeek);
 
-  const handleWeekChange = (week: 1 | 2) => {
-    setWeekNumber(week);
+  const handleMealTypeDragStart = (result: any) => {
+    setIsDraggingCategory(true);
+    setDraggedCategoryId(result.draggableId);
   };
 
-  const handleRandomize = async () => {
-    if (!recipes || recipes.length === 0) {
-      toast({
-        title: "No Recipes Found",
-        description: "Add some recipes to your collection first!",
-      });
-      return;
-    }
+  const handleMealTypeDragEnd = (result: DropResult) => {
+    setIsDraggingCategory(false);
+    setDraggedCategoryId(null);
+    
+    if (!result.destination) return;
 
-    setShowReplaceDialog(true);
+    const items = Array.from(mealTypes);
+    const [reorderedItem] = items.splice(result.source.index, 1);
+    items.splice(result.destination.index, 0, reorderedItem);
+
+    setMealTypes(items);
   };
 
-  const confirmReplaceMealPlan = async () => {
-    const quantities = {
-      dinner: 7,
-      lunch: 7,
-      breakfast: 7,
-      snacks: 7,
-    };
+  // Show household management if no household is selected
+  if (!currentHousehold) {
+    return (
+      <div className="container max-w-4xl py-4 px-4 sm:py-8 sm:px-6">
+        <div className="flex flex-col gap-4 mb-6 sm:flex-row sm:justify-between sm:items-center">
+          <div className="space-y-2">
+            <h1 className="text-2xl sm:text-3xl font-bold text-navy flex items-center gap-2">
+              <Calendar className="h-6 w-6 sm:h-8 sm:w-8 text-terracotta" />
+              <span>Meal Planner</span>
+            </h1>
+            <p className="text-sm sm:text-base text-muted-foreground">
+              Plan your meals for the coming weeks and generate shopping lists.
+            </p>
+          </div>
+          {user && <HouseholdSelector />}
+        </div>
 
-    try {
-      const newMealPlans = await generateRandomMealPlan(quantities);
-      const mealPlansToDelete = getMealPlansForWeek(weekNumber);
-      await Promise.all(mealPlansToDelete.map(mealPlan => removeMealPlan(mealPlan.id)));
-
-      if (newMealPlans && currentHousehold) {
-        await Promise.all(
-          newMealPlans.map(async (meal) => {
-            if (currentHousehold) {
-              await addMealPlan(
-                {
-                  recipeId: meal.recipe.id,
-                  date: meal.date,
-                  mealType: meal.mealType,
-                  householdId: currentHousehold.id,
-                  slotIndex: 0,
-                  isLeftover: false,
-                  servings: meal.recipe.servings,
-                  weekNumber: weekNumber,
-                  createdBy: user?.id || "",
-                },
-                weekNumber
-              );
-            }
-          })
-        );
-
-        toast({
-          title: "Meal Plan Generated",
-          description: "A new meal plan has been generated for the week.",
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Error Generating Meal Plan",
-        description: "Failed to generate a new meal plan. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setShowReplaceDialog(false);
-    }
-  };
-
-  const handleShare = () => {
-    toast({
-      title: "Share Meal Plan",
-      description: "Sharing functionality is not yet implemented.",
-    });
-  };
-
-  const handleClearAll = () => {
-    setClearAllDialog(true);
-  };
-
-  const confirmClearAll = async () => {
-    const mealPlansToDelete = getMealPlansForWeek(weekNumber);
-    await Promise.all(mealPlansToDelete.map(mealPlan => removeMealPlan(mealPlan.id)));
-
-    toast({
-      title: "Meal Plan Cleared",
-      description: `All meals for Week ${weekNumber} have been removed.`,
-    });
-  };
-
-  const handleAddMeal = (mealType: MealPlanMealType, date: string) => {
-    setAddMealModal({ open: true, mealType, date });
-  };
-
-  const handleAddMealFinish = async (recipe: Recipe) => {
-    if (addMealModal.mealType && addMealModal.date && currentHousehold) {
-      await addMealPlan(
-        {
-          recipeId: recipe.id,
-          date: addMealModal.date,
-          mealType: addMealModal.mealType,
-          householdId: currentHousehold.id,
-          slotIndex: 0,
-          isLeftover: false,
-          servings: recipe.servings,
-          weekNumber: weekNumber,
-          createdBy: user?.id || "",
-        },
-        weekNumber
-      );
-
-      setAddMealModal({ open: false, mealType: null, date: null });
-      toast({
-        title: "Meal Added",
-        description: `${recipe.title} has been added to your meal plan.`,
-      });
-    }
-  };
-
-  const handleRemoveMeal = (mealPlanId: string, recipe: Recipe) => {
-    setRemoveMealDialog({ open: true, mealPlanId, recipe });
-  };
-
-  const confirmRemoveMeal = async () => {
-    if (removeMealDialog.mealPlanId) {
-      await removeMealPlan(removeMealDialog.mealPlanId);
-      setRemoveMealDialog({ open: false, mealPlanId: null, recipe: null });
-      toast({
-        title: "Meal Removed",
-        description: "The meal has been removed from your meal plan.",
-      });
-    }
-  };
-
-  const handleCreateLeftover = (mealPlan: MealPlan, recipe: Recipe) => {
-    setLeftoverModal({ open: true, mealPlan, recipe });
-  };
-
-  const handleLeftoverConfirm = async (servings: number) => {
-    if (leftoverModal.mealPlan && leftoverModal.recipe && currentHousehold) {
-      const tomorrow = new Date(leftoverModal.mealPlan.date);
-      tomorrow.setDate(tomorrow.getDate() + 1);
-      const tomorrowDate = tomorrow.toISOString().split('T')[0];
-
-      await addMealPlan(
-        {
-          recipeId: leftoverModal.recipe.id,
-          date: tomorrowDate,
-          mealType: "lunch",
-          householdId: currentHousehold.id,
-          slotIndex: 0,
-          isLeftover: true,
-          leftoverServings: servings,
-          originalServings: leftoverModal.recipe.servings,
-          servings: servings,
-          weekNumber: weekNumber,
-          createdBy: user?.id || "",
-        },
-        weekNumber
-      );
-
-      setLeftoverModal({ open: false, mealPlan: null, recipe: null });
-      toast({
-        title: "Leftovers Created",
-        description: `Lunch leftovers created for ${tomorrowDate}.`,
-      });
-    }
-  };
-
-  const getMealPlansForDate = (date: string): MealPlan[] => {
-    return getMealPlansForWeek(weekNumber).filter((mealPlan) => mealPlan.date === date);
-  };
-
-  const getRecipeById = (recipeId: string): Recipe | undefined => {
-    return recipes.find((recipe) => recipe.id === recipeId);
-  };
-
-  const [clearAllDialog, setClearAllDialog] = useState(false);
+        <div className="flex flex-col items-center justify-center py-12 text-center">
+          <User className="h-16 w-16 text-muted-foreground mb-4" />
+          <h2 className="text-xl font-semibold text-navy mb-2">No Household Selected</h2>
+          <p className="text-muted-foreground mb-6 max-w-md">
+            You need to select or create a household to start planning meals. Households allow you to share meal plans with family members.
+          </p>
+          <Button asChild className="bg-terracotta hover:bg-terracotta/90">
+            <Link to="/household">
+              <User className="mr-2 h-4 w-4" />
+              Manage Household
+            </Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="container py-6">
-      <MealPlannerHeader
-        currentWeek={weekNumber}
-        onWeekChange={handleWeekChange}
-        isCalendarView={isCalendarView}
-        setIsCalendarView={setIsCalendarView}
-      />
+    <div className="container max-w-4xl py-4 px-4 sm:py-8 sm:px-6">
+      {/* Title with icon and household members */}
+      <div className="flex flex-col gap-4 mb-6 sm:flex-row sm:justify-between sm:items-center">
+        <div className="space-y-2">
+          <h1 className="text-2xl sm:text-3xl font-bold text-navy flex items-center gap-2">
+            <Calendar className="h-6 w-6 sm:h-8 sm:w-8 text-terracotta" />
+            <span>Meal Planner</span>
+          </h1>
+          <p className="text-sm sm:text-base text-muted-foreground">
+            Plan your meals for the coming weeks and generate shopping lists.
+          </p>
+        </div>
+        {user && currentHousehold && (
+          <HouseholdMembersDisplay />
+        )}
+      </div>
 
+      {/* Actions row: Generate meal plan, share and clear buttons */}
       <MealPlannerActions
         onRandomize={handleRandomize}
-        onShare={handleShare}
+        onShare={handleShareMealPlan}
         onClearAll={handleClearAll}
-        isLoading={isGenerating}
-        currentWeek={weekNumber}
+        isLoading={isLoading}
+        currentWeek={currentWeek}
+      />
+
+      {/* Week selector */}
+      <WeekSelector 
+        week={currentWeek} 
+        onWeekChange={setCurrentWeek}
+        isLoading={isLoading}
+      />
+
+      <MealPlannerDragAndDrop
+        mealTypes={mealTypes}
+        isDraggingCategory={isDraggingCategory}
+        draggedCategoryId={draggedCategoryId}
+        onDragStart={handleMealTypeDragStart}
+        onDragEnd={handleMealTypeDragEnd}
+        getMealPlansForType={getMealPlansForType}
+        getRecipeById={getRecipeById}
+        onRemoveMeal={handleRemoveMeal}
+        onAddMeal={handleAddMeal}
+        onCreateLeftover={handleCreateLeftover}
+        onReorderMeals={handleReorderMeals}
       />
 
       <MealPlannerModals
         addMealModal={addMealModal}
         setAddMealModal={setAddMealModal}
         recipes={recipes}
-        onAddMealFinish={(mealType: MealPlanMealType, recipeId: string) => {
-          const recipe = recipes.find(r => r.id === recipeId);
-          if (recipe) handleAddMealFinish(recipe);
-        }}
+        onAddMealFinish={onAddMealFinish}
         leftoverModal={leftoverModal}
         setLeftoverModal={setLeftoverModal}
-        onLeftoverConfirm={handleLeftoverConfirm}
+        onLeftoverConfirm={onLeftoverConfirm}
         showReplaceDialog={showReplaceDialog}
         setShowReplaceDialog={setShowReplaceDialog}
-        handleReplaceConfirm={confirmReplaceMealPlan}
-        currentWeek={weekNumber}
-        showQuantityDialog={false}
-        setShowQuantityDialog={() => {}}
-        handleQuantitySubmit={() => {}}
-        clearMealPlanDialog={clearAllDialog}
-        setClearMealPlanDialog={setClearAllDialog}
+        handleReplaceConfirm={handleReplaceConfirm}
+        currentWeek={currentWeek}
+        showQuantityDialog={showQuantityDialog}
+        setShowQuantityDialog={setShowQuantityDialog}
+        handleQuantityConfirm={handleQuantityConfirm}
+        clearMealPlanDialog={clearMealPlanDialog}
+        setClearMealPlanDialog={setClearMealPlanDialog}
         confirmClearAll={confirmClearAll}
-        deleteMealDialog={removeMealDialog}
-        setDeleteMealDialog={setRemoveMealDialog}
+        deleteMealDialog={deleteMealDialog}
+        setDeleteMealDialog={setDeleteMealDialog}
         confirmRemoveMeal={confirmRemoveMeal}
-      />
-
-      <CustomMealPlanCalendar
-        weekNumber={weekNumber}
-        onAddMeal={handleAddMeal}
-        getMealPlansForDate={getMealPlansForDate}
-        getRecipeById={getRecipeById}
-        onRemoveMeal={handleRemoveMeal}
-        onCreateLeftover={handleCreateLeftover}
-        isCalendarView={isCalendarView}
       />
     </div>
   );
-}
+};
+
+export default MealPlanner;

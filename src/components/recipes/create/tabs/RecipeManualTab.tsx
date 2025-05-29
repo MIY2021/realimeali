@@ -7,17 +7,29 @@ import { Lightbulb, Clock, Users } from "lucide-react";
 import { EnhancedIngredientManager } from "../EnhancedIngredientManager";
 import { EnhancedInstructionManager } from "../EnhancedInstructionManager";
 import { EnhancedImageUpload } from "../EnhancedImageUpload";
-import { RecipeClassificationSelector } from "../RecipeClassificationSelector";
+import { EnhancedCategorySelector } from "../EnhancedCategorySelector";
 
 interface RecipeManualTabProps {
   isMobile: boolean;
   newRecipe: Omit<Recipe, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>;
   setNewRecipe: (recipe: Omit<Recipe, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>) => void;
+  newCategory: string;
+  setNewCategory: (category: string) => void;
+  newIngredient: string;
+  setNewIngredient: (ingredient: string) => void;
+  newInstruction: string;
+  setNewInstruction: (instruction: string) => void;
   imagePreview: string | null;
   isGeneratingImage: boolean;
   generationProgress: string;
   onImageChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onGenerateImage: () => void;
+  onAddCategory: () => void;
+  onRemoveCategory: (category: string) => void;
+  onAddIngredient: () => void;
+  onRemoveIngredient: (index: number) => void;
+  onAddInstruction: () => void;
+  onRemoveInstruction: (index: number) => void;
 }
 
 export function RecipeManualTab({
@@ -36,6 +48,10 @@ export function RecipeManualTab({
 
   const handleInstructionsChange = (instructions: string[]) => {
     setNewRecipe({ ...newRecipe, instructions });
+  };
+
+  const handleCategoriesChange = (categories: any[]) => {
+    setNewRecipe({ ...newRecipe, categories });
   };
 
   return (
@@ -135,10 +151,10 @@ export function RecipeManualTab({
         )}
       </Card>
 
-      {/* Recipe Classification */}
-      <RecipeClassificationSelector
-        recipe={newRecipe}
-        onRecipeChange={setNewRecipe}
+      {/* Categories */}
+      <EnhancedCategorySelector
+        selectedCategories={newRecipe.categories}
+        onCategoriesChange={handleCategoriesChange}
       />
 
       {/* Ingredients */}

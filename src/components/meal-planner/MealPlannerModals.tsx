@@ -28,7 +28,7 @@ interface MealPlannerModalsProps {
   // Quantity dialog
   showQuantityDialog: boolean;
   setShowQuantityDialog: (show: boolean) => void;
-  handleQuantitySubmit: (mealType: MealType, quantity: number) => void;
+  handleQuantityConfirm: (quantities: Record<MealType, number>) => void;
 
   // Clear dialog
   clearMealPlanDialog: boolean;
@@ -55,7 +55,7 @@ export const MealPlannerModals = ({
   currentWeek,
   showQuantityDialog,
   setShowQuantityDialog,
-  handleQuantitySubmit,
+  handleQuantityConfirm,
   clearMealPlanDialog,
   setClearMealPlanDialog,
   confirmClearAll,
@@ -96,7 +96,7 @@ export const MealPlannerModals = ({
       <MealQuantityDialog
         open={showQuantityDialog}
         onClose={() => setShowQuantityDialog(false)}
-        onSubmit={handleQuantitySubmit}
+        onConfirm={handleQuantityConfirm}
       />
 
       <ClearMealPlanDialog

@@ -15,13 +15,10 @@ const CustomFooter = () => {
               <p>© 2025 RealiMeali. All rights reserved.</p>
             </div>
             <nav className="flex gap-6">
-              <Link to="/about" className="hover:text-terracotta transition-colors">
-                About
-              </Link>
               <Link to="/meal-planner" className="hover:text-terracotta transition-colors">
                 Meal Planner
               </Link>
-              <Link to="/my-recipes" className="hover:text-terracotta transition-colors">
+              <Link to="/recipes" className="hover:text-terracotta transition-colors">
                 Recipes
               </Link>
               <Link to="/shopping-list" className="hover:text-terracotta transition-colors">

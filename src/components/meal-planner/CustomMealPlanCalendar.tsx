@@ -1,173 +1,134 @@
-import { useState, useEffect } from "react";
-import { Calendar, ChevronLeft, ChevronRight, Plus } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { MealPlan, Recipe, MealType } from "@/types";
-import { EnhancedMealCard } from "./EnhancedMealCard";
 
-interface CustomMealPlanCalendarProps {
-  currentWeek: 1 | 2;
-  onWeekChange: (week: 1 | 2) => void;
+import React from "react";
+import { format, addDays, startOfWeek } from "date-fns";
+import { MealPlan, MealType } from "@/types";
+import { mockRecipes } from "@/data/recipes";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { ChevronLeft, ChevronRight, Plus, Trash2 } from "lucide-react";
+
+interface MealPlanCalendarProps {
   mealPlans: MealPlan[];
-  recipes: Recipe[];
-  onAddMeal: (date: string, mealType: MealType) => void;
-  onRemoveMeal: (planId: string) => void;
-  onCreateLeftover: (mealPlan: MealPlan, recipe: Recipe) => void;
-  onReorderMeals: (mealType: MealType, reorderedPlans: MealPlan[]) => void;
+  onAddMealPlan: (date: Date, mealType: MealType) => void;
+  onRemoveMealPlan: (id: string) => void;
 }
 
 export function CustomMealPlanCalendar({
-  currentWeek,
-  onWeekChange,
   mealPlans,
-  recipes,
-  onAddMeal,
-  onRemoveMeal,
-  onCreateLeftover,
-  onReorderMeals,
-}: CustomMealPlanCalendarProps) {
-  const [currentDate, setCurrentDate] = useState(new Date());
+  onAddMealPlan,
+  onRemoveMealPlan,
+}: MealPlanCalendarProps) {
+  const [startDate, setStartDate] = React.useState<Date>(startOfWeek(new Date(), { weekStartsOn: 1 }));
 
-  useEffect(() => {
-    // Set the date to the start of the current week
-    const today = new Date();
-    const dayOfWeek = today.getDay(); // 0 (Sunday) to 6 (Saturday)
-    const diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1); // adjust when day is sunday
-    const startOfWeek = new Date(today.setDate(diff));
-    setCurrentDate(startOfWeek);
-  }, []);
+  const days = Array.from({ length: 7 }, (_, i) => addDays(startDate, i));
+  const mealTypes: { type: MealType; label: string }[] = [
+    { type: "breakfast", label: "Breakfast" },
+    { type: "lunch", label: "Lunches" },
+    { type: "dinner", label: "Dinner" },
+    { type: "snacks", label: "Snacks" },
+  ];
 
-  const getDaysInWeek = (date: Date): Date[] => {
-    const days = [];
-    for (let i = 0; i < 7; i++) {
-      const nextDay = new Date(date);
-      nextDay.setDate(date.getDate() + i);
-      days.push(nextDay);
-    }
-    return days;
-  };
-
-  const daysInWeek = getDaysInWeek(currentDate);
-
-  const handlePrevWeek = () => {
-    const prevWeek = new Date(currentDate);
-    prevWeek.setDate(currentDate.getDate() - 7);
-    setCurrentDate(prevWeek);
-    onWeekChange(1);
-  };
-
-  const handleNextWeek = () => {
-    const nextWeek = new Date(currentDate);
-    nextWeek.setDate(currentDate.getDate() + 7);
-    setCurrentDate(nextWeek);
-    onWeekChange(2);
-  };
-
-  const getMealPlansForDateAndType = (date: Date, mealType: MealType): MealPlan[] => {
-    const dateString = date.toISOString().split("T")[0];
+  const getMealPlansForDateAndType = (date: Date, mealType: MealType) => {
+    const dateString = format(date, "yyyy-MM-dd");
     return mealPlans.filter(
-      (plan) => plan.date === dateString && plan.mealType === mealType && plan.weekNumber === currentWeek
+      (plan) =>
+        format(new Date(plan.date), "yyyy-MM-dd") === dateString &&
+        plan.mealType === mealType
     );
   };
 
-  const getRecipeForMealPlan = (mealPlan: MealPlan): Recipe | undefined => {
-    return recipes.find((recipe) => recipe.id === mealPlan.recipeId);
+  const getRecipeById = (id: string) => {
+    return mockRecipes.find((recipe) => recipe.id === id);
   };
 
-  const handleRemove = (planId: string) => {
-    onRemoveMeal(planId);
+  const handlePreviousWeek = () => {
+    setStartDate(addDays(startDate, -7));
   };
 
-  const handleCreateLeftover = (mealPlan: MealPlan, recipe: Recipe) => {
-    onCreateLeftover(mealPlan, recipe);
+  const handleNextWeek = () => {
+    setStartDate(addDays(startDate, 7));
   };
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between p-4">
-        <CardTitle className="text-lg">Week {currentWeek} Meal Plan</CardTitle>
-        <div className="flex items-center space-x-2">
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-semibold">Weekly Plan</h2>
+        <div className="flex space-x-2">
           <Button
             variant="outline"
-            size="icon"
-            onClick={handlePrevWeek}
-            aria-label="Previous week"
+            size="sm"
+            onClick={handlePreviousWeek}
           >
             <ChevronLeft className="h-4 w-4" />
+            <span className="sr-only">Previous Week</span>
           </Button>
           <Button
             variant="outline"
-            size="icon"
+            size="sm"
             onClick={handleNextWeek}
-            aria-label="Next week"
           >
             <ChevronRight className="h-4 w-4" />
+            <span className="sr-only">Next Week</span>
           </Button>
         </div>
-      </CardHeader>
-      <CardContent className="grid gap-4 p-4">
-        {daysInWeek.map((date) => {
-          const dateString = date.toISOString().split("T")[0];
-          return (
-            <div key={dateString} className="space-y-2">
-              <h3 className="text-sm font-semibold text-muted-foreground">
-                {date.toLocaleDateString("en-US", {
-                  weekday: "long",
-                  month: "short",
-                  day: "numeric",
-                })}
-              </h3>
-              <div className="space-y-3">
-                {["breakfast", "lunch", "dinner", "snacks"].map((mealType) => {
-                  const mealPlansForType = getMealPlansForDateAndType(
-                    date,
-                    mealType as MealType
-                  );
+      </div>
 
-                  return (
-                    <div key={mealType} className="space-y-1">
-                      <div className="flex items-center justify-between">
-                        <h4 className="text-sm capitalize">{mealType}</h4>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => onAddMeal(dateString, mealType as MealType)}
-                        >
-                          <Plus className="h-4 w-4 mr-2" />
-                          Add
-                        </Button>
-                      </div>
-                      <div className="space-y-2">
-                        {mealPlansForType.length === 0 ? (
-                          <p className="text-sm text-muted-foreground">
-                            No meals planned for {mealType}.
-                          </p>
-                        ) : (
-                          mealPlansForType.map((mealPlan) => {
-                            const recipe = getRecipeForMealPlan(mealPlan);
-                            const parentRecipe = mealPlan.parentMealPlanId ? recipes.find(r => r.id === mealPlan.parentMealPlanId) : undefined;
+      <div className="grid grid-cols-8 gap-2">
+        <div className="sticky left-0"></div>
+        {days.map((day) => (
+          <div key={day.toISOString()} className="text-center">
+            <div className="text-sm font-medium">{format(day, "EEE")}</div>
+            <div className="text-xs text-muted-foreground">{format(day, "MMM d")}</div>
+          </div>
+        ))}
 
-                            return (
-                              <EnhancedMealCard
-                                key={mealPlan.id}
-                                mealPlan={mealPlan}
-                                recipe={recipe}
-                                parentRecipe={parentRecipe}
-                                onRemove={handleRemove}
-                                onCreateLeftover={handleCreateLeftover}
-                              />
-                            );
-                          })
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+        {mealTypes.map((mealType) => (
+          <React.Fragment key={mealType.type}>
+            <div className="sticky left-0 flex items-center">
+              <span className="text-sm font-medium">{mealType.label}</span>
             </div>
-          );
-        })}
-      </CardContent>
-    </Card>
+
+            {days.map((day) => {
+              const plansForMeal = getMealPlansForDateAndType(day, mealType.type);
+              return (
+                <Card key={`${day.toISOString()}-${mealType.type}`} className="p-2 h-24 overflow-y-auto">
+                  {plansForMeal.length > 0 ? (
+                    <div className="space-y-1">
+                      {plansForMeal.map((plan) => {
+                        const recipe = getRecipeById(plan.recipeId);
+                        return recipe ? (
+                          <div key={plan.id} className="flex justify-between items-start text-xs">
+                            <span className="font-medium line-clamp-2">{recipe.title}</span>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 w-6 p-0 ml-1"
+                              onClick={() => onRemoveMealPlan(plan.id)}
+                            >
+                              <Trash2 className="h-3 w-3" />
+                              <span className="sr-only">Remove</span>
+                            </Button>
+                          </div>
+                        ) : null;
+                      })}
+                    </div>
+                  ) : (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-full h-full flex items-center justify-center text-muted-foreground"
+                      onClick={() => onAddMealPlan(day, mealType.type)}
+                    >
+                      <Plus className="h-4 w-4" />
+                      <span className="sr-only">Add {mealType.label}</span>
+                    </Button>
+                  )}
+                </Card>
+              );
+            })}
+          </React.Fragment>
+        ))}
+      </div>
+    </div>
   );
 }

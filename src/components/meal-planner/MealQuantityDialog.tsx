@@ -1,75 +1,104 @@
 
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { MealType } from "@/types";
-
-const MEAL_TYPE_LABELS: Record<MealType, string> = {
-  breakfast: "Breakfast",
-  lunch: "Lunch", 
-  dinner: "Dinner",
-  snacks: "Snacks",
-  sides: "Sides",
-  desserts: "Desserts",
-  drinks: "Drinks"
-};
+import { DEFAULT_MEAL_QUANTITIES } from "@/hooks/useRandomMealSelection";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Slider } from "@/components/ui/slider";
+import { Label } from "@/components/ui/label";
 
 interface MealQuantityDialogProps {
-  isOpen: boolean;
+  open: boolean;
   onClose: () => void;
-  onConfirm: (quantity: number) => void;
-  mealType: MealType;
-  recipeName: string;
-  defaultQuantity?: number;
+  onConfirm: (quantities: Record<MealType, number>) => void;
 }
 
-export function MealQuantityDialog({
-  isOpen,
+export const MealQuantityDialog = ({
+  open,
   onClose,
   onConfirm,
-  mealType,
-  recipeName,
-  defaultQuantity = 1
-}: MealQuantityDialogProps) {
-  const [quantity, setQuantity] = useState(defaultQuantity);
+}: MealQuantityDialogProps) => {
+  const [quantities, setQuantities] = useState<Record<MealType, number>>(DEFAULT_MEAL_QUANTITIES);
 
-  const handleConfirm = () => {
-    onConfirm(quantity);
-    onClose();
+  const handleQuantityChange = (mealType: MealType, value: number[]) => {
+    setQuantities(prev => ({
+      ...prev,
+      [mealType]: value[0]
+    }));
   };
 
+  const handleConfirm = () => {
+    onConfirm(quantities);
+  };
+
+  const mealTypeLabels: Record<MealType, string> = {
+    dinner: "Dinners",
+    lunch: "Lunches", 
+    breakfast: "Breakfasts",
+    snacks: "Snacks"
+  };
+
+  const mealTypeOrder: MealType[] = ["dinner", "lunch", "breakfast", "snacks"];
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Add {recipeName} to {MEAL_TYPE_LABELS[mealType]}</DialogTitle>
+          <DialogTitle className="text-xl font-semibold text-navy">
+            Customize Meal Plan
+          </DialogTitle>
+          <DialogDescription className="text-muted-foreground">
+            Choose how many meals to generate for each category. You can generate up to 7 meals per category.
+          </DialogDescription>
         </DialogHeader>
-
-        <div className="space-y-4">
-          <div>
-            <Label htmlFor="quantity">How many servings would you like to add?</Label>
-            <Input
-              id="quantity"
-              type="number"
-              min="1"
-              value={quantity}
-              onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-              className="mt-2"
-            />
-          </div>
-
-          <div className="flex justify-end space-x-2">
-            <Button variant="outline" onClick={onClose}>
-              Cancel
-            </Button>
-            <Button onClick={handleConfirm}>
-              Add to Meal Plan
-            </Button>
-          </div>
+        
+        <div className="space-y-6 py-4">
+          {mealTypeOrder.map((mealType) => (
+            <div key={mealType} className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label htmlFor={`${mealType}-slider`} className="text-sm font-medium capitalize">
+                  {mealTypeLabels[mealType]}
+                </Label>
+                <span className="text-lg font-semibold text-terracotta bg-terracotta/10 px-3 py-1 rounded-full min-w-[3rem] text-center">
+                  {quantities[mealType]}
+                </span>
+              </div>
+              <Slider
+                id={`${mealType}-slider`}
+                min={0}
+                max={7}
+                step={1}
+                value={[quantities[mealType]]}
+                onValueChange={(value) => handleQuantityChange(mealType, value)}
+                className="w-full"
+              />
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <span>0</span>
+                <span>7</span>
+              </div>
+            </div>
+          ))}
         </div>
+
+        <DialogFooter className="flex-col-reverse sm:flex-row gap-2">
+          <Button variant="outline" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button
+            onClick={handleConfirm}
+            className="bg-terracotta hover:bg-terracotta/90"
+          >
+            Generate Meal Plan
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
-}
+};

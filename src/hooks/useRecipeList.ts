@@ -1,7 +1,6 @@
 
-import { useState, useMemo } from "react";
-import { Recipe, MealType, Cuisine, DietLifestyle, ComplexityLevel } from "@/types";
-import { SimpleRecipeFilters } from "@/components/recipes/filters/SimpleRecipeFilters";
+import { useState, useCallback, useMemo } from "react";
+import { Recipe } from "@/types";
 
 interface UseRecipeListProps {
   recipes: Recipe[];
@@ -9,127 +8,67 @@ interface UseRecipeListProps {
 
 export function useRecipeList({ recipes }: UseRecipeListProps) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [sortBy, setSortBy] = useState<"title" | "prepTime" | "cookTime">("title");
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
-  const [visibleCount, setVisibleCount] = useState(12);
-  const [filtersOpen, setFiltersOpen] = useState(false);
-  const [filters, setFilters] = useState<SimpleRecipeFilters>({
-    searchTerm: "",
-    mealTypes: [],
-    cuisines: [],
-    dietLifestyle: [],
-    complexityLevels: [],
-    showFavoritesOnly: false,
-  });
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [sortType, setSortType] = useState<string>("date-newest");
+  const [displayCount, setDisplayCount] = useState(12);
 
-  const filteredAndSortedRecipes = useMemo(() => {
-    let filtered = recipes;
+  const filteredRecipes = useMemo(() => {
+    return recipes.filter((recipe) => {
+      const matchesSearch = recipe.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                           recipe.description.toLowerCase().includes(searchTerm.toLowerCase());
 
-    // Filter by search term
-    const searchQuery = searchTerm || filters.searchTerm;
-    if (searchQuery) {
-      filtered = recipes.filter(recipe =>
-        recipe.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        recipe.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        recipe.ingredients.some(ingredient => 
-          ingredient.toLowerCase().includes(searchQuery.toLowerCase())
-        )
-      );
-    }
+      const matchesCategory = categoryFilter === "all" || 
+                            recipe.categories.includes(categoryFilter as any);
 
-    // Filter by favorites only
-    if (filters.showFavoritesOnly) {
-      filtered = filtered.filter(recipe => recipe.isFavorite);
-    }
+      return matchesSearch && matchesCategory;
+    });
+  }, [recipes, searchTerm, categoryFilter]);
 
-    // Filter by meal types
-    if (filters.mealTypes.length > 0) {
-      filtered = filtered.filter(recipe => 
-        recipe.mealType && filters.mealTypes.includes(recipe.mealType)
-      );
-    }
-
-    // Filter by cuisines
-    if (filters.cuisines.length > 0) {
-      filtered = filtered.filter(recipe => 
-        recipe.cuisine && filters.cuisines.includes(recipe.cuisine)
-      );
-    }
-
-    // Filter by diet/lifestyle
-    if (filters.dietLifestyle.length > 0) {
-      filtered = filtered.filter(recipe => 
-        recipe.dietLifestyle && recipe.dietLifestyle.some(diet => 
-          filters.dietLifestyle.includes(diet)
-        )
-      );
-    }
-
-    // Filter by complexity levels
-    if (filters.complexityLevels.length > 0) {
-      filtered = filtered.filter(recipe => 
-        recipe.complexityLevel && filters.complexityLevels.includes(recipe.complexityLevel)
-      );
-    }
-
-    // Sort recipes
-    filtered.sort((a, b) => {
-      let valueA, valueB;
-      
-      switch (sortBy) {
-        case "title":
-          valueA = a.title.toLowerCase();
-          valueB = b.title.toLowerCase();
-          break;
-        case "prepTime":
-          valueA = a.prepTime;
-          valueB = b.prepTime;
-          break;
-        case "cookTime":
-          valueA = a.cookTime;
-          valueB = b.cookTime;
-          break;
-        default:
-          valueA = a.title.toLowerCase();
-          valueB = b.title.toLowerCase();
+  const sortedRecipes = useMemo(() => {
+    return [...filteredRecipes].sort((a, b) => {
+      if (sortType === "title-asc") {
+        return a.title.localeCompare(b.title);
       }
-
-      if (valueA < valueB) return sortOrder === "asc" ? -1 : 1;
-      if (valueA > valueB) return sortOrder === "asc" ? 1 : -1;
+      if (sortType === "title-desc") {
+        return b.title.localeCompare(a.title);
+      }
+      if (sortType === "prep-asc") {
+        return a.prepTime - b.prepTime;
+      }
+      if (sortType === "prep-desc") {
+        return b.prepTime - a.prepTime;
+      }
+      if (sortType === "date-newest") {
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      }
+      if (sortType === "date-oldest") {
+        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+      }
       return 0;
     });
+  }, [filteredRecipes, sortType]);
 
-    return filtered;
-  }, [recipes, searchTerm, filters, sortBy, sortOrder]);
+  const visibleRecipes = useMemo(() => {
+    return sortedRecipes.slice(0, displayCount);
+  }, [sortedRecipes, displayCount]);
 
-  const visibleRecipes = filteredAndSortedRecipes.slice(0, visibleCount);
-  const hasMoreRecipes = visibleCount < filteredAndSortedRecipes.length;
+  const hasMoreRecipes = displayCount < sortedRecipes.length;
 
-  const handleLoadMore = () => {
-    setVisibleCount(prev => prev + 12);
-  };
-
-  const handleFiltersChange = (newFilters: SimpleRecipeFilters) => {
-    setFilters(newFilters);
-    setVisibleCount(12); // Reset visible count when filters change
-  };
-
-  const toggleFilters = () => {
-    setFiltersOpen(!filtersOpen);
-  };
+  const handleLoadMore = useCallback(() => {
+    setDisplayCount(prev => prev + 8);
+  }, []);
 
   return {
     searchTerm,
     setSearchTerm,
-    sortBy,
-    setSortBy,
-    sortOrder,
-    setSortOrder,
-    filters,
-    handleFiltersChange,
-    filtersOpen,
-    toggleFilters,
-    filteredAndSortedRecipes,
+    categoryFilter,
+    setCategoryFilter,
+    sortType,
+    setSortType,
+    displayCount,
+    setDisplayCount,
+    filteredRecipes,
+    sortedRecipes,
     visibleRecipes,
     hasMoreRecipes,
     handleLoadMore,

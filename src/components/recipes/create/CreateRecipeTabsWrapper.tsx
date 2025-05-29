@@ -1,8 +1,8 @@
-
 import { TabsContent } from "@/components/ui/tabs";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Save, X, Users } from "lucide-react";
+import { Check, AlertCircle, Save, X } from "lucide-react";
 import { CreateRecipeTabNavigation } from "./CreateRecipeTabNavigation";
 import { RecipeTextTab } from "./tabs/RecipeTextTab";
 import { RecipeUrlTab } from "./tabs/RecipeUrlTab";
@@ -10,6 +10,7 @@ import { RecipeImageTab } from "./tabs/RecipeImageTab";
 import { RecipeGenerateTab } from "./tabs/RecipeGenerateTab";
 import { RecipeManualTab } from "./tabs/RecipeManualTab";
 import { EnhancedImageSelection } from "../dialog/EnhancedImageSelection";
+import { useRecipeSave } from "@/hooks/useRecipeSave";
 
 interface CreateRecipeTabsWrapperProps {
   isMobile: boolean;
@@ -22,8 +23,6 @@ interface CreateRecipeTabsWrapperProps {
   onProcessImage: (file: File) => void;
   onGenerateRecipe: () => void;
   onGenerateImage: () => void;
-  onSave: () => void;
-  onCancel: () => void;
 }
 
 export function CreateRecipeTabsWrapper({
@@ -37,26 +36,32 @@ export function CreateRecipeTabsWrapper({
   onProcessImage,
   onGenerateRecipe,
   onGenerateImage,
-  onSave,
-  onCancel,
 }: CreateRecipeTabsWrapperProps) {
-  
-  // Recipe completion status - updated to check if recipe was actually generated
+  const { handleCancel, handleSave } = useRecipeSave();
+
+  // Recipe completion status
   const getRecipeCompletionStatus = () => {
     const { newRecipe } = recipeFormHook;
     const hasTitle = newRecipe.title.trim().length > 0;
     const hasIngredients = newRecipe.ingredients.length > 0;
     const hasInstructions = newRecipe.instructions.length > 0;
-    
-    // Check if recipe was actually generated/processed vs just manually entered
-    const wasGenerated = hasTitle && hasIngredients && hasInstructions && (
-      activeTab === "manual" || // User has switched to manual after processing
-      newRecipe.title.length > 10 // Likely generated/imported content
-    );
+    const hasDescription = newRecipe.description.trim().length > 0;
+    const hasImage = !!newRecipe.image;
+    const hasCategories = newRecipe.categories.length > 0;
+    const hasTiming = newRecipe.prepTime > 0 || newRecipe.cookTime > 0;
 
+    const required = [hasTitle, hasIngredients, hasInstructions];
+    const optional = [hasDescription, hasImage, hasCategories, hasTiming];
+    
+    const requiredCount = required.filter(Boolean).length;
+    const optionalCount = optional.filter(Boolean).length;
+    
     return {
-      isComplete: hasTitle && hasIngredients && hasInstructions,
-      wasGenerated,
+      isComplete: requiredCount === required.length,
+      requiredCount,
+      requiredTotal: required.length,
+      optionalCount,
+      optionalTotal: optional.length,
       hasTitle,
       hasIngredients,
       hasInstructions,
@@ -64,6 +69,10 @@ export function CreateRecipeTabsWrapper({
   };
 
   const status = getRecipeCompletionStatus();
+
+  const onSave = () => {
+    handleSave(recipeFormHook.newRecipe);
+  };
 
   return (
     <div className="space-y-6">
@@ -88,11 +97,7 @@ export function CreateRecipeTabsWrapper({
                 recipeUrl={recipeProcessingHook.recipeUrl}
                 setRecipeUrl={recipeProcessingHook.setRecipeUrl}
                 isProcessing={recipeProcessingHook.isProcessing}
-                importProgress={recipeProcessingHook.importProgress}
                 onImportWithImages={onImportFromUrlWithImages}
-                showCommunityDialog={recipeProcessingHook.showCommunityDialog}
-                setShowCommunityDialog={recipeProcessingHook.setShowCommunityDialog}
-                parsedRecipeData={recipeProcessingHook.parsedRecipeData}
               />
             </TabsContent>
 
@@ -159,36 +164,65 @@ export function CreateRecipeTabsWrapper({
         </CreateRecipeTabNavigation>
       </div>
 
-      {/* Save/Cancel Section - Only show when recipe is actually generated/complete */}
-      {status.wasGenerated && (
-        <div className="flex flex-col gap-4 p-4 bg-white rounded-lg border">
-          {/* Community Sharing Checkbox - Only show if recipe was imported from website */}
-          {recipeFormHook.wasImportedFromWebsite && (
-            <div className="flex items-start gap-3 p-3 bg-green-50 rounded-lg border border-green-200">
-              <Checkbox
-                id="shareWithCommunity"
-                checked={recipeFormHook.shareWithCommunity}
-                onCheckedChange={recipeFormHook.setShareWithCommunity}
-                className="mt-0.5"
-              />
-              <div className="flex-1">
-                <label 
-                  htmlFor="shareWithCommunity" 
-                  className="text-sm font-medium text-green-800 cursor-pointer flex items-center gap-2"
-                >
-                  <Users className="h-4 w-4" />
-                  Share with RealiMeali Community
-                </label>
-                <p className="text-xs text-green-700 mt-1">
-                  Help other users discover this recipe! It will appear in "Find Recipes" after moderation. 
-                  Only the recipe link and details are shared - the full recipe stays on the original website.
-                </p>
+      {/* Enhanced Recipe Status & Save Section */}
+      <Card className="p-4 sm:p-6 bg-gradient-to-r from-blue-50 to-green-50 border-2 border-dashed border-blue-200">
+        <div className="space-y-4">
+          {/* Completion Status */}
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-gray-900">Recipe Status</h3>
+            <div className="flex items-center gap-2">
+              {status.isComplete ? (
+                <Badge className="bg-green-100 text-green-800">
+                  <Check className="h-3 w-3 mr-1" />
+                  Ready to Save
+                </Badge>
+              ) : (
+                <Badge variant="secondary" className="bg-orange-100 text-orange-800">
+                  <AlertCircle className="h-3 w-3 mr-1" />
+                  Incomplete
+                </Badge>
+              )}
+            </div>
+          </div>
+
+          {/* Progress Indicators */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-gray-700">Required Fields:</p>
+              <div className="space-y-1">
+                <div className="flex items-center justify-between text-sm">
+                  <span className={status.hasTitle ? "text-green-600" : "text-gray-500"}>
+                    {status.hasTitle ? "✓" : "○"} Recipe Title
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className={status.hasIngredients ? "text-green-600" : "text-gray-500"}>
+                    {status.hasIngredients ? "✓" : "○"} Ingredients ({recipeFormHook.newRecipe.ingredients.length})
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className={status.hasInstructions ? "text-green-600" : "text-gray-500"}>
+                    {status.hasInstructions ? "✓" : "○"} Instructions ({recipeFormHook.newRecipe.instructions.length})
+                  </span>
+                </div>
               </div>
             </div>
-          )}
 
-          {/* Save/Cancel Buttons */}
-          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-gray-700">
+                Optional ({status.optionalCount}/{status.optionalTotal}):
+              </p>
+              <div className="text-sm text-gray-600">
+                {recipeFormHook.newRecipe.description && "✓ Description "}
+                {recipeFormHook.newRecipe.image && "✓ Image "}
+                {recipeFormHook.newRecipe.categories.length > 0 && `✓ Categories (${recipeFormHook.newRecipe.categories.length}) `}
+                {(recipeFormHook.newRecipe.prepTime > 0 || recipeFormHook.newRecipe.cookTime > 0) && "✓ Timing "}
+              </div>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-200">
             <Button
               onClick={onSave}
               disabled={!status.isComplete || recipeProcessingHook.isProcessing}
@@ -199,7 +233,7 @@ export function CreateRecipeTabsWrapper({
             </Button>
             
             <Button
-              onClick={onCancel}
+              onClick={handleCancel}
               variant="outline"
               className="flex-1 sm:flex-initial h-11"
             >
@@ -207,8 +241,14 @@ export function CreateRecipeTabsWrapper({
               Cancel
             </Button>
           </div>
+
+          {!status.isComplete && (
+            <p className="text-sm text-orange-600 bg-orange-50 p-3 rounded-lg">
+              💡 Complete the required fields (title, ingredients, instructions) to save your recipe.
+            </p>
+          )}
         </div>
-      )}
+      </Card>
     </div>
   );
 }

@@ -7,7 +7,6 @@ interface TabOption {
   value: string;
   label: string;
   icon: React.ComponentType<{ className?: string }>;
-  description: string;
 }
 
 interface CreateRecipeTabNavigationProps {
@@ -18,36 +17,11 @@ interface CreateRecipeTabNavigationProps {
 }
 
 const tabOptions: TabOption[] = [
-  { 
-    value: "text", 
-    label: "Recipe Text", 
-    icon: Pencil,
-    description: "Paste a recipe from anywhere and our AI will format it perfectly"
-  },
-  { 
-    value: "url", 
-    label: "From Website", 
-    icon: Globe,
-    description: "Import recipes directly from cooking websites with one click"
-  },
-  { 
-    value: "image", 
-    label: "From Photo", 
-    icon: Upload,
-    description: "Take a photo of a recipe card or cookbook page to extract the recipe"
-  },
-  { 
-    value: "generate", 
-    label: "AI Generate", 
-    icon: Sparkles,
-    description: "Describe what you want to cook and let AI create a complete recipe"
-  },
-  { 
-    value: "manual", 
-    label: "Manual Entry", 
-    icon: Camera,
-    description: "Create your recipe from scratch with our guided form"
-  },
+  { value: "text", label: "Recipe Text", icon: Pencil },
+  { value: "url", label: "From Website", icon: Globe },
+  { value: "image", label: "From Photo", icon: Upload },
+  { value: "generate", label: "AI Generate", icon: Sparkles },
+  { value: "manual", label: "Manual Entry", icon: Camera },
 ];
 
 export function CreateRecipeTabNavigation({
@@ -56,8 +30,6 @@ export function CreateRecipeTabNavigation({
   setActiveTab,
   children
 }: CreateRecipeTabNavigationProps) {
-  const activeTabOption = tabOptions.find(tab => tab.value === activeTab);
-
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
       {/* Mobile Dropdown */}
@@ -83,36 +55,20 @@ export function CreateRecipeTabNavigation({
               })}
             </SelectContent>
           </Select>
-          
-          {/* Mobile Helper Text */}
-          {activeTabOption && (
-            <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
-              <p className="text-sm text-blue-800 font-medium">{activeTabOption.description}</p>
-            </div>
-          )}
         </div>
       ) : (
         /* Desktop Tabs */
-        <div className="mb-4 sm:mb-6">
-          <TabsList className="grid w-full grid-cols-5 mb-3">
-            {tabOptions.map((tab) => {
-              const Icon = tab.icon;
-              return (
-                <TabsTrigger key={tab.value} value={tab.value} className="p-2">
-                  <Icon className="h-4 w-4 mr-2" />
-                  {tab.label}
-                </TabsTrigger>
-              );
-            })}
-          </TabsList>
-          
-          {/* Desktop Helper Text */}
-          {activeTabOption && (
-            <div className="px-1 mb-2">
-              <p className="text-sm text-muted-foreground text-center">{activeTabOption.description}</p>
-            </div>
-          )}
-        </div>
+        <TabsList className="grid w-full grid-cols-5 mb-4 sm:mb-6">
+          {tabOptions.map((tab) => {
+            const Icon = tab.icon;
+            return (
+              <TabsTrigger key={tab.value} value={tab.value} className="p-2">
+                <Icon className="h-4 w-4 mr-2" />
+                {tab.label}
+              </TabsTrigger>
+            );
+          })}
+        </TabsList>
       )}
 
       {children}

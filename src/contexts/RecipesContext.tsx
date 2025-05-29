@@ -1,7 +1,8 @@
-
-import { createContext, useContext, useState, ReactNode, useCallback, useMemo } from 'react';
+import { createContext, useContext, useState, ReactNode, useCallback, useMemo, useEffect } from 'react';
 import { Recipe } from '@/types';
-import { useToast } from '@/hooks/use-toast';
+import { useRecipeApi } from '@/hooks/useRecipeApi';
+import { useAuth } from '@/contexts/AuthContext';
+import { useHousehold } from '@/contexts/HouseholdContext';
 
 interface RecipesContextType {
   recipes: Recipe[];
@@ -13,6 +14,7 @@ interface RecipesContextType {
   getRecipeBySlug: (slug: string) => Recipe | undefined;
   isLoading: boolean;
   setIsLoading: (loading: boolean) => void;
+  // Add missing methods
   fetchRecipes: (householdId: string | null) => Promise<void>;
   createRecipe: (recipe: Omit<Recipe, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>, householdId: string) => Promise<Recipe | null>;
   deleteRecipe: (id: string) => Promise<boolean>;
@@ -32,63 +34,41 @@ interface RecipesProviderProps {
   children: ReactNode;
 }
 
-// Mock recipes for frontend testing
-const mockRecipes: Recipe[] = [
-  {
-    id: '1',
-    title: 'Spaghetti Carbonara',
-    description: 'A classic Italian pasta dish with eggs, cheese, and pancetta.',
-    ingredients: ['400g spaghetti', '200g pancetta', '4 large eggs', '100g Parmesan cheese', 'Black pepper', 'Salt'],
-    instructions: ['Boil pasta', 'Cook pancetta', 'Mix eggs and cheese', 'Combine all ingredients'],
-    prepTime: 15,
-    cookTime: 20,
-    servings: 4,
-    isFavorite: false,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    createdBy: 'user1',
-    householdId: 'household1',
-    mealType: 'dinner',
-    cuisine: 'italian',
-    topTip: 'Make sure to mix the eggs off the heat to prevent scrambling!'
-  },
-  {
-    id: '2',
-    title: 'Chicken Tikka Masala',
-    description: 'Creamy and flavorful Indian curry with tender chicken pieces.',
-    ingredients: ['500g chicken', '400ml coconut milk', '2 tbsp tikka masala paste', '1 onion', 'Garlic', 'Ginger'],
-    instructions: ['Marinate chicken', 'Cook onions', 'Add spices', 'Simmer with coconut milk'],
-    prepTime: 30,
-    cookTime: 25,
-    servings: 4,
-    isFavorite: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    createdBy: 'user1',
-    householdId: 'household1',
-    mealType: 'dinner',
-    cuisine: 'indian'
-  }
-];
-
 export const RecipesProvider = ({ children }: RecipesProviderProps) => {
-  const [recipes, setRecipes] = useState<Recipe[]>(mockRecipes);
+  const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
+  const recipeApi = useRecipeApi();
+  const { user } = useAuth();
+  const { currentHousehold } = useHousehold();
+
+  // Auto-fetch recipes when household changes
+  useEffect(() => {
+    if (user && currentHousehold) {
+      console.log("Auto-fetching recipes for household:", currentHousehold.id);
+      fetchRecipes(currentHousehold.id);
+    } else {
+      console.log("Clearing recipes - no user or household");
+      setRecipes([]);
+    }
+  }, [user?.id, currentHousehold?.id]);
 
   const addRecipe = useCallback((recipe: Recipe) => {
     setRecipes(prev => [recipe, ...prev]);
   }, []);
 
   const updateRecipe = useCallback(async (id: string, updatedRecipe: Recipe) => {
-    setRecipes(prev => prev.map(recipe => 
-      recipe.id === id ? updatedRecipe : recipe
-    ));
-    toast({
-      title: "Recipe Updated",
-      description: "Recipe has been updated successfully.",
-    });
-  }, [toast]);
+    try {
+      const result = await recipeApi.updateRecipe(id, updatedRecipe);
+      if (result) {
+        setRecipes(prev => prev.map(recipe => 
+          recipe.id === id ? result : recipe
+        ));
+      }
+    } catch (error) {
+      console.error('Error updating recipe:', error);
+      throw error;
+    }
+  }, [recipeApi]);
 
   const removeRecipe = useCallback((id: string) => {
     setRecipes(prev => prev.filter(recipe => recipe.id !== id));
@@ -111,43 +91,49 @@ export const RecipesProvider = ({ children }: RecipesProviderProps) => {
     return recipes.find(recipe => createSlug(recipe.title) === slug);
   }, [recipes, createSlug]);
 
+  // Add missing methods using the API
   const fetchRecipes = useCallback(async (householdId: string | null) => {
+    if (!householdId) return;
+    
     setIsLoading(true);
-    // Mock fetch - just use existing recipes
-    setTimeout(() => {
+    try {
+      const fetchedRecipes = await recipeApi.fetchRecipes(householdId);
+      setRecipes(fetchedRecipes);
+    } catch (error) {
+      console.error('Error fetching recipes:', error);
+    } finally {
       setIsLoading(false);
-    }, 500);
-  }, []);
+    }
+  }, [recipeApi]);
 
   const createRecipe = useCallback(async (
     recipeData: Omit<Recipe, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>, 
     householdId: string
   ) => {
-    const newRecipe: Recipe = {
-      ...recipeData,
-      id: Math.random().toString(36).substr(2, 9),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      createdBy: 'current-user',
-    };
-    
-    addRecipe(newRecipe);
-    toast({
-      title: "Recipe Created",
-      description: `${newRecipe.title} has been added to your recipes.`,
-    });
-    
-    return newRecipe;
-  }, [addRecipe, toast]);
+    try {
+      const newRecipe = await recipeApi.createRecipe(recipeData, householdId);
+      if (newRecipe) {
+        addRecipe(newRecipe);
+      }
+      return newRecipe;
+    } catch (error) {
+      console.error('Error creating recipe:', error);
+      return null;
+    }
+  }, [recipeApi, addRecipe]);
 
   const deleteRecipe = useCallback(async (id: string) => {
-    removeRecipe(id);
-    toast({
-      title: "Recipe Deleted",
-      description: "Recipe has been removed from your collection.",
-    });
-    return true;
-  }, [removeRecipe, toast]);
+    try {
+      const success = await recipeApi.deleteRecipe(id);
+      if (success) {
+        removeRecipe(id);
+      }
+      return success;
+    } catch (error) {
+      console.error('Error deleting recipe:', error);
+      return false;
+    }
+  }, [recipeApi, removeRecipe]);
 
   const value = useMemo(() => ({
     recipes,
