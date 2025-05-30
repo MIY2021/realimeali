@@ -99,8 +99,6 @@ export function RecipeTabsContent({
             isMobile={isMobile}
             newRecipe={recipeFormHook.newRecipe}
             setNewRecipe={recipeFormHook.setNewRecipe}
-            newCategory={recipeFormHook.newCategory}
-            setNewCategory={recipeFormHook.setNewCategory}
             newIngredient={recipeFormHook.newIngredient}
             setNewIngredient={recipeFormHook.setNewIngredient}
             newInstruction={recipeFormHook.newInstruction}
@@ -110,8 +108,6 @@ export function RecipeTabsContent({
             generationProgress={recipeFormHook.generationProgress}
             onImageChange={recipeFormHook.handleImageChange}
             onGenerateImage={onGenerateImage}
-            onAddCategory={recipeFormHook.handleAddCategory}
-            onRemoveCategory={recipeFormHook.handleRemoveCategory}
             onAddIngredient={recipeFormHook.handleAddIngredient}
             onRemoveIngredient={recipeFormHook.handleRemoveIngredient}
             onAddInstruction={recipeFormHook.handleAddInstruction}
