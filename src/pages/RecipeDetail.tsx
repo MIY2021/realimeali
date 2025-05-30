@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Edit, Share2, Trash2 } from "lucide-react";
+import { ArrowLeft, Edit, Share, Trash2 } from "lucide-react";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
@@ -88,7 +88,7 @@ export default function RecipeDetail() {
               Edit
             </Button>
             <Button variant="outline" size="sm">
-              <Share2 className="h-4 w-4 mr-2" />
+              <Share className="h-4 w-4 mr-2" />
               Share
             </Button>
             <Button variant="destructive" size="sm" onClick={handleDelete}>

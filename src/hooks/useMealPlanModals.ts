@@ -6,7 +6,19 @@ export const useMealPlanModals = () => {
   const [addMealModal, setAddMealModal] = useState<{
     open: boolean;
     mealType: MealType | null;
-  }>({ open: false, mealType: null });
+    date: string | null;
+  }>({ open: false, mealType: null, date: null });
+
+  const [editMealModal, setEditMealModal] = useState<{
+    open: boolean;
+    mealPlan: MealPlan | null;
+    recipe: Recipe | null;
+  }>({ open: false, mealPlan: null, recipe: null });
+
+  const [removeMealModal, setRemoveMealModal] = useState<{
+    open: boolean;
+    mealPlan: MealPlan | null;
+  }>({ open: false, mealPlan: null });
 
   const [leftoverModal, setLeftoverModal] = useState<{
     open: boolean;
@@ -24,6 +36,10 @@ export const useMealPlanModals = () => {
   return {
     addMealModal,
     setAddMealModal,
+    editMealModal,
+    setEditMealModal,
+    removeMealModal,
+    setRemoveMealModal,
     leftoverModal,
     setLeftoverModal,
     clearMealPlanDialog,

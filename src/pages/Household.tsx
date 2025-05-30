@@ -31,7 +31,7 @@ export default function Household() {
 
   const handleRemoveMember = async (memberId: string, memberUserId: string): Promise<boolean> => {
     try {
-      await removeMember(memberId);
+      await removeMember(memberId, memberUserId);
       return true;
     } catch (error) {
       console.error('Error removing member:', error);

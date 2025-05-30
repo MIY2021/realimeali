@@ -123,7 +123,6 @@ export const mealPlanService = {
       date: dbPlan.date_scheduled,
       meal_type: dbPlan.meal_type as any,
       recipe_id: dbPlan.recipe_id,
-      notes: dbPlan.notes,
       created_by: dbPlan.created_by,
       created_at: dbPlan.created_at,
       updated_at: dbPlan.updated_at,

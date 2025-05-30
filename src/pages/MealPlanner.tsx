@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRecipes } from "@/contexts/RecipesContext";
@@ -6,7 +7,7 @@ import { useMealPlan } from "@/contexts/MealPlanContext";
 import { useMealPlanOperations } from "@/hooks/useMealPlanOperations";
 import { MealPlannerDragAndDrop } from "@/components/meal-planner/MealPlannerDragAndDrop";
 import { MealPlannerHeader } from "@/components/meal-planner/MealPlannerHeader";
-import { MealPlannerModals } from "@/components/meal-planner/MealPlannerModals";
+import { AddRecipeToMealModal } from "@/components/meal-planner/AddRecipeToMealModal";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useMealPlanModals } from "@/hooks/useMealPlanModals";
 import { MealPlanMealType } from "@/types";
@@ -114,52 +115,70 @@ export default function MealPlanner() {
   return (
     <div className="container max-w-7xl py-8 px-6 space-y-8">
       <MealPlannerHeader
-        weekNumber={currentWeek}
-        onWeekChange={setCurrentWeek}
-        isCalendarView={isCalendarView}
-        setIsCalendarView={setIsCalendarView}
+        user={user}
+        currentHousehold={currentHousehold}
       />
 
-      <MealPlannerDragAndDrop
-        currentWeek={currentWeek}
-        isCalendarView={isCalendarView}
-        mealPlans={currentMealPlans}
-        recipes={recipes}
-        onAddMeal={(mealType: MealPlanMealType, date: string) => 
-          setAddMealModal({ open: true, mealType, date })
-        }
-        onEditMeal={(planId: string) => {
-          // Find the meal plan and recipe for editing
-          const plan = currentMealPlans.find(p => p.id === planId);
-          const recipe = plan ? recipes.find(r => r.id === plan.recipe_id) : undefined;
-          if (plan && recipe) {
-            // Handle edit functionality here
-          }
-        }}
-        onRemoveMeal={(planId: string) => removeMealPlan(planId)}
-        reorderMealPlans={reorderMealPlans}
-      />
+      {/* Simple meal planner without calendar view for now */}
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-semibold">Week {currentWeek} Meal Plan</h2>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setCurrentWeek(1)}
+              className={`px-4 py-2 rounded ${currentWeek === 1 ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+            >
+              Week 1
+            </button>
+            <button
+              onClick={() => setCurrentWeek(2)}
+              className={`px-4 py-2 rounded ${currentWeek === 2 ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+            >
+              Week 2
+            </button>
+          </div>
+        </div>
 
-      <MealPlannerModals
-        modals={{
-          addMealModal,
-          setAddMealModal,
-          editMealModal,
-          setEditMealModal,
-          removeMealModal,
-          setRemoveMealModal,
-        }}
-        actions={{
-          handleAddRecipeToMeal,
-          handleAddRecipeWithLeftovers,
-          handleLeftoverChange,
-          confirmRemoveMeal,
-        }}
-        state={{
-          currentWeek,
-          leftoverServings,
-        }}
-      />
+        <button
+          onClick={() => setAddMealModal({ open: true, mealType: "dinner", date: null })}
+          className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+        >
+          Add Meal
+        </button>
+
+        <div className="grid gap-4">
+          {currentMealPlans.map((plan) => {
+            const recipe = recipes.find(r => r.id === plan.recipe_id);
+            return (
+              <div key={plan.id} className="p-4 border rounded-lg">
+                <h3 className="font-semibold">{recipe?.title || 'Unknown Recipe'}</h3>
+                <p className="text-sm text-gray-600">Meal Type: {plan.meal_type}</p>
+                <button
+                  onClick={() => removeMealPlan(plan.id)}
+                  className="mt-2 px-3 py-1 bg-red-500 text-white rounded text-sm hover:bg-red-600"
+                >
+                  Remove
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {addMealModal.open && (
+        <AddRecipeToMealModal
+          open={addMealModal.open}
+          onClose={() => setAddMealModal({ open: false, mealType: null, date: null })}
+          mealSlot={{ 
+            date: new Date().toISOString().split('T')[0], 
+            mealType: addMealModal.mealType || "dinner",
+            slotIndex: 0
+          }}
+          onAddRecipe={async (recipeId: string) => {
+            await handleAddRecipeToMeal(recipeId, addMealModal.mealType || "dinner");
+          }}
+        />
+      )}
     </div>
   );
 }
