@@ -19,7 +19,7 @@ export const useRecipeApi = () => {
       return (data || []).map(recipe => ({
         ...recipe,
         created_by: recipe.user_id, // Map user_id to created_by
-        // Filter meal_type to only valid values
+        // Filter meal_type to only valid values, cast as MealType
         meal_type: VALID_MEAL_TYPES.includes(recipe.meal_type as MealType) 
           ? recipe.meal_type as MealType 
           : undefined,
@@ -74,7 +74,10 @@ export const useRecipeApi = () => {
       return {
         ...data,
         created_by: data.user_id, // Map user_id to created_by
-      };
+        meal_type: VALID_MEAL_TYPES.includes(data.meal_type as MealType) 
+          ? data.meal_type as MealType 
+          : undefined,
+      } as Recipe;
     } catch (error) {
       console.error('Error creating recipe:', error);
       throw error;
@@ -112,7 +115,10 @@ export const useRecipeApi = () => {
       return {
         ...data,
         created_by: data.user_id, // Map user_id to created_by
-      };
+        meal_type: VALID_MEAL_TYPES.includes(data.meal_type as MealType) 
+          ? data.meal_type as MealType 
+          : undefined,
+      } as Recipe;
     } catch (error) {
       console.error('Error updating recipe:', error);
       throw error;

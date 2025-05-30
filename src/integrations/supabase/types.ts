@@ -704,51 +704,6 @@ export type Database = {
           },
         ]
       }
-      spoonacular_recipes: {
-        Row: {
-          cached_at: string
-          cuisine_types: string[] | null
-          diet_tags: string[] | null
-          id: number
-          image: string | null
-          ingredients: Json | null
-          instructions: Json | null
-          ready_in_minutes: number | null
-          servings: number | null
-          source_url: string | null
-          summary: string | null
-          title: string
-        }
-        Insert: {
-          cached_at?: string
-          cuisine_types?: string[] | null
-          diet_tags?: string[] | null
-          id: number
-          image?: string | null
-          ingredients?: Json | null
-          instructions?: Json | null
-          ready_in_minutes?: number | null
-          servings?: number | null
-          source_url?: string | null
-          summary?: string | null
-          title: string
-        }
-        Update: {
-          cached_at?: string
-          cuisine_types?: string[] | null
-          diet_tags?: string[] | null
-          id?: number
-          image?: string | null
-          ingredients?: Json | null
-          instructions?: Json | null
-          ready_in_minutes?: number | null
-          servings?: number | null
-          source_url?: string | null
-          summary?: string | null
-          title?: string
-        }
-        Relationships: []
-      }
       user_roles: {
         Row: {
           created_at: string
@@ -917,10 +872,6 @@ export type Database = {
         | "sides"
         | "desserts"
         | "drinks"
-        | "sauces_dips"
-        | "soups_stews"
-        | "salads"
-        | "baking_breads"
       recipe_category:
         | "Bulk"
         | "Easy"
@@ -1127,10 +1078,6 @@ export const Constants = {
         "sides",
         "desserts",
         "drinks",
-        "sauces_dips",
-        "soups_stews",
-        "salads",
-        "baking_breads",
       ],
       recipe_category: [
         "Bulk",

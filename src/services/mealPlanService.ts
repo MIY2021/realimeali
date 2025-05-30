@@ -133,7 +133,7 @@ export const mealPlanService = {
       leftover_servings: dbPlan.leftover_servings,
       original_servings: dbPlan.original_servings,
       household_id: dbPlan.household_id,
-      week_number: dbPlan.week_number,
+      week_number: dbPlan.week_number as 1 | 2,
     };
   }
 };

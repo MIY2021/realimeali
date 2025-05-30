@@ -1,51 +1,96 @@
 
+import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { PublicRecipeView } from "@/components/recipes/PublicRecipeView";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { PublicRecipeShare } from "@/types";
 
-// Mock recipe data for now
-const mockRecipe: PublicRecipeShare = {
-  public_share_id: "abc123",
-  original_recipe_id: "recipe-123",
-  shared_by_user_id: "user-123",
-  shared_by_name: "John Doe",
-  shared_by_household_name: "The Doe Family",
-  title: "Classic Pasta Carbonara",
-  description: "A traditional Italian pasta dish with eggs, cheese, pancetta, and pepper.",
-  ingredients: [
-    "400g spaghetti",
-    "200g pancetta or guanciale",
-    "4 large eggs",
-    "100g pecorino romano cheese",
-    "Black pepper",
-    "Salt"
-  ],
-  instructions: [
-    "Bring a large pot of salted water to boil and cook spaghetti until al dente.",
-    "In a large pan, cook pancetta until crispy.",
-    "In a bowl, whisk together eggs and grated cheese.",
-    "Drain pasta, reserving some pasta water.",
-    "Quickly toss hot pasta with pancetta, then remove from heat.",
-    "Add egg mixture, tossing quickly to create a creamy sauce.",
-    "Add pasta water if needed to loosen the sauce.",
-    "Season with black pepper and serve immediately."
-  ],
-  prep_time: 10,
-  cook_time: 15,
-  servings: 4,
-  image: "https://example.com/carbonara.jpg",
-  expires_at: "2025-06-01T00:00:00Z",
-  created_at: "2025-01-01T00:00:00Z",
-  meal_type: "dinner",
-  original_household_id: "household-123",
-  view_count: 127
-};
-
 export default function PublicRecipe() {
   const { shareId } = useParams<{ shareId: string }>();
-  
-  useDocumentTitle(`${mockRecipe.title} | RealiMeali`);
+  const [recipe, setRecipe] = useState<PublicRecipeShare | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  return <PublicRecipeView recipe={mockRecipe} />;
+  useDocumentTitle(recipe ? `${recipe.title} | Shared Recipe` : "Shared Recipe | RealiMeali");
+
+  useEffect(() => {
+    const fetchPublicRecipe = async () => {
+      if (!shareId) {
+        setError("No share ID provided");
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        const response = await fetch(`https://bdjzefekuahfofwzxqxd.supabase.co/functions/v1/recipe-meta/share/${shareId}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        
+        if (data.error) {
+          throw new Error(data.error);
+        }
+
+        // Transform the recipe data to match our interface
+        const transformedRecipe: PublicRecipeShare = {
+          ...data,
+          description: Array.isArray(data.description) ? data.description : [data.description || ''],
+        };
+
+        setRecipe(transformedRecipe);
+      } catch (err) {
+        console.error("Error fetching public recipe:", err);
+        setError(err instanceof Error ? err.message : "Failed to load recipe");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchPublicRecipe();
+  }, [shareId]);
+
+  if (isLoading) {
+    return (
+      <div className="container max-w-4xl py-8 px-6">
+        <div className="text-center">
+          <p>Loading recipe...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container max-w-4xl py-8 px-6">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-red-600 mb-4">Error</h1>
+          <p className="text-muted-foreground">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!recipe) {
+    return (
+      <div className="container max-w-4xl py-8 px-6">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Recipe Not Found</h1>
+          <p className="text-muted-foreground">This recipe may have expired or been removed.</p>
+        </div>
+      </div>
+    );
+  }
+
+  return <PublicRecipeView recipe={recipe} />;
 }

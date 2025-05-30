@@ -112,7 +112,7 @@ export default function CategoryPage() {
           <RecipeCard
             key={recipe.id}
             recipe={recipe}
-            onRecipeClick={() => handleRecipeClick(recipe)}
+            onClick={() => handleRecipeClick(recipe)}
             onEdit={() => handleEditRecipe(recipe)}
           />
         ))}

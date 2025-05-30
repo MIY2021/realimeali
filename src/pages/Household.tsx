@@ -24,7 +24,9 @@ export default function Household() {
     if (currentHousehold && user) {
       const ownerCheck = currentHousehold.created_by === user.id;
       setIsOwner(ownerCheck);
-      fetchMembers(currentHousehold.id);
+      if (currentHousehold.id) {
+        fetchMembers(currentHousehold.id);
+      }
     }
   }, [currentHousehold, user, fetchMembers]);
 
@@ -79,13 +81,18 @@ export default function Household() {
           members={typedMembers}
           isOwner={isOwner}
           isLoading={isLoading}
-          onRemoveMember={removeMember}
+          onRemoveMember={(memberId: string) => removeMember(memberId)}
         />
         
         {isOwner && (
           <>
-            <InviteMembersCard household={currentHousehold} />
-            <JoinRequestsCard household={currentHousehold} />
+            <InviteMembersCard 
+              household={currentHousehold} 
+              householdCode={currentHousehold.id}
+            />
+            <JoinRequestsCard 
+              householdId={currentHousehold.id}
+            />
           </>
         )}
       </div>
