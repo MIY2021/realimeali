@@ -60,10 +60,10 @@ export function SimpleCategorySelector({ recipe, onRecipeChange }: SimpleCategor
 
   return (
     <Card className="bg-white/60 backdrop-blur-sm border-white/30">
-      <CardHeader className="pb-4">
+      <CardHeader className="pb-3">
         <CardTitle className="text-lg">Categories</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-6">
+      <CardContent className="space-y-5">
         {/* Meal Type */}
         <div>
           <label className="text-sm font-medium mb-3 block">Meal Type</label>
@@ -94,10 +94,10 @@ export function SimpleCategorySelector({ recipe, onRecipeChange }: SimpleCategor
           </div>
         </div>
 
-        {/* Complexity Level */}
+        {/* Complexity Level - Fixed width issue */}
         <div>
           <label className="text-sm font-medium mb-3 block">Complexity Level</label>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+          <div className="flex flex-wrap gap-2">
             {COMPLEXITY_LEVEL_OPTIONS.map((option) => (
               <CategoryButton
                 key={option.value}

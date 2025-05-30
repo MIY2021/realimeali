@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { X, Plus, ChevronUp, ChevronDown, Clock } from "lucide-react";
+import { X, Plus, ChevronUp, ChevronDown } from "lucide-react";
 
 interface EnhancedInstructionManagerProps {
   instructions: string[];
@@ -64,68 +64,68 @@ export function EnhancedInstructionManager({ instructions, onInstructionsChange 
   };
 
   return (
-    <Card className="p-2 sm:p-4 space-y-4 bg-white/60 backdrop-blur-sm border-white/30">
+    <Card className="p-3 space-y-3 bg-white/60 backdrop-blur-sm border-white/30 h-fit">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold text-gray-900">Instructions</h3>
-        <Badge variant="secondary" className="bg-green-50 text-green-700">
-          {instructions.length} {instructions.length === 1 ? 'step' : 'steps'}
+        <Badge variant="secondary" className="bg-green-50 text-green-700 text-xs">
+          {instructions.length}
         </Badge>
       </div>
 
       {instructions.length > 0 && (
-        <div className="space-y-3">
+        <div className="space-y-2 max-h-64 overflow-y-auto">
           {instructions.map((instruction, index) => (
             <div
               key={index}
-              className="flex gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg bg-white/50 hover:bg-white/70 transition-colors group"
+              className="flex gap-2 p-2 rounded-lg bg-white/50 hover:bg-white/70 transition-colors group"
             >
-              <div className="flex flex-col items-center gap-2 flex-shrink-0">
-                <div className="w-7 h-7 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-semibold">
+              <div className="flex flex-col items-center gap-1 flex-shrink-0">
+                <div className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-semibold">
                   {index + 1}
                 </div>
                 
-                {/* Reorder buttons - positioned prominently */}
-                <div className="flex flex-col gap-1">
+                {/* Reorder buttons - more compact */}
+                <div className="flex flex-col gap-0.5">
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => moveInstruction(index, 'up')}
                     disabled={index === 0}
-                    className="h-8 w-8 p-0 hover:bg-blue-100 disabled:opacity-30 rounded-md"
+                    className="h-6 w-6 p-0 hover:bg-blue-100 disabled:opacity-30"
                   >
-                    <ChevronUp className="h-4 w-4" />
+                    <ChevronUp className="h-3 w-3" />
                   </Button>
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => moveInstruction(index, 'down')}
                     disabled={index === instructions.length - 1}
-                    className="h-8 w-8 p-0 hover:bg-blue-100 disabled:opacity-30 rounded-md"
+                    className="h-6 w-6 p-0 hover:bg-blue-100 disabled:opacity-30"
                   >
-                    <ChevronDown className="h-4 w-4" />
+                    <ChevronDown className="h-3 w-3" />
                   </Button>
                 </div>
               </div>
 
               {editingIndex === index ? (
-                <div className="flex-1 space-y-3">
+                <div className="flex-1 space-y-2">
                   <Textarea
                     value={editValue}
                     onChange={(e) => setEditValue(e.target.value)}
-                    className="flex-1 min-h-[80px]"
+                    className="flex-1 min-h-[60px] text-sm"
                     autoFocus
                   />
-                  <div className="flex gap-2">
-                    <Button size="sm" onClick={saveEdit} className="text-xs sm:text-sm">
+                  <div className="flex gap-1">
+                    <Button size="sm" onClick={saveEdit} className="text-xs h-7">
                       Save
                     </Button>
-                    <Button size="sm" variant="outline" onClick={cancelEdit} className="text-xs sm:text-sm">
+                    <Button size="sm" variant="outline" onClick={cancelEdit} className="text-xs h-7">
                       Cancel
                     </Button>
                   </div>
                 </div>
               ) : (
-                <div className="flex-1 flex flex-col sm:flex-row sm:items-start justify-between gap-2">
+                <div className="flex-1 flex justify-between gap-2">
                   <p
                     className="text-sm leading-relaxed cursor-pointer hover:text-blue-600 transition-colors flex-1 break-words"
                     onClick={() => startEditing(index)}
@@ -136,9 +136,9 @@ export function EnhancedInstructionManager({ instructions, onInstructionsChange 
                     size="sm"
                     variant="ghost"
                     onClick={() => removeInstruction(index)}
-                    className="opacity-70 group-hover:opacity-100 transition-opacity hover:bg-red-50 hover:text-red-600 flex-shrink-0 h-8 w-8 p-0 self-start"
+                    className="opacity-70 group-hover:opacity-100 transition-opacity hover:bg-red-50 hover:text-red-600 flex-shrink-0 h-6 w-6 p-0"
                   >
-                    <X className="h-4 w-4" />
+                    <X className="h-3 w-3" />
                   </Button>
                 </div>
               )}
@@ -147,32 +147,23 @@ export function EnhancedInstructionManager({ instructions, onInstructionsChange 
         </div>
       )}
 
-      <div className="space-y-3">
+      <div className="space-y-2">
         <Textarea
           value={newInstruction}
           onChange={(e) => setNewInstruction(e.target.value)}
-          placeholder="Describe the next step in detail... (e.g., Preheat oven to 350°F and grease a 9x13 baking dish)"
-          className="min-h-[80px]"
+          placeholder="Describe the next step..."
+          className="min-h-[60px] text-sm"
         />
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-          <Button 
-            onClick={addInstruction} 
-            disabled={!newInstruction.trim()}
-            className="px-4 sm:px-6"
-          >
-            <Plus className="h-4 w-4 mr-1" />
-            Add Step {instructions.length + 1}
-          </Button>
-          <p className="text-xs text-gray-500">
-            <Clock className="h-3 w-3 inline mr-1" />
-            Be specific about timing and temperature
-          </p>
-        </div>
+        <Button 
+          onClick={addInstruction} 
+          disabled={!newInstruction.trim()}
+          className="w-full h-8 text-sm"
+          size="sm"
+        >
+          <Plus className="h-3 w-3 mr-1" />
+          Add Step {instructions.length + 1}
+        </Button>
       </div>
-
-      <p className="text-xs text-gray-500">
-        💡 Tip: Use arrow buttons to reorder steps, click text to edit.
-      </p>
     </Card>
   );
 }

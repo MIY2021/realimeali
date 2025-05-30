@@ -63,107 +63,117 @@ export function RecipeManualTab({
   };
 
   return (
-    <div className="space-y-6">
-      {/* Basic Information */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Basic Information</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <Label htmlFor="title" className="text-base font-medium">Recipe Title</Label>
-            <Input
-              id="title"
-              value={newRecipe.title}
-              onChange={(e) => setNewRecipe({ ...newRecipe, title: e.target.value })}
-              placeholder="Enter recipe title"
-              className="mt-1"
+    <div className="space-y-4">
+      {/* Basic Information + Image - Two column layout on desktop */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* Basic Information - Takes up 2 columns */}
+        <Card className="lg:col-span-2">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg">Basic Information</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <Label htmlFor="title" className="text-sm font-medium">Recipe Title</Label>
+              <Input
+                id="title"
+                value={newRecipe.title}
+                onChange={(e) => setNewRecipe({ ...newRecipe, title: e.target.value })}
+                placeholder="Enter recipe title"
+                className="mt-1"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="description" className="text-sm font-medium">Description</Label>
+              <Textarea
+                id="description"
+                value={newRecipe.description}
+                onChange={(e) => setNewRecipe({ ...newRecipe, description: e.target.value })}
+                placeholder="Brief description of the recipe"
+                className="mt-1 min-h-16"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <Label htmlFor="prep-time" className="text-sm font-medium">Prep Time (min)</Label>
+                <Input
+                  id="prep-time"
+                  type="number"
+                  value={newRecipe.prep_time || ''}
+                  onChange={(e) => setNewRecipe({ ...newRecipe, prep_time: parseInt(e.target.value) || 0 })}
+                  placeholder="0"
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label htmlFor="cook-time" className="text-sm font-medium">Cook Time (min)</Label>
+                <Input
+                  id="cook-time"
+                  type="number"
+                  value={newRecipe.cook_time || ''}
+                  onChange={(e) => setNewRecipe({ ...newRecipe, cook_time: parseInt(e.target.value) || 0 })}
+                  placeholder="0"
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label htmlFor="servings" className="text-sm font-medium">Servings</Label>
+                <Input
+                  id="servings"
+                  type="number"
+                  value={newRecipe.servings || ''}
+                  onChange={(e) => setNewRecipe({ ...newRecipe, servings: parseInt(e.target.value) || 1 })}
+                  placeholder="1"
+                  className="mt-1"
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Image Upload - Takes up 1 column */}
+        <Card className="lg:col-span-1">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg">Recipe Image</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <EnhancedImageUpload
+              imagePreview={imagePreview}
+              isGenerating={isGeneratingImage}
+              generationProgress={generationProgress}
+              onImageChange={handleImageChange}
+              onGenerateImage={onGenerateImage}
+              recipeTitle={newRecipe.title}
             />
-          </div>
+          </CardContent>
+        </Card>
+      </div>
 
-          <div>
-            <Label htmlFor="description" className="text-base font-medium">Description</Label>
-            <Textarea
-              id="description"
-              value={newRecipe.description}
-              onChange={(e) => setNewRecipe({ ...newRecipe, description: e.target.value })}
-              placeholder="Brief description of the recipe"
-              className="mt-1 min-h-20"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div>
-              <Label htmlFor="prep-time" className="text-base font-medium">Prep Time (minutes)</Label>
-              <Input
-                id="prep-time"
-                type="number"
-                value={newRecipe.prep_time || ''}
-                onChange={(e) => setNewRecipe({ ...newRecipe, prep_time: parseInt(e.target.value) || 0 })}
-                placeholder="0"
-                className="mt-1"
-              />
-            </div>
-            <div>
-              <Label htmlFor="cook-time" className="text-base font-medium">Cook Time (minutes)</Label>
-              <Input
-                id="cook-time"
-                type="number"
-                value={newRecipe.cook_time || ''}
-                onChange={(e) => setNewRecipe({ ...newRecipe, cook_time: parseInt(e.target.value) || 0 })}
-                placeholder="0"
-                className="mt-1"
-              />
-            </div>
-            <div>
-              <Label htmlFor="servings" className="text-base font-medium">Servings</Label>
-              <Input
-                id="servings"
-                type="number"
-                value={newRecipe.servings || ''}
-                onChange={(e) => setNewRecipe({ ...newRecipe, servings: parseInt(e.target.value) || 1 })}
-                placeholder="1"
-                className="mt-1"
-              />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Image Upload */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Recipe Image</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <EnhancedImageUpload
-            imagePreview={imagePreview}
-            isGenerating={isGeneratingImage}
-            generationProgress={generationProgress}
-            onImageChange={handleImageChange}
-            onGenerateImage={onGenerateImage}
-            recipeTitle={newRecipe.title}
-          />
-        </CardContent>
-      </Card>
-
-      {/* Recipe Classification - Single comprehensive selector */}
+      {/* Recipe Classification - Updated with better complexity level layout */}
       <SimpleCategorySelector
         recipe={newRecipe}
         onRecipeChange={setNewRecipe}
       />
 
-      {/* Enhanced Ingredients Manager */}
-      <EnhancedIngredientManager
-        ingredients={newRecipe.ingredients || []}
-        onIngredientsChange={handleIngredientsChange}
-      />
+      {/* Ingredients + Instructions - Two column layout on desktop */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Enhanced Ingredients Manager */}
+        <div className="lg:col-span-1">
+          <EnhancedIngredientManager
+            ingredients={newRecipe.ingredients || []}
+            onIngredientsChange={handleIngredientsChange}
+          />
+        </div>
 
-      {/* Enhanced Instructions Manager */}
-      <EnhancedInstructionManager
-        instructions={newRecipe.instructions || []}
-        onInstructionsChange={handleInstructionsChange}
-      />
+        {/* Enhanced Instructions Manager */}
+        <div className="lg:col-span-1">
+          <EnhancedInstructionManager
+            instructions={newRecipe.instructions || []}
+            onInstructionsChange={handleInstructionsChange}
+          />
+        </div>
+      </div>
     </div>
   );
 }

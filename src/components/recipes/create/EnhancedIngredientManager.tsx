@@ -71,57 +71,57 @@ export function EnhancedIngredientManager({ ingredients, onIngredientsChange }: 
   };
 
   return (
-    <Card className="p-2 sm:p-4 space-y-4 bg-white/60 backdrop-blur-sm border-white/30">
+    <Card className="p-3 space-y-3 bg-white/60 backdrop-blur-sm border-white/30 h-fit">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold text-gray-900">Ingredients</h3>
-        <Badge variant="secondary" className="bg-blue-50 text-blue-700">
-          {ingredients.length} {ingredients.length === 1 ? 'item' : 'items'}
+        <Badge variant="secondary" className="bg-blue-50 text-blue-700 text-xs">
+          {ingredients.length}
         </Badge>
       </div>
 
       {ingredients.length > 0 && (
-        <div className="space-y-2">
+        <div className="space-y-2 max-h-64 overflow-y-auto">
           {ingredients.map((ingredient, index) => (
             <div
               key={index}
-              className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg bg-white/50 hover:bg-white/70 transition-colors group"
+              className="flex items-center gap-2 p-2 rounded-lg bg-white/50 hover:bg-white/70 transition-colors group"
             >
-              {/* Reorder buttons - positioned prominently */}
-              <div className="flex flex-col gap-1 flex-shrink-0">
+              {/* Reorder buttons - more compact */}
+              <div className="flex flex-col gap-0.5 flex-shrink-0">
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => moveIngredient(index, 'up')}
                   disabled={index === 0}
-                  className="h-8 w-8 p-0 hover:bg-blue-100 disabled:opacity-30 rounded-md"
+                  className="h-6 w-6 p-0 hover:bg-blue-100 disabled:opacity-30"
                 >
-                  <ChevronUp className="h-4 w-4" />
+                  <ChevronUp className="h-3 w-3" />
                 </Button>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => moveIngredient(index, 'down')}
                   disabled={index === ingredients.length - 1}
-                  className="h-8 w-8 p-0 hover:bg-blue-100 disabled:opacity-30 rounded-md"
+                  className="h-6 w-6 p-0 hover:bg-blue-100 disabled:opacity-30"
                 >
-                  <ChevronDown className="h-4 w-4" />
+                  <ChevronDown className="h-3 w-3" />
                 </Button>
               </div>
               
               {editingIndex === index ? (
-                <div className="flex-1 flex flex-col sm:flex-row gap-2">
+                <div className="flex-1 flex flex-col gap-2">
                   <Input
                     value={editValue}
                     onChange={(e) => setEditValue(e.target.value)}
                     onKeyPress={(e) => handleKeyPress(e, saveEdit)}
-                    className="flex-1 text-sm"
+                    className="flex-1 text-sm h-8"
                     autoFocus
                   />
-                  <div className="flex gap-2 flex-shrink-0">
-                    <Button size="sm" onClick={saveEdit} className="px-3 text-xs sm:text-sm">
+                  <div className="flex gap-1">
+                    <Button size="sm" onClick={saveEdit} className="px-2 text-xs h-7">
                       Save
                     </Button>
-                    <Button size="sm" variant="outline" onClick={cancelEdit} className="px-3 text-xs sm:text-sm">
+                    <Button size="sm" variant="outline" onClick={cancelEdit} className="px-2 text-xs h-7">
                       Cancel
                     </Button>
                   </div>
@@ -129,7 +129,7 @@ export function EnhancedIngredientManager({ ingredients, onIngredientsChange }: 
               ) : (
                 <>
                   <span
-                    className="flex-1 text-sm cursor-pointer hover:text-blue-600 transition-colors break-words"
+                    className="flex-1 text-sm cursor-pointer hover:text-blue-600 transition-colors break-words leading-snug"
                     onClick={() => startEditing(index)}
                   >
                     {ingredient}
@@ -138,9 +138,9 @@ export function EnhancedIngredientManager({ ingredients, onIngredientsChange }: 
                     size="sm"
                     variant="ghost"
                     onClick={() => removeIngredient(index)}
-                    className="opacity-70 group-hover:opacity-100 transition-opacity hover:bg-red-50 hover:text-red-600 h-8 w-8 p-0 flex-shrink-0"
+                    className="opacity-70 group-hover:opacity-100 transition-opacity hover:bg-red-50 hover:text-red-600 h-6 w-6 p-0 flex-shrink-0"
                   >
-                    <X className="h-4 w-4" />
+                    <X className="h-3 w-3" />
                   </Button>
                 </>
               )}
@@ -149,27 +149,24 @@ export function EnhancedIngredientManager({ ingredients, onIngredientsChange }: 
         </div>
       )}
 
-      <div className="flex flex-col sm:flex-row gap-2">
+      <div className="space-y-2">
         <Input
           value={newIngredient}
           onChange={(e) => setNewIngredient(e.target.value)}
-          placeholder="Add ingredient (e.g., 2 cups flour, 1 tsp salt)"
-          className="flex-1"
+          placeholder="Add ingredient (e.g., 2 cups flour)"
+          className="text-sm h-9"
           onKeyPress={(e) => handleKeyPress(e, addIngredient)}
         />
         <Button 
           onClick={addIngredient} 
           disabled={!newIngredient.trim()}
-          className="px-4 sm:px-6 flex-shrink-0"
+          className="w-full h-8 text-sm"
+          size="sm"
         >
-          <Plus className="h-4 w-4 mr-1" />
-          Add
+          <Plus className="h-3 w-3 mr-1" />
+          Add Ingredient
         </Button>
       </div>
-
-      <p className="text-xs text-gray-500 mt-2">
-        💡 Tip: Use arrow buttons to reorder, click ingredient text to edit.
-      </p>
     </Card>
   );
 }
