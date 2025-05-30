@@ -88,13 +88,6 @@ export function CreateRecipeTabNavigation({
               })}
             </SelectContent>
           </Select>
-          
-          {/* Mobile Helper Text */}
-          {activeTabOption && (
-            <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
-              <p className="text-sm text-blue-800 font-medium">{activeTabOption.description}</p>
-            </div>
-          )}
         </div>
       ) : (
         /* Desktop Tabs */
@@ -110,13 +103,6 @@ export function CreateRecipeTabNavigation({
               );
             })}
           </TabsList>
-          
-          {/* Desktop Helper Text */}
-          {activeTabOption && (
-            <div className="px-1 mb-2">
-              <p className="text-sm text-muted-foreground text-center">{activeTabOption.description}</p>
-            </div>
-          )}
         </div>
       )}
 
