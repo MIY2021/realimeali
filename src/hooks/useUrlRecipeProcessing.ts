@@ -146,7 +146,7 @@ export function useUrlRecipeProcessing() {
       // Sanitize the recipe data - preserve all content faithfully
       const sanitizedRecipe = sanitizeRecipeData(data.parsedRecipe);
       
-      // Apply AI categorization but preserve original content
+      // Apply AI categorization but preserve original content with proper field mapping
       const recipeData = { 
         ...currentRecipe, 
         ...sanitizedRecipe,
@@ -154,13 +154,17 @@ export function useUrlRecipeProcessing() {
         ingredients: data.parsedRecipe.ingredients || sanitizedRecipe.ingredients,
         instructions: data.parsedRecipe.instructions || sanitizedRecipe.instructions,
         description: data.parsedRecipe.description || sanitizedRecipe.description,
-        // Apply AI classification
-        meal_type: data.parsedRecipe.mealType || currentRecipe.meal_type,
-        cuisine: data.parsedRecipe.cuisineRegion || currentRecipe.cuisine,
-        cooking_method: data.parsedRecipe.cookingMethod || currentRecipe.cooking_method,
-        diet_lifestyle: data.parsedRecipe.dietLifestyle || currentRecipe.diet_lifestyle || [],
-        complexity_level: data.parsedRecipe.complexityLevel || currentRecipe.complexity_level,
-        main_ingredient: data.parsedRecipe.mainIngredient || currentRecipe.main_ingredient,
+        // Fix field mapping for times - ensure they're properly mapped from AI response
+        prep_time: data.parsedRecipe.prepTime || data.parsedRecipe.prep_time || 15,
+        cook_time: data.parsedRecipe.cookTime || data.parsedRecipe.cook_time || 30,
+        servings: data.parsedRecipe.servings || 4,
+        // Apply AI classification with fallbacks to ensure categories are selected
+        meal_type: data.parsedRecipe.mealType || "dinner",
+        cuisine_region: data.parsedRecipe.cuisineRegion || "british", 
+        cooking_method: data.parsedRecipe.cookingMethod || "oven_baked",
+        diet_lifestyle: data.parsedRecipe.dietLifestyle || [],
+        complexity_level: data.parsedRecipe.complexityLevel || "standard",
+        main_ingredient: data.parsedRecipe.mainIngredient || "mixed",
         top_tip: data.parsedRecipe.topTip || "Enjoy cooking this delicious recipe!"
       };
       

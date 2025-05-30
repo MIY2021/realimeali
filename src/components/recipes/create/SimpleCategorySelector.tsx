@@ -1,8 +1,7 @@
 
 import { Recipe } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { UtensilsCrossed, X } from "lucide-react";
+import { UtensilsCrossed } from "lucide-react";
 import {
   MEAL_TYPE_OPTIONS,
   CUISINE_OPTIONS,
@@ -40,9 +39,9 @@ export function SimpleCategorySelector({ recipe, onRecipeChange }: SimpleCategor
     <button
       type="button"
       onClick={onClick}
-      className={`p-3 rounded-lg border-2 transition-all text-left ${
+      className={`p-3 rounded-lg border-2 transition-all text-left relative ${
         isSelected
-          ? 'border-terracotta bg-terracotta/10 text-terracotta font-medium'
+          ? 'border-green-500 bg-green-50 text-green-700'
           : 'border-gray-200 hover:border-gray-300 bg-white hover:bg-gray-50'
       }`}
     >
@@ -50,6 +49,13 @@ export function SimpleCategorySelector({ recipe, onRecipeChange }: SimpleCategor
         <span className="text-lg">{option.icon}</span>
         <span className="text-sm">{option.label}</span>
       </div>
+      {isSelected && (
+        <div className="absolute top-1 right-1">
+          <div className="h-5 w-5 bg-green-500 text-white rounded-full flex items-center justify-center text-xs font-bold">
+            ✓
+          </div>
+        </div>
+      )}
     </button>
   );
 
@@ -58,7 +64,7 @@ export function SimpleCategorySelector({ recipe, onRecipeChange }: SimpleCategor
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <UtensilsCrossed className="h-5 w-5 text-sage" />
-          Recipe Classification
+          Categories
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -130,37 +136,15 @@ export function SimpleCategorySelector({ recipe, onRecipeChange }: SimpleCategor
                   </div>
                   {isSelected && (
                     <div className="absolute top-1 right-1">
-                      <Badge variant="secondary" className="h-5 w-5 p-0 flex items-center justify-center">
+                      <div className="h-5 w-5 bg-green-500 text-white rounded-full flex items-center justify-center text-xs font-bold">
                         ✓
-                      </Badge>
+                      </div>
                     </div>
                   )}
                 </button>
               );
             })}
           </div>
-          
-          {/* Show selected tags */}
-          {recipe.diet_lifestyle && recipe.diet_lifestyle.length > 0 && (
-            <div className="mt-3 flex flex-wrap gap-2">
-              {recipe.diet_lifestyle.map((value) => {
-                const option = DIET_LIFESTYLE_OPTIONS.find(opt => opt.value === value);
-                return option ? (
-                  <Badge key={value} variant="secondary" className="flex items-center gap-1">
-                    <span>{option.icon}</span>
-                    <span>{option.label}</span>
-                    <button
-                      type="button"
-                      onClick={() => toggleDietLifestyle(value)}
-                      className="ml-1 hover:bg-gray-300 rounded-full p-0.5"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </Badge>
-                ) : null;
-              })}
-            </div>
-          )}
         </div>
       </CardContent>
     </Card>
