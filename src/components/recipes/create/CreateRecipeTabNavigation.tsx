@@ -19,12 +19,6 @@ interface CreateRecipeTabNavigationProps {
 
 const tabOptions: TabOption[] = [
   { 
-    value: "text", 
-    label: "Recipe Text", 
-    icon: Pencil,
-    description: "Paste a recipe from anywhere and our AI will format it perfectly"
-  },
-  { 
     value: "url", 
     label: "From Website", 
     icon: Globe,
@@ -41,6 +35,12 @@ const tabOptions: TabOption[] = [
     label: "AI Generate", 
     icon: Sparkles,
     description: "Describe what you want to cook and let AI create a complete recipe"
+  },
+  { 
+    value: "text", 
+    label: "Recipe Text", 
+    icon: Pencil,
+    description: "Paste a recipe from anywhere and our AI will format it perfectly"
   },
   { 
     value: "manual", 
@@ -66,7 +66,12 @@ export function CreateRecipeTabNavigation({
           <Select value={activeTab} onValueChange={setActiveTab}>
             <SelectTrigger className="w-full">
               <SelectValue>
-                {tabOptions.find(tab => tab.value === activeTab)?.label}
+                {activeTabOption && (
+                  <div className="flex items-center gap-2">
+                    <activeTabOption.icon className="h-4 w-4" />
+                    {activeTabOption.label}
+                  </div>
+                )}
               </SelectValue>
             </SelectTrigger>
             <SelectContent>

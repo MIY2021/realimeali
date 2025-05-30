@@ -11,6 +11,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { CreateRecipeHeader } from "./CreateRecipeHeader";
 import { CreateRecipeTabsWrapper } from "./CreateRecipeTabsWrapper";
 import { CreateRecipeActions } from "./CreateRecipeActions";
+import { Plus } from "lucide-react";
 
 export function CreateRecipeContainer() {
   const navigate = useNavigate();
@@ -20,7 +21,7 @@ export function CreateRecipeContainer() {
   const { toast } = useToast();
   const isMobile = useIsMobile();
 
-  const [activeTab, setActiveTab] = useState("manual");
+  const [activeTab, setActiveTab] = useState("url");
   const [isSaving, setIsSaving] = useState(false);
 
   // Keep hooks as objects instead of destructuring
@@ -115,8 +116,17 @@ export function CreateRecipeContainer() {
   const wrappedImportFromUrl = () => recipeProcessingHook.handleImportFromUrl(recipeFormHook.setNewRecipe, recipeFormHook.newRecipe, setActiveTab);
 
   return (
-    <div className="container max-w-5xl mx-auto py-6 px-4 space-y-6">
-      <CreateRecipeHeader onCancel={handleCancel} />
+    <div className="space-y-6">
+      {/* Title Section */}
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-3xl sm:text-4xl font-bold text-navy flex items-center gap-3 mb-2">
+          <Plus className="h-8 w-8 sm:h-10 sm:w-10 text-sage" />
+          Add New Recipe
+        </h1>
+        <p className="text-lg text-muted-foreground">
+          Create a new recipe for your household
+        </p>
+      </div>
       
       <CreateRecipeTabsWrapper
         isMobile={isMobile}
