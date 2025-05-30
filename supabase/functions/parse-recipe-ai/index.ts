@@ -355,9 +355,18 @@ Classification rules:
 - cookingMethod: one_pot, oven_baked, air_fryer, slow_cooker, pressure_cooker, bbq_grilled, stir_fried, roasted, raw_no_cook
 - dietLifestyle: ONLY include if 100% certain - check ALL ingredients carefully for meat/dairy/gluten: vegetarian, vegan, pescatarian, gluten_free, dairy_free, low_carb_keto, high_protein, paleo, diabetic_friendly, budget_meals, kid_friendly, pregnancy_safe
 - complexityLevel: quick_easy, standard, complex
-- mainIngredient: chicken, beef, pork, lamb, fish, tofu_tempeh, eggs, cheese, pasta, rice, lentils_beans, vegetables, potatoes, fruit, nuts_seeds, chocolate
+- mainIngredient: MUST be one of these EXACT values: chicken, beef, pork, lamb, fish, tofu_tempeh, eggs, cheese, pasta, rice, lentils_beans, vegetables, potatoes, fruit, nuts_seeds, chocolate
 
-IMPORTANT: If you detect ANY meat ingredients (ground beef, mince, chicken, etc.), do NOT include "vegetarian" in dietLifestyle array. Leave dietLifestyle empty if unsure.
+IMPORTANT: For mainIngredient, if the primary ingredient doesn't match exactly, choose the closest match:
+- Hot dogs/sausages → pork (or beef if beef hot dogs)
+- Seafood/shellfish → fish
+- Any beans/legumes → lentils_beans
+- Mixed vegetables → vegetables
+- Bread/flour items → pasta (closest grain option)
+- Dairy items → cheese
+- Nuts or seeds → nuts_seeds
+
+If you detect ANY meat ingredients (ground beef, mince, chicken, etc.), do NOT include "vegetarian" in dietLifestyle array. Leave dietLifestyle empty if unsure.
 
 Return ONLY valid JSON. No explanations.`;
 
@@ -394,9 +403,18 @@ Classification rules:
 - cookingMethod: one_pot, oven_baked, air_fryer, slow_cooker, pressure_cooker, bbq_grilled, stir_fried, roasted, raw_no_cook
 - dietLifestyle: ONLY include if 100% certain - check ALL ingredients carefully for meat/dairy/gluten: vegetarian, vegan, pescatarian, gluten_free, dairy_free, low_carb_keto, high_protein, paleo, diabetic_friendly, budget_meals, kid_friendly, pregnancy_safe
 - complexityLevel: quick_easy, standard, complex
-- mainIngredient: chicken, beef, pork, lamb, fish, tofu_tempeh, eggs, cheese, pasta, rice, lentils_beans, vegetables, potatoes, fruit, nuts_seeds, chocolate
+- mainIngredient: MUST be one of these EXACT values: chicken, beef, pork, lamb, fish, tofu_tempeh, eggs, cheese, pasta, rice, lentils_beans, vegetables, potatoes, fruit, nuts_seeds, chocolate
 
-IMPORTANT: If you detect ANY meat ingredients (ground beef, mince, chicken, etc.), do NOT include "vegetarian" in dietLifestyle array. Leave dietLifestyle empty if unsure.
+IMPORTANT: For mainIngredient, if the primary ingredient doesn't match exactly, choose the closest match:
+- Hot dogs/sausages → pork (or beef if beef hot dogs)
+- Seafood/shellfish → fish
+- Any beans/legumes → lentils_beans
+- Mixed vegetables → vegetables
+- Bread/flour items → pasta (closest grain option)
+- Dairy items → cheese
+- Nuts or seeds → nuts_seeds
+
+If you detect ANY meat ingredients (ground beef, mince, chicken, etc.), do NOT include "vegetarian" in dietLifestyle array. Leave dietLifestyle empty if unsure.
 
 Return ONLY valid JSON. No explanations.`;
 
@@ -436,9 +454,18 @@ Classification rules:
 - cookingMethod: one_pot, oven_baked, air_fryer, slow_cooker, pressure_cooker, bbq_grilled, stir_fried, roasted, raw_no_cook  
 - dietLifestyle: ONLY include if 100% certain - check ALL ingredients carefully for meat/dairy/gluten: vegetarian, vegan, pescatarian, gluten_free, dairy_free, low_carb_keto, high_protein, paleo, diabetic_friendly, budget_meals, kid_friendly, pregnancy_safe
 - complexityLevel: quick_easy, standard, complex
-- mainIngredient: chicken, beef, pork, lamb, fish, tofu_tempeh, eggs, cheese, pasta, rice, lentils_beans, vegetables, potatoes, fruit, nuts_seeds, chocolate
+- mainIngredient: MUST be one of these EXACT values: chicken, beef, pork, lamb, fish, tofu_tempeh, eggs, cheese, pasta, rice, lentils_beans, vegetables, potatoes, fruit, nuts_seeds, chocolate
 
-IMPORTANT: If you detect ANY meat ingredients (ground beef, mince, chicken, etc.), do NOT include "vegetarian" in dietLifestyle array. Leave dietLifestyle empty if unsure.
+IMPORTANT: For mainIngredient, if the primary ingredient doesn't match exactly, choose the closest match:
+- Hot dogs/sausages → pork (or beef if beef hot dogs)
+- Seafood/shellfish → fish
+- Any beans/legumes → lentils_beans
+- Mixed vegetables → vegetables
+- Bread/flour items → pasta (closest grain option)
+- Dairy items → cheese
+- Nuts or seeds → nuts_seeds
+
+If you detect ANY meat ingredients (ground beef, mince, chicken, etc.), do NOT include "vegetarian" in dietLifestyle array. Leave dietLifestyle empty if unsure.
 
 Create realistic recipes with proper ingredient amounts and detailed cooking steps. Return ONLY valid JSON.`;
 
