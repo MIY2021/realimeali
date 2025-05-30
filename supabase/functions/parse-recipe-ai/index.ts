@@ -1,4 +1,3 @@
-
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
@@ -34,7 +33,7 @@ async function retryWithBackoff<T>(
   throw new Error('Max retries exceeded');
 }
 
-// Enhanced website content extraction with image extraction
+// Enhanced website content extraction with improved image extraction
 async function extractWebsiteContent(url: string, extractImages: boolean = false) {
   try {
     console.log('Fetching website content from:', url);
@@ -56,29 +55,75 @@ async function extractWebsiteContent(url: string, extractImages: boolean = false
     
     // Extract images if requested
     if (extractImages) {
-      console.log('Extracting images from website...');
-      
-      // Extract image URLs from common patterns
-      const imagePatterns = [
-        /<img[^>]+src=["']([^"']+)["'][^>]*>/gi,
-        /<picture[^>]*>[\s\S]*?<img[^>]+src=["']([^"']+)["'][^>]*>[\s\S]*?<\/picture>/gi,
-        /data-src=["']([^"']+\.(?:jpg|jpeg|png|webp|gif))["']/gi,
-        /data-lazy-src=["']([^"']+\.(?:jpg|jpeg|png|webp|gif))["']/gi,
-      ];
+      console.log('Extracting images from website with enhanced patterns...');
       
       const imageUrls = new Set<string>();
+      
+      // 1. Extract from JSON-LD structured data (common on recipe sites)
+      const jsonLdMatches = html.match(/<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi);
+      if (jsonLdMatches) {
+        console.log('Found JSON-LD structured data blocks:', jsonLdMatches.length);
+        jsonLdMatches.forEach(match => {
+          try {
+            const jsonContent = match.replace(/<script[^>]*>/i, '').replace(/<\/script>/i, '');
+            const data = JSON.parse(jsonContent);
+            
+            // Extract images from structured data
+            const extractFromStructuredData = (obj: any) => {
+              if (!obj) return;
+              
+              if (typeof obj === 'string' && obj.match(/\.(jpg|jpeg|png|webp)$/i)) {
+                imageUrls.add(obj);
+              } else if (Array.isArray(obj)) {
+                obj.forEach(extractFromStructuredData);
+              } else if (typeof obj === 'object') {
+                // Look for common image properties
+                ['image', 'photo', 'thumbnail', 'url'].forEach(prop => {
+                  if (obj[prop]) {
+                    extractFromStructuredData(obj[prop]);
+                  }
+                });
+                
+                // Recursively check other properties
+                Object.values(obj).forEach(extractFromStructuredData);
+              }
+            };
+            
+            extractFromStructuredData(data);
+          } catch (e) {
+            console.log('Failed to parse JSON-LD block:', e);
+          }
+        });
+      }
+      
+      // 2. Enhanced image tag patterns
+      const imagePatterns = [
+        // Standard img tags
+        /<img[^>]+src=["']([^"']+)["'][^>]*>/gi,
+        // Picture elements
+        /<picture[^>]*>[\s\S]*?<img[^>]+src=["']([^"']+)["'][^>]*>[\s\S]*?<\/picture>/gi,
+        // Data attributes for lazy loading
+        /data-src=["']([^"']+\.(?:jpg|jpeg|png|webp|gif))["']/gi,
+        /data-lazy-src=["']([^"']+\.(?:jpg|jpeg|png|webp|gif))["']/gi,
+        /data-original=["']([^"']+\.(?:jpg|jpeg|png|webp|gif))["']/gi,
+        /data-srcset=["']([^"']+\.(?:jpg|jpeg|png|webp|gif))[^"']*["']/gi,
+        // Srcset attributes
+        /srcset=["']([^"']*\.(?:jpg|jpeg|png|webp|gif))[^"']*["']/gi,
+      ];
       
       for (const pattern of imagePatterns) {
         let match;
         while ((match = pattern.exec(html)) !== null) {
           let imageUrl = match[1];
           
-          // Skip base64, svg, and very small images
+          // Skip unwanted images
           if (imageUrl.startsWith('data:') || 
               imageUrl.includes('.svg') || 
               imageUrl.includes('placeholder') ||
               imageUrl.includes('loading') ||
-              imageUrl.includes('1x1')) {
+              imageUrl.includes('1x1') ||
+              imageUrl.includes('pixel') ||
+              imageUrl.includes('spacer')) {
             continue;
           }
           
@@ -93,15 +138,96 @@ async function extractWebsiteContent(url: string, extractImages: boolean = false
             imageUrl = `${urlObj.protocol}//${urlObj.host}/${imageUrl}`;
           }
           
-          // Filter for likely recipe images (reasonable size and format)
+          // Filter for likely recipe images
           if (imageUrl.match(/\.(jpg|jpeg|png|webp)$/i)) {
             imageUrls.add(imageUrl);
           }
         }
       }
       
-      extractedImages = Array.from(imageUrls).slice(0, 6); // Limit to 6 images
-      console.log(`Extracted ${extractedImages.length} images:`, extractedImages);
+      // 3. OpenGraph and meta tags
+      const metaImagePatterns = [
+        /<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/gi,
+        /<meta[^>]+name=["']twitter:image["'][^>]+content=["']([^"']+)["']/gi,
+        /<meta[^>]+property=["']article:image["'][^>]+content=["']([^"']+)["']/gi,
+      ];
+      
+      for (const pattern of metaImagePatterns) {
+        let match;
+        while ((match = pattern.exec(html)) !== null) {
+          let imageUrl = match[1];
+          if (imageUrl.startsWith('//')) {
+            imageUrl = 'https:' + imageUrl;
+          } else if (imageUrl.startsWith('/')) {
+            const urlObj = new URL(url);
+            imageUrl = `${urlObj.protocol}//${urlObj.host}${imageUrl}`;
+          }
+          if (imageUrl.match(/\.(jpg|jpeg|png|webp)$/i)) {
+            imageUrls.add(imageUrl);
+          }
+        }
+      }
+      
+      // 4. CSS background images
+      const cssBackgroundPattern = /background-image:\s*url\(["']?([^"')]+\.(?:jpg|jpeg|png|webp))["']?\)/gi;
+      let match;
+      while ((match = cssBackgroundPattern.exec(html)) !== null) {
+        let imageUrl = match[1];
+        if (imageUrl.startsWith('//')) {
+          imageUrl = 'https:' + imageUrl;
+        } else if (imageUrl.startsWith('/')) {
+          const urlObj = new URL(url);
+          imageUrl = `${urlObj.protocol}//${urlObj.host}${imageUrl}`;
+        }
+        imageUrls.add(imageUrl);
+      }
+      
+      // Convert Set to Array and prioritize recipe-related images
+      const allImages = Array.from(imageUrls);
+      console.log(`Found ${allImages.length} total images before filtering`);
+      
+      // Prioritize images that are likely to be recipe photos
+      const prioritizeImage = (imageUrl: string): number => {
+        let score = 0;
+        
+        // Higher score for recipe-related keywords in URL
+        const recipeKeywords = ['recipe', 'food', 'dish', 'cooking', 'kitchen', 'meal', 'ingredient'];
+        const urlLower = imageUrl.toLowerCase();
+        
+        recipeKeywords.forEach(keyword => {
+          if (urlLower.includes(keyword)) score += 10;
+        });
+        
+        // Prefer larger images (common pattern in URLs)
+        if (urlLower.includes('large') || urlLower.includes('big') || urlLower.includes('full')) score += 5;
+        if (urlLower.includes('thumb') || urlLower.includes('small') || urlLower.includes('mini')) score -= 5;
+        
+        // Prefer images with dimensions that suggest quality
+        const dimensionMatch = imageUrl.match(/(\d{3,4})x(\d{3,4})/);
+        if (dimensionMatch) {
+          const width = parseInt(dimensionMatch[1]);
+          const height = parseInt(dimensionMatch[2]);
+          if (width >= 400 && height >= 300) score += 15;
+        }
+        
+        // Penalize likely UI elements
+        const uiKeywords = ['logo', 'icon', 'button', 'banner', 'header', 'footer', 'nav', 'menu', 'social'];
+        uiKeywords.forEach(keyword => {
+          if (urlLower.includes(keyword)) score -= 20;
+        });
+        
+        return score;
+      };
+      
+      // Sort by priority and take top images
+      const prioritizedImages = allImages
+        .map(url => ({ url, score: prioritizeImage(url) }))
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 8) // Increase limit to 8 images
+        .map(item => item.url);
+      
+      extractedImages = prioritizedImages;
+      console.log(`Extracted ${extractedImages.length} prioritized images:`, extractedImages.map(img => img.substring(0, 100)));
     }
     
     // Extract text content
@@ -238,7 +364,6 @@ Return ONLY valid JSON. No explanations.`;
       userPrompt = `Extract recipe information from this website content:\n\n${websiteContent}`;
       
     } else if (body.recipeText) {
-      // Recipe text parsing
       systemPrompt = `You are a recipe parsing assistant. Extract recipe information from text and classify it across 6 dimensions. 
 
 CRITICAL: You MUST carefully examine ingredients for meat content. If ANY meat (beef, pork, lamb, chicken, turkey, fish, seafood, etc.) is present, the recipe CANNOT be classified as "vegetarian" or "vegan". Be extremely careful about this classification.
