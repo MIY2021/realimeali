@@ -1,3 +1,4 @@
+
 import { useCallback } from "react";
 import { MealType, MealPlan } from "@/types";
 import { useToast } from "@/hooks/use-toast";
@@ -47,7 +48,7 @@ export const useMealPlanOperations = (
         console.log("Adding meal plan:", { mealPlanData, weekNumber, userId: user.id, householdId: currentHousehold.id });
       }
       
-      // Ensure weekNumber is included in the meal plan data
+      // Create a clean meal plan object without timestamp fields
       const mealPlanWithWeek = {
         ...mealPlanData,
         week_number: weekNumber
