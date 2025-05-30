@@ -51,7 +51,7 @@ export function RecipeCard({ recipe, onAddToMealPlan, showActions = true }: Reci
 
   const getRecipeUrl = () => {
     const recipeSlug = createSlug(recipe.title);
-    return `/recipes/${recipeSlug}`;
+    return `/my-recipes/${recipeSlug}`;
   };
 
   const capitalizeFirst = (str: string) => {
@@ -83,9 +83,6 @@ export function RecipeCard({ recipe, onAddToMealPlan, showActions = true }: Reci
               Meal Type: {capitalizeFirst(recipe.meal_type)}
             </Badge>
           )}
-          {recipe.complexity_level && (
-            <Badge variant="outline">{capitalizeFirst(recipe.complexity_level)}</Badge>
-          )}
         </div>
 
         {/* Action buttons row */}
@@ -94,11 +91,12 @@ export function RecipeCard({ recipe, onAddToMealPlan, showActions = true }: Reci
             asChild
             variant="outline"
             size="sm"
-            className="flex-1"
+            className="flex-1 text-xs sm:text-sm"
           >
             <Link to={getRecipeUrl()}>
-              <Eye className="h-4 w-4 mr-2" />
-              View Recipe
+              <Eye className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">View Recipe</span>
+              <span className="sm:hidden">View</span>
             </Link>
           </Button>
           
@@ -106,11 +104,12 @@ export function RecipeCard({ recipe, onAddToMealPlan, showActions = true }: Reci
             <Button
               variant="default"
               size="sm"
-              className="flex-1"
+              className="flex-1 text-xs sm:text-sm"
               onClick={handleAddToMealPlan}
             >
-              <Plus className="h-4 w-4 mr-2" />
-              Add to Meal Plan
+              <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Add to Meal Plan</span>
+              <span className="sm:hidden">Add</span>
             </Button>
           )}
         </div>
