@@ -1,3 +1,4 @@
+
 import { TabsContent } from "@/components/ui/tabs";
 import { RecipeTextTab } from "./tabs/RecipeTextTab";
 import { RecipeUrlTab } from "./tabs/RecipeUrlTab";
@@ -27,7 +28,7 @@ export function RecipeTabsContent({
   onGenerateImage,
 }: RecipeTabsContentProps) {
   return (
-    <div className="pt-0 p-0 sm:p-4">
+    <div className="pt-0 p-0 sm:p-4 sm:pt-0">
       <TabsContent value="text">
         <RecipeTextTab
           recipeText={recipeProcessingHook.recipeText}

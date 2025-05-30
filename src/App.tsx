@@ -76,7 +76,7 @@ const App = () => (
                         }
                       />
                       <Route
-                        path="/my-recipes/:slug"
+                        path="/my-recipes/:id/:slug"
                         element={
                           <ProtectedRoute>
                             <RecipeDetail />
@@ -84,7 +84,7 @@ const App = () => (
                         }
                       />
                       <Route
-                        path="/my-recipes/:id/:slug"
+                        path="/my-recipes/:slug"
                         element={
                           <ProtectedRoute>
                             <RecipeDetail />

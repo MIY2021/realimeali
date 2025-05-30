@@ -12,7 +12,7 @@ import { AddToMealPlanDialog } from "@/components/recipes/AddToMealPlanDialog";
 import { Recipe } from "@/types";
 
 export default function RecipeDetail() {
-  const { id } = useParams<{ id: string }>();
+  const { id, slug } = useParams<{ id: string; slug?: string }>();
   const navigate = useNavigate();
   const { getRecipeById, deleteRecipe, toggleFavorite } = useRecipes();
   const { user } = useAuth();
@@ -20,7 +20,8 @@ export default function RecipeDetail() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isAddToMealPlanOpen, setIsAddToMealPlanOpen] = useState(false);
 
-  const recipe = id ? getRecipeById(id) : undefined;
+  // Try to get recipe by ID first, then fall back to slug for old URLs
+  const recipe = id ? getRecipeById(id) : (slug ? getRecipeById(slug) : undefined);
 
   useDocumentTitle(recipe ? `${recipe.title} | RealiMeali` : "Recipe | RealiMeali");
 

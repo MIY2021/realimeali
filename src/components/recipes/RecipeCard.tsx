@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
@@ -7,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Recipe } from "@/types";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { RecipeImage } from "@/components/ui/recipe-image";
+import { generateSlug } from "@/utils/slugUtils";
 
 interface RecipeCardProps {
   recipe: Recipe;
@@ -38,19 +40,9 @@ export function RecipeCard({ recipe, onAddToMealPlan, showActions = true }: Reci
     onAddToMealPlan(recipe);
   };
 
-  // Create URL-friendly slug from recipe title
-  const createSlug = (title: string) => {
-    return title
-      .toLowerCase()
-      .replace(/[^a-z0-9 -]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-')
-      .trim();
-  };
-
   const getRecipeUrl = () => {
-    const recipeSlug = createSlug(recipe.title);
-    return `/my-recipes/${recipeSlug}`;
+    const recipeSlug = generateSlug(recipe.title);
+    return `/my-recipes/${recipe.id}/${recipeSlug}`;
   };
 
   const capitalizeFirst = (str: string) => {
