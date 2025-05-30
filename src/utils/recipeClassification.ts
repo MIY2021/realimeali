@@ -18,14 +18,14 @@ export const MEAL_TYPE_OPTIONS: { value: MealType; label: string; icon: string }
 ];
 
 export const CUISINE_OPTIONS: { value: Cuisine; label: string; icon: string }[] = [
-  { value: "british", label: "British", icon: "🇬🇧" },
-  { value: "italian", label: "Italian", icon: "🇮🇹" },
-  { value: "asian", label: "Asian", icon: "🥢" },
-  { value: "mexican", label: "Mexican", icon: "🇲🇽" },
-  { value: "indian", label: "Indian", icon: "🇮🇳" },
+  { value: "british", label: "British", icon: "🍽️" },
+  { value: "italian", label: "Italian", icon: "🍕" },
+  { value: "asian", label: "Asian", icon: "🍜" },
+  { value: "mexican", label: "Mexican", icon: "🌮" },
+  { value: "indian", label: "Indian", icon: "🍛" },
   { value: "mediterranean", label: "Mediterranean", icon: "🫒" },
-  { value: "american", label: "American", icon: "🇺🇸" },
-  { value: "french", label: "French", icon: "🇫🇷" },
+  { value: "american", label: "American", icon: "🍔" },
+  { value: "french", label: "French", icon: "🥖" },
   { value: "middle_eastern", label: "Middle Eastern", icon: "🥙" },
   { value: "other", label: "Other", icon: "🌍" },
 ];
