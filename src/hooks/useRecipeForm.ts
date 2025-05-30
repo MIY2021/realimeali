@@ -1,105 +1,83 @@
-import { useState } from "react";
-import { Recipe } from "@/types";
 
-export function useRecipeForm() {
+import { useState } from "react";
+import { Recipe, DietLifestyle } from "@/types";
+
+export const useRecipeForm = (initialRecipe?: Partial<Recipe>) => {
   const [newRecipe, setNewRecipe] = useState<Omit<Recipe, 'id' | 'created_at' | 'updated_at' | 'created_by'>>({
-    title: "",
-    description: "",
-    ingredients: [],
-    instructions: [],
-    prep_time: 0,
-    cook_time: 0,
-    servings: 1,
-    image: "",
-    is_favorite: false,
-    household_id: "",
-    meal_type: undefined,
-    cuisine: undefined,
-    diet_lifestyle: [],
-    complexity_level: undefined,
-    slug: undefined,
-    top_tip: undefined,
-    cuisine_region: undefined,
-    cooking_method: undefined,
-    main_ingredient: undefined,
+    title: initialRecipe?.title || '',
+    description: initialRecipe?.description || '',
+    ingredients: initialRecipe?.ingredients || [],
+    instructions: initialRecipe?.instructions || [],
+    prep_time: initialRecipe?.prep_time || 0,
+    cook_time: initialRecipe?.cook_time || 0,
+    servings: initialRecipe?.servings || 1,
+    image: initialRecipe?.image || '',
+    is_favorite: initialRecipe?.is_favorite || false,
+    household_id: initialRecipe?.household_id || '',
+    meal_type: initialRecipe?.meal_type,
+    cuisine_region: initialRecipe?.cuisine_region,
+    cooking_method: initialRecipe?.cooking_method,
+    diet_lifestyle: initialRecipe?.diet_lifestyle || [],
+    complexity_level: initialRecipe?.complexity_level,
+    main_ingredient: initialRecipe?.main_ingredient,
+    top_tip: initialRecipe?.top_tip,
+    slug: initialRecipe?.slug,
   });
 
-  const [newCategory, setNewCategory] = useState("");
-  const [newIngredient, setNewIngredient] = useState("");
-  const [newInstruction, setNewInstruction] = useState("");
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
-  const [generationProgress, setGenerationProgress] = useState("");
-  const [shareWithCommunity, setShareWithCommunity] = useState(false);
-  const [wasImportedFromWebsite, setWasImportedFromWebsite] = useState(false);
+  const [newCategory, setNewCategory] = useState('');
+  const [newIngredient, setNewIngredient] = useState('');
+  const [newInstruction, setNewInstruction] = useState('');
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-        setNewRecipe({ ...newRecipe, image: reader.result as string });
-      };
-      reader.readAsDataURL(file);
+  const onAddCategory = () => {
+    if (newCategory.trim()) {
+      // Handle diet_lifestyle as proper DietLifestyle array
+      setNewRecipe(prevRecipe => ({
+        ...prevRecipe,
+        diet_lifestyle: [...(prevRecipe.diet_lifestyle || []), newCategory.trim() as DietLifestyle]
+      }));
+      setNewCategory('');
     }
   };
 
-  const handleAddCategory = () => {
-    if (newCategory.trim() !== "") {
-      setNewRecipe((prevRecipe) => {
-        const updatedCategories = [...(prevRecipe.diet_lifestyle || []), newCategory.trim()];
-        return { ...prevRecipe, diet_lifestyle: updatedCategories };
-      });
-      setNewCategory("");
+  const onRemoveCategory = (categoryToRemove: string) => {
+    setNewRecipe(prevRecipe => ({
+      ...prevRecipe,
+      diet_lifestyle: (prevRecipe.diet_lifestyle || []).filter(cat => cat !== categoryToRemove)
+    }));
+  };
+
+  const onAddIngredient = () => {
+    if (newIngredient.trim()) {
+      setNewRecipe(prevRecipe => ({
+        ...prevRecipe,
+        ingredients: [...prevRecipe.ingredients, newIngredient.trim()]
+      }));
+      setNewIngredient('');
     }
   };
 
-  const handleRemoveCategory = (categoryToRemove: string) => {
-    setNewRecipe((prevRecipe) => {
-      const updatedCategories = (prevRecipe.diet_lifestyle || []).filter(
-        (category) => category !== categoryToRemove
-      );
-      return { ...prevRecipe, diet_lifestyle: updatedCategories };
-    });
+  const onRemoveIngredient = (ingredientToRemove: string) => {
+    setNewRecipe(prevRecipe => ({
+      ...prevRecipe,
+      ingredients: prevRecipe.ingredients.filter(ing => ing !== ingredientToRemove)
+    }));
   };
 
-  const handleAddIngredient = () => {
-    if (newIngredient.trim() !== "") {
-      setNewRecipe((prevRecipe) => {
-        const updatedIngredients = [...prevRecipe.ingredients, newIngredient.trim()];
-        return { ...prevRecipe, ingredients: updatedIngredients };
-      });
-      setNewIngredient("");
+  const onAddInstruction = () => {
+    if (newInstruction.trim()) {
+      setNewRecipe(prevRecipe => ({
+        ...prevRecipe,
+        instructions: [...prevRecipe.instructions, newInstruction.trim()]
+      }));
+      setNewInstruction('');
     }
   };
 
-  const handleRemoveIngredient = (ingredientToRemove: string) => {
-    setNewRecipe((prevRecipe) => {
-      const updatedIngredients = prevRecipe.ingredients.filter(
-        (ingredient) => ingredient !== ingredientToRemove
-      );
-      return { ...prevRecipe, ingredients: updatedIngredients };
-    });
-  };
-
-  const handleAddInstruction = () => {
-    if (newInstruction.trim() !== "") {
-      setNewRecipe((prevRecipe) => {
-        const updatedInstructions = [...prevRecipe.instructions, newInstruction.trim()];
-        return { ...prevRecipe, instructions: updatedInstructions };
-      });
-      setNewInstruction("");
-    }
-  };
-
-  const handleRemoveInstruction = (instructionToRemove: string) => {
-    setNewRecipe((prevRecipe) => {
-      const updatedInstructions = prevRecipe.instructions.filter(
-        (instruction) => instruction !== instructionToRemove
-      );
-      return { ...prevRecipe, instructions: updatedInstructions };
-    });
+  const onRemoveInstruction = (instructionToRemove: string) => {
+    setNewRecipe(prevRecipe => ({
+      ...prevRecipe,
+      instructions: prevRecipe.instructions.filter(inst => inst !== instructionToRemove)
+    }));
   };
 
   return {
@@ -111,22 +89,11 @@ export function useRecipeForm() {
     setNewIngredient,
     newInstruction,
     setNewInstruction,
-    imagePreview,
-    setImagePreview,
-    isGeneratingImage,
-    setIsGeneratingImage,
-    generationProgress,
-    setGenerationProgress,
-    shareWithCommunity,
-    setShareWithCommunity,
-    wasImportedFromWebsite,
-    setWasImportedFromWebsite,
-    handleImageChange,
-    handleAddCategory,
-    handleRemoveCategory,
-    handleAddIngredient,
-    handleRemoveIngredient,
-    handleAddInstruction,
-    handleRemoveInstruction,
+    onAddCategory,
+    onRemoveCategory,
+    onAddIngredient,
+    onRemoveIngredient,
+    onAddInstruction,
+    onRemoveInstruction,
   };
-}
+};

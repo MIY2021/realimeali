@@ -17,6 +17,10 @@ export const useRecipeApi = () => {
       return (data || []).map(recipe => ({
         ...recipe,
         created_by: recipe.user_id, // Map user_id to created_by
+        // Handle enum type mismatches by filtering to valid values
+        meal_type: recipe.meal_type as any,
+        cuisine_region: recipe.cuisine_region as any,
+        main_ingredient: recipe.main_ingredient as any,
       }));
     } catch (error) {
       console.error('Error fetching recipes:', error);

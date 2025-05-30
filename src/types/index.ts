@@ -1,4 +1,3 @@
-
 export interface Recipe {
   id: string;
   title: string;
@@ -84,7 +83,7 @@ export interface PublicRecipeShare {
   shared_by_name: string;
   shared_by_household_name: string;
   title: string;
-  description: string;
+  description: string[];
   ingredients: string[];
   instructions: string[];
   prep_time: number;
@@ -115,8 +114,8 @@ export interface HouseholdMealPlan {
   };
 }
 
-// New simplified category types
-export type MealType = "breakfast" | "lunch" | "dinner" | "snacks" | "sides" | "desserts" | "drinks";
+// Updated enum types to match database exactly
+export type MealType = "breakfast" | "lunch" | "dinner" | "snacks" | "sides" | "desserts" | "drinks" | "sauces_dips" | "soups_stews" | "salads" | "baking_breads";
 export type MealPlanMealType = "breakfast" | "lunch" | "dinner" | "snacks";
 
 export type Cuisine = "british" | "italian" | "asian" | "mexican" | "indian" | "mediterranean" | "american" | "french" | "middle_eastern" | "other";
@@ -125,8 +124,8 @@ export type DietLifestyle = "vegetarian" | "vegan" | "gluten_free" | "dairy_free
 
 export type ComplexityLevel = "quick_easy" | "standard" | "complex";
 
-export type CuisineRegion = "british" | "italian" | "asian" | "mexican" | "indian" | "mediterranean" | "american" | "french" | "middle_eastern" | "other";
+export type CuisineRegion = "british" | "american" | "italian" | "french" | "mexican" | "indian" | "chinese" | "japanese" | "thai" | "mediterranean" | "middle_eastern" | "african" | "korean" | "caribbean" | "nordic" | "eastern_european";
 
 export type CookingMethod = "one_pot" | "oven_baked" | "air_fryer" | "slow_cooker" | "pressure_cooker" | "bbq_grilled" | "stir_fried" | "roasted" | "raw_no_cook";
 
-export type MainIngredient = "chicken" | "beef" | "pork" | "fish" | "seafood" | "lamb" | "turkey" | "vegetables" | "beans_legumes" | "grains" | "pasta" | "rice" | "eggs" | "dairy";
+export type MainIngredient = "chicken" | "beef" | "pork" | "lamb" | "fish" | "tofu_tempeh" | "eggs" | "cheese" | "pasta" | "rice" | "lentils_beans" | "vegetables" | "potatoes" | "fruit" | "nuts_seeds" | "chocolate";

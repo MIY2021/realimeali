@@ -39,13 +39,13 @@ export function useRecipeList({ recipes }: UseRecipeListProps) {
 
     // Filter by favorites only
     if (filters.showFavoritesOnly) {
-      filtered = filtered.filter(recipe => recipe.isFavorite);
+      filtered = filtered.filter(recipe => recipe.is_favorite);
     }
 
     // Filter by meal types
     if (filters.mealTypes.length > 0) {
       filtered = filtered.filter(recipe => 
-        recipe.mealType && filters.mealTypes.includes(recipe.mealType)
+        recipe.meal_type && filters.mealTypes.includes(recipe.meal_type)
       );
     }
 
@@ -59,7 +59,7 @@ export function useRecipeList({ recipes }: UseRecipeListProps) {
     // Filter by diet/lifestyle
     if (filters.dietLifestyle.length > 0) {
       filtered = filtered.filter(recipe => 
-        recipe.dietLifestyle && recipe.dietLifestyle.some(diet => 
+        recipe.diet_lifestyle && recipe.diet_lifestyle.some(diet => 
           filters.dietLifestyle.includes(diet)
         )
       );
@@ -68,7 +68,7 @@ export function useRecipeList({ recipes }: UseRecipeListProps) {
     // Filter by complexity levels
     if (filters.complexityLevels.length > 0) {
       filtered = filtered.filter(recipe => 
-        recipe.complexityLevel && filters.complexityLevels.includes(recipe.complexityLevel)
+        recipe.complexity_level && filters.complexityLevels.includes(recipe.complexity_level)
       );
     }
 
@@ -82,12 +82,12 @@ export function useRecipeList({ recipes }: UseRecipeListProps) {
           valueB = b.title.toLowerCase();
           break;
         case "prepTime":
-          valueA = a.prepTime;
-          valueB = b.prepTime;
+          valueA = a.prep_time;
+          valueB = b.prep_time;
           break;
         case "cookTime":
-          valueA = a.cookTime;
-          valueB = b.cookTime;
+          valueA = a.cook_time;
+          valueB = b.cook_time;
           break;
         default:
           valueA = a.title.toLowerCase();

@@ -1,4 +1,3 @@
-
 import { useCallback } from "react";
 import { MealType, MealPlan } from "@/types";
 import { useToast } from "@/hooks/use-toast";

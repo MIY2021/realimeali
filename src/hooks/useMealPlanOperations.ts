@@ -23,7 +23,7 @@ export function useMealPlanOperations() {
   };
 
   const addMealPlanOperation = async (
-    mealPlanData: Omit<MealPlan, 'id' | 'createdAt' | 'updatedAt'>,
+    mealPlanData: Omit<MealPlan, 'id' | 'created_at' | 'updated_at'>,
     weekNumber: 1 | 2
   ) => {
     if (!user || !currentHousehold) {
