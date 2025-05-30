@@ -9,15 +9,143 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Exponential backoff retry logic
+async function retryWithBackoff<T>(
+  fn: () => Promise<T>,
+  maxRetries: number = 3,
+  baseDelay: number = 1000
+): Promise<T> {
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (error) {
+      if (attempt === maxRetries) throw error;
+      
+      // Check if it's a retryable error
+      if (error?.status === 429 || error?.status === 408) {
+        const delay = baseDelay * Math.pow(2, attempt);
+        console.log(`Retrying in ${delay}ms (attempt ${attempt + 1}/${maxRetries + 1})`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      } else {
+        throw error;
+      }
+    }
+  }
+  throw new Error('Max retries exceeded');
+}
+
+// Enhanced website content extraction
+async function extractWebsiteContent(url: string) {
+  try {
+    console.log('Fetching website content from:', url);
+    
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; RecipeBot/1.0)',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch website: ${response.status} ${response.statusText}`);
+    }
+
+    const html = await response.text();
+    
+    // Extract potential recipe content using common selectors
+    const recipeSelectors = [
+      '.recipe-content',
+      '.recipe-instructions',
+      '.recipe-ingredients',
+      '[itemtype*="Recipe"]',
+      '.entry-content',
+      '.post-content',
+      'main',
+      'article'
+    ];
+
+    // Simple HTML parsing to extract text content
+    let content = html;
+    
+    // Remove script and style tags
+    content = content.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+    content = content.replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '');
+    
+    // Extract text from HTML tags
+    content = content.replace(/<[^>]*>/g, ' ');
+    content = content.replace(/\s+/g, ' ').trim();
+    
+    // Look for recipe-specific content
+    const recipeKeywords = ['ingredients', 'instructions', 'directions', 'recipe', 'cook', 'prep'];
+    const lines = content.split('\n');
+    const relevantLines = lines.filter(line => 
+      recipeKeywords.some(keyword => line.toLowerCase().includes(keyword)) ||
+      line.length > 20
+    );
+    
+    const extractedContent = relevantLines.join('\n').substring(0, 8000); // Limit content size
+    
+    console.log('Extracted content length:', extractedContent.length);
+    return extractedContent;
+  } catch (error) {
+    console.error('Error extracting website content:', error);
+    throw new Error(`Could not extract content from website: ${error.message}`);
+  }
+}
+
+// OpenAI API call with Flex processing
+async function callOpenAI(systemPrompt: string, userPrompt: string, useFlex: boolean = true) {
+  const requestBody: any = {
+    model: 'gpt-4o-mini',
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userPrompt }
+    ],
+    temperature: 0.3,
+    max_tokens: 2000,
+  };
+
+  // Add flex processing for cost optimization
+  if (useFlex) {
+    requestBody.service_tier = 'flex';
+  }
+
+  return await retryWithBackoff(async () => {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openAIApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestBody),
+      signal: AbortSignal.timeout(900000), // 15 minute timeout for flex processing
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error('OpenAI API error:', response.status, errorData);
+      
+      if (response.status === 429) {
+        const error = new Error(`Resource unavailable: ${errorData.error?.message || 'Rate limited'}`);
+        (error as any).status = 429;
+        throw error;
+      }
+      
+      throw new Error(`OpenAI API error: ${response.status} ${errorData.error?.message || response.statusText}`);
+    }
+
+    return await response.json();
+  });
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { content, type = 'text' } = await req.json();
-
-    console.log('Parse recipe request:', { type, contentLength: content?.length });
+    const body = await req.json();
+    console.log('Parse recipe request:', Object.keys(body));
 
     if (!openAIApiKey) {
       throw new Error('OpenAI API key not configured');
@@ -25,8 +153,51 @@ serve(async (req) => {
 
     let systemPrompt = '';
     let userPrompt = '';
+    let useFlex = true; // Default to flex processing for cost savings
 
-    if (type === 'text') {
+    // Handle different request types
+    if (body.websiteUrl) {
+      // Website URL import
+      console.log('Processing website URL:', body.websiteUrl);
+      
+      const websiteContent = await extractWebsiteContent(body.websiteUrl);
+      
+      systemPrompt = `You are a recipe parsing assistant. Extract recipe information from website content and classify it across 6 dimensions. 
+
+Return a JSON object with this EXACT structure:
+{
+  "title": "Recipe name",
+  "description": "Brief description (1-2 sentences)",
+  "ingredients": ["ingredient 1", "ingredient 2"],
+  "instructions": ["step 1", "step 2"],
+  "topTip": "One helpful cooking tip",
+  "prepTime": 15,
+  "cookTime": 30,
+  "servings": 4,
+  "classification": {
+    "mealType": "dinner",
+    "cuisineRegion": "italian", 
+    "cookingMethod": "oven_baked",
+    "dietLifestyle": ["vegetarian"],
+    "complexityLevel": "standard",
+    "mainIngredient": "pasta"
+  }
+}
+
+Classification options:
+- mealType: breakfast, lunch, dinner, snacks, sides, desserts, drinks, sauces_dips, soups_stews, salads, baking_breads
+- cuisineRegion: british, american, italian, french, mexican, indian, chinese, japanese, thai, mediterranean, middle_eastern, african, korean, caribbean, nordic, eastern_european  
+- cookingMethod: one_pot, oven_baked, air_fryer, slow_cooker, pressure_cooker, bbq_grilled, stir_fried, roasted, raw_no_cook
+- dietLifestyle: vegetarian, vegan, pescatarian, gluten_free, dairy_free, low_carb_keto, high_protein, paleo, diabetic_friendly, budget_meals, kid_friendly, pregnancy_safe (can be multiple)
+- complexityLevel: quick_easy, standard, complex
+- mainIngredient: chicken, beef, pork, lamb, fish, tofu_tempeh, eggs, cheese, pasta, rice, lentils_beans, vegetables, potatoes, fruit, nuts_seeds, chocolate
+
+Return ONLY valid JSON. No explanations.`;
+
+      userPrompt = `Extract recipe information from this website content:\n\n${websiteContent}`;
+      
+    } else if (body.recipeText) {
+      // Recipe text parsing
       systemPrompt = `You are a recipe parsing assistant. Extract recipe information from text and classify it across 6 dimensions. 
 
 Return a JSON object with this EXACT structure:
@@ -59,8 +230,12 @@ Classification options:
 
 Return ONLY valid JSON. No explanations.`;
 
-      userPrompt = `Parse this recipe text and classify it:\n\n${content}`;
-    } else if (type === 'generate') {
+      userPrompt = `Parse this recipe text and classify it:\n\n${body.recipeText}`;
+      
+    } else if (body.generateRequest) {
+      // AI recipe generation
+      console.log('Generating recipe with AI for:', body.generateRequest);
+      
       systemPrompt = `You are a creative recipe generator. Create an original recipe based on the user's request and classify it across 6 dimensions.
 
 Return a JSON object with this EXACT structure:
@@ -93,33 +268,41 @@ Classification options:
 
 Create realistic recipes with proper ingredient amounts and detailed cooking steps. Return ONLY valid JSON.`;
 
-      userPrompt = `Generate a recipe for: ${content}`;
+      let generationPrompt = body.generateRequest;
+      
+      // Add style preferences to the prompt
+      if (body.stylePreferences && body.stylePreferences.length > 0) {
+        const styleDescriptions = {
+          'quick-easy': 'Make this recipe quick and easy with minimal prep time and simple techniques',
+          'cheap-cheerful': 'Focus on budget-friendly ingredients and cost-effective cooking methods',
+          'michelin-star': 'Create an elevated, restaurant-quality dish with sophisticated techniques and presentation'
+        };
+        
+        const styles = body.stylePreferences.map(style => styleDescriptions[style] || style).join(', ');
+        generationPrompt += `\n\nStyle preferences: ${styles}`;
+      }
+      
+      userPrompt = `Generate a recipe for: ${generationPrompt}`;
+      useFlex = true; // Use flex for generation to save costs
+      
+    } else {
+      throw new Error('Missing required parameters. Provide websiteUrl, recipeText, or generateRequest.');
     }
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt }
-        ],
-        temperature: type === 'generate' ? 0.8 : 0.3,
-        max_tokens: 2000,
-      }),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error('OpenAI API error:', errorData);
-      throw new Error(`OpenAI API error: ${response.status}`);
+    // Make OpenAI API call with retry logic and flex processing
+    let data;
+    try {
+      data = await callOpenAI(systemPrompt, userPrompt, useFlex);
+    } catch (error) {
+      // If flex processing fails with resource unavailability, fallback to standard tier
+      if (error?.status === 429 && useFlex) {
+        console.log('Flex processing unavailable, falling back to standard tier...');
+        data = await callOpenAI(systemPrompt, userPrompt, false);
+      } else {
+        throw error;
+      }
     }
 
-    const data = await response.json();
     const content_text = data.choices[0].message.content;
 
     console.log('OpenAI response received, parsing JSON...');
@@ -153,7 +336,7 @@ Create realistic recipes with proper ingredient amounts and detailed cooking ste
         classification: parsedRecipe.classification
       });
 
-      return new Response(JSON.stringify(cleanedRecipe), {
+      return new Response(JSON.stringify({ parsedRecipe: cleanedRecipe }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
 
@@ -173,7 +356,18 @@ Create realistic recipes with proper ingredient amounts and detailed cooking ste
 
   } catch (error) {
     console.error('Error in parse-recipe-ai function:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    
+    // Provide specific error messages for different failure types
+    let errorMessage = error.message;
+    if (error.message?.includes('Resource unavailable')) {
+      errorMessage = 'AI service is temporarily busy. Please try again in a moment.';
+    } else if (error.message?.includes('timeout')) {
+      errorMessage = 'Request timed out. Please try with a shorter recipe or try again later.';
+    } else if (error.message?.includes('rate limit')) {
+      errorMessage = 'Too many requests. Please wait a moment before trying again.';
+    }
+    
+    return new Response(JSON.stringify({ error: errorMessage }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

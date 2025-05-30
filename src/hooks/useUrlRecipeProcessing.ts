@@ -80,28 +80,34 @@ export function useUrlRecipeProcessing() {
         console.error('Error calling parse-recipe-ai function:', error);
         
         // Handle specific error codes
-        if (error.message?.includes('RATE_LIMIT')) {
+        if (error.message?.includes('Resource unavailable')) {
           toast({
-            title: "Rate Limit Exceeded",
-            description: "Please wait a moment before trying again.",
+            title: "AI Service Busy",
+            description: "The AI service is temporarily busy. Please try again in a moment.",
             variant: "destructive",
           });
-        } else if (error.message?.includes('INVALID_URL')) {
+        } else if (error.message?.includes('timeout')) {
           toast({
-            title: "Invalid Website",
-            description: "The URL format is not supported.",
+            title: "Import Timeout",
+            description: "Website took too long to process. Please try again.",
             variant: "destructive",
           });
-        } else if (error.message?.includes('WEBSITE_FETCH_ERROR')) {
+        } else if (error.message?.includes('Could not extract content')) {
           toast({
-            title: "Access Error",
-            description: "Could not access the website. Please check the URL.",
+            title: "Website Access Error",
+            description: "Could not access the website content. Please check the URL or try a different recipe website.",
+            variant: "destructive",
+          });
+        } else if (error.message?.includes('rate limit')) {
+          toast({
+            title: "Rate Limit",
+            description: "Too many requests. Please wait a moment before trying again.",
             variant: "destructive",
           });
         } else {
           toast({
             title: "Import Failed",
-            description: "Failed to import from website. Please try again.",
+            description: "Failed to import from website. Please try again or use a different URL.",
             variant: "destructive",
           });
         }
@@ -111,7 +117,7 @@ export function useUrlRecipeProcessing() {
       if (!data?.parsedRecipe) {
         toast({
           title: "No Recipe Found",
-          description: "Could not find recipe data on this website.",
+          description: "Could not find recipe data on this website. Try a different recipe URL.",
           variant: "destructive",
         });
         return;
@@ -155,7 +161,7 @@ export function useUrlRecipeProcessing() {
         : '';
       
       toast({
-        title: "Recipe Imported!",
+        title: "Recipe Imported! 🎉",
         description: `Recipe details extracted successfully.${imageMessage}`,
       });
     } catch (error) {
