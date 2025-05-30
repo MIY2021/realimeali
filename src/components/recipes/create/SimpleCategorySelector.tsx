@@ -41,7 +41,7 @@ export function SimpleCategorySelector({ recipe, onRecipeChange }: SimpleCategor
       className={`p-3 rounded-lg border-2 transition-all text-left relative ${
         isSelected
           ? 'border-green-500 bg-green-50 text-green-700'
-          : 'border-gray-200 hover:border-gray-300 bg-white hover:bg-gray-50'
+          : 'border-gray-200 hover:border-gray-300 bg-white/50 hover:bg-white/70'
       }`}
     >
       <div className="flex items-center gap-2">
@@ -59,15 +59,15 @@ export function SimpleCategorySelector({ recipe, onRecipeChange }: SimpleCategor
   );
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Categories</CardTitle>
+    <Card className="bg-white/60 backdrop-blur-sm border-white/30">
+      <CardHeader className="pb-4">
+        <CardTitle className="text-lg">Categories</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Meal Type */}
         <div>
           <label className="text-sm font-medium mb-3 block">Meal Type</label>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
             {MEAL_TYPE_OPTIONS.map((option) => (
               <CategoryButton
                 key={option.value}
@@ -82,7 +82,7 @@ export function SimpleCategorySelector({ recipe, onRecipeChange }: SimpleCategor
         {/* Cuisine */}
         <div>
           <label className="text-sm font-medium mb-3 block">Cuisine</label>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
             {CUISINE_OPTIONS.map((option) => (
               <CategoryButton
                 key={option.value}
@@ -112,7 +112,7 @@ export function SimpleCategorySelector({ recipe, onRecipeChange }: SimpleCategor
         {/* Diet & Lifestyle */}
         <div>
           <label className="text-sm font-medium mb-3 block">Diet & Lifestyle (select multiple)</label>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
             {DIET_LIFESTYLE_OPTIONS.map((option) => {
               const isSelected = (recipe.diet_lifestyle || []).includes(option.value as any);
               return (
@@ -123,7 +123,7 @@ export function SimpleCategorySelector({ recipe, onRecipeChange }: SimpleCategor
                   className={`p-3 rounded-lg border-2 transition-all text-left relative ${
                     isSelected
                       ? 'border-green-500 bg-green-50 text-green-700'
-                      : 'border-gray-200 hover:border-gray-300 bg-white hover:bg-gray-50'
+                      : 'border-gray-200 hover:border-gray-300 bg-white/50 hover:bg-white/70'
                   }`}
                 >
                   <div className="flex items-center gap-2">

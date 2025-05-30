@@ -7,7 +7,7 @@ export default function CreateRecipePage() {
   
   return (
     <div className="min-h-screen bg-cream">
-      <div className="container max-w-4xl mx-auto py-3 px-2 sm:px-4 space-y-6">
+      <div className="container max-w-6xl mx-auto py-3 px-2 sm:px-4 space-y-6">
         <CreateRecipeContainer />
       </div>
     </div>

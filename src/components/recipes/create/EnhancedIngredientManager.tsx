@@ -71,7 +71,7 @@ export function EnhancedIngredientManager({ ingredients, onIngredientsChange }: 
   };
 
   return (
-    <Card className="p-3 sm:p-4 space-y-4 mx-2 sm:mx-0">
+    <Card className="p-2 sm:p-4 space-y-4 bg-white/60 backdrop-blur-sm border-white/30">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold text-gray-900">Ingredients</h3>
         <Badge variant="secondary" className="bg-blue-50 text-blue-700">
@@ -84,32 +84,32 @@ export function EnhancedIngredientManager({ ingredients, onIngredientsChange }: 
           {ingredients.map((ingredient, index) => (
             <div
               key={index}
-              className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors group"
+              className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg bg-white/50 hover:bg-white/70 transition-colors group"
             >
-              {/* Reorder buttons - larger and more prominent */}
-              <div className="flex flex-col gap-1">
+              {/* Reorder buttons - positioned prominently */}
+              <div className="flex flex-col gap-1 flex-shrink-0">
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => moveIngredient(index, 'up')}
                   disabled={index === 0}
-                  className="h-6 w-6 p-0 hover:bg-blue-100 disabled:opacity-30"
+                  className="h-8 w-8 p-0 hover:bg-blue-100 disabled:opacity-30 rounded-md"
                 >
-                  <ChevronUp className="h-3 w-3" />
+                  <ChevronUp className="h-4 w-4" />
                 </Button>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => moveIngredient(index, 'down')}
                   disabled={index === ingredients.length - 1}
-                  className="h-6 w-6 p-0 hover:bg-blue-100 disabled:opacity-30"
+                  className="h-8 w-8 p-0 hover:bg-blue-100 disabled:opacity-30 rounded-md"
                 >
-                  <ChevronDown className="h-3 w-3" />
+                  <ChevronDown className="h-4 w-4" />
                 </Button>
               </div>
               
               {editingIndex === index ? (
-                <div className="flex-1 flex gap-2">
+                <div className="flex-1 flex flex-col sm:flex-row gap-2">
                   <Input
                     value={editValue}
                     onChange={(e) => setEditValue(e.target.value)}
@@ -117,17 +117,19 @@ export function EnhancedIngredientManager({ ingredients, onIngredientsChange }: 
                     className="flex-1 text-sm"
                     autoFocus
                   />
-                  <Button size="sm" onClick={saveEdit} className="px-2 sm:px-3 text-xs sm:text-sm">
-                    Save
-                  </Button>
-                  <Button size="sm" variant="outline" onClick={cancelEdit} className="px-2 sm:px-3 text-xs sm:text-sm">
-                    Cancel
-                  </Button>
+                  <div className="flex gap-2 flex-shrink-0">
+                    <Button size="sm" onClick={saveEdit} className="px-3 text-xs sm:text-sm">
+                      Save
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={cancelEdit} className="px-3 text-xs sm:text-sm">
+                      Cancel
+                    </Button>
+                  </div>
                 </div>
               ) : (
                 <>
                   <span
-                    className="flex-1 text-sm cursor-pointer hover:text-blue-600 transition-colors"
+                    className="flex-1 text-sm cursor-pointer hover:text-blue-600 transition-colors break-words"
                     onClick={() => startEditing(index)}
                   >
                     {ingredient}
@@ -136,7 +138,7 @@ export function EnhancedIngredientManager({ ingredients, onIngredientsChange }: 
                     size="sm"
                     variant="ghost"
                     onClick={() => removeIngredient(index)}
-                    className="opacity-70 group-hover:opacity-100 transition-opacity hover:bg-red-50 hover:text-red-600 h-8 w-8 p-0"
+                    className="opacity-70 group-hover:opacity-100 transition-opacity hover:bg-red-50 hover:text-red-600 h-8 w-8 p-0 flex-shrink-0"
                   >
                     <X className="h-4 w-4" />
                   </Button>
@@ -147,7 +149,7 @@ export function EnhancedIngredientManager({ ingredients, onIngredientsChange }: 
         </div>
       )}
 
-      <div className="flex gap-2">
+      <div className="flex flex-col sm:flex-row gap-2">
         <Input
           value={newIngredient}
           onChange={(e) => setNewIngredient(e.target.value)}
@@ -158,7 +160,7 @@ export function EnhancedIngredientManager({ ingredients, onIngredientsChange }: 
         <Button 
           onClick={addIngredient} 
           disabled={!newIngredient.trim()}
-          className="px-4 sm:px-6"
+          className="px-4 sm:px-6 flex-shrink-0"
         >
           <Plus className="h-4 w-4 mr-1" />
           Add

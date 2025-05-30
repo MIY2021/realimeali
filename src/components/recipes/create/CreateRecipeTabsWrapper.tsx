@@ -38,7 +38,7 @@ export function CreateRecipeTabsWrapper({
 
   return (
     <div className="space-y-6">
-      <div className="bg-white rounded-none sm:rounded-lg shadow-none sm:shadow-sm border-0 sm:border">
+      <div className="bg-white/50 backdrop-blur-sm rounded-none sm:rounded-lg shadow-none sm:shadow-md border-0 sm:border border-white/20">
         <CreateRecipeTabNavigation 
           isMobile={isMobile}
           activeTab={activeTab}

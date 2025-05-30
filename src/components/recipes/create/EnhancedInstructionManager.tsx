@@ -64,7 +64,7 @@ export function EnhancedInstructionManager({ instructions, onInstructionsChange 
   };
 
   return (
-    <Card className="p-3 sm:p-4 space-y-4 mx-2 sm:mx-0">
+    <Card className="p-2 sm:p-4 space-y-4 bg-white/60 backdrop-blur-sm border-white/30">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold text-gray-900">Instructions</h3>
         <Badge variant="secondary" className="bg-green-50 text-green-700">
@@ -77,32 +77,32 @@ export function EnhancedInstructionManager({ instructions, onInstructionsChange 
           {instructions.map((instruction, index) => (
             <div
               key={index}
-              className="flex gap-2 sm:gap-3 p-3 sm:p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors group"
+              className="flex gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg bg-white/50 hover:bg-white/70 transition-colors group"
             >
-              <div className="flex flex-col items-center gap-2">
-                <div className="w-7 h-7 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-semibold flex-shrink-0">
+              <div className="flex flex-col items-center gap-2 flex-shrink-0">
+                <div className="w-7 h-7 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-semibold">
                   {index + 1}
                 </div>
                 
-                {/* Reorder buttons - larger and more prominent */}
+                {/* Reorder buttons - positioned prominently */}
                 <div className="flex flex-col gap-1">
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => moveInstruction(index, 'up')}
                     disabled={index === 0}
-                    className="h-6 w-6 p-0 hover:bg-blue-100 disabled:opacity-30"
+                    className="h-8 w-8 p-0 hover:bg-blue-100 disabled:opacity-30 rounded-md"
                   >
-                    <ChevronUp className="h-3 w-3" />
+                    <ChevronUp className="h-4 w-4" />
                   </Button>
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => moveInstruction(index, 'down')}
                     disabled={index === instructions.length - 1}
-                    className="h-6 w-6 p-0 hover:bg-blue-100 disabled:opacity-30"
+                    className="h-8 w-8 p-0 hover:bg-blue-100 disabled:opacity-30 rounded-md"
                   >
-                    <ChevronDown className="h-3 w-3" />
+                    <ChevronDown className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
@@ -125,9 +125,9 @@ export function EnhancedInstructionManager({ instructions, onInstructionsChange 
                   </div>
                 </div>
               ) : (
-                <div className="flex-1 flex items-start justify-between">
+                <div className="flex-1 flex flex-col sm:flex-row sm:items-start justify-between gap-2">
                   <p
-                    className="text-sm leading-relaxed cursor-pointer hover:text-blue-600 transition-colors flex-1 pr-2 sm:pr-4"
+                    className="text-sm leading-relaxed cursor-pointer hover:text-blue-600 transition-colors flex-1 break-words"
                     onClick={() => startEditing(index)}
                   >
                     {instruction}
@@ -136,7 +136,7 @@ export function EnhancedInstructionManager({ instructions, onInstructionsChange 
                     size="sm"
                     variant="ghost"
                     onClick={() => removeInstruction(index)}
-                    className="opacity-70 group-hover:opacity-100 transition-opacity hover:bg-red-50 hover:text-red-600 flex-shrink-0 h-8 w-8 p-0"
+                    className="opacity-70 group-hover:opacity-100 transition-opacity hover:bg-red-50 hover:text-red-600 flex-shrink-0 h-8 w-8 p-0 self-start"
                   >
                     <X className="h-4 w-4" />
                   </Button>
@@ -154,7 +154,7 @@ export function EnhancedInstructionManager({ instructions, onInstructionsChange 
           placeholder="Describe the next step in detail... (e.g., Preheat oven to 350°F and grease a 9x13 baking dish)"
           className="min-h-[80px]"
         />
-        <div className="flex justify-between items-center gap-2">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
           <Button 
             onClick={addInstruction} 
             disabled={!newInstruction.trim()}
@@ -163,7 +163,7 @@ export function EnhancedInstructionManager({ instructions, onInstructionsChange 
             <Plus className="h-4 w-4 mr-1" />
             Add Step {instructions.length + 1}
           </Button>
-          <p className="text-xs text-gray-500 hidden sm:block">
+          <p className="text-xs text-gray-500">
             <Clock className="h-3 w-3 inline mr-1" />
             Be specific about timing and temperature
           </p>
