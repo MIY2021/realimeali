@@ -139,7 +139,6 @@ export function RecipeManualTab({
         <CardContent>
           <EnhancedImageUpload
             imagePreview={imagePreview}
-            currentImage={newRecipe.image}
             isGenerating={isGeneratingImage}
             generationProgress={generationProgress}
             onImageChange={handleImageChange}
@@ -172,9 +171,9 @@ export function RecipeManualTab({
               <Plus className="h-4 w-4" />
             </Button>
           </div>
-          {newRecipe.category && newRecipe.category.length > 0 && (
+          {newRecipe.diet_lifestyle && newRecipe.diet_lifestyle.length > 0 && (
             <div className="flex flex-wrap gap-2">
-              {newRecipe.category.map((category, index) => (
+              {newRecipe.diet_lifestyle.map((category, index) => (
                 <Badge key={index} variant="secondary" className="flex items-center gap-1">
                   {category}
                   <button

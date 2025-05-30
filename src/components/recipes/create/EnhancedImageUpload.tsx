@@ -6,7 +6,7 @@ import { Upload, Camera, Sparkles, X } from "lucide-react";
 
 interface EnhancedImageUploadProps {
   imagePreview: string | null;
-  isGeneratingImage: boolean;
+  isGenerating: boolean;
   generationProgress: string;
   onImageChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onGenerateImage: () => void;
@@ -15,7 +15,7 @@ interface EnhancedImageUploadProps {
 
 export function EnhancedImageUpload({
   imagePreview,
-  isGeneratingImage,
+  isGenerating,
   generationProgress,
   onImageChange,
   onGenerateImage,
@@ -64,9 +64,7 @@ export function EnhancedImageUpload({
   };
 
   return (
-    <Card className="p-4 space-y-4">
-      <h3 className="text-lg font-semibold text-gray-900">Recipe Image</h3>
-      
+    <div className="space-y-4">
       {imagePreview ? (
         <div className="relative group">
           <img
@@ -128,11 +126,11 @@ export function EnhancedImageUpload({
 
         <Button
           onClick={onGenerateImage}
-          disabled={isGeneratingImage || !recipeTitle.trim()}
+          disabled={isGenerating || !recipeTitle.trim()}
           variant="outline"
           className="w-full"
         >
-          {isGeneratingImage ? (
+          {isGenerating ? (
             <>
               <Camera className="h-4 w-4 mr-2 animate-pulse" />
               Generating...
@@ -146,7 +144,7 @@ export function EnhancedImageUpload({
         </Button>
       </div>
 
-      {isGeneratingImage && generationProgress && (
+      {isGenerating && generationProgress && (
         <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
           <p className="text-sm text-blue-700 flex items-center">
             <Sparkles className="h-4 w-4 mr-2 animate-spin" />
@@ -158,6 +156,6 @@ export function EnhancedImageUpload({
       <p className="text-xs text-gray-500">
         💡 Tip: High-quality images make your recipes more appealing and easier to follow.
       </p>
-    </Card>
+    </div>
   );
 }
