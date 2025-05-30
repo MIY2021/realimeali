@@ -26,16 +26,16 @@ export function useUrlRecipeProcessing() {
   const [selectedImage, setSelectedImage] = useState("");
 
   const funnyMessages = [
-    "🕵️ Sneaking into the kitchen...",
-    "🔍 Analyzing secret ingredients...",
-    "🧠 Teaching AI what delicious looks like...",
-    "📝 Copying the chef's homework...",
-    "🎭 Pretending to be a food critic...",
-    "🔬 Extracting flavor molecules...",
-    "📸 Taking sneaky recipe photos...",
-    "🎪 Performing culinary magic tricks...",
-    "🦸 Unleashing recipe superpowers...",
-    "🎯 Hunting down those instructions..."
+    "🤓 Oh where did I put my reading glasses...",
+    "😋 WOW this recipe looks tasty!",
+    "🤤 Getting hungry just looking at this...",
+    "🕵️ Investigating kitchen mysteries...",
+    "🎭 Putting on my chef hat...",
+    "🦸 Activating recipe superpowers...",
+    "🔮 Consulting the culinary crystal ball...",
+    "🎪 Performing food magic tricks...",
+    "🧙‍♂️ Brewing up some recipe wizardry...",
+    "🎯 Hunting for flavor treasures..."
   ];
 
   const handleImportFromUrl = async (
