@@ -5,7 +5,6 @@ import { RecipeUrlTab } from "./tabs/RecipeUrlTab";
 import { RecipeImageTab } from "./tabs/RecipeImageTab";
 import { RecipeGenerateTab } from "./tabs/RecipeGenerateTab";
 import { RecipeManualTab } from "./tabs/RecipeManualTab";
-import { EnhancedImageSelection } from "../dialog/EnhancedImageSelection";
 
 interface RecipeTabsContentProps {
   isMobile: boolean;
@@ -79,41 +78,30 @@ export function RecipeTabsContent({
       </TabsContent>
 
       <TabsContent value="manual">
-        <div className="space-y-4 sm:space-y-6">
-          {/* Show image selection if images are available from website import */}
-          {(recipeProcessingHook.websiteImages.length > 0 || recipeProcessingHook.storedImages.length > 0) && (
-            <EnhancedImageSelection
-              images={recipeProcessingHook.websiteImages}
-              storedImages={recipeProcessingHook.storedImages}
-              selectedImage={recipeFormHook.newRecipe.image || ""}
-              onImageSelect={(url) => recipeFormHook.setNewRecipe({ 
-                ...recipeFormHook.newRecipe, 
-                image: url 
-              })}
-              onDownloadImages={recipeProcessingHook.handleDownloadImages}
-              isDownloading={recipeProcessingHook.isDownloadingImages}
-            />
-          )}
-          
-          <RecipeManualTab
-            isMobile={isMobile}
-            newRecipe={recipeFormHook.newRecipe}
-            setNewRecipe={recipeFormHook.setNewRecipe}
-            newIngredient={recipeFormHook.newIngredient}
-            setNewIngredient={recipeFormHook.setNewIngredient}
-            newInstruction={recipeFormHook.newInstruction}
-            setNewInstruction={recipeFormHook.setNewInstruction}
-            imagePreview={recipeFormHook.imagePreview}
-            isGeneratingImage={recipeFormHook.isGeneratingImage}
-            generationProgress={recipeFormHook.generationProgress}
-            onImageChange={recipeFormHook.handleImageChange}
-            onGenerateImage={onGenerateImage}
-            onAddIngredient={recipeFormHook.handleAddIngredient}
-            onRemoveIngredient={recipeFormHook.handleRemoveIngredient}
-            onAddInstruction={recipeFormHook.handleAddInstruction}
-            onRemoveInstruction={recipeFormHook.handleRemoveInstruction}
-          />
-        </div>
+        <RecipeManualTab
+          isMobile={isMobile}
+          newRecipe={recipeFormHook.newRecipe}
+          setNewRecipe={recipeFormHook.setNewRecipe}
+          newIngredient={recipeFormHook.newIngredient}
+          setNewIngredient={recipeFormHook.setNewIngredient}
+          newInstruction={recipeFormHook.newInstruction}
+          setNewInstruction={recipeFormHook.setNewInstruction}
+          imagePreview={recipeFormHook.imagePreview}
+          isGeneratingImage={recipeFormHook.isGeneratingImage}
+          generationProgress={recipeFormHook.generationProgress}
+          onImageChange={recipeFormHook.handleImageChange}
+          onGenerateImage={onGenerateImage}
+          onAddIngredient={recipeFormHook.handleAddIngredient}
+          onRemoveIngredient={recipeFormHook.handleRemoveIngredient}
+          onAddInstruction={recipeFormHook.handleAddInstruction}
+          onRemoveInstruction={recipeFormHook.handleRemoveInstruction}
+          websiteImages={recipeProcessingHook.websiteImages}
+          storedImages={recipeProcessingHook.storedImages}
+          selectedImage={recipeProcessingHook.selectedImage}
+          onImageSelect={recipeProcessingHook.handleImageSelect}
+          onDownloadImages={recipeProcessingHook.handleDownloadImages}
+          isDownloadingImages={recipeProcessingHook.isDownloadingImages}
+        />
       </TabsContent>
     </div>
   );

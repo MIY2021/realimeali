@@ -9,6 +9,12 @@ import { EnhancedIngredientManager } from "../EnhancedIngredientManager";
 import { EnhancedInstructionManager } from "../EnhancedInstructionManager";
 import { Recipe } from "@/types";
 
+interface StoredImage {
+  originalUrl: string;
+  storedUrl: string;
+  filename: string;
+}
+
 interface RecipeManualTabProps {
   isMobile: boolean;
   newRecipe: Omit<Recipe, 'id' | 'created_at' | 'updated_at' | 'created_by'>;
@@ -26,6 +32,12 @@ interface RecipeManualTabProps {
   onRemoveIngredient: (index: number) => void;
   onAddInstruction: () => void;
   onRemoveInstruction: (index: number) => void;
+  websiteImages?: string[];
+  storedImages?: StoredImage[];
+  selectedImage?: string;
+  onImageSelect?: (url: string) => void;
+  onDownloadImages?: () => void;
+  isDownloadingImages?: boolean;
 }
 
 export function RecipeManualTab({
@@ -45,6 +57,12 @@ export function RecipeManualTab({
   onRemoveIngredient,
   onAddInstruction,
   onRemoveInstruction,
+  websiteImages = [],
+  storedImages = [],
+  selectedImage = "",
+  onImageSelect,
+  onDownloadImages,
+  isDownloadingImages = false,
 }: RecipeManualTabProps) {
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -60,6 +78,13 @@ export function RecipeManualTab({
 
   const handleInstructionsChange = (instructions: string[]) => {
     setNewRecipe({ ...newRecipe, instructions });
+  };
+
+  const handleUrlImageSelect = (url: string) => {
+    if (onImageSelect) {
+      onImageSelect(url);
+    }
+    setNewRecipe({ ...newRecipe, image: url });
   };
 
   return (
@@ -146,6 +171,12 @@ export function RecipeManualTab({
               onImageChange={handleImageChange}
               onGenerateImage={onGenerateImage}
               recipeTitle={newRecipe.title}
+              websiteImages={websiteImages}
+              storedImages={storedImages}
+              selectedImage={selectedImage}
+              onImageSelect={handleUrlImageSelect}
+              onDownloadImages={onDownloadImages}
+              isDownloadingImages={isDownloadingImages}
             />
           </CardContent>
         </Card>
