@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { X, Plus, ChevronUp, ChevronDown } from "lucide-react";
+import { X, Plus, GripVertical } from "lucide-react";
+import { DragDropContext, Droppable, Draggable, DropResult } from "react-beautiful-dnd";
 
 interface EnhancedIngredientManagerProps {
   ingredients: string[];
@@ -54,19 +55,22 @@ export function EnhancedIngredientManager({ ingredients, onIngredientsChange }: 
     }
   };
 
-  const moveIngredient = (fromIndex: number, direction: 'up' | 'down') => {
-    if (
-      (direction === 'up' && fromIndex === 0) ||
-      (direction === 'down' && fromIndex === ingredients.length - 1)
-    ) {
+  const handleDragEnd = (result: DropResult) => {
+    if (!result.destination) {
       return;
     }
 
-    const newIngredients = [...ingredients];
-    const toIndex = direction === 'up' ? fromIndex - 1 : fromIndex + 1;
-    
-    [newIngredients[fromIndex], newIngredients[toIndex]] = [newIngredients[toIndex], newIngredients[fromIndex]];
-    
+    const sourceIndex = result.source.index;
+    const destinationIndex = result.destination.index;
+
+    if (sourceIndex === destinationIndex) {
+      return;
+    }
+
+    const newIngredients = Array.from(ingredients);
+    const [reorderedItem] = newIngredients.splice(sourceIndex, 1);
+    newIngredients.splice(destinationIndex, 0, reorderedItem);
+
     onIngredientsChange(newIngredients);
   };
 
@@ -80,73 +84,86 @@ export function EnhancedIngredientManager({ ingredients, onIngredientsChange }: 
       </div>
 
       {ingredients.length > 0 && (
-        <div className="space-y-1 sm:max-h-64 sm:overflow-y-auto flex-1">
-          {ingredients.map((ingredient, index) => (
-            <div
-              key={index}
-              className="flex items-center gap-2 p-1.5 rounded-lg bg-white/50 hover:bg-white/70 transition-colors group"
-            >
-              {/* Reorder buttons - more compact */}
-              <div className="flex flex-col gap-0.5 flex-shrink-0">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => moveIngredient(index, 'up')}
-                  disabled={index === 0}
-                  className="h-5 w-5 p-0 hover:bg-blue-100 disabled:opacity-30"
-                >
-                  <ChevronUp className="h-3 w-3" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => moveIngredient(index, 'down')}
-                  disabled={index === ingredients.length - 1}
-                  className="h-5 w-5 p-0 hover:bg-blue-100 disabled:opacity-30"
-                >
-                  <ChevronDown className="h-3 w-3" />
-                </Button>
+        <DragDropContext onDragEnd={handleDragEnd}>
+          <Droppable droppableId="ingredients">
+            {(provided, snapshot) => (
+              <div
+                {...provided.droppableProps}
+                ref={provided.innerRef}
+                className={`space-y-0.5 sm:max-h-64 sm:overflow-y-auto flex-1 transition-all duration-200 ${
+                  snapshot.isDraggingOver ? 'bg-blue-50/50 rounded-lg p-2' : ''
+                }`}
+              >
+                {ingredients.map((ingredient, index) => (
+                  <Draggable key={`ingredient-${index}`} draggableId={`ingredient-${index}`} index={index}>
+                    {(provided, snapshot) => (
+                      <div
+                        ref={provided.innerRef}
+                        {...provided.draggableProps}
+                        className={`
+                          flex items-center gap-1.5 p-1 rounded-lg bg-white/50 hover:bg-white/70 transition-all duration-200 group
+                          ${snapshot.isDragging ? 'shadow-lg scale-105 rotate-1 z-50 bg-white border-2 border-blue-300' : ''}
+                        `}
+                        style={{
+                          ...provided.draggableProps.style,
+                          ...(snapshot.isDragging && {
+                            transform: `${provided.draggableProps.style?.transform} translateY(-4px)`,
+                          }),
+                        }}
+                      >
+                        {/* Drag handle */}
+                        <div
+                          {...provided.dragHandleProps}
+                          className="flex-shrink-0 touch-none"
+                        >
+                          <GripVertical className="h-4 w-4 text-gray-400 hover:text-gray-600 cursor-grab active:cursor-grabbing transition-colors" />
+                        </div>
+                        
+                        {editingIndex === index ? (
+                          <div className="flex-1 flex flex-col gap-1">
+                            <Input
+                              value={editValue}
+                              onChange={(e) => setEditValue(e.target.value)}
+                              onKeyPress={(e) => handleKeyPress(e, saveEdit)}
+                              className="flex-1 text-sm h-7"
+                              autoFocus
+                            />
+                            <div className="flex gap-1">
+                              <Button size="sm" onClick={saveEdit} className="px-2 text-xs h-6">
+                                Save
+                              </Button>
+                              <Button size="sm" variant="outline" onClick={cancelEdit} className="px-2 text-xs h-6">
+                                Cancel
+                              </Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <>
+                            <span
+                              className="flex-1 text-sm cursor-pointer hover:text-blue-600 transition-colors break-words leading-snug"
+                              onClick={() => startEditing(index)}
+                            >
+                              {ingredient}
+                            </span>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => removeIngredient(index)}
+                              className="opacity-70 group-hover:opacity-100 transition-opacity hover:bg-red-50 hover:text-red-600 h-5 w-5 p-0 flex-shrink-0"
+                            >
+                              <X className="h-3 w-3" />
+                            </Button>
+                          </>
+                        )}
+                      </div>
+                    )}
+                  </Draggable>
+                ))}
+                {provided.placeholder}
               </div>
-              
-              {editingIndex === index ? (
-                <div className="flex-1 flex flex-col gap-1">
-                  <Input
-                    value={editValue}
-                    onChange={(e) => setEditValue(e.target.value)}
-                    onKeyPress={(e) => handleKeyPress(e, saveEdit)}
-                    className="flex-1 text-sm h-7"
-                    autoFocus
-                  />
-                  <div className="flex gap-1">
-                    <Button size="sm" onClick={saveEdit} className="px-2 text-xs h-6">
-                      Save
-                    </Button>
-                    <Button size="sm" variant="outline" onClick={cancelEdit} className="px-2 text-xs h-6">
-                      Cancel
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <>
-                  <span
-                    className="flex-1 text-sm cursor-pointer hover:text-blue-600 transition-colors break-words leading-snug"
-                    onClick={() => startEditing(index)}
-                  >
-                    {ingredient}
-                  </span>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => removeIngredient(index)}
-                    className="opacity-70 group-hover:opacity-100 transition-opacity hover:bg-red-50 hover:text-red-600 h-5 w-5 p-0 flex-shrink-0"
-                  >
-                    <X className="h-3 w-3" />
-                  </Button>
-                </>
-              )}
-            </div>
-          ))}
-        </div>
+            )}
+          </Droppable>
+        </DragDropContext>
       )}
 
       <div className="space-y-2 mt-auto">

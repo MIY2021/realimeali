@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { X, Plus, ChevronUp, ChevronDown } from "lucide-react";
+import { X, Plus, GripVertical } from "lucide-react";
+import { DragDropContext, Droppable, Draggable, DropResult } from "react-beautiful-dnd";
 
 interface EnhancedInstructionManagerProps {
   instructions: string[];
@@ -47,19 +48,22 @@ export function EnhancedInstructionManager({ instructions, onInstructionsChange 
     setEditValue("");
   };
 
-  const moveInstruction = (fromIndex: number, direction: 'up' | 'down') => {
-    if (
-      (direction === 'up' && fromIndex === 0) ||
-      (direction === 'down' && fromIndex === instructions.length - 1)
-    ) {
+  const handleDragEnd = (result: DropResult) => {
+    if (!result.destination) {
       return;
     }
 
-    const newInstructions = [...instructions];
-    const toIndex = direction === 'up' ? fromIndex - 1 : fromIndex + 1;
-    
-    [newInstructions[fromIndex], newInstructions[toIndex]] = [newInstructions[toIndex], newInstructions[fromIndex]];
-    
+    const sourceIndex = result.source.index;
+    const destinationIndex = result.destination.index;
+
+    if (sourceIndex === destinationIndex) {
+      return;
+    }
+
+    const newInstructions = Array.from(instructions);
+    const [reorderedItem] = newInstructions.splice(sourceIndex, 1);
+    newInstructions.splice(destinationIndex, 0, reorderedItem);
+
     onInstructionsChange(newInstructions);
   };
 
@@ -73,78 +77,92 @@ export function EnhancedInstructionManager({ instructions, onInstructionsChange 
       </div>
 
       {instructions.length > 0 && (
-        <div className="space-y-1 sm:max-h-64 sm:overflow-y-auto flex-1">
-          {instructions.map((instruction, index) => (
-            <div
-              key={index}
-              className="flex gap-2 p-1.5 rounded-lg bg-white/50 hover:bg-white/70 transition-colors group"
-            >
-              <div className="flex flex-col items-center gap-1 flex-shrink-0">
-                <div className="w-5 h-5 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-semibold">
-                  {index + 1}
-                </div>
-                
-                {/* Reorder buttons - more compact */}
-                <div className="flex flex-col gap-0.5">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => moveInstruction(index, 'up')}
-                    disabled={index === 0}
-                    className="h-5 w-5 p-0 hover:bg-blue-100 disabled:opacity-30"
-                  >
-                    <ChevronUp className="h-3 w-3" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => moveInstruction(index, 'down')}
-                    disabled={index === instructions.length - 1}
-                    className="h-5 w-5 p-0 hover:bg-blue-100 disabled:opacity-30"
-                  >
-                    <ChevronDown className="h-3 w-3" />
-                  </Button>
-                </div>
-              </div>
+        <DragDropContext onDragEnd={handleDragEnd}>
+          <Droppable droppableId="instructions">
+            {(provided, snapshot) => (
+              <div
+                {...provided.droppableProps}
+                ref={provided.innerRef}
+                className={`space-y-0.5 sm:max-h-64 sm:overflow-y-auto flex-1 transition-all duration-200 ${
+                  snapshot.isDraggingOver ? 'bg-blue-50/50 rounded-lg p-2' : ''
+                }`}
+              >
+                {instructions.map((instruction, index) => (
+                  <Draggable key={`instruction-${index}`} draggableId={`instruction-${index}`} index={index}>
+                    {(provided, snapshot) => (
+                      <div
+                        ref={provided.innerRef}
+                        {...provided.draggableProps}
+                        className={`
+                          flex gap-1.5 p-1 rounded-lg bg-white/50 hover:bg-white/70 transition-all duration-200 group
+                          ${snapshot.isDragging ? 'shadow-lg scale-105 rotate-1 z-50 bg-white border-2 border-blue-300' : ''}
+                        `}
+                        style={{
+                          ...provided.draggableProps.style,
+                          ...(snapshot.isDragging && {
+                            transform: `${provided.draggableProps.style?.transform} translateY(-4px)`,
+                          }),
+                        }}
+                      >
+                        <div className="flex flex-col items-center gap-1 flex-shrink-0">
+                          {/* Drag handle */}
+                          <div
+                            {...provided.dragHandleProps}
+                            className="touch-none"
+                          >
+                            <GripVertical className="h-4 w-4 text-gray-400 hover:text-gray-600 cursor-grab active:cursor-grabbing transition-colors" />
+                          </div>
+                          
+                          {/* Step number */}
+                          <div className="w-5 h-5 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-semibold">
+                            {index + 1}
+                          </div>
+                        </div>
 
-              {editingIndex === index ? (
-                <div className="flex-1 space-y-1">
-                  <Textarea
-                    value={editValue}
-                    onChange={(e) => setEditValue(e.target.value)}
-                    className="flex-1 min-h-[50px] text-sm"
-                    autoFocus
-                  />
-                  <div className="flex gap-1">
-                    <Button size="sm" onClick={saveEdit} className="text-xs h-6">
-                      Save
-                    </Button>
-                    <Button size="sm" variant="outline" onClick={cancelEdit} className="text-xs h-6">
-                      Cancel
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex-1 flex justify-between gap-2">
-                  <p
-                    className="text-sm leading-relaxed cursor-pointer hover:text-blue-600 transition-colors flex-1 break-words"
-                    onClick={() => startEditing(index)}
-                  >
-                    {instruction}
-                  </p>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => removeInstruction(index)}
-                    className="opacity-70 group-hover:opacity-100 transition-opacity hover:bg-red-50 hover:text-red-600 flex-shrink-0 h-5 w-5 p-0"
-                  >
-                    <X className="h-3 w-3" />
-                  </Button>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
+                        {editingIndex === index ? (
+                          <div className="flex-1 space-y-1">
+                            <Textarea
+                              value={editValue}
+                              onChange={(e) => setEditValue(e.target.value)}
+                              className="flex-1 min-h-[50px] text-sm"
+                              autoFocus
+                            />
+                            <div className="flex gap-1">
+                              <Button size="sm" onClick={saveEdit} className="text-xs h-6">
+                                Save
+                              </Button>
+                              <Button size="sm" variant="outline" onClick={cancelEdit} className="text-xs h-6">
+                                Cancel
+                              </Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex-1 flex justify-between gap-2">
+                            <p
+                              className="text-sm leading-relaxed cursor-pointer hover:text-blue-600 transition-colors flex-1 break-words"
+                              onClick={() => startEditing(index)}
+                            >
+                              {instruction}
+                            </p>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => removeInstruction(index)}
+                              className="opacity-70 group-hover:opacity-100 transition-opacity hover:bg-red-50 hover:text-red-600 flex-shrink-0 h-5 w-5 p-0"
+                            >
+                              <X className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </Draggable>
+                ))}
+                {provided.placeholder}
+              </div>
+            )}
+          </Droppable>
+        </DragDropContext>
       )}
 
       <div className="space-y-2 mt-auto">
