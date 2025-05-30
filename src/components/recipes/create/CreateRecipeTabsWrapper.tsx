@@ -1,4 +1,3 @@
-
 import { TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -89,10 +88,18 @@ export function CreateRecipeTabsWrapper({
                 setRecipeUrl={recipeProcessingHook.setRecipeUrl}
                 isProcessing={recipeProcessingHook.isProcessing}
                 importProgress={recipeProcessingHook.importProgress}
+                progressValue={recipeProcessingHook.progressValue}
                 onImportWithImages={onImportFromUrlWithImages}
                 showCommunityDialog={recipeProcessingHook.showCommunityDialog}
                 setShowCommunityDialog={recipeProcessingHook.setShowCommunityDialog}
                 parsedRecipeData={recipeProcessingHook.parsedRecipeData}
+                websiteImages={recipeProcessingHook.websiteImages}
+                storedImages={recipeProcessingHook.storedImages}
+                selectedImage={recipeProcessingHook.selectedImage}
+                onImageSelect={recipeProcessingHook.handleImageSelect}
+                onDownloadImages={recipeProcessingHook.handleDownloadImages}
+                isDownloadingImages={recipeProcessingHook.isDownloadingImages}
+                showImageSelection={recipeProcessingHook.showImageSelection}
               />
             </TabsContent>
 
