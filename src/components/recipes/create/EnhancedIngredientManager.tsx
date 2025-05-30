@@ -15,6 +15,8 @@ export function EnhancedIngredientManager({ ingredients, onIngredientsChange }: 
   const [newIngredient, setNewIngredient] = useState("");
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editValue, setEditValue] = useState("");
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
   const addIngredient = () => {
     if (newIngredient.trim()) {
@@ -54,6 +56,67 @@ export function EnhancedIngredientManager({ ingredients, onIngredientsChange }: 
     }
   };
 
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    setDraggedIndex(index);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/html', '');
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    setDragOverIndex(index);
+  };
+
+  const handleDragLeave = () => {
+    setDragOverIndex(null);
+  };
+
+  const handleDrop = (e: React.DragEvent, dropIndex: number) => {
+    e.preventDefault();
+    
+    if (draggedIndex === null || draggedIndex === dropIndex) {
+      setDraggedIndex(null);
+      setDragOverIndex(null);
+      return;
+    }
+
+    const newIngredients = [...ingredients];
+    const draggedItem = newIngredients[draggedIndex];
+    
+    // Remove the dragged item
+    newIngredients.splice(draggedIndex, 1);
+    
+    // Insert at new position
+    const insertIndex = draggedIndex < dropIndex ? dropIndex - 1 : dropIndex;
+    newIngredients.splice(insertIndex, 0, draggedItem);
+    
+    onIngredientsChange(newIngredients);
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
+
+  const moveIngredient = (fromIndex: number, direction: 'up' | 'down') => {
+    if (
+      (direction === 'up' && fromIndex === 0) ||
+      (direction === 'down' && fromIndex === ingredients.length - 1)
+    ) {
+      return;
+    }
+
+    const newIngredients = [...ingredients];
+    const toIndex = direction === 'up' ? fromIndex - 1 : fromIndex + 1;
+    
+    [newIngredients[fromIndex], newIngredients[toIndex]] = [newIngredients[toIndex], newIngredients[fromIndex]];
+    
+    onIngredientsChange(newIngredients);
+  };
+
   return (
     <Card className="p-4 space-y-4">
       <div className="flex items-center justify-between">
@@ -68,9 +131,36 @@ export function EnhancedIngredientManager({ ingredients, onIngredientsChange }: 
           {ingredients.map((ingredient, index) => (
             <div
               key={index}
-              className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors group"
+              draggable={editingIndex !== index}
+              onDragStart={(e) => handleDragStart(e, index)}
+              onDragOver={(e) => handleDragOver(e, index)}
+              onDragLeave={handleDragLeave}
+              onDrop={(e) => handleDrop(e, index)}
+              onDragEnd={handleDragEnd}
+              className={`flex items-center gap-3 p-3 rounded-lg transition-colors group cursor-move ${
+                dragOverIndex === index ? 'bg-blue-100 border-2 border-blue-300' : 'bg-gray-50 hover:bg-gray-100'
+              } ${draggedIndex === index ? 'opacity-50' : ''}`}
             >
-              <GripVertical className="h-4 w-4 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab" />
+              <div className="flex flex-col gap-1">
+                <GripVertical className="h-4 w-4 text-gray-400 group-hover:text-gray-600 transition-colors cursor-grab active:cursor-grabbing" />
+                {/* Touch-friendly reorder buttons for mobile */}
+                <div className="flex flex-col gap-0.5 sm:hidden">
+                  <button
+                    onClick={() => moveIngredient(index, 'up')}
+                    disabled={index === 0}
+                    className="text-xs text-gray-400 hover:text-gray-600 disabled:opacity-30"
+                  >
+                    ↑
+                  </button>
+                  <button
+                    onClick={() => moveIngredient(index, 'down')}
+                    disabled={index === ingredients.length - 1}
+                    className="text-xs text-gray-400 hover:text-gray-600 disabled:opacity-30"
+                  >
+                    ↓
+                  </button>
+                </div>
+              </div>
               
               {editingIndex === index ? (
                 <div className="flex-1 flex gap-2">
@@ -130,7 +220,7 @@ export function EnhancedIngredientManager({ ingredients, onIngredientsChange }: 
       </div>
 
       <p className="text-xs text-gray-500 mt-2">
-        💡 Tip: Click on any ingredient to edit it. Include quantities and units for best results.
+        💡 Tip: Drag items to reorder, click to edit, or use arrow buttons on mobile.
       </p>
     </Card>
   );

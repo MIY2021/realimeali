@@ -15,6 +15,8 @@ export function EnhancedInstructionManager({ instructions, onInstructionsChange 
   const [newInstruction, setNewInstruction] = useState("");
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editValue, setEditValue] = useState("");
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
   const addInstruction = () => {
     if (newInstruction.trim()) {
@@ -47,10 +49,64 @@ export function EnhancedInstructionManager({ instructions, onInstructionsChange 
     setEditValue("");
   };
 
-  const moveInstruction = (fromIndex: number, toIndex: number) => {
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    setDraggedIndex(index);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/html', '');
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    setDragOverIndex(index);
+  };
+
+  const handleDragLeave = () => {
+    setDragOverIndex(null);
+  };
+
+  const handleDrop = (e: React.DragEvent, dropIndex: number) => {
+    e.preventDefault();
+    
+    if (draggedIndex === null || draggedIndex === dropIndex) {
+      setDraggedIndex(null);
+      setDragOverIndex(null);
+      return;
+    }
+
     const newInstructions = [...instructions];
-    const [removed] = newInstructions.splice(fromIndex, 1);
-    newInstructions.splice(toIndex, 0, removed);
+    const draggedItem = newInstructions[draggedIndex];
+    
+    // Remove the dragged item
+    newInstructions.splice(draggedIndex, 1);
+    
+    // Insert at new position
+    const insertIndex = draggedIndex < dropIndex ? dropIndex - 1 : dropIndex;
+    newInstructions.splice(insertIndex, 0, draggedItem);
+    
+    onInstructionsChange(newInstructions);
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
+
+  const moveInstruction = (fromIndex: number, direction: 'up' | 'down') => {
+    if (
+      (direction === 'up' && fromIndex === 0) ||
+      (direction === 'down' && fromIndex === instructions.length - 1)
+    ) {
+      return;
+    }
+
+    const newInstructions = [...instructions];
+    const toIndex = direction === 'up' ? fromIndex - 1 : fromIndex + 1;
+    
+    [newInstructions[fromIndex], newInstructions[toIndex]] = [newInstructions[toIndex], newInstructions[fromIndex]];
+    
     onInstructionsChange(newInstructions);
   };
 
@@ -68,13 +124,40 @@ export function EnhancedInstructionManager({ instructions, onInstructionsChange 
           {instructions.map((instruction, index) => (
             <div
               key={index}
-              className="flex gap-3 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors group"
+              draggable={editingIndex !== index}
+              onDragStart={(e) => handleDragStart(e, index)}
+              onDragOver={(e) => handleDragOver(e, index)}
+              onDragLeave={handleDragLeave}
+              onDrop={(e) => handleDrop(e, index)}
+              onDragEnd={handleDragEnd}
+              className={`flex gap-3 p-4 rounded-lg transition-colors group cursor-move ${
+                dragOverIndex === index ? 'bg-blue-100 border-2 border-blue-300' : 'bg-gray-50 hover:bg-gray-100'
+              } ${draggedIndex === index ? 'opacity-50' : ''}`}
             >
               <div className="flex flex-col items-center gap-2">
                 <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-semibold">
                   {index + 1}
                 </div>
-                <GripVertical className="h-4 w-4 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab" />
+                <div className="flex flex-col items-center gap-1">
+                  <GripVertical className="h-4 w-4 text-gray-400 group-hover:text-gray-600 transition-colors cursor-grab active:cursor-grabbing" />
+                  {/* Touch-friendly reorder buttons for mobile */}
+                  <div className="flex flex-col gap-0.5 sm:hidden">
+                    <button
+                      onClick={() => moveInstruction(index, 'up')}
+                      disabled={index === 0}
+                      className="text-xs text-gray-400 hover:text-gray-600 disabled:opacity-30"
+                    >
+                      ↑
+                    </button>
+                    <button
+                      onClick={() => moveInstruction(index, 'down')}
+                      disabled={index === instructions.length - 1}
+                      className="text-xs text-gray-400 hover:text-gray-600 disabled:opacity-30"
+                    >
+                      ↓
+                    </button>
+                  </div>
+                </div>
               </div>
 
               {editingIndex === index ? (
@@ -141,7 +224,7 @@ export function EnhancedInstructionManager({ instructions, onInstructionsChange 
       </div>
 
       <p className="text-xs text-gray-500">
-        💡 Tip: Click on any step to edit it. Add timing details for better cooking results.
+        💡 Tip: Drag steps to reorder, click to edit, or use arrow buttons on mobile.
       </p>
     </Card>
   );
