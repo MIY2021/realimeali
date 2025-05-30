@@ -80,6 +80,7 @@ export function CreateRecipeTabNavigation({
             ...tabOptions[manualTabIndex],
             label: originalTab.label,
             emoji: originalTab.emoji,
+            icon: originalTab.icon,
             description: `Edit your ${originalTab.label.toLowerCase()} recipe`
           };
         }
