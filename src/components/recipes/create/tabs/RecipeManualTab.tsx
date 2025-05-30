@@ -13,22 +13,46 @@ interface RecipeManualTabProps {
   isMobile: boolean;
   newRecipe: Omit<Recipe, 'id' | 'created_at' | 'updated_at' | 'created_by'>;
   setNewRecipe: (recipe: Omit<Recipe, 'id' | 'created_at' | 'updated_at' | 'created_by'>) => void;
+  newCategory: string;
+  setNewCategory: (category: string) => void;
+  newIngredient: string;
+  setNewIngredient: (ingredient: string) => void;
+  newInstruction: string;
+  setNewInstruction: (instruction: string) => void;
   imagePreview: string | null;
   isGeneratingImage: boolean;
   generationProgress: string;
   onImageChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onGenerateImage: () => void;
+  onAddCategory: () => void;
+  onRemoveCategory: (category: string) => void;
+  onAddIngredient: () => void;
+  onRemoveIngredient: (ingredient: string) => void;
+  onAddInstruction: () => void;
+  onRemoveInstruction: (instruction: string) => void;
 }
 
 export function RecipeManualTab({
   isMobile,
   newRecipe,
   setNewRecipe,
+  newCategory,
+  setNewCategory,
+  newIngredient,
+  setNewIngredient,
+  newInstruction,
+  setNewInstruction,
   imagePreview,
   isGeneratingImage,
   generationProgress,
   onImageChange,
   onGenerateImage,
+  onAddCategory,
+  onRemoveCategory,
+  onAddIngredient,
+  onRemoveIngredient,
+  onAddInstruction,
+  onRemoveInstruction,
 }: RecipeManualTabProps) {
   const handleIngredientsChange = (ingredients: string[]) => {
     setNewRecipe({ ...newRecipe, ingredients });
