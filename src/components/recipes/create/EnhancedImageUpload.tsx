@@ -1,4 +1,3 @@
-
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -136,15 +135,15 @@ export function EnhancedImageUpload({
 
         {hasWebsiteImages && (
           <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium">Available images from URL:</span>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
+              <span className="text-sm font-medium sm:pr-2">Available images from URL:</span>
               {storedImages.length === 0 && onDownloadImages && (
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={onDownloadImages}
                   disabled={isDownloadingImages}
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-2 flex-shrink-0"
                 >
                   <ArrowRight className="h-4 w-4" />
                   {isDownloadingImages ? 'Downloading...' : 'Download Images'}
@@ -264,15 +263,15 @@ export function EnhancedImageUpload({
     return (
       <div className="space-y-4">
         <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium">Select an image for this recipe:</span>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
+            <span className="text-sm font-medium sm:pr-2">Select an image for this recipe:</span>
             {storedImages.length === 0 && onDownloadImages && (
               <Button
                 variant="outline"
                 size="sm"
                 onClick={onDownloadImages}
                 disabled={isDownloadingImages}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 flex-shrink-0"
               >
                 <ArrowRight className="h-4 w-4" />
                 {isDownloadingImages ? 'Downloading...' : 'Download Images'}

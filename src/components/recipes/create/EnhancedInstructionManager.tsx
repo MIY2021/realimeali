@@ -64,7 +64,7 @@ export function EnhancedInstructionManager({ instructions, onInstructionsChange 
   };
 
   return (
-    <Card className="p-3 space-y-3 bg-white/60 backdrop-blur-sm border-white/30 h-fit">
+    <Card className="p-3 space-y-3 bg-white/60 backdrop-blur-sm border-white/30 h-full flex flex-col">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold text-gray-900">Instructions</h3>
         <Badge variant="secondary" className="bg-green-50 text-green-700 text-xs">
@@ -73,14 +73,14 @@ export function EnhancedInstructionManager({ instructions, onInstructionsChange 
       </div>
 
       {instructions.length > 0 && (
-        <div className="space-y-2 sm:max-h-64 sm:overflow-y-auto">
+        <div className="space-y-1 sm:max-h-64 sm:overflow-y-auto flex-1">
           {instructions.map((instruction, index) => (
             <div
               key={index}
-              className="flex gap-2 p-2 rounded-lg bg-white/50 hover:bg-white/70 transition-colors group"
+              className="flex gap-2 p-1.5 rounded-lg bg-white/50 hover:bg-white/70 transition-colors group"
             >
               <div className="flex flex-col items-center gap-1 flex-shrink-0">
-                <div className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-semibold">
+                <div className="w-5 h-5 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-semibold">
                   {index + 1}
                 </div>
                 
@@ -91,7 +91,7 @@ export function EnhancedInstructionManager({ instructions, onInstructionsChange 
                     size="sm"
                     onClick={() => moveInstruction(index, 'up')}
                     disabled={index === 0}
-                    className="h-6 w-6 p-0 hover:bg-blue-100 disabled:opacity-30"
+                    className="h-5 w-5 p-0 hover:bg-blue-100 disabled:opacity-30"
                   >
                     <ChevronUp className="h-3 w-3" />
                   </Button>
@@ -100,7 +100,7 @@ export function EnhancedInstructionManager({ instructions, onInstructionsChange 
                     size="sm"
                     onClick={() => moveInstruction(index, 'down')}
                     disabled={index === instructions.length - 1}
-                    className="h-6 w-6 p-0 hover:bg-blue-100 disabled:opacity-30"
+                    className="h-5 w-5 p-0 hover:bg-blue-100 disabled:opacity-30"
                   >
                     <ChevronDown className="h-3 w-3" />
                   </Button>
@@ -108,18 +108,18 @@ export function EnhancedInstructionManager({ instructions, onInstructionsChange 
               </div>
 
               {editingIndex === index ? (
-                <div className="flex-1 space-y-2">
+                <div className="flex-1 space-y-1">
                   <Textarea
                     value={editValue}
                     onChange={(e) => setEditValue(e.target.value)}
-                    className="flex-1 min-h-[60px] text-sm"
+                    className="flex-1 min-h-[50px] text-sm"
                     autoFocus
                   />
                   <div className="flex gap-1">
-                    <Button size="sm" onClick={saveEdit} className="text-xs h-7">
+                    <Button size="sm" onClick={saveEdit} className="text-xs h-6">
                       Save
                     </Button>
-                    <Button size="sm" variant="outline" onClick={cancelEdit} className="text-xs h-7">
+                    <Button size="sm" variant="outline" onClick={cancelEdit} className="text-xs h-6">
                       Cancel
                     </Button>
                   </div>
@@ -136,7 +136,7 @@ export function EnhancedInstructionManager({ instructions, onInstructionsChange 
                     size="sm"
                     variant="ghost"
                     onClick={() => removeInstruction(index)}
-                    className="opacity-70 group-hover:opacity-100 transition-opacity hover:bg-red-50 hover:text-red-600 flex-shrink-0 h-6 w-6 p-0"
+                    className="opacity-70 group-hover:opacity-100 transition-opacity hover:bg-red-50 hover:text-red-600 flex-shrink-0 h-5 w-5 p-0"
                   >
                     <X className="h-3 w-3" />
                   </Button>
@@ -147,12 +147,12 @@ export function EnhancedInstructionManager({ instructions, onInstructionsChange 
         </div>
       )}
 
-      <div className="space-y-2">
+      <div className="space-y-2 mt-auto">
         <Textarea
           value={newInstruction}
           onChange={(e) => setNewInstruction(e.target.value)}
           placeholder="Describe the next step..."
-          className="min-h-[60px] text-sm"
+          className="min-h-[50px] text-sm"
         />
         <Button 
           onClick={addInstruction} 
