@@ -67,9 +67,9 @@ export function RecipeCard({ recipe, onAddToMealPlan, showActions = true }: Reci
           size="icon"
           onClick={handleToggleFavorite}
           disabled={isTogglingFavorite}
-          className="absolute top-2 right-2 text-gray-500 hover:text-red-500 transition-colors duration-200"
+          className="absolute top-2 right-2 bg-white/80 backdrop-blur-sm border border-white/20 shadow-sm hover:bg-white/90 transition-all duration-200"
         >
-          <Heart className={`h-5 w-5 ${recipe.is_favorite ? 'fill-red-500 text-red-500' : ''}`} />
+          <Heart className={`h-5 w-5 ${recipe.is_favorite ? 'fill-red-500 text-red-500' : 'text-gray-600 hover:text-red-500'}`} />
         </Button>
       </div>
       
@@ -80,7 +80,7 @@ export function RecipeCard({ recipe, onAddToMealPlan, showActions = true }: Reci
         <div className="flex items-center gap-2 mb-4">
           {recipe.meal_type && (
             <Badge variant="secondary">
-              Meal Type: {capitalizeFirst(recipe.meal_type)}
+              {capitalizeFirst(recipe.meal_type)}
             </Badge>
           )}
         </div>
@@ -91,12 +91,12 @@ export function RecipeCard({ recipe, onAddToMealPlan, showActions = true }: Reci
             asChild
             variant="outline"
             size="sm"
-            className="flex-1 text-xs sm:text-sm"
+            className="flex-1 text-xs lg:text-sm px-2 lg:px-3"
           >
             <Link to={getRecipeUrl()}>
-              <Eye className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-              <span className="hidden sm:inline">View Recipe</span>
-              <span className="sm:hidden">View</span>
+              <Eye className="h-3 w-3 lg:h-4 lg:w-4 mr-1 lg:mr-2" />
+              <span className="hidden lg:inline">View Recipe</span>
+              <span className="lg:hidden">View</span>
             </Link>
           </Button>
           
@@ -104,12 +104,12 @@ export function RecipeCard({ recipe, onAddToMealPlan, showActions = true }: Reci
             <Button
               variant="default"
               size="sm"
-              className="flex-1 text-xs sm:text-sm"
+              className="flex-1 text-xs lg:text-sm px-2 lg:px-3"
               onClick={handleAddToMealPlan}
             >
-              <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+              <Plus className="h-3 w-3 lg:h-4 lg:w-4 mr-1 lg:mr-2" />
               <span className="hidden sm:inline">Add to Meal Plan</span>
-              <span className="sm:hidden">Add</span>
+              <span className="sm:hidden">Meal Plan</span>
             </Button>
           )}
         </div>
