@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Heart } from "lucide-react";
+import { Heart, Eye, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Recipe } from "@/types";
 import { useRecipes } from "@/contexts/RecipesContext";
@@ -33,48 +33,88 @@ export function RecipeCard({ recipe, onAddToMealPlan, showActions = true }: Reci
     }
   };
 
-  return (
-    <Card className="bg-card rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200">
-      <Link to={`/recipes/${recipe.id}`} className="block h-full">
-        <div className="relative">
-          <RecipeImage recipe={recipe} className="w-full h-48 object-cover rounded-t-lg" iconSize="h-5 w-5" />
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleToggleFavorite}
-            disabled={isTogglingFavorite}
-            className="absolute top-2 right-2 text-gray-500 hover:text-red-500 transition-colors duration-200"
-          >
-            <Heart className={`h-5 w-5 ${recipe.is_favorite ? 'fill-red-500 text-red-500' : ''}`} />
-          </Button>
-        </div>
-        
-        <CardContent className="p-4">
-          <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-1">{recipe.title}</h3>
-          <p className="text-sm text-gray-600 line-clamp-2">{recipe.description}</p>
-          
-          <div className="flex items-center gap-2 mt-3">
-            {recipe.meal_type && (
-              <Badge variant="secondary">{recipe.meal_type}</Badge>
-            )}
-            {recipe.complexity_level && (
-              <Badge variant="outline">{recipe.complexity_level}</Badge>
-            )}
-          </div>
-        </CardContent>
-      </Link>
+  const handleAddToMealPlan = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onAddToMealPlan(recipe);
+  };
 
-      {showActions && (
-        <div className="p-4 border-t bg-muted/50 last:rounded-b-lg">
-          <Button
-            variant="outline"
-            className="w-full"
-            onClick={() => onAddToMealPlan(recipe)}
-          >
-            Add to Meal Plan
-          </Button>
+  // Create URL-friendly slug from recipe title
+  const createSlug = (title: string) => {
+    return title
+      .toLowerCase()
+      .replace(/[^a-z0-9 -]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .trim();
+  };
+
+  const getRecipeUrl = () => {
+    const recipeSlug = createSlug(recipe.title);
+    return `/recipes/${recipeSlug}`;
+  };
+
+  const capitalizeFirst = (str: string) => {
+    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+  };
+
+  return (
+    <Card className="bg-card rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 flex flex-col h-full">
+      <div className="relative">
+        <RecipeImage recipe={recipe} className="w-full h-48 object-cover rounded-t-lg" iconSize="h-5 w-5" />
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={handleToggleFavorite}
+          disabled={isTogglingFavorite}
+          className="absolute top-2 right-2 text-gray-500 hover:text-red-500 transition-colors duration-200"
+        >
+          <Heart className={`h-5 w-5 ${recipe.is_favorite ? 'fill-red-500 text-red-500' : ''}`} />
+        </Button>
+      </div>
+      
+      <CardContent className="p-4 flex-1 flex flex-col">
+        <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-1">{recipe.title}</h3>
+        <p className="text-sm text-gray-600 line-clamp-2 mb-3 flex-1">{recipe.description}</p>
+        
+        <div className="flex items-center gap-2 mb-4">
+          {recipe.meal_type && (
+            <Badge variant="secondary">
+              Meal Type: {capitalizeFirst(recipe.meal_type)}
+            </Badge>
+          )}
+          {recipe.complexity_level && (
+            <Badge variant="outline">{capitalizeFirst(recipe.complexity_level)}</Badge>
+          )}
         </div>
-      )}
+
+        {/* Action buttons row */}
+        <div className="flex gap-2 mt-auto">
+          <Button
+            asChild
+            variant="outline"
+            size="sm"
+            className="flex-1"
+          >
+            <Link to={getRecipeUrl()}>
+              <Eye className="h-4 w-4 mr-2" />
+              View Recipe
+            </Link>
+          </Button>
+          
+          {showActions && (
+            <Button
+              variant="default"
+              size="sm"
+              className="flex-1"
+              onClick={handleAddToMealPlan}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add to Meal Plan
+            </Button>
+          )}
+        </div>
+      </CardContent>
     </Card>
   );
 }
