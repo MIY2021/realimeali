@@ -73,7 +73,7 @@ export function EnhancedInstructionManager({ instructions, onInstructionsChange 
       </div>
 
       {instructions.length > 0 && (
-        <div className="space-y-2 max-h-64 overflow-y-auto">
+        <div className="space-y-2 sm:max-h-64 sm:overflow-y-auto">
           {instructions.map((instruction, index) => (
             <div
               key={index}

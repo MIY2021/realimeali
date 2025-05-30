@@ -90,7 +90,8 @@ export function RecipeManualTab({
                 value={newRecipe.description}
                 onChange={(e) => setNewRecipe({ ...newRecipe, description: e.target.value })}
                 placeholder="Brief description of the recipe"
-                className="mt-1 min-h-16"
+                className="mt-1 min-h-20 resize-none"
+                rows={3}
               />
             </div>
 
@@ -150,7 +151,7 @@ export function RecipeManualTab({
         </Card>
       </div>
 
-      {/* Recipe Classification - Updated with better complexity level layout */}
+      {/* Recipe Classification */}
       <SimpleCategorySelector
         recipe={newRecipe}
         onRecipeChange={setNewRecipe}
