@@ -11,6 +11,7 @@ import { useImageGeneration } from "@/hooks/useImageGeneration";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { CreateRecipeTabsWrapper } from "./CreateRecipeTabsWrapper";
 import { Plus } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 export function CreateRecipeContainer() {
   const navigate = useNavigate();
@@ -86,11 +87,18 @@ export function CreateRecipeContainer() {
       const savedRecipe = await createRecipe(recipeToSave, currentHousehold.id);
       
       if (savedRecipe) {
+        // Handle community submission if enabled
+        if (recipeFormHook.shareWithCommunity) {
+          await submitToCommunity(savedRecipe);
+        }
+        
         toast({
           title: "Success",
           description: "Recipe saved successfully!",
         });
-        navigate("/my-recipes");
+        
+        // Navigate to the detail page for the new recipe
+        navigate(`/recipes/${savedRecipe.id}`);
       }
     } catch (error) {
       console.error("Error saving recipe:", error);
@@ -101,6 +109,54 @@ export function CreateRecipeContainer() {
       });
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  // Function to submit the recipe to community collection
+  const submitToCommunity = async (recipe: any) => {
+    try {
+      // Prepare community recipe data
+      const communityData = {
+        title: recipe.title,
+        description: recipe.description,
+        source_url: recipeProcessingHook.recipeUrl || "",
+        image_url: recipe.image,
+        prep_time: recipe.prep_time,
+        cook_time: recipe.cook_time,
+        servings: recipe.servings,
+        submitted_by: user?.id,
+        submitted_by_name: user?.full_name || user?.email,
+        ingredients: recipe.ingredients,
+        instructions: recipe.instructions,
+        cuisine: recipe.cuisine_region,
+        category: recipe.meal_type,
+        difficulty_level: recipe.complexity_level,
+      };
+
+      // Submit to community_recipes table
+      const { data, error } = await supabase
+        .from('community_recipes')
+        .insert(communityData)
+        .select();
+
+      if (error) {
+        console.error("Error submitting to community:", error);
+        throw error;
+      }
+
+      toast({
+        title: "Community Submission",
+        description: "Your recipe was submitted to the community collection for review!",
+      });
+      
+      return data;
+    } catch (error) {
+      console.error("Error submitting to community:", error);
+      toast({
+        title: "Community Submission Failed",
+        description: "Your recipe was saved to your account, but we couldn't submit it to the community.",
+        variant: "destructive",
+      });
     }
   };
 

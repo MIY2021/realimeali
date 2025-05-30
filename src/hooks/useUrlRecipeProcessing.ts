@@ -7,12 +7,14 @@ import { sanitizeRecipeData } from "@/utils/contentSanitizer";
 import { useImageHandling } from "./useUrlRecipeProcessing/useImageHandling";
 import { useProgressTracking } from "./useUrlRecipeProcessing/useProgressTracking";
 import { useErrorHandling } from "./useUrlRecipeProcessing/errorHandling";
+import { useToast } from "./use-toast";
 
 export function useUrlRecipeProcessing() {
   const [recipeUrl, setRecipeUrl] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [showCommunityDialog, setShowCommunityDialog] = useState(false);
   const [parsedRecipeData, setParsedRecipeData] = useState<any>(null);
+  const { toast } = useToast();
 
   const imageHandling = useImageHandling();
   const progressTracking = useProgressTracking();
@@ -22,11 +24,16 @@ export function useUrlRecipeProcessing() {
     setNewRecipe: (recipe: Omit<Recipe, 'id' | 'created_at' | 'updated_at' | 'created_by'>) => void,
     currentRecipe: Omit<Recipe, 'id' | 'created_at' | 'updated_at' | 'created_by'>,
     setActiveTab: (tab: string) => void,
-    downloadImages = false
+    downloadImages = true // Changed default to true to always attempt image download
   ) => {
     // Validate URL
     const validation = validateInput(urlSchema, recipeUrl.trim());
     if (!validation.success) {
+      toast({
+        title: "Invalid URL",
+        description: "Please enter a valid website URL",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -54,10 +61,15 @@ export function useUrlRecipeProcessing() {
       }
 
       if (!data?.parsedRecipe) {
+        toast({
+          title: "Error",
+          description: "No recipe found at that URL",
+          variant: "destructive",
+        });
         return;
       }
 
-      console.log('Received imported recipe:', data.parsedRecipe);
+      console.log('Received imported recipe:', data);
       
       // Sanitize the recipe data - preserve all content faithfully
       const sanitizedRecipe = sanitizeRecipeData(data.parsedRecipe);
@@ -81,13 +93,15 @@ export function useUrlRecipeProcessing() {
         diet_lifestyle: data.parsedRecipe.dietLifestyle || [],
         complexity_level: data.parsedRecipe.complexityLevel || "standard",
         main_ingredient: data.parsedRecipe.mainIngredient || "mixed",
-        top_tip: data.parsedRecipe.topTip || "Enjoy cooking this delicious recipe!"
+        top_tip: data.parsedRecipe.topTip || "Enjoy cooking this delicious recipe!",
+        // Set flags to enable community sharing
+        wasImportedFromWebsite: true,
       };
       
-      // Handle images - show selection if multiple images found
+      // Handle images - always process images if found
       if (data.websiteImages && data.websiteImages.length > 0) {
+        console.log('Website images found:', data.websiteImages);
         imageHandling.setWebsiteImages(data.websiteImages);
-        imageHandling.setShowImageSelection(true);
         
         // Set first image as default selection
         const defaultImage = data.storedImages && data.storedImages.length > 0 
@@ -98,6 +112,7 @@ export function useUrlRecipeProcessing() {
       }
 
       if (data.storedImages && data.storedImages.length > 0) {
+        console.log('Stored images found:', data.storedImages);
         imageHandling.setStoredImages(data.storedImages);
       }
       
@@ -113,7 +128,17 @@ export function useUrlRecipeProcessing() {
       });
       
       setNewRecipe(recipeData);
+      
+      // Always show the community dialog after successful import
+      setShowCommunityDialog(true);
+      
+      // Navigate to manual tab to review the recipe
       setActiveTab("manual");
+      
+      toast({
+        title: "Recipe Imported! 🎉",
+        description: "Recipe imported successfully. Review and save when ready.",
+      });
     } catch (error) {
       handleGeneralError(error);
     } finally {
