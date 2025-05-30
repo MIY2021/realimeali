@@ -2,9 +2,8 @@
 import { Recipe } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { UtensilsCrossed, X } from "lucide-react";
+import { MultiSelect } from "@/components/ui/multi-select";
+import { UtensilsCrossed } from "lucide-react";
 import {
   MEAL_TYPE_OPTIONS,
   CUISINE_OPTIONS,
@@ -22,17 +21,15 @@ export function RecipeClassificationSelector({ recipe, onRecipeChange }: RecipeC
     onRecipeChange({ ...recipe, [field]: value });
   };
 
-  const addDietLifestyle = (diet: string) => {
-    const currentDiets = recipe.diet_lifestyle || [];
-    if (!currentDiets.includes(diet as any)) {
-      updateRecipeField('diet_lifestyle', [...currentDiets, diet]);
-    }
+  const handleDietLifestyleChange = (selectedValues: string[]) => {
+    updateRecipeField('diet_lifestyle', selectedValues);
   };
 
-  const removeDietLifestyle = (diet: string) => {
-    const currentDiets = recipe.diet_lifestyle || [];
-    updateRecipeField('diet_lifestyle', currentDiets.filter(d => d !== diet));
-  };
+  // Convert diet lifestyle options to the format expected by MultiSelect
+  const dietLifestyleOptions = DIET_LIFESTYLE_OPTIONS.map(option => ({
+    label: `${option.icon} ${option.label}`,
+    value: option.value
+  }));
 
   return (
     <Card>
@@ -112,48 +109,14 @@ export function RecipeClassificationSelector({ recipe, onRecipeChange }: RecipeC
 
           <div>
             <label className="text-sm font-medium mb-2 block">Diet & Lifestyle</label>
-            <Select onValueChange={addDietLifestyle}>
-              <SelectTrigger>
-                <SelectValue placeholder="Add diet/lifestyle tags" />
-              </SelectTrigger>
-              <SelectContent>
-                {DIET_LIFESTYLE_OPTIONS.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    <span className="flex items-center gap-2">
-                      <span>{option.icon}</span>
-                      <span>{option.label}</span>
-                    </span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <MultiSelect
+              options={dietLifestyleOptions}
+              selected={recipe.diet_lifestyle || []}
+              onChange={handleDietLifestyleChange}
+              placeholder="Select diet/lifestyle tags"
+            />
           </div>
         </div>
-
-        {recipe.diet_lifestyle && recipe.diet_lifestyle.length > 0 && (
-          <div>
-            <label className="text-sm font-medium mb-2 block">Selected Diet & Lifestyle Tags</label>
-            <div className="flex flex-wrap gap-2">
-              {recipe.diet_lifestyle.map((diet) => {
-                const option = DIET_LIFESTYLE_OPTIONS.find(opt => opt.value === diet);
-                return (
-                  <Badge key={diet} variant="secondary" className="flex items-center gap-1">
-                    <span>{option?.icon}</span>
-                    <span>{option?.label || diet}</span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-auto p-0 ml-1"
-                      onClick={() => removeDietLifestyle(diet)}
-                    >
-                      <X className="h-3 w-3" />
-                    </Button>
-                  </Badge>
-                );
-              })}
-            </div>
-          </div>
-        )}
       </CardContent>
     </Card>
   );

@@ -64,7 +64,7 @@ export function EnhancedIngredientManager({ ingredients, onIngredientsChange }: 
       </div>
 
       {ingredients.length > 0 && (
-        <div className="space-y-2 max-h-64 overflow-y-auto">
+        <div className="space-y-2">
           {ingredients.map((ingredient, index) => (
             <div
               key={index}
