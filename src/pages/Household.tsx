@@ -17,7 +17,7 @@ export default function Household() {
   
   const { user } = useAuth();
   const { currentHousehold, households } = useHousehold();
-  const { members, isLoadingMembers, fetchMembers } = useHouseholdMembers();
+  const { members, isLoading, fetchMembers, removeMember } = useHouseholdMembers();
   const [isOwner, setIsOwner] = useState(false);
 
   useEffect(() => {
@@ -69,18 +69,23 @@ export default function Household() {
       </div>
 
       <div className="grid gap-8">
-        <HouseholdDetailsCard household={currentHousehold} />
+        <HouseholdDetailsCard 
+          household={currentHousehold} 
+          isOwner={isOwner}
+          onHouseholdUpdate={() => {}}
+        />
         
         <HouseholdMembersCard 
           members={typedMembers}
           isOwner={isOwner}
-          isLoading={isLoadingMembers}
+          isLoading={isLoading}
+          onRemoveMember={removeMember}
         />
         
         {isOwner && (
           <>
-            <InviteMembersCard householdId={currentHousehold.id} />
-            <JoinRequestsCard householdId={currentHousehold.id} />
+            <InviteMembersCard household={currentHousehold} />
+            <JoinRequestsCard household={currentHousehold} />
           </>
         )}
       </div>

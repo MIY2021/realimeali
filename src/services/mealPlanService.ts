@@ -24,7 +24,7 @@ export const mealPlanService = {
   },
 
   async addMealPlan(
-    mealPlanData: Omit<MealPlan, 'id' | 'createdAt' | 'updatedAt'>, 
+    mealPlanData: Omit<MealPlan, 'id' | 'created_at' | 'updated_at'>, 
     weekNumber: 1 | 2,
     householdId: string,
     userId: string,
@@ -32,17 +32,17 @@ export const mealPlanService = {
   ): Promise<MealPlan> {
     const insertData = {
       household_id: householdId,
-      recipe_id: mealPlanData.recipeId,
-      meal_type: mealPlanData.mealType,
+      recipe_id: mealPlanData.recipe_id,
+      meal_type: mealPlanData.meal_type,
       week_number: weekNumber,
-      slot_index: mealPlanData.slotIndex || 0,
+      slot_index: mealPlanData.slot_index || 0,
       notes: mealPlanData.notes || null,
       date_scheduled: mealPlanData.date,
       created_by: userId,
-      parent_meal_plan_id: mealPlanData.parentMealPlanId || null,
-      is_leftover: mealPlanData.isLeftover || false,
-      leftover_servings: mealPlanData.leftoverServings || null,
-      original_servings: mealPlanData.originalServings || null,
+      parent_meal_plan_id: mealPlanData.parent_meal_plan_id || null,
+      is_leftover: mealPlanData.is_leftover || false,
+      leftover_servings: mealPlanData.leftover_servings || null,
+      original_servings: mealPlanData.original_servings || null,
     };
 
     if (!silentMode) {
@@ -121,19 +121,19 @@ export const mealPlanService = {
     return {
       id: dbPlan.id,
       date: dbPlan.date_scheduled,
-      mealType: dbPlan.meal_type as any,
-      recipeId: dbPlan.recipe_id,
+      meal_type: dbPlan.meal_type as any,
+      recipe_id: dbPlan.recipe_id,
       notes: dbPlan.notes,
-      createdBy: dbPlan.created_by,
-      createdAt: dbPlan.created_at,
-      updatedAt: dbPlan.updated_at,
-      slotIndex: dbPlan.slot_index,
-      parentMealPlanId: dbPlan.parent_meal_plan_id,
-      isLeftover: dbPlan.is_leftover,
-      leftoverServings: dbPlan.leftover_servings,
-      originalServings: dbPlan.original_servings,
-      householdId: dbPlan.household_id,
-      weekNumber: dbPlan.week_number, // Added weekNumber transformation
+      created_by: dbPlan.created_by,
+      created_at: dbPlan.created_at,
+      updated_at: dbPlan.updated_at,
+      slot_index: dbPlan.slot_index,
+      parent_meal_plan_id: dbPlan.parent_meal_plan_id,
+      is_leftover: dbPlan.is_leftover,
+      leftover_servings: dbPlan.leftover_servings,
+      original_servings: dbPlan.original_servings,
+      household_id: dbPlan.household_id,
+      week_number: dbPlan.week_number,
     };
   }
 };

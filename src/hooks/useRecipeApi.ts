@@ -1,6 +1,8 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { Recipe } from "@/types";
+import { Recipe, MealType } from "@/types";
+
+const VALID_MEAL_TYPES: MealType[] = ["breakfast", "lunch", "dinner", "snacks", "sides", "desserts", "drinks"];
 
 export const useRecipeApi = () => {
   const fetchRecipes = async (householdId: string): Promise<Recipe[]> => {
@@ -17,8 +19,10 @@ export const useRecipeApi = () => {
       return (data || []).map(recipe => ({
         ...recipe,
         created_by: recipe.user_id, // Map user_id to created_by
-        // Handle enum type mismatches by filtering to valid values
-        meal_type: recipe.meal_type as any,
+        // Filter meal_type to only valid values
+        meal_type: VALID_MEAL_TYPES.includes(recipe.meal_type as MealType) 
+          ? recipe.meal_type as MealType 
+          : undefined,
         cuisine_region: recipe.cuisine_region as any,
         main_ingredient: recipe.main_ingredient as any,
       }));

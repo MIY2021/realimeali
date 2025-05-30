@@ -35,9 +35,9 @@ export const DIET_LIFESTYLE_OPTIONS: { value: DietLifestyle; label: string; icon
   { value: "vegan", label: "Vegan", icon: "🌱" },
   { value: "gluten_free", label: "Gluten-Free", icon: "🌾" },
   { value: "dairy_free", label: "Dairy-Free", icon: "🥛" },
-  { value: "low_carb", label: "Low-Carb", icon: "🥩" },
+  { value: "low_carb_keto", label: "Low-Carb/Keto", icon: "🥩" },
   { value: "high_protein", label: "High Protein", icon: "💪" },
-  { value: "budget_friendly", label: "Budget-Friendly", icon: "💰" },
+  { value: "budget_meals", label: "Budget-Friendly", icon: "💰" },
   { value: "kid_friendly", label: "Kid-Friendly", icon: "👶" },
 ];
 
