@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
@@ -91,12 +90,12 @@ export function RecipeCard({ recipe, onAddToMealPlan, showActions = true }: Reci
             asChild
             variant="outline"
             size="sm"
-            className="flex-1 text-xs lg:text-sm px-2 lg:px-3"
+            className="flex-1 text-xs px-2"
           >
             <Link to={getRecipeUrl()}>
-              <Eye className="h-3 w-3 lg:h-4 lg:w-4 mr-1 lg:mr-2" />
-              <span className="hidden lg:inline">View Recipe</span>
-              <span className="lg:hidden">View</span>
+              <Eye className="h-3 w-3 mr-1" />
+              <span className="hidden xl:inline">View Recipe</span>
+              <span className="xl:hidden">View</span>
             </Link>
           </Button>
           
@@ -104,12 +103,12 @@ export function RecipeCard({ recipe, onAddToMealPlan, showActions = true }: Reci
             <Button
               variant="default"
               size="sm"
-              className="flex-1 text-xs lg:text-sm px-2 lg:px-3"
+              className="flex-1 text-xs px-2"
               onClick={handleAddToMealPlan}
             >
-              <Plus className="h-3 w-3 lg:h-4 lg:w-4 mr-1 lg:mr-2" />
-              <span className="hidden sm:inline">Add to Meal Plan</span>
-              <span className="sm:hidden">Meal Plan</span>
+              <Plus className="h-3 w-3 mr-1" />
+              <span className="hidden xl:inline">Add to Meal Plan</span>
+              <span className="xl:hidden">Add</span>
             </Button>
           )}
         </div>
