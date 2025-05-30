@@ -10,7 +10,8 @@ export function useImageGeneration() {
     setImagePreview: (url: string) => void,
     setRecipeImage: (url: string) => void,
     setIsGeneratingImage: (loading: boolean) => void,
-    setGenerationProgress?: (progress: string) => void
+    setGenerationProgress?: (progress: string) => void,
+    description?: string
   ) => {
     if (!title.trim()) {
       toast({
@@ -25,11 +26,22 @@ export function useImageGeneration() {
     
     try {
       // Step 1: Start generation
-      setGenerationProgress?.("Creating your recipe image...");
+      setGenerationProgress?.("Creating your photo-realistic recipe image...");
+      
+      // Create detailed prompt for photo-realistic food image
+      let prompt = `Photo-realistic, professional food photography of ${title}`;
+      
+      // Add description context if available
+      if (description && description.trim()) {
+        prompt += `, ${description.trim()}`;
+      }
+      
+      // Add photography specifications
+      prompt += `, beautifully plated and styled, natural lighting, appetizing presentation, high-end restaurant quality, macro food photography, vibrant colors, garnished, professional culinary styling, depth of field, 4K quality`;
       
       const { data, error } = await supabase.functions.invoke('generate-recipe-image', {
         body: { 
-          prompt: `A delicious ${title}, food photography, professional lighting, appetizing presentation` 
+          prompt: prompt
         },
       });
 
@@ -43,13 +55,13 @@ export function useImageGeneration() {
       }
 
       // Step 3: Set the image
-      setGenerationProgress?.("Image generated successfully!");
+      setGenerationProgress?.("Photo-realistic image generated successfully!");
       setImagePreview(data.imageUrl);
       setRecipeImage(data.imageUrl);
       
       toast({
         title: "Image Generated!",
-        description: "Recipe image has been generated and saved successfully!",
+        description: "Photo-realistic recipe image has been generated and saved successfully!",
       });
 
     } catch (error) {

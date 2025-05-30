@@ -158,6 +158,8 @@ serve(async (req) => {
       
       systemPrompt = `You are a recipe parsing assistant. Extract recipe information from website content and classify it across 6 dimensions. 
 
+CRITICAL: You MUST carefully examine ingredients for meat content. If ANY meat (beef, pork, lamb, chicken, turkey, fish, seafood, etc.) is present, the recipe CANNOT be classified as "vegetarian" or "vegan". Be extremely careful about this classification.
+
 Return a JSON object with this EXACT structure:
 {
   "title": "Recipe name",
@@ -172,19 +174,21 @@ Return a JSON object with this EXACT structure:
     "mealType": "dinner",
     "cuisineRegion": "italian", 
     "cookingMethod": "oven_baked",
-    "dietLifestyle": ["vegetarian"],
+    "dietLifestyle": [],
     "complexityLevel": "standard",
     "mainIngredient": "pasta"
   }
 }
 
-Classification options:
+Classification rules:
 - mealType: breakfast, lunch, dinner, snacks, sides, desserts, drinks, sauces_dips, soups_stews, salads, baking_breads
 - cuisineRegion: british, american, italian, french, mexican, indian, chinese, japanese, thai, mediterranean, middle_eastern, african, korean, caribbean, nordic, eastern_european  
 - cookingMethod: one_pot, oven_baked, air_fryer, slow_cooker, pressure_cooker, bbq_grilled, stir_fried, roasted, raw_no_cook
-- dietLifestyle: vegetarian, vegan, pescatarian, gluten_free, dairy_free, low_carb_keto, high_protein, paleo, diabetic_friendly, budget_meals, kid_friendly, pregnancy_safe (can be multiple)
+- dietLifestyle: ONLY include if 100% certain - check ALL ingredients carefully for meat/dairy/gluten: vegetarian, vegan, pescatarian, gluten_free, dairy_free, low_carb_keto, high_protein, paleo, diabetic_friendly, budget_meals, kid_friendly, pregnancy_safe
 - complexityLevel: quick_easy, standard, complex
 - mainIngredient: chicken, beef, pork, lamb, fish, tofu_tempeh, eggs, cheese, pasta, rice, lentils_beans, vegetables, potatoes, fruit, nuts_seeds, chocolate
+
+IMPORTANT: If you detect ANY meat ingredients (ground beef, mince, chicken, etc.), do NOT include "vegetarian" in dietLifestyle array. Leave dietLifestyle empty if unsure.
 
 Return ONLY valid JSON. No explanations.`;
 
@@ -194,6 +198,8 @@ Return ONLY valid JSON. No explanations.`;
       // Recipe text parsing
       systemPrompt = `You are a recipe parsing assistant. Extract recipe information from text and classify it across 6 dimensions. 
 
+CRITICAL: You MUST carefully examine ingredients for meat content. If ANY meat (beef, pork, lamb, chicken, turkey, fish, seafood, etc.) is present, the recipe CANNOT be classified as "vegetarian" or "vegan". Be extremely careful about this classification.
+
 Return a JSON object with this EXACT structure:
 {
   "title": "Recipe name",
@@ -208,19 +214,21 @@ Return a JSON object with this EXACT structure:
     "mealType": "dinner",
     "cuisineRegion": "italian", 
     "cookingMethod": "oven_baked",
-    "dietLifestyle": ["vegetarian"],
+    "dietLifestyle": [],
     "complexityLevel": "standard",
     "mainIngredient": "pasta"
   }
 }
 
-Classification options:
+Classification rules:
 - mealType: breakfast, lunch, dinner, snacks, sides, desserts, drinks, sauces_dips, soups_stews, salads, baking_breads
 - cuisineRegion: british, american, italian, french, mexican, indian, chinese, japanese, thai, mediterranean, middle_eastern, african, korean, caribbean, nordic, eastern_european  
 - cookingMethod: one_pot, oven_baked, air_fryer, slow_cooker, pressure_cooker, bbq_grilled, stir_fried, roasted, raw_no_cook
-- dietLifestyle: vegetarian, vegan, pescatarian, gluten_free, dairy_free, low_carb_keto, high_protein, paleo, diabetic_friendly, budget_meals, kid_friendly, pregnancy_safe (can be multiple)
+- dietLifestyle: ONLY include if 100% certain - check ALL ingredients carefully for meat/dairy/gluten: vegetarian, vegan, pescatarian, gluten_free, dairy_free, low_carb_keto, high_protein, paleo, diabetic_friendly, budget_meals, kid_friendly, pregnancy_safe
 - complexityLevel: quick_easy, standard, complex
 - mainIngredient: chicken, beef, pork, lamb, fish, tofu_tempeh, eggs, cheese, pasta, rice, lentils_beans, vegetables, potatoes, fruit, nuts_seeds, chocolate
+
+IMPORTANT: If you detect ANY meat ingredients (ground beef, mince, chicken, etc.), do NOT include "vegetarian" in dietLifestyle array. Leave dietLifestyle empty if unsure.
 
 Return ONLY valid JSON. No explanations.`;
 
@@ -231,6 +239,8 @@ Return ONLY valid JSON. No explanations.`;
       console.log('Generating recipe with AI for:', body.generateRequest);
       
       systemPrompt = `You are a creative recipe generator. Create an original recipe based on the user's request and classify it across 6 dimensions.
+
+CRITICAL: You MUST carefully examine ingredients for meat content. If ANY meat (beef, pork, lamb, chicken, turkey, fish, seafood, etc.) is present, the recipe CANNOT be classified as "vegetarian" or "vegan". Be extremely careful about this classification.
 
 Return a JSON object with this EXACT structure:
 {
@@ -246,19 +256,21 @@ Return a JSON object with this EXACT structure:
     "mealType": "dinner",
     "cuisineRegion": "italian",
     "cookingMethod": "oven_baked", 
-    "dietLifestyle": ["vegetarian"],
+    "dietLifestyle": [],
     "complexityLevel": "standard",
     "mainIngredient": "pasta"
   }
 }
 
-Classification options:
+Classification rules:
 - mealType: breakfast, lunch, dinner, snacks, sides, desserts, drinks, sauces_dips, soups_stews, salads, baking_breads
 - cuisineRegion: british, american, italian, french, mexican, indian, chinese, japanese, thai, mediterranean, middle_eastern, african, korean, caribbean, nordic, eastern_european
 - cookingMethod: one_pot, oven_baked, air_fryer, slow_cooker, pressure_cooker, bbq_grilled, stir_fried, roasted, raw_no_cook  
-- dietLifestyle: vegetarian, vegan, pescatarian, gluten_free, dairy_free, low_carb_keto, high_protein, paleo, diabetic_friendly, budget_meals, kid_friendly, pregnancy_safe (can be multiple)
+- dietLifestyle: ONLY include if 100% certain - check ALL ingredients carefully for meat/dairy/gluten: vegetarian, vegan, pescatarian, gluten_free, dairy_free, low_carb_keto, high_protein, paleo, diabetic_friendly, budget_meals, kid_friendly, pregnancy_safe
 - complexityLevel: quick_easy, standard, complex
 - mainIngredient: chicken, beef, pork, lamb, fish, tofu_tempeh, eggs, cheese, pasta, rice, lentils_beans, vegetables, potatoes, fruit, nuts_seeds, chocolate
+
+IMPORTANT: If you detect ANY meat ingredients (ground beef, mince, chicken, etc.), do NOT include "vegetarian" in dietLifestyle array. Leave dietLifestyle empty if unsure.
 
 Create realistic recipes with proper ingredient amounts and detailed cooking steps. Return ONLY valid JSON.`;
 

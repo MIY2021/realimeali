@@ -1,7 +1,6 @@
 
 import { Recipe } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { UtensilsCrossed } from "lucide-react";
 import {
   MEAL_TYPE_OPTIONS,
   CUISINE_OPTIONS,
@@ -62,10 +61,7 @@ export function SimpleCategorySelector({ recipe, onRecipeChange }: SimpleCategor
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <UtensilsCrossed className="h-5 w-5 text-sage" />
-          Categories
-        </CardTitle>
+        <CardTitle>Categories</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Meal Type */}
