@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -12,6 +11,8 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { CreateRecipeTabsWrapper } from "./CreateRecipeTabsWrapper";
 import { Plus } from "lucide-react";
 
+export type RecipeOrigin = 'url' | 'image' | 'generate' | 'text' | 'manual';
+
 export function CreateRecipeContainer() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -22,6 +23,7 @@ export function CreateRecipeContainer() {
 
   const [activeTab, setActiveTab] = useState("url");
   const [isSaving, setIsSaving] = useState(false);
+  const [recipeOrigin, setRecipeOrigin] = useState<RecipeOrigin>('manual');
 
   // Keep hooks as objects instead of destructuring
   const recipeFormHook = useRecipeForm();
@@ -108,11 +110,43 @@ export function CreateRecipeContainer() {
     navigate("/my-recipes");
   };
 
-  // Wrapper functions to match expected signatures
-  const wrappedProcessText = () => recipeProcessingHook.handleProcessText(recipeFormHook.setNewRecipe, recipeFormHook.newRecipe, setActiveTab);
-  const wrappedProcessImage = (file: File) => recipeProcessingHook.handleProcessImage(file, recipeFormHook.setNewRecipe, recipeFormHook.newRecipe, setActiveTab);
-  const wrappedGenerateRecipe = () => recipeProcessingHook.handleGenerateRecipe(recipeFormHook.setNewRecipe, recipeFormHook.newRecipe, setActiveTab);
-  const wrappedImportFromUrl = () => recipeProcessingHook.handleImportFromUrl(recipeFormHook.setNewRecipe, recipeFormHook.newRecipe, setActiveTab);
+  // Wrapper functions to match expected signatures and track origin
+  const wrappedProcessText = () => {
+    setRecipeOrigin('text');
+    return recipeProcessingHook.handleProcessText(recipeFormHook.setNewRecipe, recipeFormHook.newRecipe, setActiveTab);
+  };
+  
+  const wrappedProcessImage = (file: File) => {
+    setRecipeOrigin('image');
+    return recipeProcessingHook.handleProcessImage(file, recipeFormHook.setNewRecipe, recipeFormHook.newRecipe, setActiveTab);
+  };
+  
+  const wrappedGenerateRecipe = () => {
+    setRecipeOrigin('generate');
+    return recipeProcessingHook.handleGenerateRecipe(recipeFormHook.setNewRecipe, recipeFormHook.newRecipe, setActiveTab);
+  };
+  
+  const wrappedImportFromUrl = () => {
+    setRecipeOrigin('url');
+    return recipeProcessingHook.handleImportFromUrl(recipeFormHook.setNewRecipe, recipeFormHook.newRecipe, setActiveTab);
+  };
+
+  // Handle when user manually switches to manual tab
+  const handleTabChange = (tab: string) => {
+    if (tab === 'manual' && activeTab !== 'manual') {
+      // User is switching to manual tab - keep existing origin unless it was never set
+      if (recipeOrigin === 'manual' && activeTab !== 'manual') {
+        // This means they started elsewhere but we haven't tracked it yet
+        setRecipeOrigin(activeTab as RecipeOrigin);
+      }
+    } else if (tab !== 'manual') {
+      // User is switching to a different tab - reset origin to manual only if truly starting fresh
+      if (activeTab === 'manual' && recipeOrigin === 'manual') {
+        setRecipeOrigin('manual');
+      }
+    }
+    setActiveTab(tab);
+  };
 
   return (
     <div className="space-y-6">
@@ -132,7 +166,8 @@ export function CreateRecipeContainer() {
       <CreateRecipeTabsWrapper
         isMobile={isMobile}
         activeTab={activeTab}
-        setActiveTab={setActiveTab}
+        setActiveTab={handleTabChange}
+        recipeOrigin={recipeOrigin}
         recipeFormHook={recipeFormHook}
         recipeProcessingHook={recipeProcessingHook}
         onProcessText={wrappedProcessText}

@@ -2,6 +2,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Globe, Upload, Sparkles, Pencil, Camera } from "lucide-react";
+import { RecipeOrigin } from "./CreateRecipeContainer";
 
 interface TabOption {
   value: string;
@@ -15,10 +16,11 @@ interface CreateRecipeTabNavigationProps {
   isMobile: boolean;
   activeTab: string;
   setActiveTab: (tab: string) => void;
+  recipeOrigin: RecipeOrigin;
   children: React.ReactNode;
 }
 
-const tabOptions: TabOption[] = [
+const baseTabOptions: TabOption[] = [
   { 
     value: "url", 
     label: "From Website", 
@@ -60,8 +62,34 @@ export function CreateRecipeTabNavigation({
   isMobile,
   activeTab,
   setActiveTab,
+  recipeOrigin,
   children
 }: CreateRecipeTabNavigationProps) {
+  
+  // Generate dynamic tab options based on recipe origin
+  const getDynamicTabOptions = (): TabOption[] => {
+    const tabOptions = [...baseTabOptions];
+    
+    // If we're on the manual tab but the recipe origin is different, update the manual tab
+    if (activeTab === "manual" && recipeOrigin !== "manual") {
+      const originalTab = baseTabOptions.find(tab => tab.value === recipeOrigin);
+      if (originalTab) {
+        const manualTabIndex = tabOptions.findIndex(tab => tab.value === "manual");
+        if (manualTabIndex !== -1) {
+          tabOptions[manualTabIndex] = {
+            ...tabOptions[manualTabIndex],
+            label: originalTab.label,
+            emoji: originalTab.emoji,
+            description: `Edit your ${originalTab.label.toLowerCase()} recipe`
+          };
+        }
+      }
+    }
+    
+    return tabOptions;
+  };
+
+  const tabOptions = getDynamicTabOptions();
   const activeTabOption = tabOptions.find(tab => tab.value === activeTab);
 
   return (

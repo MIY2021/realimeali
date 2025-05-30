@@ -3,11 +3,13 @@ import { CreateRecipeTabNavigation } from "./CreateRecipeTabNavigation";
 import { RecipeTabsContent } from "./RecipeTabsContent";
 import { RecipeSaveSection } from "./RecipeSaveSection";
 import { useRecipeCompletionStatus } from "./RecipeCompletionStatus";
+import { RecipeOrigin } from "./CreateRecipeContainer";
 
 interface CreateRecipeTabsWrapperProps {
   isMobile: boolean;
   activeTab: string;
   setActiveTab: (tab: string) => void;
+  recipeOrigin: RecipeOrigin;
   recipeFormHook: any;
   recipeProcessingHook: any;
   onProcessText: () => void;
@@ -23,6 +25,7 @@ export function CreateRecipeTabsWrapper({
   isMobile,
   activeTab,
   setActiveTab,
+  recipeOrigin,
   recipeFormHook,
   recipeProcessingHook,
   onProcessText,
@@ -43,6 +46,7 @@ export function CreateRecipeTabsWrapper({
           isMobile={isMobile}
           activeTab={activeTab}
           setActiveTab={setActiveTab}
+          recipeOrigin={recipeOrigin}
         >
           <RecipeTabsContent
             isMobile={isMobile}
