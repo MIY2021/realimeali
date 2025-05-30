@@ -14,9 +14,9 @@ interface RecipeGenerateTabProps {
 }
 
 const styleOptions = [
-  { id: 'quick-easy', label: 'Quick & Easy', description: 'Minimal prep time and simple techniques' },
-  { id: 'cheap-cheerful', label: 'Budget-Friendly', description: 'Cost-effective ingredients and methods' },
-  { id: 'michelin-star', label: 'Restaurant Quality', description: 'Elevated techniques and presentation' },
+  { id: 'quick-easy', label: '🚀 Quick & Easy', description: 'Minimal prep time and simple techniques' },
+  { id: 'cheap-cheerful', label: '💰 Budget-Friendly', description: 'Cost-effective ingredients and methods' },
+  { id: 'michelin-star', label: '⭐ Restaurant Quality', description: 'Elevated techniques and presentation' },
 ];
 
 export function RecipeGenerateTab({ 
@@ -40,10 +40,10 @@ export function RecipeGenerateTab({
       {/* Helper text - left aligned, reduced padding */}
       <div className="text-sm text-muted-foreground">
         <div className="hidden sm:block bg-blue-50 p-3 rounded-lg">
-          🤖 I'll create a custom recipe with title, ingredients, cooking steps, and helpful categories just for you!
+          I'll create a custom recipe based on your needs! Be as specific as you want about ingredients, dietary needs, cooking time, etc.
         </div>
         <div className="sm:hidden">
-          🤖 I'll create a custom recipe with title, ingredients, cooking steps, and helpful categories just for you!
+          I'll create a custom recipe based on your needs! Be as specific as you want about ingredients, dietary needs, cooking time, etc.
         </div>
       </div>
       
@@ -76,10 +76,6 @@ export function RecipeGenerateTab({
             ))}
           </div>
         </div>
-        
-        <p className="text-sm text-muted-foreground">
-          I'll create a custom recipe based on your needs! Be as specific as you want about ingredients, dietary needs, cooking time, etc.
-        </p>
       </div>
       
       <div className="flex justify-end">

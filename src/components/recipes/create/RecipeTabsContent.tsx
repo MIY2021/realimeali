@@ -29,7 +29,7 @@ export function RecipeTabsContent({
   onGenerateImage,
 }: RecipeTabsContentProps) {
   return (
-    <div className="p-4 sm:p-6">
+    <div className="p-3 sm:p-4">
       <TabsContent value="text">
         <RecipeTextTab
           recipeText={recipeProcessingHook.recipeText}

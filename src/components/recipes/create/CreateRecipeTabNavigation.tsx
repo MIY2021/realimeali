@@ -6,6 +6,7 @@ import { Globe, Upload, Sparkles, Pencil, Camera } from "lucide-react";
 interface TabOption {
   value: string;
   label: string;
+  emoji: string;
   icon: React.ComponentType<{ className?: string }>;
   description: string;
 }
@@ -21,30 +22,35 @@ const tabOptions: TabOption[] = [
   { 
     value: "url", 
     label: "From Website", 
+    emoji: "🌐",
     icon: Globe,
     description: "Import recipes directly from cooking websites with one click"
   },
   { 
     value: "image", 
     label: "From Photo", 
+    emoji: "📸",
     icon: Upload,
     description: "Take a photo of a recipe card or cookbook page to extract the recipe"
   },
   { 
     value: "generate", 
     label: "AI Generate", 
+    emoji: "🤖",
     icon: Sparkles,
     description: "Describe what you want to cook and let AI create a complete recipe"
   },
   { 
     value: "text", 
     label: "Recipe Text", 
+    emoji: "📝",
     icon: Pencil,
     description: "Paste a recipe from anywhere and our AI will format it perfectly"
   },
   { 
     value: "manual", 
     label: "Manual Entry", 
+    emoji: "✍️",
     icon: Camera,
     description: "Create your recipe from scratch with our guided form"
   },
@@ -68,24 +74,21 @@ export function CreateRecipeTabNavigation({
               <SelectValue>
                 {activeTabOption && (
                   <div className="flex items-center gap-2">
-                    <activeTabOption.icon className="h-4 w-4" />
+                    <span>{activeTabOption.emoji}</span>
                     {activeTabOption.label}
                   </div>
                 )}
               </SelectValue>
             </SelectTrigger>
             <SelectContent>
-              {tabOptions.map((tab) => {
-                const Icon = tab.icon;
-                return (
-                  <SelectItem key={tab.value} value={tab.value}>
-                    <div className="flex items-center gap-2">
-                      <Icon className="h-4 w-4" />
-                      {tab.label}
-                    </div>
-                  </SelectItem>
-                );
-              })}
+              {tabOptions.map((tab) => (
+                <SelectItem key={tab.value} value={tab.value}>
+                  <div className="flex items-center gap-2">
+                    <span>{tab.emoji}</span>
+                    {tab.label}
+                  </div>
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
@@ -93,15 +96,12 @@ export function CreateRecipeTabNavigation({
         /* Desktop Tabs */
         <div className="mb-4 sm:mb-6">
           <TabsList className="grid w-full grid-cols-5 mb-3">
-            {tabOptions.map((tab) => {
-              const Icon = tab.icon;
-              return (
-                <TabsTrigger key={tab.value} value={tab.value} className="p-2">
-                  <Icon className="h-4 w-4 mr-2" />
-                  {tab.label}
-                </TabsTrigger>
-              );
-            })}
+            {tabOptions.map((tab) => (
+              <TabsTrigger key={tab.value} value={tab.value} className="p-2">
+                <span className="mr-2">{tab.emoji}</span>
+                {tab.label}
+              </TabsTrigger>
+            ))}
           </TabsList>
         </div>
       )}

@@ -55,10 +55,10 @@ export function RecipeUrlTab({
       {/* Helper text - left aligned, reduced padding */}
       <div className="text-sm text-muted-foreground">
         <div className="hidden sm:block bg-blue-50 p-3 rounded-lg">
-          🔗 Import recipes directly from cooking websites with one click! I'll automatically grab the recipe details and even find the photos for you.
+          🔗 Import recipes directly from cooking websites with one click! I'll automatically grab the recipe details and even find the photos for you. Works with most popular cooking websites and recipe blogs!
         </div>
         <div className="sm:hidden">
-          🔗 Import recipes directly from cooking websites with one click! I'll automatically grab the recipe details and even find the photos for you.
+          🔗 Import recipes directly from cooking websites with one click! I'll automatically grab the recipe details and even find the photos for you. Works with most popular cooking websites and recipe blogs!
         </div>
       </div>
       
@@ -72,9 +72,6 @@ export function RecipeUrlTab({
           placeholder="https://example-recipe-website.com/recipe/your-recipe"
           className="text-base p-4 h-12"
         />
-        <p className="text-sm text-muted-foreground">
-          Works with most popular cooking websites and recipe blogs!
-        </p>
       </div>
       
       {isProcessing && importProgress && (

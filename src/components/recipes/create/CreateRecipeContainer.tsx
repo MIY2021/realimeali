@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -116,14 +117,16 @@ export function CreateRecipeContainer() {
   return (
     <div className="space-y-6">
       {/* Title Section */}
-      <div className="mb-6 sm:mb-8">
-        <h1 className="text-3xl sm:text-4xl font-bold text-navy flex items-center gap-3 mb-2">
-          <Plus className="h-8 w-8 sm:h-10 sm:w-10 text-sage" />
-          Add New Recipe
-        </h1>
-        <p className="text-lg text-muted-foreground">
-          Create a new recipe for your household
-        </p>
+      <div className="flex flex-col gap-4 mb-6 sm:flex-row sm:justify-between sm:items-center">
+        <div className="space-y-2">
+          <h1 className="text-2xl sm:text-3xl font-bold text-navy flex items-center gap-2">
+            <Plus className="h-6 w-6 sm:h-8 sm:w-8 text-sage" />
+            Add New Recipe
+          </h1>
+          <p className="text-sm sm:text-base text-muted-foreground">
+            Turn your culinary imagination into reality! Whether you're recreating a family favorite or experimenting with new flavors, every great meal starts with the perfect recipe.
+          </p>
+        </div>
       </div>
       
       <CreateRecipeTabsWrapper
