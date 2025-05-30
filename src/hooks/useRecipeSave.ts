@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
-import { useCommunityRecipes } from "@/hooks/useCommunityRecipes";
+import { supabase } from "@/integrations/supabase/client";
 import { Recipe } from "@/types";
 
 export function useRecipeSave() {
@@ -12,7 +12,6 @@ export function useRecipeSave() {
   const { createRecipe } = useRecipes();
   const { user } = useAuth();
   const { currentHousehold } = useHousehold();
-  const { submitCommunityRecipe } = useCommunityRecipes();
 
   const handleSave = async (
     newRecipe: Omit<Recipe, 'id' | 'created_at' | 'updated_at' | 'created_by'>, 
@@ -99,37 +98,44 @@ export function useRecipeSave() {
       console.log("✅ Recipe creation response:", recipe);
       
       if (recipe) {
-        // If user wants to share with community, submit it
+        // If user wants to share with community, submit it directly to community_recipes table
         if (shareWithCommunity) {
-          console.log("🌍 Submitting recipe to community...");
+          console.log("🌍 Submitting recipe to community for moderation...");
           
-          // Try to extract source URL from description or other fields
-          const sourceUrl = newRecipe.description?.match(/https?:\/\/[^\s]+/)?.[0] || 
-                           window.location.origin + `/my-recipes/${recipe.id}`;
-          
-          const communityData = {
-            title: recipe.title,
-            description: recipe.description,
-            source_url: sourceUrl,
-            image_url: recipe.image,
-            prep_time: recipe.prep_time,
-            cook_time: recipe.cook_time,
-            servings: recipe.servings,
-            category: recipe.meal_type || null,
-            cuisine: recipe.cuisine_region || null,
-            difficulty_level: recipe.complexity_level === 'quick_easy' ? 'Easy' : 
-                             recipe.complexity_level === 'complex' ? 'Hard' : 'Standard'
-          };
-          
-          const submitted = await submitCommunityRecipe(communityData);
-          
-          if (submitted) {
-            console.log("✅ Recipe successfully submitted to community");
-            toast.success("Recipe saved and shared!", {
-              description: `${recipe.title} has been added to your recipes and submitted to the community for review.`,
-            });
-          } else {
-            console.log("❌ Community submission failed, but recipe was saved");
+          try {
+            const { error: communityError } = await supabase
+              .from('community_recipes')
+              .insert({
+                title: recipe.title,
+                description: recipe.description,
+                source_url: window.location.origin + `/my-recipes/${recipe.id}`,
+                image_url: recipe.image,
+                prep_time: recipe.prep_time,
+                cook_time: recipe.cook_time,
+                servings: recipe.servings,
+                category: recipe.meal_type || null,
+                cuisine: recipe.cuisine_region || null,
+                difficulty_level: recipe.complexity_level === 'quick_easy' ? 'Easy' : 
+                               recipe.complexity_level === 'complex' ? 'Hard' : 'Standard',
+                submitted_by: user.id,
+                submitted_by_name: user.email || 'Anonymous',
+                is_approved: false, // Requires admin approval
+                is_active: true
+              });
+
+            if (communityError) {
+              console.error("❌ Community submission error:", communityError);
+              toast.success("Recipe saved!", {
+                description: `${recipe.title} has been added to your recipes. Community sharing failed but recipe is saved.`,
+              });
+            } else {
+              console.log("✅ Recipe successfully submitted to community for moderation");
+              toast.success("Recipe saved and submitted!", {
+                description: `${recipe.title} has been added to your recipes and submitted to the community for moderation.`,
+              });
+            }
+          } catch (communityError) {
+            console.error("❌ Community submission failed:", communityError);
             toast.success("Recipe saved!", {
               description: `${recipe.title} has been added to your recipes. Community sharing failed but recipe is saved.`,
             });

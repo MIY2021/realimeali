@@ -2,12 +2,22 @@
 export const FUNNY_LOADING_MESSAGES = [
   "🤓 Oh where did I put my reading glasses...",
   "😋 WOW this recipe looks tasty!",
-  "🤤 Getting hungry just looking at this...",
+  "🤤 Getting peckish just looking at this...",
   "🕵️ Investigating kitchen mysteries...",
   "🎭 Putting on my chef hat...",
   "🦸 Activating recipe superpowers...",
   "🔮 Consulting the culinary crystal ball...",
   "🎪 Performing food magic tricks...",
   "🧙‍♂️ Brewing up some recipe wizardry...",
-  "🎯 Hunting for flavor treasures..."
+  "🎯 Hunting for flavour treasures...",
+  "👨‍🍳 Donning my apron with style...",
+  "🍴 Preparing the finest cutlery...",
+  "🥄 Stirring up some culinary magic...",
+  "🌟 Sprinkling fairy dust on ingredients...",
+  "🔍 Analysing the art of cookery...",
+  "🎨 Painting flavours on the palette...",
+  "🏆 Competing for the best recipe prize...",
+  "🚀 Launching into flavour space...",
+  "🎭 Rehearsing the cooking performance...",
+  "🎪 Juggling ingredients with finesse..."
 ];

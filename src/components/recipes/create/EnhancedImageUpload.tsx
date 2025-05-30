@@ -1,3 +1,4 @@
+
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -223,7 +224,7 @@ export function EnhancedImageUpload({
             className="w-full"
           >
             <Upload className="h-4 w-4 mr-2" />
-            Upload Different Image
+            Change Image
           </Button>
 
           <Button

@@ -9,6 +9,8 @@ export const useProgressTracking = () => {
   const startProgressAnimation = () => {
     setProgressValue(0);
     
+    // Create a shuffled copy of messages for this session
+    const shuffledMessages = [...FUNNY_LOADING_MESSAGES].sort(() => Math.random() - 0.5);
     let messageIndex = 0;
     let currentProgress = 0;
     
@@ -17,9 +19,9 @@ export const useProgressTracking = () => {
       currentProgress = Math.min(currentProgress + Math.random() * 15 + 5, 85);
       setProgressValue(currentProgress);
       
-      // Update funny messages
-      if (messageIndex < FUNNY_LOADING_MESSAGES.length) {
-        setImportProgress(FUNNY_LOADING_MESSAGES[messageIndex]);
+      // Update funny messages in random order
+      if (messageIndex < shuffledMessages.length) {
+        setImportProgress(shuffledMessages[messageIndex]);
         messageIndex++;
       }
     }, 800);

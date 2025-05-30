@@ -61,15 +61,18 @@ export function CreateRecipeTabsWrapper({
         </CreateRecipeTabNavigation>
       </div>
 
-      <RecipeSaveSection
-        wasGenerated={status.wasGenerated}
-        shareWithCommunity={recipeFormHook.shareWithCommunity}
-        setShareWithCommunity={recipeFormHook.setShareWithCommunity}
-        isComplete={status.isComplete}
-        isProcessing={recipeProcessingHook.isProcessing}
-        onSave={onSave}
-        onCancel={onCancel}
-      />
+      {/* Only show save section on manual tab */}
+      {activeTab === 'manual' && (
+        <RecipeSaveSection
+          wasGenerated={status.wasGenerated}
+          shareWithCommunity={recipeFormHook.shareWithCommunity}
+          setShareWithCommunity={recipeFormHook.setShareWithCommunity}
+          isComplete={status.isComplete}
+          isProcessing={recipeProcessingHook.isProcessing}
+          onSave={onSave}
+          onCancel={onCancel}
+        />
+      )}
     </div>
   );
 }
