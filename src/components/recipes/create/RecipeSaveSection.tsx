@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { Save, X, Share, Info, CheckCheck, SparkleIcon } from "lucide-react";
+import { Save, X, Share, Info, Check, Sparkles } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface RecipeSaveSectionProps {
@@ -75,7 +75,7 @@ export function RecipeSaveSection({
             className="bg-blue-600 hover:bg-blue-700 flex items-center gap-1.5 ml-2"
           >
             {isComplete ? 
-              <CheckCheck className="h-4 w-4" /> : 
+              <Check className="h-4 w-4" /> : 
               <Save className="h-4 w-4" />
             }
             {isProcessing ? "Saving..." : "Save Recipe"}
@@ -85,7 +85,7 @@ export function RecipeSaveSection({
       
       {wasGenerated && (
         <div className="mt-3 flex items-start gap-2 text-xs text-muted-foreground pt-2 border-t">
-          <SparkleIcon className="h-3 w-3 text-amber-500 flex-shrink-0 mt-0.5" />
+          <Sparkles className="h-3 w-3 text-amber-500 flex-shrink-0 mt-0.5" />
           <p>
             This recipe was created with AI assistance. Feel free to edit it to ensure it meets your expectations!
           </p>

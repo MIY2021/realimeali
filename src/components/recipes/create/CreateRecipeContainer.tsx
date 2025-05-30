@@ -9,6 +9,7 @@ import { useRecipeForm } from "@/hooks/useRecipeForm";
 import { useRecipeProcessing } from "@/hooks/useRecipeProcessing";
 import { useImageGeneration } from "@/hooks/useImageGeneration";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useUserProfile } from "@/hooks/useUserProfile";
 import { CreateRecipeTabsWrapper } from "./CreateRecipeTabsWrapper";
 import { Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -20,6 +21,7 @@ export function CreateRecipeContainer() {
   const { createRecipe } = useRecipes();
   const { toast } = useToast();
   const isMobile = useIsMobile();
+  const { profile } = useUserProfile(user?.id || null);
 
   const [activeTab, setActiveTab] = useState("url");
   const [isSaving, setIsSaving] = useState(false);
@@ -125,7 +127,7 @@ export function CreateRecipeContainer() {
         cook_time: recipe.cook_time,
         servings: recipe.servings,
         submitted_by: user?.id,
-        submitted_by_name: user?.full_name || user?.email,
+        submitted_by_name: profile?.full_name || user?.email,
         ingredients: recipe.ingredients,
         instructions: recipe.instructions,
         cuisine: recipe.cuisine_region,
