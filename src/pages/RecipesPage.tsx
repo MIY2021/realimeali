@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus, UtensilsCrossed } from "lucide-react";
@@ -54,9 +53,7 @@ export default function RecipesPage() {
         <div className="space-y-2">
           <h1 className="text-2xl sm:text-3xl font-bold text-navy flex items-center gap-2">
             <UtensilsCrossed className="h-6 w-6 sm:h-8 sm:w-8 text-sage" />
-            <span className="truncate">
-              {currentHousehold ? `${currentHousehold.name} - My Recipes` : 'My Recipes'}
-            </span>
+            My Recipes
           </h1>
           <p className="text-sm sm:text-base text-muted-foreground">
             Welcome to your personal recipe book! Explore, create, and share delicious meals that bring joy to your table. Every great dish starts with a treasured recipe.

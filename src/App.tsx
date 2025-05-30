@@ -144,7 +144,7 @@ const App = () => (
                   </Layout>
                   <Sonner 
                     visibleToasts={1}
-                    position="top-center"
+                    position="bottom-right"
                     duration={4000}
                     closeButton
                   />
