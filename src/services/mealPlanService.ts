@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { MealPlan, MealType } from "@/types";
 import { HouseholdMealPlan } from "@/contexts/MealPlanContext";
@@ -36,7 +35,6 @@ export const mealPlanService = {
       meal_type: mealPlanData.meal_type,
       week_number: weekNumber,
       slot_index: mealPlanData.slot_index || 0,
-      notes: mealPlanData.notes || null,
       date_scheduled: mealPlanData.date,
       created_by: userId,
       parent_meal_plan_id: mealPlanData.parent_meal_plan_id || null,

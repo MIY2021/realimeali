@@ -10,7 +10,7 @@ import { MealPlannerHeader } from "@/components/meal-planner/MealPlannerHeader";
 import { AddRecipeToMealModal } from "@/components/meal-planner/AddRecipeToMealModal";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useMealPlanModals } from "@/hooks/useMealPlanModals";
-import { MealPlanMealType } from "@/types";
+import { MealType } from "@/types";
 
 export default function MealPlanner() {
   useDocumentTitle("Meal Planner | RealiMeali");
@@ -37,7 +37,7 @@ export default function MealPlanner() {
 
   const currentMealPlans = getMealPlansForWeek(currentWeek);
 
-  const handleAddRecipeToMeal = async (recipe_id: string, mealType: MealPlanMealType) => {
+  const handleAddRecipeToMeal = async (recipe_id: string, mealType: MealType) => {
     if (!user || !currentHousehold) return;
 
     const recipe = recipes.find(r => r.id === recipe_id);
@@ -65,7 +65,7 @@ export default function MealPlanner() {
 
   const handleAddRecipeWithLeftovers = async (
     recipe_id: string, 
-    mealType: MealPlanMealType, 
+    mealType: MealType, 
     leftoverServings: number
   ) => {
     if (!user || !currentHousehold) return;
@@ -171,8 +171,7 @@ export default function MealPlanner() {
           onClose={() => setAddMealModal({ open: false, mealType: null, date: null })}
           mealSlot={{ 
             date: new Date().toISOString().split('T')[0], 
-            mealType: addMealModal.mealType || "dinner",
-            slotIndex: 0
+            mealType: addMealModal.mealType || "dinner"
           }}
           onAddRecipe={async (recipeId: string) => {
             await handleAddRecipeToMeal(recipeId, addMealModal.mealType || "dinner");
