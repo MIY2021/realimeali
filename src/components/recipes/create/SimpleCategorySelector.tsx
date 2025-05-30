@@ -85,8 +85,8 @@ export function SimpleCategorySelector({ recipe, onRecipeChange }: SimpleCategor
               <CategoryButton
                 key={option.value}
                 option={option}
-                isSelected={recipe.cuisine === option.value}
-                onClick={() => updateRecipeField('cuisine', option.value)}
+                isSelected={recipe.cuisine_region === option.value}
+                onClick={() => updateRecipeField('cuisine_region', option.value)}
               />
             ))}
           </div>

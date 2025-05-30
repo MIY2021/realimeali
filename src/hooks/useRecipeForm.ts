@@ -30,7 +30,7 @@ export const useRecipeForm = (initialRecipe?: Partial<Recipe>) => {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [generationProgress, setGenerationProgress] = useState('');
-  const [shareWithCommunity, setShareWithCommunity] = useState(false);
+  const [shareWithCommunity, setShareWithCommunity] = useState(true); // Default to true
   const [wasImportedFromWebsite, setWasImportedFromWebsite] = useState(false);
 
   const onAddCategory = () => {
@@ -60,10 +60,11 @@ export const useRecipeForm = (initialRecipe?: Partial<Recipe>) => {
     }
   };
 
-  const onRemoveIngredient = (ingredientToRemove: string) => {
+  // Fixed to use index instead of ingredient value
+  const onRemoveIngredient = (indexToRemove: number) => {
     setNewRecipe(prevRecipe => ({
       ...prevRecipe,
-      ingredients: prevRecipe.ingredients.filter(ing => ing !== ingredientToRemove)
+      ingredients: prevRecipe.ingredients.filter((_, index) => index !== indexToRemove)
     }));
   };
 
@@ -77,10 +78,11 @@ export const useRecipeForm = (initialRecipe?: Partial<Recipe>) => {
     }
   };
 
-  const onRemoveInstruction = (instructionToRemove: string) => {
+  // Fixed to use index instead of instruction value
+  const onRemoveInstruction = (indexToRemove: number) => {
     setNewRecipe(prevRecipe => ({
       ...prevRecipe,
-      instructions: prevRecipe.instructions.filter(inst => inst !== instructionToRemove)
+      instructions: prevRecipe.instructions.filter((_, index) => index !== indexToRemove)
     }));
   };
 

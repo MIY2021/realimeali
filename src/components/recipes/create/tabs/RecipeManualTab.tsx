@@ -4,8 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Plus, X, Sparkles } from "lucide-react";
+import { Plus, X } from "lucide-react";
 import { EnhancedImageUpload } from "../EnhancedImageUpload";
 import { SimpleCategorySelector } from "../SimpleCategorySelector";
 import { Recipe } from "@/types";
@@ -14,8 +13,6 @@ interface RecipeManualTabProps {
   isMobile: boolean;
   newRecipe: Omit<Recipe, 'id' | 'created_at' | 'updated_at' | 'created_by'>;
   setNewRecipe: (recipe: Omit<Recipe, 'id' | 'created_at' | 'updated_at' | 'created_by'>) => void;
-  newCategory: string;
-  setNewCategory: (category: string) => void;
   newIngredient: string;
   setNewIngredient: (ingredient: string) => void;
   newInstruction: string;
@@ -25,8 +22,6 @@ interface RecipeManualTabProps {
   generationProgress: string;
   onImageChange: (file: File) => void;
   onGenerateImage: () => void;
-  onAddCategory: () => void;
-  onRemoveCategory: (category: string) => void;
   onAddIngredient: () => void;
   onRemoveIngredient: (index: number) => void;
   onAddInstruction: () => void;
@@ -37,8 +32,6 @@ export function RecipeManualTab({
   isMobile,
   newRecipe,
   setNewRecipe,
-  newCategory,
-  setNewCategory,
   newIngredient,
   setNewIngredient,
   newInstruction,
@@ -48,8 +41,6 @@ export function RecipeManualTab({
   generationProgress,
   onImageChange,
   onGenerateImage,
-  onAddCategory,
-  onRemoveCategory,
   onAddIngredient,
   onRemoveIngredient,
   onAddInstruction,
@@ -148,46 +139,11 @@ export function RecipeManualTab({
         </CardContent>
       </Card>
 
-      {/* Recipe Classification */}
+      {/* Recipe Classification - Single comprehensive selector */}
       <SimpleCategorySelector
         recipe={newRecipe}
         onRecipeChange={setNewRecipe}
       />
-
-      {/* Categories */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Categories</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="flex gap-2">
-            <Input
-              value={newCategory}
-              onChange={(e) => setNewCategory(e.target.value)}
-              placeholder="Add a category (e.g., Quick Meals, Comfort Food)"
-              onKeyPress={(e) => e.key === 'Enter' && onAddCategory()}
-            />
-            <Button onClick={onAddCategory} size="sm">
-              <Plus className="h-4 w-4" />
-            </Button>
-          </div>
-          {newRecipe.diet_lifestyle && newRecipe.diet_lifestyle.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {newRecipe.diet_lifestyle.map((category, index) => (
-                <Badge key={index} variant="secondary" className="flex items-center gap-1">
-                  {category}
-                  <button
-                    onClick={() => onRemoveCategory(category)}
-                    className="hover:bg-gray-300 rounded-full p-0.5"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </Badge>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
 
       {/* Ingredients */}
       <Card>
