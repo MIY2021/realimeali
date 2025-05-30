@@ -47,14 +47,14 @@ export const useShoppingListGenerator = () => {
       }> = [];
 
       mealPlans.forEach(mealPlan => {
-        if (mealPlan.isLeftover) {
+        if (mealPlan.is_leftover) {
           console.log('Skipping leftover meal plan:', mealPlan.id);
           return;
         }
         
-        const recipe = recipes.find(r => r.id === mealPlan.recipeId);
+        const recipe = recipes.find(r => r.id === mealPlan.recipe_id);
         if (!recipe) {
-          console.log('Recipe not found for meal plan:', mealPlan.recipeId);
+          console.log('Recipe not found for meal plan:', mealPlan.recipe_id);
           return;
         }
 

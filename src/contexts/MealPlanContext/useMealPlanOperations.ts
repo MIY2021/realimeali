@@ -1,3 +1,4 @@
+
 import { useCallback } from "react";
 import { MealType, MealPlan } from "@/types";
 import { useToast } from "@/hooks/use-toast";
@@ -47,10 +48,12 @@ export const useMealPlanOperations = (
         console.log("Adding meal plan:", { mealPlanData, weekNumber, userId: user.id, householdId: currentHousehold.id });
       }
       
-      // Create a clean meal plan object without timestamp fields
+      // Create a clean meal plan object with correct property names
       const mealPlanWithWeek = {
         ...mealPlanData,
-        week_number: weekNumber
+        week_number: weekNumber,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       };
       
       const newMealPlan = await mealPlanService.addMealPlan(

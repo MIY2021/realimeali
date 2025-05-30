@@ -15,7 +15,7 @@ export function useRecipeSave() {
   const { submitCommunityRecipe } = useCommunityRecipes();
 
   const handleSave = async (
-    newRecipe: Omit<Recipe, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>, 
+    newRecipe: Omit<Recipe, 'id' | 'created_at' | 'updated_at' | 'created_by'>, 
     shareWithCommunity: boolean = false
   ) => {
     console.log("🍳 Save recipe called with:", { 
@@ -27,14 +27,14 @@ export function useRecipeSave() {
         title: newRecipe.title,
         ingredients: newRecipe.ingredients?.length || 0,
         instructions: newRecipe.instructions?.length || 0,
-        topTip: newRecipe.topTip,
+        top_tip: newRecipe.top_tip,
         classification: {
-          mealType: newRecipe.mealType,
-          cuisineRegion: newRecipe.cuisineRegion,
-          cookingMethod: newRecipe.cookingMethod,
-          dietLifestyle: newRecipe.dietLifestyle,
-          complexityLevel: newRecipe.complexityLevel,
-          mainIngredient: newRecipe.mainIngredient,
+          meal_type: newRecipe.meal_type,
+          cuisine_region: newRecipe.cuisine_region,
+          cooking_method: newRecipe.cooking_method,
+          diet_lifestyle: newRecipe.diet_lifestyle,
+          complexity_level: newRecipe.complexity_level,
+          main_ingredient: newRecipe.main_ingredient,
         }
       }
     });
@@ -77,19 +77,19 @@ export function useRecipeSave() {
       ...newRecipe,
       title: newRecipe.title.trim(),
       description: newRecipe.description?.trim() || "",
-      topTip: newRecipe.topTip && newRecipe.topTip.trim() 
-        ? newRecipe.topTip.trim()
+      top_tip: newRecipe.top_tip && newRecipe.top_tip.trim() 
+        ? newRecipe.top_tip.trim()
         : "Enjoy cooking this delicious recipe!",
       // Ensure numeric values are valid
-      prepTime: Math.max(0, newRecipe.prepTime || 0),
-      cookTime: Math.max(0, newRecipe.cookTime || 0),
+      prep_time: Math.max(0, newRecipe.prep_time || 0),
+      cook_time: Math.max(0, newRecipe.cook_time || 0),
       servings: Math.max(1, newRecipe.servings || 1),
       // Ensure arrays are valid
       ingredients: newRecipe.ingredients.filter(ing => ing.trim()),
       instructions: newRecipe.instructions.filter(inst => inst.trim()),
-      dietLifestyle: newRecipe.dietLifestyle || [],
-      // Remove householdId if present (will be set by createRecipe)
-      householdId: undefined as any
+      diet_lifestyle: newRecipe.diet_lifestyle || [],
+      // Remove household_id if present (will be set by createRecipe)
+      household_id: undefined as any
     };
 
     console.log("✅ Validation passed, creating recipe with cleaned data:", recipeToSave);
@@ -112,13 +112,13 @@ export function useRecipeSave() {
             description: recipe.description,
             source_url: sourceUrl,
             image_url: recipe.image,
-            prep_time: recipe.prepTime,
-            cook_time: recipe.cookTime,
+            prep_time: recipe.prep_time,
+            cook_time: recipe.cook_time,
             servings: recipe.servings,
-            category: recipe.mealType || null,
-            cuisine: recipe.cuisineRegion || null,
-            difficulty_level: recipe.complexityLevel === 'quick_easy' ? 'Easy' : 
-                             recipe.complexityLevel === 'complex' ? 'Hard' : 'Standard'
+            category: recipe.meal_type || null,
+            cuisine: recipe.cuisine_region || null,
+            difficulty_level: recipe.complexity_level === 'quick_easy' ? 'Easy' : 
+                             recipe.complexity_level === 'complex' ? 'Hard' : 'Standard'
           };
           
           const submitted = await submitCommunityRecipe(communityData);

@@ -27,10 +27,14 @@ export const useRecipeForm = (initialRecipe?: Partial<Recipe>) => {
   const [newCategory, setNewCategory] = useState('');
   const [newIngredient, setNewIngredient] = useState('');
   const [newInstruction, setNewInstruction] = useState('');
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+  const [generationProgress, setGenerationProgress] = useState('');
+  const [shareWithCommunity, setShareWithCommunity] = useState(false);
+  const [wasImportedFromWebsite, setWasImportedFromWebsite] = useState(false);
 
   const onAddCategory = () => {
     if (newCategory.trim()) {
-      // Handle diet_lifestyle as proper DietLifestyle array
       setNewRecipe(prevRecipe => ({
         ...prevRecipe,
         diet_lifestyle: [...(prevRecipe.diet_lifestyle || []), newCategory.trim() as DietLifestyle]
@@ -80,6 +84,26 @@ export const useRecipeForm = (initialRecipe?: Partial<Recipe>) => {
     }));
   };
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        setImagePreview(result);
+        setNewRecipe(prev => ({ ...prev, image: result }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleAddCategory = onAddCategory;
+  const handleRemoveCategory = onRemoveCategory;
+  const handleAddIngredient = onAddIngredient;
+  const handleRemoveIngredient = onRemoveIngredient;
+  const handleAddInstruction = onAddInstruction;
+  const handleRemoveInstruction = onRemoveInstruction;
+
   return {
     newRecipe,
     setNewRecipe,
@@ -89,11 +113,28 @@ export const useRecipeForm = (initialRecipe?: Partial<Recipe>) => {
     setNewIngredient,
     newInstruction,
     setNewInstruction,
+    imagePreview,
+    setImagePreview,
+    isGeneratingImage,
+    setIsGeneratingImage,
+    generationProgress,
+    setGenerationProgress,
+    shareWithCommunity,
+    setShareWithCommunity,
+    wasImportedFromWebsite,
+    setWasImportedFromWebsite,
+    handleImageChange,
     onAddCategory,
     onRemoveCategory,
     onAddIngredient,
     onRemoveIngredient,
     onAddInstruction,
     onRemoveInstruction,
+    handleAddCategory,
+    handleRemoveCategory,
+    handleAddIngredient,
+    handleRemoveIngredient,
+    handleAddInstruction,
+    handleRemoveInstruction,
   };
 };

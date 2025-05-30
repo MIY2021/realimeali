@@ -1,39 +1,53 @@
 
-import { User } from "lucide-react";
-import { useHousehold } from "@/contexts/HouseholdContext";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { JoinHouseholdCard } from "@/components/household/JoinHouseholdCard";
+import { useHousehold } from "@/contexts/HouseholdContext";
+import { CreateHouseholdCard } from "@/components/household/CreateHouseholdCard";
 import { HouseholdDetailsCard } from "@/components/household/HouseholdDetailsCard";
 import { HouseholdMembersCard } from "@/components/household/HouseholdMembersCard";
+import { InviteMembersCard } from "@/components/household/InviteMembersCard";
+import { JoinHouseholdCard } from "@/components/household/JoinHouseholdCard";
 import { JoinRequestsCard } from "@/components/household/JoinRequestsCard";
-import { CreateHouseholdCard } from "@/components/household/CreateHouseholdCard";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
+import { useHouseholdMembers } from "@/hooks/useHouseholdMembers";
+import { HouseholdMember } from "@/types";
 
 export default function Household() {
-  useDocumentTitle("Household | RealiMeali");
+  useDocumentTitle("Household Management | RealiMeali");
   
   const { user } = useAuth();
-  const { currentHousehold, setCurrentHousehold, householdMembers, isLoadingMembers, removeMember } = useHousehold();
+  const { currentHousehold, households } = useHousehold();
+  const { members, isLoadingMembers, fetchMembers } = useHouseholdMembers();
+  const [isOwner, setIsOwner] = useState(false);
 
-  const isOwner = currentHousehold && user && currentHousehold.createdBy === user.id;
+  useEffect(() => {
+    if (currentHousehold && user) {
+      const ownerCheck = currentHousehold.created_by === user.id;
+      setIsOwner(ownerCheck);
+      fetchMembers(currentHousehold.id);
+    }
+  }, [currentHousehold, user, fetchMembers]);
 
   if (!user) {
     return (
-      <div className="container max-w-2xl mx-auto px-4 py-8">
-        <p className="text-center text-muted-foreground">Please log in to manage households.</p>
+      <div className="container max-w-4xl py-8 px-6">
+        <div className="text-center">
+          <h1 className="text-3xl font-bold text-navy mb-4">Household Management</h1>
+          <p className="text-muted-foreground">Please log in to manage your household.</p>
+        </div>
       </div>
     );
   }
 
   if (!currentHousehold) {
     return (
-      <div className="container max-w-2xl mx-auto px-4 py-8">
-        <div className="flex items-center gap-2 mb-6">
-          <User className="h-6 w-6 text-terracotta flex-shrink-0" />
-          <h1 className="text-2xl font-bold text-navy">Household Management</h1>
+      <div className="container max-w-4xl py-8 px-6 space-y-8">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-navy mb-4">Household Management</h1>
+          <p className="text-muted-foreground">Get started by creating or joining a household to begin meal planning together.</p>
         </div>
-
-        <div className="space-y-6">
+        
+        <div className="grid gap-8 md:grid-cols-2">
           <CreateHouseholdCard />
           <JoinHouseholdCard />
         </div>
@@ -41,28 +55,34 @@ export default function Household() {
     );
   }
 
+  // Type assertion to help with the type mismatch
+  const typedMembers: HouseholdMember[] = members.map(member => ({
+    ...member,
+    role: member.role as 'owner' | 'member'
+  }));
+
   return (
-    <div className="container max-w-2xl mx-auto px-4 py-8">
-      <div className="flex items-center gap-2 mb-6">
-        <User className="h-6 w-6 text-terracotta flex-shrink-0" />
-        <h1 className="text-2xl font-bold text-navy">Household Management</h1>
+    <div className="container max-w-4xl py-8 px-6 space-y-8">
+      <div className="text-center mb-8">
+        <h1 className="text-3xl font-bold text-navy mb-4">Household Management</h1>
+        <p className="text-muted-foreground">Manage your household settings and members.</p>
       </div>
 
-      <div className="space-y-6">
-        <HouseholdDetailsCard
-          household={currentHousehold}
-          isOwner={!!isOwner}
-          onHouseholdUpdate={setCurrentHousehold}
-        />
-
-        <JoinRequestsCard isOwner={!!isOwner} />
-
-        <HouseholdMembersCard
-          members={householdMembers}
-          isOwner={!!isOwner}
-          onRemoveMember={removeMember}
+      <div className="grid gap-8">
+        <HouseholdDetailsCard household={currentHousehold} />
+        
+        <HouseholdMembersCard 
+          members={typedMembers}
+          isOwner={isOwner}
           isLoading={isLoadingMembers}
         />
+        
+        {isOwner && (
+          <>
+            <InviteMembersCard householdId={currentHousehold.id} />
+            <JoinRequestsCard householdId={currentHousehold.id} />
+          </>
+        )}
       </div>
     </div>
   );

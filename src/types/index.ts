@@ -1,3 +1,4 @@
+
 export interface Recipe {
   id: string;
   title: string;
@@ -56,7 +57,7 @@ export interface HouseholdMember {
   id: string;
   user_id: string;
   household_id: string;
-  role: 'owner' | 'admin' | 'member';
+  role: 'owner' | 'member';
   created_at: string;
   updated_at: string;
   joined_at: string;
@@ -114,8 +115,8 @@ export interface HouseholdMealPlan {
   };
 }
 
-// Updated enum types to match database exactly
-export type MealType = "breakfast" | "lunch" | "dinner" | "snacks" | "sides" | "desserts" | "drinks" | "sauces_dips" | "soups_stews" | "salads" | "baking_breads";
+// Updated to only include the 7 desired meal types
+export type MealType = "breakfast" | "lunch" | "dinner" | "snacks" | "sides" | "desserts" | "drinks";
 export type MealPlanMealType = "breakfast" | "lunch" | "dinner" | "snacks";
 
 export type Cuisine = "british" | "italian" | "asian" | "mexican" | "indian" | "mediterranean" | "american" | "french" | "middle_eastern" | "other";
