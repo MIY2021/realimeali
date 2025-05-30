@@ -64,7 +64,7 @@ export function useHouseholdData(user: User | null, currentHousehold: Household 
     try {
       console.log('Fetching household members for household:', currentHousehold.id);
       
-      // Try the query with a simpler approach first
+      // Fetch household members with all required fields
       const { data, error } = await supabase
         .from('household_members')
         .select(`
@@ -72,7 +72,9 @@ export function useHouseholdData(user: User | null, currentHousehold: Household 
           user_id,
           household_id,
           role,
-          joined_at
+          joined_at,
+          created_at,
+          updated_at
         `)
         .eq('household_id', currentHousehold.id);
 
@@ -98,14 +100,24 @@ export function useHouseholdData(user: User | null, currentHousehold: Household 
         // Continue without profile data
       }
 
-      // Combine member data with profile data
-      const membersWithProfiles = data.map(member => ({
-        ...member,
-        profiles: profiles?.find(profile => profile.id === member.user_id) || null
+      // Transform data to match HouseholdMember interface
+      const membersWithProfiles: HouseholdMember[] = data.map(member => ({
+        id: member.id,
+        user_id: member.user_id,
+        household_id: member.household_id,
+        role: member.role as 'owner' | 'member',
+        joined_at: member.joined_at,
+        created_at: member.created_at || new Date().toISOString(),
+        updated_at: member.updated_at || new Date().toISOString(),
+        profile: profiles?.find(profile => profile.id === member.user_id) ? {
+          full_name: profiles.find(profile => profile.id === member.user_id)?.full_name || null,
+          email: profiles.find(profile => profile.id === member.user_id)?.email || null,
+          avatar_url: profiles.find(profile => profile.id === member.user_id)?.avatar_url || null,
+        } : undefined
       }));
 
       console.log('Successfully fetched household members:', membersWithProfiles.length);
-      return membersWithProfiles as HouseholdMember[];
+      return membersWithProfiles;
     } catch (error) {
       console.error('Unexpected error fetching household members:', error);
       return [];
@@ -141,8 +153,18 @@ export function useHouseholdData(user: User | null, currentHousehold: Household 
         return [];
       }
 
-      console.log('Successfully fetched join requests:', data?.length || 0);
-      return data || [];
+      // Transform data to match HouseholdJoinRequest interface
+      const joinRequests: HouseholdJoinRequest[] = (data || []).map(request => ({
+        id: request.id,
+        user_id: request.user_id,
+        household_id: request.household_id,
+        status: request.status as 'pending' | 'approved' | 'rejected',
+        created_at: request.created_at,
+        updated_at: request.updated_at
+      }));
+
+      console.log('Successfully fetched join requests:', joinRequests.length);
+      return joinRequests;
     } catch (error) {
       console.error('Unexpected error fetching join requests:', error);
       return [];
