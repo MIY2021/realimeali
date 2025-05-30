@@ -43,12 +43,29 @@ export function useImageRecipeProcessing() {
 
       console.log('Received recipe from image:', data.parsedRecipe);
       
-      setNewRecipe({ ...currentRecipe, ...data.parsedRecipe });
+      // Sanitize the recipe data
+      const sanitizedRecipe = sanitizeRecipeData(data.parsedRecipe);
+      
+      // Apply AI categorization
+      const recipeData = { 
+        ...currentRecipe, 
+        ...sanitizedRecipe,
+        // Apply AI classification
+        meal_type: data.parsedRecipe.mealType || currentRecipe.meal_type,
+        cuisine: data.parsedRecipe.cuisineRegion || currentRecipe.cuisine,
+        cooking_method: data.parsedRecipe.cookingMethod || currentRecipe.cooking_method,
+        diet_lifestyle: data.parsedRecipe.dietLifestyle || currentRecipe.diet_lifestyle || [],
+        complexity_level: data.parsedRecipe.complexityLevel || currentRecipe.complexity_level,
+        main_ingredient: data.parsedRecipe.mainIngredient || currentRecipe.main_ingredient,
+        top_tip: data.parsedRecipe.topTip || "Enjoy cooking this delicious recipe!"
+      };
+      
+      setNewRecipe(recipeData);
       setActiveTab("manual");
       
       toast({
-        title: "Recipe Extracted!",
-        description: "Review your recipe extracted from the photo",
+        title: "Recipe Extracted! 🎉",
+        description: "Recipe extracted from photo and auto-categorized successfully.",
       });
     } catch (error) {
       console.error('Error processing image:', error);

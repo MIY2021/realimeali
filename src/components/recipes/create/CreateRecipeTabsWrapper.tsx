@@ -41,17 +41,17 @@ export function CreateRecipeTabsWrapper({
   onCancel,
 }: CreateRecipeTabsWrapperProps) {
   
-  // Recipe completion status - updated to check if recipe was actually generated
+  // Recipe completion status - check if recipe was actually generated
   const getRecipeCompletionStatus = () => {
     const { newRecipe } = recipeFormHook;
     const hasTitle = newRecipe.title.trim().length > 0;
     const hasIngredients = newRecipe.ingredients.length > 0;
     const hasInstructions = newRecipe.instructions.length > 0;
     
-    // Check if recipe was actually generated/processed vs just manually entered
+    // Check if recipe was actually generated/processed
     const wasGenerated = hasTitle && hasIngredients && hasInstructions && (
-      activeTab === "manual" || // User has switched to manual after processing
-      newRecipe.title.length > 10 // Likely generated/imported content
+      newRecipe.title.length > 5 || // Likely generated content
+      hasIngredients && hasInstructions // Has structured data
     );
 
     return {
@@ -159,33 +159,31 @@ export function CreateRecipeTabsWrapper({
         </CreateRecipeTabNavigation>
       </div>
 
-      {/* Save/Cancel Section - Only show when recipe is actually generated/complete */}
+      {/* Save/Cancel Section - Show when recipe is complete and generated */}
       {status.wasGenerated && (
         <div className="flex flex-col gap-4 p-4 bg-white rounded-lg border">
-          {/* Community Sharing Checkbox - Only show if recipe was imported from website */}
-          {recipeFormHook.wasImportedFromWebsite && (
-            <div className="flex items-start gap-3 p-3 bg-green-50 rounded-lg border border-green-200">
-              <Checkbox
-                id="shareWithCommunity"
-                checked={recipeFormHook.shareWithCommunity}
-                onCheckedChange={recipeFormHook.setShareWithCommunity}
-                className="mt-0.5"
-              />
-              <div className="flex-1">
-                <label 
-                  htmlFor="shareWithCommunity" 
-                  className="text-sm font-medium text-green-800 cursor-pointer flex items-center gap-2"
-                >
-                  <Users className="h-4 w-4" />
-                  Share with RealiMeali Community
-                </label>
-                <p className="text-xs text-green-700 mt-1">
-                  Help other users discover this recipe! It will appear in "Find Recipes" after moderation. 
-                  Only the recipe link and details are shared - the full recipe stays on the original website.
-                </p>
-              </div>
+          {/* Community Sharing Checkbox - Show for all generated recipes */}
+          <div className="flex items-start gap-3 p-3 bg-green-50 rounded-lg border border-green-200">
+            <Checkbox
+              id="shareWithCommunity"
+              checked={recipeFormHook.shareWithCommunity}
+              onCheckedChange={recipeFormHook.setShareWithCommunity}
+              className="mt-0.5"
+            />
+            <div className="flex-1">
+              <label 
+                htmlFor="shareWithCommunity" 
+                className="text-sm font-medium text-green-800 cursor-pointer flex items-center gap-2"
+              >
+                <Users className="h-4 w-4" />
+                🎉 Share with RealiMeali Community
+              </label>
+              <p className="text-xs text-green-700 mt-1">
+                Help other users discover this recipe! It will appear in the "Find Recipes" section after our moderation team approves it.
+                Only the recipe link and details are shared - the full recipe stays on the original website.
+              </p>
             </div>
-          )}
+          </div>
 
           {/* Save/Cancel Buttons */}
           <div className="flex flex-col sm:flex-row gap-3">

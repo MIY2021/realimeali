@@ -8,9 +8,7 @@ import { useRecipeForm } from "@/hooks/useRecipeForm";
 import { useRecipeProcessing } from "@/hooks/useRecipeProcessing";
 import { useImageGeneration } from "@/hooks/useImageGeneration";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { CreateRecipeHeader } from "./CreateRecipeHeader";
 import { CreateRecipeTabsWrapper } from "./CreateRecipeTabsWrapper";
-import { CreateRecipeActions } from "./CreateRecipeActions";
 import { Plus } from "lucide-react";
 
 export function CreateRecipeContainer() {
@@ -141,16 +139,6 @@ export function CreateRecipeContainer() {
         onGenerateImage={onGenerateImage}
         onSave={handleSaveRecipe}
         onCancel={handleCancel}
-      />
-
-      <CreateRecipeActions
-        onSave={handleSaveRecipe}
-        onCancel={handleCancel}
-        isLoading={isSaving}
-        isValid={!!(recipeFormHook.newRecipe.title.trim() && recipeFormHook.newRecipe.ingredients.length > 0 && recipeFormHook.newRecipe.instructions.length > 0)}
-        shareWithCommunity={recipeFormHook.shareWithCommunity}
-        setShareWithCommunity={recipeFormHook.setShareWithCommunity}
-        wasImportedFromWebsite={recipeFormHook.wasImportedFromWebsite}
       />
     </div>
   );

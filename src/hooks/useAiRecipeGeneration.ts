@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Recipe } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
+import { sanitizeRecipeData } from "@/utils/contentSanitizer";
 
 export function useAiRecipeGeneration() {
   const { toast } = useToast();
@@ -17,8 +18,8 @@ export function useAiRecipeGeneration() {
   ) => {
     if (!aiPrompt.trim()) {
       toast({
-        title: "Missing Input",
-        description: "Please describe the recipe you'd like to generate.",
+        title: "Error",
+        description: "Please describe what recipe you'd like me to create",
         variant: "destructive",
       });
       return;
@@ -26,80 +27,55 @@ export function useAiRecipeGeneration() {
 
     setIsProcessing(true);
     try {
-      console.log('Generating AI recipe with prompt:', aiPrompt, 'and style preferences:', stylePreferences);
+      console.log('Generating AI recipe for:', aiPrompt);
       
       const { data, error } = await supabase.functions.invoke('parse-recipe-ai', {
         body: { 
-          generateRequest: aiPrompt,
+          generateRequest: aiPrompt.trim(),
           stylePreferences: stylePreferences
         }
       });
 
       if (error) {
         console.error('Error calling parse-recipe-ai function:', error);
-        
-        // Handle specific error types
-        if (error.message?.includes('Resource unavailable')) {
-          toast({
-            title: "AI Service Busy",
-            description: "The AI service is temporarily busy. Please try again in a moment.",
-            variant: "destructive",
-          });
-        } else if (error.message?.includes('timeout')) {
-          toast({
-            title: "Generation Timeout",
-            description: "Recipe generation took too long. Please try with a simpler request.",
-            variant: "destructive",
-          });
-        } else if (error.message?.includes('rate limit')) {
-          toast({
-            title: "Rate Limit",
-            description: "Too many requests. Please wait a moment before trying again.",
-            variant: "destructive",
-          });
-        } else {
-          toast({
-            title: "Generation Error",
-            description: "Failed to generate recipe. Please try again.",
-            variant: "destructive",
-          });
-        }
-        return;
+        throw new Error(error.message || 'Failed to generate recipe');
       }
 
       if (!data?.parsedRecipe) {
-        toast({
-          title: "Generation Failed",
-          description: "Could not generate a recipe from your request. Please try rephrasing it.",
-          variant: "destructive",
-        });
-        return;
+        throw new Error('No recipe could be generated');
       }
 
       console.log('Received generated recipe:', data.parsedRecipe);
       
-      // Apply the generated recipe data
-      const generatedRecipe = {
-        ...currentRecipe,
-        ...data.parsedRecipe
+      // Sanitize the recipe data
+      const sanitizedRecipe = sanitizeRecipeData(data.parsedRecipe);
+      
+      // Apply AI categorization
+      const recipeData = { 
+        ...currentRecipe, 
+        ...sanitizedRecipe,
+        // Apply AI classification
+        meal_type: data.parsedRecipe.mealType || currentRecipe.meal_type,
+        cuisine: data.parsedRecipe.cuisineRegion || currentRecipe.cuisine,
+        cooking_method: data.parsedRecipe.cookingMethod || currentRecipe.cooking_method,
+        diet_lifestyle: data.parsedRecipe.dietLifestyle || currentRecipe.diet_lifestyle || [],
+        complexity_level: data.parsedRecipe.complexityLevel || currentRecipe.complexity_level,
+        main_ingredient: data.parsedRecipe.mainIngredient || currentRecipe.main_ingredient,
+        top_tip: data.parsedRecipe.topTip || "Enjoy cooking this delicious recipe!"
       };
       
-      setNewRecipe(generatedRecipe);
+      setNewRecipe(recipeData);
       setActiveTab("manual");
       
       toast({
         title: "Recipe Generated! 🎉",
-        description: "Your custom recipe has been created. Review and edit it in the Manual Entry tab.",
+        description: "Your custom recipe has been created and categorized automatically.",
       });
-      
-      // Clear the prompt after successful generation
-      setAiPrompt("");
-      
     } catch (error) {
       console.error('Error generating recipe:', error);
       toast({
-        title: "Unexpected Error",
-        description: "An unexpected error occurred. Please try again.",
+        title: "Generation Failed",
+        description: error.message || "Failed to generate recipe. Please try again.",
         variant: "destructive",
       });
     } finally {

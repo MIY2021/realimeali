@@ -130,7 +130,20 @@ export function useUrlRecipeProcessing() {
       
       // Sanitize the recipe data
       const sanitizedRecipe = sanitizeRecipeData(data.parsedRecipe);
-      const recipeData = { ...currentRecipe, ...sanitizedRecipe };
+      
+      // Apply AI categorization
+      const recipeData = { 
+        ...currentRecipe, 
+        ...sanitizedRecipe,
+        // Apply AI classification
+        meal_type: data.parsedRecipe.mealType || currentRecipe.meal_type,
+        cuisine: data.parsedRecipe.cuisineRegion || currentRecipe.cuisine,
+        cooking_method: data.parsedRecipe.cookingMethod || currentRecipe.cooking_method,
+        diet_lifestyle: data.parsedRecipe.dietLifestyle || currentRecipe.diet_lifestyle || [],
+        complexity_level: data.parsedRecipe.complexityLevel || currentRecipe.complexity_level,
+        main_ingredient: data.parsedRecipe.mainIngredient || currentRecipe.main_ingredient,
+        top_tip: data.parsedRecipe.topTip || "Enjoy cooking this delicious recipe!"
+      };
       
       if (data.websiteImages && data.websiteImages.length > 0) {
         setWebsiteImages(data.websiteImages);
@@ -149,8 +162,8 @@ export function useUrlRecipeProcessing() {
         description: recipeData.description,
         source_url: validation.data,
         image_url: recipeData.image,
-        prep_time: recipeData.prepTime || 0,
-        cook_time: recipeData.cookTime || 0,
+        prep_time: recipeData.prep_time || 0,
+        cook_time: recipeData.cook_time || 0,
         servings: recipeData.servings || 1,
       });
       
@@ -165,7 +178,7 @@ export function useUrlRecipeProcessing() {
       
       toast({
         title: "Recipe Imported! 🎉",
-        description: `Recipe details extracted successfully.${imageMessage}`,
+        description: `Recipe details extracted and auto-categorized successfully.${imageMessage}`,
       });
     } catch (error) {
       console.error('Error importing from website:', error);
