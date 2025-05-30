@@ -93,9 +93,9 @@ async function extractWebsiteContent(url: string) {
   }
 }
 
-// OpenAI API call with Flex processing
-async function callOpenAI(systemPrompt: string, userPrompt: string, useFlex: boolean = true) {
-  const requestBody: any = {
+// OpenAI API call without flex processing
+async function callOpenAI(systemPrompt: string, userPrompt: string) {
+  const requestBody = {
     model: 'gpt-4o-mini',
     messages: [
       { role: 'system', content: systemPrompt },
@@ -105,11 +105,6 @@ async function callOpenAI(systemPrompt: string, userPrompt: string, useFlex: boo
     max_tokens: 2000,
   };
 
-  // Add flex processing for cost optimization
-  if (useFlex) {
-    requestBody.service_tier = 'flex';
-  }
-
   return await retryWithBackoff(async () => {
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -118,7 +113,7 @@ async function callOpenAI(systemPrompt: string, userPrompt: string, useFlex: boo
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(requestBody),
-      signal: AbortSignal.timeout(900000), // 15 minute timeout for flex processing
+      signal: AbortSignal.timeout(30000), // 30 second timeout
     });
 
     if (!response.ok) {
@@ -153,7 +148,6 @@ serve(async (req) => {
 
     let systemPrompt = '';
     let userPrompt = '';
-    let useFlex = true; // Default to flex processing for cost savings
 
     // Handle different request types
     if (body.websiteUrl) {
@@ -283,26 +277,13 @@ Create realistic recipes with proper ingredient amounts and detailed cooking ste
       }
       
       userPrompt = `Generate a recipe for: ${generationPrompt}`;
-      useFlex = true; // Use flex for generation to save costs
       
     } else {
       throw new Error('Missing required parameters. Provide websiteUrl, recipeText, or generateRequest.');
     }
 
-    // Make OpenAI API call with retry logic and flex processing
-    let data;
-    try {
-      data = await callOpenAI(systemPrompt, userPrompt, useFlex);
-    } catch (error) {
-      // If flex processing fails with resource unavailability, fallback to standard tier
-      if (error?.status === 429 && useFlex) {
-        console.log('Flex processing unavailable, falling back to standard tier...');
-        data = await callOpenAI(systemPrompt, userPrompt, false);
-      } else {
-        throw error;
-      }
-    }
-
+    // Make OpenAI API call with retry logic
+    const data = await callOpenAI(systemPrompt, userPrompt);
     const content_text = data.choices[0].message.content;
 
     console.log('OpenAI response received, parsing JSON...');

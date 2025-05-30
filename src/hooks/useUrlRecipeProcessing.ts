@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Recipe } from "@/types";
@@ -79,26 +80,28 @@ export function useUrlRecipeProcessing() {
       if (error) {
         console.error('Error calling parse-recipe-ai function:', error);
         
-        // Handle specific error codes
-        if (error.message?.includes('Resource unavailable')) {
+        // Handle specific error codes with more robust error checking
+        const errorMessage = error.message || 'Unknown error occurred';
+        
+        if (errorMessage.includes('Resource unavailable') || errorMessage.includes('busy')) {
           toast({
             title: "AI Service Busy",
             description: "The AI service is temporarily busy. Please try again in a moment.",
             variant: "destructive",
           });
-        } else if (error.message?.includes('timeout')) {
+        } else if (errorMessage.includes('timeout') || errorMessage.includes('timed out')) {
           toast({
             title: "Import Timeout",
             description: "Website took too long to process. Please try again.",
             variant: "destructive",
           });
-        } else if (error.message?.includes('Could not extract content')) {
+        } else if (errorMessage.includes('Could not extract content') || errorMessage.includes('Failed to fetch')) {
           toast({
             title: "Website Access Error",
             description: "Could not access the website content. Please check the URL or try a different recipe website.",
             variant: "destructive",
           });
-        } else if (error.message?.includes('rate limit')) {
+        } else if (errorMessage.includes('rate limit') || errorMessage.includes('429')) {
           toast({
             title: "Rate Limit",
             description: "Too many requests. Please wait a moment before trying again.",
@@ -107,7 +110,7 @@ export function useUrlRecipeProcessing() {
         } else {
           toast({
             title: "Import Failed",
-            description: "Failed to import from website. Please try again or use a different URL.",
+            description: `Failed to import from website: ${errorMessage}. Please try again or use a different URL.`,
             variant: "destructive",
           });
         }
@@ -168,7 +171,7 @@ export function useUrlRecipeProcessing() {
       console.error('Error importing from website:', error);
       toast({
         title: "Import Error",
-        description: "An unexpected error occurred. Please try again.",
+        description: "An unexpected error occurred. Please check your internet connection and try again.",
         variant: "destructive",
       });
     } finally {

@@ -1,46 +1,53 @@
 
-import { useCallback, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { useState, useCallback } from 'react';
 import { User } from '@supabase/supabase-js';
+import { supabase } from '@/integrations/supabase/client';
 import { Household, HouseholdMember, HouseholdJoinRequest } from '@/types';
-import { transformHousehold, transformHouseholdMember, transformJoinRequest } from './transformers';
 
-export const useHouseholdData = (user: User | null, currentHousehold: Household | null) => {
+export function useHouseholdData(user: User | null, currentHousehold: Household | null) {
   const [isLoadingHousehold, setIsLoadingHousehold] = useState(false);
   const [isLoadingMembers, setIsLoadingMembers] = useState(false);
 
   const fetchHousehold = useCallback(async (): Promise<Household | null> => {
-    if (!user) return null;
+    if (!user) {
+      console.log('No user found, skipping household fetch');
+      return null;
+    }
 
     setIsLoadingHousehold(true);
     try {
+      console.log('Fetching household for user:', user.id);
+      
       const { data: memberData, error: memberError } = await supabase
         .from('household_members')
-        .select('household_id')
+        .select(`
+          household_id,
+          households!inner(
+            id,
+            name,
+            created_by,
+            created_at,
+            updated_at
+          )
+        `)
         .eq('user_id', user.id)
-        .single();
+        .limit(1)
+        .maybeSingle();
 
       if (memberError) {
-        console.error('Error fetching household member data:', memberError);
+        console.error('Error fetching household membership:', memberError);
         return null;
       }
 
-      if (!memberData) return null;
-
-      const { data: householdData, error: householdError } = await supabase
-        .from('households')
-        .select('*')
-        .eq('id', memberData.household_id)
-        .single();
-
-      if (householdError) {
-        console.error('Error fetching household data:', householdError);
+      if (!memberData?.households) {
+        console.log('No household found for user');
         return null;
       }
 
-      return transformHousehold(householdData);
+      console.log('Found household:', memberData.households);
+      return memberData.households as Household;
     } catch (error) {
-      console.error('Error fetching household:', error);
+      console.error('Unexpected error fetching household:', error);
       return null;
     } finally {
       setIsLoadingHousehold(false);
@@ -48,10 +55,16 @@ export const useHouseholdData = (user: User | null, currentHousehold: Household 
   }, [user]);
 
   const fetchHouseholdMembers = useCallback(async (): Promise<HouseholdMember[]> => {
-    if (!currentHousehold) return [];
+    if (!currentHousehold) {
+      console.log('No household available, skipping members fetch');
+      return [];
+    }
 
     setIsLoadingMembers(true);
     try {
+      console.log('Fetching household members for household:', currentHousehold.id);
+      
+      // Try the query with a simpler approach first
       const { data, error } = await supabase
         .from('household_members')
         .select(`
@@ -59,20 +72,42 @@ export const useHouseholdData = (user: User | null, currentHousehold: Household 
           user_id,
           household_id,
           role,
-          joined_at,
-          profiles (
-            full_name,
-            email,
-            avatar_url
-          )
+          joined_at
         `)
         .eq('household_id', currentHousehold.id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching household members:', error);
+        return [];
+      }
 
-      return data.map(transformHouseholdMember);
+      if (!data) {
+        console.log('No members found for household');
+        return [];
+      }
+
+      // Fetch profile data separately to avoid complex joins
+      const memberIds = data.map(member => member.user_id);
+      const { data: profiles, error: profileError } = await supabase
+        .from('profiles')
+        .select('id, full_name, email, avatar_url')
+        .in('id', memberIds);
+
+      if (profileError) {
+        console.error('Error fetching member profiles:', profileError);
+        // Continue without profile data
+      }
+
+      // Combine member data with profile data
+      const membersWithProfiles = data.map(member => ({
+        ...member,
+        profiles: profiles?.find(profile => profile.id === member.user_id) || null
+      }));
+
+      console.log('Successfully fetched household members:', membersWithProfiles.length);
+      return membersWithProfiles as HouseholdMember[];
     } catch (error) {
-      console.error('Error fetching household members:', error);
+      console.error('Unexpected error fetching household members:', error);
       return [];
     } finally {
       setIsLoadingMembers(false);
@@ -80,20 +115,36 @@ export const useHouseholdData = (user: User | null, currentHousehold: Household 
   }, [currentHousehold]);
 
   const fetchJoinRequests = useCallback(async (): Promise<HouseholdJoinRequest[]> => {
-    if (!currentHousehold) return [];
+    if (!currentHousehold) {
+      console.log('No household available, skipping join requests fetch');
+      return [];
+    }
 
     try {
+      console.log('Fetching join requests for household:', currentHousehold.id);
+      
       const { data, error } = await supabase
         .from('household_join_requests')
-        .select('*')
+        .select(`
+          id,
+          user_id,
+          household_id,
+          status,
+          created_at,
+          updated_at
+        `)
         .eq('household_id', currentHousehold.id)
-        .eq('status', 'pending')
-        .order('created_at', { ascending: false });
+        .eq('status', 'pending');
 
-      if (error) throw error;
-      return (data || []).map(transformJoinRequest);
+      if (error) {
+        console.error('Error fetching join requests:', error);
+        return [];
+      }
+
+      console.log('Successfully fetched join requests:', data?.length || 0);
+      return data || [];
     } catch (error) {
-      console.error('Error fetching join requests:', error);
+      console.error('Unexpected error fetching join requests:', error);
       return [];
     }
   }, [currentHousehold]);
@@ -105,4 +156,4 @@ export const useHouseholdData = (user: User | null, currentHousehold: Household 
     isLoadingHousehold,
     isLoadingMembers,
   };
-};
+}
