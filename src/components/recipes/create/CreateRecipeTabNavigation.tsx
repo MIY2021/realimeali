@@ -78,9 +78,9 @@ export function CreateRecipeTabNavigation({
         if (manualTabIndex !== -1) {
           tabOptions[manualTabIndex] = {
             ...tabOptions[manualTabIndex],
-            label: originalTab.label,
-            emoji: originalTab.emoji,
-            description: `Edit your ${originalTab.label.toLowerCase()} recipe`
+            label: `Manual Entry (${originalTab.label})`,
+            emoji: "✍️",
+            description: `Edit your ${originalTab.label.toLowerCase()} recipe manually`
           };
         }
       }
