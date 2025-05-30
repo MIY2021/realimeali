@@ -9,26 +9,35 @@ import { InviteMembersCard } from "@/components/household/InviteMembersCard";
 import { JoinHouseholdCard } from "@/components/household/JoinHouseholdCard";
 import { JoinRequestsCard } from "@/components/household/JoinRequestsCard";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
-import { useHouseholdMembers } from "@/hooks/useHouseholdMembers";
-import { HouseholdMember } from "@/types";
 
 export default function Household() {
   useDocumentTitle("Household Management | RealiMeali");
   
   const { user } = useAuth();
-  const { currentHousehold, households } = useHousehold();
-  const { members, isLoading, fetchMembers, removeMember } = useHouseholdMembers();
+  const { 
+    currentHousehold, 
+    householdMembers, 
+    isLoadingMembers, 
+    removeMember 
+  } = useHousehold();
   const [isOwner, setIsOwner] = useState(false);
 
   useEffect(() => {
     if (currentHousehold && user) {
       const ownerCheck = currentHousehold.created_by === user.id;
       setIsOwner(ownerCheck);
-      if (currentHousehold.id) {
-        fetchMembers(currentHousehold.id);
-      }
     }
-  }, [currentHousehold, user, fetchMembers]);
+  }, [currentHousehold, user]);
+
+  const handleRemoveMember = async (memberId: string, memberUserId: string): Promise<boolean> => {
+    try {
+      await removeMember(memberId);
+      return true;
+    } catch (error) {
+      console.error('Error removing member:', error);
+      return false;
+    }
+  };
 
   if (!user) {
     return (
@@ -57,12 +66,6 @@ export default function Household() {
     );
   }
 
-  // Type assertion to help with the type mismatch
-  const typedMembers: HouseholdMember[] = members.map(member => ({
-    ...member,
-    role: member.role as 'owner' | 'member'
-  }));
-
   return (
     <div className="container max-w-4xl py-8 px-6 space-y-8">
       <div className="text-center mb-8">
@@ -78,10 +81,10 @@ export default function Household() {
         />
         
         <HouseholdMembersCard 
-          members={typedMembers}
+          members={householdMembers}
           isOwner={isOwner}
-          isLoading={isLoading}
-          onRemoveMember={(memberId: string) => removeMember(memberId)}
+          isLoading={isLoadingMembers}
+          onRemoveMember={handleRemoveMember}
         />
         
         {isOwner && (
@@ -91,7 +94,7 @@ export default function Household() {
               householdCode={currentHousehold.id}
             />
             <JoinRequestsCard 
-              householdId={currentHousehold.id}
+              isOwner={isOwner}
             />
           </>
         )}
