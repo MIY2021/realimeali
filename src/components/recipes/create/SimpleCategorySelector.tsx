@@ -22,9 +22,9 @@ export function SimpleCategorySelector({ recipe, onRecipeChange }: SimpleCategor
 
   const toggleDietLifestyle = (value: string) => {
     const current = recipe.diet_lifestyle || [];
-    const updated = current.includes(value)
+    const updated = current.includes(value as any)
       ? current.filter(item => item !== value)
-      : [...current, value];
+      : [...current, value as any];
     updateRecipeField('diet_lifestyle', updated);
   };
 
@@ -112,7 +112,7 @@ export function SimpleCategorySelector({ recipe, onRecipeChange }: SimpleCategor
           <label className="text-sm font-medium mb-3 block">Diet & Lifestyle (select multiple)</label>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
             {DIET_LIFESTYLE_OPTIONS.map((option) => {
-              const isSelected = (recipe.diet_lifestyle || []).includes(option.value);
+              const isSelected = (recipe.diet_lifestyle || []).includes(option.value as any);
               return (
                 <button
                   key={option.value}

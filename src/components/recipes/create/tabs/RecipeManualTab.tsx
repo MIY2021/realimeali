@@ -55,6 +55,14 @@ export function RecipeManualTab({
   onAddInstruction,
   onRemoveInstruction,
 }: RecipeManualTabProps) {
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      onImageChange(file);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Basic Information */}
@@ -134,7 +142,7 @@ export function RecipeManualTab({
             currentImage={newRecipe.image}
             isGenerating={isGeneratingImage}
             generationProgress={generationProgress}
-            onImageChange={onImageChange}
+            onImageChange={handleImageChange}
             onGenerateImage={onGenerateImage}
             recipeTitle={newRecipe.title}
           />
@@ -164,9 +172,9 @@ export function RecipeManualTab({
               <Plus className="h-4 w-4" />
             </Button>
           </div>
-          {newRecipe.categories && newRecipe.categories.length > 0 && (
+          {newRecipe.category && newRecipe.category.length > 0 && (
             <div className="flex flex-wrap gap-2">
-              {newRecipe.categories.map((category, index) => (
+              {newRecipe.category.map((category, index) => (
                 <Badge key={index} variant="secondary" className="flex items-center gap-1">
                   {category}
                   <button
