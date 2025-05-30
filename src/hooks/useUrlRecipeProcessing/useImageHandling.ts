@@ -18,6 +18,7 @@ export const useImageHandling = () => {
   const [selectedImage, setSelectedImage] = useState("");
 
   const handleImageSelect = (imageUrl: string) => {
+    console.log('Image selected:', imageUrl);
     setSelectedImage(imageUrl);
   };
 
@@ -73,17 +74,29 @@ export const useImageHandling = () => {
   };
 
   const resetImageState = () => {
+    console.log('Resetting image state');
     setWebsiteImages([]);
     setStoredImages([]);
     setShowImageSelection(false);
     setSelectedImage("");
   };
 
+  // Add debug logging when state changes
+  const setWebsiteImagesWithLogging = (images: string[]) => {
+    console.log('Setting website images:', images);
+    setWebsiteImages(images);
+  };
+
+  const setStoredImagesWithLogging = (images: StoredImage[]) => {
+    console.log('Setting stored images:', images);
+    setStoredImages(images);
+  };
+
   return {
     websiteImages,
-    setWebsiteImages,
+    setWebsiteImages: setWebsiteImagesWithLogging,
     storedImages,
-    setStoredImages,
+    setStoredImages: setStoredImagesWithLogging,
     isDownloadingImages,
     showImageSelection,
     setShowImageSelection,

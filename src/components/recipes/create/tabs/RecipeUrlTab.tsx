@@ -43,12 +43,15 @@ export function RecipeUrlTab({
   isDownloadingImages,
   showImageSelection
 }: RecipeUrlTabProps) {
-  console.log('RecipeUrlTab render:', {
-    websiteImages: websiteImages.length,
-    storedImages: storedImages.length,
+  console.log('RecipeUrlTab render - Image Debug:', {
+    websiteImages: websiteImages?.length || 0,
+    storedImages: storedImages?.length || 0,
     showImageSelection,
-    selectedImage
+    selectedImage: selectedImage ? 'has selected' : 'no selected',
+    isProcessing
   });
+
+  const hasImages = websiteImages && websiteImages.length > 0;
 
   return (
     <div className="space-y-4">
@@ -82,10 +85,10 @@ export function RecipeUrlTab({
         </div>
       )}
 
-      {/* Always show image selection if we have images, regardless of showImageSelection flag */}
-      {(websiteImages.length > 0 || storedImages.length > 0) && (
+      {/* Show image selection if we have images */}
+      {hasImages && (
         <div className="mt-6 p-4 border rounded-lg bg-gray-50">
-          <h3 className="text-sm font-medium mb-3">📸 Images found from website:</h3>
+          <h3 className="text-sm font-medium mb-3">📸 Images found from website ({websiteImages.length}):</h3>
           <EnhancedImageSelection
             images={websiteImages}
             storedImages={storedImages}

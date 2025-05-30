@@ -57,7 +57,11 @@ export function useUrlRecipeProcessing() {
         return;
       }
 
-      console.log('Received imported recipe:', data.parsedRecipe);
+      console.log('Received imported recipe data:', {
+        title: data.parsedRecipe?.title,
+        websiteImages: data.websiteImages?.length || 0,
+        storedImages: data.storedImages?.length || 0
+      });
       
       // Sanitize the recipe data - preserve all content faithfully
       const sanitizedRecipe = sanitizeRecipeData(data.parsedRecipe);
@@ -86,6 +90,7 @@ export function useUrlRecipeProcessing() {
       
       // Handle images - show selection if multiple images found
       if (data.websiteImages && data.websiteImages.length > 0) {
+        console.log('Setting website images:', data.websiteImages);
         imageHandling.setWebsiteImages(data.websiteImages);
         imageHandling.setShowImageSelection(true);
         
@@ -95,9 +100,12 @@ export function useUrlRecipeProcessing() {
           : data.websiteImages[0];
         imageHandling.setSelectedImage(defaultImage);
         recipeData.image = defaultImage;
+      } else {
+        console.log('No website images found in response');
       }
 
       if (data.storedImages && data.storedImages.length > 0) {
+        console.log('Setting stored images:', data.storedImages);
         imageHandling.setStoredImages(data.storedImages);
       }
       

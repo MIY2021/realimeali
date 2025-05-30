@@ -34,8 +34,8 @@ async function retryWithBackoff<T>(
   throw new Error('Max retries exceeded');
 }
 
-// Enhanced website content extraction
-async function extractWebsiteContent(url: string) {
+// Enhanced website content extraction with image extraction
+async function extractWebsiteContent(url: string, extractImages: boolean = false) {
   try {
     console.log('Fetching website content from:', url);
     
@@ -52,19 +52,59 @@ async function extractWebsiteContent(url: string) {
 
     const html = await response.text();
     
-    // Extract potential recipe content using common selectors
-    const recipeSelectors = [
-      '.recipe-content',
-      '.recipe-instructions',
-      '.recipe-ingredients',
-      '[itemtype*="Recipe"]',
-      '.entry-content',
-      '.post-content',
-      'main',
-      'article'
-    ];
-
-    // Simple HTML parsing to extract text content
+    let extractedImages: string[] = [];
+    
+    // Extract images if requested
+    if (extractImages) {
+      console.log('Extracting images from website...');
+      
+      // Extract image URLs from common patterns
+      const imagePatterns = [
+        /<img[^>]+src=["']([^"']+)["'][^>]*>/gi,
+        /<picture[^>]*>[\s\S]*?<img[^>]+src=["']([^"']+)["'][^>]*>[\s\S]*?<\/picture>/gi,
+        /data-src=["']([^"']+\.(?:jpg|jpeg|png|webp|gif))["']/gi,
+        /data-lazy-src=["']([^"']+\.(?:jpg|jpeg|png|webp|gif))["']/gi,
+      ];
+      
+      const imageUrls = new Set<string>();
+      
+      for (const pattern of imagePatterns) {
+        let match;
+        while ((match = pattern.exec(html)) !== null) {
+          let imageUrl = match[1];
+          
+          // Skip base64, svg, and very small images
+          if (imageUrl.startsWith('data:') || 
+              imageUrl.includes('.svg') || 
+              imageUrl.includes('placeholder') ||
+              imageUrl.includes('loading') ||
+              imageUrl.includes('1x1')) {
+            continue;
+          }
+          
+          // Convert relative URLs to absolute
+          if (imageUrl.startsWith('//')) {
+            imageUrl = 'https:' + imageUrl;
+          } else if (imageUrl.startsWith('/')) {
+            const urlObj = new URL(url);
+            imageUrl = `${urlObj.protocol}//${urlObj.host}${imageUrl}`;
+          } else if (!imageUrl.startsWith('http')) {
+            const urlObj = new URL(url);
+            imageUrl = `${urlObj.protocol}//${urlObj.host}/${imageUrl}`;
+          }
+          
+          // Filter for likely recipe images (reasonable size and format)
+          if (imageUrl.match(/\.(jpg|jpeg|png|webp)$/i)) {
+            imageUrls.add(imageUrl);
+          }
+        }
+      }
+      
+      extractedImages = Array.from(imageUrls).slice(0, 6); // Limit to 6 images
+      console.log(`Extracted ${extractedImages.length} images:`, extractedImages);
+    }
+    
+    // Extract text content
     let content = html;
     
     // Remove script and style tags
@@ -86,7 +126,7 @@ async function extractWebsiteContent(url: string) {
     const extractedContent = relevantLines.join('\n').substring(0, 8000); // Limit content size
     
     console.log('Extracted content length:', extractedContent.length);
-    return extractedContent;
+    return { content: extractedContent, images: extractedImages };
   } catch (error) {
     console.error('Error extracting website content:', error);
     throw new Error(`Could not extract content from website: ${error.message}`);
@@ -148,13 +188,16 @@ serve(async (req) => {
 
     let systemPrompt = '';
     let userPrompt = '';
+    let websiteImages: string[] = [];
 
     // Handle different request types
     if (body.websiteUrl) {
       // Website URL import
       console.log('Processing website URL:', body.websiteUrl);
       
-      const websiteContent = await extractWebsiteContent(body.websiteUrl);
+      const extractResult = await extractWebsiteContent(body.websiteUrl, body.extractImages);
+      const websiteContent = extractResult.content;
+      websiteImages = extractResult.images;
       
       systemPrompt = `You are a recipe parsing assistant. Extract recipe information from website content and classify it across 6 dimensions. 
 
@@ -326,10 +369,17 @@ Create realistic recipes with proper ingredient amounts and detailed cooking ste
 
       console.log('Recipe parsed successfully:', {
         title: cleanedRecipe.title,
-        classification: parsedRecipe.classification
+        classification: parsedRecipe.classification,
+        websiteImagesFound: websiteImages.length
       });
 
-      return new Response(JSON.stringify({ parsedRecipe: cleanedRecipe }), {
+      // Return response with images if they were extracted
+      const response = { 
+        parsedRecipe: cleanedRecipe,
+        ...(websiteImages.length > 0 && { websiteImages })
+      };
+
+      return new Response(JSON.stringify(response), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
 
