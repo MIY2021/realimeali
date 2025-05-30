@@ -34,13 +34,9 @@ export default function CategoryPage() {
            (recipe.diet_lifestyle && recipe.diet_lifestyle.includes(decodedCategory as any));
   });
 
-  const handleRecipeClick = (recipe: Recipe) => {
+  const handleAddToMealPlan = (recipe: Recipe) => {
+    // Navigate to recipe detail page where they can add to meal plan
     navigate(`/my-recipes/${recipe.id}`);
-  };
-
-  const handleEditRecipe = (recipe: Recipe) => {
-    setEditingRecipe(recipe);
-    setIsEditDialogOpen(true);
   };
 
   const handleRecipeUpdate = (updatedRecipe: Recipe) => {
@@ -112,8 +108,8 @@ export default function CategoryPage() {
           <RecipeCard
             key={recipe.id}
             recipe={recipe}
-            onClick={() => handleRecipeClick(recipe)}
-            onEdit={() => handleEditRecipe(recipe)}
+            onAddToMealPlan={handleAddToMealPlan}
+            showActions={true}
           />
         ))}
       </div>
