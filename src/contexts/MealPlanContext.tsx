@@ -106,8 +106,6 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
             original_servings: recipe.servings,
             household_id: currentHousehold.id,
             week_number: weekNumber,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
           }, weekNumber, silentMode);
 
           if (!silentMode) {
