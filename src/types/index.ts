@@ -1,4 +1,3 @@
-
 export interface Recipe {
   id: string;
   title: string;
@@ -58,8 +57,6 @@ export interface HouseholdMember {
   user_id: string;
   household_id: string;
   role: 'owner' | 'member';
-  created_at: string;
-  updated_at: string;
   joined_at: string;
   profile?: {
     full_name: string;

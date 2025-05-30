@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from 'react';
 import { User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -64,7 +63,7 @@ export function useHouseholdData(user: User | null, currentHousehold: Household 
     try {
       console.log('Fetching household members for household:', currentHousehold.id);
       
-      // Fetch household members with all required fields
+      // Fetch household members with only existing fields
       const { data, error } = await supabase
         .from('household_members')
         .select(`
@@ -72,9 +71,7 @@ export function useHouseholdData(user: User | null, currentHousehold: Household 
           user_id,
           household_id,
           role,
-          joined_at,
-          created_at,
-          updated_at
+          joined_at
         `)
         .eq('household_id', currentHousehold.id);
 
@@ -107,8 +104,6 @@ export function useHouseholdData(user: User | null, currentHousehold: Household 
         household_id: member.household_id,
         role: member.role as 'owner' | 'member',
         joined_at: member.joined_at,
-        created_at: member.created_at || new Date().toISOString(),
-        updated_at: member.updated_at || new Date().toISOString(),
         profile: profiles?.find(profile => profile.id === member.user_id) ? {
           full_name: profiles.find(profile => profile.id === member.user_id)?.full_name || null,
           email: profiles.find(profile => profile.id === member.user_id)?.email || null,
