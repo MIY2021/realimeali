@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Recipe } from "@/types";
@@ -22,6 +21,9 @@ export function useUrlRecipeProcessing() {
   const [showCommunityDialog, setShowCommunityDialog] = useState(false);
   const [parsedRecipeData, setParsedRecipeData] = useState<any>(null);
   const [importProgress, setImportProgress] = useState("");
+  const [progressValue, setProgressValue] = useState(0);
+  const [showImageSelection, setShowImageSelection] = useState(false);
+  const [selectedImage, setSelectedImage] = useState("");
 
   const funnyMessages = [
     "🕵️ Sneaking into the kitchen...",
@@ -56,10 +58,19 @@ export function useUrlRecipeProcessing() {
     setIsProcessing(true);
     setWebsiteImages([]);
     setStoredImages([]);
+    setShowImageSelection(false);
+    setProgressValue(0);
     
-    // Show funny progress messages
+    // Enhanced progress simulation
     let messageIndex = 0;
+    let currentProgress = 0;
+    
     const progressInterval = setInterval(() => {
+      // Update progress smoothly
+      currentProgress = Math.min(currentProgress + Math.random() * 15 + 5, 85);
+      setProgressValue(currentProgress);
+      
+      // Update funny messages
       if (messageIndex < funnyMessages.length) {
         setImportProgress(funnyMessages[messageIndex]);
         messageIndex++;
@@ -76,6 +87,10 @@ export function useUrlRecipeProcessing() {
           downloadImages: downloadImages
         }
       });
+
+      // Complete progress animation quickly at the end
+      setProgressValue(100);
+      setImportProgress("✨ Recipe imported successfully!");
 
       if (error) {
         console.error('Error calling parse-recipe-ai function:', error);
@@ -128,13 +143,17 @@ export function useUrlRecipeProcessing() {
 
       console.log('Received imported recipe:', data.parsedRecipe);
       
-      // Sanitize the recipe data
+      // Sanitize the recipe data - preserve all content faithfully
       const sanitizedRecipe = sanitizeRecipeData(data.parsedRecipe);
       
-      // Apply AI categorization
+      // Apply AI categorization but preserve original content
       const recipeData = { 
         ...currentRecipe, 
         ...sanitizedRecipe,
+        // Preserve original ingredients and instructions without truncation
+        ingredients: data.parsedRecipe.ingredients || sanitizedRecipe.ingredients,
+        instructions: data.parsedRecipe.instructions || sanitizedRecipe.instructions,
+        description: data.parsedRecipe.description || sanitizedRecipe.description,
         // Apply AI classification
         meal_type: data.parsedRecipe.mealType || currentRecipe.meal_type,
         cuisine: data.parsedRecipe.cuisineRegion || currentRecipe.cuisine,
@@ -145,15 +164,21 @@ export function useUrlRecipeProcessing() {
         top_tip: data.parsedRecipe.topTip || "Enjoy cooking this delicious recipe!"
       };
       
+      // Handle images - show selection if multiple images found
       if (data.websiteImages && data.websiteImages.length > 0) {
         setWebsiteImages(data.websiteImages);
+        setShowImageSelection(true);
+        
+        // Set first image as default selection
+        const defaultImage = data.storedImages && data.storedImages.length > 0 
+          ? data.storedImages[0].storedUrl 
+          : data.websiteImages[0];
+        setSelectedImage(defaultImage);
+        recipeData.image = defaultImage;
       }
 
       if (data.storedImages && data.storedImages.length > 0) {
         setStoredImages(data.storedImages);
-        recipeData.image = data.storedImages[0].storedUrl;
-      } else if (data.websiteImages && data.websiteImages.length > 0) {
-        recipeData.image = data.websiteImages[0];
       }
       
       // Store parsed data for potential community submission
@@ -189,9 +214,16 @@ export function useUrlRecipeProcessing() {
       });
     } finally {
       clearInterval(progressInterval);
-      setImportProgress("");
+      setTimeout(() => {
+        setImportProgress("");
+        setProgressValue(0);
+      }, 2000);
       setIsProcessing(false);
     }
+  };
+
+  const handleImageSelect = (imageUrl: string) => {
+    setSelectedImage(imageUrl);
   };
 
   const handleDownloadImages = async () => {
@@ -256,7 +288,11 @@ export function useUrlRecipeProcessing() {
     setShowCommunityDialog,
     parsedRecipeData,
     importProgress,
+    progressValue,
+    showImageSelection,
+    selectedImage,
     handleImportFromUrl,
     handleDownloadImages,
+    handleImageSelect,
   };
 }

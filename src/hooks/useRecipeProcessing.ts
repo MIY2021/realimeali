@@ -26,8 +26,12 @@ export function useRecipeProcessing() {
     setShowCommunityDialog: urlProcessing.setShowCommunityDialog,
     parsedRecipeData: urlProcessing.parsedRecipeData,
     importProgress: urlProcessing.importProgress,
+    progressValue: urlProcessing.progressValue,
+    showImageSelection: urlProcessing.showImageSelection,
+    selectedImage: urlProcessing.selectedImage,
     handleImportFromUrl: urlProcessing.handleImportFromUrl,
     handleDownloadImages: urlProcessing.handleDownloadImages,
+    handleImageSelect: urlProcessing.handleImageSelect,
     
     // Image processing
     handleProcessImage: imageProcessing.handleProcessImage,

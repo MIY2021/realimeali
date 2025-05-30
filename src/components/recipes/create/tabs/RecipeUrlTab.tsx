@@ -2,17 +2,27 @@
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 import { CommunityRecipeSubmissionDialog } from "@/components/recipes/CommunityRecipeSubmissionDialog";
+import { EnhancedImageSelection } from "@/components/recipes/dialog/EnhancedImageSelection";
 
 interface RecipeUrlTabProps {
   recipeUrl: string;
   setRecipeUrl: (url: string) => void;
   isProcessing: boolean;
   importProgress: string;
+  progressValue: number;
   onImportWithImages: () => void;
   showCommunityDialog: boolean;
   setShowCommunityDialog: (show: boolean) => void;
   parsedRecipeData: any;
+  websiteImages: string[];
+  storedImages: any[];
+  selectedImage: string;
+  onImageSelect: (url: string) => void;
+  onDownloadImages: () => void;
+  isDownloadingImages: boolean;
+  showImageSelection: boolean;
 }
 
 export function RecipeUrlTab({ 
@@ -20,10 +30,18 @@ export function RecipeUrlTab({
   setRecipeUrl, 
   isProcessing, 
   importProgress,
+  progressValue,
   onImportWithImages,
   showCommunityDialog,
   setShowCommunityDialog,
-  parsedRecipeData
+  parsedRecipeData,
+  websiteImages,
+  storedImages,
+  selectedImage,
+  onImageSelect,
+  onDownloadImages,
+  isDownloadingImages,
+  showImageSelection
 }: RecipeUrlTabProps) {
   return (
     <div className="space-y-4">
@@ -44,20 +62,32 @@ export function RecipeUrlTab({
           type="url"
           value={recipeUrl}
           onChange={(e) => setRecipeUrl(e.target.value)}
-          placeholder="https://www.allrecipes.com/recipe/231506/simple-macaroni-and-cheese/"
+          placeholder="https://example-recipe-website.com/recipe/your-recipe"
           className="text-base p-4 h-12"
         />
         <p className="text-sm text-muted-foreground">
-          Works with popular cooking websites like AllRecipes, Food Network, BBC Good Food, and many more!
+          Works with most popular cooking websites and recipe blogs!
         </p>
       </div>
       
       {isProcessing && importProgress && (
         <div className="text-center py-4">
           <div className="text-lg font-medium text-blue-600 mb-2">{importProgress}</div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
-            <div className="bg-blue-600 h-2 rounded-full animate-pulse" style={{ width: '60%' }}></div>
-          </div>
+          <Progress value={progressValue} className="w-full h-3" />
+          <div className="text-sm text-gray-500 mt-1">{Math.round(progressValue)}%</div>
+        </div>
+      )}
+
+      {showImageSelection && websiteImages.length > 0 && (
+        <div className="mt-4">
+          <EnhancedImageSelection
+            images={websiteImages}
+            storedImages={storedImages}
+            selectedImage={selectedImage}
+            onImageSelect={onImageSelect}
+            onDownloadImages={onDownloadImages}
+            isDownloading={isDownloadingImages}
+          />
         </div>
       )}
       
