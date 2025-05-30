@@ -1,5 +1,5 @@
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { Recipe, MealType, Cuisine, DietLifestyle, ComplexityLevel } from "@/types";
 import { SimpleRecipeFilters } from "@/components/recipes/filters/SimpleRecipeFilters";
 
@@ -105,18 +105,18 @@ export function useRecipeList({ recipes }: UseRecipeListProps) {
   const visibleRecipes = filteredAndSortedRecipes.slice(0, visibleCount);
   const hasMoreRecipes = visibleCount < filteredAndSortedRecipes.length;
 
-  const handleLoadMore = () => {
+  const handleLoadMore = useCallback(() => {
     setVisibleCount(prev => prev + 12);
-  };
+  }, []);
 
-  const handleFiltersChange = (newFilters: SimpleRecipeFilters) => {
+  const handleFiltersChange = useCallback((newFilters: SimpleRecipeFilters) => {
     setFilters(newFilters);
     setVisibleCount(12); // Reset visible count when filters change
-  };
+  }, []);
 
-  const toggleFilters = () => {
+  const toggleFilters = useCallback(() => {
     setFiltersOpen(!filtersOpen);
-  };
+  }, [filtersOpen]);
 
   return {
     searchTerm,

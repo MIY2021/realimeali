@@ -7,7 +7,7 @@ import {
   DropdownMenuCheckboxItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ChevronDown, Check } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface DropdownFilterSectionProps {
@@ -24,6 +24,12 @@ export function DropdownFilterSection({
   onToggle,
 }: DropdownFilterSectionProps) {
   const [isOpen, setIsOpen] = useState(false);
+
+  const handleItemClick = (value: string, event: Event) => {
+    // Prevent the dropdown from closing when clicking on items
+    event.preventDefault();
+    onToggle(value);
+  };
 
   return (
     <div className="relative">
@@ -42,19 +48,21 @@ export function DropdownFilterSection({
             <ChevronDown className="h-4 w-4 opacity-50" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-56 max-h-96 overflow-y-auto bg-popover border border-border shadow-lg z-50" align="start">
+        <DropdownMenuContent 
+          className="w-56 max-h-96 overflow-y-auto bg-popover border border-border shadow-lg z-50" 
+          align="start"
+          onCloseAutoFocus={(e) => e.preventDefault()}
+        >
           {options.map((option) => (
             <DropdownMenuCheckboxItem
               key={option.value}
               checked={selectedValues.includes(option.value)}
               onCheckedChange={() => onToggle(option.value)}
+              onSelect={(e) => handleItemClick(option.value, e)}
               className="flex items-center gap-2 py-2"
             >
               <span className="text-base">{option.icon}</span>
               <span className="text-sm">{option.label}</span>
-              {selectedValues.includes(option.value) && (
-                <Check className="h-4 w-4 ml-auto" />
-              )}
             </DropdownMenuCheckboxItem>
           ))}
         </DropdownMenuContent>
