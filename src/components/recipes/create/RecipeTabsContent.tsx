@@ -56,7 +56,7 @@ export function RecipeTabsContent({
           onImageSelect={recipeProcessingHook.handleImageSelect}
           onDownloadImages={recipeProcessingHook.handleDownloadImages}
           isDownloadingImages={recipeProcessingHook.isDownloadingImages}
-          showImageSelection={true} // Always show image selection regardless of flag
+          showImageSelection={recipeProcessingHook.showImageSelection}
         />
       </TabsContent>
 
@@ -82,20 +82,17 @@ export function RecipeTabsContent({
         <div className="space-y-4 sm:space-y-6">
           {/* Show image selection if images are available from website import */}
           {(recipeProcessingHook.websiteImages.length > 0 || recipeProcessingHook.storedImages.length > 0) && (
-            <div className="mt-6 p-4 border rounded-lg bg-gray-50">
-              <h3 className="text-sm font-medium mb-3">📸 Images found from website:</h3>
-              <EnhancedImageSelection
-                images={recipeProcessingHook.websiteImages}
-                storedImages={recipeProcessingHook.storedImages}
-                selectedImage={recipeFormHook.newRecipe.image || ""}
-                onImageSelect={(url) => recipeFormHook.setNewRecipe({ 
-                  ...recipeFormHook.newRecipe, 
-                  image: url 
-                })}
-                onDownloadImages={recipeProcessingHook.handleDownloadImages}
-                isDownloading={recipeProcessingHook.isDownloadingImages}
-              />
-            </div>
+            <EnhancedImageSelection
+              images={recipeProcessingHook.websiteImages}
+              storedImages={recipeProcessingHook.storedImages}
+              selectedImage={recipeFormHook.newRecipe.image || ""}
+              onImageSelect={(url) => recipeFormHook.setNewRecipe({ 
+                ...recipeFormHook.newRecipe, 
+                image: url 
+              })}
+              onDownloadImages={recipeProcessingHook.handleDownloadImages}
+              isDownloading={recipeProcessingHook.isDownloadingImages}
+            />
           )}
           
           <RecipeManualTab

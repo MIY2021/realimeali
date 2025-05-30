@@ -40,11 +40,13 @@ export function RecipeUrlTab({
   selectedImage,
   onImageSelect,
   onDownloadImages,
-  isDownloadingImages
+  isDownloadingImages,
+  showImageSelection
 }: RecipeUrlTabProps) {
   console.log('RecipeUrlTab render:', {
     websiteImages: websiteImages.length,
     storedImages: storedImages.length,
+    showImageSelection,
     selectedImage
   });
 
@@ -80,7 +82,7 @@ export function RecipeUrlTab({
         </div>
       )}
 
-      {/* Always show image selection if we have images */}
+      {/* Always show image selection if we have images, regardless of showImageSelection flag */}
       {(websiteImages.length > 0 || storedImages.length > 0) && (
         <div className="mt-6 p-4 border rounded-lg bg-gray-50">
           <h3 className="text-sm font-medium mb-3">📸 Images found from website:</h3>

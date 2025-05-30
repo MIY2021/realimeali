@@ -5,8 +5,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EnhancedImageUpload } from "../EnhancedImageUpload";
 import { SimpleCategorySelector } from "../SimpleCategorySelector";
-import { DragDropIngredientManager } from "../DragDropIngredientManager";
-import { DragDropInstructionManager } from "../DragDropInstructionManager";
+import { EnhancedIngredientManager } from "../EnhancedIngredientManager";
+import { EnhancedInstructionManager } from "../EnhancedInstructionManager";
 import { Recipe } from "@/types";
 
 interface RecipeManualTabProps {
@@ -41,6 +41,10 @@ export function RecipeManualTab({
   generationProgress,
   onImageChange,
   onGenerateImage,
+  onAddIngredient,
+  onRemoveIngredient,
+  onAddInstruction,
+  onRemoveInstruction,
 }: RecipeManualTabProps) {
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -143,20 +147,20 @@ export function RecipeManualTab({
         </CardContent>
       </Card>
 
-      {/* Recipe Classification - Single comprehensive selector with normal sized buttons */}
+      {/* Recipe Classification - Single comprehensive selector */}
       <SimpleCategorySelector
         recipe={newRecipe}
         onRecipeChange={setNewRecipe}
       />
 
-      {/* Drag & Drop Ingredients Manager */}
-      <DragDropIngredientManager
+      {/* Enhanced Ingredients Manager */}
+      <EnhancedIngredientManager
         ingredients={newRecipe.ingredients || []}
         onIngredientsChange={handleIngredientsChange}
       />
 
-      {/* Drag & Drop Instructions Manager */}
-      <DragDropInstructionManager
+      {/* Enhanced Instructions Manager */}
+      <EnhancedInstructionManager
         instructions={newRecipe.instructions || []}
         onInstructionsChange={handleInstructionsChange}
       />
