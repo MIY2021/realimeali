@@ -1,3 +1,4 @@
+
 import { useCallback } from "react";
 import { MealType, Recipe } from "@/types";
 import { mealPlanService } from "@/services/mealPlanService";
@@ -101,9 +102,26 @@ export const useMealPlannerOperations = ({
   }, [removeMealPlan, toast]);
 
   const handleCreateLeftover = useCallback(async (mealPlan: any, recipe: Recipe, leftoverServings?: number) => {
-    if (!user || !currentHousehold) return;
+    if (!user || !currentHousehold) {
+      console.error("No user or household available for leftover creation");
+      toast({
+        title: "Error",
+        description: "Please log in and select a household",
+        variant: "destructive",
+      });
+      return;
+    }
 
     try {
+      console.log("Creating leftover with data:", { 
+        mealPlan: mealPlan.id, 
+        recipe: recipe.title, 
+        leftoverServings, 
+        currentWeek,
+        userId: user.id,
+        householdId: currentHousehold.id
+      });
+
       const servingsToSave = leftoverServings || Math.ceil(recipe.servings / 2);
       
       const leftoverData = {
@@ -120,15 +138,20 @@ export const useMealPlannerOperations = ({
         week_number: currentWeek,
       };
 
+      console.log("Creating leftover meal with data:", leftoverData);
+
       // Create the leftover meal
       await addMealPlan(leftoverData, currentWeek);
+      console.log("Leftover meal created successfully");
 
       // Update the original dinner meal to track leftover allocation
+      console.log("Updating original meal plan leftover allocation");
       await mealPlanService.updateMealPlanLeftoverAllocation(
         mealPlan.id,
         servingsToSave,
         currentHousehold.id
       );
+      console.log("Original meal plan updated successfully");
 
       const remainingServings = recipe.servings - servingsToSave;
       
@@ -138,9 +161,14 @@ export const useMealPlannerOperations = ({
       });
     } catch (err) {
       console.error("Error creating leftover:", err);
+      console.error("Error details:", {
+        message: err?.message,
+        stack: err?.stack,
+        name: err?.name
+      });
       toast({
         title: "Error",
-        description: "Failed to create leftover meal",
+        description: `Failed to create leftover meal: ${err?.message || 'Unknown error'}`,
         variant: "destructive",
       });
     }
