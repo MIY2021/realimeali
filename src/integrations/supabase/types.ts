@@ -628,6 +628,7 @@ export type Database = {
           instructions: string[]
           is_favorite: boolean | null
           main_ingredient: Database["public"]["Enums"]["main_ingredient"] | null
+          meal_plan_count: number
           meal_type: Database["public"]["Enums"]["meal_type"] | null
           prep_time: number | null
           servings: number | null
@@ -657,6 +658,7 @@ export type Database = {
           main_ingredient?:
             | Database["public"]["Enums"]["main_ingredient"]
             | null
+          meal_plan_count?: number
           meal_type?: Database["public"]["Enums"]["meal_type"] | null
           prep_time?: number | null
           servings?: number | null
@@ -686,6 +688,7 @@ export type Database = {
           main_ingredient?:
             | Database["public"]["Enums"]["main_ingredient"]
             | null
+          meal_plan_count?: number
           meal_type?: Database["public"]["Enums"]["meal_type"] | null
           prep_time?: number | null
           servings?: number | null
@@ -767,6 +770,10 @@ export type Database = {
       }
       increment_community_recipe_view_count: {
         Args: { recipe_id: string }
+        Returns: undefined
+      }
+      increment_recipe_meal_plan_count: {
+        Args: { recipe_id_param: string }
         Returns: undefined
       }
       increment_share_view_count: {

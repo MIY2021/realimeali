@@ -1,4 +1,3 @@
-
 import { Recipe } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -81,7 +80,7 @@ export function RecipeList({
         <div className="w-full sm:w-48">
           <Select value={`${sortBy}-${sortOrder}`} onValueChange={(value) => {
             const [newSortBy, newSortOrder] = value.split('-');
-            setSortBy(newSortBy as "title" | "prepTime" | "cookTime");
+            setSortBy(newSortBy as "title" | "prepTime" | "cookTime" | "mealPlanCount");
             setSortOrder(newSortOrder as "asc" | "desc");
           }}>
             <SelectTrigger className="text-sm sm:text-base">
@@ -94,6 +93,8 @@ export function RecipeList({
               <SelectItem value="prepTime-desc">Prep Time (High to Low)</SelectItem>
               <SelectItem value="cookTime-asc">Cook Time (Low to High)</SelectItem>
               <SelectItem value="cookTime-desc">Cook Time (High to Low)</SelectItem>
+              <SelectItem value="mealPlanCount-desc">Most Used in Meal Plans</SelectItem>
+              <SelectItem value="mealPlanCount-asc">Least Used in Meal Plans</SelectItem>
             </SelectContent>
           </Select>
         </div>

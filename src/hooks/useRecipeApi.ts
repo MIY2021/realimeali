@@ -25,6 +25,7 @@ export const useRecipeApi = () => {
           : undefined,
         cuisine_region: recipe.cuisine_region as any,
         main_ingredient: recipe.main_ingredient as any,
+        meal_plan_count: recipe.meal_plan_count || 0, // Ensure default value
       }));
     } catch (error) {
       console.error('Error fetching recipes:', error);

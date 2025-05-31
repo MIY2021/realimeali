@@ -1,19 +1,12 @@
+import { useState, useMemo } from "react";
+import { Recipe } from "@/types";
 
-import { useState, useMemo, useCallback } from "react";
-import { Recipe, MealType, Cuisine, DietLifestyle, ComplexityLevel } from "@/types";
-import { SimpleRecipeFilters } from "@/components/recipes/filters/SimpleRecipeFilters";
-
-interface UseRecipeListProps {
-  recipes: Recipe[];
-}
-
-export function useRecipeList({ recipes }: UseRecipeListProps) {
+export function useRecipeList({ recipes }: { recipes: Recipe[] }) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [sortBy, setSortBy] = useState<"title" | "prepTime" | "cookTime">("title");
+  const [sortBy, setSortBy] = useState<"title" | "prepTime" | "cookTime" | "mealPlanCount">("title");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
-  const [visibleCount, setVisibleCount] = useState(12);
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [filters, setFilters] = useState<SimpleRecipeFilters>({
+  const [filters, setFilters] = useState({
     searchTerm: "",
     mealTypes: [],
     cuisines: [],
@@ -21,102 +14,103 @@ export function useRecipeList({ recipes }: UseRecipeListProps) {
     complexityLevels: [],
     showFavoritesOnly: false,
   });
+  const [currentPage, setCurrentPage] = useState(1);
+  const recipesPerPage = 12;
 
+  const toggleFilters = () => {
+    setFiltersOpen(!filtersOpen);
+  };
+
+  const handleFiltersChange = (newFilters: any) => {
+    setFilters(newFilters);
+    setCurrentPage(1); // Reset to first page when filters change
+  };
+
+  // Filtering logic
+  const filteredRecipes = useMemo(() => {
+    return recipes.filter((recipe) => {
+      const searchTermMatch =
+        searchTerm === "" ||
+        recipe.title.toLowerCase().includes(searchTerm.toLowerCase());
+
+      const mealTypeMatch =
+        filters.mealTypes.length === 0 ||
+        (recipe.meal_type && filters.mealTypes.includes(recipe.meal_type));
+
+      const cuisineMatch =
+        filters.cuisines.length === 0 ||
+        (recipe.cuisine_region && filters.cuisines.includes(recipe.cuisine_region));
+
+      const dietLifestyleMatch =
+        filters.dietLifestyle.length === 0 ||
+        (recipe.diet_lifestyle &&
+          recipe.diet_lifestyle.some((diet) => filters.dietLifestyle.includes(diet)));
+
+      const complexityLevelMatch =
+        filters.complexityLevels.length === 0 ||
+        (recipe.complexity_level &&
+          filters.complexityLevels.includes(recipe.complexity_level));
+
+      const favoritesMatch =
+        !filters.showFavoritesOnly || recipe.is_favorite === filters.showFavoritesOnly;
+
+      return (
+        searchTermMatch &&
+        mealTypeMatch &&
+        cuisineMatch &&
+        dietLifestyleMatch &&
+        complexityLevelMatch &&
+        favoritesMatch
+      );
+    });
+  }, [recipes, searchTerm, filters]);
+
+  // Sorting logic
   const filteredAndSortedRecipes = useMemo(() => {
-    let filtered = recipes;
+    const sorted = [...filteredRecipes].sort((a, b) => {
+      let aValue: any, bValue: any;
 
-    // Filter by search term
-    const searchQuery = searchTerm || filters.searchTerm;
-    if (searchQuery) {
-      filtered = recipes.filter(recipe =>
-        recipe.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        recipe.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        recipe.ingredients.some(ingredient => 
-          ingredient.toLowerCase().includes(searchQuery.toLowerCase())
-        )
-      );
-    }
-
-    // Filter by favorites only
-    if (filters.showFavoritesOnly) {
-      filtered = filtered.filter(recipe => recipe.is_favorite);
-    }
-
-    // Filter by meal types
-    if (filters.mealTypes.length > 0) {
-      filtered = filtered.filter(recipe => 
-        recipe.meal_type && filters.mealTypes.includes(recipe.meal_type)
-      );
-    }
-
-    // Filter by cuisines
-    if (filters.cuisines.length > 0) {
-      filtered = filtered.filter(recipe => 
-        recipe.cuisine && filters.cuisines.includes(recipe.cuisine)
-      );
-    }
-
-    // Filter by diet/lifestyle
-    if (filters.dietLifestyle.length > 0) {
-      filtered = filtered.filter(recipe => 
-        recipe.diet_lifestyle && recipe.diet_lifestyle.some(diet => 
-          filters.dietLifestyle.includes(diet)
-        )
-      );
-    }
-
-    // Filter by complexity levels
-    if (filters.complexityLevels.length > 0) {
-      filtered = filtered.filter(recipe => 
-        recipe.complexity_level && filters.complexityLevels.includes(recipe.complexity_level)
-      );
-    }
-
-    // Sort recipes
-    filtered.sort((a, b) => {
-      let valueA, valueB;
-      
       switch (sortBy) {
         case "title":
-          valueA = a.title.toLowerCase();
-          valueB = b.title.toLowerCase();
+          aValue = a.title.toLowerCase();
+          bValue = b.title.toLowerCase();
           break;
         case "prepTime":
-          valueA = a.prep_time;
-          valueB = b.prep_time;
+          aValue = a.prep_time;
+          bValue = b.prep_time;
           break;
         case "cookTime":
-          valueA = a.cook_time;
-          valueB = b.cook_time;
+          aValue = a.cook_time;
+          bValue = b.cook_time;
+          break;
+        case "mealPlanCount":
+          aValue = a.meal_plan_count || 0;
+          bValue = b.meal_plan_count || 0;
           break;
         default:
-          valueA = a.title.toLowerCase();
-          valueB = b.title.toLowerCase();
+          return 0;
       }
 
-      if (valueA < valueB) return sortOrder === "asc" ? -1 : 1;
-      if (valueA > valueB) return sortOrder === "asc" ? 1 : -1;
+      if (aValue < bValue) return sortOrder === "asc" ? -1 : 1;
+      if (aValue > bValue) return sortOrder === "asc" ? 1 : -1;
       return 0;
     });
 
-    return filtered;
-  }, [recipes, searchTerm, filters, sortBy, sortOrder]);
+    return sorted;
+  }, [filteredRecipes, sortBy, sortOrder]);
 
-  const visibleRecipes = filteredAndSortedRecipes.slice(0, visibleCount);
-  const hasMoreRecipes = visibleCount < filteredAndSortedRecipes.length;
+  // Pagination logic
+  const visibleRecipes = useMemo(() => {
+    const startIndex = (currentPage - 1) * recipesPerPage;
+    const endIndex = startIndex + recipesPerPage;
+    return filteredAndSortedRecipes.slice(startIndex, endIndex);
+  }, [filteredAndSortedRecipes, currentPage, recipesPerPage]);
 
-  const handleLoadMore = useCallback(() => {
-    setVisibleCount(prev => prev + 12);
-  }, []);
+  const hasMoreRecipes = visibleRecipes.length < filteredAndSortedRecipes.length;
 
-  const handleFiltersChange = useCallback((newFilters: SimpleRecipeFilters) => {
-    setFilters(newFilters);
-    setVisibleCount(12); // Reset visible count when filters change
-  }, []);
-
-  const toggleFilters = useCallback(() => {
-    setFiltersOpen(!filtersOpen);
-  }, [filtersOpen]);
+  const handleLoadMore = () => {
+    setCurrentPage((prevPage) => prevPage + 1);
+  };
 
   return {
     searchTerm,
