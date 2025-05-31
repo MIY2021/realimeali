@@ -1,4 +1,3 @@
-
 import { useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRecipes } from "@/contexts/RecipesContext";
@@ -96,39 +95,48 @@ export default function MealPlannerContainer() {
   const currentMealPlans = getMealPlansForWeek(currentWeek);
 
   const handleAddMeal = useCallback((mealType: MealType) => {
+    console.log("🍽️ handleAddMeal called with mealType:", mealType);
     setPendingMealType(mealType);
     
     // Special handling for lunch - show leftover servings dialog
     if (mealType === 'lunch') {
+      console.log("🥪 Opening leftover dialog for lunch");
       setLeftoverDialog(true);
     } else {
+      console.log("🍽️ Opening simple meal dialog for:", mealType);
       setSimpleMealDialog(true);
     }
-  }, []);
+  }, [setPendingMealType, setLeftoverDialog, setSimpleMealDialog]);
 
   const handleServingsConfirm = useCallback((mealType: MealType, servings: number) => {
+    console.log("✅ handleServingsConfirm:", { mealType, servings });
     setAddMealModal({ open: true, mealType, date: null });
     setPendingMealType(null);
   }, [setAddMealModal, setPendingMealType]);
 
   const handleSimpleMealSelect = useCallback(async (recipeId: string) => {
+    console.log("🎯 handleSimpleMealSelect:", { recipeId, pendingMealType });
     if (!pendingMealType) return;
     await handleAddRecipeToMeal(recipeId, pendingMealType);
     setPendingMealType(null);
-  }, [pendingMealType, handleAddRecipeToMeal]);
+    setSimpleMealDialog(false);
+  }, [pendingMealType, handleAddRecipeToMeal, setPendingMealType, setSimpleMealDialog]);
 
   const handleLunchLeftoverConfirm = useCallback((servings: number) => {
+    console.log("🥪 handleLunchLeftoverConfirm - servings:", servings);
     // For lunch additions, we'll show the recipe selection dialog with the servings info
     setLeftoverDialog(false);
     setSimpleMealDialog(true);
     // Store the servings for later use when a recipe is selected
     console.log("Lunch leftover servings selected:", servings);
-  }, []);
+  }, [setLeftoverDialog, setSimpleMealDialog]);
 
   const handleCreateLeftoverWithDialog = useCallback((mealPlan: MealPlan, recipe: Recipe) => {
+    console.log("🔄 handleCreateLeftoverWithDialog:", { mealPlan: mealPlan.id, recipe: recipe.title });
     setPendingLeftoverData({ mealPlan, recipe });
+    setPendingMealType('lunch'); // Set to lunch for leftover creation
     setLeftoverDialog(true);
-  }, []);
+  }, [setPendingLeftoverData, setPendingMealType, setLeftoverDialog]);
 
   const handleRandomizeClick = useCallback(() => {
     // Check if there are existing meal plans
@@ -137,7 +145,7 @@ export default function MealPlannerContainer() {
     } else {
       handleRandomize();
     }
-  }, [currentMealPlans.length, handleRandomize]);
+  }, [currentMealPlans.length, handleRandomize, setWarningDialog]);
 
   const handleWarningConfirm = useCallback(() => {
     handleRandomize();
@@ -148,9 +156,11 @@ export default function MealPlannerContainer() {
   }, [performClearAll]);
 
   const handleCreateLeftoverWithServings = useCallback(async (mealPlan: MealPlan, recipe: Recipe, leftoverServings: number) => {
+    console.log("🔄 handleCreateLeftoverWithServings:", { leftoverServings });
     await handleCreateLeftover(mealPlan, recipe, leftoverServings);
     setPendingLeftoverData(null);
-  }, [handleCreateLeftover]);
+    setPendingMealType(null);
+  }, [handleCreateLeftover, setPendingLeftoverData, setPendingMealType]);
 
   if (!user || !currentHousehold) {
     return (

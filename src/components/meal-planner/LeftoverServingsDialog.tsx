@@ -33,9 +33,23 @@ export function LeftoverServingsDialog({
 }: LeftoverServingsDialogProps) {
   const [servings, setServings] = useState([2]); // Default to 2 servings
   
+  console.log("🍽️ LeftoverServingsDialog render:", {
+    open,
+    isNewLunchMeal,
+    hasRecipe: !!recipe,
+    hasMealPlan: !!mealPlan,
+    servings: servings[0]
+  });
+  
   const maxServings = recipe ? recipe.servings - 1 : 8; // Default max to 8 for new lunch meals
 
   const handleConfirm = () => {
+    console.log("✅ LeftoverServingsDialog confirm:", {
+      isNewLunchMeal,
+      servings: servings[0],
+      hasOnCreateLeftover: !!onCreateLeftover
+    });
+    
     if (isNewLunchMeal) {
       // For new lunch meals, just pass the servings count
       onConfirm(servings[0]);
@@ -46,8 +60,11 @@ export function LeftoverServingsDialog({
     onClose();
   };
 
-  // For new lunch meals or when we have recipe/mealPlan for leftovers
-  if (!isNewLunchMeal && (!recipe || !mealPlan)) return null;
+  // Fix the conditional rendering - allow rendering for new lunch meals OR when we have recipe/mealPlan for leftovers
+  if (!isNewLunchMeal && (!recipe || !mealPlan)) {
+    console.log("❌ LeftoverServingsDialog not rendering - missing required props");
+    return null;
+  }
 
   const title = isNewLunchMeal ? "Add Lunch Meal" : "Create Lunch Leftovers";
   const description = isNewLunchMeal 

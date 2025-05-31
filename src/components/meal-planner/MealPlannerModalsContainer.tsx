@@ -60,6 +60,17 @@ export const MealPlannerModalsContainer = ({
   onClearAllConfirm,
   onServingsConfirm,
 }: MealPlannerModalsContainerProps) => {
+  
+  console.log("🎭 MealPlannerModalsContainer render:", {
+    leftoverDialog,
+    pendingMealType,
+    isNewLunchMeal: pendingMealType === 'lunch' && !pendingLeftoverData,
+    hasPendingLeftoverData: !!pendingLeftoverData
+  });
+
+  // Determine if this is a new lunch meal (no leftover data) vs creating leftovers (has leftover data)
+  const isNewLunchMeal = pendingMealType === 'lunch' && !pendingLeftoverData;
+
   return (
     <>
       <MealPlanQuantitiesDialog
@@ -85,11 +96,12 @@ export const MealPlannerModalsContainer = ({
         onClose={() => {
           setLeftoverDialog(false);
           setPendingMealType(null);
+          // Don't clear pendingLeftoverData here to allow proper debugging
         }}
         mealPlan={pendingLeftoverData?.mealPlan || null}
         recipe={pendingLeftoverData?.recipe || null}
         onConfirm={onLunchLeftoverConfirm}
-        isNewLunchMeal={pendingMealType === 'lunch'}
+        isNewLunchMeal={isNewLunchMeal}
         onCreateLeftover={onCreateLeftover}
       />
 
