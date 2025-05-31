@@ -7,7 +7,7 @@ import { useMealPlan } from "@/contexts/MealPlanContext";
 import { MealPlannerHeader } from "@/components/meal-planner/MealPlannerHeader";
 import { MealPlannerActions } from "@/components/meal-planner/MealPlannerActions";
 import { WeekSelector } from "@/components/meal-planner/WeekSelector";
-import { AddRecipeToMealModal } from "@/components/meal-planner/AddRecipeToMealModal";
+import { SimpleMealSelectionDialog } from "@/components/meal-planner/SimpleMealSelectionDialog";
 import { MealPlanQuantitiesDialog } from "@/components/meal-planner/MealPlanQuantitiesDialog";
 import { MealServingsDialog } from "@/components/meal-planner/MealServingsDialog";
 import MealListSection from "@/components/MealListSection";
@@ -37,6 +37,7 @@ export default function MealPlannerContainer() {
   const [isLoading, setIsLoading] = useState(false);
   const [quantitiesDialog, setQuantitiesDialog] = useState(false);
   const [servingsDialog, setServingsDialog] = useState(false);
+  const [simpleMealDialog, setSimpleMealDialog] = useState(false);
   const [pendingMealType, setPendingMealType] = useState<MealType | null>(null);
   
   const {
@@ -48,7 +49,6 @@ export default function MealPlannerContainer() {
 
   const {
     handleAddRecipeToMeal,
-    handleAddMeal,
     handleRemoveMeal,
     handleCreateLeftover,
     handleReorderMeals,
@@ -87,10 +87,54 @@ export default function MealPlannerContainer() {
     return recipes.find(recipe => recipe.id === id);
   }, [recipes]);
 
+  const handleAddMeal = useCallback((mealType: MealType) => {
+    setPendingMealType(mealType);
+    setSimpleMealDialog(true);
+  }, []);
+
   const handleServingsConfirm = useCallback((mealType: MealType, servings: number) => {
     setAddMealModal({ open: true, mealType, date: null });
     setPendingMealType(null);
   }, [setAddMealModal, setPendingMealType]);
+
+  const handleSimpleMealSelect = useCallback(async (recipeId: string) => {
+    if (!pendingMealType) return;
+    await handleAddRecipeToMeal(recipeId, pendingMealType);
+    setPendingMealType(null);
+  }, [pendingMealType, handleAddRecipeToMeal]);
+
+  // Updated handleRandomizeWithQuantities to include all meal types
+  const handleRandomizeWithAllQuantities = useCallback(async (quantities: { 
+    dinner: number; 
+    lunch: number; 
+    breakfast: number; 
+    snacks: number;
+    sides: number;
+    desserts: number;
+    drinks: number;
+  }) => {
+    if (!user || !currentHousehold) return;
+    
+    setIsLoading(true);
+    try {
+      console.log('Generating random meal plan with quantities:', quantities);
+      const totalAdded = await generateRandomMealPlan(quantities, currentWeek);
+      
+      toast({
+        title: "Meal Plan Generated",
+        description: `Added ${totalAdded} meals to week ${currentWeek}`,
+      });
+    } catch (err) {
+      console.error("Error generating meal plan:", err);
+      toast({
+        title: "Error",
+        description: "Failed to generate meal plan",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [user, currentHousehold, currentWeek, generateRandomMealPlan, setIsLoading, toast]);
 
   if (!user || !currentHousehold) {
     return (
@@ -139,24 +183,21 @@ export default function MealPlannerContainer() {
         ))}
       </div>
 
-      {addMealModal.open && (
-        <AddRecipeToMealModal
-          open={addMealModal.open}
-          onClose={() => setAddMealModal({ open: false, mealType: null, date: null })}
-          mealSlot={{ 
-            date: new Date().toISOString().split('T')[0], 
-            mealType: addMealModal.mealType || "dinner"
-          }}
-          onAddRecipe={async (recipeId: string) => {
-            await handleAddRecipeToMeal(recipeId, addMealModal.mealType || "dinner");
-          }}
-        />
-      )}
-
       <MealPlanQuantitiesDialog
         isOpen={quantitiesDialog}
         onClose={() => setQuantitiesDialog(false)}
-        onConfirm={handleRandomizeWithQuantities}
+        onConfirm={handleRandomizeWithAllQuantities}
+      />
+
+      <SimpleMealSelectionDialog
+        open={simpleMealDialog}
+        onClose={() => {
+          setSimpleMealDialog(false);
+          setPendingMealType(null);
+        }}
+        mealType={pendingMealType || "dinner"}
+        recipes={recipes}
+        onSelectRecipe={handleSimpleMealSelect}
       />
 
       {pendingMealType && (

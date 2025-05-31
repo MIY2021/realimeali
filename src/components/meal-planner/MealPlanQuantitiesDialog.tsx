@@ -2,13 +2,21 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Slider } from "@/components/ui/slider";
 
 interface MealPlanQuantitiesDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: (quantities: { dinner: number; lunch: number; breakfast: number; snacks: number }) => void;
+  onConfirm: (quantities: { 
+    dinner: number; 
+    lunch: number; 
+    breakfast: number; 
+    snacks: number;
+    sides: number;
+    desserts: number;
+    drinks: number;
+  }) => void;
 }
 
 export function MealPlanQuantitiesDialog({
@@ -20,7 +28,10 @@ export function MealPlanQuantitiesDialog({
     dinner: 5,
     lunch: 2,
     breakfast: 2,
-    snacks: 2
+    snacks: 2,
+    sides: 2,
+    desserts: 1,
+    drinks: 1
   });
 
   const handleConfirm = () => {
@@ -28,11 +39,21 @@ export function MealPlanQuantitiesDialog({
     onClose();
   };
 
-  const updateQuantity = (mealType: keyof typeof quantities, value: number) => {
+  const updateQuantity = (mealType: keyof typeof quantities, value: number[]) => {
     setQuantities(prev => ({
       ...prev,
-      [mealType]: Math.max(0, value)
+      [mealType]: value[0]
     }));
+  };
+
+  const mealTypeLabels = {
+    dinner: "Dinners",
+    lunch: "Lunches", 
+    breakfast: "Breakfasts",
+    snacks: "Snacks",
+    sides: "Sides",
+    desserts: "Desserts",
+    drinks: "Drinks"
   };
 
   return (
@@ -42,60 +63,30 @@ export function MealPlanQuantitiesDialog({
           <DialogTitle>Generate Meal Plan</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="space-y-6">
           <p className="text-sm text-muted-foreground">
             How many meals would you like to generate for each meal type?
           </p>
           
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="dinner">Dinners</Label>
-              <Input
-                id="dinner"
-                type="number"
-                min="0"
-                value={quantities.dinner}
-                onChange={(e) => updateQuantity('dinner', parseInt(e.target.value) || 0)}
-                className="mt-1"
+          {Object.entries(quantities).map(([mealType, quantity]) => (
+            <div key={mealType} className="space-y-2">
+              <div className="flex justify-between">
+                <Label htmlFor={mealType}>
+                  {mealTypeLabels[mealType as keyof typeof mealTypeLabels]}
+                </Label>
+                <span className="text-sm font-medium">{quantity}</span>
+              </div>
+              <Slider
+                id={mealType}
+                min={0}
+                max={10}
+                step={1}
+                value={[quantity]}
+                onValueChange={(value) => updateQuantity(mealType as keyof typeof quantities, value)}
+                className="w-full"
               />
             </div>
-            
-            <div>
-              <Label htmlFor="lunch">Lunches</Label>
-              <Input
-                id="lunch"
-                type="number"
-                min="0"
-                value={quantities.lunch}
-                onChange={(e) => updateQuantity('lunch', parseInt(e.target.value) || 0)}
-                className="mt-1"
-              />
-            </div>
-            
-            <div>
-              <Label htmlFor="breakfast">Breakfasts</Label>
-              <Input
-                id="breakfast"
-                type="number"
-                min="0"
-                value={quantities.breakfast}
-                onChange={(e) => updateQuantity('breakfast', parseInt(e.target.value) || 0)}
-                className="mt-1"
-              />
-            </div>
-            
-            <div>
-              <Label htmlFor="snacks">Snacks</Label>
-              <Input
-                id="snacks"
-                type="number"
-                min="0"
-                value={quantities.snacks}
-                onChange={(e) => updateQuantity('snacks', parseInt(e.target.value) || 0)}
-                className="mt-1"
-              />
-            </div>
-          </div>
+          ))}
 
           <div className="flex justify-end space-x-2 pt-4">
             <Button variant="outline" onClick={onClose}>

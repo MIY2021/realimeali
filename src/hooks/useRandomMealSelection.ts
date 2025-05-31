@@ -11,6 +11,9 @@ interface MealQuantities {
   lunch: number;
   breakfast: number;
   snacks: number;
+  sides: number;
+  desserts: number;
+  drinks: number;
 }
 
 export function useRandomMealSelection() {
@@ -32,17 +35,22 @@ export function useRandomMealSelection() {
       console.log('Available recipes:', recipes.length);
       console.log('Requested quantities:', quantities);
 
-      // Generate meals for the 4 main types only (skip sides, desserts, drinks)
+      // Generate meals for all meal types
       const mealTypesToGenerate: Array<{ type: MealType; count: number }> = [
         { type: "dinner", count: quantities.dinner },
         { type: "lunch", count: quantities.lunch },
         { type: "breakfast", count: quantities.breakfast },
-        { type: "snacks", count: quantities.snacks }
+        { type: "snacks", count: quantities.snacks },
+        { type: "sides", count: quantities.sides },
+        { type: "desserts", count: quantities.desserts },
+        { type: "drinks", count: quantities.drinks }
       ];
 
       let totalAdded = 0;
       
       for (const { type, count } of mealTypesToGenerate) {
+        if (count === 0) continue;
+        
         const availableRecipes = recipes.filter(recipe => 
           recipe.meal_type === type || (!recipe.meal_type && type === "dinner")
         );
