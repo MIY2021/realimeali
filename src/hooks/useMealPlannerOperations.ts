@@ -1,4 +1,3 @@
-
 import { useCallback } from "react";
 import { MealType, Recipe } from "@/types";
 import { mealPlanService } from "@/services/mealPlanService";
@@ -122,12 +121,15 @@ export const useMealPlannerOperations = ({
         householdId: currentHousehold.id
       });
 
-      // Ensure we have a positive servings value - this is crucial for the DB constraint
-      const servingsToSave = leftoverServings && leftoverServings > 0 
-        ? leftoverServings 
-        : Math.max(1, Math.ceil(recipe.servings / 2));
+      // Ensure we have a positive integer servings value - this is crucial for the DB constraint
+      let servingsToSave: number;
+      if (leftoverServings && Number.isInteger(leftoverServings) && leftoverServings > 0) {
+        servingsToSave = leftoverServings;
+      } else {
+        servingsToSave = Math.max(1, Math.floor(recipe.servings / 2));
+      }
       
-      console.log("Calculated servings to save:", servingsToSave);
+      console.log("Calculated servings to save (must be positive integer):", servingsToSave, typeof servingsToSave);
       
       const leftoverData = {
         recipe_id: mealPlan.recipe_id,
@@ -136,7 +138,7 @@ export const useMealPlannerOperations = ({
         created_by: user.id,
         slot_index: 0,
         is_leftover: true,
-        leftover_servings: servingsToSave, // This must be positive for DB constraint
+        leftover_servings: servingsToSave, // This must be a positive integer for DB constraint
         original_servings: recipe.servings,
         parent_meal_plan_id: mealPlan.id,
         household_id: currentHousehold.id,
@@ -261,6 +263,11 @@ export const useMealPlannerOperations = ({
     console.log('🚀 Starting meal plan generation process...');
     
     try {
+      // Clear existing meal plans for the week FIRST
+      console.log('🧹 Clearing existing meal plans for week', currentWeek);
+      await clearWeek(currentWeek);
+      console.log('✅ Week cleared successfully');
+      
       console.log('📋 About to call generateRandomMealPlan with:', {
         quantities,
         currentWeek,
@@ -300,7 +307,7 @@ export const useMealPlannerOperations = ({
       setIsLoading(false);
       console.log('🏁 Generation process complete, loading set to false');
     }
-  }, [user, currentHousehold, currentWeek, generateRandomMealPlan, setIsLoading, toast, recipes]);
+  }, [user, currentHousehold, currentWeek, generateRandomMealPlan, clearWeek, setIsLoading, toast, recipes]);
 
   const handleShare = useCallback(async () => {
     if (navigator.share) {
