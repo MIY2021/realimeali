@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { useMealPlan } from "@/contexts/MealPlanContext";
+import { useRecipesLoader } from "@/hooks/useRecipesLoader";
 import { MealPlannerHeader } from "@/components/meal-planner/MealPlannerHeader";
 import { MealPlannerActions } from "@/components/meal-planner/MealPlannerActions";
 import { WeekSelector } from "@/components/meal-planner/WeekSelector";
@@ -22,7 +23,7 @@ export default function MealPlannerContainer() {
   useDocumentTitle("Meal Planner | RealiMeali");
   
   const { user } = useAuth();
-  const { recipes } = useRecipes();
+  const { recipes, isLoading: recipesLoading } = useRecipes();
   const { currentHousehold } = useHousehold();
   const { 
     getMealPlansForWeek, 
@@ -32,6 +33,9 @@ export default function MealPlannerContainer() {
     reorderMealPlans 
   } = useMealPlan();
   const { toast } = useToast();
+  
+  // Auto-load recipes when component mounts
+  useRecipesLoader();
   
   const [currentWeek, setCurrentWeek] = useState<1 | 2>(1);
   const [isLoading, setIsLoading] = useState(false);
@@ -105,7 +109,7 @@ export default function MealPlannerContainer() {
 
   if (!user || !currentHousehold) {
     return (
-      <div className="container max-w-7xl py-8 px-6">
+      <div className="container max-w-4xl py-4 px-4 sm:py-8 sm:px-6">
         <div className="text-center">
           <h1 className="text-3xl font-bold text-navy mb-4">Meal Planner</h1>
           <p className="text-muted-foreground">Please log in and select a household to start meal planning.</p>
@@ -114,8 +118,19 @@ export default function MealPlannerContainer() {
     );
   }
 
+  if (recipesLoading) {
+    return (
+      <div className="container max-w-4xl py-4 px-4 sm:py-8 sm:px-6">
+        <div className="text-center">
+          <h1 className="text-3xl font-bold text-navy mb-4">Meal Planner</h1>
+          <p className="text-muted-foreground">Loading your recipes...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="container max-w-7xl py-8 px-6 space-y-8">
+    <div className="container max-w-4xl py-4 px-4 sm:py-8 sm:px-6 space-y-8">
       <MealPlannerHeader
         user={user}
         currentHousehold={currentHousehold}
@@ -154,6 +169,7 @@ export default function MealPlannerContainer() {
         isOpen={quantitiesDialog}
         onClose={() => setQuantitiesDialog(false)}
         onConfirm={handleRandomizeWithQuantities}
+        availableRecipes={recipes.length}
       />
 
       <SimpleMealSelectionDialog

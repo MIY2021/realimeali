@@ -17,12 +17,14 @@ interface MealPlanQuantitiesDialogProps {
     desserts: number;
     drinks: number;
   }) => void;
+  availableRecipes?: number;
 }
 
 export function MealPlanQuantitiesDialog({
   isOpen,
   onClose,
   onConfirm,
+  availableRecipes = 0,
 }: MealPlanQuantitiesDialogProps) {
   const [quantities, setQuantities] = useState({
     dinner: 5,
@@ -71,9 +73,12 @@ export function MealPlanQuantitiesDialog({
         </DialogHeader>
 
         <div className="space-y-6">
-          <p className="text-sm text-muted-foreground">
-            How many meals would you like to generate for each meal type?
-          </p>
+          <div className="text-sm text-muted-foreground space-y-1">
+            <p>How many meals would you like to generate for each meal type?</p>
+            <p className="text-xs">
+              Available recipes: <span className="font-medium text-foreground">{availableRecipes}</span>
+            </p>
+          </div>
           
           {Object.entries(quantities).map(([mealType, quantity]) => (
             <div key={mealType} className="space-y-2">
@@ -99,10 +104,19 @@ export function MealPlanQuantitiesDialog({
             <Button variant="outline" onClick={onClose}>
               Cancel
             </Button>
-            <Button onClick={handleConfirm}>
+            <Button 
+              onClick={handleConfirm}
+              disabled={availableRecipes === 0}
+            >
               Generate Meal Plan
             </Button>
           </div>
+          
+          {availableRecipes === 0 && (
+            <p className="text-xs text-destructive text-center">
+              No recipes available. Please add some recipes first.
+            </p>
+          )}
         </div>
       </DialogContent>
     </Dialog>
