@@ -24,13 +24,17 @@ export function useRandomMealSelection() {
         date: string;
       }> = [];
 
-      // For now, just randomly select recipes for each meal type
-      const mealTypes: MealPlanMealType[] = ["breakfast", "lunch", "dinner", "snacks"];
+      // Generate meals for the 4 main types only (skip sides, desserts, drinks)
+      const mealTypesToGenerate: Array<{ type: MealPlanMealType; count: number }> = [
+        { type: "dinner", count: quantities.dinner },
+        { type: "lunch", count: quantities.lunch },
+        { type: "breakfast", count: quantities.breakfast },
+        { type: "snacks", count: quantities.snacks }
+      ];
       
-      mealTypes.forEach(mealType => {
-        const count = quantities[mealType];
+      mealTypesToGenerate.forEach(({ type, count }) => {
         const availableRecipes = recipes.filter(recipe => 
-          recipe.meal_type === mealType || !recipe.meal_type
+          recipe.meal_type === type || (!recipe.meal_type && type === "dinner")
         );
         
         for (let i = 0; i < count; i++) {
@@ -38,7 +42,7 @@ export function useRandomMealSelection() {
             const randomRecipe = availableRecipes[Math.floor(Math.random() * availableRecipes.length)];
             selectedMeals.push({
               recipe: randomRecipe,
-              mealType,
+              mealType: type,
               date: new Date().toISOString().split('T')[0] // Today's date for now
             });
           }

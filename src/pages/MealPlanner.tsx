@@ -44,7 +44,7 @@ export default function MealPlanner() {
   const { generateRandomMealPlan } = useRandomMealSelection();
 
   const currentMealPlans = getMealPlansForWeek(currentWeek);
-  const mealTypes: MealType[] = ["breakfast", "lunch", "dinner", "snack"];
+  const mealTypes: MealType[] = ["dinner", "lunch", "breakfast", "snacks", "sides", "desserts", "drinks"];
 
   const getMealPlansForType = useCallback((mealType: MealType): MealPlan[] => {
     return currentMealPlans
@@ -165,7 +165,12 @@ export default function MealPlanner() {
     
     setIsLoading(true);
     try {
-      await generateRandomMealPlan(currentWeek);
+      await generateRandomMealPlan({
+        dinner: 5,
+        lunch: 2,
+        breakfast: 2,
+        snacks: 2
+      });
       toast({
         title: "Meal Plan Generated",
         description: `Random meal plan created for week ${currentWeek}`,
