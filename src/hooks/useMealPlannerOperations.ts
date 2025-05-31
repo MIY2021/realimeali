@@ -144,14 +144,19 @@ export const useMealPlannerOperations = ({
   }, [reorderMealPlans, currentWeek, toast]);
 
   const handleRandomize = useCallback(() => {
-    console.log("handleRandomize called");
+    console.log("🎲 handleRandomize called");
     if (!user || !currentHousehold) {
-      console.log("No user or household for randomize");
+      console.log("❌ No user or household for randomize");
+      toast({
+        title: "Error",
+        description: "Please log in and select a household",
+        variant: "destructive",
+      });
       return;
     }
-    console.log("Opening quantities dialog");
+    console.log("✅ Opening quantities dialog");
     setQuantitiesDialog(true);
-  }, [user, currentHousehold, setQuantitiesDialog]);
+  }, [user, currentHousehold, setQuantitiesDialog, toast]);
 
   const handleRandomizeWithQuantities = useCallback(async (quantities: { 
     dinner: number; 
@@ -162,35 +167,66 @@ export const useMealPlannerOperations = ({
     desserts: number;
     drinks: number;
   }) => {
-    console.log("handleRandomizeWithQuantities called with:", quantities);
+    console.log("🎯 handleRandomizeWithQuantities called with:", quantities);
+    
     if (!user || !currentHousehold) {
-      console.log("No user or household for randomize with quantities");
+      console.log("❌ No user or household for randomize with quantities");
+      toast({
+        title: "Error",
+        description: "Please log in and select a household",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!generateRandomMealPlan) {
+      console.error("❌ generateRandomMealPlan function is missing!");
+      toast({
+        title: "Error",
+        description: "Meal plan generation is not available",
+        variant: "destructive",
+      });
       return;
     }
     
     setIsLoading(true);
+    console.log('🚀 Starting meal plan generation...');
+    
     try {
-      console.log('Generating random meal plan with quantities:', quantities);
-      console.log('Current week:', currentWeek);
-      console.log('Available recipes:', recipes.length);
+      console.log('📊 Generation context:', {
+        quantities,
+        currentWeek,
+        availableRecipes: recipes.length,
+        userId: user.id,
+        householdId: currentHousehold.id
+      });
       
       const totalAdded = await generateRandomMealPlan(quantities, currentWeek);
       
-      console.log('Meal plan generation completed, total added:', totalAdded);
+      console.log('🎉 Meal plan generation completed, total added:', totalAdded);
       
-      toast({
-        title: "Meal Plan Generated",
-        description: `Added ${totalAdded} meals to week ${currentWeek}`,
-      });
+      if (totalAdded > 0) {
+        toast({
+          title: "Meal Plan Generated",
+          description: `Added ${totalAdded} meals to week ${currentWeek}`,
+        });
+      } else {
+        toast({
+          title: "No meals added",
+          description: "No suitable recipes found for the selected meal types",
+          variant: "destructive",
+        });
+      }
     } catch (err) {
-      console.error("Error generating meal plan:", err);
+      console.error("💥 Error generating meal plan:", err);
       toast({
         title: "Error",
-        description: "Failed to generate meal plan",
+        description: `Failed to generate meal plan: ${err?.message || 'Unknown error'}`,
         variant: "destructive",
       });
     } finally {
       setIsLoading(false);
+      console.log('🏁 Generation process complete, loading set to false');
     }
   }, [user, currentHousehold, currentWeek, generateRandomMealPlan, setIsLoading, toast, recipes]);
 

@@ -24,24 +24,35 @@ export function useRandomMealSelection() {
   const { addMealPlan } = useMealPlan();
 
   const generateRandomMealPlan = async (quantities: MealQuantities, weekNumber: 1 | 2) => {
+    console.log('🎯 generateRandomMealPlan called with:', { quantities, weekNumber });
+    
     if (!user || !currentHousehold) {
+      console.error('❌ Missing user or household:', { user: !!user, currentHousehold: !!currentHousehold });
       throw new Error('User and household are required');
     }
 
     setIsGenerating(true);
+    console.log('✅ Starting meal plan generation...');
     
     try {
-      console.log('Starting meal plan generation for week', weekNumber);
-      console.log('Available recipes:', recipes.length);
-      console.log('Requested quantities:', quantities);
+      console.log('📋 Generation context:', {
+        weekNumber,
+        availableRecipes: recipes.length,
+        requestedQuantities: quantities,
+        userId: user.id,
+        householdId: currentHousehold.id
+      });
 
       let totalAdded = 0;
       
       // Generate meals for each meal type
       for (const [mealType, count] of Object.entries(quantities)) {
-        if (count === 0) continue;
+        if (count === 0) {
+          console.log(`⏭️ Skipping ${mealType} (count: 0)`);
+          continue;
+        }
         
-        console.log(`Processing ${mealType}: ${count} meals`);
+        console.log(`🍽️ Processing ${mealType}: ${count} meals`);
         
         // Filter recipes for this meal type
         let availableRecipes = recipes.filter(recipe => {
@@ -51,12 +62,12 @@ export function useRandomMealSelection() {
           return false;
         });
         
-        console.log(`Found ${availableRecipes.length} recipes for ${mealType}`);
+        console.log(`📚 Found ${availableRecipes.length} recipes for ${mealType}`);
         
         // If no specific recipes found and it's not dinner, try to find some general recipes
         if (availableRecipes.length === 0 && mealType !== "dinner") {
           availableRecipes = recipes.filter(recipe => !recipe.meal_type).slice(0, 5);
-          console.log(`Using general recipes for ${mealType}: ${availableRecipes.length}`);
+          console.log(`🔄 Using general recipes for ${mealType}: ${availableRecipes.length}`);
         }
         
         // Add the requested number of meals
@@ -66,9 +77,9 @@ export function useRandomMealSelection() {
             const randomRecipe = availableRecipes[randomIndex];
             
             try {
-              console.log(`Adding ${randomRecipe.title} to ${mealType} (${i + 1}/${count})`);
+              console.log(`➕ Adding ${randomRecipe.title} to ${mealType} (${i + 1}/${count})`);
               
-              await addMealPlan({
+              const mealPlanData = {
                 recipe_id: randomRecipe.id,
                 meal_type: mealType as MealType,
                 date: new Date().toISOString().split('T')[0],
@@ -78,10 +89,14 @@ export function useRandomMealSelection() {
                 household_id: currentHousehold.id,
                 week_number: weekNumber,
                 original_servings: randomRecipe.servings,
-              }, weekNumber, true); // Silent mode to avoid multiple toasts
+              };
+
+              console.log('📝 Meal plan data:', mealPlanData);
+              
+              await addMealPlan(mealPlanData, weekNumber, true); // Silent mode to avoid multiple toasts
               
               totalAdded++;
-              console.log(`Successfully added ${randomRecipe.title}`);
+              console.log(`✅ Successfully added ${randomRecipe.title} (total: ${totalAdded})`);
               
               // Remove the recipe from available list to avoid duplicates in same meal type
               availableRecipes.splice(randomIndex, 1);
@@ -93,23 +108,25 @@ export function useRandomMealSelection() {
                   if (!recipe.meal_type && mealType === "dinner") return true;
                   return false;
                 });
+                console.log(`🔄 Reset recipe list for ${mealType}, now ${availableRecipes.length} recipes`);
               }
             } catch (error) {
-              console.error(`Error adding ${randomRecipe.title} to meal plan:`, error);
+              console.error(`❌ Error adding ${randomRecipe.title} to meal plan:`, error);
             }
           } else {
-            console.log(`No recipes available for ${mealType}`);
+            console.log(`⚠️ No recipes available for ${mealType}`);
           }
         }
       }
 
-      console.log(`Successfully added ${totalAdded} meals to the plan`);
+      console.log(`🎉 Generation complete! Successfully added ${totalAdded} meals to the plan`);
       return totalAdded;
     } catch (error) {
-      console.error("Error generating meal plan:", error);
+      console.error("💥 Error generating meal plan:", error);
       throw error;
     } finally {
       setIsGenerating(false);
+      console.log('🏁 Generation process finished, isGenerating set to false');
     }
   };
 

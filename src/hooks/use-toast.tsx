@@ -14,7 +14,7 @@ export function useToast() {
     toast: (data?: ToastProps) => {
       if (!data) {
         sonnerToast.success("Success", {
-          icon: <Check className="h-4 w-4" />,
+          icon: <Check className="h-4 w-4 text-green-600" />,
         });
         return;
       }
@@ -28,7 +28,7 @@ export function useToast() {
       } else {
         sonnerToast.success(title || "Success", {
           description: description,
-          icon: <Check className="h-4 w-4" />,
+          icon: <Check className="h-4 w-4 text-green-600" />,
         });
       }
     },
@@ -48,7 +48,7 @@ export const toast = (data?: ToastProps) => {
   } else {
     sonnerToast.success(title || "Success", {
       description: description,
-      icon: <Check className="h-4 w-4" />,
+      icon: <Check className="h-4 w-4 text-green-600" />,
     });
   }
 };

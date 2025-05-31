@@ -13,6 +13,8 @@ const Toaster = ({ ...props }: ToasterProps) => {
       className="toaster group"
       duration={4000}
       visibleToasts={5}
+      closeButton={false}
+      swipeDirection="right"
       toastOptions={{
         style: {
           fontSize: '14px',
@@ -25,8 +27,6 @@ const Toaster = ({ ...props }: ToasterProps) => {
             "group-[.toast]:bg-primary group-[.toast]:text-primary-foreground",
           cancelButton:
             "group-[.toast]:bg-muted group-[.toast]:text-muted-foreground",
-          closeButton:
-            "group-[.toast]:absolute group-[.toast]:right-2 group-[.toast]:top-2 group-[.toast]:bg-transparent group-[.toast]:border-0 group-[.toast]:text-foreground/50 hover:group-[.toast]:text-foreground group-[.toast]:opacity-100",
           success: 
             "group-[.toast]:bg-green-50 group-[.toast]:text-green-800 group-[.toast]:border-green-200",
           error:
@@ -34,7 +34,6 @@ const Toaster = ({ ...props }: ToasterProps) => {
           icon: "group-[.toast]:text-green-600",
         },
       }}
-      closeButton={true}
       {...props}
     />
   )
