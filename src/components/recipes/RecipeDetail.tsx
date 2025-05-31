@@ -230,16 +230,6 @@ export const RecipeDetail = ({ recipe, onEdit, onDelete, isOwner }: RecipeDetail
             })}
           </div>
         </div>
-        
-        {/* Meal Plan Usage Count */}
-        <div className="mt-4 pt-4 border-t border-gray-100">
-          <div className="flex items-center justify-center gap-2 text-sm text-gray-600">
-            <span>📅</span>
-            <span>
-              Added to meal plan {recipe.meal_plan_count} time{recipe.meal_plan_count !== 1 ? 's' : ''}
-            </span>
-          </div>
-        </div>
       </div>
 
       {/* Share Dialog */}

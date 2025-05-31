@@ -58,22 +58,6 @@ export const mealPlanService = {
       throw error;
     }
 
-    // Increment the meal plan count for the recipe (only for non-leftover meals)
-    if (!mealPlanData.is_leftover) {
-      try {
-        const { error: incrementError } = await supabase.rpc('increment_recipe_meal_plan_count', {
-          recipe_id_param: mealPlanData.recipe_id
-        });
-        
-        if (incrementError) {
-          console.error("Error incrementing meal plan count:", incrementError);
-          // Don't throw here as the meal plan was successfully created
-        }
-      } catch (err) {
-        console.error("Error calling increment function:", err);
-      }
-    }
-
     if (!silentMode) {
       console.log("Meal plan added successfully:", data);
     }

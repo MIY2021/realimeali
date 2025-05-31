@@ -1,79 +1,7 @@
-export type Theme = "system" | "dark" | "light";
-
-export type NavigationItem = {
-  title: string;
-  href: string;
-  disabled?: boolean;
-};
-
-export type SiteConfig = {
-  name: string;
-  description: string;
-  url: string;
-  ogImage: string;
-  links: {
-    twitter: string;
-    github: string;
-  };
-};
-
-export interface DataTableSearchableColumn<TData> {
-  id: keyof TData;
-  title: string;
-}
-
-export interface DataTableFilterableColumn<TData>
-  extends DataTableSearchableColumn<TData> {
-  options: { label: string; value: string }[];
-}
-
-export type DashboardConfig = {
-  mainNav: NavigationItem[];
-  sidebarNav: NavigationItem[];
-};
-
-export type SettingsConfig = {
-  mainNav: NavigationItem[];
-  sidebarNav: NavigationItem[];
-};
-
-export type Household = {
-  id: string;
-  name: string;
-  created_at: string;
-  updated_at: string;
-  created_by: string;
-};
-
-export type UserProfile = {
-  id: string;
-  email: string;
-  first_name: string;
-  last_name: string;
-  created_at: string;
-  updated_at: string;
-};
-
-export type PublicShare = {
-  id: string;
-  recipe_id: string;
-  shared_by_name: string;
-  household_name: string;
-  created_at: string;
-  updated_at: string;
-};
-
-export type MealType = "breakfast" | "lunch" | "dinner" | "snacks" | "sides" | "desserts" | "drinks";
-export type Cuisine = "american" | "italian" | "mexican" | "chinese" | "indian" | "french" | "japanese" | "korean" | "thai" | "mediterranean" | "greek" | "spanish" | "german" | "moroccan" | "lebanese" | "vietnamese" | "cajun" | "caribbean" | "south_american" | "african" | "fusion";
-export type CookingMethod = "baking" | "frying" | "roasting" | "grilling" | "steaming" | "boiling" | "sauteing" | "stir_frying" | "braising" | "poaching" | "raw";
-export type DietLifestyle = "vegetarian" | "vegan" | "gluten_free" | "dairy_free" | "keto" | "paleo" | "low_carb" | "mediterranean" | "whole30";
-export type ComplexityLevel = "easy" | "intermediate" | "advanced";
-export type MainIngredient = "chicken" | "beef" | "pork" | "fish" | "seafood" | "tofu" | "eggs" | "pasta" | "rice" | "beans" | "lentils" | "vegetables" | "fruits" | "nuts" | "seeds" | "dairy";
-
 export interface Recipe {
   id: string;
   title: string;
-  description?: string;
+  description: string;
   ingredients: string[];
   instructions: string[];
   prep_time: number;
@@ -81,36 +9,121 @@ export interface Recipe {
   servings: number;
   image?: string;
   is_favorite: boolean;
-  meal_type?: MealType;
-  cuisine_region?: Cuisine;
-  cooking_method?: CookingMethod;
-  diet_lifestyle?: DietLifestyle[];
-  complexity_level?: ComplexityLevel;
-  main_ingredient?: MainIngredient;
-  top_tip?: string;
   created_at: string;
   updated_at: string;
   created_by: string;
   household_id: string;
+  meal_type?: MealType;
+  cuisine?: Cuisine;
+  diet_lifestyle?: DietLifestyle[];
+  complexity_level?: ComplexityLevel;
   slug?: string;
-  meal_plan_count: number; // Add this new field
+  top_tip?: string;
+  cuisine_region?: CuisineRegion;
+  cooking_method?: CookingMethod;
+  main_ingredient?: MainIngredient;
 }
-
-export type MealPlanMealType = "breakfast" | "lunch" | "dinner" | "snacks";
 
 export interface MealPlan {
   id: string;
   date: string;
-  meal_type: MealPlanMealType;
+  meal_type: string;
   recipe_id: string;
-  created_by: string;
+  slot_index: number;
+  is_leftover: boolean;
+  leftover_servings?: number;
+  original_servings: number;
   created_at: string;
   updated_at: string;
-  slot_index: number;
-  parent_meal_plan_id?: string | null;
-  is_leftover: boolean;
-  leftover_servings?: number | null;
-  original_servings?: number | null;
   household_id: string;
+  prep_time?: number;
+  cook_time?: number;
+  servings?: number;
   week_number: 1 | 2;
+  parent_meal_plan_id?: string;
+  created_by: string;
 }
+
+export interface Household {
+  id: string;
+  name: string;
+  created_at: string;
+  updated_at: string;
+  created_by: string;
+}
+
+export interface HouseholdMember {
+  id: string;
+  user_id: string;
+  household_id: string;
+  role: 'owner' | 'member';
+  joined_at: string;
+  profile?: {
+    full_name: string;
+    email: string;
+    avatar_url?: string;
+  };
+}
+
+export interface HouseholdJoinRequest {
+  id: string;
+  household_id: string;
+  user_id: string;
+  status: 'pending' | 'approved' | 'rejected';
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PublicRecipeShare {
+  public_share_id: string;
+  original_recipe_id: string;
+  shared_by_user_id: string;
+  shared_by_name: string;
+  shared_by_household_name: string;
+  title: string;
+  description: string[];
+  ingredients: string[];
+  instructions: string[];
+  prep_time: number;
+  cook_time: number;
+  servings: number;
+  image?: string;
+  expires_at: string;
+  created_at: string;
+  meal_type?: string;
+  original_household_id: string;
+  view_count: number;
+}
+
+export interface UserProfile {
+  id: string;
+  email: string;
+  full_name?: string;
+  first_name?: string;
+  last_name?: string;
+  avatar_url?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface HouseholdMealPlan {
+  [date: string]: {
+    [meal_type: string]: Recipe[];
+  };
+}
+
+// Updated to only include the 7 desired meal types
+export type MealType = "breakfast" | "lunch" | "dinner" | "snacks" | "sides" | "desserts" | "drinks";
+export type MealPlanMealType = "breakfast" | "lunch" | "dinner" | "snacks";
+
+export type Cuisine = "british" | "italian" | "asian" | "mexican" | "indian" | "mediterranean" | "american" | "french" | "middle_eastern" | "other";
+
+export type DietLifestyle = "vegetarian" | "vegan" | "gluten_free" | "dairy_free" | "high_protein" | "kid_friendly" | "pescatarian" | "low_carb_keto" | "paleo" | "diabetic_friendly" | "budget_meals" | "pregnancy_safe";
+
+export type ComplexityLevel = "quick_easy" | "standard" | "complex";
+
+export type CuisineRegion = "british" | "american" | "italian" | "french" | "mexican" | "indian" | "chinese" | "japanese" | "thai" | "mediterranean" | "middle_eastern" | "african" | "korean" | "caribbean" | "nordic" | "eastern_european";
+
+export type CookingMethod = "one_pot" | "oven_baked" | "air_fryer" | "slow_cooker" | "pressure_cooker" | "bbq_grilled" | "stir_fried" | "roasted" | "raw_no_cook";
+
+export type MainIngredient = "chicken" | "beef" | "pork" | "lamb" | "fish" | "tofu_tempeh" | "eggs" | "cheese" | "pasta" | "rice" | "lentils_beans" | "vegetables" | "potatoes" | "fruit" | "nuts_seeds" | "chocolate";
