@@ -1,6 +1,6 @@
 
 import { toast as sonnerToast } from "sonner";
-import { CheckCircle } from "lucide-react";
+import { Check } from "lucide-react";
 
 type ToastProps = {
   title?: string;
@@ -14,7 +14,7 @@ export function useToast() {
     toast: (data?: ToastProps) => {
       if (!data) {
         sonnerToast.success("Success", {
-          icon: <CheckCircle className="h-4 w-4" />,
+          icon: <Check className="h-4 w-4" />,
         });
         return;
       }
@@ -28,7 +28,7 @@ export function useToast() {
       } else {
         sonnerToast.success(title || "Success", {
           description: description,
-          icon: <CheckCircle className="h-4 w-4" />,
+          icon: <Check className="h-4 w-4" />,
         });
       }
     },
@@ -48,7 +48,7 @@ export const toast = (data?: ToastProps) => {
   } else {
     sonnerToast.success(title || "Success", {
       description: description,
-      icon: <CheckCircle className="h-4 w-4" />,
+      icon: <Check className="h-4 w-4" />,
     });
   }
 };
