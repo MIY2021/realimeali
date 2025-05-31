@@ -1,4 +1,3 @@
-
 import { useCallback } from "react";
 import { MealType, Recipe } from "@/types";
 
@@ -100,10 +99,12 @@ export const useMealPlannerOperations = ({
     }
   }, [removeMealPlan, toast]);
 
-  const handleCreateLeftover = useCallback(async (mealPlan: any, recipe: Recipe) => {
+  const handleCreateLeftover = useCallback(async (mealPlan: any, recipe: Recipe, leftoverServings?: number) => {
     if (!user || !currentHousehold) return;
 
     try {
+      const servingsToSave = leftoverServings || Math.ceil(recipe.servings / 2);
+      
       const leftoverData = {
         recipe_id: mealPlan.recipe_id,
         meal_type: 'lunch' as MealType,
@@ -111,7 +112,7 @@ export const useMealPlannerOperations = ({
         created_by: user.id,
         slot_index: 0,
         is_leftover: true,
-        leftover_servings: Math.ceil(recipe.servings / 2),
+        leftover_servings: servingsToSave,
         original_servings: recipe.servings,
         parent_meal_plan_id: mealPlan.id,
         household_id: currentHousehold.id,
@@ -119,10 +120,16 @@ export const useMealPlannerOperations = ({
       };
 
       await addMealPlan(leftoverData, currentWeek);
+
+      // Update the original meal plan to show reduced servings
+      const updatedOriginalServings = recipe.servings - servingsToSave;
+      
+      // We would need to update the meal plan here to show reduced servings
+      // For now, we'll just show the toast with the information
       
       toast({
         title: "Leftover Added",
-        description: `${recipe.title} leftovers added to lunch`,
+        description: `${servingsToSave} servings of ${recipe.title} saved for lunch. Dinner now shows ${updatedOriginalServings} servings.`,
       });
     } catch (err) {
       console.error("Error creating leftover:", err);

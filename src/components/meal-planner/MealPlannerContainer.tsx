@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRecipes } from "@/contexts/RecipesContext";
@@ -129,6 +128,13 @@ export default function MealPlannerContainer() {
     console.log("Lunch leftover servings selected:", servings);
   }, []);
 
+  const handleCreateLeftoverWithDialog = useCallback((mealPlan: MealPlan, recipe: Recipe) => {
+    // Set the meal plan and recipe for the leftover dialog
+    setLeftoverDialog(true);
+    // We'll need to pass these to the dialog somehow
+    console.log("Creating leftover for meal plan:", mealPlan, "recipe:", recipe);
+  }, []);
+
   const handleRandomizeClick = useCallback(() => {
     // Check if there are existing meal plans
     if (currentMealPlans.length > 0) {
@@ -198,7 +204,7 @@ export default function MealPlannerContainer() {
             getRecipeById={getRecipeById}
             onAddMeal={handleAddMeal}
             onRemoveMeal={handleRemoveMeal}
-            onCreateLeftover={handleCreateLeftover}
+            onCreateLeftover={handleCreateLeftoverWithDialog}
             onReorderMeals={handleReorderMeals}
           />
         ))}
@@ -232,6 +238,7 @@ export default function MealPlannerContainer() {
         recipe={null}
         onConfirm={handleLunchLeftoverConfirm}
         isNewLunchMeal={pendingMealType === 'lunch'}
+        onCreateLeftover={handleCreateLeftover}
       />
 
       <MealPlanWarningDialog

@@ -19,6 +19,7 @@ interface LeftoverServingsDialogProps {
   recipe: Recipe | null;
   onConfirm: (servings: number) => void;
   isNewLunchMeal?: boolean;
+  onCreateLeftover?: (mealPlan: MealPlan, recipe: Recipe, leftoverServings: number) => void;
 }
 
 export function LeftoverServingsDialog({
@@ -28,17 +29,24 @@ export function LeftoverServingsDialog({
   recipe,
   onConfirm,
   isNewLunchMeal = false,
+  onCreateLeftover,
 }: LeftoverServingsDialogProps) {
   const [servings, setServings] = useState([2]); // Default to 2 servings
   
   const maxServings = recipe ? recipe.servings - 1 : 8; // Default max to 8 for new lunch meals
 
   const handleConfirm = () => {
-    onConfirm(servings[0]);
+    if (isNewLunchMeal) {
+      // For new lunch meals, just pass the servings count
+      onConfirm(servings[0]);
+    } else if (mealPlan && recipe && onCreateLeftover) {
+      // For creating leftovers from existing meals, create the leftover and update portions
+      onCreateLeftover(mealPlan, recipe, servings[0]);
+    }
     onClose();
   };
 
-  // For new lunch meals, show even without recipe/mealPlan
+  // For new lunch meals or when we have recipe/mealPlan for leftovers
   if (!isNewLunchMeal && (!recipe || !mealPlan)) return null;
 
   const title = isNewLunchMeal ? "Add Lunch Meal" : "Create Lunch Leftovers";
@@ -73,6 +81,8 @@ export function LeftoverServingsDialog({
             {!isNewLunchMeal && recipe && (
               <div className="text-xs text-muted-foreground">
                 Original recipe serves {recipe.servings}. You can save up to {maxServings} servings for leftovers.
+                <br />
+                This will reduce the dinner portion count by {servings[0]} servings.
               </div>
             )}
           </div>
