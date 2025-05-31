@@ -1,7 +1,10 @@
 
 import { useState } from "react";
-import { Recipe, MealPlanMealType } from "@/types";
+import { Recipe, MealType } from "@/types";
 import { useRecipes } from "@/contexts/RecipesContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { useHousehold } from "@/contexts/HouseholdContext";
+import { useMealPlan } from "@/contexts/MealPlanContext";
 
 interface MealQuantities {
   dinner: number;
@@ -13,43 +16,68 @@ interface MealQuantities {
 export function useRandomMealSelection() {
   const [isGenerating, setIsGenerating] = useState(false);
   const { recipes } = useRecipes();
+  const { user } = useAuth();
+  const { currentHousehold } = useHousehold();
+  const { addMealPlan } = useMealPlan();
 
-  const generateRandomMealPlan = async (quantities: MealQuantities) => {
+  const generateRandomMealPlan = async (quantities: MealQuantities, weekNumber: 1 | 2) => {
+    if (!user || !currentHousehold) {
+      throw new Error('User and household are required');
+    }
+
     setIsGenerating(true);
     
     try {
-      const selectedMeals: Array<{
-        recipe: Recipe;
-        mealType: MealPlanMealType;
-        date: string;
-      }> = [];
+      console.log('Starting meal plan generation for week', weekNumber);
+      console.log('Available recipes:', recipes.length);
+      console.log('Requested quantities:', quantities);
 
       // Generate meals for the 4 main types only (skip sides, desserts, drinks)
-      const mealTypesToGenerate: Array<{ type: MealPlanMealType; count: number }> = [
+      const mealTypesToGenerate: Array<{ type: MealType; count: number }> = [
         { type: "dinner", count: quantities.dinner },
         { type: "lunch", count: quantities.lunch },
         { type: "breakfast", count: quantities.breakfast },
         { type: "snacks", count: quantities.snacks }
       ];
+
+      let totalAdded = 0;
       
-      mealTypesToGenerate.forEach(({ type, count }) => {
+      for (const { type, count } of mealTypesToGenerate) {
         const availableRecipes = recipes.filter(recipe => 
           recipe.meal_type === type || (!recipe.meal_type && type === "dinner")
         );
         
+        console.log(`Found ${availableRecipes.length} recipes for ${type}`);
+        
         for (let i = 0; i < count; i++) {
           if (availableRecipes.length > 0) {
             const randomRecipe = availableRecipes[Math.floor(Math.random() * availableRecipes.length)];
-            selectedMeals.push({
-              recipe: randomRecipe,
-              mealType: type,
-              date: new Date().toISOString().split('T')[0] // Today's date for now
-            });
+            
+            try {
+              // Add the meal to the plan
+              await addMealPlan({
+                recipe_id: randomRecipe.id,
+                meal_type: type,
+                date: new Date().toISOString().split('T')[0],
+                created_by: user.id,
+                slot_index: i,
+                is_leftover: false,
+                household_id: currentHousehold.id,
+                week_number: weekNumber,
+                original_servings: randomRecipe.servings,
+              }, weekNumber, true); // Silent mode to avoid multiple toasts
+              
+              totalAdded++;
+              console.log(`Added ${randomRecipe.title} to ${type}`);
+            } catch (error) {
+              console.error(`Error adding ${randomRecipe.title} to meal plan:`, error);
+            }
           }
         }
-      });
+      }
 
-      return selectedMeals;
+      console.log(`Successfully added ${totalAdded} meals to the plan`);
+      return totalAdded;
     } catch (error) {
       console.error("Error generating meal plan:", error);
       throw error;

@@ -11,7 +11,7 @@ interface UseMealPlannerOperationsProps {
   removeMealPlan: any;
   clearWeek: any;
   reorderMealPlans: any;
-  generateRandomMealPlan: any;
+  generateRandomMealPlan: (quantities: any, weekNumber: 1 | 2) => Promise<number>;
   setAddMealModal: any;
   setIsLoading: (loading: boolean) => void;
   toast: any;
@@ -141,15 +141,19 @@ export const useMealPlannerOperations = ({
     
     setIsLoading(true);
     try {
-      await generateRandomMealPlan({
+      const quantities = {
         dinner: 5,
         lunch: 2,
         breakfast: 2,
         snacks: 2
-      });
+      };
+      
+      console.log('Generating random meal plan with quantities:', quantities);
+      const totalAdded = await generateRandomMealPlan(quantities, currentWeek);
+      
       toast({
         title: "Meal Plan Generated",
-        description: `Random meal plan created for week ${currentWeek}`,
+        description: `Added ${totalAdded} meals to week ${currentWeek}`,
       });
     } catch (err) {
       console.error("Error generating meal plan:", err);
