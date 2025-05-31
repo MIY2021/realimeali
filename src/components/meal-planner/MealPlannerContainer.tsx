@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRecipes } from "@/contexts/RecipesContext";
@@ -121,22 +120,13 @@ export default function MealPlannerContainer() {
     setPendingMealType(null);
   }, [pendingMealType, handleAddRecipeToMeal]);
 
-  const handleRandomizeClick = useCallback(() => {
-    // Check if there are existing meal plans
-    if (currentMealPlans.length > 0) {
-      setWarningDialog(true);
-    } else {
-      handleRandomize();
-    }
-  }, [currentMealPlans.length, handleRandomize]);
-
-  const handleWarningConfirm = useCallback(() => {
-    handleRandomize();
-  }, [handleRandomize]);
-
-  const handleClearAllConfirm = useCallback(() => {
-    performClearAll();
-  }, [performClearAll]);
+  const handleLunchLeftoverConfirm = useCallback((servings: number) => {
+    // For lunch additions, we'll show the recipe selection dialog with the servings info
+    setLeftoverDialog(false);
+    setSimpleMealDialog(true);
+    // Store the servings for later use when a recipe is selected
+    console.log("Lunch leftover servings selected:", servings);
+  }, []);
 
   if (!user || !currentHousehold) {
     return (
@@ -222,12 +212,8 @@ export default function MealPlannerContainer() {
         }}
         mealPlan={null}
         recipe={null}
-        onConfirm={(servings) => {
-          // Handle leftover servings for lunch
-          console.log("Leftover servings:", servings);
-          setLeftoverDialog(false);
-          setPendingMealType(null);
-        }}
+        onConfirm={handleLunchLeftoverConfirm}
+        isNewLunchMeal={pendingMealType === 'lunch'}
       />
 
       <MealPlanWarningDialog
