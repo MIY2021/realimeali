@@ -9,6 +9,7 @@ interface UseLeftoverOperationsProps {
   currentWeek: 1 | 2;
   addMealPlan: any;
   toast: any;
+  refreshMealPlans?: () => void; // Add refresh function
 }
 
 export const useLeftoverOperations = ({
@@ -17,6 +18,7 @@ export const useLeftoverOperations = ({
   currentWeek,
   addMealPlan,
   toast,
+  refreshMealPlans,
 }: UseLeftoverOperationsProps) => {
 
   const handleCreateLeftover = useCallback(async (mealPlan: any, recipe: Recipe, leftoverServings?: number) => {
@@ -68,11 +70,7 @@ export const useLeftoverOperations = ({
       console.log("✅ Creating leftover meal with data:", leftoverData);
       console.log("✅ Constraint validation: is_leftover=true AND leftover_servings > 0 =", leftoverData.is_leftover === true && leftoverData.leftover_servings > 0);
 
-      // Create the leftover meal
-      await addMealPlan(leftoverData, currentWeek);
-      console.log("✅ Leftover meal created successfully");
-
-      // Update the original dinner meal to track leftover allocation
+      // Update the original dinner meal to track leftover allocation FIRST
       console.log("✅ Updating original meal plan leftover allocation");
       await mealPlanService.updateMealPlanLeftoverAllocation(
         mealPlan.id,
@@ -80,6 +78,16 @@ export const useLeftoverOperations = ({
         currentHousehold.id
       );
       console.log("✅ Original meal plan updated successfully");
+
+      // Then create the leftover meal
+      await addMealPlan(leftoverData, currentWeek);
+      console.log("✅ Leftover meal created successfully");
+
+      // Refresh meal plans to ensure UI shows updated data
+      if (refreshMealPlans) {
+        console.log("✅ Refreshing meal plans to update UI");
+        await refreshMealPlans();
+      }
 
       const remainingServings = recipe.servings - servingsToSave;
       
@@ -100,7 +108,7 @@ export const useLeftoverOperations = ({
         variant: "destructive",
       });
     }
-  }, [user, currentHousehold, currentWeek, addMealPlan, toast]);
+  }, [user, currentHousehold, currentWeek, addMealPlan, toast, refreshMealPlans]);
 
   return {
     handleCreateLeftover,

@@ -58,9 +58,16 @@ export function EnhancedMealCard({
     }
     
     // For dinner meals, show reduced servings if leftovers were allocated
-    if (mealPlan.meal_type === 'dinner' && mealPlan.leftover_servings) {
+    if (mealPlan.meal_type === 'dinner' && mealPlan.leftover_servings && mealPlan.leftover_servings > 0) {
       const originalServings = mealPlan.original_servings || displayRecipe.servings;
-      return originalServings - mealPlan.leftover_servings;
+      const effectiveServings = originalServings - mealPlan.leftover_servings;
+      console.log("🍽️ Calculating effective servings for dinner:", {
+        originalServings,
+        leftoverServings: mealPlan.leftover_servings,
+        effectiveServings,
+        mealPlanId: mealPlan.id
+      });
+      return effectiveServings;
     }
     
     return mealPlan.original_servings || displayRecipe.servings;
