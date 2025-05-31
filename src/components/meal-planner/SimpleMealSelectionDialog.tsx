@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Recipe, MealType } from "@/types";
 import { ChevronDown } from "lucide-react";
+import { RecipeImage } from "@/components/ui/recipe-image";
 
 interface SimpleMealSelectionDialogProps {
   open: boolean;
@@ -43,8 +44,19 @@ export function SimpleMealSelectionDialog({
   // Filter recipes by category, meal type, and search term
   const filteredRecipes = recipes.filter((recipe) => {
     const matchesSearch = recipe.title.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = categoryFilter === "all" || recipe.meal_type === categoryFilter;
-    const matchesMealType = recipe.meal_type === mealType || (!recipe.meal_type && mealType === "dinner");
+    
+    // Category filter logic
+    let matchesCategory = true;
+    if (categoryFilter !== "all") {
+      matchesCategory = recipe.meal_type === categoryFilter;
+    }
+    
+    // For the specific meal type we're adding to, show relevant recipes
+    // If no meal_type is set on recipe, consider it suitable for dinner
+    const matchesMealType = recipe.meal_type === mealType || 
+                           (!recipe.meal_type && mealType === "dinner") ||
+                           categoryFilter !== "all"; // If user selected a category, show those regardless of target meal type
+    
     return matchesSearch && matchesCategory && matchesMealType;
   });
 
@@ -74,7 +86,8 @@ export function SimpleMealSelectionDialog({
             <select
               value={categoryFilter}
               onChange={e => setCategoryFilter(e.target.value)}
-              className="w-full border rounded-lg p-3 pr-10 appearance-none bg-white text-sm"
+              className="w-full border rounded-lg p-3 pr-10 appearance-none bg-white text-sm z-50"
+              style={{ zIndex: 50 }}
             >
               <option value="all">All Categories</option>
               {availableMealTypes.map((type) => (
@@ -105,24 +118,28 @@ export function SimpleMealSelectionDialog({
                 {filteredRecipes.map((recipe) => (
                   <div
                     key={recipe.id}
-                    className="p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"
+                    className="p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
                     onClick={() => handleSelectRecipe(recipe.id)}
                   >
                     <div className="flex gap-3">
-                      {recipe.image && (
-                        <img
-                          src={recipe.image}
-                          alt={recipe.title}
-                          className="w-12 h-12 object-cover rounded"
-                        />
-                      )}
-                      <div className="flex-1">
-                        <h4 className="font-medium text-sm">{recipe.title}</h4>
-                        <p className="text-xs text-gray-600 line-clamp-2">
+                      <div className="w-16 h-16 rounded-md overflow-hidden bg-muted flex-shrink-0">
+                        <RecipeImage recipe={recipe} className="w-full h-full" iconSize="h-5 w-5" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-medium text-sm leading-tight">{recipe.title}</h4>
+                        <p className="text-xs text-gray-600 line-clamp-2 mt-1">
                           {recipe.description}
                         </p>
-                        <div className="text-xs text-gray-500 mt-1">
-                          {recipe.servings} servings • {recipe.prep_time + recipe.cook_time} min
+                        <div className="text-xs text-gray-500 mt-2 flex items-center gap-2">
+                          <span>{recipe.servings} servings</span>
+                          <span>•</span>
+                          <span>{recipe.prep_time + recipe.cook_time} min</span>
+                          {recipe.meal_type && (
+                            <>
+                              <span>•</span>
+                              <span className="text-blue-600">{MEAL_TYPE_LABELS[recipe.meal_type as MealType]}</span>
+                            </>
+                          )}
                         </div>
                       </div>
                     </div>

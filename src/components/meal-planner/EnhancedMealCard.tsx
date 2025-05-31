@@ -1,4 +1,5 @@
 
+import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Trash2, GripVertical } from "lucide-react";
@@ -6,6 +7,7 @@ import { Link } from "react-router-dom";
 import { MealPlan, Recipe } from "@/types";
 import { RecipeImage } from "@/components/ui/recipe-image";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { DeleteMealDialog } from "@/components/meal-planner/DeleteMealDialog";
 
 interface EnhancedMealCardProps {
   mealPlan: MealPlan;
@@ -26,6 +28,7 @@ export function EnhancedMealCard({
 }: EnhancedMealCardProps) {
   const isMobile = useIsMobile();
   const displayRecipe = recipe || parentRecipe;
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   
   // Create URL-friendly slug from recipe title
   const createSlug = (title: string) => {
@@ -42,6 +45,10 @@ export function EnhancedMealCard({
     return `/recipes/${recipeSlug}`;
   };
 
+  const handleDeleteConfirm = () => {
+    onRemove(mealPlan.id);
+  };
+
   if (!displayRecipe) {
     return (
       <Card className={`mb-${isMobile ? '1.5' : '2'}`}>
@@ -52,7 +59,7 @@ export function EnhancedMealCard({
               <Button
                 variant="ghost"
                 size={isMobile ? "sm" : "sm"}
-                onClick={() => onRemove(mealPlan.id)}
+                onClick={() => setShowDeleteDialog(true)}
                 className={`text-red-500 hover:text-red-700 hover:bg-red-50 ${isMobile ? 'h-8 w-8' : ''}`}
               >
                 <Trash2 className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
@@ -68,6 +75,13 @@ export function EnhancedMealCard({
               </div>
             </div>
           </div>
+          
+          <DeleteMealDialog
+            open={showDeleteDialog}
+            onOpenChange={setShowDeleteDialog}
+            onConfirm={handleDeleteConfirm}
+            recipe={displayRecipe}
+          />
         </CardContent>
       </Card>
     );
@@ -141,7 +155,7 @@ export function EnhancedMealCard({
             <Button
               variant="ghost"
               size={isMobile ? "sm" : "sm"}
-              onClick={() => onRemove(mealPlan.id)}
+              onClick={() => setShowDeleteDialog(true)}
               className={`text-red-500 hover:text-red-700 hover:bg-red-50 ${isMobile ? 'h-8 w-8' : ''}`}
             >
               <Trash2 className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
@@ -157,6 +171,13 @@ export function EnhancedMealCard({
             </div>
           </div>
         </div>
+        
+        <DeleteMealDialog
+          open={showDeleteDialog}
+          onOpenChange={setShowDeleteDialog}
+          onConfirm={handleDeleteConfirm}
+          recipe={displayRecipe}
+        />
       </CardContent>
     </Card>
   );

@@ -18,6 +18,7 @@ interface UseMealPlannerOperationsProps {
   setQuantitiesDialog: (open: boolean) => void;
   setServingsDialog: (open: boolean) => void;
   setPendingMealType: (mealType: MealType | null) => void;
+  setClearAllDialog?: (open: boolean) => void;
 }
 
 export const useMealPlannerOperations = ({
@@ -36,6 +37,7 @@ export const useMealPlannerOperations = ({
   setQuantitiesDialog,
   setServingsDialog,
   setPendingMealType,
+  setClearAllDialog,
 }: UseMealPlannerOperationsProps) => {
 
   const handleAddRecipeToMeal = useCallback(async (recipe_id: string, mealType: MealType) => {
@@ -283,11 +285,22 @@ export const useMealPlannerOperations = ({
     }
   }, [currentWeek, toast]);
 
-  const handleClearAll = useCallback(async () => {
+  const handleClearAll = useCallback(() => {
     if (!user || !currentHousehold) return;
     
-    const confirmed = window.confirm(`Are you sure you want to clear all meals for week ${currentWeek}?`);
-    if (!confirmed) return;
+    // Use the dialog if available, otherwise fallback to confirm
+    if (setClearAllDialog) {
+      setClearAllDialog(true);
+    } else {
+      const confirmed = window.confirm(`Are you sure you want to clear all meals for week ${currentWeek}?`);
+      if (confirmed) {
+        performClearAll();
+      }
+    }
+  }, [user, currentHousehold, currentWeek, setClearAllDialog]);
+
+  const performClearAll = useCallback(async () => {
+    if (!user || !currentHousehold) return;
 
     setIsLoading(true);
     try {
@@ -318,5 +331,6 @@ export const useMealPlannerOperations = ({
     handleRandomizeWithQuantities,
     handleShare,
     handleClearAll,
+    performClearAll,
   };
 };

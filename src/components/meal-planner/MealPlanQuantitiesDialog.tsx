@@ -31,9 +31,9 @@ export function MealPlanQuantitiesDialog({
     lunch: 2,
     breakfast: 2,
     snacks: 2,
-    sides: 2,
-    desserts: 1,
-    drinks: 1
+    sides: 0,
+    desserts: 0,
+    drinks: 0
   });
 
   useEffect(() => {
