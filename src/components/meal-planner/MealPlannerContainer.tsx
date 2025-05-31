@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRecipes } from "@/contexts/RecipesContext";
@@ -11,6 +10,8 @@ import { WeekSelector } from "@/components/meal-planner/WeekSelector";
 import { SimpleMealSelectionDialog } from "@/components/meal-planner/SimpleMealSelectionDialog";
 import { MealPlanQuantitiesDialog } from "@/components/meal-planner/MealPlanQuantitiesDialog";
 import { MealServingsDialog } from "@/components/meal-planner/MealServingsDialog";
+import { LeftoverServingsDialog } from "@/components/meal-planner/LeftoverServingsDialog";
+import { MealPlanWarningDialog } from "@/components/meal-planner/MealPlanWarningDialog";
 import MealListSection from "@/components/MealListSection";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useMealPlanModals } from "@/hooks/useMealPlanModals";
@@ -42,6 +43,8 @@ export default function MealPlannerContainer() {
   const [quantitiesDialog, setQuantitiesDialog] = useState(false);
   const [servingsDialog, setServingsDialog] = useState(false);
   const [simpleMealDialog, setSimpleMealDialog] = useState(false);
+  const [leftoverDialog, setLeftoverDialog] = useState(false);
+  const [warningDialog, setWarningDialog] = useState(false);
   const [pendingMealType, setPendingMealType] = useState<MealType | null>(null);
   
   const {
@@ -93,7 +96,13 @@ export default function MealPlannerContainer() {
 
   const handleAddMeal = useCallback((mealType: MealType) => {
     setPendingMealType(mealType);
-    setSimpleMealDialog(true);
+    
+    // Special handling for lunch - show leftover servings dialog
+    if (mealType === 'lunch') {
+      setLeftoverDialog(true);
+    } else {
+      setSimpleMealDialog(true);
+    }
   }, []);
 
   const handleServingsConfirm = useCallback((mealType: MealType, servings: number) => {
@@ -106,6 +115,19 @@ export default function MealPlannerContainer() {
     await handleAddRecipeToMeal(recipeId, pendingMealType);
     setPendingMealType(null);
   }, [pendingMealType, handleAddRecipeToMeal]);
+
+  const handleRandomizeClick = useCallback(() => {
+    // Check if there are existing meal plans
+    if (currentMealPlans.length > 0) {
+      setWarningDialog(true);
+    } else {
+      handleRandomize();
+    }
+  }, [currentMealPlans.length, handleRandomize]);
+
+  const handleWarningConfirm = useCallback(() => {
+    handleRandomize();
+  }, [handleRandomize]);
 
   if (!user || !currentHousehold) {
     return (
@@ -137,7 +159,7 @@ export default function MealPlannerContainer() {
       />
 
       <MealPlannerActions
-        onRandomize={handleRandomize}
+        onRandomize={handleRandomizeClick}
         onShare={handleShare}
         onClearAll={handleClearAll}
         isLoading={isLoading}
@@ -181,6 +203,29 @@ export default function MealPlannerContainer() {
         mealType={pendingMealType || "dinner"}
         recipes={recipes}
         onSelectRecipe={handleSimpleMealSelect}
+      />
+
+      <LeftoverServingsDialog
+        open={leftoverDialog}
+        onClose={() => {
+          setLeftoverDialog(false);
+          setPendingMealType(null);
+        }}
+        mealPlan={null}
+        recipe={null}
+        onConfirm={(servings) => {
+          // Handle leftover servings for lunch
+          console.log("Leftover servings:", servings);
+          setLeftoverDialog(false);
+          setPendingMealType(null);
+        }}
+      />
+
+      <MealPlanWarningDialog
+        open={warningDialog}
+        onOpenChange={setWarningDialog}
+        onConfirm={handleWarningConfirm}
+        weekNumber={currentWeek}
       />
 
       {pendingMealType && (

@@ -26,6 +26,8 @@ const MEAL_TYPE_LABELS: Record<MealType, string> = {
   drinks: "Drinks"
 };
 
+const INITIAL_DISPLAY_COUNT = 12;
+
 export function SimpleMealSelectionDialog({
   open,
   onClose,
@@ -35,6 +37,7 @@ export function SimpleMealSelectionDialog({
 }: SimpleMealSelectionDialogProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [displayCount, setDisplayCount] = useState(INITIAL_DISPLAY_COUNT);
 
   // Get available meal types from recipes
   const availableMealTypes = [...new Set(
@@ -52,25 +55,35 @@ export function SimpleMealSelectionDialog({
     }
     
     // For the specific meal type we're adding to, show relevant recipes
-    // If no meal_type is set on recipe, consider it suitable for dinner
-    const matchesMealType = recipe.meal_type === mealType || 
-                           (!recipe.meal_type && mealType === "dinner") ||
-                           categoryFilter !== "all"; // If user selected a category, show those regardless of target meal type
+    let matchesMealType = true;
+    if (categoryFilter === "all") {
+      matchesMealType = recipe.meal_type === mealType || 
+                       (!recipe.meal_type && mealType === "dinner");
+    }
     
     return matchesSearch && matchesCategory && matchesMealType;
   });
+
+  const displayedRecipes = filteredRecipes.slice(0, displayCount);
+  const hasMore = displayCount < filteredRecipes.length;
 
   const handleSelectRecipe = (recipeId: string) => {
     onSelectRecipe(recipeId);
     onClose();
     setSearchTerm("");
     setCategoryFilter("all");
+    setDisplayCount(INITIAL_DISPLAY_COUNT);
   };
 
   const handleClose = () => {
     setSearchTerm("");
     setCategoryFilter("all");
+    setDisplayCount(INITIAL_DISPLAY_COUNT);
     onClose();
+  };
+
+  const handleLoadMore = () => {
+    setDisplayCount(prev => prev + INITIAL_DISPLAY_COUNT);
   };
 
   return (
@@ -107,7 +120,7 @@ export function SimpleMealSelectionDialog({
           />
 
           <ScrollArea className="h-[300px]">
-            {filteredRecipes.length === 0 ? (
+            {displayedRecipes.length === 0 ? (
               <div className="text-center py-8">
                 <p className="text-sm text-muted-foreground">
                   No recipes found for {MEAL_TYPE_LABELS[mealType]}
@@ -115,7 +128,7 @@ export function SimpleMealSelectionDialog({
               </div>
             ) : (
               <div className="space-y-2">
-                {filteredRecipes.map((recipe) => (
+                {displayedRecipes.map((recipe) => (
                   <div
                     key={recipe.id}
                     className="p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
@@ -145,6 +158,18 @@ export function SimpleMealSelectionDialog({
                     </div>
                   </div>
                 ))}
+                
+                {hasMore && (
+                  <div className="text-center pt-4">
+                    <Button 
+                      variant="outline" 
+                      onClick={handleLoadMore}
+                      className="w-full"
+                    >
+                      Load More Recipes ({filteredRecipes.length - displayCount} remaining)
+                    </Button>
+                  </div>
+                )}
               </div>
             )}
           </ScrollArea>

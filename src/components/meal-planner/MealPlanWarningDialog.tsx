@@ -10,19 +10,19 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-interface ClearAllMealsDialogProps {
+interface MealPlanWarningDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onConfirm: () => void;
   weekNumber: 1 | 2;
 }
 
-export const ClearAllMealsDialog = ({
+export const MealPlanWarningDialog = ({
   open,
   onOpenChange,
   onConfirm,
   weekNumber,
-}: ClearAllMealsDialogProps) => {
+}: MealPlanWarningDialogProps) => {
   const handleConfirm = () => {
     onConfirm();
     onOpenChange(false);
@@ -33,20 +33,20 @@ export const ClearAllMealsDialog = ({
       <AlertDialogContent className="sm:max-w-md">
         <AlertDialogHeader>
           <AlertDialogTitle className="text-xl font-semibold text-navy">
-            Clear All Meals?
+            Replace Existing Meal Plan?
           </AlertDialogTitle>
           <AlertDialogDescription className="text-muted-foreground">
-            Are you sure you want to clear all meals for Week {weekNumber}? 
-            This action cannot be undone.
+            Week {weekNumber} already has meals planned. Generating a new meal plan will 
+            replace all current meals with new randomly selected recipes from your collection.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className="flex-col-reverse sm:flex-row gap-2">
           <AlertDialogCancel className="mt-0">Cancel</AlertDialogCancel>
           <AlertDialogAction
             onClick={handleConfirm}
-            className="bg-red-600 hover:bg-red-700"
+            className="bg-terracotta hover:bg-terracotta/90"
           >
-            Clear All Meals
+            Continue with New Plan
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
