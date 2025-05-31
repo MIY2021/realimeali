@@ -175,7 +175,8 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
       removeMealPlan,
       clearWeek,
       reorderMealPlans,
-      isLoading
+      isLoading,
+      fetchMealPlans // Export the refresh function
     }}>
       {children}
     </MealPlanContext.Provider>

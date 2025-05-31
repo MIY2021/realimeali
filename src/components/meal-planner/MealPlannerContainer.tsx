@@ -1,3 +1,4 @@
+
 import { useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRecipes } from "@/contexts/RecipesContext";
@@ -26,7 +27,8 @@ export default function MealPlannerContainer() {
     addMealPlan, 
     removeMealPlan, 
     clearWeek, 
-    reorderMealPlans 
+    reorderMealPlans,
+    fetchMealPlans // Get the refresh function
   } = useMealPlan();
   const { toast } = useToast();
   
@@ -90,6 +92,7 @@ export default function MealPlannerContainer() {
     setServingsDialog,
     setPendingMealType,
     setClearAllDialog,
+    refreshMealPlans: fetchMealPlans, // Pass the actual refresh function
   });
 
   const currentMealPlans = getMealPlansForWeek(currentWeek);
