@@ -9,7 +9,6 @@ import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { RecipeDetail as RecipeDetailComponent } from "@/components/recipes/RecipeDetail";
 import { EditRecipeDialog } from "@/components/recipes/EditRecipeDialog";
 import { AddToMealPlanDialog } from "@/components/recipes/AddToMealPlanDialog";
-import { ShareRecipeDialog } from "@/components/recipes/ShareRecipeDialog";
 import { Recipe } from "@/types";
 import { generateSlug } from "@/utils/slugUtils";
 
@@ -20,7 +19,6 @@ export default function RecipeDetail() {
   const { user } = useAuth();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isAddToMealPlanOpen, setIsAddToMealPlanOpen] = useState(false);
-  const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
 
   // Find recipe by slug or legacy ID
   const recipe = (() => {
@@ -101,7 +99,7 @@ export default function RecipeDetail() {
         
         <Button 
           onClick={() => setIsAddToMealPlanOpen(true)}
-          className="bg-terracotta hover:bg-terracotta/90"
+          className="bg-terracotta hover:bg-terracotta/90 text-white"
         >
           Add to Meal Plan
         </Button>
@@ -114,19 +112,6 @@ export default function RecipeDetail() {
         onDelete={canEdit ? handleDelete : undefined}
         isOwner={canEdit}
       />
-
-      {/* Share button at the bottom */}
-      {canEdit && (
-        <div className="mt-8 pt-6 border-t border-gray-200">
-          <Button 
-            onClick={() => setIsShareDialogOpen(true)}
-            variant="outline"
-            className="w-full"
-          >
-            Share Recipe Publicly
-          </Button>
-        </div>
-      )}
 
       {/* Dialogs */}
       {isEditDialogOpen && (
@@ -143,14 +128,6 @@ export default function RecipeDetail() {
           recipe={recipe}
           open={isAddToMealPlanOpen}
           onOpenChange={setIsAddToMealPlanOpen}
-        />
-      )}
-
-      {isShareDialogOpen && (
-        <ShareRecipeDialog
-          recipe={recipe}
-          open={isShareDialogOpen}
-          onOpenChange={setIsShareDialogOpen}
         />
       )}
     </div>

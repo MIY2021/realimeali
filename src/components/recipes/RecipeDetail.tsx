@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { User, Clock, Users, Heart, Share, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import {
   DropdownMenu,
@@ -46,88 +47,62 @@ export const RecipeDetail = ({ recipe, onEdit, onDelete, isOwner }: RecipeDetail
     return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
   };
 
+  const totalTime = recipe.prep_time + recipe.cook_time;
+
   return (
     <div className="max-w-4xl mx-auto">
-      {/* Recipe Header */}
-      <div className="flex items-start justify-between mb-6">
-        <div className="flex-1">
-          <h1 className="text-4xl font-bold text-navy mb-3">{recipe.title}</h1>
-          {recipe.description && (
-            <p className="text-gray-600 text-lg mb-4">{recipe.description}</p>
-          )}
-          
-          {/* Recipe Meta */}
-          <div className="flex items-center gap-6 mb-6">
-            <div className="flex items-center gap-2">
-              <Clock className="h-5 w-5 text-terracotta" />
-              <span className="text-sm font-medium text-gray-700">
-                {recipe.prep_time} min prep • {recipe.cook_time} min cook
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Users className="h-5 w-5 text-terracotta" />
-              <span className="text-sm font-medium text-gray-700">{recipe.servings} servings</span>
-            </div>
-          </div>
+      {/* Hero Section with Image and Title Overlay */}
+      <div className="relative h-80 mb-8 rounded-lg overflow-hidden shadow-lg">
+        <RecipeImage 
+          recipe={recipe} 
+          className="w-full h-full object-cover"
+          iconSize="h-12 w-12"
+        />
+        
+        {/* Dark gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+        
+        {/* Favorite button - top right */}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={handleToggleFavorite}
+          className="absolute top-4 right-4 bg-white/20 backdrop-blur-sm border border-white/30 shadow-sm hover:bg-white/30 transition-all duration-200"
+        >
+          <Heart className={`h-6 w-6 ${recipe.is_favorite ? 'fill-red-500 text-red-500' : 'text-white'}`} />
+        </Button>
 
-          {/* Recipe Badges */}
-          <div className="flex items-center gap-2 mb-6 flex-wrap">
-            {recipe.meal_type && (
-              <Badge variant="secondary" className="bg-terracotta/10 text-terracotta border-terracotta/20">
-                {capitalizeFirst(recipe.meal_type)}
-              </Badge>
-            )}
-            {recipe.complexity_level && (
-              <Badge variant="outline" className="border-gray-300">
-                {capitalizeFirst(recipe.complexity_level.replace('_', ' '))}
-              </Badge>
-            )}
-            {recipe.cuisine_region && (
-              <Badge variant="outline" className="border-gray-300">
-                {capitalizeFirst(recipe.cuisine_region)}
-              </Badge>
-            )}
-          </div>
-        </div>
-
-        {/* Actions */}
-        <div className="flex items-center gap-3">
+        {/* Action buttons - top right corner */}
+        <div className="absolute top-4 right-16 flex gap-2">
           <Button 
-            variant="outline" 
-            size="sm"
-            onClick={handleToggleFavorite}
-            className="flex items-center gap-2"
-          >
-            <Heart className={`h-4 w-4 ${recipe.is_favorite ? 'fill-red-500 text-red-500' : 'text-gray-500'}`} />
-            {recipe.is_favorite ? 'Favorited' : 'Favorite'}
-          </Button>
-          
-          <Button 
-            variant="outline" 
-            size="sm"
+            variant="ghost" 
+            size="icon"
             onClick={() => setIsShareDialogOpen(true)}
-            className="flex items-center gap-2"
+            className="bg-white/20 backdrop-blur-sm border border-white/30 shadow-sm hover:bg-white/30 transition-all duration-200"
           >
-            <Share className="h-4 w-4" />
-            Share
+            <Share className="h-5 w-5 text-white" />
           </Button>
 
           {isOwner && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm">
-                  <MoreHorizontal className="h-4 w-4" />
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  className="bg-white/20 backdrop-blur-sm border border-white/30 shadow-sm hover:bg-white/30 transition-all duration-200"
+                >
+                  <MoreHorizontal className="h-5 w-5 text-white" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => onEdit?.(recipe)}>
+              <DropdownMenuContent align="end" className="bg-white shadow-lg border border-gray-200">
+                <DropdownMenuItem onClick={() => onEdit?.(recipe)} className="text-gray-700 hover:bg-gray-50">
                   <Pencil className="h-4 w-4 mr-2" />
                   Edit Recipe
                 </DropdownMenuItem>
                 <DropdownMenuItem 
                   onClick={handleDelete}
                   disabled={isDeleting}
-                  className="text-red-600 focus:text-red-600"
+                  className="text-red-600 focus:text-red-600 hover:bg-red-50"
                 >
                   <Trash2 className="h-4 w-4 mr-2" />
                   {isDeleting ? 'Deleting...' : 'Delete Recipe'}
@@ -136,61 +111,101 @@ export const RecipeDetail = ({ recipe, onEdit, onDelete, isOwner }: RecipeDetail
             </DropdownMenu>
           )}
         </div>
-      </div>
-
-      {/* Recipe Image */}
-      {recipe.image && (
-        <div className="mb-8 rounded-lg overflow-hidden shadow-md">
-          <RecipeImage 
-            recipe={recipe} 
-            className="w-full h-80 object-cover"
-            iconSize="h-8 w-8"
-          />
-        </div>
-      )}
-
-      {/* Recipe Content */}
-      <div className="grid lg:grid-cols-3 gap-8">
-        {/* Ingredients */}
-        <div className="lg:col-span-1">
-          <h2 className="text-2xl font-bold text-navy mb-4 flex items-center gap-2">
-            Ingredients
-          </h2>
-          <div className="bg-gray-50 rounded-lg p-6">
-            <ul className="space-y-3">
-              {recipe.ingredients.map((ingredient, index) => (
-                <li key={index} className="flex items-start gap-3">
-                  <span className="text-terracotta mt-1.5 text-lg font-bold">•</span>
-                  <span className="text-gray-700 leading-relaxed">{ingredient}</span>
-                </li>
-              ))}
-            </ul>
+        
+        {/* Title and meta info overlay - bottom */}
+        <div className="absolute bottom-0 left-0 right-0 p-6">
+          <h1 className="text-3xl font-bold text-white mb-3">{recipe.title}</h1>
+          
+          {/* Recipe badges */}
+          <div className="flex items-center gap-2 mb-4 flex-wrap">
+            {recipe.meal_type && (
+              <Badge className="bg-terracotta/90 text-white border-0 backdrop-blur-sm">
+                {capitalizeFirst(recipe.meal_type)}
+              </Badge>
+            )}
+            {recipe.complexity_level && (
+              <Badge variant="outline" className="border-white/40 text-white bg-white/10 backdrop-blur-sm">
+                {capitalizeFirst(recipe.complexity_level.replace('_', ' '))}
+              </Badge>
+            )}
+            {recipe.cuisine_region && (
+              <Badge variant="outline" className="border-white/40 text-white bg-white/10 backdrop-blur-sm">
+                {capitalizeFirst(recipe.cuisine_region)}
+              </Badge>
+            )}
           </div>
         </div>
+      </div>
 
-        {/* Instructions */}
-        <div className="lg:col-span-2">
-          <h2 className="text-2xl font-bold text-navy mb-4">Instructions</h2>
+      {/* Time and Servings Info */}
+      <div className="flex items-center gap-8 mb-6 px-2">
+        <div className="flex items-center gap-2">
+          <Clock className="h-5 w-5 text-terracotta" />
+          <span className="text-navy font-medium">{totalTime} min total</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <Users className="h-5 w-5 text-terracotta" />
+          <span className="text-navy font-medium">{recipe.servings} servings</span>
+        </div>
+      </div>
+
+      {/* Description */}
+      {recipe.description && (
+        <p className="text-gray-600 text-lg mb-6 px-2">{recipe.description}</p>
+      )}
+
+      {/* Tabbed Content */}
+      <Tabs defaultValue="ingredients" className="w-full">
+        <TabsList className="grid w-full grid-cols-2 bg-gray-100 rounded-lg p-1 mb-6">
+          <TabsTrigger 
+            value="ingredients" 
+            className="text-gray-600 data-[state=active]:bg-sage data-[state=active]:text-white font-medium rounded-md transition-all"
+          >
+            Ingredients
+          </TabsTrigger>
+          <TabsTrigger 
+            value="instructions" 
+            className="text-gray-600 data-[state=active]:bg-sage data-[state=active]:text-white font-medium rounded-md transition-all"
+          >
+            Instructions
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="ingredients" className="mt-0">
+          <div className="bg-cream/30 rounded-lg p-6">
+            <h2 className="text-xl font-bold text-navy mb-4">Ingredients</h2>
+            <div className="space-y-3">
+              {recipe.ingredients.map((ingredient, index) => (
+                <div key={index} className="flex items-start justify-between py-2 border-b border-gray-200 last:border-0">
+                  <span className="text-gray-700 flex-1">{ingredient}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="instructions" className="mt-0">
           <div className="space-y-6">
+            <h2 className="text-xl font-bold text-navy mb-4">Instructions</h2>
             {recipe.instructions.map((step, index) => (
-              <div key={index} className="flex gap-4">
-                <div className="flex-shrink-0 w-10 h-10 bg-terracotta text-white rounded-full flex items-center justify-center text-lg font-bold">
+              <div key={index} className="flex gap-4 p-4 bg-gray-50 rounded-lg">
+                <div className="flex-shrink-0 w-8 h-8 bg-terracotta text-white rounded-full flex items-center justify-center text-sm font-bold">
                   {index + 1}
                 </div>
-                <p className="text-gray-700 pt-2 leading-relaxed text-lg">{step}</p>
+                <p className="text-gray-700 leading-relaxed flex-1">{step}</p>
               </div>
             ))}
           </div>
+        </TabsContent>
+      </Tabs>
 
-          {/* Top Tip */}
-          {recipe.top_tip && (
-            <div className="mt-8 p-6 bg-blue-50 border-l-4 border-blue-400 rounded-r-lg">
-              <h3 className="font-bold text-blue-900 mb-2 text-lg">💡 Top Tip</h3>
-              <p className="text-blue-800 leading-relaxed">{recipe.top_tip}</p>
-            </div>
-          )}
+      {/* Top Tip */}
+      {recipe.top_tip && (
+        <div className="mt-8 p-6 bg-blue-50 border-l-4 border-blue-400 rounded-r-lg">
+          <h3 className="font-bold text-blue-900 mb-2 text-lg">💡 Top Tip</h3>
+          <p className="text-blue-800 leading-relaxed">{recipe.top_tip}</p>
         </div>
-      </div>
+      )}
 
       {/* Recipe Footer */}
       <div className="mt-12 pt-6 border-t border-gray-200">
