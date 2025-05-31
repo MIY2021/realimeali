@@ -107,7 +107,7 @@ export function EnhancedMealCard({
   const effectiveServings = getEffectiveServings();
 
   return (
-    <Card className={`mb-${isMobile ? '1.5' : '2'} ${mealPlan.is_leftover ? 'bg-green-50 border-green-200' : ''}`}>
+    <Card className={`mb-${isMobile ? '1.5' : '2'}`}>
       <CardContent className={`${isMobile ? 'p-2.5' : 'p-3'}`}>
         <div className={`flex items-center gap-${isMobile ? '2' : '3'}`}>
           {/* Recipe thumbnail - Made larger */}
