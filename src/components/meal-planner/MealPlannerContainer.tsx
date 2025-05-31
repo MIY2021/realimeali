@@ -1,3 +1,4 @@
+
 import { useState, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRecipes } from "@/contexts/RecipesContext";
@@ -12,6 +13,7 @@ import { MealPlanQuantitiesDialog } from "@/components/meal-planner/MealPlanQuan
 import { MealServingsDialog } from "@/components/meal-planner/MealServingsDialog";
 import { LeftoverServingsDialog } from "@/components/meal-planner/LeftoverServingsDialog";
 import { MealPlanWarningDialog } from "@/components/meal-planner/MealPlanWarningDialog";
+import { ClearAllMealsDialog } from "@/components/meal-planner/ClearAllMealsDialog";
 import MealListSection from "@/components/MealListSection";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useMealPlanModals } from "@/hooks/useMealPlanModals";
@@ -45,6 +47,7 @@ export default function MealPlannerContainer() {
   const [simpleMealDialog, setSimpleMealDialog] = useState(false);
   const [leftoverDialog, setLeftoverDialog] = useState(false);
   const [warningDialog, setWarningDialog] = useState(false);
+  const [clearAllDialog, setClearAllDialog] = useState(false);
   const [pendingMealType, setPendingMealType] = useState<MealType | null>(null);
   
   const {
@@ -63,6 +66,7 @@ export default function MealPlannerContainer() {
     handleRandomizeWithQuantities,
     handleShare,
     handleClearAll,
+    performClearAll,
   } = useMealPlannerOperations({
     user,
     currentHousehold,
@@ -79,6 +83,7 @@ export default function MealPlannerContainer() {
     setQuantitiesDialog,
     setServingsDialog,
     setPendingMealType,
+    setClearAllDialog,
   });
 
   const currentMealPlans = getMealPlansForWeek(currentWeek);
@@ -128,6 +133,10 @@ export default function MealPlannerContainer() {
   const handleWarningConfirm = useCallback(() => {
     handleRandomize();
   }, [handleRandomize]);
+
+  const handleClearAllConfirm = useCallback(() => {
+    performClearAll();
+  }, [performClearAll]);
 
   if (!user || !currentHousehold) {
     return (
@@ -225,6 +234,13 @@ export default function MealPlannerContainer() {
         open={warningDialog}
         onOpenChange={setWarningDialog}
         onConfirm={handleWarningConfirm}
+        weekNumber={currentWeek}
+      />
+
+      <ClearAllMealsDialog
+        open={clearAllDialog}
+        onOpenChange={setClearAllDialog}
+        onConfirm={handleClearAllConfirm}
         weekNumber={currentWeek}
       />
 
