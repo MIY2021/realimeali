@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -34,7 +34,12 @@ export function MealPlanQuantitiesDialog({
     drinks: 1
   });
 
+  useEffect(() => {
+    console.log("🎛️ MealPlanQuantitiesDialog isOpen state changed:", isOpen);
+  }, [isOpen]);
+
   const handleConfirm = () => {
+    console.log("✅ MealPlanQuantitiesDialog handleConfirm called with quantities:", quantities);
     onConfirm(quantities);
     onClose();
   };
@@ -55,6 +60,8 @@ export function MealPlanQuantitiesDialog({
     desserts: "Desserts",
     drinks: "Drinks"
   };
+
+  console.log("🎛️ MealPlanQuantitiesDialog rendering with isOpen:", isOpen);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>

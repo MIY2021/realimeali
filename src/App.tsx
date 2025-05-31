@@ -1,5 +1,4 @@
 
-import { Toaster as Sonner } from "sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
@@ -8,6 +7,7 @@ import { HouseholdProvider } from "@/contexts/HouseholdContext";
 import { RecipesProvider } from "@/contexts/RecipesContext";
 import { MealPlanProvider } from "@/contexts/MealPlanContext";
 import { HouseholdShoppingProvider } from "@/contexts/HouseholdShoppingContext";
+import { Toaster } from "@/components/ui/sonner";
 import Layout from "@/components/layout/Layout";
 import { ScrollToTop } from "@/components/layout/ScrollToTop";
 import Index from "@/pages/Index";
@@ -142,12 +142,7 @@ const App = () => (
                       <Route path="*" element={<NotFound />} />
                     </Routes>
                   </Layout>
-                  <Sonner 
-                    visibleToasts={1}
-                    position="bottom-right"
-                    duration={4000}
-                    closeButton
-                  />
+                  <Toaster />
                 </TooltipProvider>
               </HouseholdShoppingProvider>
             </MealPlanProvider>
