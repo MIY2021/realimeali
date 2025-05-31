@@ -14,7 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Recipe } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import { usePublicRecipeSharing } from "@/hooks/usePublicRecipeSharing";
-import { Copy, Share2 } from "lucide-react";
+import { Copy, Share } from "lucide-react";
 
 interface ShareRecipeDialogProps {
   recipe: Recipe;
@@ -102,7 +102,7 @@ export function ShareRecipeDialog({
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Share2 className="h-5 w-5" />
+            <Share className="h-5 w-5" />
             Share Recipe
           </DialogTitle>
           <DialogDescription>
