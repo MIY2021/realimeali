@@ -1,23 +1,18 @@
-import { useState, useCallback } from "react";
+
+import { useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { useMealPlan } from "@/contexts/MealPlanContext";
 import { useRecipesLoader } from "@/hooks/useRecipesLoader";
 import { MealPlannerHeader } from "@/components/meal-planner/MealPlannerHeader";
-import { MealPlannerActions } from "@/components/meal-planner/MealPlannerActions";
-import { WeekSelector } from "@/components/meal-planner/WeekSelector";
-import { SimpleMealSelectionDialog } from "@/components/meal-planner/SimpleMealSelectionDialog";
-import { MealPlanQuantitiesDialog } from "@/components/meal-planner/MealPlanQuantitiesDialog";
-import { MealServingsDialog } from "@/components/meal-planner/MealServingsDialog";
-import { LeftoverServingsDialog } from "@/components/meal-planner/LeftoverServingsDialog";
-import { MealPlanWarningDialog } from "@/components/meal-planner/MealPlanWarningDialog";
-import { ClearAllMealsDialog } from "@/components/meal-planner/ClearAllMealsDialog";
-import MealListSection from "@/components/MealListSection";
+import { MealPlannerContent } from "@/components/meal-planner/MealPlannerContent";
+import { MealPlannerModalsContainer } from "@/components/meal-planner/MealPlannerModalsContainer";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useMealPlanModals } from "@/hooks/useMealPlanModals";
 import { useRandomMealSelection } from "@/hooks/useRandomMealSelection";
 import { useMealPlannerOperations } from "@/hooks/useMealPlannerOperations";
+import { useMealPlannerState } from "@/hooks/useMealPlannerState";
 import { MealType, Recipe, MealPlan } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 
@@ -39,15 +34,28 @@ export default function MealPlannerContainer() {
   // Auto-load recipes when component mounts
   useRecipesLoader();
   
-  const [currentWeek, setCurrentWeek] = useState<1 | 2>(1);
-  const [isLoading, setIsLoading] = useState(false);
-  const [quantitiesDialog, setQuantitiesDialog] = useState(false);
-  const [servingsDialog, setServingsDialog] = useState(false);
-  const [simpleMealDialog, setSimpleMealDialog] = useState(false);
-  const [leftoverDialog, setLeftoverDialog] = useState(false);
-  const [warningDialog, setWarningDialog] = useState(false);
-  const [clearAllDialog, setClearAllDialog] = useState(false);
-  const [pendingMealType, setPendingMealType] = useState<MealType | null>(null);
+  const {
+    currentWeek,
+    setCurrentWeek,
+    isLoading,
+    setIsLoading,
+    quantitiesDialog,
+    setQuantitiesDialog,
+    servingsDialog,
+    setServingsDialog,
+    simpleMealDialog,
+    setSimpleMealDialog,
+    leftoverDialog,
+    setLeftoverDialog,
+    warningDialog,
+    setWarningDialog,
+    clearAllDialog,
+    setClearAllDialog,
+    pendingMealType,
+    setPendingMealType,
+    pendingLeftoverData,
+    setPendingLeftoverData,
+  } = useMealPlannerState();
   
   const {
     addMealModal,
@@ -86,17 +94,6 @@ export default function MealPlannerContainer() {
   });
 
   const currentMealPlans = getMealPlansForWeek(currentWeek);
-  const mealTypes: MealType[] = ["dinner", "lunch", "breakfast", "snacks", "sides", "desserts", "drinks"];
-
-  const getMealPlansForType = useCallback((mealType: MealType): MealPlan[] => {
-    return currentMealPlans
-      .filter(plan => plan.meal_type === mealType)
-      .sort((a, b) => (a.slot_index || 0) - (b.slot_index || 0));
-  }, [currentMealPlans]);
-
-  const getRecipeById = useCallback((id: string): Recipe | undefined => {
-    return recipes.find(recipe => recipe.id === id);
-  }, [recipes]);
 
   const handleAddMeal = useCallback((mealType: MealType) => {
     setPendingMealType(mealType);
@@ -129,10 +126,8 @@ export default function MealPlannerContainer() {
   }, []);
 
   const handleCreateLeftoverWithDialog = useCallback((mealPlan: MealPlan, recipe: Recipe) => {
-    // Set the meal plan and recipe for the leftover dialog
+    setPendingLeftoverData({ mealPlan, recipe });
     setLeftoverDialog(true);
-    // We'll need to pass these to the dialog somehow
-    console.log("Creating leftover for meal plan:", mealPlan, "recipe:", recipe);
   }, []);
 
   const handleRandomizeClick = useCallback(() => {
@@ -151,6 +146,11 @@ export default function MealPlannerContainer() {
   const handleClearAllConfirm = useCallback(() => {
     performClearAll();
   }, [performClearAll]);
+
+  const handleCreateLeftoverWithServings = useCallback(async (mealPlan: MealPlan, recipe: Recipe, leftoverServings: number) => {
+    await handleCreateLeftover(mealPlan, recipe, leftoverServings);
+    setPendingLeftoverData(null);
+  }, [handleCreateLeftover]);
 
   if (!user || !currentHousehold) {
     return (
@@ -181,91 +181,47 @@ export default function MealPlannerContainer() {
         currentHousehold={currentHousehold}
       />
 
-      <MealPlannerActions
+      <MealPlannerContent
+        currentWeek={currentWeek}
+        setCurrentWeek={setCurrentWeek}
+        isLoading={isLoading}
+        currentMealPlans={currentMealPlans}
+        recipes={recipes}
         onRandomize={handleRandomizeClick}
         onShare={handleShare}
         onClearAll={handleClearAll}
-        isLoading={isLoading}
-        currentWeek={currentWeek}
+        onAddMeal={handleAddMeal}
+        onRemoveMeal={handleRemoveMeal}
+        onCreateLeftover={handleCreateLeftoverWithDialog}
+        onReorderMeals={handleReorderMeals}
       />
 
-      <WeekSelector
-        week={currentWeek}
-        onWeekChange={setCurrentWeek}
-        isLoading={isLoading}
-      />
-
-      <div className="space-y-6">
-        {mealTypes.map((mealType) => (
-          <MealListSection
-            key={mealType}
-            mealType={mealType}
-            mealPlans={getMealPlansForType(mealType)}
-            getRecipeById={getRecipeById}
-            onAddMeal={handleAddMeal}
-            onRemoveMeal={handleRemoveMeal}
-            onCreateLeftover={handleCreateLeftoverWithDialog}
-            onReorderMeals={handleReorderMeals}
-          />
-        ))}
-      </div>
-
-      <MealPlanQuantitiesDialog
-        isOpen={quantitiesDialog}
-        onClose={() => setQuantitiesDialog(false)}
-        onConfirm={handleRandomizeWithQuantities}
-        availableRecipes={recipes.length}
-      />
-
-      <SimpleMealSelectionDialog
-        open={simpleMealDialog}
-        onClose={() => {
-          setSimpleMealDialog(false);
-          setPendingMealType(null);
-        }}
-        mealType={pendingMealType || "dinner"}
+      <MealPlannerModalsContainer
+        quantitiesDialog={quantitiesDialog}
+        setQuantitiesDialog={setQuantitiesDialog}
+        simpleMealDialog={simpleMealDialog}
+        setSimpleMealDialog={setSimpleMealDialog}
+        leftoverDialog={leftoverDialog}
+        setLeftoverDialog={setLeftoverDialog}
+        warningDialog={warningDialog}
+        setWarningDialog={setWarningDialog}
+        clearAllDialog={clearAllDialog}
+        setClearAllDialog={setClearAllDialog}
+        servingsDialog={servingsDialog}
+        setServingsDialog={setServingsDialog}
+        pendingMealType={pendingMealType}
+        setPendingMealType={setPendingMealType}
+        pendingLeftoverData={pendingLeftoverData}
         recipes={recipes}
-        onSelectRecipe={handleSimpleMealSelect}
+        currentWeek={currentWeek}
+        onRandomizeWithQuantities={handleRandomizeWithQuantities}
+        onSimpleMealSelect={handleSimpleMealSelect}
+        onLunchLeftoverConfirm={handleLunchLeftoverConfirm}
+        onCreateLeftover={handleCreateLeftoverWithServings}
+        onWarningConfirm={handleWarningConfirm}
+        onClearAllConfirm={handleClearAllConfirm}
+        onServingsConfirm={handleServingsConfirm}
       />
-
-      <LeftoverServingsDialog
-        open={leftoverDialog}
-        onClose={() => {
-          setLeftoverDialog(false);
-          setPendingMealType(null);
-        }}
-        mealPlan={null}
-        recipe={null}
-        onConfirm={handleLunchLeftoverConfirm}
-        isNewLunchMeal={pendingMealType === 'lunch'}
-        onCreateLeftover={handleCreateLeftover}
-      />
-
-      <MealPlanWarningDialog
-        open={warningDialog}
-        onOpenChange={setWarningDialog}
-        onConfirm={handleWarningConfirm}
-        weekNumber={currentWeek}
-      />
-
-      <ClearAllMealsDialog
-        open={clearAllDialog}
-        onOpenChange={setClearAllDialog}
-        onConfirm={handleClearAllConfirm}
-        weekNumber={currentWeek}
-      />
-
-      {pendingMealType && (
-        <MealServingsDialog
-          isOpen={servingsDialog}
-          onClose={() => {
-            setServingsDialog(false);
-            setPendingMealType(null);
-          }}
-          onConfirm={handleServingsConfirm}
-          mealType={pendingMealType}
-        />
-      )}
     </div>
   );
 }
