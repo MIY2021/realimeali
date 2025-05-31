@@ -1,3 +1,4 @@
+
 import { useState, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRecipes } from "@/contexts/RecipesContext";
@@ -127,6 +128,23 @@ export default function MealPlannerContainer() {
     // Store the servings for later use when a recipe is selected
     console.log("Lunch leftover servings selected:", servings);
   }, []);
+
+  const handleRandomizeClick = useCallback(() => {
+    // Check if there are existing meal plans
+    if (currentMealPlans.length > 0) {
+      setWarningDialog(true);
+    } else {
+      handleRandomize();
+    }
+  }, [currentMealPlans.length, handleRandomize]);
+
+  const handleWarningConfirm = useCallback(() => {
+    handleRandomize();
+  }, [handleRandomize]);
+
+  const handleClearAllConfirm = useCallback(() => {
+    performClearAll();
+  }, [performClearAll]);
 
   if (!user || !currentHousehold) {
     return (
