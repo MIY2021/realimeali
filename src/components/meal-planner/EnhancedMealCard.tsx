@@ -49,6 +49,25 @@ export function EnhancedMealCard({
     onRemove(mealPlan.id);
   };
 
+  // Calculate effective servings for dinner meals with leftovers
+  const getEffectiveServings = () => {
+    if (!displayRecipe) return null;
+    
+    if (mealPlan.is_leftover) {
+      return mealPlan.leftover_servings;
+    }
+    
+    // For dinner meals, show reduced servings if leftovers were allocated
+    if (mealPlan.meal_type === 'dinner' && mealPlan.leftover_servings) {
+      const originalServings = mealPlan.original_servings || displayRecipe.servings;
+      return originalServings - mealPlan.leftover_servings;
+    }
+    
+    return mealPlan.original_servings || displayRecipe.servings;
+  };
+
+  const hasLeftoversAllocated = mealPlan.meal_type === 'dinner' && mealPlan.leftover_servings && mealPlan.leftover_servings > 0;
+
   if (!displayRecipe) {
     return (
       <Card className={`mb-${isMobile ? '1.5' : '2'}`}>
@@ -88,6 +107,7 @@ export function EnhancedMealCard({
   }
 
   const showLeftoverButton = mealPlan.meal_type === 'dinner' && !mealPlan.is_leftover && onCreateLeftover;
+  const effectiveServings = getEffectiveServings();
 
   return (
     <Card className={`mb-${isMobile ? '1.5' : '2'} ${mealPlan.is_leftover ? 'bg-orange-50 border-orange-200' : ''}`}>
@@ -111,7 +131,7 @@ export function EnhancedMealCard({
                   </Link>
                 </div>
                 <div className={`${isMobile ? 'text-xs' : 'text-xs'} text-orange-600`}>
-                  {mealPlan.leftover_servings} servings from dinner
+                  {effectiveServings} servings from dinner
                 </div>
               </div>
             ) : (
@@ -127,11 +147,11 @@ export function EnhancedMealCard({
                     {displayRecipe.prep_time + displayRecipe.cook_time} min
                   </span>
                   <span className={`${isMobile ? 'text-xs' : 'text-xs'} text-muted-foreground`}>
-                    • {mealPlan.original_servings || displayRecipe.servings} servings
+                    • {effectiveServings} servings
                   </span>
-                  {mealPlan.original_servings && mealPlan.original_servings !== displayRecipe.servings && (
+                  {hasLeftoversAllocated && (
                     <span className={`${isMobile ? 'text-xs' : 'text-xs'} text-orange-600`}>
-                      (some saved for leftovers)
+                      ({mealPlan.leftover_servings} saved for leftovers)
                     </span>
                   )}
                 </div>

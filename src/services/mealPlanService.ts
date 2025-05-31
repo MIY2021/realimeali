@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { MealPlan, MealType } from "@/types";
 import { HouseholdMealPlan } from "@/contexts/MealPlanContext";
@@ -62,6 +63,27 @@ export const mealPlanService = {
       console.log("Meal plan added successfully:", data);
     }
     return this.transformDbToMealPlan(data);
+  },
+
+  async updateMealPlanLeftoverAllocation(
+    mealPlanId: string, 
+    leftoverServings: number,
+    householdId: string
+  ): Promise<void> {
+    console.log("Updating meal plan leftover allocation:", { mealPlanId, leftoverServings });
+    
+    const { error } = await supabase
+      .from('household_meal_plans')
+      .update({ leftover_servings: leftoverServings })
+      .eq('id', mealPlanId)
+      .eq('household_id', householdId);
+
+    if (error) {
+      console.error("Error updating meal plan leftover allocation:", error);
+      throw error;
+    }
+
+    console.log("Successfully updated leftover allocation");
   },
 
   async removeMealPlan(id: string, householdId: string): Promise<void> {

@@ -1,5 +1,6 @@
 import { useCallback } from "react";
 import { MealType, Recipe } from "@/types";
+import { mealPlanService } from "@/services/mealPlanService";
 
 interface UseMealPlannerOperationsProps {
   user: any;
@@ -119,17 +120,21 @@ export const useMealPlannerOperations = ({
         week_number: currentWeek,
       };
 
+      // Create the leftover meal
       await addMealPlan(leftoverData, currentWeek);
 
-      // Update the original meal plan to show reduced servings
-      const updatedOriginalServings = recipe.servings - servingsToSave;
-      
-      // We would need to update the meal plan here to show reduced servings
-      // For now, we'll just show the toast with the information
+      // Update the original dinner meal to track leftover allocation
+      await mealPlanService.updateMealPlanLeftoverAllocation(
+        mealPlan.id,
+        servingsToSave,
+        currentHousehold.id
+      );
+
+      const remainingServings = recipe.servings - servingsToSave;
       
       toast({
         title: "Leftover Added",
-        description: `${servingsToSave} servings of ${recipe.title} saved for lunch. Dinner now shows ${updatedOriginalServings} servings.`,
+        description: `${servingsToSave} servings of ${recipe.title} saved for lunch. Dinner now shows ${remainingServings} servings.`,
       });
     } catch (err) {
       console.error("Error creating leftover:", err);
