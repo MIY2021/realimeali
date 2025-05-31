@@ -14,7 +14,6 @@ const Toaster = ({ ...props }: ToasterProps) => {
       duration={4000}
       visibleToasts={5}
       closeButton={false}
-      swipeDirection="right"
       toastOptions={{
         style: {
           fontSize: '14px',
