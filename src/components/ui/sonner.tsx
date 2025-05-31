@@ -14,24 +14,30 @@ const Toaster = ({ ...props }: ToasterProps) => {
       duration={3000}
       visibleToasts={1}
       closeButton={true}
-      position="top-right"
+      position="bottom-right"
+      expand={false}
+      richColors={false}
       toastOptions={{
         style: {
           fontSize: '14px',
+          backgroundColor: 'white',
+          color: '#1f2937',
+          border: '1px solid #e5e7eb',
         },
         classNames: {
           toast:
-            "group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg group-[.toaster]:rounded-lg group-[.toaster]:p-4",
-          description: "group-[.toast]:text-muted-foreground",
+            "group toast group-[.toaster]:bg-white group-[.toaster]:text-gray-800 group-[.toaster]:border-gray-200 group-[.toaster]:shadow-lg group-[.toaster]:rounded-lg group-[.toaster]:p-4",
+          description: "group-[.toast]:text-gray-600",
           actionButton:
             "group-[.toast]:bg-primary group-[.toast]:text-primary-foreground",
           cancelButton:
             "group-[.toast]:bg-muted group-[.toast]:text-muted-foreground",
           success: 
-            "group-[.toast]:bg-green-50 group-[.toast]:text-green-800 group-[.toast]:border-green-200",
+            "group-[.toast]:bg-white group-[.toast]:text-gray-800 group-[.toast]:border-gray-200",
           error:
-            "group-[.toast]:bg-red-50 group-[.toast]:text-red-800 group-[.toast]:border-red-200",
+            "group-[.toast]:bg-white group-[.toast]:text-gray-800 group-[.toast]:border-gray-200",
           icon: "group-[.toast]:text-green-600",
+          closeButton: "group-[.toast]:bg-white group-[.toast]:text-gray-600 group-[.toast]:border-gray-200 group-[.toast]:hover:bg-gray-50",
         },
       }}
       {...props}
