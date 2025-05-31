@@ -1,16 +1,19 @@
 
-import { useState, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { useMealPlan } from "@/contexts/MealPlanContext";
-import { useMealPlanOperations } from "@/hooks/useMealPlanOperations";
-import { MealPlannerDragAndDrop } from "@/components/meal-planner/MealPlannerDragAndDrop";
 import { MealPlannerHeader } from "@/components/meal-planner/MealPlannerHeader";
+import { MealPlannerActions } from "@/components/meal-planner/MealPlannerActions";
+import { WeekSelector } from "@/components/meal-planner/WeekSelector";
 import { AddRecipeToMealModal } from "@/components/meal-planner/AddRecipeToMealModal";
+import MealListSection from "@/components/MealListSection";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useMealPlanModals } from "@/hooks/useMealPlanModals";
-import { MealType } from "@/types";
+import { useRandomMealSelection } from "@/hooks/useRandomMealSelection";
+import { MealType, Recipe, MealPlan } from "@/types";
+import { useToast } from "@/hooks/use-toast";
 
 export default function MealPlanner() {
   useDocumentTitle("Meal Planner | RealiMeali");
@@ -18,24 +21,40 @@ export default function MealPlanner() {
   const { user } = useAuth();
   const { recipes } = useRecipes();
   const { currentHousehold } = useHousehold();
-  const { getMealPlansForWeek, addMealPlan, removeMealPlan, addMealPlanWithLeftovers, clearWeek, reorderMealPlans } = useMealPlan();
-  const { isLoading, error, addMealPlan: addMealPlanOp, removeMealPlan: removeMealPlanOp } = useMealPlanOperations();
+  const { 
+    getMealPlansForWeek, 
+    addMealPlan, 
+    addMealPlanWithLeftovers,
+    removeMealPlan, 
+    clearWeek, 
+    reorderMealPlans 
+  } = useMealPlan();
+  const { toast } = useToast();
   
   const [currentWeek, setCurrentWeek] = useState<1 | 2>(1);
-  const [isCalendarView, setIsCalendarView] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   
   const {
     addMealModal,
     setAddMealModal,
-    editMealModal,
-    setEditMealModal,
-    removeMealModal,
-    setRemoveMealModal,
+    clearMealPlanDialog,
+    setClearMealPlanDialog,
   } = useMealPlanModals();
 
-  const [leftoverServings, setLeftoverServings] = useState<number>(0);
+  const { generateRandomMealPlan } = useRandomMealSelection();
 
   const currentMealPlans = getMealPlansForWeek(currentWeek);
+  const mealTypes: MealType[] = ["breakfast", "lunch", "dinner", "snack"];
+
+  const getMealPlansForType = useCallback((mealType: MealType): MealPlan[] => {
+    return currentMealPlans
+      .filter(plan => plan.meal_type === mealType)
+      .sort((a, b) => (a.slot_index || 0) - (b.slot_index || 0));
+  }, [currentMealPlans]);
+
+  const getRecipeById = useCallback((id: string): Recipe | undefined => {
+    return recipes.find(recipe => recipe.id === id);
+  }, [recipes]);
 
   const handleAddRecipeToMeal = async (recipe_id: string, mealType: MealType) => {
     if (!user || !currentHousehold) return;
@@ -58,47 +77,142 @@ export default function MealPlanner() {
 
       await addMealPlan(mealPlanData, currentWeek);
       setAddMealModal({ open: false, mealType: null, date: null });
+      
+      toast({
+        title: "Meal Added",
+        description: `${recipe.title} added to ${mealType}`,
+      });
     } catch (err) {
       console.error("Error adding meal plan:", err);
+      toast({
+        title: "Error",
+        description: "Failed to add meal to plan",
+        variant: "destructive",
+      });
     }
   };
 
-  const handleAddRecipeWithLeftovers = async (
-    recipe_id: string, 
-    mealType: MealType, 
-    leftoverServings: number
-  ) => {
+  const handleAddMeal = (mealType: MealType) => {
+    setAddMealModal({ open: true, mealType, date: null });
+  };
+
+  const handleRemoveMeal = async (planId: string) => {
+    try {
+      await removeMealPlan(planId);
+      toast({
+        title: "Meal Removed",
+        description: "Meal removed from plan",
+      });
+    } catch (err) {
+      console.error("Error removing meal:", err);
+      toast({
+        title: "Error",
+        description: "Failed to remove meal",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleCreateLeftover = async (mealPlan: MealPlan, recipe: Recipe) => {
     if (!user || !currentHousehold) return;
 
-    const recipe = recipes.find(r => r.id === recipe_id);
-    if (!recipe) return;
-
     try {
-      const mealPlanData = {
-        recipe_id: recipe_id,
-        meal_type: mealType,
-        date: new Date().toISOString().split('T')[0],
+      const leftoverData = {
+        recipe_id: mealPlan.recipe_id,
+        meal_type: 'lunch' as MealType,
+        date: mealPlan.date,
         created_by: user.id,
         slot_index: 0,
-        is_leftover: false,
+        is_leftover: true,
+        leftover_servings: Math.ceil(recipe.servings / 2),
+        original_servings: recipe.servings,
+        parent_meal_plan_id: mealPlan.id,
         household_id: currentHousehold.id,
         week_number: currentWeek,
-        original_servings: recipe.servings,
       };
 
-      await addMealPlanWithLeftovers(mealPlanData, currentWeek, leftoverServings);
-      setAddMealModal({ open: false, mealType: null, date: null });
+      await addMealPlan(leftoverData, currentWeek);
+      
+      toast({
+        title: "Leftover Added",
+        description: `${recipe.title} leftovers added to lunch`,
+      });
     } catch (err) {
-      console.error("Error adding meal plan with leftovers:", err);
+      console.error("Error creating leftover:", err);
+      toast({
+        title: "Error",
+        description: "Failed to create leftover meal",
+        variant: "destructive",
+      });
     }
   };
 
-  const handleLeftoverChange = (servings: number) => {
-    setLeftoverServings(servings);
+  const handleReorderMeals = async (mealType: MealType, sourceIndex: number, destinationIndex: number) => {
+    try {
+      await reorderMealPlans(mealType, currentWeek, sourceIndex, destinationIndex);
+    } catch (err) {
+      console.error("Error reordering meals:", err);
+      toast({
+        title: "Error",
+        description: "Failed to reorder meals",
+        variant: "destructive",
+      });
+    }
   };
 
-  const confirmRemoveMeal = async () => {
-    // Implementation for removing meal
+  const handleRandomize = async () => {
+    if (!user || !currentHousehold) return;
+    
+    setIsLoading(true);
+    try {
+      await generateRandomMealPlan(currentWeek);
+      toast({
+        title: "Meal Plan Generated",
+        description: `Random meal plan created for week ${currentWeek}`,
+      });
+    } catch (err) {
+      console.error("Error generating meal plan:", err);
+      toast({
+        title: "Error",
+        description: "Failed to generate meal plan",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleShare = () => {
+    // TODO: Implement share functionality
+    toast({
+      title: "Share",
+      description: "Share functionality coming soon!",
+    });
+  };
+
+  const handleClearAll = async () => {
+    if (!user || !currentHousehold) return;
+    
+    const confirmed = window.confirm(`Are you sure you want to clear all meals for week ${currentWeek}?`);
+    if (!confirmed) return;
+
+    setIsLoading(true);
+    try {
+      await clearWeek(currentWeek);
+      toast({
+        title: "Week Cleared",
+        description: `All meals cleared for week ${currentWeek}`,
+      });
+    } catch (err) {
+      console.error("Error clearing week:", err);
+      toast({
+        title: "Error",
+        description: "Failed to clear week",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   if (!user || !currentHousehold) {
@@ -119,50 +233,33 @@ export default function MealPlanner() {
         currentHousehold={currentHousehold}
       />
 
-      {/* Simple meal planner without calendar view for now */}
+      <MealPlannerActions
+        onRandomize={handleRandomize}
+        onShare={handleShare}
+        onClearAll={handleClearAll}
+        isLoading={isLoading}
+        currentWeek={currentWeek}
+      />
+
+      <WeekSelector
+        week={currentWeek}
+        onWeekChange={setCurrentWeek}
+        isLoading={isLoading}
+      />
+
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl font-semibold">Week {currentWeek} Meal Plan</h2>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setCurrentWeek(1)}
-              className={`px-4 py-2 rounded ${currentWeek === 1 ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
-            >
-              Week 1
-            </button>
-            <button
-              onClick={() => setCurrentWeek(2)}
-              className={`px-4 py-2 rounded ${currentWeek === 2 ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
-            >
-              Week 2
-            </button>
-          </div>
-        </div>
-
-        <button
-          onClick={() => setAddMealModal({ open: true, mealType: "dinner", date: null })}
-          className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
-        >
-          Add Meal
-        </button>
-
-        <div className="grid gap-4">
-          {currentMealPlans.map((plan) => {
-            const recipe = recipes.find(r => r.id === plan.recipe_id);
-            return (
-              <div key={plan.id} className="p-4 border rounded-lg">
-                <h3 className="font-semibold">{recipe?.title || 'Unknown Recipe'}</h3>
-                <p className="text-sm text-gray-600">Meal Type: {plan.meal_type}</p>
-                <button
-                  onClick={() => removeMealPlan(plan.id)}
-                  className="mt-2 px-3 py-1 bg-red-500 text-white rounded text-sm hover:bg-red-600"
-                >
-                  Remove
-                </button>
-              </div>
-            );
-          })}
-        </div>
+        {mealTypes.map((mealType) => (
+          <MealListSection
+            key={mealType}
+            mealType={mealType}
+            mealPlans={getMealPlansForType(mealType)}
+            getRecipeById={getRecipeById}
+            onAddMeal={handleAddMeal}
+            onRemoveMeal={handleRemoveMeal}
+            onCreateLeftover={handleCreateLeftover}
+            onReorderMeals={handleReorderMeals}
+          />
+        ))}
       </div>
 
       {addMealModal.open && (
