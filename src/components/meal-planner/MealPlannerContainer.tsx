@@ -8,6 +8,8 @@ import { MealPlannerHeader } from "@/components/meal-planner/MealPlannerHeader";
 import { MealPlannerActions } from "@/components/meal-planner/MealPlannerActions";
 import { WeekSelector } from "@/components/meal-planner/WeekSelector";
 import { AddRecipeToMealModal } from "@/components/meal-planner/AddRecipeToMealModal";
+import { MealPlanQuantitiesDialog } from "@/components/meal-planner/MealPlanQuantitiesDialog";
+import { MealServingsDialog } from "@/components/meal-planner/MealServingsDialog";
 import MealListSection from "@/components/MealListSection";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useMealPlanModals } from "@/hooks/useMealPlanModals";
@@ -33,6 +35,9 @@ export default function MealPlannerContainer() {
   
   const [currentWeek, setCurrentWeek] = useState<1 | 2>(1);
   const [isLoading, setIsLoading] = useState(false);
+  const [quantitiesDialog, setQuantitiesDialog] = useState(false);
+  const [servingsDialog, setServingsDialog] = useState(false);
+  const [pendingMealType, setPendingMealType] = useState<MealType | null>(null);
   
   const {
     addMealModal,
@@ -48,6 +53,7 @@ export default function MealPlannerContainer() {
     handleCreateLeftover,
     handleReorderMeals,
     handleRandomize,
+    handleRandomizeWithQuantities,
     handleShare,
     handleClearAll,
   } = useMealPlannerOperations({
@@ -63,6 +69,9 @@ export default function MealPlannerContainer() {
     setAddMealModal,
     setIsLoading,
     toast,
+    setQuantitiesDialog,
+    setServingsDialog,
+    setPendingMealType,
   });
 
   const currentMealPlans = getMealPlansForWeek(currentWeek);
@@ -77,6 +86,11 @@ export default function MealPlannerContainer() {
   const getRecipeById = useCallback((id: string): Recipe | undefined => {
     return recipes.find(recipe => recipe.id === id);
   }, [recipes]);
+
+  const handleServingsConfirm = useCallback((mealType: MealType, servings: number) => {
+    setAddMealModal({ open: true, mealType, date: null });
+    setPendingMealType(null);
+  }, [setAddMealModal, setPendingMealType]);
 
   if (!user || !currentHousehold) {
     return (
@@ -136,6 +150,24 @@ export default function MealPlannerContainer() {
           onAddRecipe={async (recipeId: string) => {
             await handleAddRecipeToMeal(recipeId, addMealModal.mealType || "dinner");
           }}
+        />
+      )}
+
+      <MealPlanQuantitiesDialog
+        isOpen={quantitiesDialog}
+        onClose={() => setQuantitiesDialog(false)}
+        onConfirm={handleRandomizeWithQuantities}
+      />
+
+      {pendingMealType && (
+        <MealServingsDialog
+          isOpen={servingsDialog}
+          onClose={() => {
+            setServingsDialog(false);
+            setPendingMealType(null);
+          }}
+          onConfirm={handleServingsConfirm}
+          mealType={pendingMealType}
         />
       )}
     </div>

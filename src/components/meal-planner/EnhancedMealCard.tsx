@@ -79,9 +79,9 @@ export function EnhancedMealCard({
     <Card className={`mb-${isMobile ? '1.5' : '2'} ${mealPlan.is_leftover ? 'bg-orange-50 border-orange-200' : ''}`}>
       <CardContent className={`${isMobile ? 'p-2.5' : 'p-3'}`}>
         <div className={`flex items-center gap-${isMobile ? '2' : '3'}`}>
-          {/* Recipe thumbnail */}
-          <div className={`${isMobile ? 'w-10 h-10' : 'w-12 h-12'} rounded-md overflow-hidden bg-muted flex-shrink-0`}>
-            <RecipeImage recipe={displayRecipe} className="w-full h-full" iconSize={isMobile ? "h-3 w-3" : "h-4 w-4"} />
+          {/* Recipe thumbnail - Made larger */}
+          <div className={`${isMobile ? 'w-14 h-14' : 'w-16 h-16'} rounded-md overflow-hidden bg-muted flex-shrink-0`}>
+            <RecipeImage recipe={displayRecipe} className="w-full h-full" iconSize={isMobile ? "h-4 w-4" : "h-5 w-5"} />
           </div>
 
           <div className="flex-1 min-w-0">

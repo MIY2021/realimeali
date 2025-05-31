@@ -18,20 +18,21 @@ export const MealPlannerActions = ({
   isLoading
 }: MealPlannerActionsProps) => {
   return (
-    <>
-      {/* Desktop: All buttons on same row */}
-      <div className="hidden sm:flex gap-4 mb-4">
-        <Button
-          onClick={onRandomize}
-          className="bg-sage hover:bg-sage/90 flex items-center whitespace-nowrap flex-1"
-          disabled={isLoading}
-        >
-          <FileSpreadsheet className="mr-2 h-4 w-4" />
-          Generate Meal Plan
-        </Button>
-        
+    <div className="space-y-3">
+      {/* Generate Meal Plan - Full width on its own row */}
+      <Button
+        onClick={onRandomize}
+        className="bg-sage hover:bg-sage/90 flex items-center justify-center w-full"
+        disabled={isLoading}
+      >
+        <FileSpreadsheet className="mr-2 h-4 w-4" />
+        Generate Meal Plan
+      </Button>
+
+      {/* Desktop: Shopping List, Share, and Clear buttons on same row */}
+      <div className="hidden sm:flex gap-3">
         <Button asChild variant="outline" className="flex items-center flex-1">
-          <Link to="/shopping-list" className="flex items-center">
+          <Link to="/shopping-list" className="flex items-center justify-center">
             <ListChecks className="mr-2 h-4 w-4" />
             Shopping List
           </Link>
@@ -40,7 +41,7 @@ export const MealPlannerActions = ({
         <Button
           onClick={onShare}
           variant="outline"
-          className="flex items-center"
+          className="flex items-center px-4"
           disabled={isLoading}
         >
           <Share className="h-4 w-4" />
@@ -48,7 +49,7 @@ export const MealPlannerActions = ({
         
         <Button
           variant="outline"
-          className="text-terracotta border-terracotta hover:bg-terracotta/10 flex items-center"
+          className="text-terracotta border-terracotta hover:bg-terracotta/10 flex items-center px-4"
           onClick={onClearAll}
           disabled={isLoading}
         >
@@ -56,20 +57,10 @@ export const MealPlannerActions = ({
         </Button>
       </div>
 
-      {/* Mobile: Stacked buttons */}
-      <div className="sm:hidden space-y-2 mb-4">
-        <Button
-          onClick={onRandomize}
-          size="sm"
-          className="bg-sage hover:bg-sage/90 flex items-center whitespace-nowrap w-full"
-          disabled={isLoading}
-        >
-          <FileSpreadsheet className="mr-2 h-4 w-4" />
-          Generate Meal Plan
-        </Button>
-        
+      {/* Mobile: Stacked layout */}
+      <div className="sm:hidden space-y-2">
         <Button asChild variant="outline" size="sm" className="flex items-center w-full">
-          <Link to="/shopping-list" className="flex items-center">
+          <Link to="/shopping-list" className="flex items-center justify-center">
             <ListChecks className="mr-2 h-4 w-4" />
             Shopping List
           </Link>
@@ -80,7 +71,7 @@ export const MealPlannerActions = ({
             onClick={onShare}
             size="sm"
             variant="outline"
-            className="flex items-center flex-1"
+            className="flex items-center justify-center flex-1"
             disabled={isLoading}
           >
             <Share className="h-4 w-4" />
@@ -89,7 +80,7 @@ export const MealPlannerActions = ({
           <Button
             variant="outline"
             size="sm"
-            className="text-terracotta border-terracotta hover:bg-terracotta/10 flex items-center flex-1"
+            className="text-terracotta border-terracotta hover:bg-terracotta/10 flex items-center justify-center flex-1"
             onClick={onClearAll}
             disabled={isLoading}
           >
@@ -97,6 +88,6 @@ export const MealPlannerActions = ({
           </Button>
         </div>
       </div>
-    </>
+    </div>
   );
 };

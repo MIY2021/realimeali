@@ -15,6 +15,9 @@ interface UseMealPlannerOperationsProps {
   setAddMealModal: any;
   setIsLoading: (loading: boolean) => void;
   toast: any;
+  setQuantitiesDialog: (open: boolean) => void;
+  setServingsDialog: (open: boolean) => void;
+  setPendingMealType: (mealType: MealType | null) => void;
 }
 
 export const useMealPlannerOperations = ({
@@ -30,6 +33,9 @@ export const useMealPlannerOperations = ({
   setAddMealModal,
   setIsLoading,
   toast,
+  setQuantitiesDialog,
+  setServingsDialog,
+  setPendingMealType,
 }: UseMealPlannerOperationsProps) => {
 
   const handleAddRecipeToMeal = useCallback(async (recipe_id: string, mealType: MealType) => {
@@ -69,8 +75,9 @@ export const useMealPlannerOperations = ({
   }, [user, currentHousehold, recipes, currentWeek, addMealPlan, setAddMealModal, toast]);
 
   const handleAddMeal = useCallback((mealType: MealType) => {
-    setAddMealModal({ open: true, mealType, date: null });
-  }, [setAddMealModal]);
+    setPendingMealType(mealType);
+    setServingsDialog(true);
+  }, [setPendingMealType, setServingsDialog]);
 
   const handleRemoveMeal = useCallback(async (planId: string) => {
     try {
@@ -136,18 +143,16 @@ export const useMealPlannerOperations = ({
     }
   }, [reorderMealPlans, currentWeek, toast]);
 
-  const handleRandomize = useCallback(async () => {
+  const handleRandomize = useCallback(() => {
+    if (!user || !currentHousehold) return;
+    setQuantitiesDialog(true);
+  }, [user, currentHousehold, setQuantitiesDialog]);
+
+  const handleRandomizeWithQuantities = useCallback(async (quantities: { dinner: number; lunch: number; breakfast: number; snacks: number }) => {
     if (!user || !currentHousehold) return;
     
     setIsLoading(true);
     try {
-      const quantities = {
-        dinner: 5,
-        lunch: 2,
-        breakfast: 2,
-        snacks: 2
-      };
-      
       console.log('Generating random meal plan with quantities:', quantities);
       const totalAdded = await generateRandomMealPlan(quantities, currentWeek);
       
@@ -206,6 +211,7 @@ export const useMealPlannerOperations = ({
     handleCreateLeftover,
     handleReorderMeals,
     handleRandomize,
+    handleRandomizeWithQuantities,
     handleShare,
     handleClearAll,
   };
