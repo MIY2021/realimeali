@@ -8,6 +8,7 @@ import { MealPlan, Recipe } from "@/types";
 import { RecipeImage } from "@/components/ui/recipe-image";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { DeleteMealDialog } from "@/components/meal-planner/DeleteMealDialog";
+import { generateSlug } from "@/utils/slugUtils";
 
 interface EnhancedMealCardProps {
   mealPlan: MealPlan;
@@ -30,19 +31,9 @@ export function EnhancedMealCard({
   const displayRecipe = recipe || parentRecipe;
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   
-  // Create URL-friendly slug from recipe title
-  const createSlug = (title: string) => {
-    return title
-      .toLowerCase()
-      .replace(/[^a-z0-9 -]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-')
-      .trim();
-  };
-
   const getRecipeUrl = (recipe: Recipe) => {
-    const recipeSlug = createSlug(recipe.title);
-    return `/recipes/${recipeSlug}`;
+    const recipeSlug = generateSlug(recipe.title);
+    return `/my-recipes/${recipe.id}/${recipeSlug}`;
   };
 
   const handleDeleteConfirm = () => {
@@ -158,7 +149,7 @@ export function EnhancedMealCard({
                   </span>
                   {hasLeftoversAllocated && (
                     <span className={`${isMobile ? 'text-xs' : 'text-xs'} text-orange-600`}>
-                      ({mealPlan.leftover_servings} saved for leftovers)
+                      (+{mealPlan.leftover_servings} saved for leftovers)
                     </span>
                   )}
                 </div>
