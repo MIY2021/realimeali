@@ -35,37 +35,42 @@ export function useRandomMealSelection() {
       console.log('Available recipes:', recipes.length);
       console.log('Requested quantities:', quantities);
 
-      // Generate meals for all meal types
-      const mealTypesToGenerate: Array<{ type: MealType; count: number }> = [
-        { type: "dinner", count: quantities.dinner },
-        { type: "lunch", count: quantities.lunch },
-        { type: "breakfast", count: quantities.breakfast },
-        { type: "snacks", count: quantities.snacks },
-        { type: "sides", count: quantities.sides },
-        { type: "desserts", count: quantities.desserts },
-        { type: "drinks", count: quantities.drinks }
-      ];
-
       let totalAdded = 0;
       
-      for (const { type, count } of mealTypesToGenerate) {
+      // Generate meals for each meal type
+      for (const [mealType, count] of Object.entries(quantities)) {
         if (count === 0) continue;
         
-        const availableRecipes = recipes.filter(recipe => 
-          recipe.meal_type === type || (!recipe.meal_type && type === "dinner")
-        );
+        console.log(`Processing ${mealType}: ${count} meals`);
         
-        console.log(`Found ${availableRecipes.length} recipes for ${type}`);
+        // Filter recipes for this meal type
+        let availableRecipes = recipes.filter(recipe => {
+          if (recipe.meal_type === mealType) return true;
+          // If recipe has no meal_type and we're looking for dinner, include it
+          if (!recipe.meal_type && mealType === "dinner") return true;
+          return false;
+        });
         
+        console.log(`Found ${availableRecipes.length} recipes for ${mealType}`);
+        
+        // If no specific recipes found and it's not dinner, try to find some general recipes
+        if (availableRecipes.length === 0 && mealType !== "dinner") {
+          availableRecipes = recipes.filter(recipe => !recipe.meal_type).slice(0, 5);
+          console.log(`Using general recipes for ${mealType}: ${availableRecipes.length}`);
+        }
+        
+        // Add the requested number of meals
         for (let i = 0; i < count; i++) {
           if (availableRecipes.length > 0) {
-            const randomRecipe = availableRecipes[Math.floor(Math.random() * availableRecipes.length)];
+            const randomIndex = Math.floor(Math.random() * availableRecipes.length);
+            const randomRecipe = availableRecipes[randomIndex];
             
             try {
-              // Add the meal to the plan
+              console.log(`Adding ${randomRecipe.title} to ${mealType} (${i + 1}/${count})`);
+              
               await addMealPlan({
                 recipe_id: randomRecipe.id,
-                meal_type: type,
+                meal_type: mealType as MealType,
                 date: new Date().toISOString().split('T')[0],
                 created_by: user.id,
                 slot_index: i,
@@ -76,10 +81,24 @@ export function useRandomMealSelection() {
               }, weekNumber, true); // Silent mode to avoid multiple toasts
               
               totalAdded++;
-              console.log(`Added ${randomRecipe.title} to ${type}`);
+              console.log(`Successfully added ${randomRecipe.title}`);
+              
+              // Remove the recipe from available list to avoid duplicates in same meal type
+              availableRecipes.splice(randomIndex, 1);
+              
+              // If we run out of recipes, reset the list
+              if (availableRecipes.length === 0) {
+                availableRecipes = recipes.filter(recipe => {
+                  if (recipe.meal_type === mealType) return true;
+                  if (!recipe.meal_type && mealType === "dinner") return true;
+                  return false;
+                });
+              }
             } catch (error) {
               console.error(`Error adding ${randomRecipe.title} to meal plan:`, error);
             }
+          } else {
+            console.log(`No recipes available for ${mealType}`);
           }
         }
       }

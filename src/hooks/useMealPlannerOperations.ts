@@ -144,7 +144,12 @@ export const useMealPlannerOperations = ({
   }, [reorderMealPlans, currentWeek, toast]);
 
   const handleRandomize = useCallback(() => {
-    if (!user || !currentHousehold) return;
+    console.log("handleRandomize called");
+    if (!user || !currentHousehold) {
+      console.log("No user or household for randomize");
+      return;
+    }
+    console.log("Opening quantities dialog");
     setQuantitiesDialog(true);
   }, [user, currentHousehold, setQuantitiesDialog]);
 
@@ -157,12 +162,21 @@ export const useMealPlannerOperations = ({
     desserts: number;
     drinks: number;
   }) => {
-    if (!user || !currentHousehold) return;
+    console.log("handleRandomizeWithQuantities called with:", quantities);
+    if (!user || !currentHousehold) {
+      console.log("No user or household for randomize with quantities");
+      return;
+    }
     
     setIsLoading(true);
     try {
       console.log('Generating random meal plan with quantities:', quantities);
+      console.log('Current week:', currentWeek);
+      console.log('Available recipes:', recipes.length);
+      
       const totalAdded = await generateRandomMealPlan(quantities, currentWeek);
+      
+      console.log('Meal plan generation completed, total added:', totalAdded);
       
       toast({
         title: "Meal Plan Generated",
@@ -178,7 +192,7 @@ export const useMealPlannerOperations = ({
     } finally {
       setIsLoading(false);
     }
-  }, [user, currentHousehold, currentWeek, generateRandomMealPlan, setIsLoading, toast]);
+  }, [user, currentHousehold, currentWeek, generateRandomMealPlan, setIsLoading, toast, recipes]);
 
   const handleShare = useCallback(async () => {
     if (navigator.share) {
