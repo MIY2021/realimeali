@@ -103,39 +103,6 @@ export default function MealPlannerContainer() {
     setPendingMealType(null);
   }, [pendingMealType, handleAddRecipeToMeal]);
 
-  // Updated handleRandomizeWithQuantities to include all meal types
-  const handleRandomizeWithAllQuantities = useCallback(async (quantities: { 
-    dinner: number; 
-    lunch: number; 
-    breakfast: number; 
-    snacks: number;
-    sides: number;
-    desserts: number;
-    drinks: number;
-  }) => {
-    if (!user || !currentHousehold) return;
-    
-    setIsLoading(true);
-    try {
-      console.log('Generating random meal plan with quantities:', quantities);
-      const totalAdded = await generateRandomMealPlan(quantities, currentWeek);
-      
-      toast({
-        title: "Meal Plan Generated",
-        description: `Added ${totalAdded} meals to week ${currentWeek}`,
-      });
-    } catch (err) {
-      console.error("Error generating meal plan:", err);
-      toast({
-        title: "Error",
-        description: "Failed to generate meal plan",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  }, [user, currentHousehold, currentWeek, generateRandomMealPlan, setIsLoading, toast]);
-
   if (!user || !currentHousehold) {
     return (
       <div className="container max-w-7xl py-8 px-6">
@@ -186,7 +153,7 @@ export default function MealPlannerContainer() {
       <MealPlanQuantitiesDialog
         isOpen={quantitiesDialog}
         onClose={() => setQuantitiesDialog(false)}
-        onConfirm={handleRandomizeWithAllQuantities}
+        onConfirm={handleRandomizeWithQuantities}
       />
 
       <SimpleMealSelectionDialog

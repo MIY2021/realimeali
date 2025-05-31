@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Recipe, MealType } from "@/types";
+import { ChevronDown } from "lucide-react";
 
 interface SimpleMealSelectionDialogProps {
   open: boolean;
@@ -32,22 +33,31 @@ export function SimpleMealSelectionDialog({
   onSelectRecipe,
 }: SimpleMealSelectionDialogProps) {
   const [searchTerm, setSearchTerm] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
 
-  // Filter recipes by meal type and search term
+  // Get available meal types from recipes
+  const availableMealTypes = [...new Set(
+    recipes.filter(r => r.meal_type).map(r => r.meal_type!)
+  )];
+
+  // Filter recipes by category, meal type, and search term
   const filteredRecipes = recipes.filter((recipe) => {
     const matchesSearch = recipe.title.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = categoryFilter === "all" || recipe.meal_type === categoryFilter;
     const matchesMealType = recipe.meal_type === mealType || (!recipe.meal_type && mealType === "dinner");
-    return matchesSearch && matchesMealType;
+    return matchesSearch && matchesCategory && matchesMealType;
   });
 
   const handleSelectRecipe = (recipeId: string) => {
     onSelectRecipe(recipeId);
     onClose();
     setSearchTerm("");
+    setCategoryFilter("all");
   };
 
   const handleClose = () => {
     setSearchTerm("");
+    setCategoryFilter("all");
     onClose();
   };
 
@@ -59,6 +69,24 @@ export function SimpleMealSelectionDialog({
         </DialogHeader>
 
         <div className="space-y-4">
+          {/* Category Filter Dropdown */}
+          <div className="relative">
+            <select
+              value={categoryFilter}
+              onChange={e => setCategoryFilter(e.target.value)}
+              className="w-full border rounded-lg p-3 pr-10 appearance-none bg-white text-sm"
+            >
+              <option value="all">All Categories</option>
+              {availableMealTypes.map((type) => (
+                <option key={type} value={type}>
+                  {MEAL_TYPE_LABELS[type as MealType]}
+                </option>
+              ))}
+            </select>
+            <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 pointer-events-none text-gray-400" />
+          </div>
+
+          {/* Search Input */}
           <Input
             placeholder="Search recipes..."
             value={searchTerm}

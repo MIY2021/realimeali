@@ -148,7 +148,15 @@ export const useMealPlannerOperations = ({
     setQuantitiesDialog(true);
   }, [user, currentHousehold, setQuantitiesDialog]);
 
-  const handleRandomizeWithQuantities = useCallback(async (quantities: { dinner: number; lunch: number; breakfast: number; snacks: number }) => {
+  const handleRandomizeWithQuantities = useCallback(async (quantities: { 
+    dinner: number; 
+    lunch: number; 
+    breakfast: number; 
+    snacks: number;
+    sides: number;
+    desserts: number;
+    drinks: number;
+  }) => {
     if (!user || !currentHousehold) return;
     
     setIsLoading(true);
@@ -172,12 +180,33 @@ export const useMealPlannerOperations = ({
     }
   }, [user, currentHousehold, currentWeek, generateRandomMealPlan, setIsLoading, toast]);
 
-  const handleShare = useCallback(() => {
-    toast({
-      title: "Share",
-      description: "Share functionality coming soon!",
-    });
-  }, [toast]);
+  const handleShare = useCallback(async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `Week ${currentWeek} Meal Plan`,
+          text: 'Check out my meal plan!',
+          url: window.location.href
+        });
+      } catch (err) {
+        console.log('Share cancelled or failed');
+      }
+    } else {
+      // Fallback to clipboard
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        toast({
+          title: "Link Copied",
+          description: "Meal plan link copied to clipboard",
+        });
+      } catch (err) {
+        toast({
+          title: "Share",
+          description: "Share functionality not available",
+        });
+      }
+    }
+  }, [currentWeek, toast]);
 
   const handleClearAll = useCallback(async () => {
     if (!user || !currentHousehold) return;
