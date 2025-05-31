@@ -122,7 +122,12 @@ export const useMealPlannerOperations = ({
         householdId: currentHousehold.id
       });
 
-      const servingsToSave = leftoverServings || Math.ceil(recipe.servings / 2);
+      // Ensure we have a positive servings value - this is crucial for the DB constraint
+      const servingsToSave = leftoverServings && leftoverServings > 0 
+        ? leftoverServings 
+        : Math.max(1, Math.ceil(recipe.servings / 2));
+      
+      console.log("Calculated servings to save:", servingsToSave);
       
       const leftoverData = {
         recipe_id: mealPlan.recipe_id,
@@ -131,7 +136,7 @@ export const useMealPlannerOperations = ({
         created_by: user.id,
         slot_index: 0,
         is_leftover: true,
-        leftover_servings: servingsToSave,
+        leftover_servings: servingsToSave, // This must be positive for DB constraint
         original_servings: recipe.servings,
         parent_meal_plan_id: mealPlan.id,
         household_id: currentHousehold.id,
