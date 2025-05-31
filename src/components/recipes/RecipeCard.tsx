@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Recipe } from "@/types";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { RecipeImage } from "@/components/ui/recipe-image";
-import { generateSlug } from "@/utils/slugUtils";
+import { createRecipeUrl } from "@/utils/slugUtils";
 
 interface RecipeCardProps {
   recipe: Recipe;
@@ -41,8 +41,7 @@ export function RecipeCard({ recipe, onAddToMealPlan, showActions = true }: Reci
   };
 
   const getRecipeUrl = () => {
-    const recipeSlug = generateSlug(recipe.title);
-    return `/my-recipes/${recipe.id}/${recipeSlug}`;
+    return createRecipeUrl(recipe);
   };
 
   const capitalizeFirst = (str: string) => {

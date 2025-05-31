@@ -61,3 +61,11 @@ export function generateUniqueSlug(title: string, existingSlugs: string[]): stri
   const baseSlug = generateSlug(title);
   return ensureUniqueSlug(baseSlug, existingSlugs);
 }
+
+/**
+ * Creates a recipe URL using only the slug
+ */
+export function createRecipeUrl(recipe: { title: string }): string {
+  const slug = generateSlug(recipe.title);
+  return `/my-recipes/${slug}`;
+}

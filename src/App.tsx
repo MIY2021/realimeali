@@ -75,16 +75,18 @@ const App = () => (
                           </ProtectedRoute>
                         }
                       />
+                      {/* New slug-only route for recipes */}
                       <Route
-                        path="/my-recipes/:id/:slug"
+                        path="/my-recipes/:slug"
                         element={
                           <ProtectedRoute>
                             <RecipeDetail />
                           </ProtectedRoute>
                         }
                       />
+                      {/* Legacy route with ID for backward compatibility */}
                       <Route
-                        path="/my-recipes/:slug"
+                        path="/my-recipes/:id/:slug"
                         element={
                           <ProtectedRoute>
                             <RecipeDetail />

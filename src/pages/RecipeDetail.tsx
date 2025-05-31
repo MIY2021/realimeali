@@ -10,18 +10,31 @@ import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { EditRecipeDialog } from "@/components/recipes/EditRecipeDialog";
 import { AddToMealPlanDialog } from "@/components/recipes/AddToMealPlanDialog";
 import { Recipe } from "@/types";
+import { generateSlug } from "@/utils/slugUtils";
 
 export default function RecipeDetail() {
-  const { id, slug } = useParams<{ id: string; slug?: string }>();
+  const { id, slug } = useParams<{ id?: string; slug?: string }>();
   const navigate = useNavigate();
-  const { getRecipeById, deleteRecipe, toggleFavorite } = useRecipes();
+  const { recipes, getRecipeById, deleteRecipe, toggleFavorite } = useRecipes();
   const { user } = useAuth();
   const { currentHousehold } = useHousehold();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isAddToMealPlanOpen, setIsAddToMealPlanOpen] = useState(false);
 
-  // Try to get recipe by ID first, then fall back to slug for old URLs
-  const recipe = id ? getRecipeById(id) : (slug ? getRecipeById(slug) : undefined);
+  // Find recipe by slug or legacy ID
+  const recipe = (() => {
+    if (id) {
+      // Legacy URL with ID - try to find by ID first
+      return getRecipeById(id);
+    }
+    
+    if (slug) {
+      // New URL structure - find by matching slug
+      return recipes.find(r => generateSlug(r.title) === slug);
+    }
+    
+    return undefined;
+  })();
 
   useDocumentTitle(recipe ? `${recipe.title} | RealiMeali` : "Recipe | RealiMeali");
 

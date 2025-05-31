@@ -8,7 +8,7 @@ import { MealPlan, Recipe } from "@/types";
 import { RecipeImage } from "@/components/ui/recipe-image";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { DeleteMealDialog } from "@/components/meal-planner/DeleteMealDialog";
-import { generateSlug } from "@/utils/slugUtils";
+import { createRecipeUrl } from "@/utils/slugUtils";
 
 interface EnhancedMealCardProps {
   mealPlan: MealPlan;
@@ -32,8 +32,7 @@ export function EnhancedMealCard({
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   
   const getRecipeUrl = (recipe: Recipe) => {
-    const recipeSlug = generateSlug(recipe.title);
-    return `/my-recipes/${recipe.id}/${recipeSlug}`;
+    return createRecipeUrl(recipe);
   };
 
   const handleDeleteConfirm = () => {
@@ -108,7 +107,7 @@ export function EnhancedMealCard({
   const effectiveServings = getEffectiveServings();
 
   return (
-    <Card className={`mb-${isMobile ? '1.5' : '2'} ${mealPlan.is_leftover ? 'bg-orange-50 border-orange-200' : ''}`}>
+    <Card className={`mb-${isMobile ? '1.5' : '2'} ${mealPlan.is_leftover ? 'bg-green-50 border-green-200' : ''}`}>
       <CardContent className={`${isMobile ? 'p-2.5' : 'p-3'}`}>
         <div className={`flex items-center gap-${isMobile ? '2' : '3'}`}>
           {/* Recipe thumbnail - Made larger */}
@@ -120,15 +119,15 @@ export function EnhancedMealCard({
             {mealPlan.is_leftover ? (
               <div className={`space-y-${isMobile ? '0.5' : '1'}`}>
                 <div className={`flex items-center gap-${isMobile ? '1.5' : '2'} ${isMobile ? 'text-xs' : 'text-sm'}`}>
-                  <span className="text-orange-600">🍽️</span>
+                  <span className="text-green-600">🍽️</span>
                   <Link 
                     to={getRecipeUrl(displayRecipe)}
-                    className="font-medium text-orange-800 hover:text-orange-900 transition-colors truncate"
+                    className="font-medium text-green-800 hover:text-green-900 transition-colors truncate"
                   >
                     Leftover: {displayRecipe.title}
                   </Link>
                 </div>
-                <div className={`${isMobile ? 'text-xs' : 'text-xs'} text-orange-600`}>
+                <div className={`${isMobile ? 'text-xs' : 'text-xs'} text-green-600`}>
                   {effectiveServings} servings from dinner
                 </div>
               </div>
@@ -148,7 +147,7 @@ export function EnhancedMealCard({
                     • {effectiveServings} servings
                   </span>
                   {hasLeftoversAllocated && (
-                    <span className={`${isMobile ? 'text-xs' : 'text-xs'} text-orange-600`}>
+                    <span className={`${isMobile ? 'text-xs' : 'text-xs'} text-green-600`}>
                       (+{mealPlan.leftover_servings} saved for leftovers)
                     </span>
                   )}
@@ -163,7 +162,7 @@ export function EnhancedMealCard({
                 variant="ghost"
                 size={isMobile ? "sm" : "sm"}
                 onClick={() => onCreateLeftover(mealPlan, displayRecipe)}
-                className={`text-orange-600 hover:text-orange-700 hover:bg-orange-50 ${isMobile ? 'h-8 px-2' : 'px-2'}`}
+                className={`text-green-600 hover:text-green-700 hover:bg-green-50 ${isMobile ? 'h-8 px-2' : 'px-2'}`}
                 title="Create lunch leftovers"
               >
                 <span className={`${isMobile ? 'text-xs' : 'text-xs'}`}>+ Lunch</span>
