@@ -5,13 +5,13 @@ import { FilterHeader } from "./FilterHeader";
 import { DropdownFilterSection } from "./DropdownFilterSection";
 import {
   MealType,
-  Cuisine,
+  CuisineRegion,
   DietLifestyle,
   ComplexityLevel,
 } from "@/types";
 import {
   MEAL_TYPE_OPTIONS,
-  CUISINE_OPTIONS,
+  CUISINE_REGION_OPTIONS,
   DIET_LIFESTYLE_OPTIONS,
   COMPLEXITY_LEVEL_OPTIONS,
 } from "@/utils/recipeClassification";
@@ -19,7 +19,7 @@ import {
 export interface SimpleRecipeFilters {
   searchTerm: string;
   mealTypes: MealType[];
-  cuisines: Cuisine[];
+  cuisineRegions: CuisineRegion[];
   dietLifestyle: DietLifestyle[];
   complexityLevels: ComplexityLevel[];
   showFavoritesOnly: boolean;
@@ -48,7 +48,7 @@ export function SimpleRecipeFiltersComponent({
   });
 
   const activeFilterCount = filters.mealTypes.length + 
-                           filters.cuisines.length + 
+                           filters.cuisineRegions.length + 
                            filters.dietLifestyle.length + 
                            filters.complexityLevels.length +
                            (filters.showFavoritesOnly ? 1 : 0);
@@ -57,7 +57,7 @@ export function SimpleRecipeFiltersComponent({
     onFiltersChange({
       searchTerm: filters.searchTerm, // Keep search term
       mealTypes: [],
-      cuisines: [],
+      cuisineRegions: [],
       dietLifestyle: [],
       complexityLevels: [],
       showFavoritesOnly: false,
@@ -94,9 +94,9 @@ export function SimpleRecipeFiltersComponent({
 
           <DropdownFilterSection
             title="🌍 Cuisine"
-            options={CUISINE_OPTIONS}
-            selectedValues={filters.cuisines}
-            onToggle={(value) => toggleArrayFilter('cuisines', value)}
+            options={CUISINE_REGION_OPTIONS}
+            selectedValues={filters.cuisineRegions}
+            onToggle={(value) => toggleArrayFilter('cuisineRegions', value)}
           />
 
           <DropdownFilterSection
@@ -169,9 +169,9 @@ export function SimpleRecipeFiltersComponent({
 
           <DropdownFilterSection
             title="🌍 Cuisine"
-            options={CUISINE_OPTIONS}
-            selectedValues={filters.cuisines}
-            onToggle={(value) => toggleArrayFilter('cuisines', value)}
+            options={CUISINE_REGION_OPTIONS}
+            selectedValues={filters.cuisineRegions}
+            onToggle={(value) => toggleArrayFilter('cuisineRegions', value)}
           />
 
           <DropdownFilterSection

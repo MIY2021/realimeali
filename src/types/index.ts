@@ -1,3 +1,4 @@
+
 export interface Recipe {
   id: string;
   title: string;
@@ -14,13 +15,11 @@ export interface Recipe {
   created_by: string;
   household_id: string;
   meal_type?: MealType;
-  cuisine?: Cuisine;
+  cuisine_region?: CuisineRegion;
   diet_lifestyle?: DietLifestyle[];
   complexity_level?: ComplexityLevel;
   slug?: string;
   top_tip?: string;
-  cuisine_region?: CuisineRegion;
-  cooking_method?: CookingMethod;
   main_ingredient?: MainIngredient;
 }
 
@@ -112,18 +111,18 @@ export interface HouseholdMealPlan {
   };
 }
 
-// Updated to only include the 7 desired meal types
+// Updated to include sides, desserts, drinks in meal plans
 export type MealType = "breakfast" | "lunch" | "dinner" | "snacks" | "sides" | "desserts" | "drinks";
-export type MealPlanMealType = "breakfast" | "lunch" | "dinner" | "snacks";
+export type MealPlanMealType = "breakfast" | "lunch" | "dinner" | "snacks" | "sides" | "desserts" | "drinks";
 
-export type Cuisine = "british" | "italian" | "asian" | "mexican" | "indian" | "mediterranean" | "american" | "french" | "middle_eastern" | "other";
+// Updated to match database cuisine_region enum exactly (with greek added)
+export type CuisineRegion = "british" | "american" | "italian" | "french" | "mexican" | "indian" | "chinese" | "japanese" | "thai" | "mediterranean" | "middle_eastern" | "african" | "korean" | "caribbean" | "nordic" | "eastern_european" | "greek";
 
 export type DietLifestyle = "vegetarian" | "vegan" | "gluten_free" | "dairy_free" | "high_protein" | "kid_friendly" | "pescatarian" | "low_carb_keto" | "paleo" | "diabetic_friendly" | "budget_meals" | "pregnancy_safe";
 
+// Updated to match database exactly (changed easy to quick_easy)
 export type ComplexityLevel = "quick_easy" | "standard" | "complex";
 
-export type CuisineRegion = "british" | "american" | "italian" | "french" | "mexican" | "indian" | "chinese" | "japanese" | "thai" | "mediterranean" | "middle_eastern" | "african" | "korean" | "caribbean" | "nordic" | "eastern_european";
-
-export type CookingMethod = "one_pot" | "oven_baked" | "air_fryer" | "slow_cooker" | "pressure_cooker" | "bbq_grilled" | "stir_fried" | "roasted" | "raw_no_cook";
-
 export type MainIngredient = "chicken" | "beef" | "pork" | "lamb" | "fish" | "tofu_tempeh" | "eggs" | "cheese" | "pasta" | "rice" | "lentils_beans" | "vegetables" | "potatoes" | "fruit" | "nuts_seeds" | "chocolate";
+
+// Remove Cuisine and CookingMethod types - using CuisineRegion instead

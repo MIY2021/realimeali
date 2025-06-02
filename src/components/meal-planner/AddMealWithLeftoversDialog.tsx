@@ -28,14 +28,14 @@ export function AddMealWithLeftoversDialog({
   const { recipes } = useRecipes();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedMealType, setSelectedMealType] = useState("");
-  const [selectedCuisine, setSelectedCuisine] = useState("");
+  const [selectedCuisineRegion, setSelectedCuisineRegion] = useState("");
 
   const filteredRecipes = recipes.filter((recipe) => {
     const searchRegex = new RegExp(searchTerm, "i");
     if (!searchRegex.test(recipe.title) && !searchRegex.test(recipe.description)) return false;
 
     if (selectedMealType && recipe.meal_type !== selectedMealType) return false;
-    if (selectedCuisine && recipe.cuisine !== selectedCuisine) return false;
+    if (selectedCuisineRegion && recipe.cuisine_region !== selectedCuisineRegion) return false;
 
     return true;
   });
@@ -79,6 +79,9 @@ export function AddMealWithLeftoversDialog({
                 <SelectItem value="lunch">Lunch</SelectItem>
                 <SelectItem value="dinner">Dinner</SelectItem>
                 <SelectItem value="snacks">Snacks</SelectItem>
+                <SelectItem value="sides">Sides</SelectItem>
+                <SelectItem value="desserts">Desserts</SelectItem>
+                <SelectItem value="drinks">Drinks</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -87,7 +90,7 @@ export function AddMealWithLeftoversDialog({
             <Label htmlFor="cuisine" className="text-right">
               Cuisine
             </Label>
-            <Select onValueChange={setSelectedCuisine}>
+            <Select onValueChange={setSelectedCuisineRegion}>
               <SelectTrigger className="col-span-3">
                 <SelectValue placeholder="Select cuisine" />
               </SelectTrigger>
@@ -96,7 +99,8 @@ export function AddMealWithLeftoversDialog({
                 <SelectItem value="italian">Italian</SelectItem>
                 <SelectItem value="mexican">Mexican</SelectItem>
                 <SelectItem value="indian">Indian</SelectItem>
-                <SelectItem value="asian">Asian</SelectItem>
+                <SelectItem value="chinese">Chinese</SelectItem>
+                <SelectItem value="greek">Greek</SelectItem>
               </SelectContent>
             </Select>
           </div>

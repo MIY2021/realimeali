@@ -17,11 +17,10 @@ import {
   SelectItem,
   SelectTrigger,
 } from "@/components/ui/select";
-import { Recipe } from "@/types";
+import { Recipe, MealType, CuisineRegion } from "@/types";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { RecipeCard } from "@/components/recipes/RecipeCard";
-import { MealType, Cuisine } from "@/types";
 
 interface AddRecipeToMealModalProps {
   open: boolean;
@@ -42,10 +41,10 @@ export function AddRecipeToMealModal({
   const { recipes, isLoading, error } = useRecipes();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedMealType, setSelectedMealType] = useState<MealType | null>(null);
-  const [selectedCuisine, setSelectedCuisine] = useState<Cuisine | null>(null);
+  const [selectedCuisineRegion, setSelectedCuisineRegion] = useState<CuisineRegion | null>(null);
 
   const mealTypes: MealType[] = ["breakfast", "lunch", "dinner", "snacks", "sides", "desserts", "drinks"];
-  const cuisines: Cuisine[] = ["british", "italian", "asian", "mexican", "indian", "mediterranean", "american", "french", "middle_eastern", "other"];
+  const cuisineRegions: CuisineRegion[] = ["british", "italian", "chinese", "mexican", "indian", "mediterranean", "american", "french", "middle_eastern", "greek"];
 
   useEffect(() => {
     if (error) {
@@ -61,11 +60,11 @@ export function AddRecipeToMealModal({
       }
 
       if (selectedMealType && recipe.meal_type !== selectedMealType) return false;
-      if (selectedCuisine && recipe.cuisine !== selectedCuisine) return false;
+      if (selectedCuisineRegion && recipe.cuisine_region !== selectedCuisineRegion) return false;
 
       return true;
     });
-  }, [recipes, searchTerm, selectedMealType, selectedCuisine]);
+  }, [recipes, searchTerm, selectedMealType, selectedCuisineRegion]);
 
   const handleRecipeSelect = async (recipe: Recipe) => {
     await onAddRecipe(recipe.id, recipe.servings);
@@ -134,17 +133,17 @@ export function AddRecipeToMealModal({
               <div>
                 <Label htmlFor="cuisine">Cuisine</Label>
                 <Select
-                  value={selectedCuisine || undefined}
+                  value={selectedCuisineRegion || undefined}
                   onValueChange={(value) =>
-                    setSelectedCuisine(value === "all" ? null : (value as Cuisine))
+                    setSelectedCuisineRegion(value === "all" ? null : (value as CuisineRegion))
                   }
                 >
                   <SelectTrigger className="w-[180px]">
-                    {selectedCuisine ? selectedCuisine : "All Cuisines"}
+                    {selectedCuisineRegion ? selectedCuisineRegion : "All Cuisines"}
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Cuisines</SelectItem>
-                    {cuisines.map((cuisine) => (
+                    {cuisineRegions.map((cuisine) => (
                       <SelectItem key={cuisine} value={cuisine}>
                         {cuisine}
                       </SelectItem>

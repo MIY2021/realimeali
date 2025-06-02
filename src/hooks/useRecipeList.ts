@@ -1,6 +1,6 @@
 
 import { useState, useMemo, useCallback } from "react";
-import { Recipe, MealType, Cuisine, DietLifestyle, ComplexityLevel } from "@/types";
+import { Recipe, MealType, CuisineRegion, DietLifestyle, ComplexityLevel } from "@/types";
 import { SimpleRecipeFilters } from "@/components/recipes/filters/SimpleRecipeFilters";
 
 interface UseRecipeListProps {
@@ -16,7 +16,7 @@ export function useRecipeList({ recipes }: UseRecipeListProps) {
   const [filters, setFilters] = useState<SimpleRecipeFilters>({
     searchTerm: "",
     mealTypes: [],
-    cuisines: [],
+    cuisineRegions: [],
     dietLifestyle: [],
     complexityLevels: [],
     showFavoritesOnly: false,
@@ -49,10 +49,10 @@ export function useRecipeList({ recipes }: UseRecipeListProps) {
       );
     }
 
-    // Filter by cuisines
-    if (filters.cuisines.length > 0) {
+    // Filter by cuisine regions
+    if (filters.cuisineRegions.length > 0) {
       filtered = filtered.filter(recipe => 
-        recipe.cuisine && filters.cuisines.includes(recipe.cuisine)
+        recipe.cuisine_region && filters.cuisineRegions.includes(recipe.cuisine_region)
       );
     }
 

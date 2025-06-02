@@ -628,6 +628,7 @@ export type Database = {
           instructions: string[]
           is_favorite: boolean | null
           main_ingredient: Database["public"]["Enums"]["main_ingredient"] | null
+          meal_plan_count: number
           meal_type: Database["public"]["Enums"]["meal_type"] | null
           prep_time: number | null
           servings: number | null
@@ -657,6 +658,7 @@ export type Database = {
           main_ingredient?:
             | Database["public"]["Enums"]["main_ingredient"]
             | null
+          meal_plan_count?: number
           meal_type?: Database["public"]["Enums"]["meal_type"] | null
           prep_time?: number | null
           servings?: number | null
@@ -686,6 +688,7 @@ export type Database = {
           main_ingredient?:
             | Database["public"]["Enums"]["main_ingredient"]
             | null
+          meal_plan_count?: number
           meal_type?: Database["public"]["Enums"]["meal_type"] | null
           prep_time?: number | null
           servings?: number | null
@@ -769,6 +772,10 @@ export type Database = {
         Args: { recipe_id: string }
         Returns: undefined
       }
+      increment_recipe_meal_plan_count: {
+        Args: { recipe_id_param: string }
+        Returns: undefined
+      }
       increment_share_view_count: {
         Args: { share_id: string }
         Returns: undefined
@@ -832,6 +839,7 @@ export type Database = {
         | "caribbean"
         | "nordic"
         | "eastern_european"
+        | "greek"
       diet_lifestyle:
         | "vegetarian"
         | "vegan"
@@ -1035,6 +1043,7 @@ export const Constants = {
         "caribbean",
         "nordic",
         "eastern_european",
+        "greek",
       ],
       diet_lifestyle: [
         "vegetarian",

@@ -1,94 +1,87 @@
 
-import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
-import { Recipe } from "@/types";
-import { supabase } from "@/integrations/supabase/client";
-import { sanitizeRecipeData } from "@/utils/contentSanitizer";
+import { useState } from 'react';
+import { Recipe } from '@/types';
+import { supabase } from '@/integrations/supabase/client';
+
+interface AiRecipeGenerationProps {
+  preferences?: string;
+  dietaryRestrictions?: string;
+  cookingTime?: number;
+  servings?: number;
+}
 
 export function useAiRecipeGeneration() {
-  const { toast } = useToast();
-  const [aiPrompt, setAiPrompt] = useState("");
-  const [stylePreferences, setStylePreferences] = useState<string[]>([]);
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleGenerateRecipe = async (
-    setNewRecipe: (recipe: Omit<Recipe, 'id' | 'created_at' | 'updated_at' | 'created_by'>) => void,
-    currentRecipe: Omit<Recipe, 'id' | 'created_at' | 'updated_at' | 'created_by'>,
-    setActiveTab: (tab: string) => void
-  ) => {
-    if (!aiPrompt.trim()) {
-      toast({
-        title: "Error",
-        description: "Please describe what recipe you'd like me to create",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsProcessing(true);
+  const generateRecipe = async ({ 
+    preferences = '', 
+    dietaryRestrictions = '', 
+    cookingTime = 30,
+    servings = 4 
+  }: AiRecipeGenerationProps): Promise<Omit<Recipe, 'id' | 'created_at' | 'updated_at' | 'created_by'> | null> => {
+    setIsGenerating(true);
+    setError(null);
+    
     try {
-      console.log('Generating AI recipe for:', aiPrompt);
-      
-      const { data, error } = await supabase.functions.invoke('parse-recipe-ai', {
-        body: { 
-          generateRequest: aiPrompt.trim(),
-          stylePreferences: stylePreferences
+      const { data, error: functionError } = await supabase.functions.invoke('parse-recipe-ai', {
+        body: {
+          prompt: `Generate a recipe with the following criteria:
+            - Preferences: ${preferences || 'Any cuisine'}
+            - Dietary restrictions: ${dietaryRestrictions || 'None'}
+            - Cooking time: approximately ${cookingTime} minutes
+            - Servings: ${servings}
+            
+            Please provide a complete recipe with title, description, ingredients list, step-by-step instructions, and estimated prep/cook times.`
         }
       });
 
-      if (error) {
-        console.error('Error calling parse-recipe-ai function:', error);
-        throw new Error(error.message || 'Failed to generate recipe');
+      if (functionError) {
+        throw new Error(functionError.message || 'Failed to generate recipe');
       }
 
-      if (!data?.parsedRecipe) {
-        throw new Error('No recipe could be generated');
+      if (!data?.recipe) {
+        throw new Error('No recipe data received from AI');
       }
 
-      console.log('Received generated recipe:', data.parsedRecipe);
-      
-      // Sanitize the recipe data
-      const sanitizedRecipe = sanitizeRecipeData(data.parsedRecipe);
-      
-      // Apply AI categorization
-      const recipeData = { 
-        ...currentRecipe, 
-        ...sanitizedRecipe,
-        // Apply AI classification
-        meal_type: data.parsedRecipe.mealType || currentRecipe.meal_type,
-        cuisine: data.parsedRecipe.cuisineRegion || currentRecipe.cuisine,
-        cooking_method: data.parsedRecipe.cookingMethod || currentRecipe.cooking_method,
-        diet_lifestyle: data.parsedRecipe.dietLifestyle || currentRecipe.diet_lifestyle || [],
-        complexity_level: data.parsedRecipe.complexityLevel || currentRecipe.complexity_level,
-        main_ingredient: data.parsedRecipe.mainIngredient || currentRecipe.main_ingredient,
-        top_tip: data.parsedRecipe.topTip || "Enjoy cooking this delicious recipe!"
+      const aiRecipe = data.recipe;
+
+      // Transform the AI response to match our Recipe interface
+      const recipe: Omit<Recipe, 'id' | 'created_at' | 'updated_at' | 'created_by'> = {
+        title: aiRecipe.title || 'AI Generated Recipe',
+        description: aiRecipe.description || '',
+        ingredients: Array.isArray(aiRecipe.ingredients) ? aiRecipe.ingredients : [],
+        instructions: Array.isArray(aiRecipe.instructions) ? aiRecipe.instructions : [],
+        prep_time: aiRecipe.prep_time || 15,
+        cook_time: aiRecipe.cook_time || cookingTime,
+        servings: servings,
+        household_id: '', // Will be set when saving
+        is_favorite: false,
+        meal_type: aiRecipe.meal_type || undefined,
+        cuisine_region: aiRecipe.cuisine_region || undefined,
+        diet_lifestyle: aiRecipe.diet_lifestyle || [],
+        complexity_level: aiRecipe.complexity_level || 'quick_easy',
+        main_ingredient: aiRecipe.main_ingredient || undefined,
+        top_tip: aiRecipe.top_tip || undefined,
+        image: aiRecipe.image || undefined,
+        slug: aiRecipe.title?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || undefined
       };
+
+      return recipe;
       
-      setNewRecipe(recipeData);
-      setActiveTab("manual");
-      
-      toast({
-        title: "Recipe Generated! 🎉",
-        description: "Your custom recipe has been created and categorized automatically.",
-      });
-    } catch (error) {
-      console.error('Error generating recipe:', error);
-      toast({
-        title: "Generation Failed",
-        description: error.message || "Failed to generate recipe. Please try again.",
-        variant: "destructive",
-      });
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+      setError(errorMessage);
+      console.error('Error generating AI recipe:', err);
+      return null;
     } finally {
-      setIsProcessing(false);
+      setIsGenerating(false);
     }
   };
 
   return {
-    aiPrompt,
-    setAiPrompt,
-    stylePreferences,
-    setStylePreferences,
-    isProcessing,
-    handleGenerateRecipe,
+    generateRecipe,
+    isGenerating,
+    error
   };
 }

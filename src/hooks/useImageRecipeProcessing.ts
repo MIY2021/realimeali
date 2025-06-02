@@ -1,86 +1,81 @@
 
-import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
-import { Recipe } from "@/types";
-import { supabase } from "@/integrations/supabase/client";
-import { sanitizeRecipeData } from "@/utils/contentSanitizer";
+import { useState } from 'react';
+import { Recipe } from '@/types';
+import { supabase } from '@/integrations/supabase/client';
 
 export function useImageRecipeProcessing() {
-  const { toast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleProcessImage = async (
-    file: File,
-    setNewRecipe: (recipe: Omit<Recipe, 'id' | 'created_at' | 'updated_at' | 'created_by'>) => void,
-    currentRecipe: Omit<Recipe, 'id' | 'created_at' | 'updated_at' | 'created_by'>,
-    setActiveTab: (tab: string) => void
-  ) => {
+  const processImage = async (imageFile: File): Promise<Omit<Recipe, 'id' | 'created_at' | 'updated_at' | 'created_by'> | null> => {
     setIsProcessing(true);
+    setError(null);
+
     try {
-      console.log('Processing image file:', file.name, file.type);
-      
-      const reader = new FileReader();
-      const imageDataUrl = await new Promise<string>((resolve, reject) => {
-        reader.onload = () => resolve(reader.result as string);
+      // Convert image to base64
+      const base64Image = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const result = reader.result as string;
+          resolve(result.split(',')[1]); // Remove data:image/jpeg;base64, prefix
+        };
         reader.onerror = reject;
-        reader.readAsDataURL(file);
+        reader.readAsDataURL(imageFile);
       });
 
-      console.log('Image converted to base64, calling AI...');
-      
-      const { data, error } = await supabase.functions.invoke('parse-recipe-ai', {
-        body: { imageUrl: imageDataUrl }
+      const { data, error: functionError } = await supabase.functions.invoke('parse-recipe-ai', {
+        body: {
+          image: base64Image,
+          mimeType: imageFile.type
+        }
       });
 
-      if (error) {
-        console.error('Error calling parse-recipe-ai function:', error);
-        throw new Error(error.message || 'Failed to extract recipe from image');
+      if (functionError) {
+        throw new Error(functionError.message || 'Failed to process image');
       }
 
-      if (!data?.parsedRecipe) {
-        throw new Error('No recipe data could be extracted from the image');
+      if (!data?.recipe) {
+        throw new Error('No recipe data extracted from image');
       }
 
-      console.log('Received recipe from image:', data.parsedRecipe);
-      
-      // Sanitize the recipe data
-      const sanitizedRecipe = sanitizeRecipeData(data.parsedRecipe);
-      
-      // Apply AI categorization
-      const recipeData = { 
-        ...currentRecipe, 
-        ...sanitizedRecipe,
-        // Apply AI classification
-        meal_type: data.parsedRecipe.mealType || currentRecipe.meal_type,
-        cuisine: data.parsedRecipe.cuisineRegion || currentRecipe.cuisine,
-        cooking_method: data.parsedRecipe.cookingMethod || currentRecipe.cooking_method,
-        diet_lifestyle: data.parsedRecipe.dietLifestyle || currentRecipe.diet_lifestyle || [],
-        complexity_level: data.parsedRecipe.complexityLevel || currentRecipe.complexity_level,
-        main_ingredient: data.parsedRecipe.mainIngredient || currentRecipe.main_ingredient,
-        top_tip: data.parsedRecipe.topTip || "Enjoy cooking this delicious recipe!"
+      const extractedRecipe = data.recipe;
+
+      // Transform the extracted data to match our Recipe interface
+      const recipe: Omit<Recipe, 'id' | 'created_at' | 'updated_at' | 'created_by'> = {
+        title: extractedRecipe.title || 'Recipe from Image',
+        description: extractedRecipe.description || '',
+        ingredients: Array.isArray(extractedRecipe.ingredients) ? extractedRecipe.ingredients : [],
+        instructions: Array.isArray(extractedRecipe.instructions) ? extractedRecipe.instructions : [],
+        prep_time: extractedRecipe.prep_time || 15,
+        cook_time: extractedRecipe.cook_time || 30,
+        servings: extractedRecipe.servings || 4,
+        household_id: '', // Will be set when saving
+        is_favorite: false,
+        meal_type: extractedRecipe.meal_type || undefined,
+        cuisine_region: extractedRecipe.cuisine_region || undefined,
+        diet_lifestyle: extractedRecipe.diet_lifestyle || [],
+        complexity_level: extractedRecipe.complexity_level || 'quick_easy',
+        main_ingredient: extractedRecipe.main_ingredient || undefined,
+        top_tip: extractedRecipe.top_tip || undefined,
+        image: undefined, // Don't include the original image
+        slug: extractedRecipe.title?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || undefined
       };
-      
-      setNewRecipe(recipeData);
-      setActiveTab("manual");
-      
-      toast({
-        title: "Recipe Extracted! 🎉",
-        description: "Recipe extracted from photo and auto-categorized successfully.",
-      });
-    } catch (error) {
-      console.error('Error processing image:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to extract recipe from image. Please try with a clearer image.",
-        variant: "destructive",
-      });
+
+      return recipe;
+
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+      setError(errorMessage);
+      console.error('Error processing image:', err);
+      return null;
     } finally {
       setIsProcessing(false);
     }
   };
 
   return {
+    processImage,
     isProcessing,
-    handleProcessImage,
+    error
   };
 }

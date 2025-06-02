@@ -3,7 +3,7 @@ import { Recipe } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   MEAL_TYPE_OPTIONS,
-  CUISINE_OPTIONS,
+  CUISINE_REGION_OPTIONS,
   DIET_LIFESTYLE_OPTIONS,
   COMPLEXITY_LEVEL_OPTIONS,
 } from "@/utils/recipeClassification";
@@ -83,7 +83,7 @@ export function SimpleCategorySelector({ recipe, onRecipeChange }: SimpleCategor
         <div>
           <label className="text-sm font-medium mb-3 block">Cuisine</label>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
-            {CUISINE_OPTIONS.map((option) => (
+            {CUISINE_REGION_OPTIONS.map((option) => (
               <CategoryButton
                 key={option.value}
                 option={option}

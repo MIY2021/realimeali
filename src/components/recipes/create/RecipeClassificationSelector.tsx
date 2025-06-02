@@ -6,7 +6,7 @@ import { MultiSelect } from "@/components/ui/multi-select";
 import { UtensilsCrossed } from "lucide-react";
 import {
   MEAL_TYPE_OPTIONS,
-  CUISINE_OPTIONS,
+  CUISINE_REGION_OPTIONS,
   DIET_LIFESTYLE_OPTIONS,
   COMPLEXITY_LEVEL_OPTIONS,
 } from "@/utils/recipeClassification";
@@ -66,14 +66,14 @@ export function RecipeClassificationSelector({ recipe, onRecipeChange }: RecipeC
           <div>
             <label className="text-sm font-medium mb-2 block">Cuisine</label>
             <Select 
-              value={recipe.cuisine || ""} 
-              onValueChange={(value) => updateRecipeField('cuisine', value)}
+              value={recipe.cuisine_region || ""} 
+              onValueChange={(value) => updateRecipeField('cuisine_region', value)}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select cuisine" />
               </SelectTrigger>
               <SelectContent>
-                {CUISINE_OPTIONS.map((option) => (
+                {CUISINE_REGION_OPTIONS.map((option) => (
                   <SelectItem key={option.value} value={option.value}>
                     <span className="flex items-center gap-2">
                       <span>{option.icon}</span>
