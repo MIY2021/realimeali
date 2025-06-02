@@ -3,6 +3,8 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { FilterHeader } from "./FilterHeader";
 import { DropdownFilterSection } from "./DropdownFilterSection";
+import { Heart } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 import {
   MealType,
   CuisineRegion,
@@ -40,6 +42,8 @@ export function SimpleRecipeFiltersComponent({
   onToggle,
   alwaysVisible = false
 }: SimpleRecipeFiltersProps) {
+  const isMobile = useIsMobile();
+  
   const hasActiveFilters = Object.entries(filters).some(([key, value]) => {
     if (key === 'searchTerm') return false; // Don't count search term
     if (key === 'showFavoritesOnly') return value === true;
@@ -99,6 +103,15 @@ export function SimpleRecipeFiltersComponent({
             onToggle={(value) => toggleArrayFilter('cuisineRegions', value)}
           />
 
+          <Button
+            variant={filters.showFavoritesOnly ? "default" : "outline"}
+            onClick={toggleFavorites}
+            className={`flex items-center gap-2 ${isMobile ? "min-w-[48px] px-3" : "min-w-[140px]"}`}
+          >
+            <Heart className={`h-4 w-4 ${filters.showFavoritesOnly ? "fill-current" : ""}`} />
+            {!isMobile && "Favourites Only"}
+          </Button>
+
           <DropdownFilterSection
             title="⚡ Complexity"
             options={COMPLEXITY_LEVEL_OPTIONS}
@@ -112,14 +125,6 @@ export function SimpleRecipeFiltersComponent({
             selectedValues={filters.dietLifestyle}
             onToggle={(value) => toggleArrayFilter('dietLifestyle', value)}
           />
-
-          <Button
-            variant={filters.showFavoritesOnly ? "default" : "outline"}
-            onClick={toggleFavorites}
-            className="flex items-center gap-2 min-w-[140px]"
-          >
-            ❤️ Favourites Only
-          </Button>
         </div>
         {hasActiveFilters && (
           <div className="mt-3">
@@ -174,6 +179,14 @@ export function SimpleRecipeFiltersComponent({
             onToggle={(value) => toggleArrayFilter('cuisineRegions', value)}
           />
 
+          <Button
+            variant={filters.showFavoritesOnly ? "default" : "outline"}
+            onClick={toggleFavorites}
+            className="flex items-center gap-2 min-w-[140px]"
+          >
+            ❤️ Favourites Only
+          </Button>
+
           <DropdownFilterSection
             title="⚡ Complexity"
             options={COMPLEXITY_LEVEL_OPTIONS}
@@ -187,14 +200,6 @@ export function SimpleRecipeFiltersComponent({
             selectedValues={filters.dietLifestyle}
             onToggle={(value) => toggleArrayFilter('dietLifestyle', value)}
           />
-
-          <Button
-            variant={filters.showFavoritesOnly ? "default" : "outline"}
-            onClick={toggleFavorites}
-            className="flex items-center gap-2 min-w-[140px]"
-          >
-            ❤️ Favourites Only
-          </Button>
         </div>
       </CardContent>
     </Card>
