@@ -11,6 +11,7 @@ interface UseMealPlanGenerationProps {
   setQuantitiesDialog: (open: boolean) => void;
   toast: any;
   recipes: any[];
+  refreshMealPlans?: () => Promise<void>;
 }
 
 export const useMealPlanGeneration = ({
@@ -23,6 +24,7 @@ export const useMealPlanGeneration = ({
   setQuantitiesDialog,
   toast,
   recipes,
+  refreshMealPlans,
 }: UseMealPlanGenerationProps) => {
 
   const handleRandomize = useCallback(() => {
@@ -67,7 +69,8 @@ export const useMealPlanGeneration = ({
       householdId: currentHousehold?.id,
       currentWeek,
       availableRecipes: recipes.length,
-      generateRandomMealPlan: typeof generateRandomMealPlan
+      generateRandomMealPlan: typeof generateRandomMealPlan,
+      refreshMealPlans: typeof refreshMealPlans
     });
     
     if (!user || !currentHousehold) {
@@ -109,6 +112,15 @@ export const useMealPlanGeneration = ({
       
       console.log('🎉 Meal plan generation completed successfully! Total added:', totalAdded);
       
+      // Refresh the meal plans to update the UI
+      if (refreshMealPlans) {
+        console.log('🔄 Refreshing meal plans to update UI...');
+        await refreshMealPlans();
+        console.log('✅ Meal plans refreshed successfully');
+      } else {
+        console.log('⚠️ refreshMealPlans function not available');
+      }
+      
       if (totalAdded > 0) {
         toast({
           title: "Meal Plan Generated",
@@ -138,7 +150,7 @@ export const useMealPlanGeneration = ({
       setIsLoading(false);
       console.log('🏁 Generation process complete, loading set to false');
     }
-  }, [user, currentHousehold, currentWeek, generateRandomMealPlan, clearWeek, setIsLoading, toast, recipes]);
+  }, [user, currentHousehold, currentWeek, generateRandomMealPlan, clearWeek, setIsLoading, toast, recipes, refreshMealPlans]);
 
   return {
     handleRandomize,

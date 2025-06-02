@@ -22,7 +22,7 @@ interface UseMealPlannerOperationsProps {
   setServingsDialog: (open: boolean) => void;
   setPendingMealType: (mealType: MealType | null) => void;
   setClearAllDialog?: (open: boolean) => void;
-  refreshMealPlans?: () => void; // Add refresh function
+  refreshMealPlans?: () => Promise<void>;
 }
 
 export const useMealPlannerOperations = (props: UseMealPlannerOperationsProps) => {
@@ -46,7 +46,7 @@ export const useMealPlannerOperations = (props: UseMealPlannerOperationsProps) =
     currentWeek: props.currentWeek,
     addMealPlan: props.addMealPlan,
     toast: props.toast,
-    refreshMealPlans: props.refreshMealPlans, // Pass refresh function
+    refreshMealPlans: props.refreshMealPlans,
   });
 
   const generationOperations = useMealPlanGeneration({
@@ -59,6 +59,7 @@ export const useMealPlannerOperations = (props: UseMealPlannerOperationsProps) =
     setQuantitiesDialog: props.setQuantitiesDialog,
     toast: props.toast,
     recipes: props.recipes,
+    refreshMealPlans: props.refreshMealPlans,
   });
 
   const sharingOperations = useMealPlanSharing({
