@@ -8,7 +8,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Input } from "@/components/ui/input";
 import {
   MealType,
-  Cuisine,
+  CuisineRegion,
   DietLifestyle,
   ComplexityLevel,
 } from "@/types";
@@ -22,7 +22,7 @@ import {
 export interface ToggleRecipeFilters {
   searchTerm: string;
   mealTypes: MealType[];
-  cuisines: Cuisine[];
+  cuisines: CuisineRegion[];
   dietLifestyle: DietLifestyle[];
   complexityLevels: ComplexityLevel[];
 }
@@ -165,7 +165,7 @@ export function ToggleRecipeFiltersComponent({
           title="🌍 Cuisine"
           options={CUISINE_OPTIONS}
           selectedValues={filters.cuisines}
-          onSelectionChange={(values) => updateFilter('cuisines', values as Cuisine[])}
+          onSelectionChange={(values) => updateFilter('cuisines', values as CuisineRegion[])}
         />
 
         <FilterToggleGroup
