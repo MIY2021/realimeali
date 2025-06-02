@@ -27,7 +27,7 @@ export default function MealPlannerContainer() {
     removeMealPlan, 
     clearWeek, 
     reorderMealPlans,
-    fetchMealPlans // Get the refresh function
+    fetchMealPlans 
   } = useMealPlan();
   const { toast } = useToast();
   
@@ -64,6 +64,33 @@ export default function MealPlannerContainer() {
 
   const { generateRandomMeals } = useRandomMealSelection();
 
+  // Create a wrapper function that matches the expected signature
+  const generateRandomMealPlan = useCallback(async (quantities: { 
+    dinner: number; 
+    lunch: number; 
+    breakfast: number; 
+    snacks: number;
+    sides: number;
+    desserts: number;
+    drinks: number;
+  }, weekNumber: 1 | 2) => {
+    let totalAdded = 0;
+    
+    // Generate meals for each meal type based on quantities
+    for (const [mealType, count] of Object.entries(quantities)) {
+      if (count > 0) {
+        try {
+          const added = await generateRandomMeals(weekNumber, mealType as any, count);
+          totalAdded += added;
+        } catch (error) {
+          console.error(`Error generating ${mealType} meals:`, error);
+        }
+      }
+    }
+    
+    return totalAdded;
+  }, [generateRandomMeals]);
+
   const {
     handleAddRecipeToMeal,
     handleRemoveMeal,
@@ -83,7 +110,7 @@ export default function MealPlannerContainer() {
     removeMealPlan,
     clearWeek,
     reorderMealPlans,
-    generateRandomMealPlan: generateRandomMeals,
+    generateRandomMealPlan,
     setAddMealModal,
     setIsLoading,
     toast,
@@ -91,7 +118,7 @@ export default function MealPlannerContainer() {
     setServingsDialog,
     setPendingMealType,
     setClearAllDialog,
-    refreshMealPlans: fetchMealPlans, // Pass the actual refresh function
+    refreshMealPlans: fetchMealPlans,
   });
 
   const currentMealPlans = getMealPlansForWeek(currentWeek);
