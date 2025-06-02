@@ -37,15 +37,15 @@ export function DropdownFilterSection({
         <DropdownMenuTrigger asChild>
           <Button
             variant="outline"
-            className="flex items-center gap-2 min-w-[140px] justify-between"
+            className="flex items-center gap-1 w-full justify-between h-10 px-2 sm:px-3 text-xs sm:text-sm"
           >
-            <span className="truncate">{title}</span>
+            <span className="truncate flex-1 text-left">{title}</span>
             {selectedValues.length > 0 && (
-              <Badge variant="secondary" className="ml-1 h-5 min-w-5 flex items-center justify-center p-1">
+              <Badge variant="secondary" className="h-4 min-w-4 flex items-center justify-center p-1 text-xs">
                 {selectedValues.length}
               </Badge>
             )}
-            <ChevronDown className="h-4 w-4 opacity-50" />
+            <ChevronDown className="h-3 w-3 sm:h-4 sm:w-4 opacity-50 flex-shrink-0" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent 
