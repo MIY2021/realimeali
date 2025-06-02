@@ -1,107 +1,96 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { useCommunityRecipes } from "@/hooks/useCommunityRecipes";
-import { CommunityRecipeCard } from "@/components/community/CommunityRecipeCard";
+import { useCommunityRecipeList } from "@/hooks/useCommunityRecipeList";
+import { useMobileLayout } from "@/hooks/useMobileLayout";
+import { CommunityRecipeGrid } from "@/components/community/CommunityRecipeGrid";
+import { SimpleRecipeFiltersComponent } from "@/components/recipes/filters/SimpleRecipeFilters";
+import { MobileLayoutSelector } from "@/components/recipes/MobileLayoutSelector";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { DropdownFilterSection } from "@/components/recipes/filters/DropdownFilterSection";
 import { Link } from "react-router-dom";
-import { FindRecipesFilters } from "./FindRecipesFilters";
-import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  MEAL_TYPE_OPTIONS,
+  CUISINE_REGION_OPTIONS,
+  COMPLEXITY_LEVEL_OPTIONS,
+} from "@/utils/recipeClassification";
 
 export const FindRecipesContent = () => {
   const { user } = useAuth();
   const { currentHousehold } = useHousehold();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("all");
-  const [selectedCuisine, setSelectedCuisine] = useState("all");
-  const [selectedIngredient, setSelectedIngredient] = useState("");
-  const [currentPage, setCurrentPage] = useState(0);
-  const [allRecipes, setAllRecipes] = useState<any[]>([]);
-  
   const { recipes, isLoading, totalCount, fetchCommunityRecipes } = useCommunityRecipes();
 
-  const RECIPES_PER_PAGE = 12;
+  // Custom hooks for managing state
+  const {
+    searchTerm,
+    setSearchTerm,
+    sortBy,
+    setSortBy,
+    sortOrder,
+    setSortOrder,
+    filters,
+    handleFiltersChange,
+    filtersOpen,
+    toggleFilters,
+    filteredAndSortedRecipes,
+    visibleRecipes,
+    hasMoreRecipes,
+    handleLoadMore,
+  } = useCommunityRecipeList({ recipes });
 
-  // Available categories and cuisines for filtering
-  const [categories] = useState([
-    "Breakfast", "Lunch", "Dinner", "Appetizer", "Dessert", "Snack", 
-    "Beverage", "Soup", "Salad", "Side Dish", "Main Course"
-  ]);
-
-  const [cuisines] = useState([
-    "American", "Italian", "Chinese", "Mexican", "Indian", "French", 
-    "Thai", "Greek", "Japanese", "Mediterranean", "British", "Korean", 
-    "Vietnamese", "Spanish", "Other"
-  ]);
+  const { mobileLayout, handleMobileLayoutChange } = useMobileLayout();
+  const isMobile = useIsMobile();
 
   // Load initial recipes
   useEffect(() => {
     if (user && currentHousehold) {
-      loadRecipes(true);
+      fetchCommunityRecipes({
+        limit: 50,
+        offset: 0
+      });
     }
-  }, [user, currentHousehold]);
+  }, [user, currentHousehold, fetchCommunityRecipes]);
 
-  // Load recipes with current filters
-  const loadRecipes = async (reset = false) => {
-    const offset = reset ? 0 : currentPage * RECIPES_PER_PAGE;
-    
-    const filters = {
-      category: selectedCategory !== "all" ? selectedCategory : undefined,
-      cuisine: selectedCuisine !== "all" ? selectedCuisine : undefined,
-      search: searchQuery.trim() || undefined,
-      limit: RECIPES_PER_PAGE,
-      offset: offset
-    };
-
-    await fetchCommunityRecipes(filters);
-    
-    if (reset) {
-      setAllRecipes(recipes);
-      setCurrentPage(0);
-    } else {
-      setAllRecipes(prev => [...prev, ...recipes]);
-      setCurrentPage(prev => prev + 1);
-    }
+  const toggleArrayFilter = (key: keyof typeof filters, value: string) => {
+    const currentArray = filters[key] as string[];
+    const updatedArray = currentArray.includes(value)
+      ? currentArray.filter(item => item !== value)
+      : [...currentArray, value];
+    handleFiltersChange({ ...filters, [key]: updatedArray });
   };
 
-  // Handle search
-  const handleSearch = () => {
-    loadRecipes(true);
-  };
+  const hasActiveFilters = Object.entries(filters).some(([key, value]) => {
+    if (key === 'searchTerm') return false;
+    if (key === 'showFavoritesOnly') return value === true;
+    if (Array.isArray(value)) return value.length > 0;
+    return false;
+  });
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleSearch();
-    }
-  };
+  const activeFilterCount = filters.mealTypes.length + 
+                           filters.cuisineRegions.length + 
+                           filters.complexityLevels.length;
 
-  // Clear filters
-  const clearFilters = () => {
-    setSearchQuery("");
-    setSelectedCategory("all");
-    setSelectedCuisine("all");
-    setSelectedIngredient("");
-    setCurrentPage(0);
-    setAllRecipes([]);
-    loadRecipes(true);
+  const clearAllFilters = () => {
+    handleFiltersChange({
+      searchTerm: filters.searchTerm,
+      mealTypes: [],
+      cuisineRegions: [],
+      dietLifestyle: [],
+      complexityLevels: [],
+      showFavoritesOnly: false,
+    });
   };
-
-  // Load more recipes
-  const handleLoadMore = () => {
-    loadRecipes(false);
-  };
-
-  // Auto-search when filters change
-  useEffect(() => {
-    if (user && currentHousehold) {
-      const timeoutId = setTimeout(() => {
-        loadRecipes(true);
-      }, 300);
-      
-      return () => clearTimeout(timeoutId);
-    }
-  }, [selectedCategory, selectedCuisine]);
 
   if (!user) {
     return (
@@ -129,96 +118,167 @@ export const FindRecipesContent = () => {
     );
   }
 
-  const displayRecipes = currentPage === 0 ? recipes : allRecipes;
-  const hasMore = displayRecipes.length < totalCount;
+  if (isLoading) {
+    return (
+      <div className="py-10 text-center">
+        <p className="text-muted-foreground">Loading community recipes...</p>
+      </div>
+    );
+  }
 
   return (
-    <>
-      <FindRecipesFilters
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-        selectedCategory={selectedCategory}
-        setSelectedCategory={setSelectedCategory}
-        selectedArea={selectedCuisine}
-        setSelectedArea={setSelectedCuisine}
-        selectedIngredient={selectedIngredient}
-        setSelectedIngredient={setSelectedIngredient}
-        onSearch={handleSearch}
-        onClearFilters={clearFilters}
-        onKeyPress={handleKeyPress}
-        popularIngredients={[]} // Not used for community recipes
-        categories={categories}
-        categoriesLoading={false}
-      />
+    <div className={`space-y-4 sm:space-y-6 ${isMobile ? 'bg-cream min-h-screen' : ''}`}>
+      {/* Mobile Grid Layout */}
+      {isMobile ? (
+        <div className="space-y-3">
+          {/* Row 1: Search | Sort | Layout */}
+          <div className="grid grid-cols-[1fr_1fr_auto] gap-2">
+            <Input
+              placeholder="Search recipes..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full text-sm"
+            />
+            
+            <Select value={`${sortBy}-${sortOrder}`} onValueChange={(value) => {
+              const [newSortBy, newSortOrder] = value.split('-');
+              setSortBy(newSortBy as "title" | "prepTime" | "cookTime");
+              setSortOrder(newSortOrder as "asc" | "desc");
+            }}>
+              <SelectTrigger className="text-sm">
+                <SelectValue placeholder="Sort" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="title-asc">Title A-Z</SelectItem>
+                <SelectItem value="title-desc">Title Z-A</SelectItem>
+                <SelectItem value="prepTime-asc">Prep Time ↑</SelectItem>
+                <SelectItem value="prepTime-desc">Prep Time ↓</SelectItem>
+                <SelectItem value="cookTime-asc">Cook Time ↑</SelectItem>
+                <SelectItem value="cookTime-desc">Cook Time ↓</SelectItem>
+              </SelectContent>
+            </Select>
 
-      <div className="space-y-6">
-        {/* Recipe count display */}
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">
-            {displayRecipes.length > 0 
-              ? `Showing ${displayRecipes.length} of ${totalCount} community recipes`
-              : 'No community recipes found'
-            }
-          </p>
+            <div className="w-[60px]">
+              <MobileLayoutSelector
+                value={mobileLayout}
+                onChange={handleMobileLayoutChange}
+              />
+            </div>
+          </div>
+
+          {/* Row 2: Meal Type | Cuisine */}
+          <div className="grid grid-cols-[1fr_1fr_auto] gap-2">
+            <DropdownFilterSection
+              title="🕒 Meal"
+              options={MEAL_TYPE_OPTIONS}
+              selectedValues={filters.mealTypes}
+              onToggle={(value) => toggleArrayFilter('mealTypes', value)}
+            />
+
+            <DropdownFilterSection
+              title="🌍 Cuisine"
+              options={CUISINE_REGION_OPTIONS}
+              selectedValues={filters.cuisineRegions}
+              onToggle={(value) => toggleArrayFilter('cuisineRegions', value)}
+            />
+
+            <div className="w-[60px]"></div>
+          </div>
+
+          {/* Row 3: Complexity */}
+          <div className="grid grid-cols-[1fr_1fr_auto] gap-2">
+            <DropdownFilterSection
+              title="⚡ Complexity"
+              options={COMPLEXITY_LEVEL_OPTIONS}
+              selectedValues={filters.complexityLevels}
+              onToggle={(value) => toggleArrayFilter('complexityLevels', value)}
+            />
+
+            <div></div>
+            <div className="w-[60px]"></div>
+          </div>
+
+          {/* Clear filters link */}
+          {hasActiveFilters && (
+            <div className="text-center">
+              <button
+                onClick={clearAllFilters}
+                className="text-sm text-muted-foreground hover:text-foreground underline"
+              >
+                Clear all filters ({activeFilterCount})
+              </button>
+            </div>
+          )}
         </div>
-
-        {/* Recipe grid */}
-        {isLoading && displayRecipes.length === 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="space-y-3">
-                <Skeleton className="h-48 w-full rounded-lg" />
-                <Skeleton className="h-4 w-3/4" />
-                <Skeleton className="h-4 w-1/2" />
-              </div>
-            ))}
+      ) : (
+        /* Desktop Layout */
+        <div>
+          {/* Search, Sort Controls */}
+          <div className="flex gap-3 mb-6">
+            <div className="flex-1">
+              <Input
+                placeholder="Search recipes..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full"
+              />
+            </div>
+            
+            <div className="w-32 sm:w-48">
+              <Select value={`${sortBy}-${sortOrder}`} onValueChange={(value) => {
+                const [newSortBy, newSortOrder] = value.split('-');
+                setSortBy(newSortBy as "title" | "prepTime" | "cookTime");
+                setSortOrder(newSortOrder as "asc" | "desc");
+              }}>
+                <SelectTrigger className="text-sm sm:text-base">
+                  <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="title-asc">Title A-Z</SelectItem>
+                  <SelectItem value="title-desc">Title Z-A</SelectItem>
+                  <SelectItem value="prepTime-asc">Prep Time (Low to High)</SelectItem>
+                  <SelectItem value="prepTime-desc">Prep Time (High to Low)</SelectItem>
+                  <SelectItem value="cookTime-asc">Cook Time (Low to High)</SelectItem>
+                  <SelectItem value="cookTime-desc">Cook Time (High to Low)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-        ) : displayRecipes.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground text-lg mb-2">No recipes found</p>
-            <p className="text-sm text-muted-foreground">
-              Be the first to share a recipe! Use the "Add Recipe" feature to import and share recipes with the community.
+
+          {/* Filters directly under search bar */}
+          <SimpleRecipeFiltersComponent
+            filters={filters}
+            onFiltersChange={handleFiltersChange}
+            isOpen={filtersOpen}
+            onToggle={toggleFilters}
+            alwaysVisible={true}
+          />
+        </div>
+      )}
+      
+      {filteredAndSortedRecipes.length === 0 ? (
+        <div className="text-center py-8 px-4">
+          <p className="text-muted-foreground">No community recipes found. Try adjusting your search or filters.</p>
+        </div>
+      ) : (
+        <>
+          <CommunityRecipeGrid
+            recipes={visibleRecipes}
+            mobileLayout={mobileLayout}
+          />
+          
+          <div className="flex flex-col items-center gap-4 mt-6 px-4">
+            {hasMoreRecipes && (
+              <Button onClick={handleLoadMore} variant="outline" className="w-full sm:w-auto">
+                Load More Recipes
+              </Button>
+            )}
+            <p className="text-sm text-muted-foreground text-center">
+              Showing {visibleRecipes.length} of {filteredAndSortedRecipes.length} community recipes
             </p>
-            <Button asChild className="mt-4 bg-terracotta hover:bg-terracotta/90">
-              <Link to="/create-recipe">
-                Add Your First Recipe
-              </Link>
-            </Button>
           </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {displayRecipes.map((recipe) => (
-              <CommunityRecipeCard key={recipe.id} recipe={recipe} />
-            ))}
-          </div>
-        )}
-
-        {/* Load more section */}
-        {hasMore && !isLoading && (
-          <div className="flex flex-col items-center gap-4 pt-4">
-            <Button
-              onClick={handleLoadMore}
-              variant="outline"
-              className="px-8"
-            >
-              Load More Recipes
-            </Button>
-          </div>
-        )}
-
-        {/* Loading indicator for load more */}
-        {isLoading && displayRecipes.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div key={`loading-${i}`} className="space-y-3">
-                <Skeleton className="h-48 w-full rounded-lg" />
-                <Skeleton className="h-4 w-3/4" />
-                <Skeleton className="h-4 w-1/2" />
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    </>
+        </>
+      )}
+    </div>
   );
 };

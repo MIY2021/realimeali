@@ -1,11 +1,5 @@
 
-import { Search, Info } from "lucide-react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Search } from "lucide-react";
 
 export const FindRecipesHeader = () => {
   return (
@@ -15,20 +9,13 @@ export const FindRecipesHeader = () => {
           <Search className="h-6 w-6 sm:h-8 sm:w-8 text-terracotta" />
           <span>Find Recipes</span>
         </h1>
-        <div className="flex items-start gap-2">
+        <div className="space-y-1">
           <p className="text-sm sm:text-base text-muted-foreground">
-            Discover thousands of delicious recipes from around the world
+            Discover amazing recipes shared by RealiMeali users as community inspiration
           </p>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Info className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
-              </TooltipTrigger>
-              <TooltipContent className="max-w-xs">
-                <p>Search by recipe name, ingredient, or use filters to find amazing recipes. Filters automatically apply when selected to help you discover your next favorite dish.</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <p className="text-xs sm:text-sm text-muted-foreground font-medium">
+            <strong>Important:</strong> All recipes are sourced from external websites - please visit the original source to support the recipe creators
+          </p>
         </div>
       </div>
     </div>
