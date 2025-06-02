@@ -1,4 +1,3 @@
-
 import { useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRecipes } from "@/contexts/RecipesContext";
@@ -63,7 +62,7 @@ export default function MealPlannerContainer() {
     setAddMealModal,
   } = useMealPlanModals();
 
-  const { generateRandomMealPlan } = useRandomMealSelection();
+  const { generateRandomMeals } = useRandomMealSelection();
 
   const {
     handleAddRecipeToMeal,
@@ -84,7 +83,7 @@ export default function MealPlannerContainer() {
     removeMealPlan,
     clearWeek,
     reorderMealPlans,
-    generateRandomMealPlan,
+    generateRandomMealPlan: generateRandomMeals,
     setAddMealModal,
     setIsLoading,
     toast,
