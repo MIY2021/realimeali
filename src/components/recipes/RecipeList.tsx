@@ -67,8 +67,8 @@ export function RecipeList({
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      {/* Search and Sort Controls */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
+      {/* Search and Sort Controls - Mobile on same row */}
+      <div className="flex gap-3">
         <div className="flex-1">
           <Input
             placeholder="Search recipes..."
@@ -78,7 +78,7 @@ export function RecipeList({
           />
         </div>
         
-        <div className="w-full sm:w-48">
+        <div className="w-32 sm:w-48">
           <Select value={`${sortBy}-${sortOrder}`} onValueChange={(value) => {
             const [newSortBy, newSortOrder] = value.split('-');
             setSortBy(newSortBy as "title" | "prepTime" | "cookTime");

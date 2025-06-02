@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus, UtensilsCrossed } from "lucide-react";
@@ -47,6 +48,13 @@ export default function RecipesPage() {
     }
   }, [setScrollKey, restoreScrollPosition, navigationState.shouldRestoreScroll, isLoading, recipes.length, clearNavigationState]);
 
+  const getWelcomeText = () => {
+    if (!currentHousehold) {
+      return "Welcome to your personal recipe collection! All recipes are organised by household.";
+    }
+    return `Welcome to your recipe collection for ${currentHousehold.name}! All recipes are organised by household.`;
+  };
+
   return (
     <div className="container max-w-7xl py-4 px-4 sm:py-8 sm:px-6">
       <div className="flex flex-col gap-4 mb-6 sm:flex-row sm:justify-between sm:items-center">
@@ -56,14 +64,14 @@ export default function RecipesPage() {
             My Recipes
           </h1>
           <p className="text-sm sm:text-base text-muted-foreground">
-            Welcome to your personal recipe book! Explore, create, and share delicious meals that bring joy to your table. Every great dish starts with a treasured recipe.
+            {getWelcomeText()}
           </p>
         </div>
         {user && currentHousehold && (
           <Button asChild className="bg-terracotta hover:bg-terracotta/90 w-full sm:w-auto">
             <Link to="/my-recipes/new">
               <Plus className="h-4 w-4 mr-2" />
-              Add New Recipe
+              Add Recipe
             </Link>
           </Button>
         )}

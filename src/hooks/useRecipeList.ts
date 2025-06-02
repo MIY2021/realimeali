@@ -37,7 +37,7 @@ export function useRecipeList({ recipes }: UseRecipeListProps) {
       );
     }
 
-    // Filter by favorites only
+    // Filter by favourites only
     if (filters.showFavoritesOnly) {
       filtered = filtered.filter(recipe => recipe.is_favorite);
     }

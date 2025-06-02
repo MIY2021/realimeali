@@ -100,17 +100,17 @@ export function SimpleRecipeFiltersComponent({
           />
 
           <DropdownFilterSection
-            title="🍎 Diet & Lifestyle"
-            options={DIET_LIFESTYLE_OPTIONS}
-            selectedValues={filters.dietLifestyle}
-            onToggle={(value) => toggleArrayFilter('dietLifestyle', value)}
-          />
-
-          <DropdownFilterSection
             title="⚡ Complexity"
             options={COMPLEXITY_LEVEL_OPTIONS}
             selectedValues={filters.complexityLevels}
             onToggle={(value) => toggleArrayFilter('complexityLevels', value)}
+          />
+
+          <DropdownFilterSection
+            title="🍎 Diet & Lifestyle"
+            options={DIET_LIFESTYLE_OPTIONS}
+            selectedValues={filters.dietLifestyle}
+            onToggle={(value) => toggleArrayFilter('dietLifestyle', value)}
           />
 
           <Button
@@ -118,7 +118,7 @@ export function SimpleRecipeFiltersComponent({
             onClick={toggleFavorites}
             className="flex items-center gap-2 min-w-[140px]"
           >
-            ❤️ Favorites Only
+            ❤️ Favourites Only
           </Button>
         </div>
         {hasActiveFilters && (
@@ -175,17 +175,17 @@ export function SimpleRecipeFiltersComponent({
           />
 
           <DropdownFilterSection
-            title="🍎 Diet & Lifestyle"
-            options={DIET_LIFESTYLE_OPTIONS}
-            selectedValues={filters.dietLifestyle}
-            onToggle={(value) => toggleArrayFilter('dietLifestyle', value)}
-          />
-
-          <DropdownFilterSection
             title="⚡ Complexity"
             options={COMPLEXITY_LEVEL_OPTIONS}
             selectedValues={filters.complexityLevels}
             onToggle={(value) => toggleArrayFilter('complexityLevels', value)}
+          />
+
+          <DropdownFilterSection
+            title="🍎 Diet & Lifestyle"
+            options={DIET_LIFESTYLE_OPTIONS}
+            selectedValues={filters.dietLifestyle}
+            onToggle={(value) => toggleArrayFilter('dietLifestyle', value)}
           />
 
           <Button
@@ -193,7 +193,7 @@ export function SimpleRecipeFiltersComponent({
             onClick={toggleFavorites}
             className="flex items-center gap-2 min-w-[140px]"
           >
-            ❤️ Favorites Only
+            ❤️ Favourites Only
           </Button>
         </div>
       </CardContent>
