@@ -113,7 +113,7 @@ export function RecipeList({
   }
 
   return (
-    <div className="space-y-4 sm:space-y-6">
+    <div className={`space-y-4 sm:space-y-6 ${isMobile ? 'bg-cream min-h-screen' : ''}`}>
       {/* Mobile Grid Layout */}
       {isMobile ? (
         <div className="space-y-3">
@@ -211,10 +211,10 @@ export function RecipeList({
           )}
         </div>
       ) : (
-        /* Desktop Layout - Keep existing */
+        /* Desktop Layout - Keep existing with added spacing */
         <div>
           {/* Search, Sort Controls */}
-          <div className="flex gap-3">
+          <div className="flex gap-3 mb-4">
             <div className="flex-1">
               <Input
                 placeholder="Search recipes..."
