@@ -88,54 +88,56 @@ export function SimpleRecipeFiltersComponent({
   if (alwaysVisible) {
     return (
       <div className="mb-4">
-        {/* Grid layout to align with search/sort row above */}
-        <div className="grid grid-cols-1 sm:grid-cols-[2fr_1fr_auto] gap-3">
-          {/* Left group - aligns under search */}
-          <div className="flex flex-wrap gap-2">
-            <DropdownFilterSection
-              title="🕒 Meal Type"
-              options={MEAL_TYPE_OPTIONS}
-              selectedValues={filters.mealTypes}
-              onToggle={(value) => toggleArrayFilter('mealTypes', value)}
-            />
-            <DropdownFilterSection
-              title="⚡ Complexity"
-              options={COMPLEXITY_LEVEL_OPTIONS}
-              selectedValues={filters.complexityLevels}
-              onToggle={(value) => toggleArrayFilter('complexityLevels', value)}
-            />
-          </div>
+        <div className="flex flex-wrap gap-2 sm:gap-3">
+          <DropdownFilterSection
+            title="🕒 Meal Type"
+            options={MEAL_TYPE_OPTIONS}
+            selectedValues={filters.mealTypes}
+            onToggle={(value) => toggleArrayFilter('mealTypes', value)}
+          />
 
-          {/* Center group - aligns under sort */}
-          <div className="flex flex-wrap gap-2">
-            <DropdownFilterSection
-              title="🌍 Cuisine"
-              options={CUISINE_REGION_OPTIONS}
-              selectedValues={filters.cuisineRegions}
-              onToggle={(value) => toggleArrayFilter('cuisineRegions', value)}
-            />
-            <DropdownFilterSection
-              title="🍎 Diet & Lifestyle"
-              options={DIET_LIFESTYLE_OPTIONS}
-              selectedValues={filters.dietLifestyle}
-              onToggle={(value) => toggleArrayFilter('dietLifestyle', value)}
-            />
-          </div>
+          <DropdownFilterSection
+            title="🌍 Cuisine"
+            options={CUISINE_REGION_OPTIONS}
+            selectedValues={filters.cuisineRegions}
+            onToggle={(value) => toggleArrayFilter('cuisineRegions', value)}
+          />
 
-          {/* Right group - aligns under mobile layout selector */}
-          <div className="flex justify-start sm:justify-end">
+          {isMobile && (
             <Button
               variant={filters.showFavoritesOnly ? "default" : "outline"}
               onClick={toggleFavorites}
-              className="flex items-center gap-2 h-10"
-              size={isMobile ? "sm" : "default"}
+              className="flex items-center gap-2 min-w-[48px] px-3"
             >
               <Heart className={`h-4 w-4 ${filters.showFavoritesOnly ? "fill-current" : ""}`} />
-              {!isMobile && "Favourites"}
             </Button>
-          </div>
+          )}
+
+          <DropdownFilterSection
+            title="⚡ Complexity"
+            options={COMPLEXITY_LEVEL_OPTIONS}
+            selectedValues={filters.complexityLevels}
+            onToggle={(value) => toggleArrayFilter('complexityLevels', value)}
+          />
+
+          <DropdownFilterSection
+            title="🍎 Diet & Lifestyle"
+            options={DIET_LIFESTYLE_OPTIONS}
+            selectedValues={filters.dietLifestyle}
+            onToggle={(value) => toggleArrayFilter('dietLifestyle', value)}
+          />
+
+          {!isMobile && (
+            <Button
+              variant={filters.showFavoritesOnly ? "default" : "outline"}
+              onClick={toggleFavorites}
+              className="flex items-center gap-2 min-w-[140px]"
+            >
+              <Heart className={`h-4 w-4 ${filters.showFavoritesOnly ? "fill-current" : ""}`} />
+              Favourites Only
+            </Button>
+          )}
         </div>
-        
         {hasActiveFilters && (
           <div className="mt-3">
             <button

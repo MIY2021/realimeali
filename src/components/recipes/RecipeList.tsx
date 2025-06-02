@@ -70,24 +70,24 @@ export function RecipeList({
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      {/* Search, Sort and Mobile Layout Controls - Grid Layout */}
-      <div className="grid grid-cols-1 sm:grid-cols-[2fr_1fr_auto] gap-3">
-        <div className="sm:col-span-1">
+      {/* Search, Sort and Mobile Layout Controls */}
+      <div className="flex gap-3">
+        <div className="flex-1">
           <Input
             placeholder="Search recipes..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full h-10"
+            className="w-full"
           />
         </div>
         
-        <div className="sm:col-span-1">
+        <div className="w-32 sm:w-48">
           <Select value={`${sortBy}-${sortOrder}`} onValueChange={(value) => {
             const [newSortBy, newSortOrder] = value.split('-');
             setSortBy(newSortBy as "title" | "prepTime" | "cookTime");
             setSortOrder(newSortOrder as "asc" | "desc");
           }}>
-            <SelectTrigger className="text-sm sm:text-base h-10">
+            <SelectTrigger className="text-sm sm:text-base">
               <SelectValue placeholder="Sort by" />
             </SelectTrigger>
             <SelectContent>
@@ -103,7 +103,7 @@ export function RecipeList({
 
         {/* Mobile Layout Selector - only visible on mobile */}
         {isMobile && (
-          <div className="sm:col-span-1 sm:justify-self-end">
+          <div className="w-[60px]">
             <MobileLayoutSelector
               value={mobileLayout}
               onChange={handleMobileLayoutChange}
