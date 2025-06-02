@@ -117,14 +117,22 @@ export function CreateRecipeContainer() {
     return recipeProcessingHook.handleProcessText(recipeFormHook.setNewRecipe, recipeFormHook.newRecipe, setActiveTab);
   };
   
-  const wrappedProcessImage = (file: File) => {
+  const wrappedProcessImage = async (file: File) => {
     setRecipeOrigin('image');
-    return recipeProcessingHook.processImage(file, recipeFormHook.setNewRecipe, recipeFormHook.newRecipe, setActiveTab);
+    const result = await recipeProcessingHook.processImage(file);
+    if (result) {
+      recipeFormHook.setNewRecipe({ ...recipeFormHook.newRecipe, ...result });
+      setActiveTab("manual");
+    }
   };
   
-  const wrappedGenerateRecipe = () => {
+  const wrappedGenerateRecipe = async () => {
     setRecipeOrigin('generate');
-    return recipeProcessingHook.generateRecipe(recipeFormHook.setNewRecipe, recipeFormHook.newRecipe, setActiveTab);
+    const result = await recipeProcessingHook.generateRecipe({});
+    if (result) {
+      recipeFormHook.setNewRecipe({ ...recipeFormHook.newRecipe, ...result });
+      setActiveTab("manual");
+    }
   };
   
   const wrappedImportFromUrl = () => {
