@@ -88,7 +88,7 @@ export function SimpleRecipeFiltersComponent({
   if (alwaysVisible) {
     return (
       <div className="mb-4">
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap gap-2 sm:gap-3">
           <DropdownFilterSection
             title="🕒 Meal Type"
             options={MEAL_TYPE_OPTIONS}
@@ -103,14 +103,15 @@ export function SimpleRecipeFiltersComponent({
             onToggle={(value) => toggleArrayFilter('cuisineRegions', value)}
           />
 
-          <Button
-            variant={filters.showFavoritesOnly ? "default" : "outline"}
-            onClick={toggleFavorites}
-            className={`flex items-center gap-2 ${isMobile ? "min-w-[48px] px-3" : "min-w-[140px]"}`}
-          >
-            <Heart className={`h-4 w-4 ${filters.showFavoritesOnly ? "fill-current" : ""}`} />
-            {!isMobile && "Favourites Only"}
-          </Button>
+          {isMobile && (
+            <Button
+              variant={filters.showFavoritesOnly ? "default" : "outline"}
+              onClick={toggleFavorites}
+              className="flex items-center gap-2 min-w-[48px] px-3"
+            >
+              <Heart className={`h-4 w-4 ${filters.showFavoritesOnly ? "fill-current" : ""}`} />
+            </Button>
+          )}
 
           <DropdownFilterSection
             title="⚡ Complexity"
@@ -125,6 +126,17 @@ export function SimpleRecipeFiltersComponent({
             selectedValues={filters.dietLifestyle}
             onToggle={(value) => toggleArrayFilter('dietLifestyle', value)}
           />
+
+          {!isMobile && (
+            <Button
+              variant={filters.showFavoritesOnly ? "default" : "outline"}
+              onClick={toggleFavorites}
+              className="flex items-center gap-2 min-w-[140px]"
+            >
+              <Heart className={`h-4 w-4 ${filters.showFavoritesOnly ? "fill-current" : ""}`} />
+              Favourites Only
+            </Button>
+          )}
         </div>
         {hasActiveFilters && (
           <div className="mt-3">
@@ -179,14 +191,6 @@ export function SimpleRecipeFiltersComponent({
             onToggle={(value) => toggleArrayFilter('cuisineRegions', value)}
           />
 
-          <Button
-            variant={filters.showFavoritesOnly ? "default" : "outline"}
-            onClick={toggleFavorites}
-            className="flex items-center gap-2 min-w-[140px]"
-          >
-            ❤️ Favourites Only
-          </Button>
-
           <DropdownFilterSection
             title="⚡ Complexity"
             options={COMPLEXITY_LEVEL_OPTIONS}
@@ -200,6 +204,14 @@ export function SimpleRecipeFiltersComponent({
             selectedValues={filters.dietLifestyle}
             onToggle={(value) => toggleArrayFilter('dietLifestyle', value)}
           />
+
+          <Button
+            variant={filters.showFavoritesOnly ? "default" : "outline"}
+            onClick={toggleFavorites}
+            className="flex items-center gap-2 min-w-[140px]"
+          >
+            ❤️ Favourites Only
+          </Button>
         </div>
       </CardContent>
     </Card>
