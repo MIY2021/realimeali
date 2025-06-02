@@ -113,7 +113,6 @@ export interface HouseholdMealPlan {
 
 // Updated to include sides, desserts, drinks in meal plans
 export type MealType = "breakfast" | "lunch" | "dinner" | "snacks" | "sides" | "desserts" | "drinks";
-export type MealPlanMealType = "breakfast" | "lunch" | "dinner" | "snacks" | "sides" | "desserts" | "drinks";
 
 // Updated to match database cuisine_region enum exactly (with greek added)
 export type CuisineRegion = "british" | "american" | "italian" | "french" | "mexican" | "indian" | "chinese" | "japanese" | "thai" | "mediterranean" | "middle_eastern" | "african" | "korean" | "caribbean" | "nordic" | "eastern_european" | "greek";
@@ -124,5 +123,3 @@ export type DietLifestyle = "vegetarian" | "vegan" | "gluten_free" | "dairy_free
 export type ComplexityLevel = "quick_easy" | "standard" | "complex";
 
 export type MainIngredient = "chicken" | "beef" | "pork" | "lamb" | "fish" | "tofu_tempeh" | "eggs" | "cheese" | "pasta" | "rice" | "lentils_beans" | "vegetables" | "potatoes" | "fruit" | "nuts_seeds" | "chocolate";
-
-// Remove Cuisine and CookingMethod types - using CuisineRegion instead

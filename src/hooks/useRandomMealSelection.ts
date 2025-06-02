@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Recipe, MealPlanMealType } from "@/types";
+import { Recipe, MealType } from "@/types";
 import { mealPlanService } from "@/services/mealPlanService";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,7 +11,7 @@ export function useRandomMealSelection() {
 
   const generateRandomMeals = async (
     weekNumber: 1 | 2,
-    mealType: MealPlanMealType,
+    mealType: MealType | "all",
     numMeals: number,
     onProgress?: (progress: number) => void
   ) => {
@@ -59,7 +59,7 @@ export function useRandomMealSelection() {
       const addPromises = selectedRecipes.map(async (recipe, index) => {
         const mealPlanData = {
           recipe_id: recipe.id,
-          meal_type: mealType as MealPlanMealType,
+          meal_type: mealType === 'all' ? 'dinner' : mealType,
           date: new Date().toISOString().split('T')[0], // Today's date as default
           created_by: user.id,
           slot_index: index,

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Recipe, DietLifestyle } from "@/types";
 
@@ -16,7 +15,6 @@ export const useRecipeForm = (initialRecipe?: Partial<Recipe>) => {
     household_id: initialRecipe?.household_id || '',
     meal_type: initialRecipe?.meal_type,
     cuisine_region: initialRecipe?.cuisine_region,
-    cooking_method: initialRecipe?.cooking_method,
     diet_lifestyle: initialRecipe?.diet_lifestyle || [],
     complexity_level: initialRecipe?.complexity_level,
     main_ingredient: initialRecipe?.main_ingredient,

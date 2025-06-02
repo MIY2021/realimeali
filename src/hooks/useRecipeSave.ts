@@ -30,7 +30,6 @@ export function useRecipeSave() {
         classification: {
           meal_type: newRecipe.meal_type,
           cuisine_region: newRecipe.cuisine_region,
-          cooking_method: newRecipe.cooking_method,
           diet_lifestyle: newRecipe.diet_lifestyle,
           complexity_level: newRecipe.complexity_level,
           main_ingredient: newRecipe.main_ingredient,

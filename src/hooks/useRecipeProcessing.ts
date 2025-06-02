@@ -34,16 +34,12 @@ export function useRecipeProcessing() {
     handleImageSelect: urlProcessing.handleImageSelect,
     
     // Image processing
-    handleProcessImage: imageProcessing.handleProcessImage,
+    processImage: imageProcessing.processImage,
     
     // AI generation
-    aiPrompt: aiGeneration.aiPrompt,
-    setAiPrompt: aiGeneration.setAiPrompt,
-    stylePreferences: aiGeneration.stylePreferences,
-    setStylePreferences: aiGeneration.setStylePreferences,
-    handleGenerateRecipe: aiGeneration.handleGenerateRecipe,
+    generateRecipe: aiGeneration.generateRecipe,
     
     // Combined processing state
-    isProcessing: textProcessing.isProcessing || urlProcessing.isProcessing || imageProcessing.isProcessing || aiGeneration.isProcessing,
+    isProcessing: textProcessing.isProcessing || urlProcessing.isProcessing || imageProcessing.isProcessing || aiGeneration.isGenerating,
   };
 }
