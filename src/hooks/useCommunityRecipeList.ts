@@ -2,10 +2,37 @@
 import { useState, useMemo, useCallback } from "react";
 import { CommunityRecipe } from "@/hooks/useCommunityRecipes";
 import { SimpleRecipeFilters } from "@/components/recipes/filters/SimpleRecipeFilters";
+import { MealType, CuisineRegion, ComplexityLevel } from "@/types";
 
 interface UseCommunityRecipeListProps {
   recipes: CommunityRecipe[];
 }
+
+// Helper functions to safely convert community recipe strings to our types
+const safeMealTypeConversion = (category: string | null): MealType | null => {
+  if (!category) return null;
+  const normalized = category.toLowerCase();
+  const validMealTypes: MealType[] = ["breakfast", "lunch", "dinner", "snacks", "sides", "desserts", "drinks"];
+  return validMealTypes.find(type => type === normalized) || null;
+};
+
+const safeCuisineConversion = (cuisine: string | null): CuisineRegion | null => {
+  if (!cuisine) return null;
+  const normalized = cuisine.toLowerCase();
+  const validCuisines: CuisineRegion[] = [
+    "british", "american", "italian", "french", "mexican", "indian", "chinese", 
+    "japanese", "thai", "mediterranean", "middle_eastern", "african", "korean", 
+    "caribbean", "nordic", "eastern_european", "greek"
+  ];
+  return validCuisines.find(c => c === normalized) || null;
+};
+
+const safeComplexityConversion = (difficulty: string | null): ComplexityLevel | null => {
+  if (!difficulty) return null;
+  const normalized = difficulty.toLowerCase();
+  const validComplexity: ComplexityLevel[] = ["quick_easy", "standard", "complex"];
+  return validComplexity.find(level => level === normalized) || null;
+};
 
 export function useCommunityRecipeList({ recipes }: UseCommunityRecipeListProps) {
   const [searchTerm, setSearchTerm] = useState("");
@@ -36,23 +63,26 @@ export function useCommunityRecipeList({ recipes }: UseCommunityRecipeListProps)
 
     // Filter by meal types (map category to meal types)
     if (filters.mealTypes.length > 0) {
-      filtered = filtered.filter(recipe => 
-        recipe.category && filters.mealTypes.includes(recipe.category.toLowerCase())
-      );
+      filtered = filtered.filter(recipe => {
+        const safeMealType = safeMealTypeConversion(recipe.category);
+        return safeMealType && filters.mealTypes.includes(safeMealType);
+      });
     }
 
     // Filter by cuisine regions
     if (filters.cuisineRegions.length > 0) {
-      filtered = filtered.filter(recipe => 
-        recipe.cuisine && filters.cuisineRegions.includes(recipe.cuisine.toLowerCase())
-      );
+      filtered = filtered.filter(recipe => {
+        const safeCuisine = safeCuisineConversion(recipe.cuisine);
+        return safeCuisine && filters.cuisineRegions.includes(safeCuisine);
+      });
     }
 
     // Filter by complexity levels
     if (filters.complexityLevels.length > 0) {
-      filtered = filtered.filter(recipe => 
-        recipe.difficulty_level && filters.complexityLevels.includes(recipe.difficulty_level.toLowerCase())
-      );
+      filtered = filtered.filter(recipe => {
+        const safeComplexity = safeComplexityConversion(recipe.difficulty_level);
+        return safeComplexity && filters.complexityLevels.includes(safeComplexity);
+      });
     }
 
     // Sort recipes

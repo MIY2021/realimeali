@@ -2,10 +2,9 @@
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Globe } from "lucide-react";
+import { Globe, UtensilsCrossed } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CommunityRecipe } from "@/hooks/useCommunityRecipes";
-import { RecipeImage } from "@/components/ui/recipe-image";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface CommunityRecipeCardProps {
@@ -14,6 +13,7 @@ interface CommunityRecipeCardProps {
 
 export function CommunityRecipeCard({ recipe }: CommunityRecipeCardProps) {
   const isMobile = useIsMobile();
+  const [imgError, setImgError] = useState(false);
 
   const handleVisitRecipe = () => {
     window.open(recipe.source_url, '_blank');
@@ -32,22 +32,22 @@ export function CommunityRecipeCard({ recipe }: CommunityRecipeCardProps) {
     }
   };
 
-  // Convert CommunityRecipe to Recipe-like structure for RecipeImage
-  const recipeForImage = {
-    id: recipe.id,
-    title: recipe.title,
-    image: recipe.image_url || undefined,
-  };
-
   return (
     <Card className="bg-card rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 flex flex-col h-full">
       <div className="relative overflow-hidden rounded-t-lg">
         <div onClick={handleVisitRecipe} className="cursor-pointer">
-          <RecipeImage 
-            recipe={recipeForImage} 
-            className={`w-full aspect-[4/3] object-cover transition-transform duration-300 ${!isMobile ? 'hover:scale-110' : ''}`} 
-            iconSize="h-5 w-5" 
-          />
+          {recipe.image_url && !imgError ? (
+            <img
+              src={recipe.image_url}
+              alt={recipe.title}
+              className={`w-full aspect-[4/3] object-cover transition-transform duration-300 ${!isMobile ? 'hover:scale-110' : ''}`}
+              onError={() => setImgError(true)}
+            />
+          ) : (
+            <div className="w-full aspect-[4/3] flex items-center justify-center bg-muted">
+              <UtensilsCrossed className="h-8 w-8 text-muted-foreground" />
+            </div>
+          )}
         </div>
         <Badge
           variant="secondary"
