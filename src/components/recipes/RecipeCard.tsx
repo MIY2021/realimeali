@@ -9,6 +9,7 @@ import { Recipe } from "@/types";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { RecipeImage } from "@/components/ui/recipe-image";
 import { createRecipeUrl } from "@/utils/slugUtils";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface RecipeCardProps {
   recipe: Recipe;
@@ -19,6 +20,7 @@ interface RecipeCardProps {
 export function RecipeCard({ recipe, onAddToMealPlan, showActions = true }: RecipeCardProps) {
   const { toggleFavorite } = useRecipes();
   const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
+  const isMobile = useIsMobile();
 
   const handleToggleFavorite = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -64,7 +66,9 @@ export function RecipeCard({ recipe, onAddToMealPlan, showActions = true }: Reci
       </div>
       
       <CardContent className="p-4 flex-1 flex flex-col">
-        <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-1">{recipe.title}</h3>
+        <h3 className={`text-lg font-semibold text-gray-900 mb-2 ${isMobile ? '' : 'line-clamp-1'}`}>
+          {recipe.title}
+        </h3>
         <p className="text-sm text-gray-600 line-clamp-2 mb-3 flex-1">{recipe.description}</p>
         
         <div className="flex items-center gap-2 mb-4">
