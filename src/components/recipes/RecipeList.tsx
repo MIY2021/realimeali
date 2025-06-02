@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { DropdownFilterSection } from "./filters/DropdownFilterSection";
+import { SimpleRecipeFiltersComponent } from "./filters/SimpleRecipeFilters";
 import {
   MEAL_TYPE_OPTIONS,
   CUISINE_REGION_OPTIONS,
@@ -54,6 +55,8 @@ export function RecipeList({
     visibleRecipes,
     hasMoreRecipes,
     handleLoadMore,
+    filtersOpen,
+    toggleFilters,
   } = useRecipeList({ recipes });
 
   const { mobileLayout, handleMobileLayoutChange } = useMobileLayout();
@@ -111,93 +114,135 @@ export function RecipeList({
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      {/* 3-Column Grid Layout */}
-      <div className="grid grid-cols-[1fr_1fr_auto] gap-3 items-start">
-        {/* Row 1: Search | Sort | Layout */}
-        <Input
-          placeholder="Search recipes..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="h-10"
-        />
-        
-        <Select value={`${sortBy}-${sortOrder}`} onValueChange={(value) => {
-          const [newSortBy, newSortOrder] = value.split('-');
-          setSortBy(newSortBy as "title" | "prepTime" | "cookTime");
-          setSortOrder(newSortOrder as "asc" | "desc");
-        }}>
-          <SelectTrigger className="h-10">
-            <SelectValue placeholder="Sort by" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="title-asc">Title A-Z</SelectItem>
-            <SelectItem value="title-desc">Title Z-A</SelectItem>
-            <SelectItem value="prepTime-asc">Prep Time (Low to High)</SelectItem>
-            <SelectItem value="prepTime-desc">Prep Time (High to Low)</SelectItem>
-            <SelectItem value="cookTime-asc">Cook Time (Low to High)</SelectItem>
-            <SelectItem value="cookTime-desc">Cook Time (High to Low)</SelectItem>
-          </SelectContent>
-        </Select>
+      {/* Desktop: Use SimpleRecipeFilters component */}
+      {!isMobile && (
+        <>
+          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+            <Input
+              placeholder="Search recipes..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="flex-1"
+            />
+            
+            <Select value={`${sortBy}-${sortOrder}`} onValueChange={(value) => {
+              const [newSortBy, newSortOrder] = value.split('-');
+              setSortBy(newSortBy as "title" | "prepTime" | "cookTime");
+              setSortOrder(newSortOrder as "asc" | "desc");
+            }}>
+              <SelectTrigger className="w-full sm:w-[200px]">
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="title-asc">Title A-Z</SelectItem>
+                <SelectItem value="title-desc">Title Z-A</SelectItem>
+                <SelectItem value="prepTime-asc">Prep Time (Low to High)</SelectItem>
+                <SelectItem value="prepTime-desc">Prep Time (High to Low)</SelectItem>
+                <SelectItem value="cookTime-asc">Cook Time (Low to High)</SelectItem>
+                <SelectItem value="cookTime-desc">Cook Time (High to Low)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-        {isMobile && (
-          <MobileLayoutSelector
-            value={mobileLayout}
-            onChange={handleMobileLayoutChange}
+          <SimpleRecipeFiltersComponent
+            filters={filters}
+            onFiltersChange={handleFiltersChange}
+            isOpen={filtersOpen}
+            onToggle={toggleFilters}
           />
-        )}
+        </>
+      )}
 
-        {/* Row 2: Meal Type | Cuisine | Favourite */}
-        <DropdownFilterSection
-          title="🕒 Meal Type"
-          options={MEAL_TYPE_OPTIONS}
-          selectedValues={filters.mealTypes}
-          onToggle={(value) => toggleArrayFilter('mealTypes', value)}
-        />
+      {/* Mobile: Use 3-column grid layout */}
+      {isMobile && (
+        <>
+          {/* Mobile 3-Column Grid Layout with proper responsive classes */}
+          <div className="grid grid-cols-[1fr_1fr_auto] gap-2 items-start max-w-full overflow-hidden">
+            {/* Row 1: Search | Sort | Layout */}
+            <Input
+              placeholder="Search recipes..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="h-10 min-w-0"
+            />
+            
+            <Select value={`${sortBy}-${sortOrder}`} onValueChange={(value) => {
+              const [newSortBy, newSortOrder] = value.split('-');
+              setSortBy(newSortBy as "title" | "prepTime" | "cookTime");
+              setSortOrder(newSortOrder as "asc" | "desc");
+            }}>
+              <SelectTrigger className="h-10 min-w-0">
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="title-asc">Title A-Z</SelectItem>
+                <SelectItem value="title-desc">Title Z-A</SelectItem>
+                <SelectItem value="prepTime-asc">Prep Time (Low to High)</SelectItem>
+                <SelectItem value="prepTime-desc">Prep Time (High to Low)</SelectItem>
+                <SelectItem value="cookTime-asc">Cook Time (Low to High)</SelectItem>
+                <SelectItem value="cookTime-desc">Cook Time (High to Low)</SelectItem>
+              </SelectContent>
+            </Select>
 
-        <DropdownFilterSection
-          title="🌍 Cuisine"
-          options={CUISINE_REGION_OPTIONS}
-          selectedValues={filters.cuisineRegions}
-          onToggle={(value) => toggleArrayFilter('cuisineRegions', value)}
-        />
+            <MobileLayoutSelector
+              value={mobileLayout}
+              onChange={handleMobileLayoutChange}
+            />
 
-        <Button
-          variant={filters.showFavoritesOnly ? "default" : "outline"}
-          onClick={toggleFavorites}
-          className="h-10 px-3 min-w-[60px] flex items-center justify-center"
-        >
-          <Heart className={`h-4 w-4 ${filters.showFavoritesOnly ? "fill-current" : ""}`} />
-        </Button>
+            {/* Row 2: Meal Type | Cuisine | Favourite */}
+            <DropdownFilterSection
+              title="🕒 Meal Type"
+              options={MEAL_TYPE_OPTIONS}
+              selectedValues={filters.mealTypes}
+              onToggle={(value) => toggleArrayFilter('mealTypes', value)}
+            />
 
-        {/* Row 3: Complexity | Diet | Empty */}
-        <DropdownFilterSection
-          title="⚡ Complexity"
-          options={COMPLEXITY_LEVEL_OPTIONS}
-          selectedValues={filters.complexityLevels}
-          onToggle={(value) => toggleArrayFilter('complexityLevels', value)}
-        />
+            <DropdownFilterSection
+              title="🌍 Cuisine"
+              options={CUISINE_REGION_OPTIONS}
+              selectedValues={filters.cuisineRegions}
+              onToggle={(value) => toggleArrayFilter('cuisineRegions', value)}
+            />
 
-        <DropdownFilterSection
-          title="🍎 Diet & Lifestyle"
-          options={DIET_LIFESTYLE_OPTIONS}
-          selectedValues={filters.dietLifestyle}
-          onToggle={(value) => toggleArrayFilter('dietLifestyle', value)}
-        />
+            <Button
+              variant={filters.showFavoritesOnly ? "default" : "outline"}
+              onClick={toggleFavorites}
+              className="h-10 w-full min-w-0 flex items-center justify-center"
+            >
+              <Heart className={`h-4 w-4 ${filters.showFavoritesOnly ? "fill-current" : ""}`} />
+            </Button>
 
-        {/* Empty cell for alignment */}
-        <div></div>
-      </div>
+            {/* Row 3: Complexity | Diet | Empty */}
+            <DropdownFilterSection
+              title="⚡ Complexity"
+              options={COMPLEXITY_LEVEL_OPTIONS}
+              selectedValues={filters.complexityLevels}
+              onToggle={(value) => toggleArrayFilter('complexityLevels', value)}
+            />
 
-      {/* Clear filters button */}
-      {hasActiveFilters && (
-        <div className="flex justify-start">
-          <button
-            onClick={clearAllFilters}
-            className="text-sm text-muted-foreground hover:text-foreground underline"
-          >
-            Clear all filters ({activeFilterCount})
-          </button>
-        </div>
+            <DropdownFilterSection
+              title="🍎 Diet & Lifestyle"
+              options={DIET_LIFESTYLE_OPTIONS}
+              selectedValues={filters.dietLifestyle}
+              onToggle={(value) => toggleArrayFilter('dietLifestyle', value)}
+            />
+
+            {/* Empty cell for alignment */}
+            <div></div>
+          </div>
+
+          {/* Clear filters button for mobile */}
+          {hasActiveFilters && (
+            <div className="flex justify-start">
+              <button
+                onClick={clearAllFilters}
+                className="text-sm text-muted-foreground hover:text-foreground underline"
+              >
+                Clear all filters ({activeFilterCount})
+              </button>
+            </div>
+          )}
+        </>
       )}
       
       {filteredAndSortedRecipes.length === 0 ? (
