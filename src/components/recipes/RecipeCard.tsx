@@ -53,7 +53,7 @@ export function RecipeCard({ recipe, onAddToMealPlan, showActions = true }: Reci
   return (
     <Card className="bg-card rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 flex flex-col h-full">
       <div className="relative">
-        <RecipeImage recipe={recipe} className="w-full h-48 object-cover rounded-t-lg" iconSize="h-5 w-5" />
+        <RecipeImage recipe={recipe} className="w-full aspect-[4/3] object-cover rounded-t-lg" iconSize="h-5 w-5" />
         <Button
           variant="ghost"
           size="icon"
@@ -66,7 +66,7 @@ export function RecipeCard({ recipe, onAddToMealPlan, showActions = true }: Reci
       </div>
       
       <CardContent className="p-4 flex-1 flex flex-col">
-        <h3 className={`text-lg font-semibold text-gray-900 mb-2 ${isMobile ? '' : 'line-clamp-1'}`}>
+        <h3 className="text-lg font-semibold text-gray-900 mb-2">
           {recipe.title}
         </h3>
         <p className="text-sm text-gray-600 line-clamp-2 mb-3 flex-1">{recipe.description}</p>
