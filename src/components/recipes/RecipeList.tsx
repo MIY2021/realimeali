@@ -8,6 +8,8 @@ import { useRecipeList } from "@/hooks/useRecipeList";
 import { useMobileLayout } from "@/hooks/useMobileLayout";
 import { RecipeGrid } from "./RecipeGrid";
 import { SimpleRecipeFiltersComponent } from "./filters/SimpleRecipeFilters";
+import { MobileLayoutSelector } from "./MobileLayoutSelector";
+import { useIsMobile } from "@/hooks/use-mobile";
 import {
   Select,
   SelectContent,
@@ -50,6 +52,7 @@ export function RecipeList({
   } = useRecipeList({ recipes });
 
   const { mobileLayout, handleMobileLayoutChange } = useMobileLayout();
+  const isMobile = useIsMobile();
 
   const handleAddToMealPlan = (recipe: Recipe) => {
     console.log("Opening meal plan dialog for recipe:", recipe.title);
@@ -67,7 +70,7 @@ export function RecipeList({
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      {/* Search and Sort Controls - Mobile on same row */}
+      {/* Search, Sort and Mobile Layout Controls */}
       <div className="flex gap-3">
         <div className="flex-1">
           <Input
@@ -97,6 +100,16 @@ export function RecipeList({
             </SelectContent>
           </Select>
         </div>
+
+        {/* Mobile Layout Selector - only visible on mobile */}
+        {isMobile && (
+          <div className="w-[60px]">
+            <MobileLayoutSelector
+              value={mobileLayout}
+              onChange={handleMobileLayoutChange}
+            />
+          </div>
+        )}
       </div>
 
       {/* Filters directly under search bar */}
