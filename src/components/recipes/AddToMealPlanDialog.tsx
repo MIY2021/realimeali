@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Recipe, MealPlanMealType } from "@/types";
+import { Recipe, MealType } from "@/types";
 import { useMealPlan } from "@/contexts/MealPlanContext";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
@@ -17,7 +17,7 @@ interface AddToMealPlanDialogProps {
 
 export function AddToMealPlanDialog({ recipe, open, onOpenChange }: AddToMealPlanDialogProps) {
   const [selectedWeek, setSelectedWeek] = useState<1 | 2>(1);
-  const [selectedMealType, setSelectedMealType] = useState<MealPlanMealType>("dinner");
+  const [selectedMealType, setSelectedMealType] = useState<MealType>("dinner");
   const [isLoading, setIsLoading] = useState(false);
 
   const { addMealPlan } = useMealPlan();
@@ -88,7 +88,7 @@ export function AddToMealPlanDialog({ recipe, open, onOpenChange }: AddToMealPla
 
           <div>
             <label className="text-sm font-medium mb-2 block">Meal Type</label>
-            <Select value={selectedMealType} onValueChange={(value) => setSelectedMealType(value as MealPlanMealType)}>
+            <Select value={selectedMealType} onValueChange={(value) => setSelectedMealType(value as MealType)}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>

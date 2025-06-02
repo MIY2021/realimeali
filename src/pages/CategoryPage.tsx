@@ -28,7 +28,6 @@ export default function CategoryPage() {
     // Check if the category matches any of the recipe's categories
     return recipe.meal_type === decodedCategory ||
            recipe.cuisine_region === decodedCategory ||
-           recipe.cooking_method === decodedCategory ||
            recipe.complexity_level === decodedCategory ||
            recipe.main_ingredient === decodedCategory ||
            (recipe.diet_lifestyle && recipe.diet_lifestyle.includes(decodedCategory as any));

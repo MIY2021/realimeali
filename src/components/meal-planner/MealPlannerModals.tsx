@@ -10,7 +10,7 @@ import {
   AddMealWithLeftoversDialog,
 } from "@/components/meal-planner/AddMealWithLeftoversDialog";
 import { MealQuantityDialog } from "./MealQuantityDialog";
-import { MealPlanMealType } from "@/types";
+import { MealType } from "@/types";
 
 interface MealPlannerModalsProps {
   isReplaceDialogOpen: boolean;
@@ -22,10 +22,10 @@ interface MealPlannerModalsProps {
   weekNumber: 1 | 2;
   onReplaceMealPlan: () => void;
   mealSlot:
-    | { date: string; mealType: MealPlanMealType; slotIndex: number }
+    | { date: string; mealType: MealType; slotIndex: number }
     | undefined;
   onAddRecipe: (recipeId: string, servings: number) => Promise<void>;
-  onAddMeal: (mealType: MealPlanMealType, servings: number) => void;
+  onAddMeal: (mealType: MealType, servings: number) => void;
 }
 
 export function MealPlannerModals({
@@ -42,7 +42,7 @@ export function MealPlannerModals({
   onAddMeal,
 }: MealPlannerModalsProps) {
   const [isQuantityDialogOpen, setIsQuantityDialogOpen] = useState(false);
-  const [pendingMeal, setPendingMeal] = useState<{ mealType: MealPlanMealType; recipeName: string } | null>(null);
+  const [pendingMeal, setPendingMeal] = useState<{ mealType: MealType; recipeName: string } | null>(null);
 
   return (
     <>
@@ -65,7 +65,7 @@ export function MealPlannerModals({
         onOpenChange={setIsAddLeftoversModalOpen}
         onAddMeal={(mealType: string, recipeName: string) => {
           setIsAddLeftoversModalOpen(false);
-          setPendingMeal({ mealType: mealType as MealPlanMealType, recipeName });
+          setPendingMeal({ mealType: mealType as MealType, recipeName });
           setIsQuantityDialogOpen(true);
         }}
       />

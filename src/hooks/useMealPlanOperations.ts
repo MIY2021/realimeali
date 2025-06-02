@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useMealPlan } from "@/contexts/MealPlanContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
-import { MealPlan, MealPlanMealType } from "@/types";
+import { MealPlan, MealType } from "@/types";
 
 export function useMealPlanOperations() {
   const [isLoading, setIsLoading] = useState(false);

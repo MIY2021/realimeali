@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -118,12 +119,12 @@ export function CreateRecipeContainer() {
   
   const wrappedProcessImage = (file: File) => {
     setRecipeOrigin('image');
-    return recipeProcessingHook.handleProcessImage(file, recipeFormHook.setNewRecipe, recipeFormHook.newRecipe, setActiveTab);
+    return recipeProcessingHook.processImage(file, recipeFormHook.setNewRecipe, recipeFormHook.newRecipe, setActiveTab);
   };
   
   const wrappedGenerateRecipe = () => {
     setRecipeOrigin('generate');
-    return recipeProcessingHook.handleGenerateRecipe(recipeFormHook.setNewRecipe, recipeFormHook.newRecipe, setActiveTab);
+    return recipeProcessingHook.generateRecipe(recipeFormHook.setNewRecipe, recipeFormHook.newRecipe, setActiveTab);
   };
   
   const wrappedImportFromUrl = () => {

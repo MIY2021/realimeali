@@ -52,8 +52,7 @@ export function useTextRecipeProcessing() {
         ...sanitizedRecipe,
         // Apply AI classification
         meal_type: data.parsedRecipe.mealType || currentRecipe.meal_type,
-        cuisine: data.parsedRecipe.cuisineRegion || currentRecipe.cuisine,
-        cooking_method: data.parsedRecipe.cookingMethod || currentRecipe.cooking_method,
+        cuisine_region: data.parsedRecipe.cuisineRegion || currentRecipe.cuisine_region,
         diet_lifestyle: data.parsedRecipe.dietLifestyle || currentRecipe.diet_lifestyle || [],
         complexity_level: data.parsedRecipe.complexityLevel || currentRecipe.complexity_level,
         main_ingredient: data.parsedRecipe.mainIngredient || currentRecipe.main_ingredient,
