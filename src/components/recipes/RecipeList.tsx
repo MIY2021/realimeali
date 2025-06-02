@@ -137,10 +137,10 @@ export function RecipeList({
               <SelectContent>
                 <SelectItem value="title-asc">Title A-Z</SelectItem>
                 <SelectItem value="title-desc">Title Z-A</SelectItem>
-                <SelectItem value="prepTime-asc">Prep ↑</SelectItem>
-                <SelectItem value="prepTime-desc">Prep ↓</SelectItem>
-                <SelectItem value="cookTime-asc">Cook ↑</SelectItem>
-                <SelectItem value="cookTime-desc">Cook ↓</SelectItem>
+                <SelectItem value="prepTime-asc">Prep Time ↑</SelectItem>
+                <SelectItem value="prepTime-desc">Prep Time ↓</SelectItem>
+                <SelectItem value="cookTime-asc">Cook Time ↑</SelectItem>
+                <SelectItem value="cookTime-desc">Cook Time ↓</SelectItem>
               </SelectContent>
             </Select>
 
@@ -214,7 +214,7 @@ export function RecipeList({
         /* Desktop Layout - Keep existing with added spacing */
         <div>
           {/* Search, Sort Controls */}
-          <div className="flex gap-3 mb-4">
+          <div className="flex gap-3 mb-6">
             <div className="flex-1">
               <Input
                 placeholder="Search recipes..."
