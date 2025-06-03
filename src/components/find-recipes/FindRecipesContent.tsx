@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
@@ -31,6 +31,11 @@ export const FindRecipesContent = () => {
   const { currentHousehold, isLoadingHousehold } = useHousehold();
   const { recipes, isLoading, totalCount, fetchCommunityRecipes } = useCommunityRecipes();
 
+  // Use refs to track when we've already loaded data
+  const lastLoadedUserIdRef = useRef<string | null>(null);
+  const lastLoadedHouseholdIdRef = useRef<string | null>(null);
+  const hasLoadedRef = useRef(false);
+
   // Custom hooks for managing state
   const {
     searchTerm,
@@ -54,13 +59,31 @@ export const FindRecipesContent = () => {
 
   // Load initial recipes - only when we have stable user and household data
   useEffect(() => {
-    if (user && currentHousehold && !isLoadingHousehold) {
-      console.log('Loading community recipes for household:', currentHousehold.id);
-      fetchCommunityRecipes({
-        limit: 50,
-        offset: 0
-      });
+    const userId = user?.id;
+    const householdId = currentHousehold?.id;
+    
+    // Only load if we have user and household, and they've actually changed
+    if (!userId || !householdId || isLoadingHousehold) {
+      return;
     }
+
+    // Check if we've already loaded for this user/household combination
+    if (lastLoadedUserIdRef.current === userId && 
+        lastLoadedHouseholdIdRef.current === householdId && 
+        hasLoadedRef.current) {
+      return;
+    }
+
+    console.log('DEBUG: Loading community recipes for household:', householdId);
+    
+    lastLoadedUserIdRef.current = userId;
+    lastLoadedHouseholdIdRef.current = householdId;
+    hasLoadedRef.current = true;
+    
+    fetchCommunityRecipes({
+      limit: 50,
+      offset: 0
+    });
   }, [user?.id, currentHousehold?.id, isLoadingHousehold, fetchCommunityRecipes]);
 
   const toggleArrayFilter = (key: keyof typeof filters, value: string) => {

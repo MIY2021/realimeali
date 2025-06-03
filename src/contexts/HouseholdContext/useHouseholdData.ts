@@ -7,26 +7,31 @@ import { Household, HouseholdMember, HouseholdJoinRequest } from '@/types';
 export function useHouseholdData(user: User | null, currentHousehold: Household | null) {
   const [isLoadingHousehold, setIsLoadingHousehold] = useState(false);
   const [isLoadingMembers, setIsLoadingMembers] = useState(false);
-  const lastFetchedUserId = useRef<string | null>(null);
-  const lastFetchedHouseholdId = useRef<string | null>(null);
+  
+  // Use refs to prevent duplicate requests without causing dependency issues
+  const lastFetchedUserIdRef = useRef<string | null>(null);
+  const lastFetchedHouseholdIdRef = useRef<string | null>(null);
+  const isCurrentlyFetchingUserRef = useRef<boolean>(false);
+  const isCurrentlyFetchingMembersRef = useRef<boolean>(false);
 
   const fetchHousehold = useCallback(async (): Promise<Household | null> => {
     if (!user) {
-      console.log('No user found, skipping household fetch');
+      console.log('DEBUG: No user found, skipping household fetch');
       return null;
     }
 
     // Prevent duplicate fetches for the same user
-    if (lastFetchedUserId.current === user.id && isLoadingHousehold) {
-      console.log('Already fetching household for this user, skipping duplicate request');
+    if (lastFetchedUserIdRef.current === user.id && isCurrentlyFetchingUserRef.current) {
+      console.log('DEBUG: Already fetching household for this user, skipping duplicate request');
       return null;
     }
 
     setIsLoadingHousehold(true);
-    lastFetchedUserId.current = user.id;
+    isCurrentlyFetchingUserRef.current = true;
+    lastFetchedUserIdRef.current = user.id;
 
     try {
-      console.log('Fetching household for user:', user.id);
+      console.log('DEBUG: Fetching household for user:', user.id);
       
       const { data: memberData, error: memberError } = await supabase
         .from('household_members')
@@ -50,37 +55,39 @@ export function useHouseholdData(user: User | null, currentHousehold: Household 
       }
 
       if (!memberData?.households) {
-        console.log('No household found for user');
+        console.log('DEBUG: No household found for user');
         return null;
       }
 
-      console.log('Found household:', memberData.households);
+      console.log('DEBUG: Found household:', memberData.households);
       return memberData.households as Household;
     } catch (error) {
       console.error('Unexpected error fetching household:', error);
       return null;
     } finally {
       setIsLoadingHousehold(false);
+      isCurrentlyFetchingUserRef.current = false;
     }
-  }, [user?.id, isLoadingHousehold]);
+  }, [user?.id]);
 
   const fetchHouseholdMembers = useCallback(async (): Promise<HouseholdMember[]> => {
     if (!currentHousehold) {
-      console.log('No household available, skipping members fetch');
+      console.log('DEBUG: No household available, skipping members fetch');
       return [];
     }
 
     // Prevent duplicate fetches for the same household
-    if (lastFetchedHouseholdId.current === currentHousehold.id && isLoadingMembers) {
-      console.log('Already fetching members for this household, skipping duplicate request');
+    if (lastFetchedHouseholdIdRef.current === currentHousehold.id && isCurrentlyFetchingMembersRef.current) {
+      console.log('DEBUG: Already fetching members for this household, skipping duplicate request');
       return [];
     }
 
     setIsLoadingMembers(true);
-    lastFetchedHouseholdId.current = currentHousehold.id;
+    isCurrentlyFetchingMembersRef.current = true;
+    lastFetchedHouseholdIdRef.current = currentHousehold.id;
 
     try {
-      console.log('Fetching household members for household:', currentHousehold.id);
+      console.log('DEBUG: Fetching household members for household:', currentHousehold.id);
       
       // Fetch household members with only existing fields
       const { data, error } = await supabase
@@ -100,7 +107,7 @@ export function useHouseholdData(user: User | null, currentHousehold: Household 
       }
 
       if (!data) {
-        console.log('No members found for household');
+        console.log('DEBUG: No members found for household');
         return [];
       }
 
@@ -130,24 +137,25 @@ export function useHouseholdData(user: User | null, currentHousehold: Household 
         } : undefined
       }));
 
-      console.log('Successfully fetched household members:', membersWithProfiles.length);
+      console.log('DEBUG: Successfully fetched household members:', membersWithProfiles.length);
       return membersWithProfiles;
     } catch (error) {
       console.error('Unexpected error fetching household members:', error);
       return [];
     } finally {
       setIsLoadingMembers(false);
+      isCurrentlyFetchingMembersRef.current = false;
     }
-  }, [currentHousehold?.id, isLoadingMembers]);
+  }, [currentHousehold?.id]);
 
   const fetchJoinRequests = useCallback(async (): Promise<HouseholdJoinRequest[]> => {
     if (!currentHousehold) {
-      console.log('No household available, skipping join requests fetch');
+      console.log('DEBUG: No household available, skipping join requests fetch');
       return [];
     }
 
     try {
-      console.log('Fetching join requests for household:', currentHousehold.id);
+      console.log('DEBUG: Fetching join requests for household:', currentHousehold.id);
       
       const { data, error } = await supabase
         .from('household_join_requests')
@@ -177,7 +185,7 @@ export function useHouseholdData(user: User | null, currentHousehold: Household 
         updated_at: request.updated_at
       }));
 
-      console.log('Successfully fetched join requests:', joinRequests.length);
+      console.log('DEBUG: Successfully fetched join requests:', joinRequests.length);
       return joinRequests;
     } catch (error) {
       console.error('Unexpected error fetching join requests:', error);

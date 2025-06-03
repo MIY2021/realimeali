@@ -6,6 +6,7 @@ import React, {
   useEffect,
   useCallback,
   useMemo,
+  useRef,
 } from 'react';
 import { useAuth } from './AuthContext';
 import { Household, HouseholdMember, HouseholdJoinRequest } from '@/types';
@@ -35,6 +36,11 @@ export function HouseholdProvider({ children }: { children: React.ReactNode }) {
   const [households, setHouseholds] = useState<Household[]>([]);
   const [isInitialized, setIsInitialized] = useState(false);
 
+  // Use refs to track states without triggering re-renders
+  const hasDataRef = useRef(false);
+  const currentUserIdRef = useRef<string | null>(null);
+  const currentHouseholdIdRef = useRef<string | null>(null);
+
   // Use our custom hooks
   const {
     fetchHousehold,
@@ -44,17 +50,20 @@ export function HouseholdProvider({ children }: { children: React.ReactNode }) {
     isLoadingMembers,
   } = useHouseholdData(user, currentHousehold);
 
+  // Create stable callback functions without unstable dependencies
   const fetchHouseholdMembers = useCallback(async () => {
     if (!currentHousehold) return;
+    console.log('DEBUG: Fetching household members for:', currentHousehold.id);
     const members = await fetchMembersData();
     setHouseholdMembers(members);
-  }, [fetchMembersData, currentHousehold]);
+  }, [fetchMembersData, currentHousehold?.id]);
 
   const fetchJoinRequestsCallback = useCallback(async () => {
     if (!currentHousehold) return;
+    console.log('DEBUG: Fetching join requests for:', currentHousehold.id);
     const requests = await fetchRequestsData();
     setJoinRequests(requests);
-  }, [fetchRequestsData, currentHousehold]);
+  }, [fetchRequestsData, currentHousehold?.id]);
 
   const {
     createHousehold,
@@ -71,51 +80,71 @@ export function HouseholdProvider({ children }: { children: React.ReactNode }) {
 
   const { removeMember } = useMemberOperations(setHouseholdMembers);
 
-  // Memoize the stable user ID to prevent unnecessary re-fetches
+  // Stable user ID reference
   const stableUserId = useMemo(() => user?.id, [user?.id]);
 
-  // Fetch household on user change - only when user actually changes
+  // Primary effect: Load household when user changes
   useEffect(() => {
     const loadHousehold = async () => {
-      if (!stableUserId) {
-        // Only clear data if we were previously initialized
-        if (isInitialized) {
-          console.log('User logged out, clearing household data');
-          setCurrentHousehold(null);
-          setHouseholdMembers([]);
-          setJoinRequests([]);
-        }
+      const userId = stableUserId;
+      
+      // Only proceed if user ID actually changed
+      if (currentUserIdRef.current === userId) {
+        return;
+      }
+      
+      currentUserIdRef.current = userId;
+      
+      if (!userId) {
+        console.log('DEBUG: User logged out, clearing household data');
+        setCurrentHousehold(null);
+        setHouseholdMembers([]);
+        setJoinRequests([]);
+        hasDataRef.current = false;
+        setIsInitialized(true);
         return;
       }
 
-      console.log('Loading household for user:', stableUserId);
+      console.log('DEBUG: Loading household for user:', userId);
       const household = await fetchHousehold();
       setCurrentHousehold(household);
+      currentHouseholdIdRef.current = household?.id || null;
       setIsInitialized(true);
     };
 
     loadHousehold();
-  }, [stableUserId, fetchHousehold, isInitialized]);
+  }, [stableUserId, fetchHousehold]);
 
-  // Fetch members and join requests when household changes - with proper guards
+  // Secondary effect: Load household data when household changes
   useEffect(() => {
     if (!isInitialized) return;
     
-    if (currentHousehold) {
-      console.log('Fetching household data for:', currentHousehold.id);
+    const householdId = currentHousehold?.id;
+    
+    // Only proceed if household ID actually changed
+    if (currentHouseholdIdRef.current === householdId) {
+      return;
+    }
+    
+    currentHouseholdIdRef.current = householdId || null;
+    
+    if (householdId) {
+      console.log('DEBUG: Loading data for household:', householdId);
       fetchHouseholdMembers();
       fetchJoinRequestsCallback();
+      hasDataRef.current = true;
     } else {
       // Only clear if we had data before
-      if (householdMembers.length > 0 || joinRequests.length > 0) {
-        console.log('Clearing household members and requests');
+      if (hasDataRef.current) {
+        console.log('DEBUG: Clearing household data');
         setHouseholdMembers([]);
         setJoinRequests([]);
+        hasDataRef.current = false;
       }
     }
-  }, [currentHousehold, fetchHouseholdMembers, fetchJoinRequestsCallback, isInitialized, householdMembers.length, joinRequests.length]);
+  }, [currentHousehold?.id, fetchHouseholdMembers, fetchJoinRequestsCallback, isInitialized]);
 
-  // Memoize the context value to prevent unnecessary re-renders
+  // Memoize the context value with stable functions only
   const value: HouseholdContextType = useMemo(() => ({
     currentHousehold,
     setCurrentHousehold,

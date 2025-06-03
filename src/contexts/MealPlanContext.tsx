@@ -1,4 +1,5 @@
-import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
+
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef } from "react";
 import { MealPlan, Recipe, MealType } from "@/types";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRecipes } from "@/contexts/RecipesContext";
@@ -20,6 +21,10 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
   const [mealPlans, setMealPlans] = useState<MealPlan[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Use refs to track state without causing re-renders
+  const lastFetchedHouseholdIdRef = useRef<string | null>(null);
+  const currentUserIdRef = useRef<string | null>(null);
+
   const { addMealPlan, removeMealPlan, clearWeek } = useMealPlanOperations(
     user, 
     currentHousehold, 
@@ -29,17 +34,31 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
   );
 
   const fetchMealPlans = useCallback(async () => {
-    if (!user || !currentHousehold) {
-      console.log("No user or household, clearing meal plans");
+    const userId = user?.id;
+    const householdId = currentHousehold?.id;
+    
+    if (!userId || !householdId) {
+      console.log('DEBUG: No user or household, clearing meal plans');
       setMealPlans([]);
+      lastFetchedHouseholdIdRef.current = null;
+      currentUserIdRef.current = null;
+      return;
+    }
+
+    // Only fetch if user or household actually changed
+    if (currentUserIdRef.current === userId && lastFetchedHouseholdIdRef.current === householdId) {
       return;
     }
 
     try {
       setIsLoading(true);
-      const plans = await mealPlanService.fetchMealPlans(currentHousehold.id);
-      console.log("Transformed plans:", plans);
-      console.log("Plans with week numbers:", plans.map(p => ({ id: p.id, meal_type: p.meal_type, week_number: p.week_number })));
+      console.log('DEBUG: Fetching meal plans for household:', householdId);
+      
+      currentUserIdRef.current = userId;
+      lastFetchedHouseholdIdRef.current = householdId;
+      
+      const plans = await mealPlanService.fetchMealPlans(householdId);
+      console.log('DEBUG: Transformed plans:', plans);
       setMealPlans(plans);
     } catch (err) {
       console.error("Error fetching meal plans:", err);
@@ -51,8 +70,9 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setIsLoading(false);
     }
-  }, [user?.id, currentHousehold?.id]);
+  }, [user?.id, currentHousehold?.id, toast]);
 
+  // Single effect to handle data fetching
   useEffect(() => {
     fetchMealPlans();
   }, [fetchMealPlans]);
@@ -61,7 +81,7 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
     if (!user || !currentHousehold) return [];
     
     const weekPlans = mealPlans.filter(plan => plan.week_number === weekNumber);
-    console.log(`Getting meal plans for week ${weekNumber}:`, weekPlans);
+    console.log(`DEBUG: Getting meal plans for week ${weekNumber}:`, weekPlans);
     return weekPlans;
   }, [mealPlans, user?.id, currentHousehold?.id]);
 
@@ -119,7 +139,7 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
     } catch (err) {
       console.error("Error adding meal plan with leftovers:", err);
     }
-  }, [user?.id, currentHousehold?.id, recipes, addMealPlan, getMealPlansForWeek]);
+  }, [user?.id, currentHousehold?.id, recipes, addMealPlan, getMealPlansForWeek, toast]);
 
   const reorderMealPlans = useCallback(async (
     mealType: MealType, 
@@ -176,7 +196,7 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
       clearWeek,
       reorderMealPlans,
       isLoading,
-      fetchMealPlans // Export the refresh function
+      fetchMealPlans
     }}>
       {children}
     </MealPlanContext.Provider>
