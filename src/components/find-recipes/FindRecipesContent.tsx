@@ -199,8 +199,8 @@ export const FindRecipesContent = () => {
             </div>
           </div>
 
-          {/* Row 2: Meal Type | Cuisine */}
-          <div className="grid grid-cols-[1fr_1fr_auto] gap-2">
+          {/* Row 2: All filters on equal width */}
+          <div className="grid grid-cols-3 gap-2">
             <DropdownFilterSection
               title="🕒 Meal"
               options={MEAL_TYPE_OPTIONS}
@@ -215,20 +215,12 @@ export const FindRecipesContent = () => {
               onToggle={(value) => toggleArrayFilter('cuisineRegions', value)}
             />
 
-            <div className="w-[60px]"></div>
-          </div>
-
-          {/* Row 3: Complexity */}
-          <div className="grid grid-cols-[1fr_1fr_auto] gap-2">
             <DropdownFilterSection
               title="⚡ Complexity"
               options={COMPLEXITY_LEVEL_OPTIONS}
               selectedValues={filters.complexityLevels}
               onToggle={(value) => toggleArrayFilter('complexityLevels', value)}
             />
-
-            <div></div>
-            <div className="w-[60px]"></div>
           </div>
 
           {/* Clear filters link */}

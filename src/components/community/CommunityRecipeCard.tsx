@@ -32,6 +32,11 @@ export function CommunityRecipeCard({ recipe }: CommunityRecipeCardProps) {
     }
   };
 
+  const truncateText = (text: string, maxLength: number = 100) => {
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength).trim() + '...';
+  };
+
   return (
     <Card className="bg-card rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 flex flex-col h-full">
       <div className="relative overflow-hidden rounded-t-lg">
@@ -51,7 +56,7 @@ export function CommunityRecipeCard({ recipe }: CommunityRecipeCardProps) {
         </div>
         <Badge
           variant="secondary"
-          className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm border border-white/20 shadow-sm"
+          className="absolute top-2 right-2 bg-blue-600 text-white font-semibold px-2 py-1 text-xs shadow-lg border-0"
         >
           Community
         </Badge>
@@ -64,7 +69,9 @@ export function CommunityRecipeCard({ recipe }: CommunityRecipeCardProps) {
           </h3>
         </div>
         {recipe.description && (
-          <p className="text-sm text-gray-600 line-clamp-2 mb-3 flex-1">{recipe.description}</p>
+          <p className="text-sm text-gray-600 mb-3 flex-1">
+            {truncateText(recipe.description, 100)}
+          </p>
         )}
         
         <div className="flex items-center gap-2 mb-3">

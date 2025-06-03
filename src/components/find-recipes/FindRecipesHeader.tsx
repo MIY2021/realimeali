@@ -9,14 +9,10 @@ export const FindRecipesHeader = () => {
           <Search className="h-6 w-6 sm:h-8 sm:w-8 text-terracotta" />
           <span>Find Recipes</span>
         </h1>
-        <div className="space-y-1">
-          <p className="text-sm sm:text-base text-muted-foreground">
-            Discover amazing recipes shared by RealiMeali users as community inspiration
-          </p>
-          <p className="text-xs sm:text-sm text-muted-foreground font-medium">
-            <strong>Important:</strong> All recipes are sourced from external websites - please visit the original source to support the recipe creators
-          </p>
-        </div>
+        <p className="text-sm sm:text-base text-muted-foreground">
+          Discover amazing recipes shared by RealiMeali users as community inspiration. 
+          <strong> Important:</strong> All recipes are sourced from external websites - please visit the original source to support the recipe creators.
+        </p>
       </div>
     </div>
   );
