@@ -1,17 +1,16 @@
-
-import { Recipe } from "@/types";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
-import { AddToMealPlanDialog } from "./AddToMealPlanDialog";
 import { useRecipeList } from "@/hooks/useRecipeList";
+import { useScrollPosition } from "@/hooks/useScrollPosition";
+import { useNavigationState } from "@/hooks/useNavigationState";
 import { useMobileLayout } from "@/hooks/useMobileLayout";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { RecipeGrid } from "./RecipeGrid";
+import { RecipeFilters } from "./RecipeFilters";
 import { SimpleRecipeFiltersComponent } from "./filters/SimpleRecipeFilters";
 import { MobileLayoutSelector } from "./MobileLayoutSelector";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { DropdownFilterSection } from "./filters/DropdownFilterSection";
-import { Heart } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -25,23 +24,14 @@ import {
   DIET_LIFESTYLE_OPTIONS,
   COMPLEXITY_LEVEL_OPTIONS,
 } from "@/utils/recipeClassification";
+import { Recipe } from "@/types";
 
 interface RecipeListProps {
   recipes: Recipe[];
-  showActions?: boolean;
-  isLoading?: boolean;
+  isLoading: boolean;
 }
 
-export function RecipeList({ 
-  recipes, 
-  showActions = false, 
-  isLoading = false
-}: RecipeListProps) {
-  // State for meal plan dialog
-  const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
-  const [mealPlanDialogOpen, setMealPlanDialogOpen] = useState(false);
-
-  // Custom hooks for managing state
+export function RecipeList({ recipes, isLoading }: RecipeListProps) {
   const {
     searchTerm,
     setSearchTerm,
@@ -59,13 +49,35 @@ export function RecipeList({
     handleLoadMore,
   } = useRecipeList({ recipes });
 
+  const { saveScrollPosition } = useScrollPosition();
+  const { setNavigationState } = useNavigationState();
   const { mobileLayout, handleMobileLayoutChange } = useMobileLayout();
   const isMobile = useIsMobile();
 
-  const handleAddToMealPlan = (recipe: Recipe) => {
-    console.log("Opening meal plan dialog for recipe:", recipe.title);
-    setSelectedRecipe(recipe);
-    setMealPlanDialogOpen(true);
+  useEffect(() => {
+    // Restore scroll position if the flag is set
+    if (sessionStorage.getItem('restoreRecipesScroll') === 'true') {
+      window.scrollTo({
+        top: parseInt(sessionStorage.getItem('scrollPosition') || '0', 10),
+        behavior: 'instant'
+      });
+      sessionStorage.removeItem('restoreRecipesScroll'); // Clear the flag
+    }
+  }, []);
+
+  const handleRecipeClick = (recipeId: string) => {
+    console.log('Recipe clicked, saving scroll position');
+    
+    // Save current scroll position with layout context
+    const currentLayout = localStorage.getItem('mobileRecipeLayout') || '1';
+    saveScrollPosition('recipes', currentLayout);
+    
+    // Set navigation state to indicate we should restore scroll when returning
+    setNavigationState({ shouldRestoreScroll: true });
+    
+    // Set session storage flag as backup
+    sessionStorage.setItem('restoreRecipesScroll', 'true');
+    sessionStorage.setItem('navigatedFromRecipes', 'true');
   };
 
   const toggleArrayFilter = (key: keyof typeof filters, value: string) => {
@@ -74,10 +86,6 @@ export function RecipeList({
       ? currentArray.filter(item => item !== value)
       : [...currentArray, value];
     handleFiltersChange({ ...filters, [key]: updatedArray });
-  };
-
-  const toggleFavorites = () => {
-    handleFiltersChange({ ...filters, showFavoritesOnly: !filters.showFavoritesOnly });
   };
 
   const hasActiveFilters = Object.entries(filters).some(([key, value]) => {
@@ -90,7 +98,7 @@ export function RecipeList({
   const activeFilterCount = filters.mealTypes.length + 
                            filters.cuisineRegions.length + 
                            filters.dietLifestyle.length + 
-                           filters.complexityLevels.length +
+                           filters.complexityLevels.length + 
                            (filters.showFavoritesOnly ? 1 : 0);
 
   const clearAllFilters = () => {
@@ -128,13 +136,15 @@ export function RecipeList({
             
             <Select value={`${sortBy}-${sortOrder}`} onValueChange={(value) => {
               const [newSortBy, newSortOrder] = value.split('-');
-              setSortBy(newSortBy as "title" | "prepTime" | "cookTime");
+              setSortBy(newSortBy as "title" | "prepTime" | "cookTime" | "dateAdded");
               setSortOrder(newSortOrder as "asc" | "desc");
             }}>
               <SelectTrigger className="text-sm">
                 <SelectValue placeholder="Sort" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="dateAdded-desc">Newest First</SelectItem>
+                <SelectItem value="dateAdded-asc">Oldest First</SelectItem>
                 <SelectItem value="title-asc">Title A-Z</SelectItem>
                 <SelectItem value="title-desc">Title Z-A</SelectItem>
                 <SelectItem value="prepTime-asc">Prep Time ↑</SelectItem>
@@ -152,8 +162,8 @@ export function RecipeList({
             </div>
           </div>
 
-          {/* Row 2: Meal Type | Cuisine | Favourite */}
-          <div className="grid grid-cols-[1fr_1fr_auto] gap-2">
+          {/* Row 2: All filters on equal width */}
+          <div className="grid grid-cols-4 gap-2">
             <DropdownFilterSection
               title="🕒 Meal"
               options={MEAL_TYPE_OPTIONS}
@@ -168,50 +178,45 @@ export function RecipeList({
               onToggle={(value) => toggleArrayFilter('cuisineRegions', value)}
             />
 
-            <div className="w-[60px]">
-              <Button
-                variant={filters.showFavoritesOnly ? "default" : "outline"}
-                onClick={toggleFavorites}
-                className="w-full h-10 px-2"
-              >
-                <Heart className={`h-4 w-4 ${filters.showFavoritesOnly ? "fill-current" : ""}`} />
-              </Button>
-            </div>
-          </div>
-
-          {/* Row 3: Complexity | Diet */}
-          <div className="grid grid-cols-[1fr_1fr_auto] gap-2">
             <DropdownFilterSection
-              title="⚡ Complexity"
-              options={COMPLEXITY_LEVEL_OPTIONS}
-              selectedValues={filters.complexityLevels}
-              onToggle={(value) => toggleArrayFilter('complexityLevels', value)}
-            />
-
-            <DropdownFilterSection
-              title="🍎 Diet"
+              title="🥗 Diet"
               options={DIET_LIFESTYLE_OPTIONS}
               selectedValues={filters.dietLifestyle}
               onToggle={(value) => toggleArrayFilter('dietLifestyle', value)}
             />
 
-            <div className="w-[60px]"></div>
+            <DropdownFilterSection
+              title="⚡ Level"
+              options={COMPLEXITY_LEVEL_OPTIONS}
+              selectedValues={filters.complexityLevels}
+              onToggle={(value) => toggleArrayFilter('complexityLevels', value)}
+            />
           </div>
 
-          {/* Clear filters link */}
-          {hasActiveFilters && (
-            <div className="text-center">
+          {/* Row 3: Favorites toggle and clear filters */}
+          <div className="flex justify-between items-center">
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={filters.showFavoritesOnly}
+                onChange={(e) => handleFiltersChange({ ...filters, showFavoritesOnly: e.target.checked })}
+                className="rounded"
+              />
+              ⭐ Favorites only
+            </label>
+            
+            {hasActiveFilters && (
               <button
                 onClick={clearAllFilters}
                 className="text-sm text-muted-foreground hover:text-foreground underline"
               >
                 Clear all filters ({activeFilterCount})
               </button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       ) : (
-        /* Desktop Layout - Keep existing with added spacing */
+        /* Desktop Layout */
         <div>
           {/* Search, Sort Controls */}
           <div className="flex gap-3 mb-6">
@@ -227,13 +232,15 @@ export function RecipeList({
             <div className="w-32 sm:w-48">
               <Select value={`${sortBy}-${sortOrder}`} onValueChange={(value) => {
                 const [newSortBy, newSortOrder] = value.split('-');
-                setSortBy(newSortBy as "title" | "prepTime" | "cookTime");
+                setSortBy(newSortBy as "title" | "prepTime" | "cookTime" | "dateAdded");
                 setSortOrder(newSortOrder as "asc" | "desc");
               }}>
                 <SelectTrigger className="text-sm sm:text-base">
                   <SelectValue placeholder="Sort by" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="dateAdded-desc">Newest First</SelectItem>
+                  <SelectItem value="dateAdded-asc">Oldest First</SelectItem>
                   <SelectItem value="title-asc">Title A-Z</SelectItem>
                   <SelectItem value="title-desc">Title Z-A</SelectItem>
                   <SelectItem value="prepTime-asc">Prep Time (Low to High)</SelectItem>
@@ -265,7 +272,7 @@ export function RecipeList({
           <RecipeGrid
             recipes={visibleRecipes}
             mobileLayout={mobileLayout}
-            onAddToMealPlan={handleAddToMealPlan}
+            onRecipeClick={handleRecipeClick}
           />
           
           <div className="flex flex-col items-center gap-4 mt-6 px-4">
@@ -280,12 +287,6 @@ export function RecipeList({
           </div>
         </>
       )}
-
-      <AddToMealPlanDialog
-        recipe={selectedRecipe}
-        open={mealPlanDialogOpen}
-        onOpenChange={setMealPlanDialogOpen}
-      />
     </div>
   );
 }

@@ -64,7 +64,11 @@ export function CommunityRecipeCard({ recipe }: CommunityRecipeCardProps) {
           </h3>
         </div>
         {recipe.description && (
-          <p className="text-sm text-gray-600 mb-3 flex-1 line-clamp-2">
+          <p className="text-sm text-gray-600 mb-3 flex-1 overflow-hidden" style={{
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical'
+          }}>
             {recipe.description}
           </p>
         )}
