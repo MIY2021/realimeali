@@ -1,3 +1,4 @@
+
 import { useState, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,13 +7,11 @@ import { useAuth } from "@/contexts/AuthContext";
 export interface CommunityRecipe {
   id: string;
   title: string;
-  description: string | null; // Legacy field for backwards compatibility
-  original_description: string | null;
-  ai_generated_description: string | null;
+  description: string | null; // Original description for moderator reference
+  ai_generated_description: string | null; // AI-generated description for public display
   source_url: string;
-  image_url: string | null; // Legacy field for backwards compatibility
-  original_image_url: string | null;
-  ai_generated_image_url: string | null;
+  image_url: string | null; // Original image for moderator reference
+  ai_generated_image_url: string | null; // AI-generated image for public display
   image_credit: string | null;
   prep_time: number;
   cook_time: number;
@@ -29,6 +28,8 @@ export interface CommunityRecipe {
   moderation_status: 'pending' | 'in_review' | 'approved' | 'rejected';
   moderator_notes: string | null;
   created_at: string;
+  approved_at?: string | null;
+  approved_by?: string | null;
 }
 
 export function useCommunityRecipes() {
@@ -54,6 +55,7 @@ export function useCommunityRecipes() {
         .select('*', { count: 'exact' })
         .eq('is_approved', true)
         .eq('is_active', true)
+        .not('ai_generated_description', 'is', null) // Only show recipes with AI content
         .order('created_at', { ascending: false });
 
       if (filters?.category && filters.category !== 'all') {
@@ -65,8 +67,8 @@ export function useCommunityRecipes() {
       }
 
       if (filters?.search) {
-        // Search in both AI-generated and original descriptions for better results
-        query = query.or(`title.ilike.%${filters.search}%,ai_generated_description.ilike.%${filters.search}%,original_description.ilike.%${filters.search}%`);
+        // Search only in AI-generated descriptions since that's what's displayed
+        query = query.ilike('ai_generated_description', `%${filters.search}%`);
       }
 
       if (filters?.limit) {
@@ -122,8 +124,8 @@ export function useCommunityRecipes() {
         .from('community_recipes')
         .insert({
           title: recipeData.title,
-          original_description: recipeData.description,
-          original_image_url: recipeData.image_url,
+          description: recipeData.description, // Original description for moderator reference
+          image_url: recipeData.image_url, // Original image for moderator reference
           source_url: recipeData.source_url,
           image_credit: recipeData.image_credit,
           prep_time: recipeData.prep_time || 0,

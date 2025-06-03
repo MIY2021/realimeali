@@ -11,6 +11,8 @@ export type Database = {
     Tables: {
       community_recipes: {
         Row: {
+          ai_generated_description: string | null
+          ai_generated_image_url: string | null
           approved_at: string | null
           approved_by: string | null
           category: string | null
@@ -24,6 +26,8 @@ export type Database = {
           image_url: string | null
           is_active: boolean | null
           is_approved: boolean | null
+          moderation_status: string | null
+          moderator_notes: string | null
           prep_time: number | null
           reported_count: number | null
           save_count: number | null
@@ -36,6 +40,8 @@ export type Database = {
           view_count: number | null
         }
         Insert: {
+          ai_generated_description?: string | null
+          ai_generated_image_url?: string | null
           approved_at?: string | null
           approved_by?: string | null
           category?: string | null
@@ -49,6 +55,8 @@ export type Database = {
           image_url?: string | null
           is_active?: boolean | null
           is_approved?: boolean | null
+          moderation_status?: string | null
+          moderator_notes?: string | null
           prep_time?: number | null
           reported_count?: number | null
           save_count?: number | null
@@ -61,6 +69,8 @@ export type Database = {
           view_count?: number | null
         }
         Update: {
+          ai_generated_description?: string | null
+          ai_generated_image_url?: string | null
           approved_at?: string | null
           approved_by?: string | null
           category?: string | null
@@ -74,6 +84,8 @@ export type Database = {
           image_url?: string | null
           is_active?: boolean | null
           is_approved?: boolean | null
+          moderation_status?: string | null
+          moderator_notes?: string | null
           prep_time?: number | null
           reported_count?: number | null
           save_count?: number | null
