@@ -1,4 +1,5 @@
-import { useState, useCallback } from 'react';
+
+import { useState, useCallback, useRef } from 'react';
 import { User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { Household, HouseholdMember, HouseholdJoinRequest } from '@/types';
@@ -6,6 +7,8 @@ import { Household, HouseholdMember, HouseholdJoinRequest } from '@/types';
 export function useHouseholdData(user: User | null, currentHousehold: Household | null) {
   const [isLoadingHousehold, setIsLoadingHousehold] = useState(false);
   const [isLoadingMembers, setIsLoadingMembers] = useState(false);
+  const lastFetchedUserId = useRef<string | null>(null);
+  const lastFetchedHouseholdId = useRef<string | null>(null);
 
   const fetchHousehold = useCallback(async (): Promise<Household | null> => {
     if (!user) {
@@ -13,7 +16,15 @@ export function useHouseholdData(user: User | null, currentHousehold: Household 
       return null;
     }
 
+    // Prevent duplicate fetches for the same user
+    if (lastFetchedUserId.current === user.id && isLoadingHousehold) {
+      console.log('Already fetching household for this user, skipping duplicate request');
+      return null;
+    }
+
     setIsLoadingHousehold(true);
+    lastFetchedUserId.current = user.id;
+
     try {
       console.log('Fetching household for user:', user.id);
       
@@ -51,7 +62,7 @@ export function useHouseholdData(user: User | null, currentHousehold: Household 
     } finally {
       setIsLoadingHousehold(false);
     }
-  }, [user]);
+  }, [user?.id, isLoadingHousehold]);
 
   const fetchHouseholdMembers = useCallback(async (): Promise<HouseholdMember[]> => {
     if (!currentHousehold) {
@@ -59,7 +70,15 @@ export function useHouseholdData(user: User | null, currentHousehold: Household 
       return [];
     }
 
+    // Prevent duplicate fetches for the same household
+    if (lastFetchedHouseholdId.current === currentHousehold.id && isLoadingMembers) {
+      console.log('Already fetching members for this household, skipping duplicate request');
+      return [];
+    }
+
     setIsLoadingMembers(true);
+    lastFetchedHouseholdId.current = currentHousehold.id;
+
     try {
       console.log('Fetching household members for household:', currentHousehold.id);
       
@@ -119,7 +138,7 @@ export function useHouseholdData(user: User | null, currentHousehold: Household 
     } finally {
       setIsLoadingMembers(false);
     }
-  }, [currentHousehold]);
+  }, [currentHousehold?.id, isLoadingMembers]);
 
   const fetchJoinRequests = useCallback(async (): Promise<HouseholdJoinRequest[]> => {
     if (!currentHousehold) {
@@ -164,7 +183,7 @@ export function useHouseholdData(user: User | null, currentHousehold: Household 
       console.error('Unexpected error fetching join requests:', error);
       return [];
     }
-  }, [currentHousehold]);
+  }, [currentHousehold?.id]);
 
   return {
     fetchHousehold,

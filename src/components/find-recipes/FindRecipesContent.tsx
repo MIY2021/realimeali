@@ -28,7 +28,7 @@ import {
 
 export const FindRecipesContent = () => {
   const { user } = useAuth();
-  const { currentHousehold } = useHousehold();
+  const { currentHousehold, isLoadingHousehold } = useHousehold();
   const { recipes, isLoading, totalCount, fetchCommunityRecipes } = useCommunityRecipes();
 
   // Custom hooks for managing state
@@ -52,15 +52,16 @@ export const FindRecipesContent = () => {
   const { mobileLayout, handleMobileLayoutChange } = useMobileLayout();
   const isMobile = useIsMobile();
 
-  // Load initial recipes
+  // Load initial recipes - only when we have stable user and household data
   useEffect(() => {
-    if (user && currentHousehold) {
+    if (user && currentHousehold && !isLoadingHousehold) {
+      console.log('Loading community recipes for household:', currentHousehold.id);
       fetchCommunityRecipes({
         limit: 50,
         offset: 0
       });
     }
-  }, [user, currentHousehold, fetchCommunityRecipes]);
+  }, [user?.id, currentHousehold?.id, isLoadingHousehold, fetchCommunityRecipes]);
 
   const toggleArrayFilter = (key: keyof typeof filters, value: string) => {
     const currentArray = filters[key] as string[];
@@ -96,6 +97,15 @@ export const FindRecipesContent = () => {
     return (
       <div className="py-10 text-center px-4">
         <p className="text-muted-foreground mb-4">Please log in to discover and save recipes.</p>
+      </div>
+    );
+  }
+
+  // Show loading state while household is being determined
+  if (isLoadingHousehold) {
+    return (
+      <div className="py-10 text-center">
+        <p className="text-muted-foreground">Loading your household...</p>
       </div>
     );
   }

@@ -5,6 +5,7 @@ import React, {
   useState,
   useEffect,
   useCallback,
+  useMemo,
 } from 'react';
 import { useAuth } from './AuthContext';
 import { Household, HouseholdMember, HouseholdJoinRequest } from '@/types';
@@ -32,6 +33,7 @@ export function HouseholdProvider({ children }: { children: React.ReactNode }) {
   const [householdMembers, setHouseholdMembers] = useState<HouseholdMember[]>([]);
   const [joinRequests, setJoinRequests] = useState<HouseholdJoinRequest[]>([]);
   const [households, setHouseholds] = useState<Household[]>([]);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // Use our custom hooks
   const {
@@ -43,14 +45,16 @@ export function HouseholdProvider({ children }: { children: React.ReactNode }) {
   } = useHouseholdData(user, currentHousehold);
 
   const fetchHouseholdMembers = useCallback(async () => {
+    if (!currentHousehold) return;
     const members = await fetchMembersData();
     setHouseholdMembers(members);
-  }, [fetchMembersData]);
+  }, [fetchMembersData, currentHousehold]);
 
   const fetchJoinRequestsCallback = useCallback(async () => {
+    if (!currentHousehold) return;
     const requests = await fetchRequestsData();
     setJoinRequests(requests);
-  }, [fetchRequestsData]);
+  }, [fetchRequestsData, currentHousehold]);
 
   const {
     createHousehold,
@@ -67,32 +71,52 @@ export function HouseholdProvider({ children }: { children: React.ReactNode }) {
 
   const { removeMember } = useMemberOperations(setHouseholdMembers);
 
-  // Fetch household on user change
+  // Memoize the stable user ID to prevent unnecessary re-fetches
+  const stableUserId = useMemo(() => user?.id, [user?.id]);
+
+  // Fetch household on user change - only when user actually changes
   useEffect(() => {
     const loadHousehold = async () => {
+      if (!stableUserId) {
+        // Only clear data if we were previously initialized
+        if (isInitialized) {
+          console.log('User logged out, clearing household data');
+          setCurrentHousehold(null);
+          setHouseholdMembers([]);
+          setJoinRequests([]);
+        }
+        return;
+      }
+
+      console.log('Loading household for user:', stableUserId);
       const household = await fetchHousehold();
       setCurrentHousehold(household);
+      setIsInitialized(true);
     };
 
-    if (user) {
-      loadHousehold();
-    } else {
-      setCurrentHousehold(null);
-    }
-  }, [user, fetchHousehold]);
+    loadHousehold();
+  }, [stableUserId, fetchHousehold, isInitialized]);
 
-  // Fetch members and join requests when household changes
+  // Fetch members and join requests when household changes - with proper guards
   useEffect(() => {
+    if (!isInitialized) return;
+    
     if (currentHousehold) {
+      console.log('Fetching household data for:', currentHousehold.id);
       fetchHouseholdMembers();
       fetchJoinRequestsCallback();
     } else {
-      setHouseholdMembers([]);
-      setJoinRequests([]);
+      // Only clear if we had data before
+      if (householdMembers.length > 0 || joinRequests.length > 0) {
+        console.log('Clearing household members and requests');
+        setHouseholdMembers([]);
+        setJoinRequests([]);
+      }
     }
-  }, [currentHousehold, fetchHouseholdMembers, fetchJoinRequestsCallback]);
+  }, [currentHousehold, fetchHouseholdMembers, fetchJoinRequestsCallback, isInitialized, householdMembers.length, joinRequests.length]);
 
-  const value: HouseholdContextType = {
+  // Memoize the context value to prevent unnecessary re-renders
+  const value: HouseholdContextType = useMemo(() => ({
     currentHousehold,
     setCurrentHousehold,
     householdMembers,
@@ -100,7 +124,7 @@ export function HouseholdProvider({ children }: { children: React.ReactNode }) {
     joinRequests,
     setJoinRequests,
     households,
-    isLoadingHousehold,
+    isLoadingHousehold: isLoadingHousehold || !isInitialized,
     isLoadingMembers,
     createHousehold,
     updateHousehold,
@@ -111,7 +135,24 @@ export function HouseholdProvider({ children }: { children: React.ReactNode }) {
     fetchJoinRequests: fetchJoinRequestsCallback,
     approveJoinRequest,
     rejectJoinRequest,
-  };
+  }), [
+    currentHousehold,
+    householdMembers,
+    joinRequests,
+    households,
+    isLoadingHousehold,
+    isLoadingMembers,
+    isInitialized,
+    createHousehold,
+    updateHousehold,
+    joinHousehold,
+    requestToJoinHousehold,
+    leaveHousehold,
+    removeMember,
+    fetchJoinRequestsCallback,
+    approveJoinRequest,
+    rejectJoinRequest,
+  ]);
 
   return (
     <HouseholdContext.Provider value={value}>
