@@ -6,10 +6,11 @@ import { useIsMobile } from "@/hooks/use-mobile";
 interface RecipeGridProps {
   recipes: Recipe[];
   mobileLayout: string;
-  onAddToMealPlan: (recipe: Recipe) => void;
+  onAddToMealPlan?: (recipe: Recipe) => void;
+  onRecipeClick?: (recipeId: string) => void;
 }
 
-export function RecipeGrid({ recipes, mobileLayout, onAddToMealPlan }: RecipeGridProps) {
+export function RecipeGrid({ recipes, mobileLayout, onAddToMealPlan, onRecipeClick }: RecipeGridProps) {
   const isMobile = useIsMobile();
 
   // Determine grid classes based on mobile layout or default responsive layout
@@ -30,7 +31,8 @@ export function RecipeGrid({ recipes, mobileLayout, onAddToMealPlan }: RecipeGri
         <RecipeCard 
           key={recipe.id} 
           recipe={recipe} 
-          onAddToMealPlan={() => onAddToMealPlan(recipe)}
+          onAddToMealPlan={onAddToMealPlan ? () => onAddToMealPlan(recipe) : undefined}
+          onRecipeClick={onRecipeClick ? () => onRecipeClick(recipe.id) : undefined}
           showActions={true}
         />
       ))}

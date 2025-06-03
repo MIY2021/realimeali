@@ -57,6 +57,7 @@ export const useNavigationState = () => {
 
   return {
     navigationState,
+    setNavigationState,
     markCameFromRecipes,
     clearNavigationState,
   };
