@@ -24,6 +24,11 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
   // Use refs to track state without causing re-renders
   const lastFetchedHouseholdIdRef = useRef<string | null>(null);
   const currentUserIdRef = useRef<string | null>(null);
+  const isFetchingRef = useRef<boolean>(false);
+
+  // Create stable user and household references
+  const stableUserId = user?.id || null;
+  const stableHouseholdId = currentHousehold?.id || null;
 
   const { addMealPlan, removeMealPlan, clearWeek } = useMealPlanOperations(
     user, 
@@ -33,25 +38,32 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
     mealPlans
   );
 
+  // Stable fetchMealPlans function with no dependencies on loading states
   const fetchMealPlans = useCallback(async () => {
-    const userId = user?.id;
-    const householdId = currentHousehold?.id;
+    const userId = stableUserId;
+    const householdId = stableHouseholdId;
     
     if (!userId || !householdId) {
-      console.log('DEBUG: No user or household, clearing meal plans');
-      setMealPlans([]);
-      lastFetchedHouseholdIdRef.current = null;
-      currentUserIdRef.current = null;
+      // Only clear if we had data before
+      if (lastFetchedHouseholdIdRef.current) {
+        console.log('DEBUG: No user or household, clearing meal plans');
+        setMealPlans([]);
+        lastFetchedHouseholdIdRef.current = null;
+        currentUserIdRef.current = null;
+      }
       return;
     }
 
-    // Only fetch if user or household actually changed
-    if (currentUserIdRef.current === userId && lastFetchedHouseholdIdRef.current === householdId) {
+    // Prevent duplicate fetches
+    if (currentUserIdRef.current === userId && 
+        lastFetchedHouseholdIdRef.current === householdId &&
+        isFetchingRef.current) {
       return;
     }
 
     try {
       setIsLoading(true);
+      isFetchingRef.current = true;
       console.log('DEBUG: Fetching meal plans for household:', householdId);
       
       currentUserIdRef.current = userId;
@@ -69,21 +81,26 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
       });
     } finally {
       setIsLoading(false);
+      isFetchingRef.current = false;
     }
-  }, [user?.id, currentHousehold?.id, toast]);
+  }, [stableUserId, stableHouseholdId, toast]);
 
-  // Single effect to handle data fetching
+  // Single effect to handle data fetching - only depend on stable IDs
   useEffect(() => {
-    fetchMealPlans();
-  }, [fetchMealPlans]);
+    // Only fetch if the user/household combination actually changed
+    if (currentUserIdRef.current !== stableUserId || 
+        lastFetchedHouseholdIdRef.current !== stableHouseholdId) {
+      fetchMealPlans();
+    }
+  }, [stableUserId, stableHouseholdId, fetchMealPlans]);
 
   const getMealPlansForWeek = useCallback((weekNumber: 1 | 2): MealPlan[] => {
-    if (!user || !currentHousehold) return [];
+    if (!stableUserId || !stableHouseholdId) return [];
     
     const weekPlans = mealPlans.filter(plan => plan.week_number === weekNumber);
     console.log(`DEBUG: Getting meal plans for week ${weekNumber}:`, weekPlans);
     return weekPlans;
-  }, [mealPlans, user?.id, currentHousehold?.id]);
+  }, [mealPlans, stableUserId, stableHouseholdId]);
 
   const getRecipeForMealPlan = useCallback((mealPlan: MealPlan): Recipe | undefined => {
     return recipes.find(recipe => recipe.id === mealPlan.recipe_id);
@@ -185,19 +202,22 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [user?.id, currentHousehold?.id, mealPlans]);
 
+  // Memoize context value with only stable dependencies
+  const contextValue: MealPlanContextType = {
+    mealPlans,
+    getMealPlansForWeek,
+    getRecipeForMealPlan,
+    addMealPlan,
+    addMealPlanWithLeftovers,
+    removeMealPlan,
+    clearWeek,
+    reorderMealPlans,
+    isLoading,
+    fetchMealPlans
+  };
+
   return (
-    <MealPlanContext.Provider value={{
-      mealPlans,
-      getMealPlansForWeek,
-      getRecipeForMealPlan,
-      addMealPlan,
-      addMealPlanWithLeftovers,
-      removeMealPlan,
-      clearWeek,
-      reorderMealPlans,
-      isLoading,
-      fetchMealPlans
-    }}>
+    <MealPlanContext.Provider value={contextValue}>
       {children}
     </MealPlanContext.Provider>
   );

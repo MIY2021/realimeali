@@ -40,6 +40,10 @@ export function HouseholdProvider({ children }: { children: React.ReactNode }) {
   const hasDataRef = useRef(false);
   const currentUserIdRef = useRef<string | null>(null);
   const currentHouseholdIdRef = useRef<string | null>(null);
+  const isLoadingHouseholdRef = useRef(false);
+
+  // Create stable user ID reference
+  const stableUserId = user?.id || null;
 
   // Use our custom hooks
   const {
@@ -80,9 +84,6 @@ export function HouseholdProvider({ children }: { children: React.ReactNode }) {
 
   const { removeMember } = useMemberOperations(setHouseholdMembers);
 
-  // Stable user ID reference
-  const stableUserId = useMemo(() => user?.id, [user?.id]);
-
   // Primary effect: Load household when user changes
   useEffect(() => {
     const loadHousehold = async () => {
@@ -101,15 +102,26 @@ export function HouseholdProvider({ children }: { children: React.ReactNode }) {
         setHouseholdMembers([]);
         setJoinRequests([]);
         hasDataRef.current = false;
+        currentHouseholdIdRef.current = null;
         setIsInitialized(true);
         return;
       }
 
+      if (isLoadingHouseholdRef.current) {
+        return;
+      }
+
+      isLoadingHouseholdRef.current = true;
       console.log('DEBUG: Loading household for user:', userId);
-      const household = await fetchHousehold();
-      setCurrentHousehold(household);
-      currentHouseholdIdRef.current = household?.id || null;
-      setIsInitialized(true);
+      
+      try {
+        const household = await fetchHousehold();
+        setCurrentHousehold(household);
+        currentHouseholdIdRef.current = household?.id || null;
+        setIsInitialized(true);
+      } finally {
+        isLoadingHouseholdRef.current = false;
+      }
     };
 
     loadHousehold();
@@ -119,14 +131,14 @@ export function HouseholdProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!isInitialized) return;
     
-    const householdId = currentHousehold?.id;
+    const householdId = currentHousehold?.id || null;
     
     // Only proceed if household ID actually changed
     if (currentHouseholdIdRef.current === householdId) {
       return;
     }
     
-    currentHouseholdIdRef.current = householdId || null;
+    currentHouseholdIdRef.current = householdId;
     
     if (householdId) {
       console.log('DEBUG: Loading data for household:', householdId);

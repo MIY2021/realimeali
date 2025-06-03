@@ -17,7 +17,7 @@ export default function RecipesPage() {
   useDocumentTitle("My Recipes | RealiMeali");
   
   const { user } = useAuth();
-  const { currentHousehold } = useHousehold();
+  const { currentHousehold, isLoadingHousehold } = useHousehold();
   const { recipes, isLoading } = useRecipes();
   const { restoreScrollPosition, setScrollKey, clearScrollPosition } = useScrollPosition();
   const { navigationState, clearNavigationState } = useNavigationState();
@@ -54,6 +54,17 @@ export default function RecipesPage() {
     }
     return `Welcome to your recipe collection for ${currentHousehold.name}! All recipes are organised by household.`;
   };
+
+  // Show loading state while household is being determined
+  if (isLoadingHousehold) {
+    return (
+      <div className={`container max-w-7xl py-4 px-4 sm:py-8 sm:px-6 ${isMobile ? 'bg-cream min-h-screen' : ''}`}>
+        <div className="py-10 text-center">
+          <p className="text-muted-foreground">Loading your household...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`container max-w-7xl py-4 px-4 sm:py-8 sm:px-6 ${isMobile ? 'bg-cream min-h-screen' : ''}`}>
