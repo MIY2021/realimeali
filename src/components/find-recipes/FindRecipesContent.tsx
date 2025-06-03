@@ -175,13 +175,15 @@ export const FindRecipesContent = () => {
             
             <Select value={`${sortBy}-${sortOrder}`} onValueChange={(value) => {
               const [newSortBy, newSortOrder] = value.split('-');
-              setSortBy(newSortBy as "title" | "prepTime" | "cookTime");
+              setSortBy(newSortBy as "title" | "prepTime" | "cookTime" | "dateAdded");
               setSortOrder(newSortOrder as "asc" | "desc");
             }}>
               <SelectTrigger className="text-sm">
                 <SelectValue placeholder="Sort" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="dateAdded-desc">Newest First</SelectItem>
+                <SelectItem value="dateAdded-asc">Oldest First</SelectItem>
                 <SelectItem value="title-asc">Title A-Z</SelectItem>
                 <SelectItem value="title-desc">Title Z-A</SelectItem>
                 <SelectItem value="prepTime-asc">Prep Time ↑</SelectItem>
@@ -252,13 +254,15 @@ export const FindRecipesContent = () => {
             <div className="w-32 sm:w-48">
               <Select value={`${sortBy}-${sortOrder}`} onValueChange={(value) => {
                 const [newSortBy, newSortOrder] = value.split('-');
-                setSortBy(newSortBy as "title" | "prepTime" | "cookTime");
+                setSortBy(newSortBy as "title" | "prepTime" | "cookTime" | "dateAdded");
                 setSortOrder(newSortOrder as "asc" | "desc");
               }}>
                 <SelectTrigger className="text-sm sm:text-base">
                   <SelectValue placeholder="Sort by" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="dateAdded-desc">Newest First</SelectItem>
+                  <SelectItem value="dateAdded-asc">Oldest First</SelectItem>
                   <SelectItem value="title-asc">Title A-Z</SelectItem>
                   <SelectItem value="title-desc">Title Z-A</SelectItem>
                   <SelectItem value="prepTime-asc">Prep Time (Low to High)</SelectItem>

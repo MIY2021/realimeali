@@ -32,11 +32,6 @@ export function CommunityRecipeCard({ recipe }: CommunityRecipeCardProps) {
     }
   };
 
-  const truncateText = (text: string, maxLength: number = 100) => {
-    if (text.length <= maxLength) return text;
-    return text.substring(0, maxLength).trim() + '...';
-  };
-
   return (
     <Card className="bg-card rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 flex flex-col h-full">
       <div className="relative overflow-hidden rounded-t-lg">
@@ -69,8 +64,8 @@ export function CommunityRecipeCard({ recipe }: CommunityRecipeCardProps) {
           </h3>
         </div>
         {recipe.description && (
-          <p className="text-sm text-gray-600 mb-3 flex-1">
-            {truncateText(recipe.description, 100)}
+          <p className="text-sm text-gray-600 mb-3 flex-1 line-clamp-2">
+            {recipe.description}
           </p>
         )}
         

@@ -36,8 +36,8 @@ const safeComplexityConversion = (difficulty: string | null): ComplexityLevel | 
 
 export function useCommunityRecipeList({ recipes }: UseCommunityRecipeListProps) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [sortBy, setSortBy] = useState<"title" | "prepTime" | "cookTime">("title");
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  const [sortBy, setSortBy] = useState<"title" | "prepTime" | "cookTime" | "dateAdded">("dateAdded");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [visibleCount, setVisibleCount] = useState(12);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [filters, setFilters] = useState<SimpleRecipeFilters>({
@@ -101,6 +101,10 @@ export function useCommunityRecipeList({ recipes }: UseCommunityRecipeListProps)
         case "cookTime":
           valueA = a.cook_time;
           valueB = b.cook_time;
+          break;
+        case "dateAdded":
+          valueA = new Date(a.created_at).getTime();
+          valueB = new Date(b.created_at).getTime();
           break;
         default:
           valueA = a.title.toLowerCase();
