@@ -23,6 +23,7 @@ import {
 import {
   MEAL_TYPE_OPTIONS,
   CUISINE_REGION_OPTIONS,
+  DIET_LIFESTYLE_OPTIONS,
   COMPLEXITY_LEVEL_OPTIONS,
 } from "@/utils/recipeClassification";
 
@@ -103,6 +104,7 @@ export const FindRecipesContent = () => {
 
   const activeFilterCount = filters.mealTypes.length + 
                            filters.cuisineRegions.length + 
+                           filters.dietLifestyle.length + 
                            filters.complexityLevels.length;
 
   const clearAllFilters = () => {
@@ -201,8 +203,8 @@ export const FindRecipesContent = () => {
             </div>
           </div>
 
-          {/* Row 2: All filters on equal width */}
-          <div className="grid grid-cols-3 gap-2">
+          {/* Row 2: All filters on equal width - now 4 columns */}
+          <div className="grid grid-cols-4 gap-2">
             <DropdownFilterSection
               title="🕒 Meal"
               options={MEAL_TYPE_OPTIONS}
@@ -218,7 +220,14 @@ export const FindRecipesContent = () => {
             />
 
             <DropdownFilterSection
-              title="⚡ Complexity"
+              title="🥗 Diet"
+              options={DIET_LIFESTYLE_OPTIONS}
+              selectedValues={filters.dietLifestyle}
+              onToggle={(value) => toggleArrayFilter('dietLifestyle', value)}
+            />
+
+            <DropdownFilterSection
+              title="⚡ Level"
               options={COMPLEXITY_LEVEL_OPTIONS}
               selectedValues={filters.complexityLevels}
               onToggle={(value) => toggleArrayFilter('complexityLevels', value)}

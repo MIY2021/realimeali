@@ -51,9 +51,9 @@ export function CommunityRecipeCard({ recipe }: CommunityRecipeCardProps) {
         </div>
         <Badge
           variant="secondary"
-          className="absolute top-2 right-2 bg-blue-600 text-white font-semibold px-2 py-1 text-xs shadow-lg border-0"
+          className="absolute top-2 right-2 bg-sage text-white font-semibold px-2 py-1 text-xs shadow-lg border-0"
         >
-          Community
+          External
         </Badge>
       </div>
       
