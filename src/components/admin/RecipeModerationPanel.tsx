@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -52,9 +51,10 @@ export function RecipeModerationPanel() {
 
       if (rejectedError) throw rejectedError;
 
-      setPendingRecipes(pending || []);
-      setApprovedRecipes(approved || []);
-      setRejectedRecipes(rejected || []);
+      // Cast the data to match our interface since database returns string for moderation_status
+      setPendingRecipes((pending || []) as CommunityRecipe[]);
+      setApprovedRecipes((approved || []) as CommunityRecipe[]);
+      setRejectedRecipes((rejected || []) as CommunityRecipe[]);
     } catch (error) {
       console.error('Error fetching recipes:', error);
       toast.error("Failed to load recipes");
@@ -75,7 +75,7 @@ export function RecipeModerationPanel() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${supabase.supabaseKey}`,
+          'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJkanplZmVrdWFoZm9md3p4cXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY3MjE1ODQsImV4cCI6MjA2MjI5NzU4NH0.AyzVwsNDgyjeveMtz4-6mVnJGr7DaU8ZUJhr5Yk_us8`,
         },
         body: JSON.stringify({
           recipeTitle: recipe.title,
@@ -117,7 +117,7 @@ export function RecipeModerationPanel() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${supabase.supabaseKey}`,
+          'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJkanplZmVrdWFoZm9md3p4cXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY3MjE1ODQsImV4cCI6MjA2MjI5NzU4NH0.AyzVwsNDgyjeveMtz4-6mVnJGr7DaU8ZUJhr5Yk_us8`,
         },
         body: JSON.stringify({
           prompt: recipe.title,

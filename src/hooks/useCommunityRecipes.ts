@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -83,7 +82,8 @@ export function useCommunityRecipes() {
 
       if (error) throw error;
 
-      setRecipes(data || []);
+      // Cast the data to match our interface since database returns string for moderation_status
+      setRecipes((data || []) as CommunityRecipe[]);
       setTotalCount(count || 0);
     } catch (error) {
       console.error('Error fetching community recipes:', error);
