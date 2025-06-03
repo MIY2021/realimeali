@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,9 +6,13 @@ import { useAuth } from "@/contexts/AuthContext";
 export interface CommunityRecipe {
   id: string;
   title: string;
-  description: string | null;
+  description: string | null; // Legacy field for backwards compatibility
+  original_description: string | null;
+  ai_generated_description: string | null;
   source_url: string;
-  image_url: string | null;
+  image_url: string | null; // Legacy field for backwards compatibility
+  original_image_url: string | null;
+  ai_generated_image_url: string | null;
   image_credit: string | null;
   prep_time: number;
   cook_time: number;
@@ -23,6 +26,8 @@ export interface CommunityRecipe {
   save_count: number;
   is_approved: boolean;
   is_active: boolean;
+  moderation_status: 'pending' | 'in_review' | 'approved' | 'rejected';
+  moderator_notes: string | null;
   created_at: string;
 }
 
@@ -60,7 +65,8 @@ export function useCommunityRecipes() {
       }
 
       if (filters?.search) {
-        query = query.or(`title.ilike.%${filters.search}%,description.ilike.%${filters.search}%`);
+        // Search in both AI-generated and original descriptions for better results
+        query = query.or(`title.ilike.%${filters.search}%,ai_generated_description.ilike.%${filters.search}%,original_description.ilike.%${filters.search}%`);
       }
 
       if (filters?.limit) {
@@ -115,9 +121,20 @@ export function useCommunityRecipes() {
       const { error } = await supabase
         .from('community_recipes')
         .insert({
-          ...recipeData,
+          title: recipeData.title,
+          original_description: recipeData.description,
+          original_image_url: recipeData.image_url,
+          source_url: recipeData.source_url,
+          image_credit: recipeData.image_credit,
+          prep_time: recipeData.prep_time || 0,
+          cook_time: recipeData.cook_time || 0,
+          servings: recipeData.servings || 1,
+          cuisine: recipeData.cuisine,
+          category: recipeData.category,
+          difficulty_level: recipeData.difficulty_level,
           submitted_by: user.id,
           submitted_by_name: user.email || 'Anonymous',
+          moderation_status: 'pending',
         });
 
       if (error) throw error;

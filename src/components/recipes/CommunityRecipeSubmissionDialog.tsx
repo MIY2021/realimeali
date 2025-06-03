@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Sparkles } from "lucide-react";
 import { useCommunityRecipes } from "@/hooks/useCommunityRecipes";
 
 interface CommunityRecipeSubmissionDialogProps {
@@ -100,14 +101,20 @@ export function CommunityRecipeSubmissionDialog({
           </div>
 
           <div>
-            <Label htmlFor="description">Description (Optional)</Label>
+            <Label htmlFor="description">
+              Description
+              <span className="text-sm text-muted-foreground ml-2">(For moderation reference)</span>
+            </Label>
             <Textarea
               id="description"
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              placeholder="Brief description of this recipe..."
+              placeholder="Brief description of this recipe (helps our moderators understand the recipe)..."
               rows={3}
             />
+            <p className="text-xs text-muted-foreground mt-1">
+              This helps our team understand your recipe for approval
+            </p>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -160,11 +167,22 @@ export function CommunityRecipeSubmissionDialog({
             </Select>
           </div>
 
-          <div className="bg-blue-50 p-3 rounded-lg text-sm">
+          <div className="bg-blue-50 p-4 rounded-lg text-sm space-y-2">
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-blue-600" />
+              <p className="font-medium">AI-Enhanced Content</p>
+            </div>
+            <p className="text-muted-foreground">
+              Our team will review your submission and generate original, copyright-safe descriptions and images for public display. 
+              Only the recipe title, metadata, and source link will be shared publicly.
+            </p>
+          </div>
+
+          <div className="bg-gray-50 p-3 rounded-lg text-sm">
             <p className="font-medium mb-1">Recipe will be submitted for review</p>
             <p className="text-muted-foreground">
               Your recipe will appear in the community once approved by our moderation team.
-              Only the recipe metadata and link will be shared - the full recipe stays on the original site.
+              The full recipe stays on the original site - we only share the link and our AI-generated summary.
             </p>
           </div>
 

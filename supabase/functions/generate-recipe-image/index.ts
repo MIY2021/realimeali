@@ -27,7 +27,7 @@ serve(async (req) => {
       throw new Error('Supabase configuration is missing');
     }
 
-    const { prompt } = await req.json();
+    const { prompt, isCommunityRecipe = false } = await req.json();
 
     if (!prompt) {
       return new Response(
@@ -41,6 +41,12 @@ serve(async (req) => {
 
     console.log('Generating image with prompt:', prompt);
 
+    // Enhanced prompt for community recipes with light, bright food photography
+    let enhancedPrompt = prompt;
+    if (isCommunityRecipe) {
+      enhancedPrompt = `Professional food photography of ${prompt}. Shot with natural daylight, bright and airy lighting, clean white background or light wooden surface. The dish should look fresh, appetizing, and professionally styled. High-quality food photography, magazine-style, minimal and clean composition, soft natural shadows, vibrant colors but not oversaturated.`;
+    }
+
     // Generate image with OpenAI
     const response = await fetch('https://api.openai.com/v1/images/generations', {
       method: 'POST',
@@ -50,7 +56,7 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         model: 'dall-e-3',
-        prompt: prompt,
+        prompt: enhancedPrompt,
         n: 1,
         size: '1024x1024',
         quality: 'standard',
@@ -86,7 +92,8 @@ serve(async (req) => {
 
     // Generate unique filename
     const timestamp = Date.now();
-    const fileName = `recipe-${timestamp}.png`;
+    const prefix = isCommunityRecipe ? 'community-recipe' : 'recipe';
+    const fileName = `${prefix}-${timestamp}.png`;
 
     // Upload to Supabase storage
     const { data: uploadData, error: uploadError } = await supabase.storage
