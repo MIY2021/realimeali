@@ -50,7 +50,7 @@ export function RecipeList({ recipes, isLoading }: RecipeListProps) {
   } = useRecipeList({ recipes });
 
   const { saveScrollPosition } = useScrollPosition();
-  const { setNavigationState } = useNavigationState();
+  const { navigationState, setNavigationState } = useNavigationState();
   const { mobileLayout, handleMobileLayoutChange } = useMobileLayout();
   const isMobile = useIsMobile();
 
@@ -73,7 +73,7 @@ export function RecipeList({ recipes, isLoading }: RecipeListProps) {
     saveScrollPosition('recipes', currentLayout);
     
     // Set navigation state to indicate we should restore scroll when returning
-    setNavigationState({ shouldRestoreScroll: true });
+    setNavigationState(prev => ({ ...prev, shouldRestoreScroll: true }));
     
     // Set session storage flag as backup
     sessionStorage.setItem('restoreRecipesScroll', 'true');

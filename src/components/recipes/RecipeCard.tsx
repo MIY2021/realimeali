@@ -13,11 +13,12 @@ import { useIsMobile } from "@/hooks/use-mobile";
 
 interface RecipeCardProps {
   recipe: Recipe;
-  onAddToMealPlan: (recipe: Recipe) => void;
+  onAddToMealPlan?: (recipe: Recipe) => void;
+  onRecipeClick?: (recipeId: string) => void;
   showActions?: boolean;
 }
 
-export function RecipeCard({ recipe, onAddToMealPlan, showActions = true }: RecipeCardProps) {
+export function RecipeCard({ recipe, onAddToMealPlan, onRecipeClick, showActions = true }: RecipeCardProps) {
   const { toggleFavorite } = useRecipes();
   const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
   const isMobile = useIsMobile();
@@ -39,7 +40,15 @@ export function RecipeCard({ recipe, onAddToMealPlan, showActions = true }: Reci
   const handleAddToMealPlan = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    onAddToMealPlan(recipe);
+    if (onAddToMealPlan) {
+      onAddToMealPlan(recipe);
+    }
+  };
+
+  const handleRecipeClick = () => {
+    if (onRecipeClick) {
+      onRecipeClick(recipe.id);
+    }
   };
 
   const getRecipeUrl = () => {
@@ -53,7 +62,7 @@ export function RecipeCard({ recipe, onAddToMealPlan, showActions = true }: Reci
   return (
     <Card className="bg-card rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 flex flex-col h-full">
       <div className="relative overflow-hidden rounded-t-lg">
-        <Link to={getRecipeUrl()}>
+        <Link to={getRecipeUrl()} onClick={handleRecipeClick}>
           <RecipeImage 
             recipe={recipe} 
             className={`w-full aspect-[4/3] object-cover transition-transform duration-300 ${!isMobile ? 'hover:scale-110' : ''}`} 
@@ -72,7 +81,7 @@ export function RecipeCard({ recipe, onAddToMealPlan, showActions = true }: Reci
       </div>
       
       <CardContent className="p-4 flex-1 flex flex-col">
-        <Link to={getRecipeUrl()}>
+        <Link to={getRecipeUrl()} onClick={handleRecipeClick}>
           <h3 className="text-lg font-semibold text-gray-900 mb-2 hover:text-primary transition-colors">
             {recipe.title}
           </h3>
@@ -95,14 +104,14 @@ export function RecipeCard({ recipe, onAddToMealPlan, showActions = true }: Reci
             size="sm"
             className="flex-1 text-xs px-2"
           >
-            <Link to={getRecipeUrl()}>
+            <Link to={getRecipeUrl()} onClick={handleRecipeClick}>
               <Eye className="h-3 w-3 mr-1" />
               <span className="hidden xl:inline">View Recipe</span>
               <span className="xl:hidden">View</span>
             </Link>
           </Button>
           
-          {showActions && (
+          {showActions && onAddToMealPlan && (
             <Button
               variant="default"
               size="sm"
