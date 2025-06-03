@@ -63,7 +63,7 @@ export const MealPlannerContent = ({
       />
 
       <div className="space-y-6">
-        {mealTypes.map((mealType) => (
+        {mealTypes.map((mealType, index) => (
           <MealListSection
             key={mealType}
             mealType={mealType}
@@ -73,6 +73,7 @@ export const MealPlannerContent = ({
             onRemoveMeal={onRemoveMeal}
             onCreateLeftover={onCreateLeftover}
             onReorderMeals={onReorderMeals}
+            sectionIndex={index}
           />
         ))}
       </div>

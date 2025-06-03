@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Trash2, GripVertical } from "lucide-react";
@@ -17,6 +17,7 @@ interface EnhancedMealCardProps {
   onCreateLeftover?: (mealPlan: MealPlan, recipe: Recipe) => void;
   parentRecipe?: Recipe; // For leftover meals
   dragHandleProps?: any; // Props from react-beautiful-dnd
+  animationDelay?: number; // For staggered animations
 }
 
 export function EnhancedMealCard({ 
@@ -25,12 +26,23 @@ export function EnhancedMealCard({
   onRemove, 
   onCreateLeftover,
   parentRecipe,
-  dragHandleProps
+  dragHandleProps,
+  animationDelay = 0
 }: EnhancedMealCardProps) {
   const isMobile = useIsMobile();
   const displayRecipe = recipe || parentRecipe;
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
   
+  // Trigger animation on mount
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsVisible(true);
+    }, animationDelay);
+    
+    return () => clearTimeout(timer);
+  }, [animationDelay]);
+
   const getRecipeUrl = (recipe: Recipe) => {
     return createRecipeUrl(recipe);
   };
@@ -67,7 +79,12 @@ export function EnhancedMealCard({
 
   if (!displayRecipe) {
     return (
-      <Card className={`mb-${isMobile ? '1.5' : '2'}`}>
+      <Card className={`mb-${isMobile ? '1.5' : '2'} transform transition-all duration-500 ease-out ${
+        isVisible 
+          ? 'translate-y-0 opacity-100 scale-100' 
+          : 'translate-y-4 opacity-0 scale-95'
+      }`}
+      style={{ transitionDelay: `${animationDelay}ms` }}>
         <CardContent className={`${isMobile ? 'p-2.5' : 'p-3'}`}>
           <div className="flex items-center justify-between">
             <span className={`${isMobile ? 'text-xs' : 'text-sm'} text-gray-500`}>Unknown recipe</span>
@@ -76,14 +93,14 @@ export function EnhancedMealCard({
                 variant="ghost"
                 size={isMobile ? "sm" : "sm"}
                 onClick={() => setShowDeleteDialog(true)}
-                className={`text-red-500 hover:text-red-700 hover:bg-red-50 ${isMobile ? 'h-8 w-8' : ''}`}
+                className={`text-red-500 hover:text-red-700 hover:bg-red-50 transition-all duration-200 hover:scale-105 ${isMobile ? 'h-8 w-8' : ''}`}
               >
                 <Trash2 className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
               </Button>
               
               <div
                 {...dragHandleProps}
-                className={`flex-shrink-0 text-gray-400 hover:text-gray-600 cursor-grab active:cursor-grabbing ${
+                className={`flex-shrink-0 text-gray-400 hover:text-gray-600 cursor-grab active:cursor-grabbing transition-all duration-200 hover:scale-110 ${
                   isMobile ? 'p-1' : 'p-1.5'
                 }`}
               >
@@ -107,11 +124,19 @@ export function EnhancedMealCard({
   const effectiveServings = getEffectiveServings();
 
   return (
-    <Card className={`mb-${isMobile ? '1.5' : '2'}`}>
+    <Card className={`mb-${isMobile ? '1.5' : '2'} transform transition-all duration-500 ease-out hover:shadow-md ${
+      isVisible 
+        ? 'translate-y-0 opacity-100 scale-100' 
+        : 'translate-y-4 opacity-0 scale-95'
+    }`}
+    style={{ 
+      transitionDelay: `${animationDelay}ms`,
+      willChange: 'transform, opacity'
+    }}>
       <CardContent className={`${isMobile ? 'p-2.5' : 'p-3'}`}>
         <div className={`flex items-center gap-${isMobile ? '2' : '3'}`}>
-          {/* Recipe thumbnail - Made larger */}
-          <div className={`${isMobile ? 'w-14 h-14' : 'w-16 h-16'} rounded-md overflow-hidden bg-muted flex-shrink-0`}>
+          {/* Recipe thumbnail - Made larger with hover effect */}
+          <div className={`${isMobile ? 'w-14 h-14' : 'w-16 h-16'} rounded-md overflow-hidden bg-muted flex-shrink-0 transition-all duration-200 hover:scale-105 hover:shadow-sm`}>
             <RecipeImage recipe={displayRecipe} className="w-full h-full" iconSize={isMobile ? "h-4 w-4" : "h-5 w-5"} />
           </div>
 
@@ -119,10 +144,10 @@ export function EnhancedMealCard({
             {mealPlan.is_leftover ? (
               <div className={`space-y-${isMobile ? '0.5' : '1'}`}>
                 <div className={`flex items-center gap-${isMobile ? '1.5' : '2'} ${isMobile ? 'text-xs' : 'text-sm'}`}>
-                  <span className="text-green-600">🍽️</span>
+                  <span className="text-green-600 animate-pulse">🍽️</span>
                   <Link 
                     to={getRecipeUrl(displayRecipe)}
-                    className="font-medium text-green-800 hover:text-green-900 transition-colors truncate"
+                    className="font-medium text-green-800 hover:text-green-900 transition-all duration-200 truncate hover:scale-105 origin-left"
                   >
                     Leftover: {displayRecipe.title}
                   </Link>
@@ -135,7 +160,7 @@ export function EnhancedMealCard({
               <div className={`space-y-${isMobile ? '0.5' : '1'}`}>
                 <Link 
                   to={getRecipeUrl(displayRecipe)}
-                  className={`${isMobile ? 'text-xs' : 'text-sm'} font-medium hover:text-terracotta transition-colors block truncate`}
+                  className={`${isMobile ? 'text-xs' : 'text-sm'} font-medium hover:text-terracotta transition-all duration-200 block truncate hover:scale-105 origin-left`}
                 >
                   {displayRecipe.title}
                 </Link>
@@ -147,7 +172,7 @@ export function EnhancedMealCard({
                     • {effectiveServings} servings
                   </span>
                   {hasLeftoversAllocated && (
-                    <span className={`${isMobile ? 'text-xs' : 'text-xs'} text-green-600`}>
+                    <span className={`${isMobile ? 'text-xs' : 'text-xs'} text-green-600 animate-pulse`}>
                       (+{mealPlan.leftover_servings} saved for leftovers)
                     </span>
                   )}
@@ -162,7 +187,7 @@ export function EnhancedMealCard({
                 variant="ghost"
                 size={isMobile ? "sm" : "sm"}
                 onClick={() => onCreateLeftover(mealPlan, displayRecipe)}
-                className={`text-green-600 hover:text-green-700 hover:bg-green-50 ${isMobile ? 'h-8 px-2' : 'px-2'}`}
+                className={`text-green-600 hover:text-green-700 hover:bg-green-50 transition-all duration-200 hover:scale-105 ${isMobile ? 'h-8 px-2' : 'px-2'}`}
                 title="Create lunch leftovers"
               >
                 <span className={`${isMobile ? 'text-xs' : 'text-xs'}`}>+ Lunch</span>
@@ -173,16 +198,17 @@ export function EnhancedMealCard({
               variant="ghost"
               size={isMobile ? "sm" : "sm"}
               onClick={() => setShowDeleteDialog(true)}
-              className={`text-red-500 hover:text-red-700 hover:bg-red-50 ${isMobile ? 'h-8 w-8' : ''}`}
+              className={`text-red-500 hover:text-red-700 hover:bg-red-50 transition-all duration-200 hover:scale-105 ${isMobile ? 'h-8 w-8' : ''}`}
             >
               <Trash2 className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
             </Button>
 
             <div
               {...dragHandleProps}
-              className={`flex-shrink-0 text-gray-400 hover:text-gray-600 cursor-grab active:cursor-grabbing ${
+              className={`flex-shrink-0 text-gray-400 hover:text-gray-600 cursor-grab active:cursor-grabbing transition-all duration-200 hover:scale-110 active:scale-95 active:rotate-2 ${
                 isMobile ? 'p-1' : 'p-1.5'
               }`}
+              style={{ willChange: 'transform' }}
             >
               <GripVertical className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
             </div>

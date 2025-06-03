@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Check, X, Eye, Link, Clock, Circle, Sparkles, Image as ImageIcon, Upload } from "lucide-react";
+import { Check, X, Eye, Link, Clock, Circle, Sparkles, ImageIcon, Upload } from "lucide-react";
 import { CommunityRecipe } from "@/hooks/useCommunityRecipes";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
