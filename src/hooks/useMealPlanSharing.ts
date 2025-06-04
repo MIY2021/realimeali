@@ -1,3 +1,4 @@
+
 import { useCallback } from "react";
 import { MealPlan, Recipe } from "@/types";
 
@@ -81,20 +82,19 @@ export const useMealPlanSharing = ({
     const mealPlanText = formatMealPlanText();
     const shareTitle = `Week ${currentWeek} Meal Plan`;
     const shareUrl = `${window.location.origin}/meal-planner`;
+    const textWithUrl = `${mealPlanText}\n\nView and edit this meal plan: ${shareUrl}`;
 
     if (navigator.share) {
       try {
         await navigator.share({
           title: shareTitle,
-          text: mealPlanText,
-          url: shareUrl
+          text: textWithUrl
         });
       } catch (err) {
         console.log('Share cancelled or failed');
       }
     } else {
       // Fallback to clipboard with formatted text including URL
-      const textWithUrl = `${mealPlanText}\n\nView and edit this meal plan: ${shareUrl}`;
       try {
         await navigator.clipboard.writeText(textWithUrl);
         toast({
