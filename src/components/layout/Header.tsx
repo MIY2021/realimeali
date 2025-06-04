@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { User, UtensilsCrossed, CalendarDays, Book, ListChecks, Users, AlignJustify, Search, User as UserIcon } from "lucide-react";
@@ -8,7 +9,8 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import {
   Sheet,
