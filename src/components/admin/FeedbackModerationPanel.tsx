@@ -6,9 +6,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Clock, AlertCircle, Star } from "lucide-react";
+import { Clock, AlertCircle, Star, Image as ImageIcon, Eye } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface FeedbackItem {
@@ -21,6 +22,7 @@ interface FeedbackItem {
   status: string;
   priority?: string;
   admin_notes?: string;
+  image_url?: string;
   created_at: string;
   updated_at: string;
 }
@@ -31,6 +33,8 @@ export function FeedbackModerationPanel() {
   const [selectedStatus, setSelectedStatus] = useState<{ [key: string]: string }>({});
   const [selectedPriority, setSelectedPriority] = useState<{ [key: string]: string }>({});
   const [adminNotes, setAdminNotes] = useState<{ [key: string]: string }>({});
+  const [imageDialogOpen, setImageDialogOpen] = useState(false);
+  const [selectedImageUrl, setSelectedImageUrl] = useState<string>("");
   const isMobile = useIsMobile();
 
   const fetchFeedback = useCallback(async () => {
@@ -78,6 +82,11 @@ export function FeedbackModerationPanel() {
 
   const saveAdminNotes = async (feedbackId: string, notes: string) => {
     await updateFeedback(feedbackId, { admin_notes: notes });
+  };
+
+  const openImageDialog = (imageUrl: string) => {
+    setSelectedImageUrl(imageUrl);
+    setImageDialogOpen(true);
   };
 
   useEffect(() => {
@@ -174,6 +183,17 @@ export function FeedbackModerationPanel() {
                             <CardTitle className={`${isMobile ? 'text-base' : 'text-lg'}`}>
                               {item.subject}
                             </CardTitle>
+                            {item.image_url && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => openImageDialog(item.image_url!)}
+                                className="h-6 px-2"
+                              >
+                                <ImageIcon className="h-3 w-3 mr-1" />
+                                {!isMobile && "View Image"}
+                              </Button>
+                            )}
                           </div>
                           <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
                             <Badge variant="outline" className={`text-xs ${getTypeColor(item.type)}`}>
@@ -257,6 +277,25 @@ export function FeedbackModerationPanel() {
           </TabsContent>
         ))}
       </Tabs>
+
+      {/* Image View Dialog */}
+      <Dialog open={imageDialogOpen} onOpenChange={setImageDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Eye className="h-4 w-4" />
+              Feedback Attachment
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex justify-center">
+            <img
+              src={selectedImageUrl}
+              alt="Feedback attachment"
+              className="max-w-full max-h-[70vh] object-contain rounded-lg"
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
