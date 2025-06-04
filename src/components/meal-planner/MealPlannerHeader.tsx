@@ -11,14 +11,14 @@ interface MealPlannerHeaderProps {
 export const MealPlannerHeader = ({ user, currentHousehold }: MealPlannerHeaderProps) => {
   const { householdMembers, isLoadingMembers } = useHousehold();
 
-  console.log('MealPlannerHeader - Current state:', {
+  console.log('MealPlannerHeader render:', {
     hasUser: !!user,
     hasHousehold: !!currentHousehold,
     householdId: currentHousehold?.id,
     householdName: currentHousehold?.name,
-    membersCount: householdMembers.length,
+    membersCount: householdMembers?.length || 0,
     isLoadingMembers,
-    timestamp: new Date().toISOString()
+    shouldShowMembers: !!(user && currentHousehold)
   });
 
   return (
@@ -33,7 +33,9 @@ export const MealPlannerHeader = ({ user, currentHousehold }: MealPlannerHeaderP
         </p>
       </div>
       {user && currentHousehold && (
-        <HouseholdMembersDisplay />
+        <div className="flex items-center">
+          <HouseholdMembersDisplay />
+        </div>
       )}
     </div>
   );
