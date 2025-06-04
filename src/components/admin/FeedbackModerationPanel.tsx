@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -9,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Clock, AlertCircle, Star, Image as ImageIcon, Eye } from "lucide-react";
+import { Clock, AlertCircle, Star, ImageIcon, Eye } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface FeedbackItem {

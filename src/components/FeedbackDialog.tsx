@@ -22,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Upload, X, Image as ImageIcon } from "lucide-react";
+import { Upload, X, ImageIcon } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface FeedbackDialogProps {
