@@ -1,3 +1,4 @@
+
 import { useCallback } from "react";
 import { MealPlan, Recipe } from "@/types";
 
@@ -94,7 +95,7 @@ export const useMealPlanSharing = ({
       }
     } else {
       // Fallback to clipboard with formatted text including URL
-      const textWithUrl = `${mealPlanText}\n\nView and edit this meal plan: ${shareUrl}`;
+      const textWithUrl = `${mealPlanText}\n\nView and edit meal plan: ${shareUrl}`;
       try {
         await navigator.clipboard.writeText(textWithUrl);
         toast({
