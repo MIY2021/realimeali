@@ -76,9 +76,9 @@ export function useHouseholdData(user: User | null, currentHousehold: Household 
       return [];
     }
 
-    // Prevent duplicate fetches for the same household
-    if (lastFetchedHouseholdIdRef.current === currentHousehold.id && isCurrentlyFetchingMembersRef.current) {
-      console.log('DEBUG: Already fetching members for this household, skipping duplicate request');
+    // Reset loading state and prevent duplicate fetches
+    if (isCurrentlyFetchingMembersRef.current) {
+      console.log('DEBUG: Already fetching members, skipping duplicate request');
       return [];
     }
 
@@ -107,9 +107,15 @@ export function useHouseholdData(user: User | null, currentHousehold: Household 
       }
 
       if (!membersData || membersData.length === 0) {
-        console.log('DEBUG: No members found for household');
+        console.warn('DEBUG: No members found for household - this should not happen!', {
+          householdId: currentHousehold.id,
+          householdName: currentHousehold.name,
+          createdBy: currentHousehold.created_by
+        });
         return [];
       }
+
+      console.log('DEBUG: Found members data:', membersData);
 
       // Then get profiles for these users
       const userIds = membersData.map(member => member.user_id);
@@ -126,6 +132,8 @@ export function useHouseholdData(user: User | null, currentHousehold: Household 
       if (profilesError) {
         console.error('Error fetching profiles:', profilesError);
       }
+
+      console.log('DEBUG: Found profiles data:', profilesData);
 
       // Combine members with their profiles
       const membersWithProfiles: HouseholdMember[] = membersData.map(member => {
@@ -145,10 +153,13 @@ export function useHouseholdData(user: User | null, currentHousehold: Household 
         };
       });
 
-      console.log('DEBUG: Successfully fetched household members with profiles:', {
+      console.log('DEBUG: Successfully processed household members:', {
         memberCount: membersWithProfiles.length,
+        householdId: currentHousehold.id,
         membersWithProfiles: membersWithProfiles.map(m => ({
           id: m.id,
+          user_id: m.user_id,
+          role: m.role,
           hasProfile: !!m.profile,
           profileName: m.profile?.full_name
         }))

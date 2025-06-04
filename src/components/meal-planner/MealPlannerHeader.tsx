@@ -1,6 +1,9 @@
 
-import { CalendarDays } from "lucide-react";
+import { CalendarDays, RefreshCw } from "lucide-react";
 import { HouseholdMembersDisplay } from "@/components/household/HouseholdMembersDisplay";
+import { Button } from "@/components/ui/button";
+import { useHousehold } from "@/contexts/HouseholdContext";
+import { useState } from "react";
 
 interface MealPlannerHeaderProps {
   user: any;
@@ -8,6 +11,31 @@ interface MealPlannerHeaderProps {
 }
 
 export const MealPlannerHeader = ({ user, currentHousehold }: MealPlannerHeaderProps) => {
+  const { householdMembers, isLoadingMembers } = useHousehold();
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      // Force a page refresh to reload all household data
+      window.location.reload();
+    } catch (error) {
+      console.error('Error refreshing data:', error);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  console.log('MealPlannerHeader - Current state:', {
+    hasUser: !!user,
+    hasHousehold: !!currentHousehold,
+    householdId: currentHousehold?.id,
+    householdName: currentHousehold?.name,
+    membersCount: householdMembers.length,
+    isLoadingMembers,
+    timestamp: new Date().toISOString()
+  });
+
   return (
     <div className="flex items-center justify-between mb-2">
       <div>
@@ -20,7 +48,21 @@ export const MealPlannerHeader = ({ user, currentHousehold }: MealPlannerHeaderP
         </p>
       </div>
       {user && currentHousehold && (
-        <HouseholdMembersDisplay />
+        <div className="flex items-center gap-2">
+          <HouseholdMembersDisplay />
+          {(householdMembers.length === 0 && !isLoadingMembers) && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              className="text-terracotta hover:text-terracotta"
+            >
+              <RefreshCw className={`h-4 w-4 mr-1 ${isRefreshing ? 'animate-spin' : ''}`} />
+              Refresh
+            </Button>
+          )}
+        </div>
       )}
     </div>
   );
