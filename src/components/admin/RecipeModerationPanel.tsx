@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -17,15 +18,22 @@ export function RecipeModerationPanel() {
   const fetchRecipes = useCallback(async () => {
     setIsLoading(true);
     try {
-      // Fetch pending recipes
+      console.log("🔍 Fetching recipes for moderation...");
+      
+      // Fetch pending recipes - include both 'pending' and null moderation_status
       const { data: pending, error: pendingError } = await supabase
         .from('community_recipes')
         .select('*')
-        .eq('moderation_status', 'pending')
+        .or('moderation_status.eq.pending,moderation_status.is.null')
         .eq('is_active', true)
         .order('created_at', { ascending: false });
 
-      if (pendingError) throw pendingError;
+      if (pendingError) {
+        console.error("❌ Error fetching pending recipes:", pendingError);
+        throw pendingError;
+      }
+
+      console.log("📝 Found pending recipes:", pending?.length || 0);
 
       // Fetch approved recipes
       const { data: approved, error: approvedError } = await supabase
@@ -36,7 +44,12 @@ export function RecipeModerationPanel() {
         .order('approved_at', { ascending: false })
         .limit(20);
 
-      if (approvedError) throw approvedError;
+      if (approvedError) {
+        console.error("❌ Error fetching approved recipes:", approvedError);
+        throw approvedError;
+      }
+
+      console.log("✅ Found approved recipes:", approved?.length || 0);
 
       // Fetch rejected recipes
       const { data: rejected, error: rejectedError } = await supabase
@@ -46,14 +59,21 @@ export function RecipeModerationPanel() {
         .order('updated_at', { ascending: false })
         .limit(20);
 
-      if (rejectedError) throw rejectedError;
+      if (rejectedError) {
+        console.error("❌ Error fetching rejected recipes:", rejectedError);
+        throw rejectedError;
+      }
+
+      console.log("❌ Found rejected recipes:", rejected?.length || 0);
 
       // Cast the data to match our interface since database returns string for moderation_status
       setPendingRecipes((pending || []) as CommunityRecipe[]);
       setApprovedRecipes((approved || []) as CommunityRecipe[]);
       setRejectedRecipes((rejected || []) as CommunityRecipe[]);
+      
+      console.log("📊 Recipe counts - Pending:", pending?.length, "Approved:", approved?.length, "Rejected:", rejected?.length);
     } catch (error) {
-      console.error('Error fetching recipes:', error);
+      console.error('❌ Error fetching recipes:', error);
       toast.error("Failed to load recipes");
     } finally {
       setIsLoading(false);
@@ -102,6 +122,9 @@ export function RecipeModerationPanel() {
           <div className="text-center py-8">
             <Clock className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <p className="text-muted-foreground">No pending recipes to review</p>
+            <p className="text-xs text-muted-foreground mt-2">
+              Check console logs for debugging information
+            </p>
           </div>
         ) : (
           <div className="space-y-4">

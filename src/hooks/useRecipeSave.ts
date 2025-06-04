@@ -102,26 +102,32 @@ export function useRecipeSave() {
           console.log("🌍 Submitting recipe to community for moderation...");
           
           try {
-            const { error: communityError } = await supabase
+            const communityRecipeData = {
+              title: recipe.title,
+              description: recipe.description || `A delicious ${recipe.meal_type || 'recipe'} recipe with ${recipe.ingredients.length} ingredients.`,
+              source_url: `${window.location.origin}/my-recipes/${recipe.id}`,
+              image_url: recipe.image,
+              prep_time: recipe.prep_time,
+              cook_time: recipe.cook_time,
+              servings: recipe.servings,
+              category: recipe.meal_type || null,
+              cuisine: recipe.cuisine_region || null,
+              difficulty_level: recipe.complexity_level === 'quick_easy' ? 'Easy' : 
+                             recipe.complexity_level === 'complex' ? 'Hard' : 'Standard',
+              submitted_by: user.id,
+              submitted_by_name: user.email || 'Anonymous',
+              is_approved: false, // Requires admin approval
+              is_active: true,
+              moderation_status: 'pending'
+            };
+
+            console.log("📝 Community recipe data:", communityRecipeData);
+
+            const { data: communityRecipe, error: communityError } = await supabase
               .from('community_recipes')
-              .insert({
-                title: recipe.title,
-                description: recipe.description || `A delicious ${recipe.meal_type || 'recipe'} recipe with ${recipe.ingredients.length} ingredients.`,
-                source_url: `${window.location.origin}/my-recipes/${recipe.id}`,
-                image_url: recipe.image,
-                prep_time: recipe.prep_time,
-                cook_time: recipe.cook_time,
-                servings: recipe.servings,
-                category: recipe.meal_type || null,
-                cuisine: recipe.cuisine_region || null,
-                difficulty_level: recipe.complexity_level === 'quick_easy' ? 'Easy' : 
-                               recipe.complexity_level === 'complex' ? 'Hard' : 'Standard',
-                submitted_by: user.id,
-                submitted_by_name: user.email || 'Anonymous',
-                is_approved: false, // Requires admin approval
-                is_active: true,
-                moderation_status: 'pending'
-              });
+              .insert(communityRecipeData)
+              .select()
+              .single();
 
             if (communityError) {
               console.error("❌ Community submission error:", communityError);
@@ -129,7 +135,7 @@ export function useRecipeSave() {
                 description: `${recipe.title} has been added to your recipes. Community sharing failed but recipe is saved.`,
               });
             } else {
-              console.log("✅ Recipe successfully submitted to community for moderation");
+              console.log("✅ Recipe successfully submitted to community for moderation:", communityRecipe);
               toast.success("Recipe saved and submitted!", {
                 description: `${recipe.title} has been added to your recipes and submitted to the community for moderation.`,
               });
