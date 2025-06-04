@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Clock, AlertCircle, Star, ImageIcon, Eye } from "lucide-react";
+import { Clock, AlertCircle, Star, Camera, Eye } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface FeedbackItem {
@@ -189,7 +189,7 @@ export function FeedbackModerationPanel() {
                                 onClick={() => openImageDialog(item.image_url!)}
                                 className="h-6 px-2"
                               >
-                                <ImageIcon className="h-3 w-3 mr-1" />
+                                <Camera className="h-3 w-3 mr-1" />
                                 {!isMobile && "View Image"}
                               </Button>
                             )}

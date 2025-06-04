@@ -22,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Upload, X, ImageIcon } from "lucide-react";
+import { Upload, X, Camera } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface FeedbackDialogProps {
@@ -258,7 +258,7 @@ export function FeedbackDialog({ open, onClose }: FeedbackDialogProps) {
             ) : (
               <div className="relative border rounded-lg p-2">
                 <div className="flex items-center gap-2">
-                  <ImageIcon className="h-4 w-4 text-gray-500" />
+                  <Camera className="h-4 w-4 text-gray-500" />
                   <span className={`flex-1 truncate ${isMobile ? 'text-xs' : 'text-sm'}`}>
                     {selectedImage.name}
                   </span>
