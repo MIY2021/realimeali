@@ -71,9 +71,6 @@ export default function ShoppingListHeader({
           <p className="text-sm sm:text-base text-muted-foreground">
             {getWelcomeText()}
           </p>
-          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-            Add custom items or generate a list from your meal plans
-          </p>
         </div>
         <div className="flex gap-2">
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>

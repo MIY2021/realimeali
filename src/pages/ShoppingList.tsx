@@ -208,7 +208,10 @@ export default function ShoppingList() {
                 />
               ) : (
                 <>
-                  <ShoppingListCreationInfo lastGenerated={lastGenerated} />
+                  <ShoppingListCreationInfo 
+                    lastGenerated={lastGenerated}
+                    createdByUserId={shoppingList.length > 0 ? shoppingList[0].createdBy : undefined}
+                  />
                   <ShoppingListItems
                     shoppingList={shoppingList}
                     copiedItemId={copiedItemId}
