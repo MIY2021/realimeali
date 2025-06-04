@@ -1,4 +1,3 @@
-
 export interface Recipe {
   id: string;
   title: string;
@@ -61,6 +60,9 @@ export interface HouseholdMember {
     full_name: string;
     email: string;
     avatar_url?: string;
+    auth_provider?: string;
+    avatar_type?: string;
+    avatar_data?: string;
   };
 }
 

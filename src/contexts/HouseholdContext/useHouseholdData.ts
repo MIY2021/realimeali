@@ -1,4 +1,3 @@
-
 import { useState, useCallback, useRef } from 'react';
 import { User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -117,7 +116,7 @@ export function useHouseholdData(user: User | null, currentHousehold: Household 
 
       console.log('DEBUG: Found members data:', membersData);
 
-      // Then get profiles for these users
+      // Then get profiles for these users with all avatar fields
       const userIds = membersData.map(member => member.user_id);
       const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
@@ -125,7 +124,10 @@ export function useHouseholdData(user: User | null, currentHousehold: Household 
           id,
           full_name,
           email,
-          avatar_url
+          avatar_url,
+          auth_provider,
+          avatar_type,
+          avatar_data
         `)
         .in('id', userIds);
 
@@ -149,6 +151,9 @@ export function useHouseholdData(user: User | null, currentHousehold: Household 
             full_name: profile.full_name || null,
             email: profile.email || null,
             avatar_url: profile.avatar_url || null,
+            auth_provider: profile.auth_provider || null,
+            avatar_type: profile.avatar_type || null,
+            avatar_data: profile.avatar_data || null,
           } : undefined
         };
       });
@@ -161,7 +166,9 @@ export function useHouseholdData(user: User | null, currentHousehold: Household 
           user_id: m.user_id,
           role: m.role,
           hasProfile: !!m.profile,
-          profileName: m.profile?.full_name
+          profileName: m.profile?.full_name,
+          avatarType: m.profile?.avatar_type,
+          hasAvatarUrl: !!m.profile?.avatar_url
         }))
       });
       

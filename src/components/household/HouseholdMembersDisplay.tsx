@@ -1,37 +1,11 @@
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { User, Loader } from "lucide-react";
 import { useHousehold } from "@/contexts/HouseholdContext";
-import { useState } from "react";
+import { EnhancedAvatar } from "@/components/ui/enhanced-avatar";
 
 export const HouseholdMembersDisplay = () => {
   const { currentHousehold, householdMembers, isLoadingMembers } = useHousehold();
-  const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
-
-  const handleImageError = (memberId: string, avatar_url?: string) => {
-    console.error(`Avatar image failed to load in HouseholdMembersDisplay for member ${memberId}:`, {
-      memberId,
-      avatar_url,
-      timestamp: new Date().toISOString()
-    });
-    
-    setImageErrors(prev => new Set(prev).add(memberId));
-  };
-
-  const handleImageLoad = (memberId: string, avatar_url?: string) => {
-    console.log(`Avatar image loaded successfully in HouseholdMembersDisplay for member ${memberId}:`, {
-      memberId,
-      avatar_url,
-      timestamp: new Date().toISOString()
-    });
-    
-    setImageErrors(prev => {
-      const newSet = new Set(prev);
-      newSet.delete(memberId);
-      return newSet;
-    });
-  };
 
   if (!currentHousehold) {
     return null;
@@ -60,10 +34,11 @@ export const HouseholdMembersDisplay = () => {
       profile: {
         full_name: m.profile?.full_name,
         avatar_url: m.profile?.avatar_url,
-        hasAvatarUrl: !!m.profile?.avatar_url
+        avatar_type: m.profile?.avatar_type,
+        avatar_data: m.profile?.avatar_data,
+        auth_provider: m.profile?.auth_provider
       }
     })),
-    imageErrors: Array.from(imageErrors),
     timestamp: new Date().toISOString()
   });
 
@@ -94,36 +69,24 @@ export const HouseholdMembersDisplay = () => {
           <Tooltip key={member.id}>
             <TooltipTrigger>
               <div className="relative">
-                <Avatar className="h-8 w-8 border-2 border-background hover:scale-105 transition-transform">
-                  <AvatarImage 
-                    src={member.profile?.avatar_url} 
-                    alt={member.profile?.full_name || 'User'}
-                    onError={() => handleImageError(member.id, member.profile?.avatar_url)}
-                    onLoad={() => handleImageLoad(member.id, member.profile?.avatar_url)}
-                    className="object-cover"
-                  />
-                  <AvatarFallback className="bg-terracotta/20 text-terracotta text-xs">
-                    {member.profile?.full_name 
-                      ? member.profile.full_name.charAt(0).toUpperCase()
-                      : <User className="h-3 w-3" />
-                    }
-                  </AvatarFallback>
-                </Avatar>
-                {imageErrors.has(member.id) && member.profile?.avatar_url && (
-                  <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-red-500 rounded-full border border-white" 
-                       title="Avatar failed to load" />
-                )}
+                <EnhancedAvatar
+                  src={member.profile?.avatar_url}
+                  alt={member.profile?.full_name || 'User'}
+                  fallbackText={member.profile?.full_name}
+                  avatarType={member.profile?.avatar_type as 'google' | 'uploaded' | 'fruit' || 'fruit'}
+                  avatarData={member.profile?.avatar_data}
+                  size="sm"
+                  className="border-2 border-background hover:scale-105 transition-transform"
+                />
               </div>
             </TooltipTrigger>
             <TooltipContent>
               <div className="text-center">
                 <p className="font-medium">{member.profile?.full_name || 'Unknown User'}</p>
                 <p className="text-xs text-muted-foreground capitalize">{member.role}</p>
-                {member.profile?.avatar_url && (
-                  <p className="text-xs text-muted-foreground">
-                    Avatar: {imageErrors.has(member.id) ? '❌ Failed' : '✅ Loaded'}
-                  </p>
-                )}
+                <p className="text-xs text-muted-foreground">
+                  Avatar: {member.profile?.avatar_type || 'default'}
+                </p>
               </div>
             </TooltipContent>
           </Tooltip>
