@@ -106,8 +106,8 @@ export function useRecipeSave() {
               .from('community_recipes')
               .insert({
                 title: recipe.title,
-                description: recipe.description,
-                source_url: window.location.origin + `/my-recipes/${recipe.id}`,
+                description: recipe.description || `A delicious ${recipe.meal_type || 'recipe'} recipe with ${recipe.ingredients.length} ingredients.`,
+                source_url: `${window.location.origin}/my-recipes/${recipe.id}`,
                 image_url: recipe.image,
                 prep_time: recipe.prep_time,
                 cook_time: recipe.cook_time,
@@ -119,7 +119,8 @@ export function useRecipeSave() {
                 submitted_by: user.id,
                 submitted_by_name: user.email || 'Anonymous',
                 is_approved: false, // Requires admin approval
-                is_active: true
+                is_active: true,
+                moderation_status: 'pending'
               });
 
             if (communityError) {

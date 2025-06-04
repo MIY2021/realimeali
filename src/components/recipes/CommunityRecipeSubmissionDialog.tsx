@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sparkles } from "lucide-react";
 import { useCommunityRecipes } from "@/hooks/useCommunityRecipes";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface CommunityRecipeSubmissionDialogProps {
   isOpen: boolean;
@@ -42,6 +43,7 @@ export function CommunityRecipeSubmissionDialog({
   initialData 
 }: CommunityRecipeSubmissionDialogProps) {
   const { submitCommunityRecipe } = useCommunityRecipes();
+  const isMobile = useIsMobile();
   const [formData, setFormData] = useState({
     title: initialData.title,
     description: initialData.description,
@@ -84,24 +86,25 @@ export function CommunityRecipeSubmissionDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
-          <DialogTitle>Share Recipe with RealiMeali Community</DialogTitle>
+      <DialogContent className={`${isMobile ? 'sm:max-w-[95vw] h-[90vh] overflow-y-auto' : 'sm:max-w-[500px]'}`}>
+        <DialogHeader className={`${isMobile ? 'pb-2' : ''}`}>
+          <DialogTitle className={`${isMobile ? 'text-lg' : ''}`}>Share Recipe with RealiMeali Community</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className={`space-y-${isMobile ? '3' : '4'}`}>
           <div>
-            <Label htmlFor="title">Recipe Title</Label>
+            <Label htmlFor="title" className={`${isMobile ? 'text-sm' : ''}`}>Recipe Title</Label>
             <Input
               id="title"
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               required
+              className={`${isMobile ? 'text-sm' : ''}`}
             />
           </div>
 
           <div>
-            <Label htmlFor="description">
+            <Label htmlFor="description" className={`${isMobile ? 'text-sm' : ''}`}>
               Description
               <span className="text-sm text-muted-foreground ml-2">(For moderation reference)</span>
             </Label>
@@ -110,23 +113,24 @@ export function CommunityRecipeSubmissionDialog({
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               placeholder="Brief description of this recipe (helps our moderators understand the recipe)..."
-              rows={3}
+              rows={isMobile ? 2 : 3}
+              className={`${isMobile ? 'text-sm' : ''}`}
             />
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className={`${isMobile ? 'text-xs' : 'text-xs'} text-muted-foreground mt-1`}>
               This helps our team understand your recipe for approval
             </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className={`grid ${isMobile ? 'grid-cols-1 gap-3' : 'grid-cols-2 gap-4'}`}>
             <div>
-              <Label htmlFor="category">Category</Label>
+              <Label htmlFor="category" className={`${isMobile ? 'text-sm' : ''}`}>Category</Label>
               <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })}>
-                <SelectTrigger>
+                <SelectTrigger className={`${isMobile ? 'text-sm' : ''}`}>
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
                   {categories.map((category) => (
-                    <SelectItem key={category} value={category}>
+                    <SelectItem key={category} value={category} className={`${isMobile ? 'text-sm' : ''}`}>
                       {category}
                     </SelectItem>
                   ))}
@@ -135,14 +139,14 @@ export function CommunityRecipeSubmissionDialog({
             </div>
 
             <div>
-              <Label htmlFor="cuisine">Cuisine</Label>
+              <Label htmlFor="cuisine" className={`${isMobile ? 'text-sm' : ''}`}>Cuisine</Label>
               <Select value={formData.cuisine} onValueChange={(value) => setFormData({ ...formData, cuisine: value })}>
-                <SelectTrigger>
+                <SelectTrigger className={`${isMobile ? 'text-sm' : ''}`}>
                   <SelectValue placeholder="Select cuisine" />
                 </SelectTrigger>
                 <SelectContent>
                   {cuisines.map((cuisine) => (
-                    <SelectItem key={cuisine} value={cuisine}>
+                    <SelectItem key={cuisine} value={cuisine} className={`${isMobile ? 'text-sm' : ''}`}>
                       {cuisine}
                     </SelectItem>
                   ))}
@@ -152,14 +156,14 @@ export function CommunityRecipeSubmissionDialog({
           </div>
 
           <div>
-            <Label htmlFor="difficulty">Difficulty Level</Label>
+            <Label htmlFor="difficulty" className={`${isMobile ? 'text-sm' : ''}`}>Difficulty Level</Label>
             <Select value={formData.difficulty_level} onValueChange={(value) => setFormData({ ...formData, difficulty_level: value })}>
-              <SelectTrigger>
+              <SelectTrigger className={`${isMobile ? 'text-sm' : ''}`}>
                 <SelectValue placeholder="Select difficulty" />
               </SelectTrigger>
               <SelectContent>
                 {difficultyLevels.map((level) => (
-                  <SelectItem key={level} value={level}>
+                  <SelectItem key={level} value={level} className={`${isMobile ? 'text-sm' : ''}`}>
                     {level}
                   </SelectItem>
                 ))}
@@ -167,7 +171,7 @@ export function CommunityRecipeSubmissionDialog({
             </Select>
           </div>
 
-          <div className="bg-blue-50 p-4 rounded-lg text-sm space-y-2">
+          <div className={`bg-blue-50 p-${isMobile ? '3' : '4'} rounded-lg ${isMobile ? 'text-xs' : 'text-sm'} space-y-2`}>
             <div className="flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-blue-600" />
               <p className="font-medium">AI-Enhanced Content</p>
@@ -178,7 +182,7 @@ export function CommunityRecipeSubmissionDialog({
             </p>
           </div>
 
-          <div className="bg-gray-50 p-3 rounded-lg text-sm">
+          <div className={`bg-gray-50 p-3 rounded-lg ${isMobile ? 'text-xs' : 'text-sm'}`}>
             <p className="font-medium mb-1">Recipe will be submitted for review</p>
             <p className="text-muted-foreground">
               Your recipe will appear in the community once approved by our moderation team.
@@ -186,11 +190,20 @@ export function CommunityRecipeSubmissionDialog({
             </p>
           </div>
 
-          <div className="flex gap-2 pt-4">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+          <div className={`flex ${isMobile ? 'flex-col' : 'gap-2'} pt-4`}>
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={() => onOpenChange(false)}
+              className={`${isMobile ? 'mb-2' : ''}`}
+            >
               Cancel
             </Button>
-            <Button type="submit" disabled={isSubmitting} className="flex-1">
+            <Button 
+              type="submit" 
+              disabled={isSubmitting} 
+              className={`${isMobile ? '' : 'flex-1'}`}
+            >
               {isSubmitting ? "Submitting..." : "Submit to Community"}
             </Button>
           </div>

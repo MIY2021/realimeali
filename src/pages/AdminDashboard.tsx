@@ -7,12 +7,15 @@ import { useAdminCheck } from "@/hooks/useAdminCheck";
 import { RecipeModerationPanel } from "@/components/admin/RecipeModerationPanel";
 import { AdminStats } from "@/components/admin/AdminStats";
 import { UserManagement } from "@/components/admin/UserManagement";
+import { FeedbackModerationPanel } from "@/components/admin/FeedbackModerationPanel";
 import { User, AlertCircle } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const AdminDashboard = () => {
   useDocumentTitle("Admin Dashboard");
   const { isAdmin, isLoading } = useAdminCheck();
   const [activeTab, setActiveTab] = useState("moderation");
+  const isMobile = useIsMobile();
 
   if (isLoading) {
     return (
@@ -46,55 +49,82 @@ const AdminDashboard = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
+    <div className={`container mx-auto ${isMobile ? 'px-2 py-4' : 'px-4 py-8'}`}>
+      <div className={`mb-${isMobile ? '6' : '8'}`}>
         <div className="flex items-center gap-2 mb-2">
           <User className="h-6 w-6 text-terracotta" />
-          <h1 className="text-3xl font-bold text-navy">Admin Dashboard</h1>
+          <h1 className={`${isMobile ? 'text-2xl' : 'text-3xl'} font-bold text-navy`}>Admin Dashboard</h1>
         </div>
-        <p className="text-muted-foreground">
-          Manage recipes, users, and platform content
+        <p className={`text-muted-foreground ${isMobile ? 'text-sm' : ''}`}>
+          Manage recipes, users, feedback, and platform content
         </p>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="moderation">Recipe Moderation</TabsTrigger>
-          <TabsTrigger value="stats">Statistics</TabsTrigger>
-          <TabsTrigger value="users">User Management</TabsTrigger>
+        <TabsList className={`grid w-full ${isMobile ? 'grid-cols-2' : 'grid-cols-4'}`}>
+          <TabsTrigger value="moderation" className={`${isMobile ? 'text-xs px-2' : ''}`}>
+            {isMobile ? 'Recipes' : 'Recipe Moderation'}
+          </TabsTrigger>
+          <TabsTrigger value="feedback" className={`${isMobile ? 'text-xs px-2' : ''}`}>
+            {isMobile ? 'Feedback' : 'Feedback & Suggestions'}
+          </TabsTrigger>
+          {!isMobile && (
+            <>
+              <TabsTrigger value="stats">Statistics</TabsTrigger>
+              <TabsTrigger value="users">User Management</TabsTrigger>
+            </>
+          )}
         </TabsList>
 
         <TabsContent value="moderation" className="space-y-6">
           <Card>
-            <CardHeader>
-              <CardTitle>Community Recipe Moderation</CardTitle>
-              <CardDescription>
+            <CardHeader className={`${isMobile ? 'px-4 py-4' : ''}`}>
+              <CardTitle className={`${isMobile ? 'text-lg' : ''}`}>Community Recipe Moderation</CardTitle>
+              <CardDescription className={`${isMobile ? 'text-xs' : ''}`}>
                 Review and moderate community recipe submissions
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className={`${isMobile ? 'px-4 pb-4' : ''}`}>
               <RecipeModerationPanel />
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="stats" className="space-y-6">
-          <AdminStats />
-        </TabsContent>
-
-        <TabsContent value="users" className="space-y-6">
+        <TabsContent value="feedback" className="space-y-6">
           <Card>
-            <CardHeader>
-              <CardTitle>User Management</CardTitle>
-              <CardDescription>
-                Manage user accounts and permissions
+            <CardHeader className={`${isMobile ? 'px-4 py-4' : ''}`}>
+              <CardTitle className={`${isMobile ? 'text-lg' : ''}`}>Feedback & Suggestions</CardTitle>
+              <CardDescription className={`${isMobile ? 'text-xs' : ''}`}>
+                Manage user feedback, bug reports, and feature requests
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <UserManagement />
+            <CardContent className={`${isMobile ? 'px-4 pb-4' : ''}`}>
+              <FeedbackModerationPanel />
             </CardContent>
           </Card>
         </TabsContent>
+
+        {!isMobile && (
+          <>
+            <TabsContent value="stats" className="space-y-6">
+              <AdminStats />
+            </TabsContent>
+
+            <TabsContent value="users" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>User Management</CardTitle>
+                  <CardDescription>
+                    Manage user accounts and permissions
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <UserManagement />
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </>
+        )}
       </Tabs>
     </div>
   );
