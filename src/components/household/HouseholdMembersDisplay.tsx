@@ -8,27 +8,37 @@ import { Badge } from "@/components/ui/badge";
 export const HouseholdMembersDisplay = () => {
   const { currentHousehold, householdMembers, isLoadingMembers } = useHousehold();
 
-  // Debug logging
-  console.log('HouseholdMembersDisplay render:', {
+  // Enhanced debug logging
+  console.log('HouseholdMembersDisplay render - DETAILED DEBUG:', {
+    timestamp: new Date().toISOString(),
     hasHousehold: !!currentHousehold,
     householdId: currentHousehold?.id,
+    householdName: currentHousehold?.name,
     membersCount: householdMembers?.length || 0,
     isLoading: isLoadingMembers,
-    members: householdMembers?.map(m => ({
+    rawMembers: householdMembers,
+    membersDetails: householdMembers?.map(m => ({
       id: m.id,
+      userId: m.user_id,
+      role: m.role,
       name: m.profile?.full_name,
+      email: m.profile?.email,
       avatarUrl: m.profile?.avatar_url,
-      avatarType: m.profile?.avatar_type
+      avatarType: m.profile?.avatar_type,
+      avatarData: m.profile?.avatar_data,
+      authProvider: m.profile?.auth_provider,
+      hasProfile: !!m.profile
     }))
   });
 
   if (!currentHousehold) {
-    console.log('No household found, not rendering HouseholdMembersDisplay');
+    console.log('HouseholdMembersDisplay: No household found, not rendering');
     return null;
   }
 
   // Show loading state while members are being fetched
   if (isLoadingMembers) {
+    console.log('HouseholdMembersDisplay: Showing loading state');
     return (
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
         <Loader className="h-4 w-4 animate-spin" />
@@ -41,7 +51,17 @@ export const HouseholdMembersDisplay = () => {
   const membersToShow = householdMembers || [];
   const memberCount = membersToShow.length;
 
-  console.log('Rendering members display with count:', memberCount);
+  console.log('HouseholdMembersDisplay: Rendering with data:', {
+    memberCount,
+    shouldRender: memberCount > 0,
+    firstThreeMembers: membersToShow.slice(0, 3).map(m => ({
+      id: m.id,
+      name: m.profile?.full_name,
+      avatarUrl: m.profile?.avatar_url,
+      avatarType: m.profile?.avatar_type,
+      avatarData: m.profile?.avatar_data
+    }))
+  });
 
   return (
     <TooltipProvider>
@@ -60,29 +80,40 @@ export const HouseholdMembersDisplay = () => {
             </Tooltip>
           ) : (
             <>
-              {membersToShow.slice(0, 3).map((member, index) => (
-                <Tooltip key={member.id}>
-                  <TooltipTrigger>
-                    <div className="relative" style={{ zIndex: 10 - index }}>
-                      <EnhancedAvatar
-                        src={member.profile?.avatar_url}
-                        alt={member.profile?.full_name || 'User'}
-                        fallbackText={member.profile?.full_name}
-                        avatarType={member.profile?.avatar_type as 'google' | 'uploaded' | 'fruit' || 'fruit'}
-                        avatarData={member.profile?.avatar_data}
-                        size="sm"
-                        className="border-2 border-white hover:scale-105 transition-transform shadow-sm"
-                      />
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <div className="text-center">
-                      <p className="font-medium">{member.profile?.full_name || 'Unknown User'}</p>
-                      <p className="text-xs text-muted-foreground capitalize">{member.role}</p>
-                    </div>
-                  </TooltipContent>
-                </Tooltip>
-              ))}
+              {membersToShow.slice(0, 3).map((member, index) => {
+                console.log(`HouseholdMembersDisplay: Rendering avatar for member ${index}:`, {
+                  memberId: member.id,
+                  name: member.profile?.full_name,
+                  avatarUrl: member.profile?.avatar_url,
+                  avatarType: member.profile?.avatar_type,
+                  avatarData: member.profile?.avatar_data,
+                  hasProfile: !!member.profile
+                });
+
+                return (
+                  <Tooltip key={member.id}>
+                    <TooltipTrigger>
+                      <div className="relative" style={{ zIndex: 10 - index }}>
+                        <EnhancedAvatar
+                          src={member.profile?.avatar_url}
+                          alt={member.profile?.full_name || 'User'}
+                          fallbackText={member.profile?.full_name}
+                          avatarType={member.profile?.avatar_type as 'google' | 'uploaded' | 'fruit' || 'fruit'}
+                          avatarData={member.profile?.avatar_data}
+                          size="sm"
+                          className="border-2 border-white hover:scale-105 transition-transform shadow-sm"
+                        />
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <div className="text-center">
+                        <p className="font-medium">{member.profile?.full_name || 'Unknown User'}</p>
+                        <p className="text-xs text-muted-foreground capitalize">{member.role}</p>
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                );
+              })}
               {memberCount > 3 && (
                 <div className="h-8 w-8 rounded-full border-2 border-white bg-muted flex items-center justify-center text-xs font-medium shadow-sm">
                   +{memberCount - 3}

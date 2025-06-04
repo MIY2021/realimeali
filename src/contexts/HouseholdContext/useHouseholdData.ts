@@ -1,3 +1,4 @@
+
 import { useState, useCallback, useRef } from 'react';
 import { User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -15,13 +16,13 @@ export function useHouseholdData(user: User | null, currentHousehold: Household 
 
   const fetchHousehold = useCallback(async (): Promise<Household | null> => {
     if (!user) {
-      console.log('DEBUG: No user found, skipping household fetch');
+      console.log('DEBUG HOUSEHOLD: No user found, skipping household fetch');
       return null;
     }
 
     // Prevent duplicate fetches for the same user
     if (lastFetchedUserIdRef.current === user.id && isCurrentlyFetchingUserRef.current) {
-      console.log('DEBUG: Already fetching household for this user, skipping duplicate request');
+      console.log('DEBUG HOUSEHOLD: Already fetching household for this user, skipping duplicate request');
       return null;
     }
 
@@ -30,7 +31,7 @@ export function useHouseholdData(user: User | null, currentHousehold: Household 
     lastFetchedUserIdRef.current = user.id;
 
     try {
-      console.log('DEBUG: Fetching household for user:', user.id);
+      console.log('DEBUG HOUSEHOLD: Fetching household for user:', user.id);
       
       const { data: memberData, error: memberError } = await supabase
         .from('household_members')
@@ -49,19 +50,24 @@ export function useHouseholdData(user: User | null, currentHousehold: Household 
         .maybeSingle();
 
       if (memberError) {
-        console.error('Error fetching household membership:', memberError);
+        console.error('DEBUG HOUSEHOLD: Error fetching household membership:', memberError);
         return null;
       }
 
       if (!memberData?.households) {
-        console.log('DEBUG: No household found for user');
+        console.log('DEBUG HOUSEHOLD: No household found for user');
         return null;
       }
 
-      console.log('DEBUG: Found household:', memberData.households);
-      return memberData.households as Household;
+      const household = memberData.households as Household;
+      console.log('DEBUG HOUSEHOLD: Found household:', {
+        id: household.id,
+        name: household.name,
+        created_by: household.created_by
+      });
+      return household;
     } catch (error) {
-      console.error('Unexpected error fetching household:', error);
+      console.error('DEBUG HOUSEHOLD: Unexpected error fetching household:', error);
       return null;
     } finally {
       setIsLoadingHousehold(false);
@@ -71,13 +77,13 @@ export function useHouseholdData(user: User | null, currentHousehold: Household 
 
   const fetchHouseholdMembers = useCallback(async (): Promise<HouseholdMember[]> => {
     if (!currentHousehold) {
-      console.log('DEBUG: No household available, skipping members fetch');
+      console.log('DEBUG MEMBERS: No household available, skipping members fetch');
       return [];
     }
 
     // Reset loading state and prevent duplicate fetches
     if (isCurrentlyFetchingMembersRef.current) {
-      console.log('DEBUG: Already fetching members, skipping duplicate request');
+      console.log('DEBUG MEMBERS: Already fetching members, skipping duplicate request');
       return [];
     }
 
@@ -86,7 +92,7 @@ export function useHouseholdData(user: User | null, currentHousehold: Household 
     lastFetchedHouseholdIdRef.current = currentHousehold.id;
 
     try {
-      console.log('DEBUG: Fetching household members for household:', currentHousehold.id);
+      console.log('DEBUG MEMBERS: Fetching household members for household:', currentHousehold.id);
       
       // First, get the household members
       const { data: membersData, error: membersError } = await supabase
@@ -101,12 +107,12 @@ export function useHouseholdData(user: User | null, currentHousehold: Household 
         .eq('household_id', currentHousehold.id);
 
       if (membersError) {
-        console.error('Error fetching household members:', membersError);
+        console.error('DEBUG MEMBERS: Error fetching household members:', membersError);
         return [];
       }
 
       if (!membersData || membersData.length === 0) {
-        console.warn('DEBUG: No members found for household - this should not happen!', {
+        console.warn('DEBUG MEMBERS: No members found for household - this should not happen!', {
           householdId: currentHousehold.id,
           householdName: currentHousehold.name,
           createdBy: currentHousehold.created_by
@@ -114,7 +120,10 @@ export function useHouseholdData(user: User | null, currentHousehold: Household 
         return [];
       }
 
-      console.log('DEBUG: Found members data:', membersData);
+      console.log('DEBUG MEMBERS: Found members data:', {
+        count: membersData.length,
+        members: membersData.map(m => ({ id: m.id, user_id: m.user_id, role: m.role }))
+      });
 
       // Then get profiles for these users with all avatar fields
       const userIds = membersData.map(member => member.user_id);
@@ -132,16 +141,26 @@ export function useHouseholdData(user: User | null, currentHousehold: Household 
         .in('id', userIds);
 
       if (profilesError) {
-        console.error('Error fetching profiles:', profilesError);
+        console.error('DEBUG MEMBERS: Error fetching profiles:', profilesError);
       }
 
-      console.log('DEBUG: Found profiles data:', profilesData);
+      console.log('DEBUG MEMBERS: Found profiles data:', {
+        count: profilesData?.length || 0,
+        profiles: profilesData?.map(p => ({
+          id: p.id,
+          full_name: p.full_name,
+          avatar_url: p.avatar_url,
+          avatar_type: p.avatar_type,
+          avatar_data: p.avatar_data,
+          auth_provider: p.auth_provider
+        }))
+      });
 
       // Combine members with their profiles
       const membersWithProfiles: HouseholdMember[] = membersData.map(member => {
         const profile = profilesData?.find(p => p.id === member.user_id);
         
-        return {
+        const memberWithProfile = {
           id: member.id,
           user_id: member.user_id,
           household_id: member.household_id,
@@ -156,25 +175,36 @@ export function useHouseholdData(user: User | null, currentHousehold: Household 
             avatar_data: profile.avatar_data || null,
           } : undefined
         };
+
+        console.log('DEBUG MEMBERS: Processing member:', {
+          memberId: member.id,
+          userId: member.user_id,
+          role: member.role,
+          hasProfile: !!profile,
+          profileName: profile?.full_name,
+          avatarUrl: profile?.avatar_url,
+          avatarType: profile?.avatar_type,
+          avatarData: profile?.avatar_data
+        });
+
+        return memberWithProfile;
       });
 
-      console.log('DEBUG: Successfully processed household members:', {
+      console.log('DEBUG MEMBERS: Successfully processed household members:', {
         memberCount: membersWithProfiles.length,
         householdId: currentHousehold.id,
-        membersWithProfiles: membersWithProfiles.map(m => ({
+        membersWithAvatars: membersWithProfiles.filter(m => m.profile?.avatar_url || m.profile?.avatar_data).length,
+        allMembers: membersWithProfiles.map(m => ({
           id: m.id,
-          user_id: m.user_id,
-          role: m.role,
-          hasProfile: !!m.profile,
-          profileName: m.profile?.full_name,
-          avatarType: m.profile?.avatar_type,
-          hasAvatarUrl: !!m.profile?.avatar_url
+          name: m.profile?.full_name,
+          hasAvatar: !!(m.profile?.avatar_url || m.profile?.avatar_data),
+          avatarType: m.profile?.avatar_type
         }))
       });
       
       return membersWithProfiles;
     } catch (error) {
-      console.error('Unexpected error fetching household members:', error);
+      console.error('DEBUG MEMBERS: Unexpected error fetching household members:', error);
       return [];
     } finally {
       setIsLoadingMembers(false);
@@ -184,12 +214,12 @@ export function useHouseholdData(user: User | null, currentHousehold: Household 
 
   const fetchJoinRequests = useCallback(async (): Promise<HouseholdJoinRequest[]> => {
     if (!currentHousehold) {
-      console.log('DEBUG: No household available, skipping join requests fetch');
+      console.log('DEBUG JOIN: No household available, skipping join requests fetch');
       return [];
     }
 
     try {
-      console.log('DEBUG: Fetching join requests for household:', currentHousehold.id);
+      console.log('DEBUG JOIN: Fetching join requests for household:', currentHousehold.id);
       
       const { data, error } = await supabase
         .from('household_join_requests')
@@ -205,7 +235,7 @@ export function useHouseholdData(user: User | null, currentHousehold: Household 
         .eq('status', 'pending');
 
       if (error) {
-        console.error('Error fetching join requests:', error);
+        console.error('DEBUG JOIN: Error fetching join requests:', error);
         return [];
       }
 
@@ -219,10 +249,10 @@ export function useHouseholdData(user: User | null, currentHousehold: Household 
         updated_at: request.updated_at
       }));
 
-      console.log('DEBUG: Successfully fetched join requests:', joinRequests.length);
+      console.log('DEBUG JOIN: Successfully fetched join requests:', joinRequests.length);
       return joinRequests;
     } catch (error) {
-      console.error('Unexpected error fetching join requests:', error);
+      console.error('DEBUG JOIN: Unexpected error fetching join requests:', error);
       return [];
     }
   }, [currentHousehold?.id]);
