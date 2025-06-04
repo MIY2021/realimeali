@@ -1,4 +1,3 @@
-
 import { useState, useCallback, useRef } from 'react';
 import { User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -77,11 +76,20 @@ export function useHouseholdData(user: User | null, currentHousehold: Household 
 
   const syncGoogleAvatarUrl = useCallback(async (userId: string) => {
     try {
+      console.log('DEBUG AVATAR SYNC: Starting sync for user:', userId);
+      
       // Get the current user's auth data to access Google avatar
       const { data: { user: authUser } } = await supabase.auth.getUser();
       
+      console.log('DEBUG AVATAR SYNC: Auth user data:', {
+        authUserId: authUser?.id,
+        targetUserId: userId,
+        hasAvatarUrl: !!authUser?.user_metadata?.avatar_url,
+        avatarUrl: authUser?.user_metadata?.avatar_url
+      });
+      
       if (authUser?.id === userId && authUser?.user_metadata?.avatar_url) {
-        console.log('DEBUG AVATAR: Syncing Google avatar for user:', userId, authUser.user_metadata.avatar_url);
+        console.log('DEBUG AVATAR SYNC: Syncing Google avatar for user:', userId, authUser.user_metadata.avatar_url);
         
         // Update the profile with the Google avatar URL
         const { error } = await supabase
@@ -93,13 +101,15 @@ export function useHouseholdData(user: User | null, currentHousehold: Household 
           .eq('id', userId);
 
         if (error) {
-          console.error('DEBUG AVATAR: Error syncing Google avatar:', error);
+          console.error('DEBUG AVATAR SYNC: Error syncing Google avatar:', error);
         } else {
-          console.log('DEBUG AVATAR: Successfully synced Google avatar');
+          console.log('DEBUG AVATAR SYNC: Successfully synced Google avatar to profiles table');
         }
+      } else {
+        console.log('DEBUG AVATAR SYNC: Skipping sync - not current user or no avatar URL');
       }
     } catch (error) {
-      console.error('DEBUG AVATAR: Error in syncGoogleAvatarUrl:', error);
+      console.error('DEBUG AVATAR SYNC: Error in syncGoogleAvatarUrl:', error);
     }
   }, []);
 
@@ -108,6 +118,8 @@ export function useHouseholdData(user: User | null, currentHousehold: Household 
       console.log('DEBUG MEMBERS: No household available, skipping members fetch');
       return [];
     }
+
+    console.log('DEBUG MEMBERS: Starting fetch for household:', currentHousehold.id);
 
     // Reset loading state and prevent duplicate fetches
     if (isCurrentlyFetchingMembersRef.current) {
@@ -153,16 +165,26 @@ export function useHouseholdData(user: User | null, currentHousehold: Household 
         members: membersData.map(m => ({ id: m.id, user_id: m.user_id, role: m.role }))
       });
 
-      // Sync Google avatar for current user if needed
-      const currentUser = await supabase.auth.getUser();
-      const currentUserId = currentUser.data.user?.id;
+      // Get current user info for syncing
+      const { data: { user: currentAuthUser } } = await supabase.auth.getUser();
+      const currentUserId = currentAuthUser?.id;
       
-      if (currentUserId && currentUser.data.user?.user_metadata?.avatar_url) {
+      console.log('DEBUG MEMBERS: Current auth user:', {
+        currentUserId,
+        hasAvatarUrl: !!currentAuthUser?.user_metadata?.avatar_url,
+        avatarUrl: currentAuthUser?.user_metadata?.avatar_url
+      });
+
+      // Sync Google avatar for current user if needed
+      if (currentUserId && currentAuthUser?.user_metadata?.avatar_url) {
+        console.log('DEBUG MEMBERS: Syncing Google avatar before fetching profiles');
         await syncGoogleAvatarUrl(currentUserId);
       }
 
       // Then get profiles for these users with all avatar fields
       const userIds = membersData.map(member => member.user_id);
+      console.log('DEBUG MEMBERS: Fetching profiles for user IDs:', userIds);
+      
       const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
         .select(`
@@ -199,7 +221,8 @@ export function useHouseholdData(user: User | null, currentHousehold: Household 
         // For Google users, ensure we have their avatar URL
         let avatarUrl = profile?.avatar_url;
         if (!avatarUrl && profile?.auth_provider === 'google' && member.user_id === currentUserId) {
-          avatarUrl = currentUser.data.user?.user_metadata?.avatar_url || null;
+          avatarUrl = currentAuthUser?.user_metadata?.avatar_url || null;
+          console.log('DEBUG MEMBERS: Using auth avatar URL for current Google user:', avatarUrl);
         }
         
         const memberWithProfile = {
@@ -224,7 +247,8 @@ export function useHouseholdData(user: User | null, currentHousehold: Household 
           role: member.role,
           hasProfile: !!profile,
           profileName: profile?.full_name,
-          avatarUrl: avatarUrl,
+          originalAvatarUrl: profile?.avatar_url,
+          finalAvatarUrl: avatarUrl,
           avatarType: profile?.avatar_type,
           avatarData: profile?.avatar_data,
           authProvider: profile?.auth_provider,
