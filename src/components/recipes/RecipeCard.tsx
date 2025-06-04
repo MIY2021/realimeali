@@ -86,11 +86,9 @@ export function RecipeCard({ recipe, onAddToMealPlan, onRecipeClick, showActions
             {recipe.title}
           </h3>
         </Link>
-        <p className="text-sm text-gray-600 mb-3 flex-1 overflow-hidden" style={{
-          display: '-webkit-box',
-          WebkitLineClamp: 2,
-          WebkitBoxOrient: 'vertical'
-        }}>{recipe.description}</p>
+        <p className="text-sm text-gray-600 mb-3 flex-1 line-clamp-2">
+          {recipe.description}
+        </p>
         
         <div className="flex items-center gap-2 mb-4">
           {recipe.meal_type && (

@@ -91,7 +91,6 @@ export default function ShoppingListWeekSelector({
           disabled={isGenerating}
           size="sm"
           className={`
-            ${hasItems ? 'variant-outline' : 'bg-primary hover:bg-primary/90'} 
             flex items-center gap-2 px-4 py-2 rounded-lg font-medium
             transition-all duration-300 ease-in-out
             ${isGenerating ? 'scale-95' : 'hover:scale-105'}
@@ -99,6 +98,7 @@ export default function ShoppingListWeekSelector({
             ${isGenerating ? 'animate-pulse' : ''}
           `}
           variant={hasItems ? "outline" : "default"}
+          style={{ backgroundColor: hasItems ? undefined : '#81b29a' }}
         >
           {isGenerating ? (
             <>
