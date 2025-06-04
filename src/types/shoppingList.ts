@@ -11,6 +11,7 @@ export interface ShoppingListItem {
   isCustom: boolean;
   recipeIds: string[];
   createdAt?: string;
+  createdBy?: string;
 }
 
 export interface ConsolidatedShoppingList {

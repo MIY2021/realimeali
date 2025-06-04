@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { ShoppingListItem } from "@/types/shoppingList";
 
@@ -33,7 +32,8 @@ export class ShoppingListQueries {
         isChecked: item.is_checked,
         isCustom: item.is_custom,
         recipeIds: item.recipe_ids || [],
-        createdAt: item.created_at
+        createdAt: item.created_at,
+        createdBy: item.created_by
       }));
     } catch (error) {
       console.error("Error loading shopping list:", error);
