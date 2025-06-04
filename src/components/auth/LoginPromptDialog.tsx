@@ -1,10 +1,9 @@
-
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { GoogleLoginButton } from "@/components/auth/GoogleLoginButton";
 import { EmailLoginButton } from "@/components/auth/EmailLoginButton";
-import { Heart, Calendar, ShoppingBag } from "lucide-react";
+import { Heart, Calendar, ShoppingBag, Users } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface LoginPromptDialogProps {
@@ -33,6 +32,10 @@ export function LoginPromptDialog({ isOpen, onClose, trigger = "timer" }: LoginP
     {
       icon: <Heart className="h-4 w-4 sm:h-5 sm:w-5 text-terracotta flex-shrink-0" />,
       text: "Save your favorite recipes"
+    },
+    {
+      icon: <Users className="h-4 w-4 sm:h-5 sm:w-5 text-sage flex-shrink-0" />,
+      text: "Find recipes shared by other users"
     },
     {
       icon: <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-sage flex-shrink-0" />,
