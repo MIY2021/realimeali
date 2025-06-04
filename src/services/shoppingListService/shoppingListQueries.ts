@@ -11,7 +11,9 @@ export class ShoppingListQueries {
         .from('household_shopping_lists')
         .select('*')
         .eq('household_id', householdId)
-        .eq('week_number', weekNumber);
+        .eq('week_number', weekNumber)
+        .order('is_custom', { ascending: false })
+        .order('created_at', { ascending: false });
 
       if (error) {
         console.error('Database error loading shopping list:', error);
