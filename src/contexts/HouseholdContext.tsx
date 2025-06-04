@@ -39,7 +39,6 @@ export function HouseholdProvider({ children }: { children: React.ReactNode }) {
   // Use refs to track states without triggering re-renders
   const hasDataRef = useRef(false);
   const currentUserIdRef = useRef<string | null>(null);
-  const currentHouseholdIdRef = useRef<string | null>(null);
   const isLoadingHouseholdRef = useRef(false);
 
   // Create stable user ID reference
@@ -102,7 +101,6 @@ export function HouseholdProvider({ children }: { children: React.ReactNode }) {
         setHouseholdMembers([]);
         setJoinRequests([]);
         hasDataRef.current = false;
-        currentHouseholdIdRef.current = null;
         setIsInitialized(true);
         return;
       }
@@ -117,7 +115,6 @@ export function HouseholdProvider({ children }: { children: React.ReactNode }) {
       try {
         const household = await fetchHousehold();
         setCurrentHousehold(household);
-        currentHouseholdIdRef.current = household?.id || null;
         setIsInitialized(true);
       } finally {
         isLoadingHouseholdRef.current = false;
@@ -132,13 +129,6 @@ export function HouseholdProvider({ children }: { children: React.ReactNode }) {
     if (!isInitialized) return;
     
     const householdId = currentHousehold?.id || null;
-    
-    // Only proceed if household ID actually changed
-    if (currentHouseholdIdRef.current === householdId) {
-      return;
-    }
-    
-    currentHouseholdIdRef.current = householdId;
     
     if (householdId) {
       console.log('DEBUG: Loading data for household:', householdId);
