@@ -55,9 +55,9 @@ export default function ShoppingListHeader({
 
   const getWelcomeText = () => {
     if (!currentHousehold) {
-      return "Welcome to your personal shopping list! All shopping lists are organised by household.";
+      return "Your household's go-to list for turning meal plans into delicious reality.";
     }
-    return `Welcome to your shopping list for ${currentHousehold.name}! All shopping lists are organised by household.`;
+    return "Your household's go-to list for turning meal plans into delicious reality.";
   };
 
   return (

@@ -23,9 +23,9 @@ export const MealPlannerHeader = ({ user, currentHousehold }: MealPlannerHeaderP
 
   const getWelcomeText = () => {
     if (!currentHousehold) {
-      return "Welcome to your personal meal planner! All meal plans are organised by household.";
+      return "Plan the week with ease — all your meals, all in one place for your household.";
     }
-    return `Welcome to your meal planner for ${currentHousehold.name}! All meal plans are organised by household.`;
+    return "Plan the week with ease — all your meals, all in one place for your household.";
   };
 
   return (

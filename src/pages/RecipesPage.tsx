@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus, UtensilsCrossed } from "lucide-react";
@@ -49,9 +50,9 @@ export default function RecipesPage() {
 
   const getWelcomeText = () => {
     if (!currentHousehold) {
-      return "Welcome to your personal recipe collection! All recipes are organised by household.";
+      return "Curate your household's favourite meals — a private collection just for you.";
     }
-    return `Welcome to your recipe collection for ${currentHousehold.name}! All recipes are organised by household.`;
+    return "Curate your household's favourite meals — a private collection just for you.";
   };
 
   // Show loading state while household is being determined
