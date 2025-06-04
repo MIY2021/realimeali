@@ -1,4 +1,3 @@
-
 import { useCallback } from "react";
 import { MealPlan, Recipe } from "@/types";
 
@@ -74,8 +73,6 @@ export const useMealPlanSharing = ({
         text += '\n';
       }
     });
-
-    text += `View and edit this meal plan: ${window.location.origin}/meal-planner`;
     
     return text;
   }, [currentWeek, mealPlans, recipes]);
@@ -96,9 +93,10 @@ export const useMealPlanSharing = ({
         console.log('Share cancelled or failed');
       }
     } else {
-      // Fallback to clipboard with formatted text
+      // Fallback to clipboard with formatted text including URL
+      const textWithUrl = `${mealPlanText}\n\nView and edit this meal plan: ${shareUrl}`;
       try {
-        await navigator.clipboard.writeText(mealPlanText);
+        await navigator.clipboard.writeText(textWithUrl);
         toast({
           title: "Meal Plan Copied",
           description: `Week ${currentWeek} meal plan copied to clipboard`,
