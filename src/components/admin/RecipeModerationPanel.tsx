@@ -108,47 +108,6 @@ export function RecipeModerationPanel() {
     }
   };
 
-  const generateAIImage = async (recipe: CommunityRecipe) => {
-    setGeneratingAI(prev => ({ ...prev, [`${recipe.id}-img`]: true }));
-    
-    try {
-      const response = await fetch(`https://bdjzefekuahfofwzxqxd.supabase.co/functions/v1/generate-recipe-image`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJkanplZmVrdWFoZm9md3p4cXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY3MjE1ODQsImV4cCI6MjA2MjI5NzU4NH0.AyzVwsNDgyjeveMtz4-6mVnJGr7DaU8ZUJhr5Yk_us8`,
-        },
-        body: JSON.stringify({
-          prompt: recipe.title,
-          isCommunityRecipe: true,
-        }),
-      });
-
-      if (!response.ok) throw new Error('Failed to generate image');
-
-      const data = await response.json();
-      
-      // Update the recipe in the database
-      const { error } = await supabase
-        .from('community_recipes')
-        .update({ 
-          ai_generated_image_url: data.imageUrl,
-          moderation_status: 'in_review'
-        })
-        .eq('id', recipe.id);
-
-      if (error) throw error;
-
-      toast.success("AI image generated successfully");
-      fetchRecipes();
-    } catch (error) {
-      console.error('Error generating AI image:', error);
-      toast.error("Failed to generate AI image");
-    } finally {
-      setGeneratingAI(prev => ({ ...prev, [`${recipe.id}-img`]: false }));
-    }
-  };
-
   const updateAIImageUrl = async (recipe: CommunityRecipe, imageUrl: string) => {
     try {
       const { error } = await supabase
@@ -250,7 +209,6 @@ export function RecipeModerationPanel() {
           </div>
         </CardHeader>
         <CardContent>
-          {/* Original content for moderator reference */}
           {showActions && recipe.description && (
             <div className="mb-4 p-3 bg-muted rounded-md">
               <h4 className="font-medium text-sm mb-2">Original Description (Moderator Reference Only):</h4>
@@ -258,7 +216,6 @@ export function RecipeModerationPanel() {
             </div>
           )}
 
-          {/* AI-generated content */}
           {recipe.ai_generated_description && (
             <div className="mb-4 p-3 bg-green-50 rounded-md border border-green-200">
               <h4 className="font-medium text-sm mb-2 flex items-center gap-1">
@@ -280,38 +237,22 @@ export function RecipeModerationPanel() {
 
           {showActions && (
             <div className="space-y-4">
-              {/* AI Content Generation */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => generateAIDescription(recipe)}
-                    disabled={generatingAI[`${recipe.id}-desc`]}
-                    className="w-full"
-                  >
-                    <Sparkles className="h-4 w-4 mr-1" />
-                    {generatingAI[`${recipe.id}-desc`] ? 'Generating...' : 'Generate AI Summary'}
-                  </Button>
-                </div>
-                <div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => generateAIImage(recipe)}
-                    disabled={generatingAI[`${recipe.id}-img`]}
-                    className="w-full"
-                  >
-                    <Image className="h-4 w-4 mr-1" />
-                    {generatingAI[`${recipe.id}-img`] ? 'Generating...' : 'Generate AI Image'}
-                  </Button>
-                </div>
+              <div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => generateAIDescription(recipe)}
+                  disabled={generatingAI[`${recipe.id}-desc`]}
+                  className="w-full"
+                >
+                  <Sparkles className="h-4 w-4 mr-1" />
+                  {generatingAI[`${recipe.id}-desc`] ? 'Generating...' : 'Generate AI Summary'}
+                </Button>
               </div>
 
-              {/* Manual image URL input */}
               <div className="flex items-center gap-2">
                 <Input
-                  placeholder="Or paste image URL manually"
+                  placeholder="Paste image URL manually"
                   value={imageUrl}
                   onChange={(e) => setImageUrl(e.target.value)}
                   className="flex-1"
@@ -327,7 +268,6 @@ export function RecipeModerationPanel() {
                 </Button>
               </div>
 
-              {/* Approval actions - only show if AI content exists */}
               {recipe.ai_generated_description && (
                 <div className="flex items-center justify-between pt-4 border-t">
                   <div className="flex items-center gap-2">
