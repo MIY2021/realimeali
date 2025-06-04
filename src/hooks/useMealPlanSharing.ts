@@ -45,15 +45,16 @@ export const useMealPlanSharing = ({
     // Format text
     let text = `Week ${currentWeek} Meal Plan\n\n`;
     
-    const mealTypeOrder = ['breakfast', 'lunch', 'dinner', 'snacks', 'sides', 'desserts', 'drinks'];
+    // Match frontend order and add emojis
+    const mealTypeOrder = ['dinner', 'lunch', 'breakfast', 'snacks', 'sides', 'desserts', 'drinks'];
     const mealTypeLabels: { [key: string]: string } = {
-      breakfast: 'Breakfast',
-      lunch: 'Lunch', 
-      dinner: 'Dinner',
-      snacks: 'Snacks',
-      sides: 'Sides',
-      desserts: 'Desserts',
-      drinks: 'Drinks'
+      dinner: '🌙 Dinner',
+      lunch: '☀️ Lunch', 
+      breakfast: '🌅 Breakfast',
+      snacks: '🍿 Snacks',
+      sides: '🥗 Sides',
+      desserts: '🍰 Desserts',
+      drinks: '🥤 Drinks'
     };
 
     mealTypeOrder.forEach(mealType => {
@@ -82,7 +83,7 @@ export const useMealPlanSharing = ({
     const mealPlanText = formatMealPlanText();
     const shareTitle = `Week ${currentWeek} Meal Plan`;
     const shareUrl = `${window.location.origin}/meal-planner`;
-    const textWithUrl = `${mealPlanText}\n\nView and edit this meal plan: ${shareUrl}`;
+    const textWithUrl = `${mealPlanText}\nView and edit this meal plan: ${shareUrl}`;
 
     if (navigator.share) {
       try {
