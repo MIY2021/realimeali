@@ -99,7 +99,7 @@ export default function RecipesPage() {
               You need to create or join a household to view and manage recipes.
             </p>
             <Button asChild style={{ backgroundColor: '#81b29a' }}>
-              <Link to="/household">
+              <Link to="/settings">
                 Manage Household
               </Link>
             </Button>

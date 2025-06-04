@@ -8,7 +8,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger,
   DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu";
 import {
@@ -200,20 +199,12 @@ const Header = () => {
                     <>
                       <hr className="my-2" />
                       <Link
-                        to="/account"
+                        to="/settings"
                         className="flex items-center space-x-2 text-navy hover:text-terracotta transition-colors p-2 rounded"
                         onClick={() => setMobileMenuOpen(false)}
                       >
                         <User className="h-4 w-4" />
-                        <span>Manage Account</span>
-                      </Link>
-                      <Link
-                        to="/household"
-                        className="flex items-center space-x-2 text-navy hover:text-terracotta transition-colors p-2 rounded"
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
-                        <Users className="h-4 w-4" />
-                        <span>Manage Household</span>
+                        <span>Settings</span>
                       </Link>
                       {isAdmin && (
                         <Link
@@ -267,15 +258,9 @@ const Header = () => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
                   <DropdownMenuItem asChild>
-                    <Link to="/account" className="flex items-center">
+                    <Link to="/settings" className="flex items-center">
                       <User className="h-4 w-4 mr-2" />
-                      Manage Account
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/household" className="flex items-center">
-                      <Users className="h-4 w-4 mr-2" />
-                      Manage Household
+                      Settings
                     </Link>
                   </DropdownMenuItem>
                   {isAdmin && (

@@ -1,4 +1,3 @@
-
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
@@ -22,11 +21,10 @@ import ShoppingList from "@/pages/ShoppingList";
 import CategoryPage from "@/pages/CategoryPage";
 import Login from "@/pages/Login";
 import Signup from "@/pages/Signup";
-import Account from "@/pages/Account";
-import Household from "@/pages/Household";
 import AdminDashboard from "@/pages/AdminDashboard";
 import NotFound from "@/pages/NotFound";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import Settings from "@/pages/Settings";
 
 const queryClient = new QueryClient();
 
@@ -118,10 +116,19 @@ const App = () => (
                         }
                       />
                       <Route
+                        path="/settings"
+                        element={
+                          <ProtectedRoute>
+                            <Settings />
+                          </ProtectedRoute>
+                        }
+                      />
+                      {/* Redirect old routes to new settings page */}
+                      <Route
                         path="/account"
                         element={
                           <ProtectedRoute>
-                            <Account />
+                            <Settings />
                           </ProtectedRoute>
                         }
                       />
@@ -129,7 +136,7 @@ const App = () => (
                         path="/household"
                         element={
                           <ProtectedRoute>
-                            <Household />
+                            <Settings />
                           </ProtectedRoute>
                         }
                       />
