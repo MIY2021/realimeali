@@ -86,7 +86,17 @@ export function RecipeCard({ recipe, onAddToMealPlan, onRecipeClick, showActions
             {recipe.title}
           </h3>
         </Link>
-        <p className="text-sm text-gray-600 mb-3 flex-1 line-clamp-2">
+        <p 
+          className="text-sm text-gray-600 mb-3 flex-1"
+          style={{
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+            lineHeight: '1.4em',
+            maxHeight: '2.8em'
+          }}
+        >
           {recipe.description}
         </p>
         

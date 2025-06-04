@@ -90,15 +90,11 @@ export default function ShoppingListWeekSelector({
           onClick={onGenerate}
           disabled={isGenerating}
           size="sm"
-          className={`
-            flex items-center gap-2 px-4 py-2 rounded-lg font-medium
-            transition-all duration-300 ease-in-out
-            ${isGenerating ? 'scale-95' : 'hover:scale-105'}
-            shadow-lg hover:shadow-xl
-            ${isGenerating ? 'animate-pulse' : ''}
-          `}
-          variant={hasItems ? "outline" : "default"}
-          style={{ backgroundColor: hasItems ? undefined : '#81b29a' }}
+          className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all duration-300 ease-in-out shadow-lg hover:shadow-xl"
+          style={{ 
+            backgroundColor: '#81b29a',
+            color: 'white'
+          }}
         >
           {isGenerating ? (
             <>
