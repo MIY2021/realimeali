@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useHousehold } from "@/contexts/HouseholdContext";
+import { useHousehold } from "@/contexts/HouseholdContext/HouseholdProvider";
 import { CreateHouseholdCard } from "@/components/household/CreateHouseholdCard";
 import { HouseholdDetailsCard } from "@/components/household/HouseholdDetailsCard";
 import { HouseholdMembersCard } from "@/components/household/HouseholdMembersCard";
