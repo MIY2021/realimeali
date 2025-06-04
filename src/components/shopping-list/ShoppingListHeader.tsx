@@ -6,6 +6,7 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useHouseholdShopping } from "@/contexts/HouseholdShoppingContext";
+import { useHousehold } from "@/contexts/HouseholdContext";
 
 interface ShoppingListHeaderProps {
   onShare: () => void;
@@ -17,6 +18,7 @@ export default function ShoppingListHeader({
   weekNumber
 }: ShoppingListHeaderProps) {
   const isMobile = useIsMobile();
+  const { currentHousehold } = useHousehold();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [newItemName, setNewItemName] = useState("");
   const { addShoppingItem } = useHouseholdShopping();
@@ -39,13 +41,25 @@ export default function ShoppingListHeader({
     setIsAddDialogOpen(false);
   };
 
+  const getWelcomeText = () => {
+    if (!currentHousehold) {
+      return "Welcome to your personal shopping list! All shopping lists are organised by household.";
+    }
+    return `Welcome to your shopping list for ${currentHousehold.name}! All shopping lists are organised by household.`;
+  };
+
   return (
     <div className={`mb-6 ${isMobile ? 'space-y-4' : ''}`}>
       <div className="flex items-center justify-between">
-        <h1 className={`font-bold text-navy flex items-center gap-2 ${isMobile ? 'text-2xl' : 'text-3xl'}`}>
-          <ShoppingBag className={`text-sage ${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
-          Shopping List
-        </h1>
+        <div>
+          <h1 className={`font-bold text-navy flex items-center gap-2 ${isMobile ? 'text-2xl' : 'text-2xl sm:text-3xl'}`}>
+            <ShoppingBag className={`text-sage ${isMobile ? 'h-6 w-6' : 'h-6 w-6 sm:h-8 sm:w-8'}`} />
+            Shopping List
+          </h1>
+          <p className="text-sm sm:text-base text-muted-foreground">
+            {getWelcomeText()}
+          </p>
+        </div>
         <div className="flex gap-2">
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
             <DialogTrigger asChild>

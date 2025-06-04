@@ -21,15 +21,22 @@ export const MealPlannerHeader = ({ user, currentHousehold }: MealPlannerHeaderP
     shouldShowMembers: !!(user && currentHousehold)
   });
 
+  const getWelcomeText = () => {
+    if (!currentHousehold) {
+      return "Welcome to your personal meal planner! All meal plans are organised by household.";
+    }
+    return `Welcome to your meal planner for ${currentHousehold.name}! All meal plans are organised by household.`;
+  };
+
   return (
     <div className="flex items-center justify-between mb-2">
       <div>
-        <h1 className="text-2xl font-bold text-navy flex items-center gap-2">
-          <CalendarDays className="h-6 w-6" />
+        <h1 className="text-2xl sm:text-3xl font-bold text-navy flex items-center gap-2">
+          <CalendarDays className="h-6 w-6 sm:h-8 sm:w-8" />
           Meal Planner
         </h1>
-        <p className="text-sm text-muted-foreground">
-          {user ? "Plan and organize your weekly meals with your household" : "Login to create meal plans"}
+        <p className="text-sm sm:text-base text-muted-foreground">
+          {user ? getWelcomeText() : "Login to create meal plans"}
         </p>
       </div>
       {user && currentHousehold && (
