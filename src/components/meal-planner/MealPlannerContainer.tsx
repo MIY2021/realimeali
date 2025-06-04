@@ -64,6 +64,8 @@ export default function MealPlannerContainer() {
 
   const { generateRandomMeals } = useRandomMealSelection();
 
+  const currentMealPlans = getMealPlansForWeek(currentWeek);
+
   // Create a wrapper function that matches the expected signature
   const generateRandomMealPlan = useCallback(async (quantities: { 
     dinner: number; 
@@ -119,9 +121,8 @@ export default function MealPlannerContainer() {
     setPendingMealType,
     setClearAllDialog,
     refreshMealPlans: fetchMealPlans,
+    currentMealPlans,
   });
-
-  const currentMealPlans = getMealPlansForWeek(currentWeek);
 
   const handleAddMeal = useCallback((mealType: MealType) => {
     console.log("🍽️ handleAddMeal called with mealType:", mealType);

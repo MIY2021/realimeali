@@ -1,5 +1,6 @@
 
 import { useCallback } from "react";
+import { MealPlan, Recipe } from "@/types";
 
 interface UseMealPlanSharingProps {
   user: any;
@@ -9,6 +10,8 @@ interface UseMealPlanSharingProps {
   setIsLoading: (loading: boolean) => void;
   setClearAllDialog?: (open: boolean) => void;
   toast: any;
+  mealPlans?: MealPlan[];
+  recipes?: Recipe[];
 }
 
 export const useMealPlanSharing = ({
@@ -19,26 +22,86 @@ export const useMealPlanSharing = ({
   setIsLoading,
   setClearAllDialog,
   toast,
+  mealPlans = [],
+  recipes = [],
 }: UseMealPlanSharingProps) => {
 
+  const formatMealPlanText = useCallback(() => {
+    if (!mealPlans.length || !recipes.length) {
+      return `Week ${currentWeek} Meal Plan\n\nNo meals planned for this week.`;
+    }
+
+    // Group meal plans by meal type
+    const mealsByType: { [key: string]: MealPlan[] } = {};
+    const weekPlans = mealPlans.filter(plan => plan.week_number === currentWeek);
+    
+    weekPlans.forEach(plan => {
+      if (!mealsByType[plan.meal_type]) {
+        mealsByType[plan.meal_type] = [];
+      }
+      mealsByType[plan.meal_type].push(plan);
+    });
+
+    // Format text
+    let text = `Week ${currentWeek} Meal Plan\n\n`;
+    
+    const mealTypeOrder = ['breakfast', 'lunch', 'dinner', 'snacks', 'sides', 'desserts', 'drinks'];
+    const mealTypeLabels: { [key: string]: string } = {
+      breakfast: 'Breakfast',
+      lunch: 'Lunch', 
+      dinner: 'Dinner',
+      snacks: 'Snacks',
+      sides: 'Sides',
+      desserts: 'Desserts',
+      drinks: 'Drinks'
+    };
+
+    mealTypeOrder.forEach(mealType => {
+      const plans = mealsByType[mealType];
+      if (plans && plans.length > 0) {
+        text += `${mealTypeLabels[mealType]}:\n`;
+        
+        plans.forEach(plan => {
+          const recipe = recipes.find(r => r.id === plan.recipe_id);
+          if (recipe) {
+            let recipeName = recipe.title;
+            if (plan.is_leftover) {
+              recipeName += ` (Leftover - ${plan.leftover_servings || 1} servings)`;
+            }
+            text += `• ${recipeName}\n`;
+          }
+        });
+        text += '\n';
+      }
+    });
+
+    text += `View and edit this meal plan: ${window.location.origin}/meal-planner`;
+    
+    return text;
+  }, [currentWeek, mealPlans, recipes]);
+
   const handleShare = useCallback(async () => {
+    const mealPlanText = formatMealPlanText();
+    const shareTitle = `Week ${currentWeek} Meal Plan`;
+    const shareUrl = `${window.location.origin}/meal-planner`;
+
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `Week ${currentWeek} Meal Plan`,
-          text: 'Check out my meal plan!',
-          url: window.location.href
+          title: shareTitle,
+          text: mealPlanText,
+          url: shareUrl
         });
       } catch (err) {
         console.log('Share cancelled or failed');
       }
     } else {
-      // Fallback to clipboard
+      // Fallback to clipboard with formatted text
       try {
-        await navigator.clipboard.writeText(window.location.href);
+        await navigator.clipboard.writeText(mealPlanText);
         toast({
-          title: "Link Copied",
-          description: "Meal plan link copied to clipboard",
+          title: "Meal Plan Copied",
+          description: `Week ${currentWeek} meal plan copied to clipboard`,
         });
       } catch (err) {
         toast({
@@ -47,7 +110,7 @@ export const useMealPlanSharing = ({
         });
       }
     }
-  }, [currentWeek, toast]);
+  }, [currentWeek, formatMealPlanText, toast]);
 
   const handleClearAll = useCallback(() => {
     if (!user || !currentHousehold) return;

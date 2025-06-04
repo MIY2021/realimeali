@@ -23,6 +23,7 @@ interface UseMealPlannerOperationsProps {
   setPendingMealType: (mealType: MealType | null) => void;
   setClearAllDialog?: (open: boolean) => void;
   refreshMealPlans?: () => Promise<void>;
+  currentMealPlans?: any[];
 }
 
 export const useMealPlannerOperations = (props: UseMealPlannerOperationsProps) => {
@@ -70,6 +71,8 @@ export const useMealPlannerOperations = (props: UseMealPlannerOperationsProps) =
     setIsLoading: props.setIsLoading,
     setClearAllDialog: props.setClearAllDialog,
     toast: props.toast,
+    mealPlans: props.currentMealPlans,
+    recipes: props.recipes,
   });
 
   return {
