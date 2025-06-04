@@ -26,19 +26,31 @@ export default function ShoppingListHeader({
   const handleAddItem = async () => {
     if (!newItemName.trim()) return;
 
-    await addShoppingItem({
-      name: newItemName.trim(),
-      week_number: weekNumber,
-      is_checked: false,
-      is_custom: true,
-      recipe_ids: [],
-      consolidated_quantity: 1,
-      consolidated_unit: '',
-      source_ingredients: [newItemName.trim()]
-    });
+    try {
+      console.log('Adding shopping item:', newItemName.trim());
+      await addShoppingItem({
+        name: newItemName.trim(),
+        week_number: weekNumber,
+        is_checked: false,
+        is_custom: true,
+        recipe_ids: [],
+        consolidated_quantity: 1,
+        consolidated_unit: '',
+        source_ingredients: [newItemName.trim()]
+      });
 
-    setNewItemName("");
-    setIsAddDialogOpen(false);
+      setNewItemName("");
+      setIsAddDialogOpen(false);
+      console.log('Successfully added shopping item');
+    } catch (error) {
+      console.error('Error adding shopping item:', error);
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleAddItem();
+    }
   };
 
   const getWelcomeText = () => {
@@ -59,6 +71,9 @@ export default function ShoppingListHeader({
           <p className="text-sm sm:text-base text-muted-foreground">
             {getWelcomeText()}
           </p>
+          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+            Add custom items or generate a list from your meal plans
+          </p>
         </div>
         <div className="flex gap-2">
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
@@ -69,7 +84,7 @@ export default function ShoppingListHeader({
                 className="flex items-center gap-2"
               >
                 <Plus className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
-                Add Item
+                {isMobile ? null : 'Add Item'}
               </Button>
             </DialogTrigger>
             <DialogContent>
@@ -81,7 +96,8 @@ export default function ShoppingListHeader({
                   placeholder="Enter item name..."
                   value={newItemName}
                   onChange={(e) => setNewItemName(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleAddItem()}
+                  onKeyPress={handleKeyPress}
+                  autoFocus
                 />
                 <div className="flex gap-2 justify-end">
                   <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
