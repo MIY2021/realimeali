@@ -1,4 +1,5 @@
-import { CalendarDays, Refresh } from "lucide-react";
+
+import { CalendarDays, RotateCcw } from "lucide-react";
 import { HouseholdMembersDisplay } from "@/components/household/HouseholdMembersDisplay";
 import { Button } from "@/components/ui/button";
 import { useHousehold } from "@/contexts/HouseholdContext";
@@ -57,7 +58,7 @@ export const MealPlannerHeader = ({ user, currentHousehold }: MealPlannerHeaderP
               disabled={isRefreshing}
               className="text-terracotta hover:text-terracotta"
             >
-              <Refresh className={`h-4 w-4 mr-1 ${isRefreshing ? 'animate-spin' : ''}`} />
+              <RotateCcw className={`h-4 w-4 mr-1 ${isRefreshing ? 'animate-spin' : ''}`} />
               Refresh
             </Button>
           )}

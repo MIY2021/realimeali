@@ -77,7 +77,6 @@ declare module 'lucide-react' {
   export const EyeOff: LucideIcon;
   export const Edit: LucideIcon;
   export const Delete: LucideIcon;
-  export const Refresh: LucideIcon;
   export const Info: LucideIcon;
   export const Warning: LucideIcon;
   export const Success: LucideIcon;
