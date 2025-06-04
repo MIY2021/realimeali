@@ -89,7 +89,7 @@ export function useHouseholdData(user: User | null, currentHousehold: Household 
     try {
       console.log('DEBUG: Fetching household members for household:', currentHousehold.id);
       
-      // Fetch household members with only existing fields
+      // Use a single joined query to get members with their profiles
       const { data, error } = await supabase
         .from('household_members')
         .select(`
@@ -97,13 +97,47 @@ export function useHouseholdData(user: User | null, currentHousehold: Household 
           user_id,
           household_id,
           role,
-          joined_at
+          joined_at,
+          profiles!inner(
+            id,
+            full_name,
+            email,
+            avatar_url
+          )
         `)
         .eq('household_id', currentHousehold.id);
 
       if (error) {
-        console.error('Error fetching household members:', error);
-        return [];
+        console.error('Error fetching household members with profiles:', error);
+        // Fallback: Try to get members without profiles
+        const { data: fallbackData, error: fallbackError } = await supabase
+          .from('household_members')
+          .select(`
+            id,
+            user_id,
+            household_id,
+            role,
+            joined_at
+          `)
+          .eq('household_id', currentHousehold.id);
+
+        if (fallbackError) {
+          console.error('Error in fallback fetch:', fallbackError);
+          return [];
+        }
+
+        console.log('DEBUG: Using fallback data without profiles:', fallbackData?.length || 0);
+        
+        // Transform fallback data without profiles
+        const membersWithoutProfiles: HouseholdMember[] = (fallbackData || []).map(member => ({
+          id: member.id,
+          user_id: member.user_id,
+          household_id: member.household_id,
+          role: member.role as 'owner' | 'member',
+          joined_at: member.joined_at,
+        }));
+
+        return membersWithoutProfiles;
       }
 
       if (!data) {
@@ -111,33 +145,29 @@ export function useHouseholdData(user: User | null, currentHousehold: Household 
         return [];
       }
 
-      // Fetch profile data separately to avoid complex joins
-      const memberIds = data.map(member => member.user_id);
-      const { data: profiles, error: profileError } = await supabase
-        .from('profiles')
-        .select('id, full_name, email, avatar_url')
-        .in('id', memberIds);
-
-      if (profileError) {
-        console.error('Error fetching member profiles:', profileError);
-        // Continue without profile data
-      }
-
-      // Transform data to match HouseholdMember interface
+      // Transform joined data to match HouseholdMember interface
       const membersWithProfiles: HouseholdMember[] = data.map(member => ({
         id: member.id,
         user_id: member.user_id,
         household_id: member.household_id,
         role: member.role as 'owner' | 'member',
         joined_at: member.joined_at,
-        profile: profiles?.find(profile => profile.id === member.user_id) ? {
-          full_name: profiles.find(profile => profile.id === member.user_id)?.full_name || null,
-          email: profiles.find(profile => profile.id === member.user_id)?.email || null,
-          avatar_url: profiles.find(profile => profile.id === member.user_id)?.avatar_url || null,
+        profile: member.profiles ? {
+          full_name: member.profiles.full_name || null,
+          email: member.profiles.email || null,
+          avatar_url: member.profiles.avatar_url || null,
         } : undefined
       }));
 
-      console.log('DEBUG: Successfully fetched household members:', membersWithProfiles.length);
+      console.log('DEBUG: Successfully fetched household members with profiles:', {
+        memberCount: membersWithProfiles.length,
+        membersWithProfiles: membersWithProfiles.map(m => ({
+          id: m.id,
+          hasProfile: !!m.profile,
+          profileName: m.profile?.full_name
+        }))
+      });
+      
       return membersWithProfiles;
     } catch (error) {
       console.error('Unexpected error fetching household members:', error);

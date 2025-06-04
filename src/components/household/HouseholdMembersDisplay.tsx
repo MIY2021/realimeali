@@ -1,7 +1,7 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { User, Users } from "lucide-react";
+import { User, Users, Loader } from "lucide-react";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { useState } from "react";
 
@@ -33,8 +33,18 @@ export const HouseholdMembersDisplay = () => {
     });
   };
 
-  if (!currentHousehold || isLoadingMembers) {
+  if (!currentHousehold) {
     return null;
+  }
+
+  // Show loading state instead of hiding completely
+  if (isLoadingMembers) {
+    return (
+      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        <Loader className="h-4 w-4 animate-spin" />
+        <span>Loading members...</span>
+      </div>
+    );
   }
 
   if (householdMembers.length === 0) {
@@ -47,9 +57,10 @@ export const HouseholdMembersDisplay = () => {
   }
 
   // Log member data for debugging
-  console.log('HouseholdMembersDisplay - Member data:', {
+  console.log('HouseholdMembersDisplay - Rendering with data:', {
     householdId: currentHousehold.id,
     totalMembers: householdMembers.length,
+    isLoadingMembers,
     members: householdMembers.map(m => ({
       id: m.id,
       user_id: m.user_id,
@@ -98,7 +109,7 @@ export const HouseholdMembersDisplay = () => {
               </TooltipTrigger>
               <TooltipContent>
                 <div className="text-center">
-                  <p className="font-medium">{member.profile?.full_name}</p>
+                  <p className="font-medium">{member.profile?.full_name || 'Unknown User'}</p>
                   <p className="text-xs text-muted-foreground capitalize">{member.role}</p>
                   {member.profile?.avatar_url && (
                     <p className="text-xs text-muted-foreground">
