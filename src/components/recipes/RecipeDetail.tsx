@@ -164,11 +164,8 @@ export const RecipeDetail = ({ recipe, onEdit, onDelete, isOwner }: RecipeDetail
           <div className="space-y-6">
             <h2 className="text-xl font-bold text-navy mb-4">Ingredients</h2>
             {recipe.ingredients.map((ingredient, index) => (
-              <div key={index} className="flex gap-4 p-4 bg-gray-50 rounded-lg">
-                <div className="flex-shrink-0 w-8 h-8 bg-terracotta text-white rounded-full flex items-center justify-center text-sm font-bold">
-                  {index + 1}
-                </div>
-                <p className="text-gray-700 leading-relaxed flex-1">{ingredient}</p>
+              <div key={index} className="p-4 bg-gray-50 rounded-lg">
+                <p className="text-gray-700 leading-relaxed">{ingredient}</p>
               </div>
             ))}
           </div>
@@ -178,11 +175,8 @@ export const RecipeDetail = ({ recipe, onEdit, onDelete, isOwner }: RecipeDetail
           <div className="space-y-6">
             <h2 className="text-xl font-bold text-navy mb-4">Instructions</h2>
             {recipe.instructions.map((step, index) => (
-              <div key={index} className="flex gap-4 p-4 bg-gray-50 rounded-lg">
-                <div className="flex-shrink-0 w-8 h-8 bg-terracotta text-white rounded-full flex items-center justify-center text-sm font-bold">
-                  {index + 1}
-                </div>
-                <p className="text-gray-700 leading-relaxed flex-1">{step}</p>
+              <div key={index} className="p-4 bg-gray-50 rounded-lg">
+                <p className="text-gray-700 leading-relaxed">{step}</p>
               </div>
             ))}
           </div>
