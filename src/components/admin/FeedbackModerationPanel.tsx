@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Clock, AlertCircle, CheckCircle, Camera, Eye } from "lucide-react";
+import { Clock, AlertCircle, Check, Camera, Eye } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface FeedbackItem {
@@ -97,11 +97,11 @@ export function FeedbackModerationPanel() {
     switch (status) {
       case 'pending': return <Clock className="h-4 w-4 text-amber-500" />;
       case 'in_progress': return <AlertCircle className="h-4 w-4 text-blue-500" />;
-      case 'complete': return <CheckCircle className="h-4 w-4 text-green-500" />;
+      case 'complete': return <Check className="h-4 w-4 text-green-500" />;
       // Legacy status mapping
       case 'new': return <Clock className="h-4 w-4 text-amber-500" />;
-      case 'completed': return <CheckCircle className="h-4 w-4 text-green-500" />;
-      case 'closed': return <CheckCircle className="h-4 w-4 text-gray-500" />;
+      case 'completed': return <Check className="h-4 w-4 text-green-500" />;
+      case 'closed': return <Check className="h-4 w-4 text-gray-500" />;
       default: return <Clock className="h-4 w-4" />;
     }
   };
@@ -172,7 +172,7 @@ export function FeedbackModerationPanel() {
             {isMobile && groupedFeedback.in_progress.length}
           </TabsTrigger>
           <TabsTrigger value="complete" className="flex items-center gap-2">
-            <CheckCircle className="h-4 w-4" />
+            <Check className="h-4 w-4" />
             {!isMobile && `Complete (${groupedFeedback.complete.length})`}
             {isMobile && groupedFeedback.complete.length}
           </TabsTrigger>
