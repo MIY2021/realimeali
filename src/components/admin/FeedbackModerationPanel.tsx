@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -8,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Clock, AlertCircle, Star, Camera, Eye } from "lucide-react";
+import { Clock, AlertCircle, CheckCircle, Camera, Eye } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface FeedbackItem {
@@ -94,11 +95,24 @@ export function FeedbackModerationPanel() {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'new': return <Clock className="h-4 w-4 text-blue-500" />;
-      case 'in_progress': return <AlertCircle className="h-4 w-4 text-yellow-500" />;
-      case 'completed': return <Star className="h-4 w-4 text-green-500" />;
-      case 'closed': return <Star className="h-4 w-4 text-gray-500" />;
+      case 'pending': return <Clock className="h-4 w-4 text-amber-500" />;
+      case 'in_progress': return <AlertCircle className="h-4 w-4 text-blue-500" />;
+      case 'complete': return <CheckCircle className="h-4 w-4 text-green-500" />;
+      // Legacy status mapping
+      case 'new': return <Clock className="h-4 w-4 text-amber-500" />;
+      case 'completed': return <CheckCircle className="h-4 w-4 text-green-500" />;
+      case 'closed': return <CheckCircle className="h-4 w-4 text-gray-500" />;
       default: return <Clock className="h-4 w-4" />;
+    }
+  };
+
+  const normalizeStatus = (status: string) => {
+    // Map legacy statuses to new ones
+    switch (status) {
+      case 'new': return 'pending';
+      case 'completed': return 'complete';
+      case 'closed': return 'complete';
+      default: return status;
     }
   };
 
@@ -121,10 +135,18 @@ export function FeedbackModerationPanel() {
   };
 
   const groupedFeedback = {
-    new: feedback.filter(f => f.status === 'new'),
-    in_progress: feedback.filter(f => f.status === 'in_progress'),
-    completed: feedback.filter(f => f.status === 'completed'),
-    closed: feedback.filter(f => f.status === 'closed')
+    pending: feedback.filter(f => {
+      const status = normalizeStatus(f.status);
+      return status === 'pending';
+    }),
+    in_progress: feedback.filter(f => {
+      const status = normalizeStatus(f.status);
+      return status === 'in_progress';
+    }),
+    complete: feedback.filter(f => {
+      const status = normalizeStatus(f.status);
+      return status === 'complete';
+    })
   };
 
   if (isLoading) {
@@ -137,30 +159,23 @@ export function FeedbackModerationPanel() {
 
   return (
     <div className="w-full">
-      <Tabs defaultValue="new" className="w-full">
-        <TabsList className={`grid w-full ${isMobile ? 'grid-cols-2' : 'grid-cols-4'}`}>
-          <TabsTrigger value="new" className="flex items-center gap-2">
+      <Tabs defaultValue="pending" className="w-full">
+        <TabsList className={`grid w-full grid-cols-3`}>
+          <TabsTrigger value="pending" className="flex items-center gap-2">
             <Clock className="h-4 w-4" />
-            {!isMobile && `New (${groupedFeedback.new.length})`}
-            {isMobile && groupedFeedback.new.length}
+            {!isMobile && `Pending (${groupedFeedback.pending.length})`}
+            {isMobile && groupedFeedback.pending.length}
           </TabsTrigger>
           <TabsTrigger value="in_progress" className="flex items-center gap-2">
             <AlertCircle className="h-4 w-4" />
             {!isMobile && `In Progress (${groupedFeedback.in_progress.length})`}
             {isMobile && groupedFeedback.in_progress.length}
           </TabsTrigger>
-          {!isMobile && (
-            <>
-              <TabsTrigger value="completed" className="flex items-center gap-2">
-                <Star className="h-4 w-4" />
-                Completed ({groupedFeedback.completed.length})
-              </TabsTrigger>
-              <TabsTrigger value="closed" className="flex items-center gap-2">
-                <Star className="h-4 w-4" />
-                Closed ({groupedFeedback.closed.length})
-              </TabsTrigger>
-            </>
-          )}
+          <TabsTrigger value="complete" className="flex items-center gap-2">
+            <CheckCircle className="h-4 w-4" />
+            {!isMobile && `Complete (${groupedFeedback.complete.length})`}
+            {isMobile && groupedFeedback.complete.length}
+          </TabsTrigger>
         </TabsList>
 
         {Object.entries(groupedFeedback).map(([status, items]) => (
@@ -178,7 +193,7 @@ export function FeedbackModerationPanel() {
                       <div className={`flex ${isMobile ? 'flex-col' : 'items-start justify-between'} gap-2`}>
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
-                            {getStatusIcon(item.status)}
+                            {getStatusIcon(normalizeStatus(item.status))}
                             <CardTitle className={`${isMobile ? 'text-base' : 'text-lg'}`}>
                               {item.subject}
                             </CardTitle>
@@ -210,7 +225,7 @@ export function FeedbackModerationPanel() {
                         </div>
                         <div className={`flex ${isMobile ? 'flex-col w-full' : 'items-center'} gap-2`}>
                           <Select
-                            value={selectedStatus[item.id] || item.status}
+                            value={selectedStatus[item.id] || normalizeStatus(item.status)}
                             onValueChange={(value) => {
                               setSelectedStatus(prev => ({ ...prev, [item.id]: value }));
                               updateFeedbackStatus(item.id, value);
@@ -220,10 +235,9 @@ export function FeedbackModerationPanel() {
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="new">New</SelectItem>
+                              <SelectItem value="pending">Pending</SelectItem>
                               <SelectItem value="in_progress">In Progress</SelectItem>
-                              <SelectItem value="completed">Completed</SelectItem>
-                              <SelectItem value="closed">Closed</SelectItem>
+                              <SelectItem value="complete">Complete</SelectItem>
                             </SelectContent>
                           </Select>
                           <Select
