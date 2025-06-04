@@ -33,7 +33,7 @@ export default function GenerateShoppingListButton({
           ${isGenerating ? 'animate-pulse' : ''}
         `}
         variant={hasItems ? "outline" : "default"}
-        style={!hasItems ? { backgroundColor: '#81b29a' } : {}}
+        style={{ backgroundColor: '#81b29a' }}
       >
         {isGenerating ? (
           <>
