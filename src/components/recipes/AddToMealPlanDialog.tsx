@@ -2,7 +2,6 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Recipe, MealType } from "@/types";
 import { useMealPlan } from "@/contexts/MealPlanContext";
 import { useToast } from "@/hooks/use-toast";
@@ -65,6 +64,13 @@ export function AddToMealPlanDialog({ recipe, open, onOpenChange }: AddToMealPla
 
   if (!recipe) return null;
 
+  const mealTypes: { value: MealType; label: string }[] = [
+    { value: "breakfast", label: "Breakfast" },
+    { value: "lunch", label: "Lunch" },
+    { value: "dinner", label: "Dinner" },
+    { value: "snacks", label: "Snacks" },
+  ];
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
@@ -72,36 +78,44 @@ export function AddToMealPlanDialog({ recipe, open, onOpenChange }: AddToMealPla
           <DialogTitle>Add {recipe.title} to Meal Plan</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="space-y-6">
           <div>
-            <label className="text-sm font-medium mb-2 block">Select Week</label>
-            <Select value={selectedWeek.toString()} onValueChange={(value) => setSelectedWeek(parseInt(value) as 1 | 2)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="1">Week 1</SelectItem>
-                <SelectItem value="2">Week 2</SelectItem>
-              </SelectContent>
-            </Select>
+            <label className="text-sm font-medium mb-3 block">Select Week</label>
+            <div className="grid grid-cols-2 gap-3">
+              <Button
+                variant={selectedWeek === 1 ? "default" : "outline"}
+                onClick={() => setSelectedWeek(1)}
+                className="h-12"
+              >
+                Week 1
+              </Button>
+              <Button
+                variant={selectedWeek === 2 ? "default" : "outline"}
+                onClick={() => setSelectedWeek(2)}
+                className="h-12"
+              >
+                Week 2
+              </Button>
+            </div>
           </div>
 
           <div>
-            <label className="text-sm font-medium mb-2 block">Meal Type</label>
-            <Select value={selectedMealType} onValueChange={(value) => setSelectedMealType(value as MealType)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="breakfast">Breakfast</SelectItem>
-                <SelectItem value="lunch">Lunch</SelectItem>
-                <SelectItem value="dinner">Dinner</SelectItem>
-                <SelectItem value="snacks">Snacks</SelectItem>
-              </SelectContent>
-            </Select>
+            <label className="text-sm font-medium mb-3 block">Meal Type</label>
+            <div className="grid grid-cols-2 gap-3">
+              {mealTypes.map((mealType) => (
+                <Button
+                  key={mealType.value}
+                  variant={selectedMealType === mealType.value ? "default" : "outline"}
+                  onClick={() => setSelectedMealType(mealType.value)}
+                  className="h-12"
+                >
+                  {mealType.label}
+                </Button>
+              ))}
+            </div>
           </div>
 
-          <div className="flex justify-end space-x-2">
+          <div className="flex justify-end space-x-3 pt-4">
             <Button variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
