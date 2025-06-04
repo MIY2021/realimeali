@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import ShoppingListHeader from "@/components/shopping-list/ShoppingListHeader";
 import ShoppingListWeekSelector from "@/components/shopping-list/ShoppingListWeekSelector";
@@ -34,6 +35,7 @@ export default function ShoppingList() {
     shoppingList,
     isLoading,
     toggleItemChecked,
+    addCustomItem,
     clearAll,
     refreshList,
   } = useShoppingList(weekNumber);
@@ -149,6 +151,7 @@ export default function ShoppingList() {
         <ShoppingListHeader 
           onShare={handleShare} 
           weekNumber={weekNumber}
+          onAddItem={addCustomItem}
         />
         <div className="py-10 text-center">
           <p className="text-muted-foreground mb-4">Loading recipes...</p>
@@ -162,6 +165,7 @@ export default function ShoppingList() {
       <ShoppingListHeader 
         onShare={handleShare} 
         weekNumber={weekNumber}
+        onAddItem={addCustomItem}
       />
 
       {!user ? (

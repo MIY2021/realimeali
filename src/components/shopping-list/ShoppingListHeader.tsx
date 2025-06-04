@@ -5,40 +5,30 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { useHouseholdShopping } from "@/contexts/HouseholdShoppingContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
 
 interface ShoppingListHeaderProps {
   onShare: () => void;
   weekNumber: 1 | 2;
+  onAddItem: (name: string) => Promise<void>;
 }
 
 export default function ShoppingListHeader({ 
   onShare, 
-  weekNumber
+  weekNumber,
+  onAddItem
 }: ShoppingListHeaderProps) {
   const isMobile = useIsMobile();
   const { currentHousehold } = useHousehold();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [newItemName, setNewItemName] = useState("");
-  const { addShoppingItem } = useHouseholdShopping();
 
   const handleAddItem = async () => {
     if (!newItemName.trim()) return;
 
     try {
       console.log('Adding shopping item:', newItemName.trim());
-      await addShoppingItem({
-        name: newItemName.trim(),
-        week_number: weekNumber,
-        is_checked: false,
-        is_custom: true,
-        recipe_ids: [],
-        consolidated_quantity: 1,
-        consolidated_unit: '',
-        source_ingredients: [newItemName.trim()]
-      });
-
+      await onAddItem(newItemName.trim());
       setNewItemName("");
       setIsAddDialogOpen(false);
       console.log('Successfully added shopping item');
