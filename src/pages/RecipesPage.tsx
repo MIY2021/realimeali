@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus, UtensilsCrossed } from "lucide-react";
@@ -79,7 +78,7 @@ export default function RecipesPage() {
           </p>
         </div>
         {user && currentHousehold && (
-          <Button asChild className="bg-terracotta hover:bg-terracotta/90 w-full sm:w-auto">
+          <Button asChild className="w-full sm:w-auto" style={{ backgroundColor: '#81b29a' }}>
             <Link to="/my-recipes/new">
               <Plus className="h-4 w-4 mr-2" />
               Add Recipe
@@ -99,7 +98,7 @@ export default function RecipesPage() {
             <p className="text-muted-foreground mb-6">
               You need to create or join a household to view and manage recipes.
             </p>
-            <Button asChild className="bg-terracotta hover:bg-terracotta/90">
+            <Button asChild style={{ backgroundColor: '#81b29a' }}>
               <Link to="/household">
                 Manage Household
               </Link>

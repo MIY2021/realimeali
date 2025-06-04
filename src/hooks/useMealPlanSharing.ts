@@ -1,4 +1,3 @@
-
 import { useCallback } from "react";
 import { MealPlan, Recipe } from "@/types";
 
@@ -45,14 +44,14 @@ export const useMealPlanSharing = ({
     // Format text
     let text = `Week ${currentWeek} Meal Plan\n\n`;
     
-    // Match frontend order and add emojis
+    // Match frontend order and add food emojis
     const mealTypeOrder = ['dinner', 'lunch', 'breakfast', 'snacks', 'sides', 'desserts', 'drinks'];
     const mealTypeLabels: { [key: string]: string } = {
-      dinner: '🌙 Dinner',
-      lunch: '☀️ Lunch', 
-      breakfast: '🌅 Breakfast',
+      dinner: '🍽️ Dinner',
+      lunch: '🥗 Lunch', 
+      breakfast: '🥞 Breakfast',
       snacks: '🍿 Snacks',
-      sides: '🥗 Sides',
+      sides: '🥬 Sides',
       desserts: '🍰 Desserts',
       drinks: '🥤 Drinks'
     };

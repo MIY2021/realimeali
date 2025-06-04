@@ -25,7 +25,7 @@ export default function GenerateShoppingListButton({
         disabled={isGenerating}
         size={isMobile ? "default" : "lg"}
         className={`
-          ${hasItems ? 'variant-outline' : 'bg-primary hover:bg-primary/90'} 
+          ${hasItems ? 'variant-outline' : ''} 
           flex items-center gap-3 px-6 py-3 rounded-lg font-medium
           transition-all duration-300 ease-in-out
           ${isGenerating ? 'scale-95' : 'hover:scale-105'}
@@ -33,6 +33,7 @@ export default function GenerateShoppingListButton({
           ${isGenerating ? 'animate-pulse' : ''}
         `}
         variant={hasItems ? "outline" : "default"}
+        style={!hasItems ? { backgroundColor: '#81b29a' } : {}}
       >
         {isGenerating ? (
           <>
