@@ -1,5 +1,4 @@
-
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
@@ -15,15 +14,7 @@ export function RecipeModerationPanel() {
   const [rejectedRecipes, setRejectedRecipes] = useState<CommunityRecipe[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const { 
-    generateAIDescription,
-    updateAIImageUrl,
-    approveRecipe,
-    rejectRecipe,
-    generatingAI
-  } = useRecipeModerationOperations(fetchRecipes);
-
-  const fetchRecipes = async () => {
+  const fetchRecipes = useCallback(async () => {
     setIsLoading(true);
     try {
       // Fetch pending recipes
@@ -67,11 +58,19 @@ export function RecipeModerationPanel() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
+
+  const { 
+    generateAIDescription,
+    updateAIImageUrl,
+    approveRecipe,
+    rejectRecipe,
+    generatingAI
+  } = useRecipeModerationOperations(fetchRecipes);
 
   useEffect(() => {
     fetchRecipes();
-  }, []);
+  }, [fetchRecipes]);
 
   if (isLoading) {
     return (
