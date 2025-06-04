@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { User, Clock, Users, Heart, Share, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import { User, Clock, Users, Heart, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,7 +14,6 @@ import {
 import { Recipe } from "@/types";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { RecipeImage } from "@/components/ui/recipe-image";
-import { ShareRecipeDialog } from "@/components/recipes/ShareRecipeDialog";
 
 interface RecipeDetailProps {
   recipe: Recipe;
@@ -25,7 +24,6 @@ interface RecipeDetailProps {
 
 export const RecipeDetail = ({ recipe, onEdit, onDelete, isOwner }: RecipeDetailProps) => {
   const [isDeleting, setIsDeleting] = useState(false);
-  const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
   const { toggleFavorite } = useRecipes();
 
   const handleDelete = async () => {
@@ -73,17 +71,8 @@ export const RecipeDetail = ({ recipe, onEdit, onDelete, isOwner }: RecipeDetail
         </Button>
 
         {/* Action buttons - top right corner */}
-        <div className="absolute top-4 right-16 flex gap-2">
-          <Button 
-            variant="ghost" 
-            size="icon"
-            onClick={() => setIsShareDialogOpen(true)}
-            className="bg-white/20 backdrop-blur-sm border border-white/30 shadow-sm hover:bg-white/30 transition-all duration-200"
-          >
-            <Share className="h-5 w-5 text-white" />
-          </Button>
-
-          {isOwner && (
+        {isOwner && (
+          <div className="absolute top-4 right-16 flex gap-2">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button 
@@ -109,8 +98,8 @@ export const RecipeDetail = ({ recipe, onEdit, onDelete, isOwner }: RecipeDetail
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-          )}
-        </div>
+          </div>
+        )}
         
         {/* Title and meta info overlay - bottom */}
         <div className="absolute bottom-0 left-0 right-0 p-6">
@@ -172,15 +161,16 @@ export const RecipeDetail = ({ recipe, onEdit, onDelete, isOwner }: RecipeDetail
         </TabsList>
 
         <TabsContent value="ingredients" className="mt-0">
-          <div className="bg-cream/30 rounded-lg p-6">
+          <div className="space-y-6">
             <h2 className="text-xl font-bold text-navy mb-4">Ingredients</h2>
-            <div className="space-y-3">
-              {recipe.ingredients.map((ingredient, index) => (
-                <div key={index} className="flex items-start justify-between py-2 border-b border-gray-200 last:border-0">
-                  <span className="text-gray-700 flex-1">{ingredient}</span>
+            {recipe.ingredients.map((ingredient, index) => (
+              <div key={index} className="flex gap-4 p-4 bg-gray-50 rounded-lg">
+                <div className="flex-shrink-0 w-8 h-8 bg-terracotta text-white rounded-full flex items-center justify-center text-sm font-bold">
+                  {index + 1}
                 </div>
-              ))}
-            </div>
+                <p className="text-gray-700 leading-relaxed flex-1">{ingredient}</p>
+              </div>
+            ))}
           </div>
         </TabsContent>
 
@@ -198,14 +188,6 @@ export const RecipeDetail = ({ recipe, onEdit, onDelete, isOwner }: RecipeDetail
           </div>
         </TabsContent>
       </Tabs>
-
-      {/* Top Tip */}
-      {recipe.top_tip && (
-        <div className="mt-8 p-6 bg-blue-50 border-l-4 border-blue-400 rounded-r-lg">
-          <h3 className="font-bold text-blue-900 mb-2 text-lg">💡 Top Tip</h3>
-          <p className="text-blue-800 leading-relaxed">{recipe.top_tip}</p>
-        </div>
-      )}
 
       {/* Recipe Footer */}
       <div className="mt-12 pt-6 border-t border-gray-200">
@@ -231,13 +213,6 @@ export const RecipeDetail = ({ recipe, onEdit, onDelete, isOwner }: RecipeDetail
           </div>
         </div>
       </div>
-
-      {/* Share Dialog */}
-      <ShareRecipeDialog
-        recipe={recipe}
-        open={isShareDialogOpen}
-        onOpenChange={setIsShareDialogOpen}
-      />
     </div>
   );
 };
