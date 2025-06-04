@@ -1,20 +1,27 @@
+
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Check, X, Eye, Link, Clock, Circle, Sparkles, Upload, Image } from "lucide-react";
+import { Check, X, Clock, Circle } from "lucide-react";
 import { CommunityRecipe } from "@/hooks/useCommunityRecipes";
-import { Input } from "@/components/ui/input";
+import { RecipeCard } from "./moderation/RecipeCard";
+import { useRecipeModerationOperations } from "./moderation/useRecipeModerationOperations";
 
 export function RecipeModerationPanel() {
   const [pendingRecipes, setPendingRecipes] = useState<CommunityRecipe[]>([]);
   const [approvedRecipes, setApprovedRecipes] = useState<CommunityRecipe[]>([]);
   const [rejectedRecipes, setRejectedRecipes] = useState<CommunityRecipe[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [generatingAI, setGeneratingAI] = useState<{ [key: string]: boolean }>({});
+
+  const { 
+    generateAIDescription,
+    updateAIImageUrl,
+    approveRecipe,
+    rejectRecipe,
+    generatingAI
+  } = useRecipeModerationOperations(fetchRecipes);
 
   const fetchRecipes = async () => {
     setIsLoading(true);
@@ -66,281 +73,6 @@ export function RecipeModerationPanel() {
     fetchRecipes();
   }, []);
 
-  const generateAIDescription = async (recipe: CommunityRecipe) => {
-    setGeneratingAI(prev => ({ ...prev, [`${recipe.id}-desc`]: true }));
-    
-    try {
-      const response = await fetch(`https://bdjzefekuahfofwzxqxd.supabase.co/functions/v1/generate-community-description`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJkanplZmVrdWFoZm9md3p4cXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY3MjE1ODQsImV4cCI6MjA2MjI5NzU4NH0.AyzVwsNDgyjeveMtz4-6mVnJGr7DaU8ZUJhr5Yk_us8`,
-        },
-        body: JSON.stringify({
-          recipeTitle: recipe.title,
-          originalDescription: recipe.description,
-          sourceUrl: recipe.source_url,
-        }),
-      });
-
-      if (!response.ok) throw new Error('Failed to generate description');
-
-      const data = await response.json();
-      
-      // Update the recipe in the database
-      const { error } = await supabase
-        .from('community_recipes')
-        .update({ 
-          ai_generated_description: data.description,
-          moderation_status: 'in_review'
-        })
-        .eq('id', recipe.id);
-
-      if (error) throw error;
-
-      toast.success("AI description generated successfully");
-      fetchRecipes();
-    } catch (error) {
-      console.error('Error generating AI description:', error);
-      toast.error("Failed to generate AI description");
-    } finally {
-      setGeneratingAI(prev => ({ ...prev, [`${recipe.id}-desc`]: false }));
-    }
-  };
-
-  const updateAIImageUrl = async (recipe: CommunityRecipe, imageUrl: string) => {
-    try {
-      const { error } = await supabase
-        .from('community_recipes')
-        .update({ 
-          ai_generated_image_url: imageUrl,
-          moderation_status: 'in_review'
-        })
-        .eq('id', recipe.id);
-
-      if (error) throw error;
-
-      toast.success("Image URL updated successfully");
-      fetchRecipes();
-    } catch (error) {
-      console.error('Error updating image URL:', error);
-      toast.error("Failed to update image URL");
-    }
-  };
-
-  const approveRecipe = async (recipeId: string) => {
-    try {
-      const { error } = await supabase
-        .from('community_recipes')
-        .update({
-          moderation_status: 'approved',
-          is_approved: true,
-          approved_at: new Date().toISOString(),
-          approved_by: (await supabase.auth.getUser()).data.user?.id,
-        })
-        .eq('id', recipeId);
-
-      if (error) throw error;
-
-      toast.success("Recipe approved successfully");
-      fetchRecipes();
-    } catch (error) {
-      console.error('Error approving recipe:', error);
-      toast.error("Failed to approve recipe");
-    }
-  };
-
-  const rejectRecipe = async (recipeId: string) => {
-    try {
-      const { error } = await supabase
-        .from('community_recipes')
-        .update({
-          moderation_status: 'rejected',
-          is_active: false,
-        })
-        .eq('id', recipeId);
-
-      if (error) throw error;
-
-      toast.success("Recipe rejected");
-      fetchRecipes();
-    } catch (error) {
-      console.error('Error rejecting recipe:', error);
-      toast.error("Failed to reject recipe");
-    }
-  };
-
-  const RecipeCard = ({ recipe, showActions = false }: { recipe: CommunityRecipe; showActions?: boolean }) => {
-    const [imageUrl, setImageUrl] = useState(recipe.ai_generated_image_url || '');
-    
-    return (
-      <Card className="mb-4">
-        <CardHeader className="pb-3">
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <CardTitle className="text-lg mb-1">{recipe.title}</CardTitle>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-                <span>by {recipe.submitted_by_name || 'Anonymous'}</span>
-                <span>•</span>
-                <span>{new Date(recipe.created_at).toLocaleDateString()}</span>
-                <Badge variant="outline" className="ml-2">
-                  {recipe.moderation_status}
-                </Badge>
-              </div>
-              <div className="flex items-center gap-2 mb-2">
-                {recipe.category && (
-                  <Badge variant="secondary">{recipe.category}</Badge>
-                )}
-                {recipe.cuisine && (
-                  <Badge variant="outline">{recipe.cuisine}</Badge>
-                )}
-                {recipe.difficulty_level && (
-                  <Badge variant="outline">{recipe.difficulty_level}</Badge>
-                )}
-              </div>
-            </div>
-            {(recipe.ai_generated_image_url || recipe.image_url) && (
-              <img 
-                src={recipe.ai_generated_image_url || recipe.image_url} 
-                alt={recipe.title}
-                className="w-20 h-20 object-cover rounded-md ml-4"
-              />
-            )}
-          </div>
-        </CardHeader>
-        <CardContent>
-          {showActions && recipe.description && (
-            <div className="mb-4 p-3 bg-muted rounded-md">
-              <h4 className="font-medium text-sm mb-2">Original Description (Moderator Reference Only):</h4>
-              <p className="text-sm text-muted-foreground">{recipe.description}</p>
-            </div>
-          )}
-
-          {recipe.ai_generated_description && (
-            <div className="mb-4 p-3 bg-green-50 rounded-md border border-green-200">
-              <h4 className="font-medium text-sm mb-2 flex items-center gap-1">
-                <Sparkles className="h-3 w-3 text-green-600" />
-                AI-Generated Description (Public Display):
-              </h4>
-              <p className="text-sm">{recipe.ai_generated_description}</p>
-            </div>
-          )}
-          
-          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
-            <Clock className="h-4 w-4" />
-            <span>Prep: {recipe.prep_time}min</span>
-            <span>•</span>
-            <span>Cook: {recipe.cook_time}min</span>
-            <span>•</span>
-            <span>Serves: {recipe.servings}</span>
-          </div>
-
-          {showActions && (
-            <div className="space-y-4">
-              <div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => generateAIDescription(recipe)}
-                  disabled={generatingAI[`${recipe.id}-desc`]}
-                  className="w-full"
-                >
-                  <Sparkles className="h-4 w-4 mr-1" />
-                  {generatingAI[`${recipe.id}-desc`] ? 'Generating...' : 'Generate AI Summary'}
-                </Button>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <Input
-                  placeholder="Paste image URL manually"
-                  value={imageUrl}
-                  onChange={(e) => setImageUrl(e.target.value)}
-                  className="flex-1"
-                />
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => updateAIImageUrl(recipe, imageUrl)}
-                  disabled={!imageUrl || imageUrl === recipe.ai_generated_image_url}
-                >
-                  <Upload className="h-4 w-4 mr-1" />
-                  Update
-                </Button>
-              </div>
-
-              {recipe.ai_generated_description && (
-                <div className="flex items-center justify-between pt-4 border-t">
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => window.open(recipe.source_url, '_blank')}
-                    >
-                      <Link className="h-4 w-4 mr-1" />
-                      View Source
-                    </Button>
-                    <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                      <Eye className="h-4 w-4" />
-                      <span>{recipe.view_count}</span>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => approveRecipe(recipe.id)}
-                      className="text-green-600 hover:text-green-700 hover:bg-green-50"
-                    >
-                      <Check className="h-4 w-4 mr-1" />
-                      Approve
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => rejectRecipe(recipe.id)}
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                    >
-                      <X className="h-4 w-4 mr-1" />
-                      Reject
-                    </Button>
-                  </div>
-                </div>
-              )}
-
-              {!recipe.ai_generated_description && (
-                <div className="text-center p-4 bg-amber-50 rounded-md border border-amber-200">
-                  <p className="text-sm text-amber-800">
-                    Generate AI content before approving this recipe for public display.
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
-
-          {!showActions && (
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => window.open(recipe.source_url, '_blank')}
-                >
-                  <Link className="h-4 w-4 mr-1" />
-                  View Source
-                </Button>
-                <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                  <Eye className="h-4 w-4" />
-                  <span>{recipe.view_count}</span>
-                </div>
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    );
-  };
-
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-8">
@@ -375,7 +107,16 @@ export function RecipeModerationPanel() {
         ) : (
           <div className="space-y-4">
             {pendingRecipes.map((recipe) => (
-              <RecipeCard key={recipe.id} recipe={recipe} showActions={true} />
+              <RecipeCard 
+                key={recipe.id} 
+                recipe={recipe} 
+                showActions={true}
+                onGenerateAIDescription={generateAIDescription}
+                onUpdateImageUrl={updateAIImageUrl}
+                onApprove={approveRecipe}
+                onReject={rejectRecipe}
+                generatingAI={generatingAI}
+              />
             ))}
           </div>
         )}
