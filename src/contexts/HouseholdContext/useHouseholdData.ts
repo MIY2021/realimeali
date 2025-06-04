@@ -75,6 +75,34 @@ export function useHouseholdData(user: User | null, currentHousehold: Household 
     }
   }, [user?.id]);
 
+  const syncGoogleAvatarUrl = useCallback(async (userId: string) => {
+    try {
+      // Get the current user's auth data to access Google avatar
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      
+      if (authUser?.id === userId && authUser?.user_metadata?.avatar_url) {
+        console.log('DEBUG AVATAR: Syncing Google avatar for user:', userId, authUser.user_metadata.avatar_url);
+        
+        // Update the profile with the Google avatar URL
+        const { error } = await supabase
+          .from('profiles')
+          .update({ 
+            avatar_url: authUser.user_metadata.avatar_url,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', userId);
+
+        if (error) {
+          console.error('DEBUG AVATAR: Error syncing Google avatar:', error);
+        } else {
+          console.log('DEBUG AVATAR: Successfully synced Google avatar');
+        }
+      }
+    } catch (error) {
+      console.error('DEBUG AVATAR: Error in syncGoogleAvatarUrl:', error);
+    }
+  }, []);
+
   const fetchHouseholdMembers = useCallback(async (): Promise<HouseholdMember[]> => {
     if (!currentHousehold) {
       console.log('DEBUG MEMBERS: No household available, skipping members fetch');
@@ -125,6 +153,14 @@ export function useHouseholdData(user: User | null, currentHousehold: Household 
         members: membersData.map(m => ({ id: m.id, user_id: m.user_id, role: m.role }))
       });
 
+      // Sync Google avatar for current user if needed
+      const currentUser = await supabase.auth.getUser();
+      const currentUserId = currentUser.data.user?.id;
+      
+      if (currentUserId && currentUser.data.user?.user_metadata?.avatar_url) {
+        await syncGoogleAvatarUrl(currentUserId);
+      }
+
       // Then get profiles for these users with all avatar fields
       const userIds = membersData.map(member => member.user_id);
       const { data: profilesData, error: profilesError } = await supabase
@@ -160,6 +196,12 @@ export function useHouseholdData(user: User | null, currentHousehold: Household 
       const membersWithProfiles: HouseholdMember[] = membersData.map(member => {
         const profile = profilesData?.find(p => p.id === member.user_id);
         
+        // For Google users, ensure we have their avatar URL
+        let avatarUrl = profile?.avatar_url;
+        if (!avatarUrl && profile?.auth_provider === 'google' && member.user_id === currentUserId) {
+          avatarUrl = currentUser.data.user?.user_metadata?.avatar_url || null;
+        }
+        
         const memberWithProfile = {
           id: member.id,
           user_id: member.user_id,
@@ -169,7 +211,7 @@ export function useHouseholdData(user: User | null, currentHousehold: Household 
           profile: profile ? {
             full_name: profile.full_name || null,
             email: profile.email || null,
-            avatar_url: profile.avatar_url || null,
+            avatar_url: avatarUrl,
             auth_provider: profile.auth_provider || null,
             avatar_type: profile.avatar_type || null,
             avatar_data: profile.avatar_data || null,
@@ -182,9 +224,11 @@ export function useHouseholdData(user: User | null, currentHousehold: Household 
           role: member.role,
           hasProfile: !!profile,
           profileName: profile?.full_name,
-          avatarUrl: profile?.avatar_url,
+          avatarUrl: avatarUrl,
           avatarType: profile?.avatar_type,
-          avatarData: profile?.avatar_data
+          avatarData: profile?.avatar_data,
+          authProvider: profile?.auth_provider,
+          isCurrentUser: member.user_id === currentUserId
         });
 
         return memberWithProfile;
@@ -198,7 +242,8 @@ export function useHouseholdData(user: User | null, currentHousehold: Household 
           id: m.id,
           name: m.profile?.full_name,
           hasAvatar: !!(m.profile?.avatar_url || m.profile?.avatar_data),
-          avatarType: m.profile?.avatar_type
+          avatarType: m.profile?.avatar_type,
+          avatarUrl: m.profile?.avatar_url
         }))
       });
       
@@ -210,7 +255,7 @@ export function useHouseholdData(user: User | null, currentHousehold: Household 
       setIsLoadingMembers(false);
       isCurrentlyFetchingMembersRef.current = false;
     }
-  }, [currentHousehold?.id]);
+  }, [currentHousehold?.id, syncGoogleAvatarUrl]);
 
   const fetchJoinRequests = useCallback(async (): Promise<HouseholdJoinRequest[]> => {
     if (!currentHousehold) {
