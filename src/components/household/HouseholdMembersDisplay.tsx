@@ -47,15 +47,12 @@ export const HouseholdMembersDisplay = () => {
     );
   }
 
-  const displayMembers = householdMembers.length > 0 ? householdMembers : [];
-
   // Log member data for debugging
   console.log('HouseholdMembersDisplay - Current state:', {
     householdId: currentHousehold.id,
     householdName: currentHousehold.name,
     totalMembers: householdMembers.length,
     isLoadingMembers,
-    displayMembers: displayMembers.length,
     members: householdMembers.map(m => ({
       id: m.id,
       user_id: m.user_id,
@@ -70,64 +67,11 @@ export const HouseholdMembersDisplay = () => {
     timestamp: new Date().toISOString()
   });
 
-  return (
-    <TooltipProvider>
-      <div className="flex -space-x-2">
-        {displayMembers.length > 0 ? (
-          <>
-            {displayMembers.slice(0, 4).map((member) => (
-              <Tooltip key={member.id}>
-                <TooltipTrigger>
-                  <div className="relative">
-                    <Avatar className="h-8 w-8 border-2 border-background hover:scale-105 transition-transform">
-                      <AvatarImage 
-                        src={member.profile?.avatar_url} 
-                        alt={member.profile?.full_name || 'User'}
-                        onError={() => handleImageError(member.id, member.profile?.avatar_url)}
-                        onLoad={() => handleImageLoad(member.id, member.profile?.avatar_url)}
-                        className="object-cover"
-                      />
-                      <AvatarFallback className="bg-terracotta/20 text-terracotta text-xs">
-                        {member.profile?.full_name 
-                          ? member.profile.full_name.charAt(0).toUpperCase()
-                          : <User className="h-3 w-3" />
-                        }
-                      </AvatarFallback>
-                    </Avatar>
-                    {imageErrors.has(member.id) && member.profile?.avatar_url && (
-                      <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-red-500 rounded-full border border-white" 
-                           title="Avatar failed to load" />
-                    )}
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <div className="text-center">
-                    <p className="font-medium">{member.profile?.full_name || 'Unknown User'}</p>
-                    <p className="text-xs text-muted-foreground capitalize">{member.role}</p>
-                    {member.profile?.avatar_url && (
-                      <p className="text-xs text-muted-foreground">
-                        Avatar: {imageErrors.has(member.id) ? '❌ Failed' : '✅ Loaded'}
-                      </p>
-                    )}
-                  </div>
-                </TooltipContent>
-              </Tooltip>
-            ))}
-            {displayMembers.length > 4 && (
-              <Tooltip>
-                <TooltipTrigger>
-                  <div className="h-8 w-8 rounded-full border-2 border-background bg-muted flex items-center justify-center text-xs font-medium">
-                    +{displayMembers.length - 4}
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{displayMembers.length - 4} more member{displayMembers.length - 4 > 1 ? 's' : ''}</p>
-                </TooltipContent>
-              </Tooltip>
-            )}
-          </>
-        ) : (
-          // Show a placeholder when no member data is loaded yet
+  // Show member avatars if we have members, otherwise show placeholder
+  if (householdMembers.length === 0) {
+    return (
+      <TooltipProvider>
+        <div className="flex -space-x-2">
           <Tooltip>
             <TooltipTrigger>
               <div className="h-8 w-8 rounded-full border-2 border-background bg-terracotta/20 flex items-center justify-center">
@@ -135,10 +79,55 @@ export const HouseholdMembersDisplay = () => {
               </div>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Household Owner</p>
+              <p>No members found</p>
             </TooltipContent>
           </Tooltip>
-        )}
+        </div>
+      </TooltipProvider>
+    );
+  }
+
+  return (
+    <TooltipProvider>
+      <div className="flex -space-x-2">
+        {householdMembers.map((member) => (
+          <Tooltip key={member.id}>
+            <TooltipTrigger>
+              <div className="relative">
+                <Avatar className="h-8 w-8 border-2 border-background hover:scale-105 transition-transform">
+                  <AvatarImage 
+                    src={member.profile?.avatar_url} 
+                    alt={member.profile?.full_name || 'User'}
+                    onError={() => handleImageError(member.id, member.profile?.avatar_url)}
+                    onLoad={() => handleImageLoad(member.id, member.profile?.avatar_url)}
+                    className="object-cover"
+                  />
+                  <AvatarFallback className="bg-terracotta/20 text-terracotta text-xs">
+                    {member.profile?.full_name 
+                      ? member.profile.full_name.charAt(0).toUpperCase()
+                      : <User className="h-3 w-3" />
+                    }
+                  </AvatarFallback>
+                </Avatar>
+                {imageErrors.has(member.id) && member.profile?.avatar_url && (
+                  <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-red-500 rounded-full border border-white" 
+                       title="Avatar failed to load" />
+                )}
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <div className="text-center">
+                <p className="font-medium">{member.profile?.full_name || 'Unknown User'}</p>
+                <p className="text-xs text-muted-foreground capitalize">{member.role}</p>
+                {member.profile?.avatar_url && (
+                  <p className="text-xs text-muted-foreground">
+                    Avatar: {imageErrors.has(member.id) ? '❌ Failed' : '✅ Loaded'}
+                  </p>
+                )}
+              </div>
+            </TooltipContent>
+          </Tooltip>
+        ))}
       </div>
     </TooltipProvider>
   );
