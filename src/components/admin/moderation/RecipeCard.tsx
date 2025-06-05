@@ -1,10 +1,9 @@
-
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Check, X, Eye, Link, Clock, Sparkles, Upload, Image } from "lucide-react";
+import { Check, X, Eye, Link, Clock, Sparkles, Upload, Camera } from "lucide-react";
 import { CommunityRecipe } from "@/hooks/useCommunityRecipes";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -151,7 +150,7 @@ export function RecipeCard({
                     onClick={handleUpdateImage}
                     disabled={!uploadedFile}
                   >
-                    <Image className="h-4 w-4 mr-1" />
+                    <Camera className="h-4 w-4 mr-1" />
                     Upload
                   </Button>
                 </div>
