@@ -1,5 +1,3 @@
-
-
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -202,7 +200,7 @@ export function RecipeList({ recipes, isLoading, onAddToMealPlan }: RecipeListPr
 
           {/* Row 3: Favorites and Not Cooked toggles and clear filters */}
           <div className="flex justify-between items-center">
-            <div className="flex items-center gap-3 text-sm">
+            <div className="flex items-center gap-2 text-sm">
               <div className="flex items-center gap-1.5">
                 <Heart className={`h-4 w-4 ${filters.showFavoritesOnly ? 'fill-red-500 text-red-500' : 'text-gray-500'}`} />
                 <span>Favorites</span>
@@ -307,4 +305,3 @@ export function RecipeList({ recipes, isLoading, onAddToMealPlan }: RecipeListPr
     </div>
   );
 }
-
