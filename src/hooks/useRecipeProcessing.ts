@@ -3,14 +3,12 @@ import { useTextRecipeProcessing } from "./useTextRecipeProcessing";
 import { useUrlRecipeProcessing } from "./useUrlRecipeProcessing";
 import { useImageRecipeProcessing } from "./useImageRecipeProcessing";
 import { useAiRecipeGeneration } from "./useAiRecipeGeneration";
-import { useRecipeImageSearch } from "./useRecipeImageSearch";
 
 export function useRecipeProcessing() {
   const textProcessing = useTextRecipeProcessing();
   const urlProcessing = useUrlRecipeProcessing();
   const imageProcessing = useImageRecipeProcessing();
   const aiGeneration = useAiRecipeGeneration();
-  const imageSearch = useRecipeImageSearch();
 
   return {
     // Text processing
@@ -22,10 +20,8 @@ export function useRecipeProcessing() {
     recipeUrl: urlProcessing.recipeUrl,
     setRecipeUrl: urlProcessing.setRecipeUrl,
     websiteImages: urlProcessing.websiteImages,
-    searchedImages: urlProcessing.searchedImages,
     storedImages: urlProcessing.storedImages,
     isDownloadingImages: urlProcessing.isDownloadingImages,
-    isSearchingImages: urlProcessing.isSearchingImages,
     showCommunityDialog: urlProcessing.showCommunityDialog,
     setShowCommunityDialog: urlProcessing.setShowCommunityDialog,
     parsedRecipeData: urlProcessing.parsedRecipeData,
@@ -34,7 +30,6 @@ export function useRecipeProcessing() {
     handleImportFromUrl: urlProcessing.handleImportFromUrl,
     handleDownloadImages: urlProcessing.handleDownloadImages,
     handleImageSelect: urlProcessing.handleImageSelect,
-    searchRecipeImages: urlProcessing.searchRecipeImages,
     
     // Image processing
     processImage: imageProcessing.processImage,
@@ -45,10 +40,6 @@ export function useRecipeProcessing() {
     setAiPrompt: aiGeneration.setAiPrompt,
     stylePreferences: aiGeneration.stylePreferences,
     setStylePreferences: aiGeneration.setStylePreferences,
-    
-    // Image search functionality
-    searchRecipeImagesStandalone: imageSearch.searchRecipeImages,
-    clearSearchedImages: imageSearch.clearSearchedImages,
     
     // Combined processing state and progress
     isProcessing: textProcessing.isProcessing || urlProcessing.isProcessing || imageProcessing.isProcessing || aiGeneration.isGenerating,

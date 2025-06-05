@@ -6,6 +6,7 @@ import { Recipe } from "@/types";
 import { useProgressTracking } from "./useUrlRecipeProcessing/useProgressTracking";
 import { useImageHandling } from "./useUrlRecipeProcessing/useImageHandling";
 import { handleProcessingError } from "./useUrlRecipeProcessing/errorHandling";
+import { SUPPORTED_DOMAINS } from "./useUrlRecipeProcessing/constants";
 
 export const useUrlRecipeProcessing = () => {
   const { toast } = useToast();
@@ -32,13 +33,12 @@ export const useUrlRecipeProcessing = () => {
       return;
     }
 
-    // Remove domain validation - let the edge function handle parsing attempts
-    try {
-      new URL(url.trim()); // Just validate it's a valid URL format
-    } catch {
+    // Validate domain
+    const domain = new URL(url).hostname.replace('www.', '');
+    if (!SUPPORTED_DOMAINS.includes(domain)) {
       toast({
-        title: "Invalid URL",
-        description: "Please enter a valid website URL",
+        title: "Unsupported Website",
+        description: `Sorry, we don't support recipes from ${domain} yet. Supported sites include: ${SUPPORTED_DOMAINS.join(', ')}`,
         variant: "destructive",
       });
       return;
@@ -54,10 +54,7 @@ export const useUrlRecipeProcessing = () => {
       console.log('🔗 Processing URL:', url);
       
       const { data, error } = await supabase.functions.invoke('parse-recipe-ai', {
-        body: { 
-          websiteUrl: url.trim(),
-          extractImages: true 
-        },
+        body: { url: url.trim() },
       });
 
       if (error) {
@@ -65,13 +62,13 @@ export const useUrlRecipeProcessing = () => {
       }
 
       if (!data?.success) {
-        throw new Error(data?.error || 'Failed to parse recipe from this website. The site may not contain recipe data or may be blocking automated access.');
+        throw new Error(data?.error || 'Failed to parse recipe');
       }
 
       progressTracking.setProgress(60);
       progressTracking.setCurrentStep("Processing recipe data...");
 
-      const recipeData = data.parsedRecipe;
+      const recipeData = data.recipe;
       console.log('📄 Parsed recipe data:', recipeData);
 
       // Transform the data to match our Recipe interface
@@ -102,14 +99,13 @@ export const useUrlRecipeProcessing = () => {
 
       // Store images for selection if available
       if (data.images && data.images.length > 0) {
-        console.log('🖼️ Found images from website:', data.images.length);
-        imageHandling.setWebsiteImages(data.images);
+        console.log('🖼️ Found images:', data.images.length);
+        imageHandling.setSelectedImages(data.images);
       }
 
       progressTracking.setProgress(100);
       progressTracking.setCurrentStep("Complete!");
 
-      const domain = new URL(url).hostname.replace('www.', '');
       console.log('✅ Recipe imported successfully');
       setNewRecipe(transformedRecipe);
       
@@ -130,25 +126,7 @@ export const useUrlRecipeProcessing = () => {
       setUrl("");
       
     } catch (error) {
-      console.error('Error importing recipe:', error);
-      
-      // Provide more helpful error messages based on the error type
-      let errorMessage = "Failed to import recipe from this website.";
-      let errorDescription = "Please try a different recipe URL or enter the recipe manually.";
-      
-      if (error.message?.includes('Failed to fetch website')) {
-        errorDescription = "The website may be blocking automated access. Try copying the recipe text instead.";
-      } else if (error.message?.includes('not contain recipe data')) {
-        errorDescription = "This page doesn't appear to contain a recipe. Make sure you're on a recipe page.";
-      } else if (error.message?.includes('timeout')) {
-        errorDescription = "The website took too long to respond. Please try again.";
-      }
-      
-      toast({
-        title: errorMessage,
-        description: errorDescription,
-        variant: "destructive",
-      });
+      handleProcessingError(error, toast);
     } finally {
       setIsProcessing(false);
       setTimeout(progressTracking.resetProgress, 2000);
@@ -182,15 +160,12 @@ export const useUrlRecipeProcessing = () => {
     selectedImages: imageHandling.selectedImages,
     setSelectedImages: imageHandling.setSelectedImages,
     websiteImages: imageHandling.websiteImages,
-    searchedImages: imageHandling.searchedImages,
     storedImages: imageHandling.storedImages,
     isDownloadingImages: imageHandling.isDownloadingImages,
-    isSearchingImages: imageHandling.isSearchingImages,
     showImageSelection: imageHandling.showImageSelection,
     selectedImage: imageHandling.selectedImage,
     handleImageSelect: imageHandling.handleImageSelect,
     handleDownloadImages: imageHandling.handleDownloadImages,
-    searchRecipeImages: imageHandling.searchRecipeImages,
     
     // Dialog state
     showCommunityDialog,

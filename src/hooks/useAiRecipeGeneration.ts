@@ -8,13 +8,7 @@ export function useAiRecipeGeneration() {
   const [aiPrompt, setAiPrompt] = useState('');
   const [stylePreferences, setStylePreferences] = useState<string[]>([]);
 
-  const generateRecipe = async (
-    options: { 
-      prompt?: string; 
-      stylePreferences?: string[];
-      searchRecipeImages?: (title: string) => Promise<string[]>;
-    } = {}
-  ) => {
+  const generateRecipe = async (options: { prompt?: string; stylePreferences?: string[] } = {}) => {
     const promptToUse = options.prompt || aiPrompt;
     const stylesToUse = options.stylePreferences || stylePreferences;
     
@@ -51,7 +45,7 @@ export function useAiRecipeGeneration() {
       });
 
       // Transform the AI response to match our Recipe interface
-      const recipeData = {
+      return {
         title: recipe.title || 'AI Generated Recipe',
         description: recipe.description || '',
         ingredients: recipe.ingredients || [],
@@ -70,14 +64,6 @@ export function useAiRecipeGeneration() {
         has_cooked: false,
         household_id: '',
       };
-
-      // Search for images if the recipe has a title and search function is available
-      if (recipeData.title && options.searchRecipeImages) {
-        console.log('🔍 Searching for images for generated recipe:', recipeData.title);
-        await options.searchRecipeImages(recipeData.title);
-      }
-
-      return recipeData;
 
     } catch (error) {
       console.error('❌ Error generating recipe:', error);

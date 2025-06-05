@@ -22,8 +22,25 @@ export const FUNNY_LOADING_MESSAGES = [
   "🎪 Juggling ingredients with finesse..."
 ];
 
-// Remove the restrictive domain list - let the edge function handle parsing attempts
-export const SUPPORTED_DOMAINS: string[] = [];
-
-// We'll let the parse-recipe-ai edge function attempt to parse any website
-// and only show errors if the actual parsing fails, not based on domain restrictions
+export const SUPPORTED_DOMAINS = [
+  'allrecipes.com',
+  'food.com',
+  'foodnetwork.com',
+  'epicurious.com',
+  'bonappetit.com',
+  'delish.com',
+  'eatingwell.com',
+  'foodandwine.com',
+  'myrecipes.com',
+  'taste.com.au',
+  'bbcgoodfood.com',
+  'jamieoliver.com',
+  'nigella.com',
+  'recipetineats.com',
+  'cafedelites.com',
+  'therecipecritic.com',
+  'cookieandkate.com',
+  'minimalistbaker.com',
+  'loveandlemons.com',
+  'budgetbytes.com'
+];

@@ -13,8 +13,7 @@ export function useTextRecipeProcessing() {
   const handleProcessText = async (
     setNewRecipe: (recipe: Omit<Recipe, 'id' | 'created_at' | 'updated_at' | 'created_by'>) => void,
     currentRecipe: Omit<Recipe, 'id' | 'created_at' | 'updated_at' | 'created_by'>,
-    setActiveTab: (tab: string) => void,
-    searchRecipeImages?: (title: string) => Promise<string[]>
+    setActiveTab: (tab: string) => void
   ) => {
     if (!recipeText.trim()) {
       toast({
@@ -61,13 +60,6 @@ export function useTextRecipeProcessing() {
       };
       
       setNewRecipe(recipeData);
-      
-      // Search for images if the recipe has a title and search function is available
-      if (recipeData.title && searchRecipeImages) {
-        console.log('🔍 Searching for images for processed recipe:', recipeData.title);
-        await searchRecipeImages(recipeData.title);
-      }
-      
       setActiveTab("manual");
       
       toast({

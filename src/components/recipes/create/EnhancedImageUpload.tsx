@@ -1,7 +1,8 @@
+
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Upload, Camera, Sparkles, X, ArrowRight, Globe, Check, Search } from "lucide-react";
+import { Upload, Camera, Sparkles, X, ArrowRight, Globe, Check } from "lucide-react";
 
 interface StoredImage {
   originalUrl: string;
@@ -22,8 +23,6 @@ interface EnhancedImageUploadProps {
   onImageSelect?: (url: string) => void;
   onDownloadImages?: () => void;
   isDownloadingImages?: boolean;
-  onSearchImages?: (title: string) => Promise<string[]>;
-  isSearchingImages?: boolean;
 }
 
 export function EnhancedImageUpload({
@@ -38,9 +37,7 @@ export function EnhancedImageUpload({
   selectedImage = "",
   onImageSelect,
   onDownloadImages,
-  isDownloadingImages = false,
-  onSearchImages,
-  isSearchingImages = false
+  isDownloadingImages = false
 }: EnhancedImageUploadProps) {
   const [isDragOver, setIsDragOver] = useState(false);
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
@@ -85,12 +82,6 @@ export function EnhancedImageUpload({
     }
     if (onImageSelect) {
       onImageSelect('');
-    }
-  };
-
-  const handleSearchImages = async () => {
-    if (onSearchImages && recipeTitle.trim()) {
-      await onSearchImages(recipeTitle);
     }
   };
 
@@ -146,33 +137,19 @@ export function EnhancedImageUpload({
         {hasWebsiteImages && (
           <div className="space-y-3">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
-              <span className="text-sm font-medium sm:pr-2">Available images:</span>
-              <div className="flex gap-2 flex-shrink-0">
-                {onSearchImages && recipeTitle.trim() && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleSearchImages}
-                    disabled={isSearchingImages}
-                    className="flex items-center gap-2"
-                  >
-                    <Search className="h-4 w-4" />
-                    {isSearchingImages ? 'Searching...' : 'Search More'}
-                  </Button>
-                )}
-                {storedImages.length === 0 && onDownloadImages && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={onDownloadImages}
-                    disabled={isDownloadingImages}
-                    className="flex items-center gap-2"
-                  >
-                    <ArrowRight className="h-4 w-4" />
-                    {isDownloadingImages ? 'Downloading...' : 'Download'}
-                  </Button>
-                )}
-              </div>
+              <span className="text-sm font-medium sm:pr-2">Available images from URL:</span>
+              {storedImages.length === 0 && onDownloadImages && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onDownloadImages}
+                  disabled={isDownloadingImages}
+                  className="flex items-center gap-2 flex-shrink-0"
+                >
+                  <ArrowRight className="h-4 w-4" />
+                  {isDownloadingImages ? 'Downloading...' : 'Download Images'}
+                </Button>
+              )}
             </div>
 
             <div className="grid grid-cols-3 gap-2">
@@ -240,7 +217,7 @@ export function EnhancedImageUpload({
           </div>
         )}
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Button
             onClick={() => setShowUploadMode(true)}
             variant="outline"
@@ -249,27 +226,6 @@ export function EnhancedImageUpload({
             <Upload className="h-4 w-4 mr-2" />
             Change Image
           </Button>
-
-          {onSearchImages && recipeTitle.trim() && (
-            <Button
-              onClick={handleSearchImages}
-              disabled={isSearchingImages}
-              variant="outline"
-              className="w-full"
-            >
-              {isSearchingImages ? (
-                <>
-                  <Search className="h-4 w-4 mr-2 animate-pulse" />
-                  Searching...
-                </>
-              ) : (
-                <>
-                  <Search className="h-4 w-4 mr-2" />
-                  Search Images
-                </>
-              )}
-            </Button>
-          )}
 
           <Button
             onClick={onGenerateImage}
@@ -285,26 +241,17 @@ export function EnhancedImageUpload({
             ) : (
               <>
                 <Sparkles className="h-4 w-4 mr-2" />
-                AI Generate
+                Generate with AI
               </>
             )}
           </Button>
         </div>
 
-        {(isGenerating && generationProgress) || (isSearchingImages) && (
+        {isGenerating && generationProgress && (
           <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
             <p className="text-sm text-blue-700 flex items-center">
-              {isSearchingImages ? (
-                <>
-                  <Search className="h-4 w-4 mr-2 animate-spin" />
-                  Searching for images...
-                </>
-              ) : (
-                <>
-                  <Sparkles className="h-4 w-4 mr-2 animate-spin" />
-                  {generationProgress}
-                </>
-              )}
+              <Sparkles className="h-4 w-4 mr-2 animate-spin" />
+              {generationProgress}
             </p>
           </div>
         )}
@@ -312,39 +259,25 @@ export function EnhancedImageUpload({
     );
   }
 
-  // Show image selection from search/URL if available and no current image
+  // Show image selection from URL if available and no current image
   if (hasWebsiteImages && !currentImage && !showUploadMode) {
     return (
       <div className="space-y-4">
         <div className="space-y-3">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
             <span className="text-sm font-medium sm:pr-2">Select an image for this recipe:</span>
-            <div className="flex gap-2 flex-shrink-0">
-              {onSearchImages && recipeTitle.trim() && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleSearchImages}
-                  disabled={isSearchingImages}
-                  className="flex items-center gap-2"
-                >
-                  <Search className="h-4 w-4" />
-                  {isSearchingImages ? 'Searching...' : 'Search More'}
-                </Button>
-              )}
-              {storedImages.length === 0 && onDownloadImages && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={onDownloadImages}
-                  disabled={isDownloadingImages}
-                  className="flex items-center gap-2"
-                >
-                  <ArrowRight className="h-4 w-4" />
-                  {isDownloadingImages ? 'Downloading...' : 'Download'}
-                </Button>
-              )}
-            </div>
+            {storedImages.length === 0 && onDownloadImages && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onDownloadImages}
+                disabled={isDownloadingImages}
+                className="flex items-center gap-2 flex-shrink-0"
+              >
+                <ArrowRight className="h-4 w-4" />
+                {isDownloadingImages ? 'Downloading...' : 'Download Images'}
+              </Button>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-3">
@@ -429,7 +362,7 @@ export function EnhancedImageUpload({
             size="sm"
             className="text-blue-600 hover:text-blue-700"
           >
-            ← Back to found images
+            ← Back to imported images
           </Button>
         </div>
       )}
@@ -453,7 +386,7 @@ export function EnhancedImageUpload({
         </p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <input
             ref={fileInputRef}
@@ -472,27 +405,6 @@ export function EnhancedImageUpload({
           </label>
         </div>
 
-        {onSearchImages && recipeTitle.trim() && (
-          <Button
-            onClick={handleSearchImages}
-            disabled={isSearchingImages}
-            variant="outline"
-            className="w-full"
-          >
-            {isSearchingImages ? (
-              <>
-                <Search className="h-4 w-4 mr-2 animate-pulse" />
-                Searching...
-              </>
-            ) : (
-              <>
-                <Search className="h-4 w-4 mr-2" />
-                Search Images
-              </>
-            )}
-          </Button>
-        )}
-
         <Button
           onClick={onGenerateImage}
           disabled={isGenerating || !recipeTitle.trim()}
@@ -507,26 +419,17 @@ export function EnhancedImageUpload({
           ) : (
             <>
               <Sparkles className="h-4 w-4 mr-2" />
-              AI Generate
+              Generate with AI
             </>
           )}
         </Button>
       </div>
 
-      {((isGenerating && generationProgress) || isSearchingImages) && (
+      {isGenerating && generationProgress && (
         <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
           <p className="text-sm text-blue-700 flex items-center">
-            {isSearchingImages ? (
-              <>
-                <Search className="h-4 w-4 mr-2 animate-spin" />
-                Searching for images...
-              </>
-            ) : (
-              <>
-                <Sparkles className="h-4 w-4 mr-2 animate-spin" />
-                {generationProgress}
-              </>
-            )}
+            <Sparkles className="h-4 w-4 mr-2 animate-spin" />
+            {generationProgress}
           </p>
         </div>
       )}
