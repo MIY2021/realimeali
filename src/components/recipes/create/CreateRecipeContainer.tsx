@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from "react";
 import { RecipeForm } from "./RecipeForm";
 import { Recipe } from "@/types";
@@ -123,7 +122,7 @@ export function CreateRecipeContainer() {
     if (!file) return;
 
     try {
-      await processImage(file, setNewRecipe, newRecipe, setActiveTab, searchRecipeImagesStandalone);
+      await processImage(file, setNewRecipe, newRecipe, setActiveTab, () => searchRecipeImagesStandalone(newRecipe.title));
     } catch (error) {
       console.error('Error processing image:', error);
     }
@@ -157,7 +156,7 @@ export function CreateRecipeContainer() {
       const response = await generateRecipe({
         prompt,
         stylePreferences,
-        searchRecipeImages: searchRecipeImagesStandalone
+        searchRecipeImages: () => searchRecipeImagesStandalone(newRecipe.title)
       });
       setGenerationProgress("Almost there, just putting the finishing touches...");
 
@@ -290,7 +289,7 @@ export function CreateRecipeContainer() {
           imagePreview={imagePreview}
           isGenerating={isGeneratingImage}
           generationProgress={generationProgress}
-          onImageChange={handleImageUpload}
+          onImageChange={handleImageChange}
           onGenerateImage={handleGenerateImage}
           recipeTitle={newRecipe.title}
           websiteImages={websiteImages}
@@ -299,7 +298,7 @@ export function CreateRecipeContainer() {
           onImageSelect={handleImageSelect}
           onDownloadImages={handleDownloadImages}
           isDownloadingImages={isDownloadingImages}
-          onSearchImages={searchRecipeImagesStandalone}
+          onSearchImages={() => searchRecipeImagesStandalone(newRecipe.title)}
           isSearchingImages={isSearchingImages}
         />
       </div>
@@ -349,7 +348,7 @@ export function CreateRecipeContainer() {
           <TabsContent value="image">
             <RecipeImageTab
               isProcessing={isProcessing}
-              onProcessImage={(file: File) => processImage(file, setNewRecipe, newRecipe, setActiveTab, searchRecipeImagesStandalone)}
+              onProcessImage={(file: File) => processImage(file, setNewRecipe, newRecipe, setActiveTab, () => searchRecipeImagesStandalone(newRecipe.title))}
               importProgress={importProgress}
               progressValue={progressValue}
             />
