@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { User, Heart, Pencil, Trash2, Plus } from "lucide-react";
 import { Recipe } from "@/types";
 import { useRecipes } from "@/contexts/RecipesContext";
+import { toast } from "sonner";
 
 interface RecipeActionButtonsProps {
   recipe: Recipe;
@@ -36,7 +37,24 @@ export const RecipeActionButtons = ({
   };
 
   const handleToggleFavorite = async () => {
-    await toggleFavorite(recipe.id, !recipe.is_favorite);
+    try {
+      const newFavoriteStatus = !recipe.is_favorite;
+      await toggleFavorite(recipe.id, newFavoriteStatus);
+      
+      // Show sonner notification
+      if (newFavoriteStatus) {
+        toast.success("Added to favorites", {
+          description: `${recipe.title} has been added to your favorites`
+        });
+      } else {
+        toast.success("Removed from favorites", {
+          description: `${recipe.title} has been removed from your favorites`
+        });
+      }
+    } catch (error) {
+      console.error('Failed to toggle favorite:', error);
+      toast.error("Failed to update favorite status");
+    }
   };
 
   const handleToggleCooked = async () => {

@@ -2,7 +2,7 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { Recipe } from '@/types';
 import { useRecipeApi } from '@/hooks/useRecipeApi';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { useHousehold } from '@/contexts/HouseholdContext';
 
 interface RecipesContextType {
@@ -25,7 +25,6 @@ export const RecipesProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { toast } = useToast();
   const { currentHousehold, isLoadingHousehold } = useHousehold();
   const api = useRecipeApi();
 
@@ -62,15 +61,11 @@ export const RecipesProvider: React.FC<{ children: React.ReactNode }> = ({ child
     } catch (error) {
       console.error('RecipesContext: Error fetching recipes:', error);
       setError('Failed to load recipes');
-      toast({
-        title: "Error",
-        description: "Failed to load recipes",
-        variant: "destructive",
-      });
+      toast.error("Failed to load recipes");
     } finally {
       setIsLoading(false);
     }
-  }, [api, toast]);
+  }, [api]);
 
   const getRecipeById = useCallback((id: string) => {
     return recipes.find(recipe => recipe.id === id);
@@ -92,14 +87,10 @@ export const RecipesProvider: React.FC<{ children: React.ReactNode }> = ({ child
       return newRecipe;
     } catch (error) {
       console.error('Error creating recipe:', error);
-      toast({
-        title: "Error",
-        description: "Failed to create recipe",
-        variant: "destructive",
-      });
+      toast.error("Failed to create recipe");
       return null;
     }
-  }, [api, toast]);
+  }, [api]);
 
   const updateRecipe = useCallback(async (id: string, recipeData: Partial<Recipe>): Promise<Recipe | null> => {
     const existingRecipe = getRecipeById(id);
@@ -115,36 +106,25 @@ export const RecipesProvider: React.FC<{ children: React.ReactNode }> = ({ child
       return updatedRecipe;
     } catch (error) {
       console.error('Error updating recipe:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update recipe",
-        variant: "destructive",
-      });
+      toast.error("Failed to update recipe");
       return null;
     }
-  }, [api, getRecipeById, toast]);
+  }, [api, getRecipeById]);
 
   const deleteRecipe = useCallback(async (id: string): Promise<boolean> => {
     try {
       const success = await api.deleteRecipe(id);
       if (success) {
         setRecipes(prev => prev.filter(recipe => recipe.id !== id));
-        toast({
-          title: "Success",
-          description: "Recipe deleted successfully",
-        });
+        toast.success("Recipe deleted successfully");
       }
       return success;
     } catch (error) {
       console.error('Error deleting recipe:', error);
-      toast({
-        title: "Error",
-        description: "Failed to delete recipe",
-        variant: "destructive",
-      });
+      toast.error("Failed to delete recipe");
       return false;
     }
-  }, [api, toast]);
+  }, [api]);
 
   const toggleFavorite = useCallback(async (id: string, isFavorite: boolean): Promise<Recipe | null> => {
     const existingRecipe = getRecipeById(id);
@@ -152,27 +132,13 @@ export const RecipesProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
     try {
       const updatedRecipe = await updateRecipe(id, { is_favorite: isFavorite });
-      
-      if (updatedRecipe) {
-        toast({
-          title: isFavorite ? "Added to Favorites" : "Removed from Favorites",
-          description: isFavorite 
-            ? `${existingRecipe.title} has been added to your favorites`
-            : `${existingRecipe.title} has been removed from your favorites`,
-        });
-      }
-      
       return updatedRecipe;
     } catch (error) {
       console.error('Error toggling favorite:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update favorite status",
-        variant: "destructive",
-      });
+      toast.error("Failed to update favorite status");
       return null;
     }
-  }, [updateRecipe, getRecipeById, toast]);
+  }, [updateRecipe, getRecipeById]);
 
   const toggleCookingStatus = useCallback(async (id: string): Promise<Recipe | null> => {
     const existingRecipe = getRecipeById(id);
@@ -186,22 +152,15 @@ export const RecipesProvider: React.FC<{ children: React.ReactNode }> = ({ child
         recipe.id === id ? updatedRecipe : recipe
       ));
 
-      toast({
-        title: "Success",
-        description: `Recipe marked as ${newCookingStatus ? 'cooked' : 'not cooked'}`,
-      });
+      toast.success(`Recipe marked as ${newCookingStatus ? 'cooked' : 'not cooked'}`);
 
       return updatedRecipe;
     } catch (error) {
       console.error('Error toggling cooking status:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update cooking status",
-        variant: "destructive",
-      });
+      toast.error("Failed to update cooking status");
       return null;
     }
-  }, [api, getRecipeById, toast]);
+  }, [api, getRecipeById]);
 
   const value: RecipesContextType = {
     recipes,

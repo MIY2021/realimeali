@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
@@ -10,6 +9,7 @@ import { useRecipes } from "@/contexts/RecipesContext";
 import { RecipeImage } from "@/components/ui/recipe-image";
 import { createRecipeUrl } from "@/utils/slugUtils";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { toast } from "sonner";
 
 interface RecipeCardProps {
   recipe: Recipe;
@@ -31,9 +31,22 @@ export function RecipeCard({ recipe, onAddToMealPlan, onRecipeClick, showActions
     
     setIsTogglingFavorite(true);
     try {
-      await toggleFavorite(recipe.id, !recipe.is_favorite);
+      const newFavoriteStatus = !recipe.is_favorite;
+      await toggleFavorite(recipe.id, newFavoriteStatus);
+      
+      // Show sonner notification
+      if (newFavoriteStatus) {
+        toast.success("Added to favorites", {
+          description: `${recipe.title} has been added to your favorites`
+        });
+      } else {
+        toast.success("Removed from favorites", {
+          description: `${recipe.title} has been removed from your favorites`
+        });
+      }
     } catch (error) {
       console.error('Failed to toggle favorite:', error);
+      toast.error("Failed to update favorite status");
     } finally {
       setIsTogglingFavorite(false);
     }
