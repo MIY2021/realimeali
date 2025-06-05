@@ -27,7 +27,7 @@ export const useRecipeApi = () => {
           if (Array.isArray(cookingStatus)) {
             hasCooked = cookingStatus.length > 0 && 
                       cookingStatus[0]?.has_cooked === true;
-          } else if (typeof cookingStatus === 'object') {
+          } else if (typeof cookingStatus === 'object' && cookingStatus !== null) {
             hasCooked = cookingStatus.has_cooked === true;
           }
         }
