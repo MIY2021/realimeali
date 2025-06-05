@@ -23,11 +23,11 @@ export const useRecipeApi = () => {
         let hasCooked = false;
         const cookingStatus = recipe.household_recipe_cooking_status;
         
-        if (cookingStatus) {
+        if (cookingStatus !== null && cookingStatus !== undefined) {
           if (Array.isArray(cookingStatus)) {
             hasCooked = cookingStatus.length > 0 && 
                       cookingStatus[0]?.has_cooked === true;
-          } else if (typeof cookingStatus === 'object' && cookingStatus !== null) {
+          } else if (typeof cookingStatus === 'object') {
             hasCooked = cookingStatus.has_cooked === true;
           }
         }
