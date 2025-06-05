@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Check, X, Eye, Link, Clock, Sparkles, Upload, ImageIcon } from "lucide-react";
+import { Check, X, Eye, Link, Clock, Sparkles, Upload, Image } from "lucide-react";
 import { CommunityRecipe } from "@/hooks/useCommunityRecipes";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -79,12 +79,12 @@ export function RecipeCard({
               )}
             </div>
           </div>
-          {/* Larger image preview for better visibility */}
+          {/* Much larger image preview for better visibility */}
           {(recipe.ai_generated_image_url || recipe.image_url) && (
             <img 
               src={recipe.ai_generated_image_url || recipe.image_url} 
               alt={recipe.title}
-              className={`${isMobile ? 'w-full h-48' : 'w-48 h-32'} object-cover rounded-md border shadow-sm`}
+              className={`${isMobile ? 'w-full h-64' : 'w-64 h-48'} object-cover rounded-md border shadow-sm`}
             />
           )}
         </div>
@@ -151,7 +151,7 @@ export function RecipeCard({
                     onClick={handleUpdateImage}
                     disabled={!uploadedFile}
                   >
-                    <ImageIcon className="h-4 w-4 mr-1" />
+                    <Image className="h-4 w-4 mr-1" />
                     Upload
                   </Button>
                 </div>

@@ -11,6 +11,7 @@ interface StoredImage {
 
 export const useImageHandling = () => {
   const { toast } = useToast();
+  const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [websiteImages, setWebsiteImages] = useState<string[]>([]);
   const [storedImages, setStoredImages] = useState<StoredImage[]>([]);
   const [isDownloadingImages, setIsDownloadingImages] = useState(false);
@@ -73,8 +74,9 @@ export const useImageHandling = () => {
     }
   };
 
-  const resetImageState = () => {
+  const resetImages = () => {
     console.log('Resetting image state');
+    setSelectedImages([]);
     setWebsiteImages([]);
     setStoredImages([]);
     setShowImageSelection(false);
@@ -93,6 +95,9 @@ export const useImageHandling = () => {
   };
 
   return {
+    selectedImages,
+    setSelectedImages,
+    resetImages,
     websiteImages,
     setWebsiteImages: setWebsiteImagesWithLogging,
     storedImages,
@@ -104,6 +109,5 @@ export const useImageHandling = () => {
     setSelectedImage,
     handleImageSelect,
     handleDownloadImages,
-    resetImageState,
   };
 };

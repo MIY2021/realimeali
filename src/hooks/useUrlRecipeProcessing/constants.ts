@@ -21,3 +21,26 @@ export const FUNNY_LOADING_MESSAGES = [
   "🎭 Rehearsing the cooking performance...",
   "🎪 Juggling ingredients with finesse..."
 ];
+
+export const SUPPORTED_DOMAINS = [
+  'allrecipes.com',
+  'food.com',
+  'foodnetwork.com',
+  'epicurious.com',
+  'bonappetit.com',
+  'delish.com',
+  'eatingwell.com',
+  'foodandwine.com',
+  'myrecipes.com',
+  'taste.com.au',
+  'bbcgoodfood.com',
+  'jamieoliver.com',
+  'nigella.com',
+  'recipetineats.com',
+  'cafedelites.com',
+  'therecipecritic.com',
+  'cookieandkate.com',
+  'minimalistbaker.com',
+  'loveandlemons.com',
+  'budgetbytes.com'
+];

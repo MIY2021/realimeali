@@ -12,20 +12,11 @@ export const useUrlRecipeProcessing = () => {
   const { toast } = useToast();
   const [url, setUrl] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [showCommunityDialog, setShowCommunityDialog] = useState(false);
+  const [parsedRecipeData, setParsedRecipeData] = useState(null);
   
-  const {
-    progress,
-    currentStep,
-    setProgress,
-    setCurrentStep,
-    resetProgress
-  } = useProgressTracking();
-
-  const {
-    selectedImages,
-    setSelectedImages,
-    resetImages
-  } = useImageHandling();
+  const progressTracking = useProgressTracking();
+  const imageHandling = useImageHandling();
 
   const handleImportFromUrl = async (
     setNewRecipe: (recipe: Omit<Recipe, 'id' | 'created_at' | 'updated_at' | 'created_by'>) => void,
@@ -54,11 +45,11 @@ export const useUrlRecipeProcessing = () => {
     }
 
     setIsProcessing(true);
-    resetProgress();
+    progressTracking.resetProgress();
     
     try {
-      setCurrentStep("Fetching recipe...");
-      setProgress(20);
+      progressTracking.setCurrentStep("Fetching recipe...");
+      progressTracking.setProgress(20);
 
       console.log('🔗 Processing URL:', url);
       
@@ -74,8 +65,8 @@ export const useUrlRecipeProcessing = () => {
         throw new Error(data?.error || 'Failed to parse recipe');
       }
 
-      setProgress(60);
-      setCurrentStep("Processing recipe data...");
+      progressTracking.setProgress(60);
+      progressTracking.setCurrentStep("Processing recipe data...");
 
       const recipeData = data.recipe;
       console.log('📄 Parsed recipe data:', recipeData);
@@ -103,17 +94,17 @@ export const useUrlRecipeProcessing = () => {
         main_ingredient: newRecipe.main_ingredient,
       };
 
-      setProgress(80);
-      setCurrentStep("Setting up recipe...");
+      progressTracking.setProgress(80);
+      progressTracking.setCurrentStep("Setting up recipe...");
 
       // Store images for selection if available
       if (data.images && data.images.length > 0) {
         console.log('🖼️ Found images:', data.images.length);
-        setSelectedImages(data.images);
+        imageHandling.setSelectedImages(data.images);
       }
 
-      setProgress(100);
-      setCurrentStep("Complete!");
+      progressTracking.setProgress(100);
+      progressTracking.setCurrentStep("Complete!");
 
       console.log('✅ Recipe imported successfully');
       setNewRecipe(transformedRecipe);
@@ -138,25 +129,50 @@ export const useUrlRecipeProcessing = () => {
       handleProcessingError(error, toast);
     } finally {
       setIsProcessing(false);
-      setTimeout(resetProgress, 2000);
+      setTimeout(progressTracking.resetProgress, 2000);
     }
   };
 
   const reset = () => {
     setUrl("");
     setIsProcessing(false);
-    resetProgress();
-    resetImages();
+    progressTracking.resetProgress();
+    imageHandling.resetImages();
   };
 
   return {
+    // URL state
     url,
     setUrl,
+    recipeUrl: url,
+    setRecipeUrl: setUrl,
+    
+    // Processing state
     isProcessing,
-    progress,
-    currentStep,
-    selectedImages,
-    setSelectedImages,
+    
+    // Progress tracking
+    progress: progressTracking.progress,
+    currentStep: progressTracking.currentStep,
+    importProgress: progressTracking.importProgress,
+    progressValue: progressTracking.progressValue,
+    
+    // Image handling
+    selectedImages: imageHandling.selectedImages,
+    setSelectedImages: imageHandling.setSelectedImages,
+    websiteImages: imageHandling.websiteImages,
+    storedImages: imageHandling.storedImages,
+    isDownloadingImages: imageHandling.isDownloadingImages,
+    showImageSelection: imageHandling.showImageSelection,
+    selectedImage: imageHandling.selectedImage,
+    handleImageSelect: imageHandling.handleImageSelect,
+    handleDownloadImages: imageHandling.handleDownloadImages,
+    
+    // Dialog state
+    showCommunityDialog,
+    setShowCommunityDialog,
+    parsedRecipeData,
+    
+    // Main functions
     handleImportFromUrl,
     reset,
   };
