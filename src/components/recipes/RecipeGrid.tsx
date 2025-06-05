@@ -34,6 +34,7 @@ export function RecipeGrid({ recipes, mobileLayout, onAddToMealPlan, onRecipeCli
           onAddToMealPlan={onAddToMealPlan ? () => onAddToMealPlan(recipe) : undefined}
           onRecipeClick={onRecipeClick ? () => onRecipeClick(recipe.id) : undefined}
           showActions={true}
+          mobileLayout={mobileLayout}
         />
       ))}
     </div>

@@ -16,9 +16,10 @@ interface RecipeCardProps {
   onAddToMealPlan?: (recipe: Recipe) => void;
   onRecipeClick?: (recipeId: string) => void;
   showActions?: boolean;
+  mobileLayout?: string;
 }
 
-export function RecipeCard({ recipe, onAddToMealPlan, onRecipeClick, showActions = true }: RecipeCardProps) {
+export function RecipeCard({ recipe, onAddToMealPlan, onRecipeClick, showActions = true, mobileLayout }: RecipeCardProps) {
   const { toggleFavorite } = useRecipes();
   const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
   const isMobile = useIsMobile();
@@ -58,6 +59,9 @@ export function RecipeCard({ recipe, onAddToMealPlan, onRecipeClick, showActions
   const capitalizeFirst = (str: string) => {
     return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
   };
+
+  // Determine if buttons should be stacked (mobile two-column layout)
+  const shouldStackButtons = isMobile && mobileLayout === '2';
 
   return (
     <Card className="bg-card rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 flex flex-col h-full">
@@ -109,12 +113,12 @@ export function RecipeCard({ recipe, onAddToMealPlan, onRecipeClick, showActions
         </div>
 
         {/* Action buttons row */}
-        <div className="flex gap-2 mt-auto">
+        <div className={`mt-auto ${shouldStackButtons ? 'flex flex-col gap-2' : 'flex gap-2'}`}>
           <Button
             asChild
             variant="outline"
             size="sm"
-            className="flex-1 text-xs px-2"
+            className={`text-xs px-2 ${shouldStackButtons ? 'w-full' : 'flex-1'}`}
           >
             <Link to={getRecipeUrl()} onClick={handleRecipeClick}>
               <Eye className="h-3 w-3 mr-1" />
@@ -127,7 +131,7 @@ export function RecipeCard({ recipe, onAddToMealPlan, onRecipeClick, showActions
             <Button
               variant="default"
               size="sm"
-              className="flex-1 text-xs px-2"
+              className={`text-xs px-2 ${shouldStackButtons ? 'w-full' : 'flex-1'}`}
               onClick={handleAddToMealPlan}
             >
               <Plus className="h-3 w-3 mr-1" />

@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,9 +30,10 @@ import { Recipe } from "@/types";
 interface RecipeListProps {
   recipes: Recipe[];
   isLoading: boolean;
+  onAddToMealPlan?: (recipe: Recipe) => void;
 }
 
-export function RecipeList({ recipes, isLoading }: RecipeListProps) {
+export function RecipeList({ recipes, isLoading, onAddToMealPlan }: RecipeListProps) {
   const {
     searchTerm,
     setSearchTerm,
@@ -273,6 +275,7 @@ export function RecipeList({ recipes, isLoading }: RecipeListProps) {
             recipes={visibleRecipes}
             mobileLayout={mobileLayout}
             onRecipeClick={handleRecipeClick}
+            onAddToMealPlan={onAddToMealPlan}
           />
           
           <div className="flex flex-col items-center gap-4 mt-6 px-4">
