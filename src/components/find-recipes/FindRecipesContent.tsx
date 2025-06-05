@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { useCommunityRecipes } from "@/hooks/useCommunityRecipes";
@@ -13,6 +14,7 @@ import { MobileLayoutSelector } from "@/components/recipes/MobileLayoutSelector"
 import { useIsMobile } from "@/hooks/use-mobile";
 import { DropdownFilterSection } from "@/components/recipes/filters/DropdownFilterSection";
 import { Link } from "react-router-dom";
+import { Heart } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -105,7 +107,8 @@ export const FindRecipesContent = () => {
   const activeFilterCount = filters.mealTypes.length + 
                            filters.cuisineRegions.length + 
                            filters.dietLifestyle.length + 
-                           filters.complexityLevels.length;
+                           filters.complexityLevels.length +
+                           (filters.showFavoritesOnly ? 1 : 0);
 
   const clearAllFilters = () => {
     handleFiltersChange({
@@ -203,8 +206,8 @@ export const FindRecipesContent = () => {
             </div>
           </div>
 
-          {/* Row 2: All filters on equal width - now 4 columns */}
-          <div className="grid grid-cols-4 gap-2">
+          {/* Row 2: All filters on equal width - wider cuisine dropdown */}
+          <div className="grid grid-cols-[1fr_1.2fr_1fr_1fr] gap-2">
             <DropdownFilterSection
               title="🕒 Meal"
               options={MEAL_TYPE_OPTIONS}
@@ -234,17 +237,26 @@ export const FindRecipesContent = () => {
             />
           </div>
 
-          {/* Clear filters link */}
-          {hasActiveFilters && (
-            <div className="text-center">
+          {/* Row 3: Favorites toggle and clear filters */}
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-2 text-sm">
+              <Heart className={`h-4 w-4 ${filters.showFavoritesOnly ? 'fill-red-500 text-red-500' : 'text-gray-500'}`} />
+              <span>Favorites only</span>
+              <Switch
+                checked={filters.showFavoritesOnly}
+                onCheckedChange={(checked) => handleFiltersChange({ ...filters, showFavoritesOnly: checked })}
+              />
+            </div>
+            
+            {hasActiveFilters && (
               <button
                 onClick={clearAllFilters}
                 className="text-sm text-muted-foreground hover:text-foreground underline"
               >
                 Clear all filters ({activeFilterCount})
               </button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       ) : (
         /* Desktop Layout */
