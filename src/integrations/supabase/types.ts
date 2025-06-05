@@ -695,6 +695,7 @@ export type Database = {
           cuisine_region: Database["public"]["Enums"]["cuisine_region"] | null
           description: string | null
           diet_lifestyle: Database["public"]["Enums"]["diet_lifestyle"][] | null
+          has_cooked: boolean
           household_id: string
           id: string
           image: string | null
@@ -723,6 +724,7 @@ export type Database = {
           diet_lifestyle?:
             | Database["public"]["Enums"]["diet_lifestyle"][]
             | null
+          has_cooked?: boolean
           household_id: string
           id?: string
           image?: string | null
@@ -753,6 +755,7 @@ export type Database = {
           diet_lifestyle?:
             | Database["public"]["Enums"]["diet_lifestyle"][]
             | null
+          has_cooked?: boolean
           household_id?: string
           id?: string
           image?: string | null
@@ -888,6 +891,10 @@ export type Database = {
       }
       toggle_recipe_cooking_status: {
         Args: { recipe_id_param: string; household_id_param: string }
+        Returns: boolean
+      }
+      toggle_recipe_cooking_status_simple: {
+        Args: { recipe_id_param: string }
         Returns: boolean
       }
     }

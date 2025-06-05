@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Recipe, MealType } from "@/types";
 
@@ -23,10 +24,13 @@ export const useRecipeApi = () => {
       
       // Transform database response to match Recipe interface
       return (data || []).map(recipe => {
+        // Use type assertion to handle the new has_cooked property
+        const recipeWithCookingStatus = recipe as any;
+        
         return {
           ...recipe,
           created_by: recipe.user_id, // Map user_id to created_by
-          has_cooked: Boolean(recipe.has_cooked || false), // Use the direct column
+          has_cooked: Boolean(recipeWithCookingStatus.has_cooked || false), // Use the direct column
           // Filter meal_type to only valid values, cast as MealType
           meal_type: VALID_MEAL_TYPES.includes(recipe.meal_type as MealType) 
             ? recipe.meal_type as MealType 
@@ -121,10 +125,13 @@ export const useRecipeApi = () => {
 
       if (error) throw error;
       
+      // Use type assertion for the response data
+      const responseData = data as any;
+      
       return {
         ...data,
         created_by: data.user_id, // Map user_id to created_by
-        has_cooked: Boolean(data.has_cooked || false), // Use the direct column
+        has_cooked: Boolean(responseData.has_cooked || false), // Use the direct column
         meal_type: VALID_MEAL_TYPES.includes(data.meal_type as MealType) 
           ? data.meal_type as MealType 
           : undefined,
@@ -153,13 +160,15 @@ export const useRecipeApi = () => {
 
   const toggleCookingStatus = async (recipeId: string): Promise<boolean> => {
     try {
-      const { data, error } = await supabase.rpc('toggle_recipe_cooking_status_simple', {
+      // Use a more generic RPC call with type assertion
+      const { data, error } = await (supabase as any).rpc('toggle_recipe_cooking_status_simple', {
         recipe_id_param: recipeId
       });
 
       if (error) throw error;
       
-      return data;
+      // Ensure we return a boolean
+      return Boolean(data);
     } catch (error) {
       console.error('Error toggling cooking status:', error);
       throw error;
