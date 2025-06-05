@@ -36,8 +36,12 @@ export function useRecipeProcessing() {
     // Image processing
     processImage: imageProcessing.processImage,
     
-    // AI generation
+    // AI generation - now properly included
     generateRecipe: aiGeneration.generateRecipe,
+    aiPrompt: aiGeneration.aiPrompt,
+    setAiPrompt: aiGeneration.setAiPrompt,
+    stylePreferences: aiGeneration.stylePreferences,
+    setStylePreferences: aiGeneration.setStylePreferences,
     
     // Combined processing state
     isProcessing: textProcessing.isProcessing || urlProcessing.isProcessing || imageProcessing.isProcessing || aiGeneration.isGenerating,

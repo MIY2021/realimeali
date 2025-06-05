@@ -1,78 +1,75 @@
 
 import { useState } from 'react';
-import { Recipe } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
-
-interface AiRecipeGenerationProps {
-  preferences?: string;
-  dietaryRestrictions?: string;
-  cookingTime?: number;
-  servings?: number;
-}
+import { toast } from 'sonner';
 
 export function useAiRecipeGeneration() {
   const [isGenerating, setIsGenerating] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [aiPrompt, setAiPrompt] = useState('');
+  const [stylePreferences, setStylePreferences] = useState<string[]>([]);
 
-  const generateRecipe = async ({ 
-    preferences = '', 
-    dietaryRestrictions = '', 
-    cookingTime = 30,
-    servings = 4 
-  }: AiRecipeGenerationProps): Promise<Omit<Recipe, 'id' | 'created_at' | 'updated_at' | 'created_by'> | null> => {
+  const generateRecipe = async (options: { prompt?: string; stylePreferences?: string[] } = {}) => {
+    const promptToUse = options.prompt || aiPrompt;
+    const stylesToUse = options.stylePreferences || stylePreferences;
+    
+    if (!promptToUse.trim()) {
+      toast.error('Please enter a recipe request');
+      return null;
+    }
+
     setIsGenerating(true);
-    setError(null);
     
     try {
-      const { data, error: functionError } = await supabase.functions.invoke('parse-recipe-ai', {
+      console.log('🤖 Generating recipe with AI:', promptToUse);
+      
+      const { data, error } = await supabase.functions.invoke('parse-recipe-ai', {
         body: {
-          prompt: `Generate a recipe with the following criteria:
-            - Preferences: ${preferences || 'Any cuisine'}
-            - Dietary restrictions: ${dietaryRestrictions || 'None'}
-            - Cooking time: approximately ${cookingTime} minutes
-            - Servings: ${servings}
-            
-            Please provide a complete recipe with title, description, ingredients list, step-by-step instructions, and estimated prep/cook times.`
+          generateRequest: promptToUse,
+          stylePreferences: stylesToUse
         }
       });
 
-      if (functionError) {
-        throw new Error(functionError.message || 'Failed to generate recipe');
+      if (error) {
+        throw error;
       }
 
-      if (!data?.recipe) {
+      if (!data?.parsedRecipe) {
         throw new Error('No recipe data received from AI');
       }
 
-      const aiRecipe = data.recipe;
+      const recipe = data.parsedRecipe;
+      console.log('✅ Recipe generated successfully:', recipe.title);
+      
+      toast.success('Recipe generated!', {
+        description: `Created "${recipe.title}" with AI assistance`
+      });
 
       // Transform the AI response to match our Recipe interface
-      const recipe: Omit<Recipe, 'id' | 'created_at' | 'updated_at' | 'created_by'> = {
-        title: aiRecipe.title || 'AI Generated Recipe',
-        description: aiRecipe.description || '',
-        ingredients: Array.isArray(aiRecipe.ingredients) ? aiRecipe.ingredients : [],
-        instructions: Array.isArray(aiRecipe.instructions) ? aiRecipe.instructions : [],
-        prep_time: aiRecipe.prep_time || 15,
-        cook_time: aiRecipe.cook_time || cookingTime,
-        servings: servings,
-        household_id: '', // Will be set when saving
+      return {
+        title: recipe.title || 'AI Generated Recipe',
+        description: recipe.description || '',
+        ingredients: recipe.ingredients || [],
+        instructions: recipe.instructions || [],
+        prep_time: recipe.prepTime || 15,
+        cook_time: recipe.cookTime || 30,
+        servings: recipe.servings || 4,
+        top_tip: recipe.topTip || 'Enjoy your AI-generated recipe!',
+        meal_type: recipe.mealType,
+        cuisine_region: recipe.cuisineRegion,
+        diet_lifestyle: recipe.dietLifestyle || [],
+        complexity_level: recipe.complexityLevel,
+        main_ingredient: recipe.mainIngredient,
+        image: undefined,
         is_favorite: false,
-        meal_type: aiRecipe.meal_type || undefined,
-        cuisine_region: aiRecipe.cuisine_region || undefined,
-        diet_lifestyle: aiRecipe.diet_lifestyle || [],
-        complexity_level: aiRecipe.complexity_level || 'quick_easy',
-        main_ingredient: aiRecipe.main_ingredient || undefined,
-        top_tip: aiRecipe.top_tip || undefined,
-        image: aiRecipe.image || undefined,
-        slug: aiRecipe.title?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || undefined
+        has_cooked: false,
+        household_id: '',
       };
 
-      return recipe;
-      
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
-      setError(errorMessage);
-      console.error('Error generating AI recipe:', err);
+    } catch (error) {
+      console.error('❌ Error generating recipe:', error);
+      toast.error('Failed to generate recipe', {
+        description: error instanceof Error ? error.message : 'Please try again'
+      });
       return null;
     } finally {
       setIsGenerating(false);
@@ -82,6 +79,9 @@ export function useAiRecipeGeneration() {
   return {
     generateRecipe,
     isGenerating,
-    error
+    aiPrompt,
+    setAiPrompt,
+    stylePreferences,
+    setStylePreferences,
   };
 }
