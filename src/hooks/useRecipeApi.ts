@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Recipe, MealType } from "@/types";
 
@@ -22,12 +21,14 @@ export const useRecipeApi = () => {
       return (data || []).map(recipe => {
         // Handle the cooking status from the joined table - it comes as an array
         let hasCooked = false;
-        if (recipe.household_recipe_cooking_status) {
-          if (Array.isArray(recipe.household_recipe_cooking_status)) {
-            hasCooked = recipe.household_recipe_cooking_status.length > 0 && 
-                      recipe.household_recipe_cooking_status[0]?.has_cooked === true;
-          } else if (recipe.household_recipe_cooking_status && typeof recipe.household_recipe_cooking_status === 'object') {
-            hasCooked = recipe.household_recipe_cooking_status.has_cooked === true;
+        const cookingStatus = recipe.household_recipe_cooking_status;
+        
+        if (cookingStatus) {
+          if (Array.isArray(cookingStatus)) {
+            hasCooked = cookingStatus.length > 0 && 
+                      cookingStatus[0]?.has_cooked === true;
+          } else if (typeof cookingStatus === 'object') {
+            hasCooked = cookingStatus.has_cooked === true;
           }
         }
 
