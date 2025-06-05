@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import { useRecipeList } from "@/hooks/useRecipeList";
 import { useScrollPosition } from "@/hooks/useScrollPosition";
 import { useNavigationState } from "@/hooks/useNavigationState";
@@ -12,6 +13,7 @@ import { RecipeFilters } from "./RecipeFilters";
 import { SimpleRecipeFiltersComponent } from "./filters/SimpleRecipeFilters";
 import { MobileLayoutSelector } from "./MobileLayoutSelector";
 import { DropdownFilterSection } from "./filters/DropdownFilterSection";
+import { Heart } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -164,8 +166,8 @@ export function RecipeList({ recipes, isLoading, onAddToMealPlan }: RecipeListPr
             </div>
           </div>
 
-          {/* Row 2: All filters on equal width */}
-          <div className="grid grid-cols-4 gap-2">
+          {/* Row 2: All filters on equal width - wider cuisine dropdown */}
+          <div className="grid grid-cols-[1fr_1.2fr_1fr_1fr] gap-2">
             <DropdownFilterSection
               title="🕒 Meal"
               options={MEAL_TYPE_OPTIONS}
@@ -197,15 +199,14 @@ export function RecipeList({ recipes, isLoading, onAddToMealPlan }: RecipeListPr
 
           {/* Row 3: Favorites toggle and clear filters */}
           <div className="flex justify-between items-center">
-            <label className="flex items-center gap-2 text-sm">
-              <input
-                type="checkbox"
+            <div className="flex items-center gap-2 text-sm">
+              <Heart className={`h-4 w-4 ${filters.showFavoritesOnly ? 'fill-red-500 text-red-500' : 'text-gray-500'}`} />
+              <span>Favorites only</span>
+              <Switch
                 checked={filters.showFavoritesOnly}
-                onChange={(e) => handleFiltersChange({ ...filters, showFavoritesOnly: e.target.checked })}
-                className="rounded"
+                onCheckedChange={(checked) => handleFiltersChange({ ...filters, showFavoritesOnly: checked })}
               />
-              ⭐ Favorites only
-            </label>
+            </div>
             
             {hasActiveFilters && (
               <button
