@@ -6,21 +6,27 @@ const VALID_MEAL_TYPES: MealType[] = ["breakfast", "lunch", "dinner", "snacks", 
 export const useRecipeApi = () => {
   const fetchRecipes = async (householdId: string): Promise<Recipe[]> => {
     try {
+      console.log('API: Fetching recipes for household:', householdId);
+      
       const { data, error } = await supabase
         .from('recipes')
         .select(`
           *,
-          household_recipe_cooking_status!left(has_cooked)
+          household_recipe_cooking_status(has_cooked)
         `)
         .eq('household_id', householdId)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('API: Supabase error:', error);
+        throw error;
+      }
+      
+      console.log('API: Raw data from Supabase:', data);
       
       // Transform database response to match Recipe interface
       return (data || []).map(recipe => {
         // Handle the cooking status from the joined table
-        // The JOIN returns an array, and we need to safely access the has_cooked property
         let hasCooked = false;
         if (recipe.household_recipe_cooking_status && 
             Array.isArray(recipe.household_recipe_cooking_status) && 
@@ -44,7 +50,7 @@ export const useRecipeApi = () => {
         };
       });
     } catch (error) {
-      console.error('Error fetching recipes:', error);
+      console.error('API: Error fetching recipes:', error);
       throw error;
     }
   };
