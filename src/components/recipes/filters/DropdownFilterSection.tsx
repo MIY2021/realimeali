@@ -8,7 +8,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ChevronDown } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 
 interface DropdownFilterSectionProps {
   title: string;
@@ -31,20 +30,22 @@ export function DropdownFilterSection({
     onToggle(value);
   };
 
+  const hasActiveFilters = selectedValues.length > 0;
+
   return (
     <div className="relative">
       <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
         <DropdownMenuTrigger asChild>
           <Button
             variant="outline"
-            className="flex items-center gap-1 w-full justify-between h-10 px-2 sm:px-3 text-xs sm:text-sm"
+            className={`flex items-center gap-1 w-full justify-between h-10 px-2 sm:px-3 text-xs sm:text-sm ${
+              hasActiveFilters 
+                ? 'text-white hover:text-white' 
+                : ''
+            }`}
+            style={hasActiveFilters ? { backgroundColor: '#81b29a' } : {}}
           >
             <span className="truncate flex-1 text-left">{title}</span>
-            {selectedValues.length > 0 && (
-              <Badge variant="secondary" className="h-4 min-w-4 flex items-center justify-center p-1 text-xs">
-                {selectedValues.length}
-              </Badge>
-            )}
             <ChevronDown className="h-3 w-3 sm:h-4 sm:w-4 opacity-50 flex-shrink-0" />
           </Button>
         </DropdownMenuTrigger>
