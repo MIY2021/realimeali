@@ -19,22 +19,8 @@ export const useRecipeApi = () => {
       
       // Transform database response to match Recipe interface
       return (data || []).map(recipe => {
-        // Handle the cooking status from the joined table - it comes as an array
-        let hasCooked = false;
-        const cookingStatus = recipe.household_recipe_cooking_status;
-        
-        // First check if cookingStatus exists and is not null
-        if (cookingStatus !== null && cookingStatus !== undefined) {
-          // Handle array case
-          if (Array.isArray(cookingStatus)) {
-            hasCooked = cookingStatus.length > 0 && 
-                      cookingStatus[0]?.has_cooked === true;
-          } 
-          // Handle object case - now TypeScript knows cookingStatus is not null
-          else if (typeof cookingStatus === 'object') {
-            hasCooked = cookingStatus.has_cooked === true;
-          }
-        }
+        // Handle the cooking status from the joined table - simplified approach
+        const hasCooked = recipe.household_recipe_cooking_status?.[0]?.has_cooked ?? false;
 
         return {
           ...recipe,
