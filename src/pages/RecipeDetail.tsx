@@ -85,7 +85,7 @@ export default function RecipeDetail() {
 
   return (
     <div className="container max-w-4xl py-8 px-6">
-      {/* Header with back button */}
+      {/* Header with back button only */}
       <div className="flex items-center justify-between mb-8">
         <Button 
           variant="ghost" 
@@ -96,13 +96,6 @@ export default function RecipeDetail() {
           <ArrowLeft className="h-4 w-4" />
           Back to Recipes
         </Button>
-        
-        <Button 
-          onClick={() => setIsAddToMealPlanOpen(true)}
-          className="bg-terracotta hover:bg-terracotta/90 text-white"
-        >
-          Add to Meal Plan
-        </Button>
       </div>
 
       {/* Use the elegant RecipeDetail component */}
@@ -111,6 +104,7 @@ export default function RecipeDetail() {
         onEdit={canEdit ? handleEdit : undefined}
         onDelete={canEdit ? handleDelete : undefined}
         isOwner={canEdit}
+        onAddToMealPlan={() => setIsAddToMealPlanOpen(true)}
       />
 
       {/* Dialogs */}

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { User, Clock, Users, Heart, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import { User, Clock, Users, Heart, MoreHorizontal, Pencil, Trash2, Plus } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,9 +20,10 @@ interface RecipeDetailProps {
   onEdit?: (recipe: Recipe) => void;
   onDelete?: () => Promise<void>;
   isOwner?: boolean;
+  onAddToMealPlan?: () => void;
 }
 
-export const RecipeDetail = ({ recipe, onEdit, onDelete, isOwner }: RecipeDetailProps) => {
+export const RecipeDetail = ({ recipe, onEdit, onDelete, isOwner, onAddToMealPlan }: RecipeDetailProps) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isTogglingCooked, setIsTogglingCooked] = useState(false);
   const { toggleFavorite, toggleCookingStatus } = useRecipes();
@@ -60,7 +61,7 @@ export const RecipeDetail = ({ recipe, onEdit, onDelete, isOwner }: RecipeDetail
   return (
     <div className="max-w-4xl mx-auto">
       {/* Hero Section with Image and Title Overlay */}
-      <div className="relative h-80 mb-8 rounded-lg overflow-hidden shadow-lg">
+      <div className="relative h-80 mb-6 rounded-lg overflow-hidden shadow-lg">
         <RecipeImage 
           recipe={recipe} 
           className="w-full h-full object-cover"
@@ -69,64 +70,6 @@ export const RecipeDetail = ({ recipe, onEdit, onDelete, isOwner }: RecipeDetail
         
         {/* Dark gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-        
-        {/* Action buttons - top right corner */}
-        <div className="absolute top-4 right-4 flex gap-2">
-          {/* Cooking Status Toggle */}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleToggleCooked}
-            disabled={isTogglingCooked}
-            className={`px-3 py-1 text-sm font-medium rounded-md transition-all duration-200 ${
-              recipe.has_cooked
-                ? 'bg-green-500/90 text-white hover:bg-green-600/90'
-                : 'bg-white/20 text-white border border-white/30 hover:bg-white/30'
-            }`}
-          >
-            <User className="h-4 w-4 mr-1" />
-            {recipe.has_cooked ? 'Cooked' : 'Mark as Cooked'}
-          </Button>
-
-          {/* Favorite button */}
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleToggleFavorite}
-            className="bg-white/20 backdrop-blur-sm border border-white/30 shadow-sm hover:bg-white/30 transition-all duration-200"
-          >
-            <Heart className={`h-6 w-6 ${recipe.is_favorite ? 'fill-red-500 text-red-500' : 'text-white'}`} />
-          </Button>
-
-          {/* Owner actions */}
-          {isOwner && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  size="icon"
-                  className="bg-white/20 backdrop-blur-sm border border-white/30 shadow-sm hover:bg-white/30 transition-all duration-200"
-                >
-                  <MoreHorizontal className="h-5 w-5 text-white" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="bg-white shadow-lg border border-gray-200">
-                <DropdownMenuItem onClick={() => onEdit?.(recipe)} className="text-gray-700 hover:bg-gray-50">
-                  <Pencil className="h-4 w-4 mr-2" />
-                  Edit Recipe
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  onClick={handleDelete}
-                  disabled={isDeleting}
-                  className="text-red-600 focus:text-red-600 hover:bg-red-50"
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  {isDeleting ? 'Deleting...' : 'Delete Recipe'}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
-        </div>
         
         {/* Title and meta info overlay - bottom */}
         <div className="absolute bottom-0 left-0 right-0 p-6">
@@ -150,6 +93,76 @@ export const RecipeDetail = ({ recipe, onEdit, onDelete, isOwner }: RecipeDetail
               </Badge>
             )}
           </div>
+        </div>
+      </div>
+
+      {/* Action buttons section - underneath the image */}
+      <div className="flex items-center justify-between mb-8 px-2">
+        <div className="flex items-center gap-3">
+          {/* Add to Meal Plan button */}
+          <Button 
+            onClick={onAddToMealPlan}
+            className="bg-terracotta hover:bg-terracotta/90 text-white"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Add to Meal Plan
+          </Button>
+
+          {/* Cooking Status Toggle */}
+          <Button
+            variant="outline"
+            onClick={handleToggleCooked}
+            disabled={isTogglingCooked}
+            className={`transition-all duration-200 ${
+              recipe.has_cooked
+                ? 'bg-green-50 border-green-200 text-green-700 hover:bg-green-100'
+                : 'hover:bg-gray-50'
+            }`}
+          >
+            <User className="h-4 w-4 mr-2" />
+            {recipe.has_cooked ? 'Cooked' : 'Mark as Cooked'}
+          </Button>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {/* Favorite button */}
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={handleToggleFavorite}
+            className="hover:bg-gray-50"
+          >
+            <Heart className={`h-5 w-5 ${recipe.is_favorite ? 'fill-red-500 text-red-500' : 'text-gray-600'}`} />
+          </Button>
+
+          {/* Owner actions */}
+          {isOwner && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button 
+                  variant="outline" 
+                  size="icon"
+                  className="hover:bg-gray-50"
+                >
+                  <MoreHorizontal className="h-5 w-5 text-gray-600" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="bg-white shadow-lg border border-gray-200">
+                <DropdownMenuItem onClick={() => onEdit?.(recipe)} className="text-gray-700 hover:bg-gray-50">
+                  <Pencil className="h-4 w-4 mr-2" />
+                  Edit Recipe
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={handleDelete}
+                  disabled={isDeleting}
+                  className="text-red-600 focus:text-red-600 hover:bg-red-50"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  {isDeleting ? 'Deleting...' : 'Delete Recipe'}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
       </div>
 
