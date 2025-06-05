@@ -50,31 +50,32 @@ export const RecipeActionButtons = ({
 
   return (
     <div className="mb-4 px-2">
-      {/* Mobile: Single row with all buttons */}
-      <div className="block sm:hidden">
-        <div className="flex gap-1">
-          {/* Add to Meal Plan button */}
-          <Button 
-            onClick={onAddToMealPlan}
-            className="bg-terracotta hover:bg-terracotta/90 text-white flex-1 text-xs px-1"
-          >
-            <Plus className="h-3 w-3 mr-1" />
-            Meal Plan
-          </Button>
-
+      {/* Mobile: Stack buttons vertically */}
+      <div className="block sm:hidden space-y-3">
+        {/* Top row - Add to Meal Plan button (full width) */}
+        <Button 
+          onClick={onAddToMealPlan}
+          className="bg-terracotta hover:bg-terracotta/90 text-white w-full"
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          Add to Meal Plan
+        </Button>
+        
+        {/* Bottom row - all buttons in a row */}
+        <div className="flex gap-2">
           {/* Cooking Status Toggle */}
           <Button
             variant="outline"
             onClick={handleToggleCooked}
             disabled={isTogglingCooked}
-            className={`transition-all duration-200 flex-1 text-xs px-1 ${
+            className={`transition-all duration-200 flex-1 ${
               recipe.has_cooked
                 ? 'bg-green-50 border-green-200 text-green-700 hover:bg-green-100'
                 : 'hover:bg-gray-50'
             }`}
           >
-            <User className="h-3 w-3 mr-1" />
-            {recipe.has_cooked ? 'Cooked' : 'Cook'}
+            <User className="h-4 w-4 mr-1" />
+            {recipe.has_cooked ? 'Cooked' : 'Mark as Cooked'}
           </Button>
 
           {/* Favorite button */}
@@ -82,9 +83,9 @@ export const RecipeActionButtons = ({
             variant="outline"
             size="icon"
             onClick={handleToggleFavorite}
-            className="hover:bg-gray-50 flex-shrink-0 h-9 w-9"
+            className="hover:bg-gray-50 flex-shrink-0"
           >
-            <Heart className={`h-4 w-4 ${recipe.is_favorite ? 'fill-red-500 text-red-500' : 'text-gray-600'}`} />
+            <Heart className={`h-5 w-5 ${recipe.is_favorite ? 'fill-red-500 text-red-500' : 'text-gray-600'}`} />
           </Button>
 
           {/* Owner actions - Edit and Delete buttons */}
@@ -94,18 +95,18 @@ export const RecipeActionButtons = ({
                 variant="outline"
                 size="icon"
                 onClick={() => onEdit?.(recipe)}
-                className="hover:bg-gray-50 flex-shrink-0 h-9 w-9"
+                className="hover:bg-gray-50 flex-shrink-0"
               >
-                <Pencil className="h-3 w-3 text-gray-600" />
+                <Pencil className="h-4 w-4 text-gray-600" />
               </Button>
               <Button
                 variant="outline"
                 size="icon"
                 onClick={handleDelete}
                 disabled={isDeleting}
-                className="hover:bg-red-50 text-red-600 border-red-200 flex-shrink-0 h-9 w-9"
+                className="hover:bg-red-50 text-red-600 border-red-200 flex-shrink-0"
               >
-                <Trash2 className="h-3 w-3" />
+                <Trash2 className="h-4 w-4" />
               </Button>
             </>
           )}
