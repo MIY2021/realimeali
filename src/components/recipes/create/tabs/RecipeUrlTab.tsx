@@ -58,10 +58,10 @@ export function RecipeUrlTab({
       {/* Helper text */}
       <div className="text-sm text-muted-foreground">
         <div className="hidden sm:block bg-blue-50 p-3 rounded-lg">
-          🔗 Import recipes from any cooking website! I'll try to automatically grab the recipe details and find photos. Works with most recipe websites and food blogs - if it doesn't work, try the "Paste Recipe Text" tab instead.
+          🔗 Import recipes from cooking websites! I'll try to automatically grab the recipe details and find photos. If it doesn't work, try the "Paste Recipe Text" tab instead.
         </div>
         <div className="sm:hidden">
-          🔗 Import recipes from any cooking website! I'll try to automatically grab the recipe details and find photos. If it doesn't work, try the "Paste Recipe Text" tab instead.
+          🔗 Import recipes from cooking websites! I'll try to automatically grab the recipe details and find photos. If it doesn't work, try the "Paste Recipe Text" tab instead.
         </div>
       </div>
       
@@ -72,11 +72,11 @@ export function RecipeUrlTab({
           type="url"
           value={recipeUrl}
           onChange={(e) => setRecipeUrl(e.target.value)}
-          placeholder="https://any-recipe-website.com/recipe/your-recipe"
+          placeholder="https://example-recipe-website.com/recipe/your-recipe"
           className="text-base p-4 h-12"
         />
         <p className="text-sm text-muted-foreground">
-          Try any recipe website! Most cooking sites and food blogs should work.
+          Enter a recipe website URL to import recipe details automatically.
         </p>
       </div>
       
