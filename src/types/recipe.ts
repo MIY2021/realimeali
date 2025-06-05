@@ -12,4 +12,5 @@ export interface RecipesContextType {
   updateRecipe: (id: string, recipe: Partial<Recipe>) => Promise<Recipe | null>;
   deleteRecipe: (id: string) => Promise<boolean>;
   toggleFavorite: (id: string, isFavorite: boolean) => Promise<Recipe | null>;
+  toggleCookingStatus: (id: string) => Promise<Recipe | null>;
 }

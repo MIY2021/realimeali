@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Heart, Eye, Plus } from "lucide-react";
+import { Heart, Eye, Plus, ChefHat } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Recipe } from "@/types";
 import { useRecipes } from "@/contexts/RecipesContext";
@@ -20,8 +20,9 @@ interface RecipeCardProps {
 }
 
 export function RecipeCard({ recipe, onAddToMealPlan, onRecipeClick, showActions = true, mobileLayout }: RecipeCardProps) {
-  const { toggleFavorite } = useRecipes();
+  const { toggleFavorite, toggleCookingStatus } = useRecipes();
   const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
+  const [isTogglingCooked, setIsTogglingCooked] = useState(false);
   const isMobile = useIsMobile();
 
   const handleToggleFavorite = async (e: React.MouseEvent) => {
@@ -35,6 +36,20 @@ export function RecipeCard({ recipe, onAddToMealPlan, onRecipeClick, showActions
       console.error('Failed to toggle favorite:', error);
     } finally {
       setIsTogglingFavorite(false);
+    }
+  };
+
+  const handleToggleCooked = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    setIsTogglingCooked(true);
+    try {
+      await toggleCookingStatus(recipe.id);
+    } catch (error) {
+      console.error('Failed to toggle cooking status:', error);
+    } finally {
+      setIsTogglingCooked(false);
     }
   };
 
@@ -106,12 +121,25 @@ export function RecipeCard({ recipe, onAddToMealPlan, onRecipeClick, showActions
           {recipe.description}
         </p>
         
-        <div className="flex items-center gap-2 mb-4">
+        <div className="flex items-center gap-2 mb-3">
           {recipe.meal_type && (
             <Badge variant="secondary">
               {capitalizeFirst(recipe.meal_type)}
             </Badge>
           )}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleToggleCooked}
+            disabled={isTogglingCooked}
+            className={`h-6 px-2 text-xs ${recipe.has_cooked 
+              ? 'bg-green-100 text-green-700 hover:bg-green-200' 
+              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            }`}
+          >
+            <ChefHat className="h-3 w-3 mr-1" />
+            {recipe.has_cooked ? 'Cooked' : 'Not Cooked'}
+          </Button>
         </div>
 
         {/* Action buttons row */}

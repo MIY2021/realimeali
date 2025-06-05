@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { User, Clock, Users, Heart, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import { User, Clock, Users, Heart, MoreHorizontal, Pencil, Trash2, ChefHat } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,7 +24,8 @@ interface RecipeDetailProps {
 
 export const RecipeDetail = ({ recipe, onEdit, onDelete, isOwner }: RecipeDetailProps) => {
   const [isDeleting, setIsDeleting] = useState(false);
-  const { toggleFavorite } = useRecipes();
+  const [isTogglingCooked, setIsTogglingCooked] = useState(false);
+  const { toggleFavorite, toggleCookingStatus } = useRecipes();
 
   const handleDelete = async () => {
     if (!onDelete) return;
@@ -39,6 +40,15 @@ export const RecipeDetail = ({ recipe, onEdit, onDelete, isOwner }: RecipeDetail
 
   const handleToggleFavorite = async () => {
     await toggleFavorite(recipe.id, !recipe.is_favorite);
+  };
+
+  const handleToggleCooked = async () => {
+    setIsTogglingCooked(true);
+    try {
+      await toggleCookingStatus(recipe.id);
+    } finally {
+      setIsTogglingCooked(false);
+    }
   };
 
   const capitalizeFirst = (str: string) => {
@@ -60,19 +70,36 @@ export const RecipeDetail = ({ recipe, onEdit, onDelete, isOwner }: RecipeDetail
         {/* Dark gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
         
-        {/* Favorite button - top right */}
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={handleToggleFavorite}
-          className="absolute top-4 right-4 bg-white/20 backdrop-blur-sm border border-white/30 shadow-sm hover:bg-white/30 transition-all duration-200"
-        >
-          <Heart className={`h-6 w-6 ${recipe.is_favorite ? 'fill-red-500 text-red-500' : 'text-white'}`} />
-        </Button>
-
         {/* Action buttons - top right corner */}
-        {isOwner && (
-          <div className="absolute top-4 right-16 flex gap-2">
+        <div className="absolute top-4 right-4 flex gap-2">
+          {/* Cooking Status Toggle */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleToggleCooked}
+            disabled={isTogglingCooked}
+            className={`px-3 py-1 text-sm font-medium rounded-md transition-all duration-200 ${
+              recipe.has_cooked
+                ? 'bg-green-500/90 text-white hover:bg-green-600/90'
+                : 'bg-white/20 text-white border border-white/30 hover:bg-white/30'
+            }`}
+          >
+            <ChefHat className="h-4 w-4 mr-1" />
+            {recipe.has_cooked ? 'Cooked' : 'Mark as Cooked'}
+          </Button>
+
+          {/* Favorite button */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleToggleFavorite}
+            className="bg-white/20 backdrop-blur-sm border border-white/30 shadow-sm hover:bg-white/30 transition-all duration-200"
+          >
+            <Heart className={`h-6 w-6 ${recipe.is_favorite ? 'fill-red-500 text-red-500' : 'text-white'}`} />
+          </Button>
+
+          {/* Owner actions */}
+          {isOwner && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button 
@@ -98,8 +125,8 @@ export const RecipeDetail = ({ recipe, onEdit, onDelete, isOwner }: RecipeDetail
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-          </div>
-        )}
+          )}
+        </div>
         
         {/* Title and meta info overlay - bottom */}
         <div className="absolute bottom-0 left-0 right-0 p-6">

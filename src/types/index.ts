@@ -20,6 +20,7 @@ export interface Recipe {
   slug?: string;
   top_tip?: string;
   main_ingredient?: MainIngredient;
+  has_cooked?: boolean; // New field to track if household has cooked this recipe
 }
 
 export interface MealPlan {

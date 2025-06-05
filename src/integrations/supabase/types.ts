@@ -378,6 +378,36 @@ export type Database = {
           },
         ]
       }
+      household_recipe_cooking_status: {
+        Row: {
+          cooked_at: string | null
+          created_at: string
+          has_cooked: boolean
+          household_id: string
+          id: string
+          recipe_id: string
+          updated_at: string
+        }
+        Insert: {
+          cooked_at?: string | null
+          created_at?: string
+          has_cooked?: boolean
+          household_id: string
+          id?: string
+          recipe_id: string
+          updated_at?: string
+        }
+        Update: {
+          cooked_at?: string | null
+          created_at?: string
+          has_cooked?: boolean
+          household_id?: string
+          id?: string
+          recipe_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       household_shopping_lists: {
         Row: {
           consolidated_quantity: number | null
@@ -854,6 +884,10 @@ export type Database = {
       }
       toggle_community_recipe_favorite: {
         Args: { recipe_id: string }
+        Returns: boolean
+      }
+      toggle_recipe_cooking_status: {
+        Args: { recipe_id_param: string; household_id_param: string }
         Returns: boolean
       }
     }

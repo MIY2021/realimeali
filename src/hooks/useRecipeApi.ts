@@ -9,7 +9,10 @@ export const useRecipeApi = () => {
     try {
       const { data, error } = await supabase
         .from('recipes')
-        .select('*')
+        .select(`
+          *,
+          household_recipe_cooking_status!left(has_cooked)
+        `)
         .eq('household_id', householdId)
         .order('created_at', { ascending: false });
 
@@ -19,6 +22,7 @@ export const useRecipeApi = () => {
       return (data || []).map(recipe => ({
         ...recipe,
         created_by: recipe.user_id, // Map user_id to created_by
+        has_cooked: recipe.household_recipe_cooking_status?.[0]?.has_cooked || false,
         // Filter meal_type to only valid values, cast as MealType
         meal_type: VALID_MEAL_TYPES.includes(recipe.meal_type as MealType) 
           ? recipe.meal_type as MealType 
@@ -73,6 +77,7 @@ export const useRecipeApi = () => {
       return {
         ...data,
         created_by: data.user_id, // Map user_id to created_by
+        has_cooked: false, // New recipes haven't been cooked yet
         meal_type: VALID_MEAL_TYPES.includes(data.meal_type as MealType) 
           ? data.meal_type as MealType 
           : undefined,
@@ -113,6 +118,7 @@ export const useRecipeApi = () => {
       return {
         ...data,
         created_by: data.user_id, // Map user_id to created_by
+        has_cooked: recipe.has_cooked, // Preserve cooking status
         meal_type: VALID_MEAL_TYPES.includes(data.meal_type as MealType) 
           ? data.meal_type as MealType 
           : undefined,
@@ -139,10 +145,27 @@ export const useRecipeApi = () => {
     }
   };
 
+  const toggleCookingStatus = async (recipeId: string, householdId: string): Promise<boolean> => {
+    try {
+      const { data, error } = await supabase.rpc('toggle_recipe_cooking_status', {
+        recipe_id_param: recipeId,
+        household_id_param: householdId
+      });
+
+      if (error) throw error;
+      
+      return data;
+    } catch (error) {
+      console.error('Error toggling cooking status:', error);
+      throw error;
+    }
+  };
+
   return {
     fetchRecipes,
     createRecipe,
     updateRecipe,
     deleteRecipe,
+    toggleCookingStatus,
   };
 };
