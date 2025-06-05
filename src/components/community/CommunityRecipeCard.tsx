@@ -71,23 +71,23 @@ export function CommunityRecipeCard({ recipe, onToggleFavorite }: CommunityRecip
             </div>
           )}
         </div>
-        <Badge
-          variant="secondary"
-          className="absolute top-2 right-2 bg-sage text-white font-semibold px-2 py-1 text-xs shadow-lg border-0"
-        >
-          External
-        </Badge>
         {onToggleFavorite && (
           <Button
             variant="ghost"
             size="icon"
             onClick={handleToggleFavorite}
             disabled={isTogglingFavorite}
-            className="absolute top-2 left-2 bg-white/80 backdrop-blur-sm border border-white/20 shadow-sm hover:bg-white/90 transition-all duration-200"
+            className="absolute top-2 right-2 bg-white/80 backdrop-blur-sm border border-white/20 shadow-sm hover:bg-white/90 transition-all duration-200"
           >
             <Heart className={`h-5 w-5 ${recipe.is_favorite ? 'fill-red-500 text-red-500' : 'text-gray-600 hover:text-red-500'}`} />
           </Button>
         )}
+        <Badge
+          variant="secondary"
+          className="absolute top-2 left-2 bg-sage text-white font-semibold px-2 py-1 text-xs shadow-lg border-0"
+        >
+          External
+        </Badge>
       </div>
       
       <CardContent className="p-4 flex-1 flex flex-col">
