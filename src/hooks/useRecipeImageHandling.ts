@@ -15,13 +15,14 @@ export function useRecipeImageHandling() {
   const handleImageChange = (
     e: React.ChangeEvent<HTMLInputElement>,
     setNewRecipe: (recipe: Omit<Recipe, 'id' | 'created_at' | 'updated_at' | 'created_by'>) => void,
+    currentRecipe: Omit<Recipe, 'id' | 'created_at' | 'updated_at' | 'created_by'>,
     handleImageSelect: (url: string) => void,
     setRecipeUrl: (url: string) => void
   ) => {
     const file = e.target.files?.[0];
     if (!file) {
       setImagePreview(null);
-      setNewRecipe(prevRecipe => ({ ...prevRecipe, image: "" }));
+      setNewRecipe({ ...currentRecipe, image: "" });
       return;
     }
 
@@ -37,7 +38,7 @@ export function useRecipeImageHandling() {
     setRecipeUrl('');
 
     // Set image in recipe state
-    setNewRecipe(prevRecipe => ({ ...prevRecipe, image: file.name }));
+    setNewRecipe({ ...currentRecipe, image: file.name });
   };
 
   const handleGenerateImage = async (
@@ -45,7 +46,8 @@ export function useRecipeImageHandling() {
     stylePreferences: string[],
     generateRecipe: any,
     searchRecipeImagesStandalone: any,
-    setNewRecipe: any
+    setNewRecipe: (recipe: Omit<Recipe, 'id' | 'created_at' | 'updated_at' | 'created_by'>) => void,
+    currentRecipe: Omit<Recipe, 'id' | 'created_at' | 'updated_at' | 'created_by'>
   ) => {
     if (!recipeTitle.trim()) {
       toast({
@@ -77,7 +79,7 @@ export function useRecipeImageHandling() {
 
       if (response?.image) {
         setGeneratedImage(response.image);
-        setNewRecipe(prevRecipe => ({ ...prevRecipe, image: response.image }));
+        setNewRecipe({ ...currentRecipe, image: response.image });
         setImagePreview(response.image);
         toast({
           title: "Image generated successfully!",

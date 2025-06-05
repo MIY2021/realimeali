@@ -4,8 +4,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RecipeUrlTab } from "./tabs/RecipeUrlTab";
 import { RecipeImageTab } from "./tabs/RecipeImageTab";
 import { RecipeAiTab } from "./tabs/RecipeAiTab";
+import { RecipeTextTab } from "./tabs/RecipeTextTab";
 import { RecipeForm } from "./RecipeForm";
-import { EnhancedImageUpload } from "./EnhancedImageUpload";
 import { useRecipeProcessing } from "@/hooks/useRecipeProcessing";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -17,7 +17,7 @@ import { useRecipeSubmissionHandler } from "./RecipeSubmissionHandler";
 export function CreateRecipeContainer() {
   useDocumentTitle("Add Recipe | RealiMeali");
   const { isLoadingMembers } = useHousehold();
-  const [activeTab, setActiveTab] = useState("manual");
+  const [activeTab, setActiveTab] = useState("url"); // Start with website import
 
   // Custom hooks for state management
   const {
@@ -92,7 +92,7 @@ export function CreateRecipeContainer() {
 
   // Wrapped handlers for the new hooks
   const wrappedHandleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    handleImageChange(e, setNewRecipe, handleImageSelect, setRecipeUrl);
+    handleImageChange(e, setNewRecipe, newRecipe, handleImageSelect, setRecipeUrl);
   };
 
   const wrappedHandleGenerateImage = () => {
@@ -101,7 +101,8 @@ export function CreateRecipeContainer() {
       stylePreferences,
       generateRecipe,
       searchRecipeImagesStandalone,
-      setNewRecipe
+      setNewRecipe,
+      newRecipe
     );
   };
 
@@ -111,6 +112,10 @@ export function CreateRecipeContainer() {
 
   const wrappedHandleShareRecipe = (recipeId: string, notes: string) => {
     handleShareRecipe(recipeId, notes, newRecipe.title);
+  };
+
+  const wrappedHandleProcessText = () => {
+    handleProcessText(setNewRecipe, newRecipe, setActiveTab, searchRecipeImagesStandalone);
   };
 
   if (isLoadingMembers) {
@@ -128,54 +133,26 @@ export function CreateRecipeContainer() {
   }
 
   return (
-    <div className="lg:flex lg:space-x-8">
-      {/* Left column: Image Upload */}
-      <div className="lg:w-1/3 mb-6 lg:mb-0">
-        <EnhancedImageUpload
-          imagePreview={imagePreview}
-          isGenerating={isGeneratingImage}
-          generationProgress={generationProgress}
-          onImageChange={wrappedHandleImageChange}
-          onGenerateImage={wrappedHandleGenerateImage}
-          recipeTitle={newRecipe.title}
-          websiteImages={websiteImages}
-          storedImages={storedImages}
-          selectedImage={selectedImage}
-          onImageSelect={handleImageSelect}
-          onDownloadImages={() => handleDownloadImages(recipeUrl)}
-          isDownloadingImages={isDownloadingImages}
-          onSearchImages={async () => {
-            if (newRecipe.title.trim()) {
-              return await searchRecipeImagesStandalone(newRecipe.title);
-            }
-            return [];
-          }}
-          isSearchingImages={isSearchingImages}
-        />
+    <div className="space-y-6">
+      {/* Page Header */}
+      <div className="text-center space-y-2">
+        <h1 className="text-3xl font-bold tracking-tight">Add Recipe</h1>
+        <p className="text-muted-foreground">
+          Import from websites, upload photos, use AI, or create manually
+        </p>
       </div>
 
-      {/* Right column: Recipe Form and Tabs */}
-      <div className="lg:w-2/3">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="manual">Manual Input</TabsTrigger>
-            <TabsTrigger value="url">Website URL</TabsTrigger>
-            <TabsTrigger value="image">Image Upload</TabsTrigger>
-            <TabsTrigger value="ai">AI Generation</TabsTrigger>
+      {/* Main Content - Single Column Layout */}
+      <div className="max-w-4xl mx-auto">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="url">Website</TabsTrigger>
+            <TabsTrigger value="image">Photo</TabsTrigger>
+            <TabsTrigger value="text">Text</TabsTrigger>
+            <TabsTrigger value="ai">AI Generate</TabsTrigger>
+            <TabsTrigger value="manual">Manual</TabsTrigger>
           </TabsList>
-          <TabsContent value="manual">
-            <RecipeForm
-              newRecipe={newRecipe}
-              setNewRecipe={setNewRecipe}
-              handleInputChange={handleInputChange}
-              handleIngredientsChange={handleIngredientsChange}
-              handleInstructionsChange={handleInstructionsChange}
-              handleSubmit={wrappedHandleSubmit}
-              setShareWithCommunity={setShareWithCommunity}
-              shareWithCommunity={shareWithCommunity}
-              handleShareRecipe={wrappedHandleShareRecipe}
-            />
-          </TabsContent>
+
           <TabsContent value="url">
             <RecipeUrlTab
               recipeUrl={recipeUrl}
@@ -196,6 +173,7 @@ export function CreateRecipeContainer() {
               showImageSelection={showImageSelection}
             />
           </TabsContent>
+
           <TabsContent value="image">
             <RecipeImageTab
               isProcessing={isProcessing}
@@ -209,6 +187,16 @@ export function CreateRecipeContainer() {
               progressValue={progressValue}
             />
           </TabsContent>
+
+          <TabsContent value="text">
+            <RecipeTextTab
+              recipeText={recipeText}
+              setRecipeText={setRecipeText}
+              isProcessing={isProcessing}
+              onProcess={wrappedHandleProcessText}
+            />
+          </TabsContent>
+
           <TabsContent value="ai">
             <RecipeAiTab
               aiPrompt={aiPrompt}
@@ -220,10 +208,42 @@ export function CreateRecipeContainer() {
               generationProgress={generationProgress}
             />
           </TabsContent>
+
+          <TabsContent value="manual">
+            <RecipeForm
+              newRecipe={newRecipe}
+              setNewRecipe={setNewRecipe}
+              handleInputChange={handleInputChange}
+              handleIngredientsChange={handleIngredientsChange}
+              handleInstructionsChange={handleInstructionsChange}
+              handleSubmit={wrappedHandleSubmit}
+              setShareWithCommunity={setShareWithCommunity}
+              shareWithCommunity={shareWithCommunity}
+              handleShareRecipe={wrappedHandleShareRecipe}
+              imagePreview={imagePreview}
+              isGeneratingImage={isGeneratingImage}
+              generationProgress={generationProgress}
+              onImageChange={wrappedHandleImageChange}
+              onGenerateImage={wrappedHandleGenerateImage}
+              websiteImages={websiteImages}
+              storedImages={storedImages}
+              selectedImage={selectedImage}
+              onImageSelect={handleImageSelect}
+              onDownloadImages={() => handleDownloadImages(recipeUrl)}
+              isDownloadingImages={isDownloadingImages}
+              onSearchImages={async () => {
+                if (newRecipe.title.trim()) {
+                  return await searchRecipeImagesStandalone(newRecipe.title);
+                }
+                return [];
+              }}
+              isSearchingImages={isSearchingImages}
+            />
+          </TabsContent>
         </Tabs>
       </div>
     </div>
   );
 }
 
-export type RecipeOrigin = 'manual' | 'url' | 'image' | 'ai';
+export type RecipeOrigin = 'manual' | 'url' | 'image' | 'ai' | 'text';
