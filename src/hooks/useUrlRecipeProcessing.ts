@@ -6,7 +6,6 @@ import { Recipe } from "@/types";
 import { useProgressTracking } from "./useUrlRecipeProcessing/useProgressTracking";
 import { useImageHandling } from "./useUrlRecipeProcessing/useImageHandling";
 import { handleProcessingError } from "./useUrlRecipeProcessing/errorHandling";
-import { SUPPORTED_DOMAINS } from "./useUrlRecipeProcessing/constants";
 
 export const useUrlRecipeProcessing = () => {
   const { toast } = useToast();
@@ -33,12 +32,13 @@ export const useUrlRecipeProcessing = () => {
       return;
     }
 
-    // Validate domain
-    const domain = new URL(url).hostname.replace('www.', '');
-    if (!SUPPORTED_DOMAINS.includes(domain)) {
+    // Basic URL validation - just check if it's a valid URL format
+    try {
+      new URL(url.trim());
+    } catch {
       toast({
-        title: "Unsupported Website",
-        description: `Sorry, we don't support recipes from ${domain} yet. Supported sites include: ${SUPPORTED_DOMAINS.join(', ')}`,
+        title: "Invalid URL",
+        description: "Please enter a valid website URL",
         variant: "destructive",
       });
       return;
@@ -54,21 +54,24 @@ export const useUrlRecipeProcessing = () => {
       console.log('🔗 Processing URL:', url);
       
       const { data, error } = await supabase.functions.invoke('parse-recipe-ai', {
-        body: { url: url.trim() },
+        body: { 
+          websiteUrl: url.trim(),
+          extractImages: true
+        },
       });
 
       if (error) {
         throw error;
       }
 
-      if (!data?.success) {
-        throw new Error(data?.error || 'Failed to parse recipe');
+      if (!data?.parsedRecipe) {
+        throw new Error('No recipe data could be extracted from this website. This might happen if:\n• The page doesn\'t contain a recipe\n• The website blocks automated access\n• The recipe format isn\'t recognized\n\nTry copying the recipe text and using the "Paste Recipe Text" tab instead.');
       }
 
       progressTracking.setProgress(60);
       progressTracking.setCurrentStep("Processing recipe data...");
 
-      const recipeData = data.recipe;
+      const recipeData = data.parsedRecipe;
       console.log('📄 Parsed recipe data:', recipeData);
 
       // Transform the data to match our Recipe interface
@@ -78,29 +81,31 @@ export const useUrlRecipeProcessing = () => {
         description: recipeData.description || "",
         ingredients: Array.isArray(recipeData.ingredients) ? recipeData.ingredients : [],
         instructions: Array.isArray(recipeData.instructions) ? recipeData.instructions : [],
-        prep_time: recipeData.prep_time || 0,
-        cook_time: recipeData.cook_time || 0,
+        prep_time: recipeData.prepTime || 0,
+        cook_time: recipeData.cookTime || 0,
         servings: recipeData.servings || 1,
-        image: recipeData.image || "",
-        top_tip: recipeData.top_tip || "",
+        top_tip: recipeData.topTip || "",
+        // Apply AI classification
+        meal_type: recipeData.mealType || newRecipe.meal_type,
+        cuisine_region: recipeData.cuisineRegion || newRecipe.cuisine_region,
+        diet_lifestyle: recipeData.dietLifestyle || newRecipe.diet_lifestyle || [],
+        complexity_level: recipeData.complexityLevel || newRecipe.complexity_level,
+        main_ingredient: recipeData.mainIngredient || newRecipe.main_ingredient,
         // Preserve any existing household_id and other fields
         household_id: newRecipe.household_id,
         is_favorite: newRecipe.is_favorite,
         has_cooked: newRecipe.has_cooked,
-        meal_type: newRecipe.meal_type,
-        cuisine_region: newRecipe.cuisine_region,
-        diet_lifestyle: newRecipe.diet_lifestyle || [],
-        complexity_level: newRecipe.complexity_level,
-        main_ingredient: newRecipe.main_ingredient,
+        image: newRecipe.image,
       };
 
       progressTracking.setProgress(80);
       progressTracking.setCurrentStep("Setting up recipe...");
 
       // Store images for selection if available
-      if (data.images && data.images.length > 0) {
-        console.log('🖼️ Found images:', data.images.length);
-        imageHandling.setSelectedImages(data.images);
+      if (data.websiteImages && data.websiteImages.length > 0) {
+        console.log('🖼️ Found images:', data.websiteImages.length);
+        imageHandling.setWebsiteImages(data.websiteImages);
+        imageHandling.setShowImageSelection(true);
       }
 
       progressTracking.setProgress(100);
@@ -117,6 +122,7 @@ export const useUrlRecipeProcessing = () => {
       
       setActiveTab("manual");
       
+      const domain = new URL(url).hostname;
       toast({
         title: "Recipe imported!",
         description: `Successfully imported "${transformedRecipe.title}" from ${domain}. Community sharing enabled by default.`,
