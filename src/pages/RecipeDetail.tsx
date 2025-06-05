@@ -68,7 +68,7 @@ export default function RecipeDetail() {
 
   if (!recipe) {
     return (
-      <div className="container max-w-4xl py-4 sm:py-8 px-4 sm:px-6">
+      <div className="container max-w-4xl py-2 sm:py-4 px-4 sm:px-6">
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4">Recipe Not Found</h1>
           <p className="text-muted-foreground mb-6">
@@ -84,9 +84,9 @@ export default function RecipeDetail() {
   }
 
   return (
-    <div className="container max-w-4xl py-2 sm:py-8 px-4 sm:px-6">
+    <div className="container max-w-4xl py-1 sm:py-4 px-4 sm:px-6">
       {/* Header with back button only */}
-      <div className="flex items-center justify-between mb-4 sm:mb-8">
+      <div className="flex items-center justify-between mb-2 sm:mb-4">
         <Button 
           variant="ghost" 
           size="sm" 
