@@ -14,7 +14,6 @@ export const useRecipeForm = () => {
     servings: 1,
     image: "",
     is_favorite: false,
-    categories: [],
     has_cooked: false,
     meal_plan_count: 0,
     top_tip: "",
@@ -44,7 +43,6 @@ export const useRecipeForm = () => {
       servings: 1,
       image: "",
       is_favorite: false,
-      categories: [],
       has_cooked: false,
       meal_plan_count: 0,
       top_tip: "",
@@ -75,6 +73,6 @@ export const useRecipeForm = () => {
     generationProgress,
     setGenerationProgress,
     resetForm,
-    supabase, // Add supabase client to the hook return
+    supabase,
   };
 };

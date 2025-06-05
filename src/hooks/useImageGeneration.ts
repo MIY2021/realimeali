@@ -10,7 +10,7 @@ export function useImageGeneration() {
     setImagePreview: (url: string) => void,
     setRecipeImage: (url: string) => void,
     setIsGeneratingImage: (loading: boolean) => void,
-    setGenerationProgress?: (progress: string) => void,
+    setGenerationProgress?: (progress: number) => void,
     description?: string
   ) => {
     if (!title.trim()) {
@@ -26,7 +26,7 @@ export function useImageGeneration() {
     
     try {
       // Step 1: Start generation
-      setGenerationProgress?.("Creating your photo-realistic recipe image...");
+      setGenerationProgress?.(10);
       
       // Create detailed prompt for photo-realistic food image
       let prompt = `Photo-realistic, professional food photography of ${title}`;
@@ -38,6 +38,8 @@ export function useImageGeneration() {
       
       // Add photography specifications
       prompt += `, beautifully plated and styled, natural lighting, appetizing presentation, high-end restaurant quality, macro food photography, vibrant colors, garnished, professional culinary styling, depth of field, 4K quality`;
+      
+      setGenerationProgress?.(50);
       
       const { data, error } = await supabase.functions.invoke('generate-recipe-image', {
         body: { 
@@ -55,7 +57,7 @@ export function useImageGeneration() {
       }
 
       // Step 3: Set the image
-      setGenerationProgress?.("Photo-realistic image generated successfully!");
+      setGenerationProgress?.(100);
       setImagePreview(data.imageUrl);
       setRecipeImage(data.imageUrl);
       
@@ -73,7 +75,7 @@ export function useImageGeneration() {
       });
     } finally {
       setIsGeneratingImage(false);
-      setGenerationProgress?.("");
+      setGenerationProgress?.(0);
     }
   };
 
