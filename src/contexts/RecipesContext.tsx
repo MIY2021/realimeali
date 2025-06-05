@@ -147,8 +147,32 @@ export const RecipesProvider: React.FC<{ children: React.ReactNode }> = ({ child
   }, [api, toast]);
 
   const toggleFavorite = useCallback(async (id: string, isFavorite: boolean): Promise<Recipe | null> => {
-    return updateRecipe(id, { is_favorite: isFavorite });
-  }, [updateRecipe]);
+    const existingRecipe = getRecipeById(id);
+    if (!existingRecipe) return null;
+
+    try {
+      const updatedRecipe = await updateRecipe(id, { is_favorite: isFavorite });
+      
+      if (updatedRecipe) {
+        toast({
+          title: isFavorite ? "Added to Favorites" : "Removed from Favorites",
+          description: isFavorite 
+            ? `${existingRecipe.title} has been added to your favorites`
+            : `${existingRecipe.title} has been removed from your favorites`,
+        });
+      }
+      
+      return updatedRecipe;
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update favorite status",
+        variant: "destructive",
+      });
+      return null;
+    }
+  }, [updateRecipe, getRecipeById, toast]);
 
   const toggleCookingStatus = useCallback(async (id: string): Promise<Recipe | null> => {
     const existingRecipe = getRecipeById(id);
