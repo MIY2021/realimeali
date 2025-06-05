@@ -78,21 +78,13 @@ export function RecipeUrlTab({
       </div>
       
       {isProcessing && importProgress && (
-        <div className="my-8 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
-          <div className="text-center space-y-4">
-            <div className="text-xl font-semibold text-blue-700 animate-pulse">
-              {importProgress}
-            </div>
-            <div className="space-y-2">
-              <Progress 
-                value={progressValue} 
-                className="w-full h-3 bg-blue-100" 
-              />
-              <div className="text-sm text-blue-600 font-medium">
-                {Math.round(progressValue)}% complete
-              </div>
-            </div>
+        <div className="space-y-3">
+          <div className="flex justify-between items-center">
+            <span className="text-sm font-medium">Processing website...</span>
+            <span className="text-sm text-muted-foreground">{Math.round(progressValue)}%</span>
           </div>
+          <Progress value={progressValue} className="w-full" />
+          <p className="text-sm text-blue-600">{importProgress}</p>
         </div>
       )}
 
