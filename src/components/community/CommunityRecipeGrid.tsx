@@ -1,7 +1,6 @@
 
 import { CommunityRecipe } from "@/hooks/useCommunityRecipes";
 import { CommunityRecipeCard } from "./CommunityRecipeCard";
-import { useCommunityRecipes } from "@/hooks/useCommunityRecipes";
 
 interface CommunityRecipeGridProps {
   recipes: CommunityRecipe[];
@@ -9,8 +8,6 @@ interface CommunityRecipeGridProps {
 }
 
 export function CommunityRecipeGrid({ recipes, mobileLayout = "1" }: CommunityRecipeGridProps) {
-  const { toggleCommunityRecipeFavorite } = useCommunityRecipes();
-
   // Determine grid layout based on screen size and mobile layout preference
   const getGridCols = () => {
     if (mobileLayout === "2") {
@@ -25,7 +22,6 @@ export function CommunityRecipeGrid({ recipes, mobileLayout = "1" }: CommunityRe
         <CommunityRecipeCard
           key={recipe.id}
           recipe={recipe}
-          onToggleFavorite={toggleCommunityRecipeFavorite}
         />
       ))}
     </div>

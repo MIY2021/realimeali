@@ -2,7 +2,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { useCommunityRecipes } from "@/hooks/useCommunityRecipes";
@@ -14,7 +13,6 @@ import { MobileLayoutSelector } from "@/components/recipes/MobileLayoutSelector"
 import { useIsMobile } from "@/hooks/use-mobile";
 import { DropdownFilterSection } from "@/components/recipes/filters/DropdownFilterSection";
 import { Link } from "react-router-dom";
-import { Heart } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -98,8 +96,7 @@ export const FindRecipesContent = () => {
   };
 
   const hasActiveFilters = Object.entries(filters).some(([key, value]) => {
-    if (key === 'searchTerm') return false;
-    if (key === 'showFavoritesOnly') return value === true;
+    if (key === 'searchTerm' || key === 'showFavoritesOnly') return false;
     if (Array.isArray(value)) return value.length > 0;
     return false;
   });
@@ -107,8 +104,7 @@ export const FindRecipesContent = () => {
   const activeFilterCount = filters.mealTypes.length + 
                            filters.cuisineRegions.length + 
                            filters.dietLifestyle.length + 
-                           filters.complexityLevels.length +
-                           (filters.showFavoritesOnly ? 1 : 0);
+                           filters.complexityLevels.length;
 
   const clearAllFilters = () => {
     handleFiltersChange({
@@ -237,17 +233,8 @@ export const FindRecipesContent = () => {
             />
           </div>
 
-          {/* Row 3: Favorites toggle and clear filters */}
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-2 text-sm">
-              <Heart className={`h-4 w-4 ${filters.showFavoritesOnly ? 'fill-red-500 text-red-500' : 'text-gray-500'}`} />
-              <span>Favorites only</span>
-              <Switch
-                checked={filters.showFavoritesOnly}
-                onCheckedChange={(checked) => handleFiltersChange({ ...filters, showFavoritesOnly: checked })}
-              />
-            </div>
-            
+          {/* Row 3: Clear filters */}
+          <div className="flex justify-end items-center">
             {hasActiveFilters && (
               <button
                 onClick={clearAllFilters}

@@ -46,7 +46,7 @@ export function useCommunityRecipeList({ recipes }: UseCommunityRecipeListProps)
     cuisineRegions: [],
     dietLifestyle: [],
     complexityLevels: [],
-    showFavoritesOnly: false,
+    showFavoritesOnly: false, // Keep this for compatibility but it won't be used
   });
 
   const filteredAndSortedRecipes = useMemo(() => {
@@ -59,11 +59,6 @@ export function useCommunityRecipeList({ recipes }: UseCommunityRecipeListProps)
         recipe.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (recipe.description && recipe.description.toLowerCase().includes(searchQuery.toLowerCase()))
       );
-    }
-
-    // Filter by favorites only
-    if (filters.showFavoritesOnly) {
-      filtered = filtered.filter(recipe => recipe.is_favorite === true);
     }
 
     // Filter by meal types (map category to meal types)

@@ -2,39 +2,21 @@
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Globe, UtensilsCrossed, Heart } from "lucide-react";
+import { Globe, UtensilsCrossed } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CommunityRecipe } from "@/hooks/useCommunityRecipes";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface CommunityRecipeCardProps {
   recipe: CommunityRecipe;
-  onToggleFavorite?: (recipeId: string, currentStatus: boolean) => Promise<boolean>;
 }
 
-export function CommunityRecipeCard({ recipe, onToggleFavorite }: CommunityRecipeCardProps) {
+export function CommunityRecipeCard({ recipe }: CommunityRecipeCardProps) {
   const isMobile = useIsMobile();
   const [imgError, setImgError] = useState(false);
-  const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
 
   const handleVisitRecipe = () => {
     window.open(recipe.source_url, '_blank');
-  };
-
-  const handleToggleFavorite = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    if (!onToggleFavorite) return;
-    
-    setIsTogglingFavorite(true);
-    try {
-      await onToggleFavorite(recipe.id, recipe.is_favorite || false);
-    } catch (error) {
-      console.error('Failed to toggle favorite:', error);
-    } finally {
-      setIsTogglingFavorite(false);
-    }
   };
 
   const capitalizeFirst = (str: string) => {
@@ -71,17 +53,6 @@ export function CommunityRecipeCard({ recipe, onToggleFavorite }: CommunityRecip
             </div>
           )}
         </div>
-        {onToggleFavorite && (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleToggleFavorite}
-            disabled={isTogglingFavorite}
-            className="absolute top-2 right-2 bg-white/80 backdrop-blur-sm border border-white/20 shadow-sm hover:bg-white/90 transition-all duration-200"
-          >
-            <Heart className={`h-5 w-5 ${recipe.is_favorite ? 'fill-red-500 text-red-500' : 'text-gray-600 hover:text-red-500'}`} />
-          </Button>
-        )}
         <Badge
           variant="secondary"
           className="absolute top-2 left-2 bg-sage text-white font-semibold px-2 py-1 text-xs shadow-lg border-0"
