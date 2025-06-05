@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { Recipe } from '@/types';
 import { useRecipeApi } from '@/hooks/useRecipeApi';
 import { useToast } from '@/hooks/use-toast';
@@ -25,8 +26,25 @@ export const RecipesProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
-  const { currentHousehold } = useHousehold();
+  const { currentHousehold, isLoadingHousehold } = useHousehold();
   const api = useRecipeApi();
+
+  // Auto-fetch recipes when household is available
+  useEffect(() => {
+    // Don't fetch if household is still loading
+    if (isLoadingHousehold) {
+      return;
+    }
+
+    // Auto-fetch recipes when a household is available
+    if (currentHousehold?.id) {
+      console.log('RecipesContext: Auto-fetching recipes for household:', currentHousehold.id);
+      fetchRecipes(currentHousehold.id);
+    } else {
+      console.log('RecipesContext: No household available, clearing recipes');
+      setRecipes([]);
+    }
+  }, [currentHousehold?.id, isLoadingHousehold]);
 
   const fetchRecipes = useCallback(async (householdId: string | null) => {
     if (!householdId) {

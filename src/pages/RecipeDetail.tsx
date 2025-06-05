@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
@@ -15,7 +16,7 @@ import { generateSlug } from "@/utils/slugUtils";
 export default function RecipeDetail() {
   const { id, slug } = useParams<{ id?: string; slug?: string }>();
   const navigate = useNavigate();
-  const { recipes, getRecipeById, deleteRecipe, updateRecipe } = useRecipes();
+  const { recipes, getRecipeById, deleteRecipe, updateRecipe, isLoading } = useRecipes();
   const { user } = useAuth();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isAddToMealPlanOpen, setIsAddToMealPlanOpen] = useState(false);
@@ -66,6 +67,36 @@ export default function RecipeDetail() {
 
   const canEdit = user && recipe && recipe.created_by === user.id;
 
+  // Show loading state while recipes are being fetched
+  if (isLoading) {
+    return (
+      <div className="container max-w-4xl py-1 sm:py-4 px-4 sm:px-6">
+        <div className="flex items-center justify-between mb-2 sm:mb-4">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => navigate("/my-recipes")}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Recipes
+          </Button>
+        </div>
+        
+        <div className="space-y-6">
+          <Skeleton className="h-64 w-full rounded-lg" />
+          <Skeleton className="h-8 w-3/4" />
+          <Skeleton className="h-20 w-full" />
+          <div className="flex gap-2">
+            <Skeleton className="h-10 w-32" />
+            <Skeleton className="h-10 w-32" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Only show "Recipe Not Found" after loading is complete and recipe is still not found
   if (!recipe) {
     return (
       <div className="container max-w-4xl py-2 sm:py-4 px-4 sm:px-6">
