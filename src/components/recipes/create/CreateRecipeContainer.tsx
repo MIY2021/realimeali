@@ -1,28 +1,45 @@
-import { useState, useCallback } from "react";
-import { RecipeForm } from "./RecipeForm";
-import { Recipe } from "@/types";
+
+import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RecipeUrlTab } from "./tabs/RecipeUrlTab";
 import { RecipeImageTab } from "./tabs/RecipeImageTab";
 import { RecipeAiTab } from "./tabs/RecipeAiTab";
-import { useRecipeProcessing } from "@/hooks/useRecipeProcessing";
-import { useToast } from "@/hooks/use-toast";
-import { useNavigate } from "react-router-dom";
-import { useCommunityRecipe } from "@/hooks/useCommunityRecipe";
+import { RecipeForm } from "./RecipeForm";
 import { EnhancedImageUpload } from "./EnhancedImageUpload";
+import { useRecipeProcessing } from "@/hooks/useRecipeProcessing";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
-import { sanitizeRecipeData } from "@/utils/contentSanitizer";
+import { useRecipeState } from "@/hooks/useRecipeState";
+import { useRecipeImageHandling } from "@/hooks/useRecipeImageHandling";
+import { useRecipeSubmissionHandler } from "./RecipeSubmissionHandler";
 
 export function CreateRecipeContainer() {
   useDocumentTitle("Add Recipe | RealiMeali");
-  const navigate = useNavigate();
-  const { toast } = useToast();
-  const { currentHousehold, isLoadingMembers } = useHousehold();
-  const { shareRecipe } = useCommunityRecipe();
+  const { isLoadingMembers } = useHousehold();
   const [activeTab, setActiveTab] = useState("manual");
-  const [shareWithCommunity, setShareWithCommunity] = useState(false);
+
+  // Custom hooks for state management
+  const {
+    newRecipe,
+    setNewRecipe,
+    shareWithCommunity,
+    setShareWithCommunity,
+    handleInputChange,
+    handleIngredientsChange,
+    handleInstructionsChange,
+  } = useRecipeState();
+
+  const {
+    imagePreview,
+    setImagePreview,
+    isGeneratingImage,
+    generationProgress,
+    handleImageChange,
+    handleGenerateImage,
+  } = useRecipeImageHandling();
+
+  const { handleSubmit, handleShareRecipe } = useRecipeSubmissionHandler();
 
   // Recipe processing hooks
   const {
@@ -56,67 +73,7 @@ export function CreateRecipeContainer() {
     progressValue,
   } = useRecipeProcessing();
 
-  // Recipe state
-  const [newRecipe, setNewRecipe] = useState<Omit<Recipe, 'id' | 'created_at' | 'updated_at' | 'created_by'>>({
-    title: "",
-    description: "",
-    ingredients: [],
-    instructions: [],
-    prep_time: 0,
-    cook_time: 0,
-    servings: 1,
-    image: "",
-    top_tip: "",
-    household_id: currentHousehold?.id || "",
-    is_favorite: false,
-    has_cooked: false,
-    meal_type: null,
-    cuisine_region: null,
-    diet_lifestyle: [],
-    complexity_level: null,
-    main_ingredient: null,
-  });
-
-  // Image generation state
-  const [generatedImage, setGeneratedImage] = useState<string | null>(null);
-  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
-  const [generationProgress, setGenerationProgress] = useState("");
-
-  // Image upload state
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
-
-  // Handlers
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setNewRecipe(prevRecipe => ({
-      ...prevRecipe,
-      [name]: value,
-    }));
-  };
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) {
-      setImagePreview(null);
-      setNewRecipe(prevRecipe => ({ ...prevRecipe, image: "" }));
-      return;
-    }
-
-    // Set image preview for display
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setImagePreview(reader.result as string);
-    };
-    reader.readAsDataURL(file);
-
-    // Clear website images and selected image
-    handleImageSelect('');
-    setRecipeUrl('');
-
-    // Set image in recipe state
-    setNewRecipe(prevRecipe => ({ ...prevRecipe, image: file.name }));
-  };
-
+  // Image upload handler
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -133,149 +90,28 @@ export function CreateRecipeContainer() {
     }
   };
 
-  const handleIngredientsChange = (ingredients: string[]) => {
-    setNewRecipe(prevRecipe => ({ ...prevRecipe, ingredients }));
+  // Wrapped handlers for the new hooks
+  const wrappedHandleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    handleImageChange(e, setNewRecipe, handleImageSelect, setRecipeUrl);
   };
 
-  const handleInstructionsChange = (instructions: string[]) => {
-    setNewRecipe(prevRecipe => ({ ...prevRecipe, instructions }));
+  const wrappedHandleGenerateImage = () => {
+    handleGenerateImage(
+      newRecipe.title,
+      stylePreferences,
+      generateRecipe,
+      searchRecipeImagesStandalone,
+      setNewRecipe
+    );
   };
 
-  const handleGenerateImage = async () => {
-    if (!newRecipe.title.trim()) {
-      toast({
-        title: "Error",
-        description: "Please enter a recipe title to generate an image",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsGeneratingImage(true);
-    setGenerationProgress("Starting AI image generation...");
-
-    try {
-      const prompt = `Generate a mouth-watering photo of ${newRecipe.title} recipe, ${stylePreferences.join(', ')}`;
-      setGenerationProgress("Crafting the perfect image prompt...");
-
-      const response = await generateRecipe({
-        prompt,
-        stylePreferences,
-        searchRecipeImages: async () => {
-          if (newRecipe.title.trim()) {
-            return await searchRecipeImagesStandalone(newRecipe.title);
-          }
-          return [];
-        }
-      });
-      setGenerationProgress("Almost there, just putting the finishing touches...");
-
-      if (response?.image) {
-        setGeneratedImage(response.image);
-        setNewRecipe(prevRecipe => ({ ...prevRecipe, image: response.image }));
-        setImagePreview(response.image);
-        toast({
-          title: "Image generated successfully!",
-          description: "Feast your eyes on this AI-generated deliciousness"
-        });
-      } else {
-        throw new Error("Failed to generate image");
-      }
-    } catch (error: any) {
-      console.error("Error generating image:", error);
-      toast({
-        title: "Image Generation Failed",
-        description: error.message || "Please try again with a different title or style",
-        variant: "destructive",
-      });
-    } finally {
-      setIsGeneratingImage(false);
-      setGenerationProgress("");
-    }
+  const wrappedHandleSubmit = (e: React.FormEvent) => {
+    handleSubmit(e, newRecipe, shareWithCommunity, setShowCommunityDialog);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!currentHousehold?.id) {
-      toast({
-        title: "No Household",
-        description: "Please create or join a household to continue.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!newRecipe.title.trim() || !newRecipe.ingredients.length || !newRecipe.instructions.length) {
-      toast({
-        title: "Missing fields",
-        description: "Please fill in all required fields.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Sanitize the recipe data
-    const sanitizedRecipe = sanitizeRecipeData(newRecipe);
-
-    try {
-      const response = await fetch('/api/recipes', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...sanitizedRecipe,
-          household_id: currentHousehold.id,
-          share_with_community: shareWithCommunity
-        }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-
-        if (shareWithCommunity) {
-          setShowCommunityDialog(true);
-        } else {
-          toast({
-            title: "Recipe created!",
-            description: `"${newRecipe.title}" has been added to your collection.`,
-          });
-          navigate(`/recipe/${data.id}`);
-        }
-      } else {
-        const errorData = await response.json();
-        throw new Error(errorData?.message || 'Failed to create recipe');
-      }
-    } catch (error: any) {
-      console.error("Error creating recipe:", error);
-      toast({
-        title: "Error creating recipe",
-        description: error.message || "Please try again.",
-        variant: "destructive",
-      });
-    }
+  const wrappedHandleShareRecipe = (recipeId: string, notes: string) => {
+    handleShareRecipe(recipeId, notes, newRecipe.title);
   };
-
-  const handleShareRecipe = useCallback(async (recipeId: string, notes: string) => {
-    try {
-      await shareRecipe(recipeId, notes);
-      toast({
-        title: "Recipe shared!",
-        description: `"${newRecipe.title}" has been shared with the community.`,
-      });
-      navigate(`/recipe/${recipeId}`);
-    } catch (error: any) {
-      console.error("Error sharing recipe:", error);
-      toast({
-        title: "Error sharing recipe",
-        description: error.message || "Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setShowCommunityDialog(false);
-    }
-  }, [newRecipe.title, navigate, shareRecipe, toast]);
 
   if (isLoadingMembers) {
     return (
@@ -299,8 +135,8 @@ export function CreateRecipeContainer() {
           imagePreview={imagePreview}
           isGenerating={isGeneratingImage}
           generationProgress={generationProgress}
-          onImageChange={handleImageChange}
-          onGenerateImage={handleGenerateImage}
+          onImageChange={wrappedHandleImageChange}
+          onGenerateImage={wrappedHandleGenerateImage}
           recipeTitle={newRecipe.title}
           websiteImages={websiteImages}
           storedImages={storedImages}
@@ -334,10 +170,10 @@ export function CreateRecipeContainer() {
               handleInputChange={handleInputChange}
               handleIngredientsChange={handleIngredientsChange}
               handleInstructionsChange={handleInstructionsChange}
-              handleSubmit={handleSubmit}
+              handleSubmit={wrappedHandleSubmit}
               setShareWithCommunity={setShareWithCommunity}
               shareWithCommunity={shareWithCommunity}
-              handleShareRecipe={handleShareRecipe}
+              handleShareRecipe={wrappedHandleShareRecipe}
             />
           </TabsContent>
           <TabsContent value="url">
@@ -379,7 +215,7 @@ export function CreateRecipeContainer() {
               setAiPrompt={setAiPrompt}
               stylePreferences={stylePreferences}
               setStylePreferences={setStylePreferences}
-              onGenerateRecipe={handleGenerateImage}
+              onGenerateRecipe={wrappedHandleGenerateImage}
               isGenerating={isGeneratingImage}
               generationProgress={generationProgress}
             />
