@@ -298,7 +298,11 @@ export function CreateRecipeContainer() {
           onImageSelect={handleImageSelect}
           onDownloadImages={handleDownloadImages}
           isDownloadingImages={isDownloadingImages}
-          onSearchImages={() => searchRecipeImagesStandalone(newRecipe.title)}
+          onSearchImages={() => {
+            if (newRecipe.title.trim()) {
+              searchRecipeImagesStandalone(newRecipe.title);
+            }
+          }}
           isSearchingImages={isSearchingImages}
         />
       </div>
@@ -348,7 +352,11 @@ export function CreateRecipeContainer() {
           <TabsContent value="image">
             <RecipeImageTab
               isProcessing={isProcessing}
-              onProcessImage={(file: File) => processImage(file, setNewRecipe, newRecipe, setActiveTab, () => searchRecipeImagesStandalone(newRecipe.title))}
+              onProcessImage={(file: File) => processImage(file, setNewRecipe, newRecipe, setActiveTab, () => {
+                if (newRecipe.title.trim()) {
+                  searchRecipeImagesStandalone(newRecipe.title);
+                }
+              })}
               importProgress={importProgress}
               progressValue={progressValue}
             />
