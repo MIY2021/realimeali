@@ -19,17 +19,25 @@ export const useRecipeApi = () => {
       if (error) throw error;
       
       // Transform database response to match Recipe interface
-      return (data || []).map(recipe => ({
-        ...recipe,
-        created_by: recipe.user_id, // Map user_id to created_by
-        has_cooked: recipe.household_recipe_cooking_status?.[0]?.has_cooked || false,
-        // Filter meal_type to only valid values, cast as MealType
-        meal_type: VALID_MEAL_TYPES.includes(recipe.meal_type as MealType) 
-          ? recipe.meal_type as MealType 
-          : undefined,
-        cuisine_region: recipe.cuisine_region as any,
-        main_ingredient: recipe.main_ingredient as any,
-      }));
+      return (data || []).map(recipe => {
+        // Handle the cooking status from the joined table
+        const cookingStatus = recipe.household_recipe_cooking_status;
+        const hasCooked = Array.isArray(cookingStatus) && cookingStatus.length > 0 
+          ? cookingStatus[0]?.has_cooked || false
+          : false;
+
+        return {
+          ...recipe,
+          created_by: recipe.user_id, // Map user_id to created_by
+          has_cooked: hasCooked,
+          // Filter meal_type to only valid values, cast as MealType
+          meal_type: VALID_MEAL_TYPES.includes(recipe.meal_type as MealType) 
+            ? recipe.meal_type as MealType 
+            : undefined,
+          cuisine_region: recipe.cuisine_region as any,
+          main_ingredient: recipe.main_ingredient as any,
+        };
+      });
     } catch (error) {
       console.error('Error fetching recipes:', error);
       throw error;
