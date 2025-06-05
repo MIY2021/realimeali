@@ -235,8 +235,8 @@ export function EnhancedImageUpload({
           >
             {isGenerating ? (
               <>
-                <Camera className="h-4 w-4 mr-2 animate-pulse" />
-                Generating...
+                <Sparkles className="h-4 w-4 mr-2 animate-spin" />
+                {generationProgress || "Generating..."}
               </>
             ) : (
               <>
@@ -246,15 +246,6 @@ export function EnhancedImageUpload({
             )}
           </Button>
         </div>
-
-        {isGenerating && generationProgress && (
-          <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-            <p className="text-sm text-blue-700 flex items-center">
-              <Sparkles className="h-4 w-4 mr-2 animate-spin" />
-              {generationProgress}
-            </p>
-          </div>
-        )}
       </div>
     );
   }
@@ -413,8 +404,8 @@ export function EnhancedImageUpload({
         >
           {isGenerating ? (
             <>
-              <Camera className="h-4 w-4 mr-2 animate-pulse" />
-              Generating...
+              <Sparkles className="h-4 w-4 mr-2 animate-spin" />
+              {generationProgress || "Generating..."}
             </>
           ) : (
             <>
@@ -424,15 +415,6 @@ export function EnhancedImageUpload({
           )}
         </Button>
       </div>
-
-      {isGenerating && generationProgress && (
-        <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-          <p className="text-sm text-blue-700 flex items-center">
-            <Sparkles className="h-4 w-4 mr-2 animate-spin" />
-            {generationProgress}
-          </p>
-        </div>
-      )}
 
       <p className="text-xs text-gray-500">
         💡 Tip: High-quality images make your recipes more appealing and easier to follow.

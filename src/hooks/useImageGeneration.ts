@@ -1,6 +1,7 @@
 
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { FUNNY_LOADING_MESSAGES } from "./useUrlRecipeProcessing/constants";
 
 export function useImageGeneration() {
   const { toast } = useToast();
@@ -10,7 +11,7 @@ export function useImageGeneration() {
     setImagePreview: (url: string) => void,
     setRecipeImage: (url: string) => void,
     setIsGeneratingImage: (loading: boolean) => void,
-    setGenerationProgress?: (progress: number) => void,
+    setGenerationProgress?: (progress: string) => void,
     description?: string
   ) => {
     if (!title.trim()) {
@@ -25,8 +26,16 @@ export function useImageGeneration() {
     setIsGeneratingImage(true);
     
     try {
-      // Step 1: Start generation
-      setGenerationProgress?.(10);
+      // Start the funny loading animation
+      const shuffledMessages = [...FUNNY_LOADING_MESSAGES].sort(() => Math.random() - 0.5);
+      let messageIndex = 0;
+      
+      const progressInterval = setInterval(() => {
+        if (messageIndex < shuffledMessages.length) {
+          setGenerationProgress?.(shuffledMessages[messageIndex]);
+          messageIndex++;
+        }
+      }, 800);
       
       // Create new hyper-realistic prompt that strictly uses title and description
       let prompt = `Generate a hyper-realistic, top-down food photograph of the recipe described in the provided title and description only: "${title}"`;
@@ -39,8 +48,6 @@ export function useImageGeneration() {
       // Add the new detailed instructions
       prompt += `. Do not invent ingredients or styling outside what's described. Use natural lighting with soft shadows and realistic textures. Plate the dish in a ceramic or rustic-style plate or bowl. Garnish only with ingredients specifically mentioned or clearly implied in the description. The background should vary between images (e.g., linen, wood, stone, concrete) but always remain clean and natural. Include minimal, relevant props (e.g., a fork, a napkin, or a wedge of cheese) only if they are contextually appropriate. The result must look like a professional, real-life food photograph with no digital or artificial appearance. Do not use imaginary or stylized elements. Use only the provided title and description as the source of truth for what the image contains.`;
       
-      setGenerationProgress?.(50);
-      
       const { data, error } = await supabase.functions.invoke('generate-recipe-image', {
         body: { 
           prompt: prompt
@@ -51,13 +58,15 @@ export function useImageGeneration() {
         throw error;
       }
 
-      // Step 2: Check for proper response structure
+      // Check for proper response structure
       if (!data?.imageUrl) {
         throw new Error('No image received from AI generation');
       }
 
-      // Step 3: Set the image
-      setGenerationProgress?.(100);
+      // Clear the progress animation and complete
+      clearInterval(progressInterval);
+      setGenerationProgress?.("✨ Image generated successfully!");
+      
       setImagePreview(data.imageUrl);
       setRecipeImage(data.imageUrl);
       
@@ -65,6 +74,11 @@ export function useImageGeneration() {
         title: "Image Generated!",
         description: "Hyper-realistic recipe image has been generated and saved successfully!",
       });
+
+      // Reset progress after a delay
+      setTimeout(() => {
+        setGenerationProgress?.("");
+      }, 2000);
 
     } catch (error) {
       console.error("Error generating image:", error);
@@ -75,7 +89,6 @@ export function useImageGeneration() {
       });
     } finally {
       setIsGeneratingImage(false);
-      setGenerationProgress?.(0);
     }
   };
 
