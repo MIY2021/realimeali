@@ -1,4 +1,3 @@
-
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -81,9 +80,11 @@ export function RecipeManualTab({
   };
 
   const handleUrlImageSelect = (url: string) => {
+    console.log('🖼️ URL image selected in manual tab:', url);
     if (onImageSelect) {
       onImageSelect(url);
     }
+    // Apply the selected image to the recipe data
     setNewRecipe({ ...newRecipe, image: url });
   };
 

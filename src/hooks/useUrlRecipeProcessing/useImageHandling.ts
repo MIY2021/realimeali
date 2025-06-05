@@ -19,7 +19,7 @@ export const useImageHandling = () => {
   const [selectedImage, setSelectedImage] = useState("");
 
   const handleImageSelect = (imageUrl: string) => {
-    console.log('Image selected:', imageUrl);
+    console.log('🖼️ Image selected:', imageUrl);
     setSelectedImage(imageUrl);
   };
 
@@ -35,7 +35,7 @@ export const useImageHandling = () => {
 
     setIsDownloadingImages(true);
     try {
-      console.log('Downloading images from website...');
+      console.log('📥 Downloading images from website...');
       
       const { data, error } = await supabase.functions.invoke('parse-recipe-ai', {
         body: { 
@@ -63,7 +63,7 @@ export const useImageHandling = () => {
         });
       }
     } catch (error) {
-      console.error('Error downloading images:', error);
+      console.error('❌ Error downloading images:', error);
       toast({
         title: "Download Failed",
         description: "Failed to download images. Please try again.",
@@ -75,7 +75,7 @@ export const useImageHandling = () => {
   };
 
   const resetImages = () => {
-    console.log('Resetting image state');
+    console.log('🔄 Resetting image state');
     setSelectedImages([]);
     setWebsiteImages([]);
     setStoredImages([]);
@@ -85,13 +85,18 @@ export const useImageHandling = () => {
 
   // Add debug logging when state changes
   const setWebsiteImagesWithLogging = (images: string[]) => {
-    console.log('Setting website images:', images);
+    console.log('📋 Setting website images:', images);
     setWebsiteImages(images);
   };
 
   const setStoredImagesWithLogging = (images: StoredImage[]) => {
-    console.log('Setting stored images:', images);
+    console.log('💾 Setting stored images:', images);
     setStoredImages(images);
+  };
+
+  const setSelectedImageWithLogging = (imageUrl: string) => {
+    console.log('🎯 Setting selected image:', imageUrl);
+    setSelectedImage(imageUrl);
   };
 
   return {
@@ -106,7 +111,7 @@ export const useImageHandling = () => {
     showImageSelection,
     setShowImageSelection,
     selectedImage,
-    setSelectedImage,
+    setSelectedImage: setSelectedImageWithLogging,
     handleImageSelect,
     handleDownloadImages,
   };

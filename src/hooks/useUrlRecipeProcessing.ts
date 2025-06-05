@@ -47,10 +47,10 @@ export const useUrlRecipeProcessing = () => {
     setIsProcessing(true);
     progressTracking.resetProgress();
     
+    // Start the funny loading animation
+    const progressInterval = progressTracking.startProgressAnimation();
+    
     try {
-      progressTracking.setCurrentStep("Fetching recipe...");
-      progressTracking.setProgress(20);
-
       console.log('🔗 Processing URL:', url);
       
       const { data, error } = await supabase.functions.invoke('parse-recipe-ai', {
@@ -68,8 +68,9 @@ export const useUrlRecipeProcessing = () => {
         throw new Error('No recipe data could be extracted from this website. This might happen if:\n• The page doesn\'t contain a recipe\n• The website blocks automated access\n• The recipe format isn\'t recognized\n\nTry copying the recipe text and using the "Paste Recipe Text" tab instead.');
       }
 
-      progressTracking.setProgress(60);
-      progressTracking.setCurrentStep("Processing recipe data...");
+      // Clear the progress animation and complete
+      clearInterval(progressInterval);
+      progressTracking.completeProgress();
 
       const recipeData = data.parsedRecipe;
       console.log('📄 Parsed recipe data:', recipeData);
@@ -98,18 +99,18 @@ export const useUrlRecipeProcessing = () => {
         image: newRecipe.image,
       };
 
-      progressTracking.setProgress(80);
-      progressTracking.setCurrentStep("Setting up recipe...");
-
       // Store images for selection if available
       if (data.websiteImages && data.websiteImages.length > 0) {
         console.log('🖼️ Found images:', data.websiteImages.length);
         imageHandling.setWebsiteImages(data.websiteImages);
         imageHandling.setShowImageSelection(true);
+        
+        // Auto-select the first image and apply it to the recipe
+        const firstImage = data.websiteImages[0];
+        imageHandling.setSelectedImage(firstImage);
+        transformedRecipe.image = firstImage;
+        console.log('🎯 Auto-selected first image:', firstImage);
       }
-
-      progressTracking.setProgress(100);
-      progressTracking.setCurrentStep("Complete!");
 
       console.log('✅ Recipe imported successfully');
       setNewRecipe(transformedRecipe);
@@ -132,6 +133,7 @@ export const useUrlRecipeProcessing = () => {
       setUrl("");
       
     } catch (error) {
+      clearInterval(progressInterval);
       handleProcessingError(error, toast);
     } finally {
       setIsProcessing(false);
