@@ -54,7 +54,10 @@ export const useUrlRecipeProcessing = () => {
       console.log('🔗 Processing URL:', url);
       
       const { data, error } = await supabase.functions.invoke('parse-recipe-ai', {
-        body: { url: url.trim() },
+        body: { 
+          websiteUrl: url.trim(),
+          extractImages: true 
+        },
       });
 
       if (error) {
@@ -68,7 +71,7 @@ export const useUrlRecipeProcessing = () => {
       progressTracking.setProgress(60);
       progressTracking.setCurrentStep("Processing recipe data...");
 
-      const recipeData = data.recipe;
+      const recipeData = data.parsedRecipe;
       console.log('📄 Parsed recipe data:', recipeData);
 
       // Transform the data to match our Recipe interface
@@ -99,8 +102,8 @@ export const useUrlRecipeProcessing = () => {
 
       // Store images for selection if available
       if (data.images && data.images.length > 0) {
-        console.log('🖼️ Found images:', data.images.length);
-        imageHandling.setSelectedImages(data.images);
+        console.log('🖼️ Found images from website:', data.images.length);
+        imageHandling.setWebsiteImages(data.images);
       }
 
       progressTracking.setProgress(100);
@@ -160,12 +163,15 @@ export const useUrlRecipeProcessing = () => {
     selectedImages: imageHandling.selectedImages,
     setSelectedImages: imageHandling.setSelectedImages,
     websiteImages: imageHandling.websiteImages,
+    searchedImages: imageHandling.searchedImages,
     storedImages: imageHandling.storedImages,
     isDownloadingImages: imageHandling.isDownloadingImages,
+    isSearchingImages: imageHandling.isSearchingImages,
     showImageSelection: imageHandling.showImageSelection,
     selectedImage: imageHandling.selectedImage,
     handleImageSelect: imageHandling.handleImageSelect,
     handleDownloadImages: imageHandling.handleDownloadImages,
+    searchRecipeImages: imageHandling.searchRecipeImages,
     
     // Dialog state
     showCommunityDialog,
