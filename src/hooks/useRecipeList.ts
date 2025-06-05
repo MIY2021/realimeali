@@ -20,6 +20,7 @@ export function useRecipeList({ recipes }: UseRecipeListProps) {
     dietLifestyle: [],
     complexityLevels: [],
     showFavoritesOnly: false,
+    showNotCookedOnly: false,
   });
 
   const filteredAndSortedRecipes = useMemo(() => {
@@ -40,6 +41,11 @@ export function useRecipeList({ recipes }: UseRecipeListProps) {
     // Filter by favourites only
     if (filters.showFavoritesOnly) {
       filtered = filtered.filter(recipe => recipe.is_favorite);
+    }
+
+    // Filter by not cooked only
+    if (filters.showNotCookedOnly) {
+      filtered = filtered.filter(recipe => !recipe.has_cooked);
     }
 
     // Filter by meal types

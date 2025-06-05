@@ -13,7 +13,7 @@ import { RecipeFilters } from "./RecipeFilters";
 import { SimpleRecipeFiltersComponent } from "./filters/SimpleRecipeFilters";
 import { MobileLayoutSelector } from "./MobileLayoutSelector";
 import { DropdownFilterSection } from "./filters/DropdownFilterSection";
-import { Heart } from "lucide-react";
+import { Heart, ChefHat } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -94,7 +94,7 @@ export function RecipeList({ recipes, isLoading, onAddToMealPlan }: RecipeListPr
 
   const hasActiveFilters = Object.entries(filters).some(([key, value]) => {
     if (key === 'searchTerm') return false;
-    if (key === 'showFavoritesOnly') return value === true;
+    if (key === 'showFavoritesOnly' || key === 'showNotCookedOnly') return value === true;
     if (Array.isArray(value)) return value.length > 0;
     return false;
   });
@@ -103,7 +103,8 @@ export function RecipeList({ recipes, isLoading, onAddToMealPlan }: RecipeListPr
                            filters.cuisineRegions.length + 
                            filters.dietLifestyle.length + 
                            filters.complexityLevels.length + 
-                           (filters.showFavoritesOnly ? 1 : 0);
+                           (filters.showFavoritesOnly ? 1 : 0) +
+                           (filters.showNotCookedOnly ? 1 : 0);
 
   const clearAllFilters = () => {
     handleFiltersChange({
@@ -113,6 +114,7 @@ export function RecipeList({ recipes, isLoading, onAddToMealPlan }: RecipeListPr
       dietLifestyle: [],
       complexityLevels: [],
       showFavoritesOnly: false,
+      showNotCookedOnly: false,
     });
   };
 
@@ -197,15 +199,25 @@ export function RecipeList({ recipes, isLoading, onAddToMealPlan }: RecipeListPr
             />
           </div>
 
-          {/* Row 3: Favorites toggle and clear filters */}
+          {/* Row 3: Favorites and Not Cooked toggles and clear filters */}
           <div className="flex justify-between items-center">
-            <div className="flex items-center gap-2 text-sm">
-              <Heart className={`h-4 w-4 ${filters.showFavoritesOnly ? 'fill-red-500 text-red-500' : 'text-gray-500'}`} />
-              <span>Favorites only</span>
-              <Switch
-                checked={filters.showFavoritesOnly}
-                onCheckedChange={(checked) => handleFiltersChange({ ...filters, showFavoritesOnly: checked })}
-              />
+            <div className="flex items-center gap-4 text-sm">
+              <div className="flex items-center gap-2">
+                <Heart className={`h-4 w-4 ${filters.showFavoritesOnly ? 'fill-red-500 text-red-500' : 'text-gray-500'}`} />
+                <span>Favorites</span>
+                <Switch
+                  checked={filters.showFavoritesOnly}
+                  onCheckedChange={(checked) => handleFiltersChange({ ...filters, showFavoritesOnly: checked })}
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <ChefHat className={`h-4 w-4 ${filters.showNotCookedOnly ? 'text-orange-500' : 'text-gray-500'}`} />
+                <span>Not Cooked</span>
+                <Switch
+                  checked={filters.showNotCookedOnly}
+                  onCheckedChange={(checked) => handleFiltersChange({ ...filters, showNotCookedOnly: checked })}
+                />
+              </div>
             </div>
             
             {hasActiveFilters && (

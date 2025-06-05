@@ -20,11 +20,14 @@ export const useRecipeApi = () => {
       
       // Transform database response to match Recipe interface
       return (data || []).map(recipe => {
-        // Handle the cooking status from the joined table
-        const cookingStatus = recipe.household_recipe_cooking_status;
-        const hasCooked = Array.isArray(cookingStatus) && cookingStatus.length > 0 
-          ? cookingStatus[0]?.has_cooked || false
-          : false;
+        // Handle the cooking status from the joined table - it comes as an array
+        let hasCooked = false;
+        if (recipe.household_recipe_cooking_status) {
+          if (Array.isArray(recipe.household_recipe_cooking_status)) {
+            hasCooked = recipe.household_recipe_cooking_status.length > 0 && 
+                      recipe.household_recipe_cooking_status[0]?.has_cooked === true;
+          }
+        }
 
         return {
           ...recipe,

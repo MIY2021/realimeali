@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { FilterHeader } from "./FilterHeader";
 import { DropdownFilterSection } from "./DropdownFilterSection";
-import { Heart } from "lucide-react";
+import { Heart, ChefHat } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
   MealType,
@@ -26,6 +26,7 @@ export interface SimpleRecipeFilters {
   dietLifestyle: DietLifestyle[];
   complexityLevels: ComplexityLevel[];
   showFavoritesOnly: boolean;
+  showNotCookedOnly: boolean;
 }
 
 interface SimpleRecipeFiltersProps {
@@ -47,7 +48,7 @@ export function SimpleRecipeFiltersComponent({
   
   const hasActiveFilters = Object.entries(filters).some(([key, value]) => {
     if (key === 'searchTerm') return false; // Don't count search term
-    if (key === 'showFavoritesOnly') return value === true;
+    if (key === 'showFavoritesOnly' || key === 'showNotCookedOnly') return value === true;
     if (Array.isArray(value)) return value.length > 0;
     return false;
   });
@@ -56,7 +57,8 @@ export function SimpleRecipeFiltersComponent({
                            filters.cuisineRegions.length + 
                            filters.dietLifestyle.length + 
                            filters.complexityLevels.length +
-                           (filters.showFavoritesOnly ? 1 : 0);
+                           (filters.showFavoritesOnly ? 1 : 0) +
+                           (filters.showNotCookedOnly ? 1 : 0);
 
   const clearAllFilters = () => {
     onFiltersChange({
@@ -66,6 +68,7 @@ export function SimpleRecipeFiltersComponent({
       dietLifestyle: [],
       complexityLevels: [],
       showFavoritesOnly: false,
+      showNotCookedOnly: false,
     });
   };
 
@@ -83,6 +86,10 @@ export function SimpleRecipeFiltersComponent({
 
   const toggleFavorites = () => {
     updateFilter('showFavoritesOnly', !filters.showFavoritesOnly);
+  };
+
+  const toggleNotCooked = () => {
+    updateFilter('showNotCookedOnly', !filters.showNotCookedOnly);
   };
 
   // If alwaysVisible is true, render without card wrapper and header
@@ -105,13 +112,22 @@ export function SimpleRecipeFiltersComponent({
           />
 
           {isMobile && (
-            <div className="flex items-center gap-2 px-3 py-2 border rounded-md bg-background">
-              <Heart className={`h-4 w-4 ${filters.showFavoritesOnly ? "fill-red-500 text-red-500" : "text-gray-500"}`} />
-              <Switch
-                checked={filters.showFavoritesOnly}
-                onCheckedChange={toggleFavorites}
-              />
-            </div>
+            <>
+              <div className="flex items-center gap-2 px-3 py-2 border rounded-md bg-background">
+                <Heart className={`h-4 w-4 ${filters.showFavoritesOnly ? "fill-red-500 text-red-500" : "text-gray-500"}`} />
+                <Switch
+                  checked={filters.showFavoritesOnly}
+                  onCheckedChange={toggleFavorites}
+                />
+              </div>
+              <div className="flex items-center gap-2 px-3 py-2 border rounded-md bg-background">
+                <ChefHat className={`h-4 w-4 ${filters.showNotCookedOnly ? "text-orange-500" : "text-gray-500"}`} />
+                <Switch
+                  checked={filters.showNotCookedOnly}
+                  onCheckedChange={toggleNotCooked}
+                />
+              </div>
+            </>
           )}
 
           <DropdownFilterSection
@@ -129,14 +145,24 @@ export function SimpleRecipeFiltersComponent({
           />
 
           {!isMobile && (
-            <div className="flex items-center gap-2 px-3 py-2 border rounded-md bg-background min-w-[140px]">
-              <Heart className={`h-4 w-4 ${filters.showFavoritesOnly ? "fill-red-500 text-red-500" : "text-gray-500"}`} />
-              <span className="text-sm">Favourites Only</span>
-              <Switch
-                checked={filters.showFavoritesOnly}
-                onCheckedChange={toggleFavorites}
-              />
-            </div>
+            <>
+              <div className="flex items-center gap-2 px-3 py-2 border rounded-md bg-background min-w-[140px]">
+                <Heart className={`h-4 w-4 ${filters.showFavoritesOnly ? "fill-red-500 text-red-500" : "text-gray-500"}`} />
+                <span className="text-sm">Favourites Only</span>
+                <Switch
+                  checked={filters.showFavoritesOnly}
+                  onCheckedChange={toggleFavorites}
+                />
+              </div>
+              <div className="flex items-center gap-2 px-3 py-2 border rounded-md bg-background min-w-[140px]">
+                <ChefHat className={`h-4 w-4 ${filters.showNotCookedOnly ? "text-orange-500" : "text-gray-500"}`} />
+                <span className="text-sm">Not Cooked Only</span>
+                <Switch
+                  checked={filters.showNotCookedOnly}
+                  onCheckedChange={toggleNotCooked}
+                />
+              </div>
+            </>
           )}
         </div>
         {hasActiveFilters && (
@@ -212,6 +238,15 @@ export function SimpleRecipeFiltersComponent({
             <Switch
               checked={filters.showFavoritesOnly}
               onCheckedChange={toggleFavorites}
+            />
+          </div>
+
+          <div className="flex items-center gap-2 px-3 py-2 border rounded-md bg-background min-w-[140px]">
+            <ChefHat className={`h-4 w-4 ${filters.showNotCookedOnly ? "text-orange-500" : "text-gray-500"}`} />
+            <span className="text-sm">Not Cooked Only</span>
+            <Switch
+              checked={filters.showNotCookedOnly}
+              onCheckedChange={toggleNotCooked}
             />
           </div>
         </div>
