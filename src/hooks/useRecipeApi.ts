@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Recipe, MealType } from "@/types";
 
@@ -26,6 +25,8 @@ export const useRecipeApi = () => {
           if (Array.isArray(recipe.household_recipe_cooking_status)) {
             hasCooked = recipe.household_recipe_cooking_status.length > 0 && 
                       recipe.household_recipe_cooking_status[0]?.has_cooked === true;
+          } else if (typeof recipe.household_recipe_cooking_status === 'object') {
+            hasCooked = recipe.household_recipe_cooking_status.has_cooked === true;
           }
         }
 
