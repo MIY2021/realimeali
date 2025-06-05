@@ -2,6 +2,7 @@
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 import { Sparkles } from "lucide-react";
 
 interface RecipeGenerateTabProps {
@@ -11,6 +12,7 @@ interface RecipeGenerateTabProps {
   setStylePreferences: (preferences: string[]) => void;
   isProcessing: boolean;
   generationProgress: string;
+  progressValue: number;
   onGenerate: () => void;
 }
 
@@ -27,6 +29,7 @@ export function RecipeGenerateTab({
   setStylePreferences, 
   isProcessing,
   generationProgress,
+  progressValue,
   onGenerate 
 }: RecipeGenerateTabProps) {
   const toggleStyle = (styleId: string) => {
@@ -79,6 +82,22 @@ export function RecipeGenerateTab({
           </div>
         </div>
       </div>
+
+      {/* Progress display - identical to image import */}
+      {isProcessing && (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-muted-foreground">Generating recipe...</span>
+            <span className="text-muted-foreground">{Math.round(progressValue)}%</span>
+          </div>
+          <Progress value={progressValue} className="w-full" />
+          {generationProgress && (
+            <p className="text-sm text-blue-600 font-medium">
+              {generationProgress}
+            </p>
+          )}
+        </div>
+      )}
       
       <div className="flex justify-end">
         <Button

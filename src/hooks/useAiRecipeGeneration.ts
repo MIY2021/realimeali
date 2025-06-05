@@ -9,6 +9,7 @@ export function useAiRecipeGeneration() {
   const [aiPrompt, setAiPrompt] = useState('');
   const [stylePreferences, setStylePreferences] = useState<string[]>([]);
   const [generationProgress, setGenerationProgress] = useState<string>('');
+  const [progressValue, setProgressValue] = useState(0);
 
   const generateRecipe = async (options: { prompt?: string; stylePreferences?: string[] } = {}) => {
     const promptToUse = options.prompt || aiPrompt;
@@ -20,15 +21,22 @@ export function useAiRecipeGeneration() {
     }
 
     setIsGenerating(true);
+    setProgressValue(0);
     
     try {
       console.log('🤖 Generating recipe with AI:', promptToUse);
       
-      // Start the funny loading animation
+      // Start the progress animation identical to image import
       const shuffledMessages = [...FUNNY_LOADING_MESSAGES].sort(() => Math.random() - 0.5);
       let messageIndex = 0;
+      let currentProgress = 0;
       
       const progressInterval = setInterval(() => {
+        // Update progress smoothly
+        currentProgress = Math.min(currentProgress + Math.random() * 15 + 5, 85);
+        setProgressValue(currentProgress);
+        
+        // Update funny messages
         if (messageIndex < shuffledMessages.length) {
           setGenerationProgress(shuffledMessages[messageIndex]);
           messageIndex++;
@@ -56,7 +64,8 @@ export function useAiRecipeGeneration() {
       const recipe = data.parsedRecipe;
       console.log('✅ Recipe generated successfully:', recipe.title);
       
-      // Set completion message
+      // Complete progress identical to image import
+      setProgressValue(100);
       setGenerationProgress("✨ Recipe generated successfully!");
       
       toast.success('Recipe generated!', {
@@ -66,6 +75,7 @@ export function useAiRecipeGeneration() {
       // Reset progress after a delay
       setTimeout(() => {
         setGenerationProgress("");
+        setProgressValue(0);
       }, 2000);
 
       // Transform the AI response to match our Recipe interface
@@ -91,6 +101,8 @@ export function useAiRecipeGeneration() {
 
     } catch (error) {
       console.error('❌ Error generating recipe:', error);
+      setGenerationProgress("");
+      setProgressValue(0);
       toast.error('Failed to generate recipe', {
         description: error instanceof Error ? error.message : 'Please try again'
       });
@@ -109,5 +121,6 @@ export function useAiRecipeGeneration() {
     setStylePreferences,
     generationProgress,
     setGenerationProgress,
+    progressValue,
   };
 }
