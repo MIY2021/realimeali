@@ -23,11 +23,15 @@ export const useRecipeApi = () => {
         let hasCooked = false;
         const cookingStatus = recipe.household_recipe_cooking_status;
         
+        // First check if cookingStatus exists and is not null
         if (cookingStatus !== null && cookingStatus !== undefined) {
+          // Handle array case
           if (Array.isArray(cookingStatus)) {
             hasCooked = cookingStatus.length > 0 && 
                       cookingStatus[0]?.has_cooked === true;
-          } else if (typeof cookingStatus === 'object' && cookingStatus !== null) {
+          } 
+          // Handle object case - now TypeScript knows cookingStatus is not null
+          else if (typeof cookingStatus === 'object') {
             hasCooked = cookingStatus.has_cooked === true;
           }
         }
