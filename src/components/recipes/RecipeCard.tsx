@@ -140,8 +140,8 @@ export function RecipeCard({ recipe, onAddToMealPlan, onRecipeClick, showActions
               : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
             }`}
           >
-            <User className={`${isCompactLayout ? 'h-2 w-2 mr-0.5' : 'h-3 w-3 mr-1'}`} />
-            {recipe.has_cooked ? 'Cooked' : (isCompactLayout ? 'Not' : 'Not Cooked')}
+            {!isCompactLayout && <User className="h-3 w-3 mr-1" />}
+            {recipe.has_cooked ? 'Cooked' : (isCompactLayout ? 'Not Cooked' : 'Not Cooked')}
           </Button>
         </div>
 
