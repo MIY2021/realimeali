@@ -123,21 +123,23 @@ export function useCommunityRecipes() {
 
       if (error) throw error;
 
-      // Update the local state
+      const newFavoriteStatus = data; // The function returns the new status
+
+      // Update the local state immediately
       setRecipes(prev => prev.map(recipe => 
         recipe.id === recipeId 
-          ? { ...recipe, is_favorite: !currentFavoriteStatus }
+          ? { ...recipe, is_favorite: newFavoriteStatus }
           : recipe
       ));
 
       toast({
-        title: !currentFavoriteStatus ? "Added to Favorites" : "Removed from Favorites",
-        description: !currentFavoriteStatus 
+        title: newFavoriteStatus ? "Added to Favorites" : "Removed from Favorites",
+        description: newFavoriteStatus 
           ? "Recipe added to your favorites" 
           : "Recipe removed from your favorites",
       });
 
-      return !currentFavoriteStatus;
+      return newFavoriteStatus;
     } catch (error) {
       console.error('Error toggling community recipe favorite:', error);
       toast({
