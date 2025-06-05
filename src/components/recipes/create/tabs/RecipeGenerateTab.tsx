@@ -2,7 +2,7 @@
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Sparkles } from "lucide-react";
 
 interface RecipeGenerateTabProps {
   aiPrompt: string;
@@ -10,6 +10,7 @@ interface RecipeGenerateTabProps {
   stylePreferences: string[];
   setStylePreferences: (preferences: string[]) => void;
   isProcessing: boolean;
+  generationProgress: string;
   onGenerate: () => void;
 }
 
@@ -24,7 +25,8 @@ export function RecipeGenerateTab({
   setAiPrompt, 
   stylePreferences, 
   setStylePreferences, 
-  isProcessing, 
+  isProcessing,
+  generationProgress,
   onGenerate 
 }: RecipeGenerateTabProps) {
   const toggleStyle = (styleId: string) => {
@@ -84,7 +86,17 @@ export function RecipeGenerateTab({
           disabled={!aiPrompt.trim() || isProcessing}
           className="bg-blue-600 hover:bg-blue-700"
         >
-          {isProcessing ? "Generating..." : "Generate Recipe"}
+          {isProcessing ? (
+            <>
+              <Sparkles className="h-4 w-4 mr-2 animate-spin" />
+              {generationProgress || "Generating..."}
+            </>
+          ) : (
+            <>
+              <Sparkles className="h-4 w-4 mr-2" />
+              Generate Recipe
+            </>
+          )}
         </Button>
       </div>
     </div>

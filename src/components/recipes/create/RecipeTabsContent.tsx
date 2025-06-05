@@ -1,4 +1,3 @@
-
 import { TabsContent } from "@/components/ui/tabs";
 import { RecipeTextTab } from "./tabs/RecipeTextTab";
 import { RecipeUrlTab } from "./tabs/RecipeUrlTab";
@@ -75,6 +74,7 @@ export function RecipeTabsContent({
           stylePreferences={recipeProcessingHook.stylePreferences}
           setStylePreferences={recipeProcessingHook.setStylePreferences}
           isProcessing={recipeProcessingHook.isProcessing}
+          generationProgress={recipeProcessingHook.aiGenerationProgress}
           onGenerate={onGenerateRecipe}
         />
       </TabsContent>

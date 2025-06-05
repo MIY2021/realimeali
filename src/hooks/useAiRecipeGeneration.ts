@@ -2,11 +2,13 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { FUNNY_LOADING_MESSAGES } from './useUrlRecipeProcessing/constants';
 
 export function useAiRecipeGeneration() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [aiPrompt, setAiPrompt] = useState('');
   const [stylePreferences, setStylePreferences] = useState<string[]>([]);
+  const [generationProgress, setGenerationProgress] = useState<string>('');
 
   const generateRecipe = async (options: { prompt?: string; stylePreferences?: string[] } = {}) => {
     const promptToUse = options.prompt || aiPrompt;
@@ -22,12 +24,26 @@ export function useAiRecipeGeneration() {
     try {
       console.log('🤖 Generating recipe with AI:', promptToUse);
       
+      // Start the funny loading animation
+      const shuffledMessages = [...FUNNY_LOADING_MESSAGES].sort(() => Math.random() - 0.5);
+      let messageIndex = 0;
+      
+      const progressInterval = setInterval(() => {
+        if (messageIndex < shuffledMessages.length) {
+          setGenerationProgress(shuffledMessages[messageIndex]);
+          messageIndex++;
+        }
+      }, 800);
+      
       const { data, error } = await supabase.functions.invoke('parse-recipe-ai', {
         body: {
           generateRequest: promptToUse,
           stylePreferences: stylesToUse
         }
       });
+
+      // Clear the progress animation
+      clearInterval(progressInterval);
 
       if (error) {
         throw error;
@@ -40,9 +56,17 @@ export function useAiRecipeGeneration() {
       const recipe = data.parsedRecipe;
       console.log('✅ Recipe generated successfully:', recipe.title);
       
+      // Set completion message
+      setGenerationProgress("✨ Recipe generated successfully!");
+      
       toast.success('Recipe generated!', {
         description: `Created "${recipe.title}" with AI assistance`
       });
+
+      // Reset progress after a delay
+      setTimeout(() => {
+        setGenerationProgress("");
+      }, 2000);
 
       // Transform the AI response to match our Recipe interface
       return {
@@ -83,5 +107,7 @@ export function useAiRecipeGeneration() {
     setAiPrompt,
     stylePreferences,
     setStylePreferences,
+    generationProgress,
+    setGenerationProgress,
   };
 }

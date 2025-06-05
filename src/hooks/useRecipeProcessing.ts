@@ -40,6 +40,7 @@ export function useRecipeProcessing() {
     setAiPrompt: aiGeneration.setAiPrompt,
     stylePreferences: aiGeneration.stylePreferences,
     setStylePreferences: aiGeneration.setStylePreferences,
+    aiGenerationProgress: aiGeneration.generationProgress,
     
     // Combined processing state and progress
     isProcessing: textProcessing.isProcessing || urlProcessing.isProcessing || imageProcessing.isProcessing || aiGeneration.isGenerating,

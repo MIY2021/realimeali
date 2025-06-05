@@ -27,7 +27,7 @@ export const useRecipeForm = () => {
   const [shareWithCommunity, setShareWithCommunity] = useState(false);
   const [imagePreview, setImagePreview] = useState<string>("");
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
-  const [generationProgress, setGenerationProgress] = useState(0);
+  const [generationProgress, setGenerationProgress] = useState<string>("");
 
   const resetForm = () => {
     setNewRecipe({
@@ -52,7 +52,7 @@ export const useRecipeForm = () => {
     setShareWithCommunity(false);
     setImagePreview("");
     setIsGeneratingImage(false);
-    setGenerationProgress(0);
+    setGenerationProgress("");
   };
 
   return {
