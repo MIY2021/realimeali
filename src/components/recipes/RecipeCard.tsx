@@ -62,6 +62,8 @@ export function RecipeCard({ recipe, onAddToMealPlan, onRecipeClick, showActions
 
   // Determine if buttons should be stacked (mobile two-column layout)
   const shouldStackButtons = isMobile && mobileLayout === '2';
+  // Determine if we should hide description (mobile two-column layout)
+  const shouldHideDescription = isMobile && mobileLayout === '2';
 
   return (
     <Card className="bg-card rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 flex flex-col h-full">
@@ -86,23 +88,25 @@ export function RecipeCard({ recipe, onAddToMealPlan, onRecipeClick, showActions
       
       <CardContent className="p-4 flex-1 flex flex-col">
         <Link to={getRecipeUrl()} onClick={handleRecipeClick}>
-          <h3 className="text-lg font-semibold text-gray-900 mb-2 hover:text-primary transition-colors">
+          <h3 className={`font-semibold text-gray-900 mb-2 hover:text-primary transition-colors ${shouldHideDescription ? 'text-base' : 'text-lg'}`}>
             {recipe.title}
           </h3>
         </Link>
-        <p 
-          className="text-sm text-gray-600 mb-3 flex-1"
-          style={{
-            display: '-webkit-box',
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: 'vertical',
-            overflow: 'hidden',
-            lineHeight: '1.4em',
-            maxHeight: '2.8em'
-          }}
-        >
-          {recipe.description}
-        </p>
+        {!shouldHideDescription && (
+          <p 
+            className="text-sm text-gray-600 mb-3 flex-1"
+            style={{
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+              lineHeight: '1.4em',
+              maxHeight: '2.8em'
+            }}
+          >
+            {recipe.description}
+          </p>
+        )}
         
         <div className="flex items-center gap-2 mb-4">
           {recipe.meal_type && (
