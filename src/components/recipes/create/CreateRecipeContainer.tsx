@@ -7,21 +7,19 @@ import { RecipeImageTab } from "./tabs/RecipeImageTab";
 import { RecipeAiTab } from "./tabs/RecipeAiTab";
 import { useRecipeProcessing } from "@/hooks/useRecipeProcessing";
 import { useToast } from "@/hooks/use-toast";
-import { useRouter } from "next/navigation";
-import { useUser } from "@clerk/nextjs";
+import { useNavigate } from "react-router-dom";
 import { useCommunityRecipe } from "@/hooks/useCommunityRecipe";
 import { EnhancedImageUpload } from "./EnhancedImageUpload";
-import { useHousehold } from "@/hooks/useHousehold";
+import { useHousehold } from "@/contexts/HouseholdContext";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { sanitizeRecipeData } from "@/utils/contentSanitizer";
 
 export function CreateRecipeContainer() {
   useDocumentTitle("Add Recipe | RealiMeali");
-  const router = useRouter();
+  const navigate = useNavigate();
   const { toast } = useToast();
-  const { user } = useUser();
-  const { householdId, isLoading: isHouseholdLoading } = useHousehold();
+  const { householdId, isLoadingMembers } = useHousehold();
   const { shareRecipe } = useCommunityRecipe();
   const [activeTab, setActiveTab] = useState("manual");
   const [shareWithCommunity, setShareWithCommunity] = useState(false);
@@ -176,21 +174,26 @@ export function CreateRecipeContainer() {
     setGenerationProgress("Starting AI image generation...");
 
     try {
-      const prompt = `Generate a mouth-watering photo of ${newRecipe.title} recipe, ${stylePreferences}`;
+      const prompt = `Generate a mouth-watering photo of ${newRecipe.title} recipe, ${stylePreferences.join(', ')}`;
       setGenerationProgress("Crafting the perfect image prompt...");
 
-      const response = await generateRecipe(prompt);
+      const response = await generateRecipe({
+        prompt,
+        stylePreferences,
+        searchRecipeImages: searchRecipeImagesStandalone
+      });
       setGenerationProgress("Almost there, just putting the finishing touches...");
 
-      if (response?.image_url) {
-        setGeneratedImage(response.image_url);
-        setNewRecipe(prevRecipe => ({ ...prevRecipe, image: response.image_url }));
-        setImagePreview(response.image_url);
-        toast.success("Image generated successfully!", {
+      if (response?.image) {
+        setGeneratedImage(response.image);
+        setNewRecipe(prevRecipe => ({ ...prevRecipe, image: response.image }));
+        setImagePreview(response.image);
+        toast({
+          title: "Image generated successfully!",
           description: "Feast your eyes on this AI-generated deliciousness"
         });
       } else {
-        throw new Error(response?.error || "Failed to generate image");
+        throw new Error("Failed to generate image");
       }
     } catch (error: any) {
       console.error("Error generating image:", error);
@@ -207,15 +210,6 @@ export function CreateRecipeContainer() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!user) {
-      toast({
-        title: "Not authenticated",
-        description: "You must be logged in to create a recipe.",
-        variant: "destructive",
-      });
-      return;
-    }
 
     if (!householdId) {
       toast({
@@ -247,7 +241,6 @@ export function CreateRecipeContainer() {
         body: JSON.stringify({
           ...sanitizedRecipe,
           household_id: householdId,
-          created_by: user.id,
           share_with_community: shareWithCommunity
         }),
       });
@@ -262,7 +255,7 @@ export function CreateRecipeContainer() {
             title: "Recipe created!",
             description: `"${newRecipe.title}" has been added to your collection.`,
           });
-          router.push(`/recipe/${data.id}`);
+          navigate(`/recipe/${data.id}`);
         }
       } else {
         const errorData = await response.json();
@@ -279,22 +272,13 @@ export function CreateRecipeContainer() {
   };
 
   const handleShareRecipe = useCallback(async (recipeId: string, notes: string) => {
-    if (!user) {
-      toast({
-        title: "Not authenticated",
-        description: "You must be logged in to share a recipe.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     try {
       await shareRecipe(recipeId, notes);
       toast({
         title: "Recipe shared!",
         description: `"${newRecipe.title}" has been shared with the community.`,
       });
-      router.push(`/recipe/${recipeId}`);
+      navigate(`/recipe/${recipeId}`);
     } catch (error: any) {
       console.error("Error sharing recipe:", error);
       toast({
@@ -305,9 +289,9 @@ export function CreateRecipeContainer() {
     } finally {
       setShowCommunityDialog(false);
     }
-  }, [newRecipe.title, router, shareRecipe, toast, user]);
+  }, [newRecipe.title, navigate, shareRecipe, toast]);
 
-  if (isHouseholdLoading) {
+  if (isLoadingMembers) {
     return (
       <div className="space-y-4">
         <Skeleton className="h-10 w-[200px]" />
@@ -336,7 +320,7 @@ export function CreateRecipeContainer() {
           storedImages={storedImages}
           selectedImage={selectedImage}
           onImageSelect={handleImageSelect}
-          onDownloadImages={handleDownloadImages}
+          onDownloadImages={() => handleDownloadImages()}
           isDownloadingImages={isDownloadingImages}
           onSearchImages={searchRecipeImagesStandalone}
           isSearchingImages={isSearchingImages}
@@ -384,14 +368,17 @@ export function CreateRecipeContainer() {
               storedImages={storedImages}
               selectedImage={selectedImage}
               onImageSelect={handleImageSelect}
-              onDownloadImages={handleDownloadImages}
+              onDownloadImages={() => handleDownloadImages()}
               isDownloadingImages={isDownloadingImages}
               showImageSelection={showImageSelection}
             />
           </TabsContent>
           <TabsContent value="image">
             <RecipeImageTab
-              onImageUpload={handleImageUpload}
+              isProcessing={isProcessing}
+              onProcessImage={(file: File) => processImage(file, setNewRecipe, newRecipe, setActiveTab, searchRecipeImagesStandalone)}
+              importProgress={importProgress}
+              progressValue={progressValue}
             />
           </TabsContent>
           <TabsContent value="ai">
@@ -410,3 +397,7 @@ export function CreateRecipeContainer() {
     </div>
   );
 }
+
+export type RecipeOrigin = 'manual' | 'url' | 'image' | 'ai';
+
+export { CreateRecipeContainer };
