@@ -259,14 +259,33 @@ async function extractWebsiteContent(url: string, extractImages: boolean = false
   }
 }
 
-// OpenAI API call without flex processing
-async function callOpenAI(systemPrompt: string, userPrompt: string) {
+// OpenAI API call for recipe parsing
+async function callOpenAI(systemPrompt: string, userPrompt: string, imageData?: string) {
+  const messages = [
+    { role: 'system', content: systemPrompt }
+  ];
+
+  if (imageData) {
+    // Use GPT-4o for vision capabilities
+    messages.push({
+      role: 'user',
+      content: [
+        { type: 'text', text: userPrompt },
+        {
+          type: 'image_url',
+          image_url: {
+            url: `data:image/jpeg;base64,${imageData}`
+          }
+        }
+      ]
+    });
+  } else {
+    messages.push({ role: 'user', content: userPrompt });
+  }
+
   const requestBody = {
-    model: 'gpt-4o-mini',
-    messages: [
-      { role: 'system', content: systemPrompt },
-      { role: 'user', content: userPrompt }
-    ],
+    model: imageData ? 'gpt-4o' : 'gpt-4o-mini',
+    messages,
     temperature: 0.3,
     max_tokens: 2000,
   };
@@ -420,6 +439,57 @@ Return ONLY valid JSON. No explanations.`;
 
       userPrompt = `Parse this recipe text and classify it:\n\n${body.recipeText}`;
       
+    } else if (body.image && body.mimeType) {
+      // Handle image processing with OCR
+      console.log('Processing image with OCR:', body.mimeType);
+      
+      systemPrompt = `You are a recipe parsing assistant with vision capabilities. Read and extract recipe information from the provided image and classify it across 6 dimensions.
+
+CRITICAL: You MUST carefully examine ingredients for meat content. If ANY meat (beef, pork, lamb, chicken, turkey, fish, seafood, etc.) is present, the recipe CANNOT be classified as "vegetarian" or "vegan". Be extremely careful about this classification.
+
+Return a JSON object with this EXACT structure:
+{
+  "title": "Recipe name",
+  "description": "Brief description (1-2 sentences)",
+  "ingredients": ["ingredient 1", "ingredient 2"],
+  "instructions": ["step 1", "step 2"],
+  "topTip": "One helpful cooking tip",
+  "prepTime": 15,
+  "cookTime": 30,
+  "servings": 4,
+  "classification": {
+    "mealType": "dinner",
+    "cuisineRegion": "italian", 
+    "cookingMethod": "oven_baked",
+    "dietLifestyle": [],
+    "complexityLevel": "standard",
+    "mainIngredient": "pasta"
+  }
+}
+
+Classification rules:
+- mealType: breakfast, lunch, dinner, snacks, sides, desserts, drinks, sauces_dips, soups_stews, salads, baking_breads
+- cuisineRegion: british, american, italian, french, mexican, indian, chinese, japanese, thai, mediterranean, middle_eastern, african, korean, caribbean, nordic, eastern_european  
+- cookingMethod: one_pot, oven_baked, air_fryer, slow_cooker, pressure_cooker, bbq_grilled, stir_fried, roasted, raw_no_cook
+- dietLifestyle: ONLY include if 100% certain - check ALL ingredients carefully for meat/dairy/gluten: vegetarian, vegan, pescatarian, gluten_free, dairy_free, low_carb_keto, high_protein, paleo, diabetic_friendly, budget_meals, kid_friendly, pregnancy_safe
+- complexityLevel: quick_easy, standard, complex
+- mainIngredient: MUST be one of these EXACT values: chicken, beef, pork, lamb, fish, tofu_tempeh, eggs, cheese, pasta, rice, lentils_beans, vegetables, potatoes, fruit, nuts_seeds, chocolate
+
+IMPORTANT: For mainIngredient, if the primary ingredient doesn't match exactly, choose the closest match:
+- Hot dogs/sausages → pork (or beef if beef hot dogs)
+- Seafood/shellfish → fish
+- Any beans/legumes → lentils_beans
+- Mixed vegetables → vegetables
+- Bread/flour items → pasta (closest grain option)
+- Dairy items → cheese
+- Nuts or seeds → nuts_seeds
+
+If you detect ANY meat ingredients (ground beef, mince, chicken, etc.), do NOT include "vegetarian" in dietLifestyle array. Leave dietLifestyle empty if unsure.
+
+Return ONLY valid JSON. No explanations.`;
+
+      userPrompt = `Please read this recipe image and extract all the recipe information including title, ingredients, instructions, cooking times, and servings. Look carefully for all text in the image, including handwritten notes, printed text, or any recipe details visible in the photo.`;
+      
     } else if (body.generateRequest) {
       // AI recipe generation
       console.log('Generating recipe with AI for:', body.generateRequest);
@@ -452,7 +522,7 @@ Classification rules:
 - mealType: breakfast, lunch, dinner, snacks, sides, desserts, drinks, sauces_dips, soups_stews, salads, baking_breads
 - cuisineRegion: british, american, italian, french, mexican, indian, chinese, japanese, thai, mediterranean, middle_eastern, african, korean, caribbean, nordic, eastern_european
 - cookingMethod: one_pot, oven_baked, air_fryer, slow_cooker, pressure_cooker, bbq_grilled, stir_fried, roasted, raw_no_cook  
-- dietLifestyle: ONLY include if 100% certain - check ALL ingredients carefully for meat/dairy/gluten: vegetarian, vegan, pescatarian, gluten_free, dairy_free, low_carb_keto, high_protein, paleo, diabetic_friendly, budget_meals, kid_friendly, pregnancy_safe
+- dietLifestyle: ONLY include if if 100% certain - check ALL ingredients carefully for meat/dairy/gluten: vegetarian, vegan, pescatarian, gluten_free, dairy_free, low_carb_keto, high_protein, paleo, diabetic_friendly, budget_meals, kid_friendly, pregnancy_safe
 - complexityLevel: quick_easy, standard, complex
 - mainIngredient: MUST be one of these EXACT values: chicken, beef, pork, lamb, fish, tofu_tempeh, eggs, cheese, pasta, rice, lentils_beans, vegetables, potatoes, fruit, nuts_seeds, chocolate
 
@@ -486,11 +556,11 @@ Create realistic recipes with proper ingredient amounts and detailed cooking ste
       userPrompt = `Generate a recipe for: ${generationPrompt}`;
       
     } else {
-      throw new Error('Missing required parameters. Provide websiteUrl, recipeText, or generateRequest.');
+      throw new Error('Missing required parameters. Provide websiteUrl, recipeText, image with mimeType, or generateRequest.');
     }
 
     // Make OpenAI API call with retry logic
-    const data = await callOpenAI(systemPrompt, userPrompt);
+    const data = await callOpenAI(systemPrompt, userPrompt, body.image);
     const content_text = data.choices[0].message.content;
 
     console.log('OpenAI response received, parsing JSON...');
@@ -525,15 +595,23 @@ Create realistic recipes with proper ingredient amounts and detailed cooking ste
         websiteImagesFound: websiteImages.length
       });
 
-      // Return response with images if they were extracted
-      const response = { 
-        parsedRecipe: cleanedRecipe,
-        ...(websiteImages.length > 0 && { websiteImages })
-      };
+      // Return response based on request type
+      if (body.image && body.mimeType) {
+        // For image processing, return the recipe data
+        return new Response(JSON.stringify({ recipe: cleanedRecipe }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      } else {
+        // For other requests, return parsedRecipe format
+        const response = { 
+          parsedRecipe: cleanedRecipe,
+          ...(websiteImages.length > 0 && { websiteImages })
+        };
 
-      return new Response(JSON.stringify(response), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+        return new Response(JSON.stringify(response), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
 
     } catch (parseError) {
       console.error('JSON parsing failed:', parseError);

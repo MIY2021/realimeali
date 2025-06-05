@@ -63,6 +63,8 @@ export function RecipeTabsContent({
         <RecipeImageTab
           isProcessing={recipeProcessingHook.isProcessing}
           onProcessImage={onProcessImage}
+          importProgress={recipeProcessingHook.importProgress}
+          progressValue={recipeProcessingHook.progressValue}
         />
       </TabsContent>
 

@@ -25,8 +25,6 @@ export function useRecipeProcessing() {
     showCommunityDialog: urlProcessing.showCommunityDialog,
     setShowCommunityDialog: urlProcessing.setShowCommunityDialog,
     parsedRecipeData: urlProcessing.parsedRecipeData,
-    importProgress: urlProcessing.importProgress,
-    progressValue: urlProcessing.progressValue,
     showImageSelection: urlProcessing.showImageSelection,
     selectedImage: urlProcessing.selectedImage,
     handleImportFromUrl: urlProcessing.handleImportFromUrl,
@@ -36,14 +34,18 @@ export function useRecipeProcessing() {
     // Image processing
     processImage: imageProcessing.processImage,
     
-    // AI generation - now properly included
+    // AI generation
     generateRecipe: aiGeneration.generateRecipe,
     aiPrompt: aiGeneration.aiPrompt,
     setAiPrompt: aiGeneration.setAiPrompt,
     stylePreferences: aiGeneration.stylePreferences,
     setStylePreferences: aiGeneration.setStylePreferences,
     
-    // Combined processing state
+    // Combined processing state and progress
     isProcessing: textProcessing.isProcessing || urlProcessing.isProcessing || imageProcessing.isProcessing || aiGeneration.isGenerating,
+    
+    // Progress tracking - prioritize specific processing type progress
+    importProgress: imageProcessing.isProcessing ? imageProcessing.importProgress : urlProcessing.importProgress,
+    progressValue: imageProcessing.isProcessing ? imageProcessing.progressValue : urlProcessing.progressValue,
   };
 }

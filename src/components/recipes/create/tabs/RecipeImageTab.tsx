@@ -3,13 +3,21 @@ import { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 
 interface RecipeImageTabProps {
   isProcessing: boolean;
   onProcessImage: (file: File) => void;
+  importProgress?: string;
+  progressValue?: number;
 }
 
-export function RecipeImageTab({ isProcessing, onProcessImage }: RecipeImageTabProps) {
+export function RecipeImageTab({ 
+  isProcessing, 
+  onProcessImage, 
+  importProgress = "", 
+  progressValue = 0 
+}: RecipeImageTabProps) {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -45,6 +53,7 @@ export function RecipeImageTab({ isProcessing, onProcessImage }: RecipeImageTabP
           accept="image/*"
           onChange={handleFileChange}
           className="text-base p-4 h-12"
+          disabled={isProcessing}
         />
         {uploadedFile && (
           <div className="space-y-3">
@@ -57,6 +66,22 @@ export function RecipeImageTab({ isProcessing, onProcessImage }: RecipeImageTabP
           </div>
         )}
       </div>
+
+      {/* Progress display */}
+      {isProcessing && (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-muted-foreground">Processing image...</span>
+            <span className="text-muted-foreground">{Math.round(progressValue)}%</span>
+          </div>
+          <Progress value={progressValue} className="w-full" />
+          {importProgress && (
+            <p className="text-sm text-blue-600 font-medium">
+              {importProgress}
+            </p>
+          )}
+        </div>
+      )}
       
       <div className="flex justify-end">
         <Button
@@ -64,7 +89,7 @@ export function RecipeImageTab({ isProcessing, onProcessImage }: RecipeImageTabP
           disabled={!uploadedFile || isProcessing}
           className="bg-blue-600 hover:bg-blue-700"
         >
-          {isProcessing ? "Processing..." : "Process Image"}
+          {isProcessing ? "Importing..." : "Import Recipe"}
         </Button>
       </div>
     </div>
