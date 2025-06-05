@@ -37,11 +37,7 @@ export function CreateRecipeContainer() {
       recipeFormHook.setImagePreview,
       (url: string) => recipeFormHook.setNewRecipe({ ...recipeFormHook.newRecipe, image: url }),
       recipeFormHook.setIsGeneratingImage,
-      (progress: string) => {
-        // Convert string progress to appropriate format for the form hook
-        // If it contains a percentage, we could extract it, but for now just use the string
-        console.log("Generation progress:", progress);
-      },
+      recipeFormHook.setGenerationProgress, // Use the actual setter function
       recipeFormHook.newRecipe.description
     );
   };
