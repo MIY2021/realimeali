@@ -122,7 +122,12 @@ export function CreateRecipeContainer() {
     if (!file) return;
 
     try {
-      await processImage(file, setNewRecipe, newRecipe, setActiveTab, () => searchRecipeImagesStandalone(newRecipe.title));
+      await processImage(file, setNewRecipe, newRecipe, setActiveTab, async () => {
+        if (newRecipe.title.trim()) {
+          return await searchRecipeImagesStandalone(newRecipe.title);
+        }
+        return [];
+      });
     } catch (error) {
       console.error('Error processing image:', error);
     }
@@ -156,7 +161,12 @@ export function CreateRecipeContainer() {
       const response = await generateRecipe({
         prompt,
         stylePreferences,
-        searchRecipeImages: () => searchRecipeImagesStandalone(newRecipe.title)
+        searchRecipeImages: async () => {
+          if (newRecipe.title.trim()) {
+            return await searchRecipeImagesStandalone(newRecipe.title);
+          }
+          return [];
+        }
       });
       setGenerationProgress("Almost there, just putting the finishing touches...");
 
@@ -296,12 +306,13 @@ export function CreateRecipeContainer() {
           storedImages={storedImages}
           selectedImage={selectedImage}
           onImageSelect={handleImageSelect}
-          onDownloadImages={handleDownloadImages}
+          onDownloadImages={() => handleDownloadImages(recipeUrl)}
           isDownloadingImages={isDownloadingImages}
-          onSearchImages={() => {
+          onSearchImages={async () => {
             if (newRecipe.title.trim()) {
-              searchRecipeImagesStandalone(newRecipe.title);
+              return await searchRecipeImagesStandalone(newRecipe.title);
             }
+            return [];
           }}
           isSearchingImages={isSearchingImages}
         />
@@ -344,7 +355,7 @@ export function CreateRecipeContainer() {
               storedImages={storedImages}
               selectedImage={selectedImage}
               onImageSelect={handleImageSelect}
-              onDownloadImages={handleDownloadImages}
+              onDownloadImages={() => handleDownloadImages(recipeUrl)}
               isDownloadingImages={isDownloadingImages}
               showImageSelection={showImageSelection}
             />
@@ -352,10 +363,11 @@ export function CreateRecipeContainer() {
           <TabsContent value="image">
             <RecipeImageTab
               isProcessing={isProcessing}
-              onProcessImage={(file: File) => processImage(file, setNewRecipe, newRecipe, setActiveTab, () => {
+              onProcessImage={(file: File) => processImage(file, setNewRecipe, newRecipe, setActiveTab, async () => {
                 if (newRecipe.title.trim()) {
-                  searchRecipeImagesStandalone(newRecipe.title);
+                  return await searchRecipeImagesStandalone(newRecipe.title);
                 }
+                return [];
               })}
               importProgress={importProgress}
               progressValue={progressValue}
