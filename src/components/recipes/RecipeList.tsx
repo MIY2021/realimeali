@@ -1,4 +1,5 @@
 
+
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -225,7 +226,7 @@ export function RecipeList({ recipes, isLoading, onAddToMealPlan }: RecipeListPr
                 onClick={clearAllFilters}
                 className="text-sm text-muted-foreground hover:text-foreground underline"
               >
-                Clear all filters ({activeFilterCount})
+                Clear filters ({activeFilterCount})
               </button>
             )}
           </div>
@@ -306,3 +307,4 @@ export function RecipeList({ recipes, isLoading, onAddToMealPlan }: RecipeListPr
     </div>
   );
 }
+
