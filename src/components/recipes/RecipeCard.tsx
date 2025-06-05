@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Heart, Eye, Plus, ChefHat } from "lucide-react";
+import { Heart, Eye, Plus, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Recipe } from "@/types";
 import { useRecipes } from "@/contexts/RecipesContext";
@@ -137,7 +137,7 @@ export function RecipeCard({ recipe, onAddToMealPlan, onRecipeClick, showActions
               : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
             }`}
           >
-            <ChefHat className="h-3 w-3 mr-1" />
+            <User className="h-3 w-3 mr-1" />
             {recipe.has_cooked ? 'Cooked' : 'Not Cooked'}
           </Button>
         </div>

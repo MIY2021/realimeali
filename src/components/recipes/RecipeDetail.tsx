@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { User, Clock, Users, Heart, MoreHorizontal, Pencil, Trash2, ChefHat } from "lucide-react";
+import { User, Clock, Users, Heart, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -84,7 +84,7 @@ export const RecipeDetail = ({ recipe, onEdit, onDelete, isOwner }: RecipeDetail
                 : 'bg-white/20 text-white border border-white/30 hover:bg-white/30'
             }`}
           >
-            <ChefHat className="h-4 w-4 mr-1" />
+            <User className="h-4 w-4 mr-1" />
             {recipe.has_cooked ? 'Cooked' : 'Mark as Cooked'}
           </Button>
 
