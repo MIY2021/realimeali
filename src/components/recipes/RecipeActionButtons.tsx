@@ -49,10 +49,10 @@ export const RecipeActionButtons = ({
   };
 
   return (
-    <div className="mb-4 px-2">
-      {/* Mobile: Stack buttons vertically */}
-      <div className="block sm:hidden space-y-3">
-        {/* Top row - Add to Meal Plan button (full width) */}
+    <div className="mb-4">
+      {/* Mobile and Desktop: Single row layout */}
+      <div className="space-y-3">
+        {/* Add to Meal Plan button (full width) */}
         <Button 
           onClick={onAddToMealPlan}
           className="bg-terracotta hover:bg-terracotta/90 text-white w-full"
@@ -61,7 +61,7 @@ export const RecipeActionButtons = ({
           Add to Meal Plan
         </Button>
         
-        {/* Bottom row - all buttons in a row */}
+        {/* All other buttons in a row */}
         <div className="flex gap-2">
           {/* Cooking Status Toggle */}
           <Button
@@ -105,70 +105,6 @@ export const RecipeActionButtons = ({
                 onClick={handleDelete}
                 disabled={isDeleting}
                 className="hover:bg-red-50 text-red-600 border-red-200 flex-shrink-0"
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </>
-          )}
-        </div>
-      </div>
-
-      {/* Desktop: Horizontal layout */}
-      <div className="hidden sm:flex items-center justify-between">
-        <div className="flex gap-3">
-          {/* Add to Meal Plan button */}
-          <Button 
-            onClick={onAddToMealPlan}
-            className="bg-terracotta hover:bg-terracotta/90 text-white"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Add to Meal Plan
-          </Button>
-
-          {/* Cooking Status Toggle */}
-          <Button
-            variant="outline"
-            onClick={handleToggleCooked}
-            disabled={isTogglingCooked}
-            className={`transition-all duration-200 ${
-              recipe.has_cooked
-                ? 'bg-green-50 border-green-200 text-green-700 hover:bg-green-100'
-                : 'hover:bg-gray-50'
-            }`}
-          >
-            <User className="h-4 w-4 mr-2" />
-            {recipe.has_cooked ? 'Cooked' : 'Mark as Cooked'}
-          </Button>
-        </div>
-
-        <div className="flex items-center gap-2">
-          {/* Favorite button */}
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={handleToggleFavorite}
-            className="hover:bg-gray-50"
-          >
-            <Heart className={`h-5 w-5 ${recipe.is_favorite ? 'fill-red-500 text-red-500' : 'text-gray-600'}`} />
-          </Button>
-
-          {/* Owner actions - Edit and Delete buttons */}
-          {isOwner && (
-            <>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => onEdit?.(recipe)}
-                className="hover:bg-gray-50"
-              >
-                <Pencil className="h-4 w-4 text-gray-600" />
-              </Button>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={handleDelete}
-                disabled={isDeleting}
-                className="hover:bg-red-50 text-red-600 border-red-200"
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
