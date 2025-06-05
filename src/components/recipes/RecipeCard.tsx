@@ -121,11 +121,11 @@ export function RecipeCard({ recipe, onAddToMealPlan, onRecipeClick, showActions
           {recipe.description}
         </p>
         
-        <div className="flex items-center gap-2 mb-3">
+        <div className={`flex items-center gap-1 mb-3 ${isCompactLayout ? 'flex-wrap' : ''}`}>
           {recipe.meal_type && (
             <Badge 
               variant="secondary"
-              className={isCompactLayout ? 'text-xs px-1.5 py-0.5' : ''}
+              className={isCompactLayout ? 'text-xs px-1 py-0 h-4 text-[10px]' : ''}
             >
               {capitalizeFirst(recipe.meal_type)}
             </Badge>
@@ -135,12 +135,12 @@ export function RecipeCard({ recipe, onAddToMealPlan, onRecipeClick, showActions
             size="sm"
             onClick={handleToggleCooked}
             disabled={isTogglingCooked}
-            className={`h-6 px-2 ${isCompactLayout ? 'text-xs' : 'text-xs'} ${recipe.has_cooked 
+            className={`${isCompactLayout ? 'h-4 px-1 text-[10px]' : 'h-6 px-2 text-xs'} ${recipe.has_cooked 
               ? 'bg-green-100 text-green-700 hover:bg-green-200' 
               : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
             }`}
           >
-            <User className={`${isCompactLayout ? 'h-2.5 w-2.5' : 'h-3 w-3'} mr-1`} />
+            <User className={`${isCompactLayout ? 'h-2 w-2 mr-0.5' : 'h-3 w-3 mr-1'}`} />
             {recipe.has_cooked ? 'Cooked' : (isCompactLayout ? 'Not' : 'Not Cooked')}
           </Button>
         </div>
