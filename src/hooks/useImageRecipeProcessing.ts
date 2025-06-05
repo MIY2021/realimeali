@@ -1,172 +1,119 @@
 
-import { useState } from 'react';
-import { Recipe } from '@/types';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
-
-const PROGRESS_MESSAGES = [
-  "📸 Reading your recipe photo...",
-  "🔍 Analyzing text in the image...",
-  "📝 Extracting recipe details...",
-  "⚙️ Organizing ingredients and steps...",
-  "🎯 Finalizing recipe information...",
-  "✨ Almost ready to cook!"
-];
+import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { Recipe } from "@/types";
+import { toast } from "sonner";
+import { sanitizeRecipeData } from "@/utils/contentSanitizer";
 
 export function useImageRecipeProcessing() {
   const [isProcessing, setIsProcessing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [importProgress, setImportProgress] = useState("");
   const [progressValue, setProgressValue] = useState(0);
 
-  const startProgressAnimation = () => {
-    setProgressValue(0);
-    let currentProgress = 0;
-    let messageIndex = 0;
-    
-    const progressInterval = setInterval(() => {
-      // Update progress smoothly
-      currentProgress = Math.min(currentProgress + Math.random() * 15 + 5, 85);
-      setProgressValue(currentProgress);
-      
-      // Update progress messages
-      if (messageIndex < PROGRESS_MESSAGES.length) {
-        setImportProgress(PROGRESS_MESSAGES[messageIndex]);
-        messageIndex++;
-      }
-    }, 1000);
-    
-    return progressInterval;
-  };
-
-  const completeProgress = () => {
-    setProgressValue(100);
-    setImportProgress("✅ Recipe imported successfully!");
-  };
-
-  const resetProgress = () => {
-    setTimeout(() => {
-      setImportProgress("");
-      setProgressValue(0);
-    }, 2000);
-  };
-
   const processImage = async (
-    imageFile: File,
+    file: File,
+    setNewRecipe: (recipe: Omit<Recipe, 'id' | 'created_at' | 'updated_at' | 'created_by'>) => void,
+    currentRecipe: Omit<Recipe, 'id' | 'created_at' | 'updated_at' | 'created_by'>,
+    setActiveTab: (tab: string) => void,
     searchRecipeImages?: (title: string) => Promise<string[]>
-  ): Promise<Omit<Recipe, 'id' | 'created_at' | 'updated_at' | 'created_by'> | null> => {
+  ) => {
     setIsProcessing(true);
-    setError(null);
-    
-    // Start progress animation
-    const progressInterval = startProgressAnimation();
+    setProgressValue(0);
+    setImportProgress("📷 Reading recipe from image...");
 
     try {
-      console.log('🖼️ Starting image processing:', imageFile.name);
-      
       // Convert image to base64
-      const base64Image = await new Promise<string>((resolve, reject) => {
+      setProgressValue(20);
+      setImportProgress("📷 Preparing image for analysis...");
+      
+      const base64 = await new Promise<string>((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = () => {
           const result = reader.result as string;
-          resolve(result.split(',')[1]); // Remove data:image/jpeg;base64, prefix
+          const base64Data = result.split(',')[1];
+          resolve(base64Data);
         };
         reader.onerror = reject;
-        reader.readAsDataURL(imageFile);
+        reader.readAsDataURL(file);
       });
 
-      console.log('📸 Image converted to base64, calling AI service...');
+      setProgressValue(40);
+      setImportProgress("🤖 AI is reading the recipe text...");
 
-      const { data, error: functionError } = await supabase.functions.invoke('parse-recipe-ai', {
+      console.log('📷 Processing image with AI:', file.name);
+      
+      const { data, error } = await supabase.functions.invoke('parse-recipe-ai', {
         body: {
-          image: base64Image,
-          mimeType: imageFile.type
+          image: base64,
+          mimeType: file.type
         }
       });
 
-      // Clear progress interval
-      clearInterval(progressInterval);
-
-      if (functionError) {
-        console.error('❌ Function error:', functionError);
-        throw new Error(functionError.message || 'Failed to process image');
+      if (error) {
+        throw error;
       }
 
-      if (!data?.recipe) {
-        console.error('❌ No recipe data in response:', data);
-        throw new Error('No recipe data extracted from image');
+      if (!data?.parsedRecipe) {
+        throw new Error('No recipe data could be extracted from the image');
       }
 
-      const extractedRecipe = data.recipe;
-      console.log('✅ Recipe extracted successfully:', extractedRecipe.title);
+      setProgressValue(80);
+      setImportProgress("✨ Organizing recipe data...");
 
-      // Complete progress
-      completeProgress();
+      console.log('✅ Recipe extracted from image:', data.parsedRecipe);
 
-      // Show success toast
-      toast.success('Recipe imported from image!', {
-        description: `Successfully extracted "${extractedRecipe.title}"`
-      });
-
-      // Transform the extracted data to match our Recipe interface
-      const recipe: Omit<Recipe, 'id' | 'created_at' | 'updated_at' | 'created_by'> = {
-        title: extractedRecipe.title || 'Recipe from Image',
-        description: extractedRecipe.description || '',
-        ingredients: Array.isArray(extractedRecipe.ingredients) ? extractedRecipe.ingredients : [],
-        instructions: Array.isArray(extractedRecipe.instructions) ? extractedRecipe.instructions : [],
-        prep_time: extractedRecipe.prepTime || 15,
-        cook_time: extractedRecipe.cookTime || 30,
-        servings: extractedRecipe.servings || 4,
-        household_id: '', // Will be set when saving
-        is_favorite: false,
-        has_cooked: false,
-        meal_type: extractedRecipe.mealType || undefined,
-        cuisine_region: extractedRecipe.cuisineRegion || undefined,
-        diet_lifestyle: extractedRecipe.dietLifestyle || [],
-        complexity_level: extractedRecipe.complexityLevel || 'quick_easy',
-        main_ingredient: extractedRecipe.mainIngredient || undefined,
-        top_tip: extractedRecipe.topTip || undefined,
-        image: undefined, // Don't include the original image
-        slug: extractedRecipe.title?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || undefined
+      // Sanitize the recipe data
+      const sanitizedRecipe = sanitizeRecipeData(data.parsedRecipe);
+      
+      // Apply AI categorization
+      const recipeData = { 
+        ...currentRecipe, 
+        ...sanitizedRecipe,
+        meal_type: data.parsedRecipe.mealType || currentRecipe.meal_type,
+        cuisine_region: data.parsedRecipe.cuisineRegion || currentRecipe.cuisine_region,
+        diet_lifestyle: data.parsedRecipe.dietLifestyle || currentRecipe.diet_lifestyle || [],
+        complexity_level: data.parsedRecipe.complexityLevel || currentRecipe.complexity_level,
+        main_ingredient: data.parsedRecipe.mainIngredient || currentRecipe.main_ingredient,
+        top_tip: data.parsedRecipe.topTip || "Enjoy cooking this delicious recipe!"
       };
 
+      setProgressValue(90);
+      setImportProgress("🔍 Searching for recipe images...");
+
       // Search for images if the recipe has a title and search function is available
-      if (recipe.title && searchRecipeImages) {
-        console.log('🔍 Searching for images for extracted recipe:', recipe.title);
-        await searchRecipeImages(recipe.title);
+      if (recipeData.title && searchRecipeImages) {
+        console.log('🔍 Searching for images for processed recipe:', recipeData.title);
+        await searchRecipeImages(recipeData.title);
       }
 
-      // Reset progress after delay
-      resetProgress();
+      setProgressValue(100);
+      setImportProgress("✅ Recipe imported successfully!");
 
-      return recipe;
-
-    } catch (err) {
-      // Clear progress interval on error
-      clearInterval(progressInterval);
+      setNewRecipe(recipeData);
+      setActiveTab("manual");
       
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
-      setError(errorMessage);
-      setImportProgress("");
-      setProgressValue(0);
-      
-      console.error('❌ Error processing image:', err);
-      
-      toast.error('Failed to import recipe from image', {
-        description: errorMessage
+      toast.success("Recipe imported from image!", {
+        description: `Successfully extracted "${recipeData.title}" from your photo`
       });
-      
-      return null;
+
+    } catch (error) {
+      console.error('❌ Error processing image:', error);
+      toast.error("Failed to process image", {
+        description: error instanceof Error ? error.message : "Please try again with a clearer image"
+      });
     } finally {
       setIsProcessing(false);
+      setTimeout(() => {
+        setImportProgress("");
+        setProgressValue(0);
+      }, 3000);
     }
   };
 
   return {
     processImage,
     isProcessing,
-    error,
     importProgress,
-    progressValue
+    progressValue,
   };
 }

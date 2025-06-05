@@ -3,12 +3,14 @@ import { useTextRecipeProcessing } from "./useTextRecipeProcessing";
 import { useUrlRecipeProcessing } from "./useUrlRecipeProcessing";
 import { useImageRecipeProcessing } from "./useImageRecipeProcessing";
 import { useAiRecipeGeneration } from "./useAiRecipeGeneration";
+import { useRecipeImageSearch } from "./useRecipeImageSearch";
 
 export function useRecipeProcessing() {
   const textProcessing = useTextRecipeProcessing();
   const urlProcessing = useUrlRecipeProcessing();
   const imageProcessing = useImageRecipeProcessing();
   const aiGeneration = useAiRecipeGeneration();
+  const imageSearch = useRecipeImageSearch();
 
   return {
     // Text processing
@@ -43,6 +45,10 @@ export function useRecipeProcessing() {
     setAiPrompt: aiGeneration.setAiPrompt,
     stylePreferences: aiGeneration.stylePreferences,
     setStylePreferences: aiGeneration.setStylePreferences,
+    
+    // Image search functionality
+    searchRecipeImagesStandalone: imageSearch.searchRecipeImages,
+    clearSearchedImages: imageSearch.clearSearchedImages,
     
     // Combined processing state and progress
     isProcessing: textProcessing.isProcessing || urlProcessing.isProcessing || imageProcessing.isProcessing || aiGeneration.isGenerating,
