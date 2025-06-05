@@ -25,6 +25,17 @@ export default function RecipesPage() {
   const { navigationState, clearNavigationState } = useNavigationState();
   const isMobile = useIsMobile();
 
+  // Debug logging
+  useEffect(() => {
+    console.log('RecipesPage Debug:', {
+      user: user?.id,
+      currentHousehold: currentHousehold?.id,
+      recipesCount: recipes.length,
+      isLoading,
+      isLoadingHousehold
+    });
+  }, [user?.id, currentHousehold?.id, recipes.length, isLoading, isLoadingHousehold]);
+
   // State for Add to Meal Plan dialog
   const [selectedRecipeForMealPlan, setSelectedRecipeForMealPlan] = useState<Recipe | null>(null);
   const [isMealPlanDialogOpen, setIsMealPlanDialogOpen] = useState(false);
@@ -119,11 +130,21 @@ export default function RecipesPage() {
             </div>
           </div>
         ) : (
-          <RecipeList 
-            recipes={recipes}
-            isLoading={isLoading}
-            onAddToMealPlan={handleAddToMealPlan}
-          />
+          <>
+            {/* Debug info for development */}
+            <div className="mb-4 p-3 bg-gray-100 rounded text-xs">
+              <strong>Debug Info:</strong> User: {user?.id?.slice(0, 8)}..., 
+              Household: {currentHousehold?.id?.slice(0, 8)}..., 
+              Recipes: {recipes.length}, 
+              Loading: {isLoading.toString()}
+            </div>
+            
+            <RecipeList 
+              recipes={recipes}
+              isLoading={isLoading}
+              onAddToMealPlan={handleAddToMealPlan}
+            />
+          </>
         )}
       </div>
 

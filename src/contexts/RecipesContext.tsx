@@ -30,15 +30,20 @@ export const RecipesProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const api = useRecipeApi();
 
   const fetchRecipes = useCallback(async (householdId: string | null) => {
-    if (!householdId) return;
+    if (!householdId) {
+      console.log('RecipesContext: No household ID provided, skipping fetch');
+      return;
+    }
     
+    console.log('RecipesContext: Fetching recipes for household:', householdId);
     setIsLoading(true);
     setError(null);
     try {
       const fetchedRecipes = await api.fetchRecipes(householdId);
+      console.log('RecipesContext: Fetched recipes:', fetchedRecipes.length);
       setRecipes(fetchedRecipes);
     } catch (error) {
-      console.error('Error fetching recipes:', error);
+      console.error('RecipesContext: Error fetching recipes:', error);
       setError('Failed to load recipes');
       toast({
         title: "Error",
