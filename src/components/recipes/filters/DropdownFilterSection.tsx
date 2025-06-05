@@ -40,10 +40,9 @@ export function DropdownFilterSection({
             variant="outline"
             className={`flex items-center gap-1 w-full justify-between h-10 px-2 sm:px-3 text-xs sm:text-sm ${
               hasActiveFilters 
-                ? 'text-white hover:text-white' 
+                ? 'bg-sage/20 border-sage/40 text-sage hover:bg-sage/30' 
                 : ''
             }`}
-            style={hasActiveFilters ? { backgroundColor: '#81b29a' } : {}}
           >
             <span className="truncate flex-1 text-left">{title}</span>
             <ChevronDown className="h-3 w-3 sm:h-4 sm:w-4 opacity-50 flex-shrink-0" />
