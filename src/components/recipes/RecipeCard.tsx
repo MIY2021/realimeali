@@ -125,7 +125,7 @@ export function RecipeCard({ recipe, onAddToMealPlan, onRecipeClick, showActions
           {recipe.meal_type && (
             <Badge 
               variant="secondary"
-              className={isCompactLayout ? 'text-xs px-1 py-0 h-4 text-[10px]' : ''}
+              className={isCompactLayout ? 'text-xs px-2 py-0.5 h-5' : ''}
             >
               {capitalizeFirst(recipe.meal_type)}
             </Badge>
@@ -135,7 +135,7 @@ export function RecipeCard({ recipe, onAddToMealPlan, onRecipeClick, showActions
             size="sm"
             onClick={handleToggleCooked}
             disabled={isTogglingCooked}
-            className={`${isCompactLayout ? 'h-4 px-1 text-[10px]' : 'h-6 px-2 text-xs'} ${recipe.has_cooked 
+            className={`${isCompactLayout ? 'h-5 px-2 text-xs' : 'h-6 px-2 text-xs'} ${recipe.has_cooked 
               ? 'bg-green-100 text-green-700 hover:bg-green-200' 
               : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
             }`}
