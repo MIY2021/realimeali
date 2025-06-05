@@ -20,8 +20,10 @@ export function useRecipeProcessing() {
     recipeUrl: urlProcessing.recipeUrl,
     setRecipeUrl: urlProcessing.setRecipeUrl,
     websiteImages: urlProcessing.websiteImages,
+    searchedImages: urlProcessing.searchedImages,
     storedImages: urlProcessing.storedImages,
     isDownloadingImages: urlProcessing.isDownloadingImages,
+    isSearchingImages: urlProcessing.isSearchingImages,
     showCommunityDialog: urlProcessing.showCommunityDialog,
     setShowCommunityDialog: urlProcessing.setShowCommunityDialog,
     parsedRecipeData: urlProcessing.parsedRecipeData,
@@ -30,6 +32,7 @@ export function useRecipeProcessing() {
     handleImportFromUrl: urlProcessing.handleImportFromUrl,
     handleDownloadImages: urlProcessing.handleDownloadImages,
     handleImageSelect: urlProcessing.handleImageSelect,
+    searchRecipeImages: urlProcessing.searchRecipeImages,
     
     // Image processing
     processImage: imageProcessing.processImage,

@@ -51,7 +51,10 @@ export function useImageRecipeProcessing() {
     }, 2000);
   };
 
-  const processImage = async (imageFile: File): Promise<Omit<Recipe, 'id' | 'created_at' | 'updated_at' | 'created_by'> | null> => {
+  const processImage = async (
+    imageFile: File,
+    searchRecipeImages?: (title: string) => Promise<string[]>
+  ): Promise<Omit<Recipe, 'id' | 'created_at' | 'updated_at' | 'created_by'> | null> => {
     setIsProcessing(true);
     setError(null);
     
@@ -126,6 +129,12 @@ export function useImageRecipeProcessing() {
         image: undefined, // Don't include the original image
         slug: extractedRecipe.title?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || undefined
       };
+
+      // Search for images if the recipe has a title and search function is available
+      if (recipe.title && searchRecipeImages) {
+        console.log('🔍 Searching for images for extracted recipe:', recipe.title);
+        await searchRecipeImages(recipe.title);
+      }
 
       // Reset progress after delay
       resetProgress();
