@@ -6,7 +6,6 @@ import { Recipe } from "@/types";
 import { useProgressTracking } from "./useUrlRecipeProcessing/useProgressTracking";
 import { useImageHandling } from "./useUrlRecipeProcessing/useImageHandling";
 import { handleProcessingError } from "./useUrlRecipeProcessing/errorHandling";
-import { SUPPORTED_DOMAINS } from "./useUrlRecipeProcessing/constants";
 
 export const useUrlRecipeProcessing = () => {
   const { toast } = useToast();
@@ -33,12 +32,13 @@ export const useUrlRecipeProcessing = () => {
       return;
     }
 
-    // Validate domain
-    const domain = new URL(url).hostname.replace('www.', '');
-    if (!SUPPORTED_DOMAINS.includes(domain)) {
+    // Remove domain validation - let the edge function handle parsing attempts
+    try {
+      new URL(url.trim()); // Just validate it's a valid URL format
+    } catch {
       toast({
-        title: "Unsupported Website",
-        description: `Sorry, we don't support recipes from ${domain} yet. Supported sites include: ${SUPPORTED_DOMAINS.join(', ')}`,
+        title: "Invalid URL",
+        description: "Please enter a valid website URL",
         variant: "destructive",
       });
       return;
@@ -65,7 +65,7 @@ export const useUrlRecipeProcessing = () => {
       }
 
       if (!data?.success) {
-        throw new Error(data?.error || 'Failed to parse recipe');
+        throw new Error(data?.error || 'Failed to parse recipe from this website. The site may not contain recipe data or may be blocking automated access.');
       }
 
       progressTracking.setProgress(60);
@@ -109,6 +109,7 @@ export const useUrlRecipeProcessing = () => {
       progressTracking.setProgress(100);
       progressTracking.setCurrentStep("Complete!");
 
+      const domain = new URL(url).hostname.replace('www.', '');
       console.log('✅ Recipe imported successfully');
       setNewRecipe(transformedRecipe);
       
@@ -129,7 +130,25 @@ export const useUrlRecipeProcessing = () => {
       setUrl("");
       
     } catch (error) {
-      handleProcessingError(error, toast);
+      console.error('Error importing recipe:', error);
+      
+      // Provide more helpful error messages based on the error type
+      let errorMessage = "Failed to import recipe from this website.";
+      let errorDescription = "Please try a different recipe URL or enter the recipe manually.";
+      
+      if (error.message?.includes('Failed to fetch website')) {
+        errorDescription = "The website may be blocking automated access. Try copying the recipe text instead.";
+      } else if (error.message?.includes('not contain recipe data')) {
+        errorDescription = "This page doesn't appear to contain a recipe. Make sure you're on a recipe page.";
+      } else if (error.message?.includes('timeout')) {
+        errorDescription = "The website took too long to respond. Please try again.";
+      }
+      
+      toast({
+        title: errorMessage,
+        description: errorDescription,
+        variant: "destructive",
+      });
     } finally {
       setIsProcessing(false);
       setTimeout(progressTracking.resetProgress, 2000);
