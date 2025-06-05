@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -45,7 +44,8 @@ export const useUrlRecipeProcessing = () => {
     }
 
     setIsProcessing(true);
-    progressTracking.resetProgress();
+    // Immediately reset progress to avoid flickering
+    progressTracking.resetProgress(true);
     
     // Start the funny loading animation
     const progressInterval = progressTracking.startProgressAnimation();
@@ -137,14 +137,15 @@ export const useUrlRecipeProcessing = () => {
       handleProcessingError(error, toast);
     } finally {
       setIsProcessing(false);
-      setTimeout(progressTracking.resetProgress, 2000);
+      // Use delayed reset for cleanup
+      progressTracking.resetProgress();
     }
   };
 
   const reset = () => {
     setUrl("");
     setIsProcessing(false);
-    progressTracking.resetProgress();
+    progressTracking.resetProgress(true);
     imageHandling.resetImages();
   };
 

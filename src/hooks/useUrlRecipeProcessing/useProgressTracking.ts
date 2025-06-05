@@ -41,13 +41,22 @@ export const useProgressTracking = () => {
     setCurrentStep("✨ Recipe imported successfully!");
   };
 
-  const resetProgress = () => {
-    setTimeout(() => {
+  const resetProgress = (immediate = false) => {
+    if (immediate) {
+      // Immediate reset for starting new import
       setImportProgress("");
       setProgressValue(0);
       setProgress(0);
       setCurrentStep("");
-    }, 2000);
+    } else {
+      // Delayed reset for cleanup after completion
+      setTimeout(() => {
+        setImportProgress("");
+        setProgressValue(0);
+        setProgress(0);
+        setCurrentStep("");
+      }, 2000);
+    }
   };
 
   return {
