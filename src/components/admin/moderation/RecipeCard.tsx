@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Check, X, Eye, Link, Clock, Sparkles, Upload } from "lucide-react";
+import { Check, X, Eye, Link, Clock, Sparkles, Upload, ImageIcon } from "lucide-react";
 import { CommunityRecipe } from "@/hooks/useCommunityRecipes";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -28,12 +28,33 @@ export function RecipeCard({
   generatingAI = {}
 }: RecipeCardProps) {
   const [imageUrl, setImageUrl] = useState(recipe.ai_generated_image_url || '');
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const isMobile = useIsMobile();
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setUploadedFile(file);
+      // For now, we'll need to implement actual file upload to storage
+      // This would typically involve uploading to Supabase Storage
+      console.log("File selected:", file.name);
+    }
+  };
+
+  const handleUpdateImage = () => {
+    if (uploadedFile) {
+      // TODO: Implement actual file upload to Supabase Storage
+      console.log("Would upload file:", uploadedFile.name);
+      // For now, just show the file was selected
+    } else if (imageUrl && onUpdateImageUrl) {
+      onUpdateImageUrl(recipe, imageUrl);
+    }
+  };
   
   return (
     <Card className="mb-4">
       <CardHeader className={`${isMobile ? 'px-3 py-3' : 'pb-3'}`}>
-        <div className={`flex ${isMobile ? 'flex-col' : 'items-start justify-between'} gap-2`}>
+        <div className={`flex ${isMobile ? 'flex-col' : 'items-start justify-between'} gap-4`}>
           <div className="flex-1">
             <CardTitle className={`${isMobile ? 'text-base' : 'text-lg'} mb-1`}>{recipe.title}</CardTitle>
             <div className={`flex ${isMobile ? 'flex-col' : 'items-center'} gap-2 text-sm text-muted-foreground mb-2`}>
@@ -58,11 +79,12 @@ export function RecipeCard({
               )}
             </div>
           </div>
+          {/* Larger image preview for better visibility */}
           {(recipe.ai_generated_image_url || recipe.image_url) && (
             <img 
               src={recipe.ai_generated_image_url || recipe.image_url} 
               alt={recipe.title}
-              className={`${isMobile ? 'w-full h-32' : 'w-20 h-20'} object-cover rounded-md ${isMobile ? '' : 'ml-4'}`}
+              className={`${isMobile ? 'w-full h-48' : 'w-48 h-32'} object-cover rounded-md border shadow-sm`}
             />
           )}
         </div>
@@ -109,23 +131,59 @@ export function RecipeCard({
               </Button>
             </div>
 
-            <div className={`flex ${isMobile ? 'flex-col' : 'items-center'} gap-2`}>
-              <Input
-                placeholder="Paste image URL manually"
-                value={imageUrl}
-                onChange={(e) => setImageUrl(e.target.value)}
-                className={`${isMobile ? 'text-sm' : ''} flex-1`}
-              />
-              <Button
-                variant="outline"
-                size={isMobile ? "sm" : "default"}
-                onClick={() => onUpdateImageUrl(recipe, imageUrl)}
-                disabled={!imageUrl || imageUrl === recipe.ai_generated_image_url}
-                className={`${isMobile ? 'w-full' : ''}`}
-              >
-                <Upload className="h-4 w-4 mr-1" />
-                Update
-              </Button>
+            {/* Enhanced image management section */}
+            <div className="space-y-3 border-t pt-4">
+              <h4 className="font-medium text-sm">Image Management</h4>
+              
+              {/* File upload option */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium">Upload New Image</label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileUpload}
+                    className="flex-1"
+                  />
+                  <Button
+                    variant="outline"
+                    size={isMobile ? "sm" : "default"}
+                    onClick={handleUpdateImage}
+                    disabled={!uploadedFile}
+                  >
+                    <ImageIcon className="h-4 w-4 mr-1" />
+                    Upload
+                  </Button>
+                </div>
+                {uploadedFile && (
+                  <p className="text-xs text-muted-foreground">
+                    Selected: {uploadedFile.name}
+                  </p>
+                )}
+              </div>
+
+              {/* URL input option */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium">Or paste image URL</label>
+                <div className={`flex ${isMobile ? 'flex-col' : 'items-center'} gap-2`}>
+                  <Input
+                    placeholder="Paste image URL manually"
+                    value={imageUrl}
+                    onChange={(e) => setImageUrl(e.target.value)}
+                    className={`${isMobile ? 'text-sm' : ''} flex-1`}
+                  />
+                  <Button
+                    variant="outline"
+                    size={isMobile ? "sm" : "default"}
+                    onClick={handleUpdateImage}
+                    disabled={!imageUrl || imageUrl === recipe.ai_generated_image_url}
+                    className={`${isMobile ? 'w-full' : ''}`}
+                  >
+                    <Upload className="h-4 w-4 mr-1" />
+                    Update URL
+                  </Button>
+                </div>
+              </div>
             </div>
 
             {recipe.ai_generated_description && (

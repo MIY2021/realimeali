@@ -196,7 +196,12 @@ export function CreateRecipeContainer() {
   
   const wrappedImportFromUrl = () => {
     setRecipeOrigin('url');
-    return recipeProcessingHook.handleImportFromUrl(recipeFormHook.setNewRecipe, recipeFormHook.newRecipe, setActiveTab);
+    return recipeProcessingHook.handleImportFromUrl(
+      recipeFormHook.setNewRecipe, 
+      recipeFormHook.newRecipe, 
+      setActiveTab,
+      recipeFormHook.setShareWithCommunity // Pass the function to enable default sharing
+    );
   };
 
   // Handle when user manually switches to manual tab
