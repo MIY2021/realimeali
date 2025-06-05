@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -80,6 +79,10 @@ export function CreateRecipeContainer() {
     }
 
     setIsSaving(true);
+    
+    // Log the shareWithCommunity flag for debugging
+    console.log("🔄 Saving recipe with shareWithCommunity:", recipeFormHook.shareWithCommunity);
+    
     try {
       const recipeToSave = {
         ...recipeFormHook.newRecipe,
@@ -89,10 +92,66 @@ export function CreateRecipeContainer() {
       const savedRecipe = await createRecipe(recipeToSave, currentHousehold.id);
       
       if (savedRecipe) {
-        toast({
-          title: "Success",
-          description: "Recipe saved successfully!",
-        });
+        // Handle community sharing if enabled
+        if (recipeFormHook.shareWithCommunity) {
+          console.log("🌍 Community sharing enabled, submitting to community_recipes...");
+          
+          try {
+            const communityRecipeData = {
+              title: savedRecipe.title,
+              description: savedRecipe.description || `A delicious ${savedRecipe.meal_type || 'recipe'} recipe with ${savedRecipe.ingredients.length} ingredients.`,
+              source_url: `${window.location.origin}/my-recipes/${savedRecipe.id}`,
+              image_url: savedRecipe.image,
+              prep_time: savedRecipe.prep_time,
+              cook_time: savedRecipe.cook_time,
+              servings: savedRecipe.servings,
+              category: savedRecipe.meal_type || null,
+              cuisine: savedRecipe.cuisine_region || null,
+              difficulty_level: savedRecipe.complexity_level === 'quick_easy' ? 'Easy' : 
+                             savedRecipe.complexity_level === 'complex' ? 'Hard' : 'Standard',
+              submitted_by: user.id,
+              submitted_by_name: user.email || 'Anonymous',
+              is_approved: false,
+              is_active: true,
+              moderation_status: 'pending'
+            };
+
+            console.log("📝 Submitting community recipe data:", communityRecipeData);
+
+            const { data: communityRecipe, error: communityError } = await recipeFormHook.supabase
+              .from('community_recipes')
+              .insert(communityRecipeData)
+              .select()
+              .single();
+
+            if (communityError) {
+              console.error("❌ Community submission error:", communityError);
+              toast({
+                title: "Recipe saved!",
+                description: `${savedRecipe.title} has been saved. Community sharing failed but recipe is saved.`,
+              });
+            } else {
+              console.log("✅ Recipe successfully submitted to community:", communityRecipe);
+              toast({
+                title: "Recipe saved and submitted!",
+                description: `${savedRecipe.title} has been saved and submitted to the community for moderation.`,
+              });
+            }
+          } catch (communityError) {
+            console.error("❌ Community submission failed:", communityError);
+            toast({
+              title: "Recipe saved!",
+              description: `${savedRecipe.title} has been saved. Community sharing failed but recipe is saved.`,
+            });
+          }
+        } else {
+          console.log("🎉 Recipe saved successfully, no community sharing requested");
+          toast({
+            title: "Success",
+            description: "Recipe saved successfully!",
+          });
+        }
+        
         navigate("/my-recipes");
       }
     } catch (error) {

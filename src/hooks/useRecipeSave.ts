@@ -91,6 +91,8 @@ export function useRecipeSave() {
     };
 
     console.log("✅ Validation passed, creating recipe with cleaned data:", recipeToSave);
+    console.log("🌍 Share with community flag:", shareWithCommunity);
+    
     try {
       console.log("🔄 Calling createRecipe function...");
       const recipe = await createRecipe(recipeToSave, currentHousehold.id);
@@ -121,7 +123,7 @@ export function useRecipeSave() {
               moderation_status: 'pending'
             };
 
-            console.log("📝 Community recipe data:", communityRecipeData);
+            console.log("📝 Community recipe data to be submitted:", communityRecipeData);
 
             const { data: communityRecipe, error: communityError } = await supabase
               .from('community_recipes')
