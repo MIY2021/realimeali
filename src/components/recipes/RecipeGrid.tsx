@@ -31,7 +31,7 @@ export function RecipeGrid({ recipes, mobileLayout, onAddToMealPlan, onRecipeCli
         <RecipeCard 
           key={recipe.id} 
           recipe={recipe} 
-          onAddToMealPlan={onAddToMealPlan ? () => onAddToMealPlan(recipe) : undefined}
+          onAddToMealPlan={onAddToMealPlan}
           onRecipeClick={onRecipeClick ? () => onRecipeClick(recipe.id) : undefined}
           showActions={true}
           mobileLayout={mobileLayout}
