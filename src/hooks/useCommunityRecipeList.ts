@@ -46,7 +46,8 @@ export function useCommunityRecipeList({ recipes }: UseCommunityRecipeListProps)
     cuisineRegions: [],
     dietLifestyle: [],
     complexityLevels: [],
-    showFavoritesOnly: false, // Keep this for compatibility but it won't be used
+    showFavoritesOnly: false,
+    showNotCookedOnly: false, // Add this property
   });
 
   const filteredAndSortedRecipes = useMemo(() => {

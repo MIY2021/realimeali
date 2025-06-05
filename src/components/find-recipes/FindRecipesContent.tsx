@@ -114,6 +114,7 @@ export const FindRecipesContent = () => {
       dietLifestyle: [],
       complexityLevels: [],
       showFavoritesOnly: false,
+      showNotCookedOnly: false,
     });
   };
 

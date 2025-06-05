@@ -1,10 +1,9 @@
-
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { FilterHeader } from "./FilterHeader";
 import { DropdownFilterSection } from "./DropdownFilterSection";
-import { Heart, ChefHat } from "lucide-react";
+import { Heart, User } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
   MealType,
@@ -121,7 +120,7 @@ export function SimpleRecipeFiltersComponent({
                 />
               </div>
               <div className="flex items-center gap-2 px-3 py-2 border rounded-md bg-background">
-                <ChefHat className={`h-4 w-4 ${filters.showNotCookedOnly ? "text-orange-500" : "text-gray-500"}`} />
+                <User className={`h-4 w-4 ${filters.showNotCookedOnly ? "text-orange-500" : "text-gray-500"}`} />
                 <Switch
                   checked={filters.showNotCookedOnly}
                   onCheckedChange={toggleNotCooked}
@@ -155,7 +154,7 @@ export function SimpleRecipeFiltersComponent({
                 />
               </div>
               <div className="flex items-center gap-2 px-3 py-2 border rounded-md bg-background min-w-[140px]">
-                <ChefHat className={`h-4 w-4 ${filters.showNotCookedOnly ? "text-orange-500" : "text-gray-500"}`} />
+                <User className={`h-4 w-4 ${filters.showNotCookedOnly ? "text-orange-500" : "text-gray-500"}`} />
                 <span className="text-sm">Not Cooked Only</span>
                 <Switch
                   checked={filters.showNotCookedOnly}
@@ -242,7 +241,7 @@ export function SimpleRecipeFiltersComponent({
           </div>
 
           <div className="flex items-center gap-2 px-3 py-2 border rounded-md bg-background min-w-[140px]">
-            <ChefHat className={`h-4 w-4 ${filters.showNotCookedOnly ? "text-orange-500" : "text-gray-500"}`} />
+            <User className={`h-4 w-4 ${filters.showNotCookedOnly ? "text-orange-500" : "text-gray-500"}`} />
             <span className="text-sm">Not Cooked Only</span>
             <Switch
               checked={filters.showNotCookedOnly}

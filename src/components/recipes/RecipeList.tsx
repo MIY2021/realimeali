@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,7 +12,7 @@ import { RecipeFilters } from "./RecipeFilters";
 import { SimpleRecipeFiltersComponent } from "./filters/SimpleRecipeFilters";
 import { MobileLayoutSelector } from "./MobileLayoutSelector";
 import { DropdownFilterSection } from "./filters/DropdownFilterSection";
-import { Heart, ChefHat } from "lucide-react";
+import { Heart, User } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -211,7 +210,7 @@ export function RecipeList({ recipes, isLoading, onAddToMealPlan }: RecipeListPr
                 />
               </div>
               <div className="flex items-center gap-2">
-                <ChefHat className={`h-4 w-4 ${filters.showNotCookedOnly ? 'text-orange-500' : 'text-gray-500'}`} />
+                <User className={`h-4 w-4 ${filters.showNotCookedOnly ? 'text-orange-500' : 'text-gray-500'}`} />
                 <span>Not Cooked</span>
                 <Switch
                   checked={filters.showNotCookedOnly}
