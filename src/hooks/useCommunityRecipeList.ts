@@ -61,6 +61,11 @@ export function useCommunityRecipeList({ recipes }: UseCommunityRecipeListProps)
       );
     }
 
+    // Filter by favorites only
+    if (filters.showFavoritesOnly) {
+      filtered = filtered.filter(recipe => recipe.is_favorite === true);
+    }
+
     // Filter by meal types (map category to meal types)
     if (filters.mealTypes.length > 0) {
       filtered = filtered.filter(recipe => {

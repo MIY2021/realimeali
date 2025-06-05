@@ -9,6 +9,35 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      community_recipe_favorites: {
+        Row: {
+          community_recipe_id: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          community_recipe_id: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          community_recipe_id?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_recipe_favorites_community_recipe_id_fkey"
+            columns: ["community_recipe_id"]
+            isOneToOne: false
+            referencedRelation: "community_recipes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       community_recipes: {
         Row: {
           ai_generated_description: string | null
@@ -822,6 +851,10 @@ export type Database = {
       reject_community_recipe: {
         Args: { recipe_id: string }
         Returns: undefined
+      }
+      toggle_community_recipe_favorite: {
+        Args: { recipe_id: string }
+        Returns: boolean
       }
     }
     Enums: {

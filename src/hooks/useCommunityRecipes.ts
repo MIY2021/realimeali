@@ -29,6 +29,7 @@ export interface CommunityRecipe {
   created_at: string;
   approved_at?: string | null;
   approved_by?: string | null;
+  is_favorite?: boolean; // New field for favorite status
 }
 
 export function useCommunityRecipes() {
@@ -51,7 +52,10 @@ export function useCommunityRecipes() {
     try {
       let query = supabase
         .from('community_recipes')
-        .select('*', { count: 'exact' })
+        .select(`
+          *,
+          community_recipe_favorites!left(id)
+        `, { count: 'exact' })
         .eq('is_approved', true)
         .eq('is_active', true)
         .not('ai_generated_description', 'is', null) // Only show recipes with AI content
@@ -82,8 +86,13 @@ export function useCommunityRecipes() {
 
       if (error) throw error;
 
-      // Cast the data to match our interface since database returns string for moderation_status
-      setRecipes((data || []) as CommunityRecipe[]);
+      // Transform data to include is_favorite status
+      const recipesWithFavorites = (data || []).map(recipe => ({
+        ...recipe,
+        is_favorite: recipe.community_recipe_favorites && recipe.community_recipe_favorites.length > 0
+      })) as CommunityRecipe[];
+
+      setRecipes(recipesWithFavorites);
       setTotalCount(count || 0);
     } catch (error) {
       console.error('Error fetching community recipes:', error);
@@ -94,6 +103,49 @@ export function useCommunityRecipes() {
       });
     } finally {
       setIsLoading(false);
+    }
+  }, [user, toast]);
+
+  const toggleCommunityRecipeFavorite = useCallback(async (recipeId: string, currentFavoriteStatus: boolean) => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "You must be logged in to favorite recipes",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    try {
+      const { data, error } = await supabase.rpc('toggle_community_recipe_favorite', {
+        recipe_id: recipeId
+      });
+
+      if (error) throw error;
+
+      // Update the local state
+      setRecipes(prev => prev.map(recipe => 
+        recipe.id === recipeId 
+          ? { ...recipe, is_favorite: !currentFavoriteStatus }
+          : recipe
+      ));
+
+      toast({
+        title: !currentFavoriteStatus ? "Added to Favorites" : "Removed from Favorites",
+        description: !currentFavoriteStatus 
+          ? "Recipe added to your favorites" 
+          : "Recipe removed from your favorites",
+      });
+
+      return !currentFavoriteStatus;
+    } catch (error) {
+      console.error('Error toggling community recipe favorite:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update favorite status",
+        variant: "destructive",
+      });
+      return currentFavoriteStatus;
     }
   }, [user, toast]);
 
@@ -183,6 +235,7 @@ export function useCommunityRecipes() {
     isLoading,
     totalCount,
     fetchCommunityRecipes,
+    toggleCommunityRecipeFavorite,
     submitCommunityRecipe,
     incrementViewCount,
     incrementSaveCount,

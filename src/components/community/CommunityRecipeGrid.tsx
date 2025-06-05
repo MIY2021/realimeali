@@ -1,34 +1,31 @@
 
 import { CommunityRecipe } from "@/hooks/useCommunityRecipes";
 import { CommunityRecipeCard } from "./CommunityRecipeCard";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useCommunityRecipes } from "@/hooks/useCommunityRecipes";
 
 interface CommunityRecipeGridProps {
   recipes: CommunityRecipe[];
-  mobileLayout: string;
+  mobileLayout?: string;
 }
 
-export function CommunityRecipeGrid({ recipes, mobileLayout }: CommunityRecipeGridProps) {
-  const isMobile = useIsMobile();
+export function CommunityRecipeGrid({ recipes, mobileLayout = "1" }: CommunityRecipeGridProps) {
+  const { toggleCommunityRecipeFavorite } = useCommunityRecipes();
 
-  // Determine grid classes based on mobile layout or default responsive layout
-  const getGridClasses = () => {
-    if (isMobile) {
-      // Mobile with layout preference
-      return mobileLayout === '1' 
-        ? 'grid grid-cols-1 gap-4 sm:gap-6'
-        : 'grid grid-cols-2 gap-3 sm:gap-4';
+  // Determine grid layout based on screen size and mobile layout preference
+  const getGridCols = () => {
+    if (mobileLayout === "2") {
+      return "grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4";
     }
-    // Default responsive layout for desktop
-    return 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6';
+    return "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4";
   };
 
   return (
-    <div className={getGridClasses()} data-testid="community-recipe-list">
+    <div className={`grid ${getGridCols()} gap-4 sm:gap-6`}>
       {recipes.map((recipe) => (
-        <CommunityRecipeCard 
-          key={recipe.id} 
-          recipe={recipe} 
+        <CommunityRecipeCard
+          key={recipe.id}
+          recipe={recipe}
+          onToggleFavorite={toggleCommunityRecipeFavorite}
         />
       ))}
     </div>
