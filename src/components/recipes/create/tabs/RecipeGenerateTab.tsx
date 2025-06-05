@@ -16,7 +16,7 @@ interface RecipeGenerateTabProps {
 const styleOptions = [
   { id: 'quick-easy', label: '🚀 Quick & Easy', description: 'Minimal prep time and simple techniques' },
   { id: 'cheap-cheerful', label: '💰 Budget-Friendly', description: 'Cost-effective ingredients and methods' },
-  { id: 'michelin-star', label: '⭐ Restaurant Quality', description: 'Elevated techniques and presentation' },
+  { id: 'michelin-star', label: '⭐ Michelin Star', description: 'Elevated techniques and presentation' },
 ];
 
 export function RecipeGenerateTab({ 

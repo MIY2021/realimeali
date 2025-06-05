@@ -75,16 +75,24 @@ export function RecipeUrlTab({
           placeholder="https://example-recipe-website.com/recipe/your-recipe"
           className="text-base p-4 h-12"
         />
-        <p className="text-sm text-muted-foreground">
-          Enter a recipe website URL to import recipe details automatically.
-        </p>
       </div>
       
       {isProcessing && importProgress && (
-        <div className="text-center py-4">
-          <div className="text-lg font-medium text-blue-600 mb-2">{importProgress}</div>
-          <Progress value={progressValue} className="w-full h-3" />
-          <div className="text-sm text-gray-500 mt-1">{Math.round(progressValue)}%</div>
+        <div className="my-8 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+          <div className="text-center space-y-4">
+            <div className="text-xl font-semibold text-blue-700 animate-pulse">
+              {importProgress}
+            </div>
+            <div className="space-y-2">
+              <Progress 
+                value={progressValue} 
+                className="w-full h-3 bg-blue-100" 
+              />
+              <div className="text-sm text-blue-600 font-medium">
+                {Math.round(progressValue)}% complete
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
