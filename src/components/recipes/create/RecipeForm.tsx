@@ -14,12 +14,8 @@ interface RecipeFormProps {
   newRecipe: Omit<Recipe, 'id' | 'created_at' | 'updated_at' | 'created_by'>;
   setNewRecipe: (recipe: Omit<Recipe, 'id' | 'created_at' | 'updated_at' | 'created_by'>) => void;
   handleInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
-  handleIngredientChange: (index: number, value: string) => void;
-  handleAddIngredient: () => void;
-  handleRemoveIngredient: (index: number) => void;
-  handleInstructionChange: (index: number, value: string) => void;
-  handleAddInstruction: () => void;
-  handleRemoveInstruction: (index: number) => void;
+  handleIngredientsChange: (ingredients: string[]) => void;
+  handleInstructionsChange: (instructions: string[]) => void;
   handleSubmit: (e: React.FormEvent) => void;
   setShareWithCommunity: (share: boolean) => void;
   shareWithCommunity: boolean;
@@ -30,12 +26,8 @@ export function RecipeForm({
   newRecipe,
   setNewRecipe,
   handleInputChange,
-  handleIngredientChange,
-  handleAddIngredient,
-  handleRemoveIngredient,
-  handleInstructionChange,
-  handleAddInstruction,
-  handleRemoveInstruction,
+  handleIngredientsChange,
+  handleInstructionsChange,
   handleSubmit,
   setShareWithCommunity,
   shareWithCommunity,
@@ -106,16 +98,12 @@ export function RecipeForm({
 
       <EnhancedIngredientManager
         ingredients={newRecipe.ingredients}
-        onIngredientChange={handleIngredientChange}
-        onAddIngredient={handleAddIngredient}
-        onRemoveIngredient={handleRemoveIngredient}
+        onIngredientsChange={handleIngredientsChange}
       />
 
       <EnhancedInstructionManager
         instructions={newRecipe.instructions}
-        onInstructionChange={handleInstructionChange}
-        onAddInstruction={handleAddInstruction}
-        onRemoveInstruction={handleRemoveInstruction}
+        onInstructionsChange={handleInstructionsChange}
       />
 
       <RecipeClassificationSelector

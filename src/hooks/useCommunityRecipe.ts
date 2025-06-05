@@ -10,11 +10,29 @@ export function useCommunityRecipe() {
   const shareRecipe = async (recipeId: string, notes: string = '') => {
     setIsSharing(true);
     try {
+      // First get the recipe data to create the community recipe
+      const { data: recipe, error: recipeError } = await supabase
+        .from('recipes')
+        .select('*')
+        .eq('id', recipeId)
+        .single();
+
+      if (recipeError || !recipe) {
+        throw new Error('Recipe not found');
+      }
+
+      // Create community recipe entry
       const { error } = await supabase
         .from('community_recipes')
         .insert({
-          recipe_id: recipeId,
-          notes: notes.trim() || null,
+          title: recipe.title,
+          description: recipe.description || notes.trim() || null,
+          source_url: `recipe/${recipeId}`,
+          submitted_by: recipe.user_id,
+          prep_time: recipe.prep_time,
+          cook_time: recipe.cook_time,
+          servings: recipe.servings,
+          image_url: recipe.image,
         });
 
       if (error) {

@@ -1,3 +1,4 @@
+
 import { useState, useCallback } from "react";
 import { RecipeForm } from "./RecipeForm";
 import { Recipe } from "@/types";
@@ -19,7 +20,7 @@ export function CreateRecipeContainer() {
   useDocumentTitle("Add Recipe | RealiMeali");
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { householdId, isLoadingMembers } = useHousehold();
+  const { currentHousehold, isLoadingMembers } = useHousehold();
   const { shareRecipe } = useCommunityRecipe();
   const [activeTab, setActiveTab] = useState("manual");
   const [shareWithCommunity, setShareWithCommunity] = useState(false);
@@ -67,7 +68,7 @@ export function CreateRecipeContainer() {
     servings: 1,
     image: "",
     top_tip: "",
-    household_id: householdId || "",
+    household_id: currentHousehold?.id || "",
     is_favorite: false,
     has_cooked: false,
     meal_type: null,
@@ -128,36 +129,12 @@ export function CreateRecipeContainer() {
     }
   };
 
-  const handleIngredientChange = (index: number, value: string) => {
-    const newIngredients = [...newRecipe.ingredients];
-    newIngredients[index] = value;
-    setNewRecipe(prevRecipe => ({ ...prevRecipe, ingredients: newIngredients }));
+  const handleIngredientsChange = (ingredients: string[]) => {
+    setNewRecipe(prevRecipe => ({ ...prevRecipe, ingredients }));
   };
 
-  const handleAddIngredient = () => {
-    setNewRecipe(prevRecipe => ({ ...prevRecipe, ingredients: [...prevRecipe.ingredients, ""] }));
-  };
-
-  const handleRemoveIngredient = (index: number) => {
-    const newIngredients = [...newRecipe.ingredients];
-    newIngredients.splice(index, 1);
-    setNewRecipe(prevRecipe => ({ ...prevRecipe, ingredients: newIngredients }));
-  };
-
-  const handleInstructionChange = (index: number, value: string) => {
-    const newInstructions = [...newRecipe.instructions];
-    newInstructions[index] = value;
-    setNewRecipe(prevRecipe => ({ ...prevRecipe, instructions: newInstructions }));
-  };
-
-  const handleAddInstruction = () => {
-    setNewRecipe(prevRecipe => ({ ...prevRecipe, instructions: [...prevRecipe.instructions, ""] }));
-  };
-
-  const handleRemoveInstruction = (index: number) => {
-    const newInstructions = [...newRecipe.instructions];
-    newInstructions.splice(index, 1);
-    setNewRecipe(prevRecipe => ({ ...prevRecipe, instructions: newInstructions }));
+  const handleInstructionsChange = (instructions: string[]) => {
+    setNewRecipe(prevRecipe => ({ ...prevRecipe, instructions }));
   };
 
   const handleGenerateImage = async () => {
@@ -211,7 +188,7 @@ export function CreateRecipeContainer() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!householdId) {
+    if (!currentHousehold?.id) {
       toast({
         title: "No Household",
         description: "Please create or join a household to continue.",
@@ -240,7 +217,7 @@ export function CreateRecipeContainer() {
         },
         body: JSON.stringify({
           ...sanitizedRecipe,
-          household_id: householdId,
+          household_id: currentHousehold.id,
           share_with_community: shareWithCommunity
         }),
       });
@@ -320,7 +297,7 @@ export function CreateRecipeContainer() {
           storedImages={storedImages}
           selectedImage={selectedImage}
           onImageSelect={handleImageSelect}
-          onDownloadImages={() => handleDownloadImages()}
+          onDownloadImages={handleDownloadImages}
           isDownloadingImages={isDownloadingImages}
           onSearchImages={searchRecipeImagesStandalone}
           isSearchingImages={isSearchingImages}
@@ -341,12 +318,8 @@ export function CreateRecipeContainer() {
               newRecipe={newRecipe}
               setNewRecipe={setNewRecipe}
               handleInputChange={handleInputChange}
-              handleIngredientChange={handleIngredientChange}
-              handleAddIngredient={handleAddIngredient}
-              handleRemoveIngredient={handleRemoveIngredient}
-              handleInstructionChange={handleInstructionChange}
-              handleAddInstruction={handleAddInstruction}
-              handleRemoveInstruction={handleRemoveInstruction}
+              handleIngredientsChange={handleIngredientsChange}
+              handleInstructionsChange={handleInstructionsChange}
               handleSubmit={handleSubmit}
               setShareWithCommunity={setShareWithCommunity}
               shareWithCommunity={shareWithCommunity}
@@ -368,7 +341,7 @@ export function CreateRecipeContainer() {
               storedImages={storedImages}
               selectedImage={selectedImage}
               onImageSelect={handleImageSelect}
-              onDownloadImages={() => handleDownloadImages()}
+              onDownloadImages={handleDownloadImages}
               isDownloadingImages={isDownloadingImages}
               showImageSelection={showImageSelection}
             />
@@ -399,5 +372,3 @@ export function CreateRecipeContainer() {
 }
 
 export type RecipeOrigin = 'manual' | 'url' | 'image' | 'ai';
-
-export { CreateRecipeContainer };
