@@ -41,10 +41,14 @@ serve(async (req) => {
 
     console.log('Generating image with prompt:', prompt);
 
-    // Enhanced prompt for community recipes with light, bright food photography
+    // For community recipes, use the same hyper-realistic template but ensure it's applied
     let enhancedPrompt = prompt;
     if (isCommunityRecipe) {
-      enhancedPrompt = `Professional food photography of ${prompt}. Shot with natural daylight, bright and airy lighting, clean white background or light wooden surface. The dish should look fresh, appetizing, and professionally styled. High-quality food photography, magazine-style, minimal and clean composition, soft natural shadows, vibrant colors but not oversaturated.`;
+      // If it's a community recipe and doesn't already contain our new template,
+      // apply the hyper-realistic styling while preserving the core prompt
+      if (!prompt.includes('hyper-realistic, top-down food photograph')) {
+        enhancedPrompt = `Generate a hyper-realistic, top-down food photograph of ${prompt}. Do not invent ingredients or styling outside what's described. Use natural lighting with soft shadows and realistic textures. Plate the dish in a ceramic or rustic-style plate or bowl. Garnish only with ingredients specifically mentioned or clearly implied in the description. The background should vary between images (e.g., linen, wood, stone, concrete) but always remain clean and natural. Include minimal, relevant props (e.g., a fork, a napkin, or a wedge of cheese) only if they are contextually appropriate. The result must look like a professional, real-life food photograph with no digital or artificial appearance. Do not use imaginary or stylized elements.`;
+      }
     }
 
     // Generate image with OpenAI

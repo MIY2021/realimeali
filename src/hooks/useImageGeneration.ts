@@ -28,16 +28,16 @@ export function useImageGeneration() {
       // Step 1: Start generation
       setGenerationProgress?.(10);
       
-      // Create detailed prompt for photo-realistic food image
-      let prompt = `Photo-realistic, professional food photography of ${title}`;
+      // Create new hyper-realistic prompt that strictly uses title and description
+      let prompt = `Generate a hyper-realistic, top-down food photograph of the recipe described in the provided title and description only: "${title}"`;
       
       // Add description context if available
       if (description && description.trim()) {
-        prompt += `, ${description.trim()}`;
+        prompt += ` - ${description.trim()}`;
       }
       
-      // Add photography specifications
-      prompt += `, beautifully plated and styled, natural lighting, appetizing presentation, high-end restaurant quality, macro food photography, vibrant colors, garnished, professional culinary styling, depth of field, 4K quality`;
+      // Add the new detailed instructions
+      prompt += `. Do not invent ingredients or styling outside what's described. Use natural lighting with soft shadows and realistic textures. Plate the dish in a ceramic or rustic-style plate or bowl. Garnish only with ingredients specifically mentioned or clearly implied in the description. The background should vary between images (e.g., linen, wood, stone, concrete) but always remain clean and natural. Include minimal, relevant props (e.g., a fork, a napkin, or a wedge of cheese) only if they are contextually appropriate. The result must look like a professional, real-life food photograph with no digital or artificial appearance. Do not use imaginary or stylized elements. Use only the provided title and description as the source of truth for what the image contains.`;
       
       setGenerationProgress?.(50);
       
@@ -63,7 +63,7 @@ export function useImageGeneration() {
       
       toast({
         title: "Image Generated!",
-        description: "Photo-realistic recipe image has been generated and saved successfully!",
+        description: "Hyper-realistic recipe image has been generated and saved successfully!",
       });
 
     } catch (error) {
