@@ -19,8 +19,17 @@ export const useRecipeApi = () => {
       
       // Transform database response to match Recipe interface
       return (data || []).map(recipe => {
-        // Handle the cooking status from the joined table - simplified approach
-        const hasCooked = recipe.household_recipe_cooking_status?.[0]?.has_cooked ?? false;
+        // Handle the cooking status from the joined table
+        // The JOIN returns an array, and we need to safely access the has_cooked property
+        let hasCooked = false;
+        if (recipe.household_recipe_cooking_status && 
+            Array.isArray(recipe.household_recipe_cooking_status) && 
+            recipe.household_recipe_cooking_status.length > 0) {
+          const statusRecord = recipe.household_recipe_cooking_status[0];
+          if (statusRecord && typeof statusRecord === 'object' && 'has_cooked' in statusRecord) {
+            hasCooked = Boolean(statusRecord.has_cooked);
+          }
+        }
 
         return {
           ...recipe,
