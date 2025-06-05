@@ -96,7 +96,7 @@ export const FindRecipesContent = () => {
   };
 
   const hasActiveFilters = Object.entries(filters).some(([key, value]) => {
-    if (key === 'searchTerm' || key === 'showFavoritesOnly') return false;
+    if (key === 'searchTerm') return false;
     if (Array.isArray(value)) return value.length > 0;
     return false;
   });
@@ -203,8 +203,8 @@ export const FindRecipesContent = () => {
             </div>
           </div>
 
-          {/* Row 2: All filters on equal width - wider cuisine dropdown */}
-          <div className="grid grid-cols-[1fr_1.2fr_1fr_1fr] gap-2">
+          {/* Row 2: All filters on equal width */}
+          <div className="grid grid-cols-4 gap-2">
             <DropdownFilterSection
               title="🕒 Meal"
               options={MEAL_TYPE_OPTIONS}
@@ -284,13 +284,47 @@ export const FindRecipesContent = () => {
           </div>
 
           {/* Filters directly under search bar */}
-          <SimpleRecipeFiltersComponent
-            filters={filters}
-            onFiltersChange={handleFiltersChange}
-            isOpen={filtersOpen}
-            onToggle={toggleFilters}
-            alwaysVisible={true}
-          />
+          <div className="mb-4">
+            <div className="flex flex-wrap gap-2 sm:gap-3">
+              <DropdownFilterSection
+                title="🕒 Meal Type"
+                options={MEAL_TYPE_OPTIONS}
+                selectedValues={filters.mealTypes}
+                onToggle={(value) => toggleArrayFilter('mealTypes', value)}
+              />
+
+              <DropdownFilterSection
+                title="🌍 Cuisine"
+                options={CUISINE_REGION_OPTIONS}
+                selectedValues={filters.cuisineRegions}
+                onToggle={(value) => toggleArrayFilter('cuisineRegions', value)}
+              />
+
+              <DropdownFilterSection
+                title="⚡ Complexity"
+                options={COMPLEXITY_LEVEL_OPTIONS}
+                selectedValues={filters.complexityLevels}
+                onToggle={(value) => toggleArrayFilter('complexityLevels', value)}
+              />
+
+              <DropdownFilterSection
+                title="🍎 Diet & Lifestyle"
+                options={DIET_LIFESTYLE_OPTIONS}
+                selectedValues={filters.dietLifestyle}
+                onToggle={(value) => toggleArrayFilter('dietLifestyle', value)}
+              />
+            </div>
+            {hasActiveFilters && (
+              <div className="mt-3">
+                <button
+                  onClick={clearAllFilters}
+                  className="text-sm text-muted-foreground hover:text-foreground underline"
+                >
+                  Clear all filters ({activeFilterCount})
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       )}
       
