@@ -61,7 +61,7 @@ export const RecipeDetail = ({ recipe, onEdit, onDelete, isOwner, onAddToMealPla
   return (
     <div className="max-w-4xl mx-auto">
       {/* Hero Section with Image and Title Overlay */}
-      <div className="relative h-80 mb-6 rounded-lg overflow-hidden shadow-lg">
+      <div className="relative h-80 mb-4 rounded-lg overflow-hidden shadow-lg">
         <RecipeImage 
           recipe={recipe} 
           className="w-full h-full object-cover"
@@ -96,13 +96,13 @@ export const RecipeDetail = ({ recipe, onEdit, onDelete, isOwner, onAddToMealPla
         </div>
       </div>
 
-      {/* Action buttons section - underneath the image */}
-      <div className="flex items-center justify-between mb-8 px-2">
-        <div className="flex items-center gap-3">
+      {/* Action buttons section - mobile responsive */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between mb-6 gap-4 px-2">
+        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
           {/* Add to Meal Plan button */}
           <Button 
             onClick={onAddToMealPlan}
-            className="bg-terracotta hover:bg-terracotta/90 text-white"
+            className="bg-terracotta hover:bg-terracotta/90 text-white w-full sm:w-auto"
           >
             <Plus className="h-4 w-4 mr-2" />
             Add to Meal Plan
@@ -113,7 +113,7 @@ export const RecipeDetail = ({ recipe, onEdit, onDelete, isOwner, onAddToMealPla
             variant="outline"
             onClick={handleToggleCooked}
             disabled={isTogglingCooked}
-            className={`transition-all duration-200 ${
+            className={`transition-all duration-200 w-full sm:w-auto ${
               recipe.has_cooked
                 ? 'bg-green-50 border-green-200 text-green-700 hover:bg-green-100'
                 : 'hover:bg-gray-50'
@@ -124,7 +124,7 @@ export const RecipeDetail = ({ recipe, onEdit, onDelete, isOwner, onAddToMealPla
           </Button>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 justify-end">
           {/* Favorite button */}
           <Button
             variant="outline"
