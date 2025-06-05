@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -145,17 +146,17 @@ export function SimpleRecipeFiltersComponent({
 
           {!isMobile && (
             <>
-              <div className="flex items-center gap-2 px-3 py-2 border rounded-md bg-background min-w-[140px]">
+              <div className="flex items-center gap-2 px-3 py-2 border rounded-md bg-background min-w-[120px]">
                 <Heart className={`h-4 w-4 ${filters.showFavoritesOnly ? "fill-red-500 text-red-500" : "text-gray-500"}`} />
-                <span className="text-sm">Favourites Only</span>
+                <span className="text-sm">Favourites</span>
                 <Switch
                   checked={filters.showFavoritesOnly}
                   onCheckedChange={toggleFavorites}
                 />
               </div>
-              <div className="flex items-center gap-2 px-3 py-2 border rounded-md bg-background min-w-[140px]">
+              <div className="flex items-center gap-2 px-3 py-2 border rounded-md bg-background min-w-[115px]">
                 <User className={`h-4 w-4 ${filters.showNotCookedOnly ? "text-orange-500" : "text-gray-500"}`} />
-                <span className="text-sm">Not Cooked Only</span>
+                <span className="text-sm">Not Cooked</span>
                 <Switch
                   checked={filters.showNotCookedOnly}
                   onCheckedChange={toggleNotCooked}
@@ -231,18 +232,18 @@ export function SimpleRecipeFiltersComponent({
             onToggle={(value) => toggleArrayFilter('dietLifestyle', value)}
           />
 
-          <div className="flex items-center gap-2 px-3 py-2 border rounded-md bg-background min-w-[140px]">
+          <div className="flex items-center gap-2 px-3 py-2 border rounded-md bg-background min-w-[120px]">
             <Heart className={`h-4 w-4 ${filters.showFavoritesOnly ? "fill-red-500 text-red-500" : "text-gray-500"}`} />
-            <span className="text-sm">Favourites Only</span>
+            <span className="text-sm">Favourites</span>
             <Switch
               checked={filters.showFavoritesOnly}
               onCheckedChange={toggleFavorites}
             />
           </div>
 
-          <div className="flex items-center gap-2 px-3 py-2 border rounded-md bg-background min-w-[140px]">
+          <div className="flex items-center gap-2 px-3 py-2 border rounded-md bg-background min-w-[115px]">
             <User className={`h-4 w-4 ${filters.showNotCookedOnly ? "text-orange-500" : "text-gray-500"}`} />
-            <span className="text-sm">Not Cooked Only</span>
+            <span className="text-sm">Not Cooked</span>
             <Switch
               checked={filters.showNotCookedOnly}
               onCheckedChange={toggleNotCooked}
