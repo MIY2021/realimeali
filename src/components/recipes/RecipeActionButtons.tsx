@@ -1,13 +1,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { User, Heart, MoreHorizontal, Pencil, Trash2, Plus } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { User, Heart, Pencil, Trash2, Plus } from "lucide-react";
 import { Recipe } from "@/types";
 import { useRecipes } from "@/contexts/RecipesContext";
 
@@ -67,7 +61,7 @@ export const RecipeActionButtons = ({
           Add to Meal Plan
         </Button>
         
-        {/* Bottom row - three buttons in a row */}
+        {/* Bottom row - all buttons in a row */}
         <div className="flex gap-2">
           {/* Cooking Status Toggle */}
           <Button
@@ -94,33 +88,27 @@ export const RecipeActionButtons = ({
             <Heart className={`h-5 w-5 ${recipe.is_favorite ? 'fill-red-500 text-red-500' : 'text-gray-600'}`} />
           </Button>
 
-          {/* Owner actions */}
+          {/* Owner actions - Edit and Delete buttons */}
           {isOwner && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button 
-                  variant="outline" 
-                  size="icon"
-                  className="hover:bg-gray-50 flex-shrink-0"
-                >
-                  <MoreHorizontal className="h-5 w-5 text-gray-600" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="bg-white shadow-lg border border-gray-200">
-                <DropdownMenuItem onClick={() => onEdit?.(recipe)} className="text-gray-700 hover:bg-gray-50">
-                  <Pencil className="h-4 w-4 mr-2" />
-                  Edit Recipe
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  onClick={handleDelete}
-                  disabled={isDeleting}
-                  className="text-red-600 focus:text-red-600 hover:bg-red-50"
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  {isDeleting ? 'Deleting...' : 'Delete Recipe'}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => onEdit?.(recipe)}
+                className="hover:bg-gray-50 flex-shrink-0"
+              >
+                <Pencil className="h-4 w-4 text-gray-600" />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={handleDelete}
+                disabled={isDeleting}
+                className="hover:bg-red-50 text-red-600 border-red-200 flex-shrink-0"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </>
           )}
         </div>
       </div>
@@ -164,33 +152,27 @@ export const RecipeActionButtons = ({
             <Heart className={`h-5 w-5 ${recipe.is_favorite ? 'fill-red-500 text-red-500' : 'text-gray-600'}`} />
           </Button>
 
-          {/* Owner actions */}
+          {/* Owner actions - Edit and Delete buttons */}
           {isOwner && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button 
-                  variant="outline" 
-                  size="icon"
-                  className="hover:bg-gray-50"
-                >
-                  <MoreHorizontal className="h-5 w-5 text-gray-600" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="bg-white shadow-lg border border-gray-200">
-                <DropdownMenuItem onClick={() => onEdit?.(recipe)} className="text-gray-700 hover:bg-gray-50">
-                  <Pencil className="h-4 w-4 mr-2" />
-                  Edit Recipe
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  onClick={handleDelete}
-                  disabled={isDeleting}
-                  className="text-red-600 focus:text-red-600 hover:bg-red-50"
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  {isDeleting ? 'Deleting...' : 'Delete Recipe'}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => onEdit?.(recipe)}
+                className="hover:bg-gray-50"
+              >
+                <Pencil className="h-4 w-4 text-gray-600" />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={handleDelete}
+                disabled={isDeleting}
+                className="hover:bg-red-50 text-red-600 border-red-200"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </>
           )}
         </div>
       </div>
