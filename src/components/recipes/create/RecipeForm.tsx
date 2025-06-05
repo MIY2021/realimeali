@@ -61,68 +61,72 @@ export function RecipeForm({
 }: RecipeFormProps) {
   return (
     <div className="space-y-8">
-      {/* Recipe Image Section */}
-      {onImageChange && onGenerateImage && (
-        <div className="bg-gray-50 p-6 rounded-lg">
-          <h3 className="text-lg font-semibold mb-4">Recipe Image</h3>
-          <EnhancedImageUpload
-            imagePreview={imagePreview}
-            isGenerating={isGeneratingImage}
-            generationProgress={generationProgress}
-            onImageChange={onImageChange}
-            onGenerateImage={onGenerateImage}
-            recipeTitle={newRecipe.title}
-            websiteImages={websiteImages}
-            storedImages={storedImages}
-            selectedImage={selectedImage}
-            onImageSelect={onImageSelect}
-            onDownloadImages={onDownloadImages}
-            isDownloadingImages={isDownloadingImages}
-            onSearchImages={onSearchImages}
-            isSearchingImages={isSearchingImages}
-          />
-        </div>
-      )}
-
       {/* Recipe Form */}
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="title">Recipe Title *</Label>
-            <Input
-              id="title"
-              name="title"
-              value={newRecipe.title}
-              onChange={handleInputChange}
-              placeholder="Enter recipe title"
-              required
-            />
+        {/* Basic Information */}
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="title">Recipe Title *</Label>
+              <Input
+                id="title"
+                name="title"
+                value={newRecipe.title}
+                onChange={handleInputChange}
+                placeholder="Enter recipe title"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="servings">Servings</Label>
+              <Input
+                id="servings"
+                name="servings"
+                type="number"
+                value={newRecipe.servings}
+                onChange={handleInputChange}
+                min="1"
+              />
+            </div>
           </div>
+
           <div className="space-y-2">
-            <Label htmlFor="servings">Servings</Label>
-            <Input
-              id="servings"
-              name="servings"
-              type="number"
-              value={newRecipe.servings}
+            <Label htmlFor="description">Description</Label>
+            <Textarea
+              id="description"
+              name="description"
+              value={newRecipe.description}
               onChange={handleInputChange}
-              min="1"
+              placeholder="Brief description of the recipe"
+              rows={3}
             />
           </div>
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="description">Description</Label>
-          <Textarea
-            id="description"
-            name="description"
-            value={newRecipe.description}
-            onChange={handleInputChange}
-            placeholder="Brief description of the recipe"
-            rows={3}
-          />
-        </div>
+        {/* Recipe Image Section - After title and description */}
+        {onImageChange && onGenerateImage && (
+          <div className="bg-gray-50 p-6 rounded-lg">
+            <h3 className="text-lg font-semibold mb-4">Recipe Image</h3>
+            <EnhancedImageUpload
+              imagePreview={imagePreview}
+              isGenerating={isGeneratingImage}
+              generationProgress={generationProgress}
+              onImageChange={onImageChange}
+              onGenerateImage={onGenerateImage}
+              recipeTitle={newRecipe.title}
+              websiteImages={websiteImages}
+              storedImages={storedImages}
+              selectedImage={selectedImage}
+              onImageSelect={onImageSelect}
+              onDownloadImages={onDownloadImages}
+              isDownloadingImages={isDownloadingImages}
+              onSearchImages={onSearchImages}
+              isSearchingImages={isSearchingImages}
+            />
+          </div>
+        )}
 
+        {/* Timing Information */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="prep_time">Prep Time (minutes)</Label>

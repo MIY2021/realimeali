@@ -1,6 +1,7 @@
 
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { UtensilsCrossed } from "lucide-react";
 import { RecipeUrlTab } from "./tabs/RecipeUrlTab";
 import { RecipeImageTab } from "./tabs/RecipeImageTab";
 import { RecipeAiTab } from "./tabs/RecipeAiTab";
@@ -73,23 +74,6 @@ export function CreateRecipeContainer() {
     progressValue,
   } = useRecipeProcessing();
 
-  // Image upload handler
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    try {
-      await processImage(file, setNewRecipe, newRecipe, setActiveTab, async () => {
-        if (newRecipe.title.trim()) {
-          return await searchRecipeImagesStandalone(newRecipe.title);
-        }
-        return [];
-      });
-    } catch (error) {
-      console.error('Error processing image:', error);
-    }
-  };
-
   // Wrapped handlers for the new hooks
   const wrappedHandleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     handleImageChange(e, setNewRecipe, newRecipe, handleImageSelect, setRecipeUrl);
@@ -133,24 +117,37 @@ export function CreateRecipeContainer() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Page Header */}
-      <div className="text-center space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight">Add Recipe</h1>
-        <p className="text-muted-foreground">
+    <div className="container mx-auto px-4 py-6 max-w-6xl">
+      {/* Page Header - matching recipes page style */}
+      <div className="mb-8">
+        <div className="flex items-center gap-3 mb-2">
+          <UtensilsCrossed className="h-8 w-8 text-primary" />
+          <h1 className="text-3xl font-bold tracking-tight">Add Recipe</h1>
+        </div>
+        <p className="text-muted-foreground text-lg">
           Import from websites, upload photos, use AI, or create manually
         </p>
       </div>
 
-      {/* Main Content - Single Column Layout */}
-      <div className="max-w-4xl mx-auto">
+      {/* Main Content */}
+      <div className="space-y-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="url">Website</TabsTrigger>
-            <TabsTrigger value="image">Photo</TabsTrigger>
-            <TabsTrigger value="text">Text</TabsTrigger>
-            <TabsTrigger value="ai">AI Generate</TabsTrigger>
-            <TabsTrigger value="manual">Manual</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-5 h-12">
+            <TabsTrigger value="url" className="text-sm">
+              🌐 Website
+            </TabsTrigger>
+            <TabsTrigger value="image" className="text-sm">
+              📸 Photo
+            </TabsTrigger>
+            <TabsTrigger value="text" className="text-sm">
+              📝 Text
+            </TabsTrigger>
+            <TabsTrigger value="ai" className="text-sm">
+              🤖 AI Generate
+            </TabsTrigger>
+            <TabsTrigger value="manual" className="text-sm">
+              ✍️ Manual
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="url">
