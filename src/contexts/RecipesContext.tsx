@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import { Recipe } from '@/types';
 import { useRecipeApi } from '@/hooks/useRecipeApi';
@@ -135,10 +134,10 @@ export const RecipesProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const toggleCookingStatus = useCallback(async (id: string): Promise<Recipe | null> => {
     const existingRecipe = getRecipeById(id);
-    if (!existingRecipe || !currentHousehold) return null;
+    if (!existingRecipe) return null;
 
     try {
-      const newCookingStatus = await api.toggleCookingStatus(id, currentHousehold.id);
+      const newCookingStatus = await api.toggleCookingStatus(id);
       const updatedRecipe = { ...existingRecipe, has_cooked: newCookingStatus };
       
       setRecipes(prev => prev.map(recipe => 
@@ -160,7 +159,7 @@ export const RecipesProvider: React.FC<{ children: React.ReactNode }> = ({ child
       });
       return null;
     }
-  }, [api, getRecipeById, currentHousehold, toast]);
+  }, [api, getRecipeById, toast]);
 
   const value: RecipesContextType = {
     recipes,

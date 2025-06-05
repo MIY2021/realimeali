@@ -10,10 +10,7 @@ export const useRecipeApi = () => {
       
       const { data, error } = await supabase
         .from('recipes')
-        .select(`
-          *,
-          household_recipe_cooking_status(has_cooked)
-        `)
+        .select('*')
         .eq('household_id', householdId)
         .order('created_at', { ascending: false });
 
@@ -26,21 +23,10 @@ export const useRecipeApi = () => {
       
       // Transform database response to match Recipe interface
       return (data || []).map(recipe => {
-        // Handle the cooking status from the joined table
-        let hasCooked = false;
-        if (recipe.household_recipe_cooking_status && 
-            Array.isArray(recipe.household_recipe_cooking_status) && 
-            recipe.household_recipe_cooking_status.length > 0) {
-          const statusRecord = recipe.household_recipe_cooking_status[0];
-          if (statusRecord && typeof statusRecord === 'object' && 'has_cooked' in statusRecord) {
-            hasCooked = Boolean(statusRecord.has_cooked);
-          }
-        }
-
         return {
           ...recipe,
           created_by: recipe.user_id, // Map user_id to created_by
-          has_cooked: hasCooked,
+          has_cooked: Boolean(recipe.has_cooked || false), // Use the direct column
           // Filter meal_type to only valid values, cast as MealType
           meal_type: VALID_MEAL_TYPES.includes(recipe.meal_type as MealType) 
             ? recipe.meal_type as MealType 
@@ -121,6 +107,7 @@ export const useRecipeApi = () => {
           servings: recipe.servings,
           image: recipe.image,
           is_favorite: recipe.is_favorite,
+          has_cooked: recipe.has_cooked, // Include the cooking status
           meal_type: recipe.meal_type,
           cuisine_region: recipe.cuisine_region,
           diet_lifestyle: recipe.diet_lifestyle,
@@ -137,7 +124,7 @@ export const useRecipeApi = () => {
       return {
         ...data,
         created_by: data.user_id, // Map user_id to created_by
-        has_cooked: recipe.has_cooked, // Preserve cooking status
+        has_cooked: Boolean(data.has_cooked || false), // Use the direct column
         meal_type: VALID_MEAL_TYPES.includes(data.meal_type as MealType) 
           ? data.meal_type as MealType 
           : undefined,
@@ -164,11 +151,10 @@ export const useRecipeApi = () => {
     }
   };
 
-  const toggleCookingStatus = async (recipeId: string, householdId: string): Promise<boolean> => {
+  const toggleCookingStatus = async (recipeId: string): Promise<boolean> => {
     try {
-      const { data, error } = await supabase.rpc('toggle_recipe_cooking_status', {
-        recipe_id_param: recipeId,
-        household_id_param: householdId
+      const { data, error } = await supabase.rpc('toggle_recipe_cooking_status_simple', {
+        recipe_id_param: recipeId
       });
 
       if (error) throw error;
