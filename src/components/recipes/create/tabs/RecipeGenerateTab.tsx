@@ -83,18 +83,16 @@ export function RecipeGenerateTab({
         </div>
       </div>
 
-      {/* Progress display - identical to image import */}
+      {/* Progress display - identical to website import */}
       {isProcessing && (
         <div className="space-y-3">
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">Generating recipe...</span>
-            <span className="text-muted-foreground">{Math.round(progressValue)}%</span>
+          <div className="flex justify-between items-center">
+            <span className="text-sm font-medium">Processing recipe...</span>
+            <span className="text-sm text-muted-foreground">{Math.round(progressValue)}%</span>
           </div>
           <Progress value={progressValue} className="w-full" />
           {generationProgress && (
-            <p className="text-sm text-blue-600 font-medium">
-              {generationProgress}
-            </p>
+            <p className="text-sm text-blue-600">{generationProgress}</p>
           )}
         </div>
       )}
@@ -105,12 +103,7 @@ export function RecipeGenerateTab({
           disabled={!aiPrompt.trim() || isProcessing}
           className="bg-blue-600 hover:bg-blue-700"
         >
-          {isProcessing ? (
-            <>
-              <Sparkles className="h-4 w-4 mr-2 animate-spin" />
-              {generationProgress || "Generating..."}
-            </>
-          ) : (
+          {isProcessing ? "Generating..." : (
             <>
               <Sparkles className="h-4 w-4 mr-2" />
               Generate Recipe

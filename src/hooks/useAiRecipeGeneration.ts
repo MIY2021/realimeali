@@ -2,14 +2,14 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { FUNNY_LOADING_MESSAGES } from './useUrlRecipeProcessing/constants';
+import { useProgressTracking } from './useUrlRecipeProcessing/useProgressTracking';
 
 export function useAiRecipeGeneration() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [aiPrompt, setAiPrompt] = useState('');
   const [stylePreferences, setStylePreferences] = useState<string[]>([]);
-  const [generationProgress, setGenerationProgress] = useState<string>('');
-  const [progressValue, setProgressValue] = useState(0);
+  
+  const progressTracking = useProgressTracking();
 
   const generateRecipe = async (options: { prompt?: string; stylePreferences?: string[] } = {}) => {
     const promptToUse = options.prompt || aiPrompt;
@@ -21,27 +21,12 @@ export function useAiRecipeGeneration() {
     }
 
     setIsGenerating(true);
-    setProgressValue(0);
+    
+    // Start the progress animation identical to website import
+    const progressInterval = progressTracking.startProgressAnimation();
     
     try {
       console.log('🤖 Generating recipe with AI:', promptToUse);
-      
-      // Start the progress animation identical to image import
-      const shuffledMessages = [...FUNNY_LOADING_MESSAGES].sort(() => Math.random() - 0.5);
-      let messageIndex = 0;
-      let currentProgress = 0;
-      
-      const progressInterval = setInterval(() => {
-        // Update progress smoothly
-        currentProgress = Math.min(currentProgress + Math.random() * 15 + 5, 85);
-        setProgressValue(currentProgress);
-        
-        // Update funny messages
-        if (messageIndex < shuffledMessages.length) {
-          setGenerationProgress(shuffledMessages[messageIndex]);
-          messageIndex++;
-        }
-      }, 800);
       
       const { data, error } = await supabase.functions.invoke('parse-recipe-ai', {
         body: {
@@ -64,19 +49,15 @@ export function useAiRecipeGeneration() {
       const recipe = data.parsedRecipe;
       console.log('✅ Recipe generated successfully:', recipe.title);
       
-      // Complete progress identical to image import
-      setProgressValue(100);
-      setGenerationProgress("✨ Recipe generated successfully!");
+      // Complete progress identical to website import
+      progressTracking.completeProgress();
       
       toast.success('Recipe generated!', {
         description: `Created "${recipe.title}" with AI assistance`
       });
 
-      // Reset progress after a delay
-      setTimeout(() => {
-        setGenerationProgress("");
-        setProgressValue(0);
-      }, 2000);
+      // Reset progress after delay
+      progressTracking.resetProgress();
 
       // Transform the AI response to match our Recipe interface
       return {
@@ -101,8 +82,8 @@ export function useAiRecipeGeneration() {
 
     } catch (error) {
       console.error('❌ Error generating recipe:', error);
-      setGenerationProgress("");
-      setProgressValue(0);
+      clearInterval(progressInterval);
+      progressTracking.resetProgress(true);
       toast.error('Failed to generate recipe', {
         description: error instanceof Error ? error.message : 'Please try again'
       });
@@ -119,8 +100,7 @@ export function useAiRecipeGeneration() {
     setAiPrompt,
     stylePreferences,
     setStylePreferences,
-    generationProgress,
-    setGenerationProgress,
-    progressValue,
+    generationProgress: progressTracking.importProgress,
+    progressValue: progressTracking.progressValue,
   };
 }

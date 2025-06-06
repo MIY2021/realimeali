@@ -34,7 +34,7 @@ export function useRecipeProcessing() {
     // Image processing
     processImage: imageProcessing.processImage,
     
-    // AI generation
+    // AI generation - now using proper progress tracking
     generateRecipe: aiGeneration.generateRecipe,
     aiPrompt: aiGeneration.aiPrompt,
     setAiPrompt: aiGeneration.setAiPrompt,
@@ -47,7 +47,11 @@ export function useRecipeProcessing() {
     isProcessing: textProcessing.isProcessing || urlProcessing.isProcessing || imageProcessing.isProcessing || aiGeneration.isGenerating,
     
     // Progress tracking - prioritize specific processing type progress
-    importProgress: imageProcessing.isProcessing ? imageProcessing.importProgress : urlProcessing.importProgress,
-    progressValue: imageProcessing.isProcessing ? imageProcessing.progressValue : urlProcessing.progressValue,
+    importProgress: aiGeneration.isGenerating ? aiGeneration.generationProgress : 
+                   imageProcessing.isProcessing ? imageProcessing.importProgress : 
+                   urlProcessing.importProgress,
+    progressValue: aiGeneration.isGenerating ? aiGeneration.progressValue :
+                   imageProcessing.isProcessing ? imageProcessing.progressValue : 
+                   urlProcessing.progressValue,
   };
 }
