@@ -58,6 +58,7 @@ export function RecipeImageTab({
           ref={fileInputRef}
           type="file"
           accept="image/*"
+          capture="environment"
           onChange={handleFileChange}
           className="hidden"
           disabled={isProcessing}
