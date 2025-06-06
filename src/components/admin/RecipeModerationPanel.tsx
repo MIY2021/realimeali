@@ -42,10 +42,13 @@ export function RecipeModerationPanel() {
   }, []);
 
   const { 
+    generateAIImage,
+    uploadImageFile,
     updateAIImageUrl,
     approveRecipe,
     rejectRecipe,
-    generatingAI
+    generatingAI,
+    uploadingFile
   } = useRecipeModerationOperations(fetchRecipes);
 
   // Filter recipes based on current filter
@@ -161,8 +164,11 @@ export function RecipeModerationPanel() {
           recipe={currentRecipe}
           onApprove={approveRecipe}
           onReject={rejectRecipe}
+          onGenerateAI={generateAIImage}
+          onUploadFile={uploadImageFile}
           onUpdateImageUrl={updateAIImageUrl}
           generatingAI={generatingAI}
+          uploadingFile={uploadingFile}
         />
       ) : null}
     </div>

@@ -4,38 +4,34 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CommunityRecipe } from "@/hooks/useCommunityRecipes";
 import { Link, Clock, Users, Globe } from "lucide-react";
-import { UtensilsCrossed } from "lucide-react";
 import { ModerationActions } from "./ModerationActions";
+import { ImageManagementPanel } from "./ImageManagementPanel";
 
 interface SingleRecipeModerationViewProps {
   recipe: CommunityRecipe;
   onApprove: (recipeId: string) => void;
   onReject: (recipeId: string) => void;
+  onGenerateAI: (recipe: CommunityRecipe) => void;
+  onUploadFile: (recipe: CommunityRecipe, file: File) => void;
   onUpdateImageUrl: (recipe: CommunityRecipe, imageUrl: string) => void;
   generatingAI: { [key: string]: boolean };
+  uploadingFile: { [key: string]: boolean };
 }
 
 export function SingleRecipeModerationView({
   recipe,
   onApprove,
   onReject,
+  onGenerateAI,
+  onUploadFile,
   onUpdateImageUrl,
   generatingAI,
+  uploadingFile,
 }: SingleRecipeModerationViewProps) {
   const [moderatorNotes, setModeratorNotes] = useState(recipe.moderator_notes || "");
-  const [editingImageUrl, setEditingImageUrl] = useState(false);
-  const [newImageUrl, setNewImageUrl] = useState(recipe.ai_generated_image_url || "");
-
-  const handleImageUrlUpdate = () => {
-    if (newImageUrl !== recipe.ai_generated_image_url) {
-      onUpdateImageUrl(recipe, newImageUrl);
-    }
-    setEditingImageUrl(false);
-  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -57,66 +53,22 @@ export function SingleRecipeModerationView({
     });
   };
 
+  const isGeneratingAIImage = generatingAI[`${recipe.id}-image`] || false;
+  const isUploadingFile = uploadingFile[recipe.id] || false;
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       {/* Main Recipe Content - Left/Top */}
       <div className="lg:col-span-2 space-y-6">
-        {/* Recipe Image */}
-        <Card>
-          <CardContent className="p-6">
-            <div className="aspect-video w-full bg-muted rounded-lg overflow-hidden mb-4">
-              {recipe.ai_generated_image_url ? (
-                <img
-                  src={recipe.ai_generated_image_url}
-                  alt={recipe.title}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                  <UtensilsCrossed className="h-12 w-12" />
-                </div>
-              )}
-            </div>
-            
-            {/* Image URL Management */}
-            <div className="space-y-2">
-              <Label htmlFor="imageUrl">AI Generated Image URL</Label>
-              {editingImageUrl ? (
-                <div className="flex gap-2">
-                  <Input
-                    id="imageUrl"
-                    value={newImageUrl}
-                    onChange={(e) => setNewImageUrl(e.target.value)}
-                    placeholder="Enter image URL..."
-                  />
-                  <Button onClick={handleImageUrlUpdate} size="sm">
-                    Save
-                  </Button>
-                  <Button 
-                    onClick={() => setEditingImageUrl(false)} 
-                    variant="outline" 
-                    size="sm"
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              ) : (
-                <div className="flex gap-2 items-center">
-                  <p className="text-sm text-muted-foreground flex-1">
-                    {recipe.ai_generated_image_url || "No AI image URL set"}
-                  </p>
-                  <Button 
-                    onClick={() => setEditingImageUrl(true)} 
-                    variant="outline" 
-                    size="sm"
-                  >
-                    Edit
-                  </Button>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+        {/* Recipe Image Management */}
+        <ImageManagementPanel
+          recipe={recipe}
+          onGenerateAI={onGenerateAI}
+          onUploadFile={onUploadFile}
+          onUpdateImageUrl={onUpdateImageUrl}
+          isGeneratingAI={isGeneratingAIImage}
+          isUploadingFile={isUploadingFile}
+        />
 
         {/* Recipe Details */}
         <Card>
