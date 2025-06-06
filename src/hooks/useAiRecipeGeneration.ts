@@ -22,6 +22,9 @@ export function useAiRecipeGeneration() {
 
     setIsGenerating(true);
     
+    // Reset progress state before starting new generation
+    progressTracking.resetProgress(true);
+    
     // Start the progress animation identical to website import
     const progressInterval = progressTracking.startProgressAnimation();
     
