@@ -1,57 +1,15 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Filter } from "lucide-react";
+import { Search } from "lucide-react";
 import { DropdownFilterSection } from "@/components/recipes/filters/DropdownFilterSection";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-
-// Define filter options similar to recipe classification
-const MEAL_TYPE_OPTIONS = [
-  { value: "Beef", label: "Beef", icon: "🥩" },
-  { value: "Chicken", label: "Chicken", icon: "🐔" },
-  { value: "Dessert", label: "Dessert", icon: "🧁" },
-  { value: "Lamb", label: "Lamb", icon: "🐑" },
-  { value: "Miscellaneous", label: "Miscellaneous", icon: "🍽️" },
-  { value: "Pasta", label: "Pasta", icon: "🍝" },
-  { value: "Pork", label: "Pork", icon: "🐷" },
-  { value: "Seafood", label: "Seafood", icon: "🐟" },
-  { value: "Side", label: "Side", icon: "🥗" },
-  { value: "Starter", label: "Starter", icon: "🥄" },
-  { value: "Vegan", label: "Vegan", icon: "🌱" },
-  { value: "Vegetarian", label: "Vegetarian", icon: "🥬" },
-  { value: "Breakfast", label: "Breakfast", icon: "🍳" },
-];
-
-const CUISINE_OPTIONS = [
-  { value: "American", label: "American", icon: "🇺🇸" },
-  { value: "British", label: "British", icon: "🇬🇧" },
-  { value: "Chinese", label: "Chinese", icon: "🇨🇳" },
-  { value: "French", label: "French", icon: "🇫🇷" },
-  { value: "Greek", label: "Greek", icon: "🇬🇷" },
-  { value: "Indian", label: "Indian", icon: "🇮🇳" },
-  { value: "Italian", label: "Italian", icon: "🇮🇹" },
-  { value: "Japanese", label: "Japanese", icon: "🇯🇵" },
-  { value: "Mexican", label: "Mexican", icon: "🇲🇽" },
-  { value: "Thai", label: "Thai", icon: "🇹🇭" },
-];
-
-const INGREDIENT_OPTIONS = [
-  { value: "chicken", label: "Chicken", icon: "🐔" },
-  { value: "beef", label: "Beef", icon: "🥩" },
-  { value: "pork", label: "Pork", icon: "🐷" },
-  { value: "fish", label: "Fish", icon: "🐟" },
-  { value: "pasta", label: "Pasta", icon: "🍝" },
-  { value: "rice", label: "Rice", icon: "🍚" },
-  { value: "potato", label: "Potato", icon: "🥔" },
-  { value: "tomato", label: "Tomato", icon: "🍅" },
-];
+  MEAL_TYPE_OPTIONS,
+  CUISINE_REGION_OPTIONS,
+  COMPLEXITY_LEVEL_OPTIONS,
+  DIET_LIFESTYLE_OPTIONS,
+} from "@/utils/recipeClassification";
 
 interface FindRecipesFiltersProps {
   searchQuery: string;
@@ -106,6 +64,7 @@ export const FindRecipesFilters = ({
   };
 
   const hasActiveFilters = selectedCategory !== "all" || selectedArea !== "all" || selectedIngredient !== "all";
+  const activeFilterCount = categorySelections.length + areaSelections.length + ingredientSelections.length;
 
   return (
     <div className="space-y-4 mb-6">
@@ -125,83 +84,48 @@ export const FindRecipesFilters = ({
         </Button>
       </div>
 
-      {/* Mobile Dropdown Layout */}
-      {isMobile ? (
-        <div className="space-y-3">
-          {/* Row 1: Meal Type and Cuisine */}
-          <div className="grid grid-cols-[1fr_1.2fr] gap-2">
-            <DropdownFilterSection
-              title="🕒 Meal"
-              options={MEAL_TYPE_OPTIONS}
-              selectedValues={categorySelections}
-              onToggle={handleCategoryToggle}
-            />
+      {/* Filter Dropdowns - Exact same layout as My Recipes */}
+      <div className="mb-4">
+        <div className="flex flex-wrap gap-2 sm:gap-3">
+          <DropdownFilterSection
+            title="🕒 Meal Type"
+            options={MEAL_TYPE_OPTIONS}
+            selectedValues={categorySelections}
+            onToggle={handleCategoryToggle}
+          />
 
-            <DropdownFilterSection
-              title="🌍 Cuisine"
-              options={CUISINE_OPTIONS}
-              selectedValues={areaSelections}
-              onToggle={handleAreaToggle}
-            />
-          </div>
+          <DropdownFilterSection
+            title="🌍 Cuisine"
+            options={CUISINE_REGION_OPTIONS}
+            selectedValues={areaSelections}
+            onToggle={handleAreaToggle}
+          />
 
-          {/* Row 2: Main Ingredient */}
-          <div className="grid grid-cols-1">
-            <DropdownFilterSection
-              title="🥩 Main Ingredient"
-              options={INGREDIENT_OPTIONS}
-              selectedValues={ingredientSelections}
-              onToggle={handleIngredientToggle}
-            />
-          </div>
+          <DropdownFilterSection
+            title="⚡ Complexity"
+            options={COMPLEXITY_LEVEL_OPTIONS}
+            selectedValues={ingredientSelections}
+            onToggle={handleIngredientToggle}
+          />
 
-          {/* Clear Filters */}
-          {hasActiveFilters && (
-            <div className="flex justify-end">
-              <button
-                onClick={onClearFilters}
-                className="text-sm text-muted-foreground hover:text-foreground underline"
-              >
-                Clear all filters
-              </button>
-            </div>
-          )}
+          <DropdownFilterSection
+            title="🍎 Diet & Lifestyle"
+            options={DIET_LIFESTYLE_OPTIONS}
+            selectedValues={[]}
+            onToggle={() => {}}
+          />
         </div>
-      ) : (
-        /* Desktop Layout */
-        <div className="space-y-4">
-          {/* Desktop Dropdown Layout */}
-          <div className="flex flex-wrap gap-3">
-            <DropdownFilterSection
-              title="🕒 Meal Type"
-              options={MEAL_TYPE_OPTIONS}
-              selectedValues={categorySelections}
-              onToggle={handleCategoryToggle}
-            />
-
-            <DropdownFilterSection
-              title="🌍 Cuisine"
-              options={CUISINE_OPTIONS}
-              selectedValues={areaSelections}
-              onToggle={handleAreaToggle}
-            />
-
-            <DropdownFilterSection
-              title="🥩 Main Ingredient"
-              options={INGREDIENT_OPTIONS}
-              selectedValues={ingredientSelections}
-              onToggle={handleIngredientToggle}
-            />
-
-            {hasActiveFilters && (
-              <Button variant="outline" onClick={onClearFilters}>
-                <Filter className="h-4 w-4 mr-2" />
-                Clear Filters
-              </Button>
-            )}
+        {hasActiveFilters && (
+          <div className="mt-3">
+            <button
+              onClick={onClearFilters}
+              className="text-sm text-muted-foreground hover:text-foreground underline"
+            >
+              Clear all filters ({activeFilterCount})
+            </button>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };
