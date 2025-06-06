@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -10,6 +11,7 @@ import { useImageGeneration } from "@/hooks/useImageGeneration";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { CreateRecipeTabsWrapper } from "./CreateRecipeTabsWrapper";
 import { Plus } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 export type RecipeOrigin = 'url' | 'image' | 'generate' | 'text' | 'manual';
 
@@ -119,7 +121,7 @@ export function CreateRecipeContainer() {
 
             console.log("📝 Submitting community recipe data:", communityRecipeData);
 
-            const { data: communityRecipe, error: communityError } = await recipeFormHook.supabase
+            const { data: communityRecipe, error: communityError } = await supabase
               .from('community_recipes')
               .insert(communityRecipeData)
               .select()
@@ -174,14 +176,18 @@ export function CreateRecipeContainer() {
   // Wrapper functions to match expected signatures and track origin
   const wrappedProcessText = () => {
     setRecipeOrigin('text');
-    return recipeProcessingHook.handleProcessText(recipeFormHook.setNewRecipe, recipeFormHook.newRecipe, setActiveTab);
+    return recipeProcessingHook.handleProcessText(
+      (recipe) => recipeFormHook.setNewRecipe(prev => ({ ...prev, ...recipe })), 
+      recipeFormHook.newRecipe, 
+      setActiveTab
+    );
   };
   
   const wrappedProcessImage = async (file: File) => {
     setRecipeOrigin('image');
     const result = await recipeProcessingHook.processImage(file);
     if (result) {
-      recipeFormHook.setNewRecipe({ ...recipeFormHook.newRecipe, ...result });
+      recipeFormHook.setNewRecipe(prev => ({ ...prev, ...result }));
       setActiveTab("manual");
     }
   };
@@ -190,7 +196,7 @@ export function CreateRecipeContainer() {
     setRecipeOrigin('generate');
     const result = await recipeProcessingHook.generateRecipe({});
     if (result) {
-      recipeFormHook.setNewRecipe({ ...recipeFormHook.newRecipe, ...result });
+      recipeFormHook.setNewRecipe(prev => ({ ...prev, ...result }));
       setActiveTab("manual");
     }
   };
@@ -198,7 +204,7 @@ export function CreateRecipeContainer() {
   const wrappedImportFromUrl = () => {
     setRecipeOrigin('url');
     return recipeProcessingHook.handleImportFromUrl(
-      recipeFormHook.setNewRecipe, 
+      (recipe) => recipeFormHook.setNewRecipe(prev => ({ ...prev, ...recipe })), 
       recipeFormHook.newRecipe, 
       setActiveTab,
       recipeFormHook.setShareWithCommunity // Pass the function to enable default sharing

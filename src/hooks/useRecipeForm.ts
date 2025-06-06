@@ -1,17 +1,7 @@
+
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Recipe } from "@/types";
-
-interface Ingredient {
-  id: string;
-  name: string;
-  quantity: string;
-}
-
-interface Instruction {
-  id: string;
-  text: string;
-}
 
 export function useRecipeForm(isEditing: boolean = false, existingRecipe?: Recipe) {
   const { toast } = useToast();
@@ -21,6 +11,7 @@ export function useRecipeForm(isEditing: boolean = false, existingRecipe?: Recip
   const [shareWithCommunity, setShareWithCommunity] = useState(true); // Default to true
   const [newRecipe, setNewRecipe] = useState<Recipe>(
     existingRecipe || {
+      id: '',
       title: "",
       description: "",
       ingredients: [],
@@ -29,19 +20,22 @@ export function useRecipeForm(isEditing: boolean = false, existingRecipe?: Recip
       cook_time: 30,
       servings: 4,
       top_tip: "",
-      meal_type: "",
-      cuisine_region: "",
+      meal_type: undefined,
+      cuisine_region: undefined,
       diet_lifestyle: [],
-      complexity_level: "",
-      main_ingredient: "",
+      complexity_level: undefined,
+      main_ingredient: undefined,
       image: undefined,
       is_favorite: false,
       has_cooked: false,
       household_id: '',
+      created_at: '',
+      updated_at: '',
+      created_by: '',
     }
   );
-  const [newIngredient, setNewIngredient] = useState<Omit<Ingredient, 'id'>>({ name: "", quantity: "" });
-  const [newInstruction, setNewInstruction] = useState<Omit<Instruction, 'id'>>({ text: "" });
+  const [newIngredient, setNewIngredient] = useState({ name: "", quantity: "" });
+  const [newInstruction, setNewInstruction] = useState({ text: "" });
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -60,9 +54,10 @@ export function useRecipeForm(isEditing: boolean = false, existingRecipe?: Recip
 
   const handleAddIngredient = () => {
     if (newIngredient.name.trim() && newIngredient.quantity.trim()) {
+      const ingredientText = `${newIngredient.quantity} ${newIngredient.name}`;
       setNewRecipe(prev => ({
         ...prev,
-        ingredients: [...prev.ingredients, { id: crypto.randomUUID(), ...newIngredient }],
+        ingredients: [...prev.ingredients, ingredientText],
       }));
       setNewIngredient({ name: "", quantity: "" }); // Clear input fields
     } else {
@@ -74,10 +69,10 @@ export function useRecipeForm(isEditing: boolean = false, existingRecipe?: Recip
     }
   };
 
-  const handleRemoveIngredient = (id: string) => {
+  const handleRemoveIngredient = (index: number) => {
     setNewRecipe(prev => ({
       ...prev,
-      ingredients: prev.ingredients.filter(ingredient => ingredient.id !== id),
+      ingredients: prev.ingredients.filter((_, i) => i !== index),
     }));
   };
 
@@ -85,7 +80,7 @@ export function useRecipeForm(isEditing: boolean = false, existingRecipe?: Recip
     if (newInstruction.text.trim()) {
       setNewRecipe(prev => ({
         ...prev,
-        instructions: [...prev.instructions, { id: crypto.randomUUID(), text: newInstruction.text }],
+        instructions: [...prev.instructions, newInstruction.text],
       }));
       setNewInstruction({ text: "" }); // Clear input field
     } else {
@@ -97,10 +92,10 @@ export function useRecipeForm(isEditing: boolean = false, existingRecipe?: Recip
     }
   };
 
-  const handleRemoveInstruction = (id: string) => {
+  const handleRemoveInstruction = (index: number) => {
     setNewRecipe(prev => ({
       ...prev,
-      instructions: prev.instructions.filter(instruction => instruction.id !== id),
+      instructions: prev.instructions.filter((_, i) => i !== index),
     }));
   };
 
