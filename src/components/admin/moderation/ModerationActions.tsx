@@ -2,7 +2,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Check, X } from "lucide-react";
-import { AlertTriangle } from "lucide-react";
 import { CommunityRecipe } from "@/hooks/useCommunityRecipes";
 
 interface ModerationActionsProps {
@@ -56,7 +55,7 @@ export function ModerationActions({
 
         {!canApprove && (
           <div className="flex items-start gap-2 p-3 bg-amber-50 rounded-lg border border-amber-200">
-            <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5" />
+            <span className="text-amber-600 font-semibold text-sm">⚠</span>
             <div className="text-sm text-amber-800">
               Recipe requires both AI description and image URL before it can be approved.
             </div>
