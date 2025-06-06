@@ -95,6 +95,16 @@
     :root {
       --popover: 39 42% 91%; /* Cream color #F4F1DE - matching --background */
     }
+    
+    /* Force dropdown content to use cream background on mobile */
+    [data-radix-select-content] {
+      background-color: hsl(39 42% 91%) !important;
+    }
+    
+    /* Also target the SelectContent component */
+    .select-content {
+      background-color: hsl(39 42% 91%) !important;
+    }
   }
 }
 
