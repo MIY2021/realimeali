@@ -1,24 +1,18 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Filter } from "lucide-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Search } from "lucide-react";
+import { DropdownFilterSection } from "@/components/recipes/filters/DropdownFilterSection";
 
 interface FindRecipesFiltersProps {
   searchQuery: string;
   setSearchQuery: (query: string) => void;
-  selectedCategory: string;
-  setSelectedCategory: (category: string) => void;
-  selectedArea: string;
-  setSelectedArea: (area: string) => void;
-  selectedIngredient: string;
-  setSelectedIngredient: (ingredient: string) => void;
+  selectedCategories: string[];
+  setSelectedCategories: (categories: string[]) => void;
+  selectedAreas: string[];
+  setSelectedAreas: (areas: string[]) => void;
+  selectedIngredients: string[];
+  setSelectedIngredients: (ingredients: string[]) => void;
   onSearch: () => void;
   onClearFilters: () => void;
   onKeyPress: (e: React.KeyboardEvent) => void;
@@ -27,15 +21,44 @@ interface FindRecipesFiltersProps {
   categoriesLoading: boolean;
 }
 
+const AREA_OPTIONS = [
+  { value: "American", label: "American", icon: "🇺🇸" },
+  { value: "British", label: "British", icon: "🇬🇧" },
+  { value: "Canadian", label: "Canadian", icon: "🇨🇦" },
+  { value: "Chinese", label: "Chinese", icon: "🇨🇳" },
+  { value: "Croatian", label: "Croatian", icon: "🇭🇷" },
+  { value: "Dutch", label: "Dutch", icon: "🇳🇱" },
+  { value: "Egyptian", label: "Egyptian", icon: "🇪🇬" },
+  { value: "French", label: "French", icon: "🇫🇷" },
+  { value: "Greek", label: "Greek", icon: "🇬🇷" },
+  { value: "Indian", label: "Indian", icon: "🇮🇳" },
+  { value: "Irish", label: "Irish", icon: "🇮🇪" },
+  { value: "Italian", label: "Italian", icon: "🇮🇹" },
+  { value: "Jamaican", label: "Jamaican", icon: "🇯🇲" },
+  { value: "Japanese", label: "Japanese", icon: "🇯🇵" },
+  { value: "Kenyan", label: "Kenyan", icon: "🇰🇪" },
+  { value: "Malaysian", label: "Malaysian", icon: "🇲🇾" },
+  { value: "Mexican", label: "Mexican", icon: "🇲🇽" },
+  { value: "Moroccan", label: "Moroccan", icon: "🇲🇦" },
+  { value: "Polish", label: "Polish", icon: "🇵🇱" },
+  { value: "Portuguese", label: "Portuguese", icon: "🇵🇹" },
+  { value: "Russian", label: "Russian", icon: "🇷🇺" },
+  { value: "Spanish", label: "Spanish", icon: "🇪🇸" },
+  { value: "Thai", label: "Thai", icon: "🇹🇭" },
+  { value: "Tunisian", label: "Tunisian", icon: "🇹🇳" },
+  { value: "Turkish", label: "Turkish", icon: "🇹🇷" },
+  { value: "Vietnamese", label: "Vietnamese", icon: "🇻🇳" },
+];
+
 export const FindRecipesFilters = ({
   searchQuery,
   setSearchQuery,
-  selectedCategory,
-  setSelectedCategory,
-  selectedArea,
-  setSelectedArea,
-  selectedIngredient,
-  setSelectedIngredient,
+  selectedCategories,
+  setSelectedCategories,
+  selectedAreas,
+  setSelectedAreas,
+  selectedIngredients,
+  setSelectedIngredients,
   onSearch,
   onClearFilters,
   onKeyPress,
@@ -43,6 +66,35 @@ export const FindRecipesFilters = ({
   categories,
   categoriesLoading,
 }: FindRecipesFiltersProps) => {
+  const categoryOptions = categoriesLoading 
+    ? [] 
+    : categories.map(category => ({
+        value: category,
+        label: category,
+        icon: "🍽️"
+      }));
+
+  const ingredientOptions = popularIngredients.map(ingredient => ({
+    value: ingredient,
+    label: ingredient.charAt(0).toUpperCase() + ingredient.slice(1),
+    icon: "🥘"
+  }));
+
+  const toggleArrayFilter = (currentArray: string[], value: string, setter: (arr: string[]) => void) => {
+    const updatedArray = currentArray.includes(value)
+      ? currentArray.filter(item => item !== value)
+      : [...currentArray, value];
+    setter(updatedArray);
+  };
+
+  const hasActiveFilters = selectedCategories.length > 0 || 
+                          selectedAreas.length > 0 || 
+                          selectedIngredients.length > 0;
+
+  const activeFilterCount = selectedCategories.length + 
+                           selectedAreas.length + 
+                           selectedIngredients.length;
+
   return (
     <div className="space-y-4 mb-6">
       <div className="flex gap-2">
@@ -61,80 +113,39 @@ export const FindRecipesFilters = ({
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-4">
-        <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Meal Type" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Any Meal Type</SelectItem>
-            {categoriesLoading ? (
-              <SelectItem value="loading" disabled>Loading categories...</SelectItem>
-            ) : (
-              categories.map((category) => (
-                <SelectItem key={category} value={category}>
-                  {category}
-                </SelectItem>
-              ))
-            )}
-          </SelectContent>
-        </Select>
+      <div className="flex flex-wrap gap-2 sm:gap-3">
+        <DropdownFilterSection
+          title="🕒 Meal Type"
+          options={categoryOptions}
+          selectedValues={selectedCategories}
+          onToggle={(value) => toggleArrayFilter(selectedCategories, value, setSelectedCategories)}
+        />
 
-        <Select value={selectedArea} onValueChange={setSelectedArea}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Cuisine" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Any Cuisine</SelectItem>
-            <SelectItem value="American">American</SelectItem>
-            <SelectItem value="British">British</SelectItem>
-            <SelectItem value="Canadian">Canadian</SelectItem>
-            <SelectItem value="Chinese">Chinese</SelectItem>
-            <SelectItem value="Croatian">Croatian</SelectItem>
-            <SelectItem value="Dutch">Dutch</SelectItem>
-            <SelectItem value="Egyptian">Egyptian</SelectItem>
-            <SelectItem value="French">French</SelectItem>
-            <SelectItem value="Greek">Greek</SelectItem>
-            <SelectItem value="Indian">Indian</SelectItem>
-            <SelectItem value="Irish">Irish</SelectItem>
-            <SelectItem value="Italian">Italian</SelectItem>
-            <SelectItem value="Jamaican">Jamaican</SelectItem>
-            <SelectItem value="Japanese">Japanese</SelectItem>
-            <SelectItem value="Kenyan">Kenyan</SelectItem>
-            <SelectItem value="Malaysian">Malaysian</SelectItem>
-            <SelectItem value="Mexican">Mexican</SelectItem>
-            <SelectItem value="Moroccan">Moroccan</SelectItem>
-            <SelectItem value="Polish">Polish</SelectItem>
-            <SelectItem value="Portuguese">Portuguese</SelectItem>
-            <SelectItem value="Russian">Russian</SelectItem>
-            <SelectItem value="Spanish">Spanish</SelectItem>
-            <SelectItem value="Thai">Thai</SelectItem>
-            <SelectItem value="Tunisian">Tunisian</SelectItem>
-            <SelectItem value="Turkish">Turkish</SelectItem>
-            <SelectItem value="Unknown">Unknown</SelectItem>
-            <SelectItem value="Vietnamese">Vietnamese</SelectItem>
-          </SelectContent>
-        </Select>
+        <DropdownFilterSection
+          title="🌍 Cuisine"
+          options={AREA_OPTIONS}
+          selectedValues={selectedAreas}
+          onToggle={(value) => toggleArrayFilter(selectedAreas, value, setSelectedAreas)}
+        />
 
-        <Select value={selectedIngredient} onValueChange={setSelectedIngredient}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Main Ingredient" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Any Ingredient</SelectItem>
-            {popularIngredients.map((ingredient) => (
-              <SelectItem key={ingredient} value={ingredient}>
-                {ingredient.charAt(0).toUpperCase() + ingredient.slice(1)}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        <Button variant="outline" onClick={onClearFilters}>
-          <Filter className="h-4 w-4 mr-2" />
-          Clear Filters
-        </Button>
+        <DropdownFilterSection
+          title="🥘 Main Ingredient"
+          options={ingredientOptions}
+          selectedValues={selectedIngredients}
+          onToggle={(value) => toggleArrayFilter(selectedIngredients, value, setSelectedIngredients)}
+        />
       </div>
+
+      {hasActiveFilters && (
+        <div className="flex justify-end">
+          <button
+            onClick={onClearFilters}
+            className="text-sm text-muted-foreground hover:text-foreground underline"
+          >
+            Clear all filters ({activeFilterCount})
+          </button>
+        </div>
+      )}
     </div>
   );
 };

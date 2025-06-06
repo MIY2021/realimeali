@@ -8,7 +8,6 @@ import { useCommunityRecipes } from "@/hooks/useCommunityRecipes";
 import { useCommunityRecipeList } from "@/hooks/useCommunityRecipeList";
 import { useMobileLayout } from "@/hooks/useMobileLayout";
 import { CommunityRecipeGrid } from "@/components/community/CommunityRecipeGrid";
-import { SimpleRecipeFiltersComponent } from "@/components/recipes/filters/SimpleRecipeFilters";
 import { MobileLayoutSelector } from "@/components/recipes/MobileLayoutSelector";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { DropdownFilterSection } from "@/components/recipes/filters/DropdownFilterSection";
@@ -203,8 +202,8 @@ export const FindRecipesContent = () => {
             </div>
           </div>
 
-          {/* Row 2: All filters on equal width */}
-          <div className="grid grid-cols-4 gap-2">
+          {/* Row 2: All filters on equal width - using the exact same gap as My Recipes */}
+          <div className="flex flex-wrap gap-2 sm:gap-3">
             <DropdownFilterSection
               title="🕒 Meal"
               options={MEAL_TYPE_OPTIONS}
@@ -283,7 +282,7 @@ export const FindRecipesContent = () => {
             </div>
           </div>
 
-          {/* Filters directly under search bar */}
+          {/* Filters directly under search bar - using the exact same gap as My Recipes */}
           <div className="mb-4">
             <div className="flex flex-wrap gap-2 sm:gap-3">
               <DropdownFilterSection
