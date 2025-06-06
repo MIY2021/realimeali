@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -201,8 +202,8 @@ export const FindRecipesContent = () => {
             </div>
           </div>
 
-          {/* Row 2: All filters - full width row */}
-          <div className="w-full">
+          {/* Row 2: All filters - matching My Recipes approach */}
+          <div className="mb-4">
             <div className="flex flex-wrap gap-2 sm:gap-3">
               <DropdownFilterSection
                 title="🕒 Meal"
