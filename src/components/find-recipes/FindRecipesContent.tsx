@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -202,9 +201,9 @@ export const FindRecipesContent = () => {
             </div>
           </div>
 
-          {/* Row 2: All filters - using the same grid structure as Row 1 */}
-          <div className="grid grid-cols-[1fr_1fr_auto] gap-2">
-            <div className="col-span-2 flex flex-wrap gap-2 sm:gap-3">
+          {/* Row 2: All filters - full width row */}
+          <div className="w-full">
+            <div className="flex flex-wrap gap-2 sm:gap-3">
               <DropdownFilterSection
                 title="🕒 Meal"
                 options={MEAL_TYPE_OPTIONS}
@@ -233,9 +232,6 @@ export const FindRecipesContent = () => {
                 onToggle={(value) => toggleArrayFilter('complexityLevels', value)}
               />
             </div>
-            
-            {/* Invisible placeholder to match layout selector width */}
-            <div className="w-[60px]"></div>
           </div>
 
           {/* Row 3: Clear filters */}
