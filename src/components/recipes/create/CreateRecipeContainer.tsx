@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -83,8 +82,11 @@ export function CreateRecipeContainer() {
 
     setIsSaving(true);
     
+    // For image imports, disable community sharing as there's no source URL
+    const effectiveShareWithCommunity = recipeOrigin === 'image' ? false : recipeFormHook.shareWithCommunity;
+    
     // Log the shareWithCommunity flag for debugging
-    console.log("🔄 Saving recipe with shareWithCommunity:", recipeFormHook.shareWithCommunity);
+    console.log("🔄 Saving recipe with shareWithCommunity:", effectiveShareWithCommunity, "origin:", recipeOrigin);
     
     try {
       const recipeToSave = {
@@ -95,8 +97,8 @@ export function CreateRecipeContainer() {
       const savedRecipe = await createRecipe(recipeToSave, currentHousehold.id);
       
       if (savedRecipe) {
-        // Handle community sharing if enabled
-        if (recipeFormHook.shareWithCommunity) {
+        // Handle community sharing if enabled and not from image import
+        if (effectiveShareWithCommunity) {
           console.log("🌍 Community sharing enabled, submitting to community_recipes...");
           
           try {
@@ -148,11 +150,19 @@ export function CreateRecipeContainer() {
             });
           }
         } else {
-          console.log("🎉 Recipe saved successfully, no community sharing requested");
-          toast({
-            title: "Success",
-            description: "Recipe saved successfully!",
-          });
+          if (recipeOrigin === 'image') {
+            console.log("🎉 Recipe saved successfully, community sharing disabled for image import");
+            toast({
+              title: "Success",
+              description: "Recipe saved successfully! Community sharing is disabled for photo imports.",
+            });
+          } else {
+            console.log("🎉 Recipe saved successfully, no community sharing requested");
+            toast({
+              title: "Success",
+              description: "Recipe saved successfully!",
+            });
+          }
         }
         
         navigate("/my-recipes");
@@ -185,6 +195,8 @@ export function CreateRecipeContainer() {
   
   const wrappedProcessImage = async (file: File) => {
     setRecipeOrigin('image');
+    // Disable community sharing for image imports
+    recipeFormHook.setShareWithCommunity(false);
     const result = await recipeProcessingHook.processImage(file);
     if (result) {
       recipeFormHook.setNewRecipe(prev => ({ ...prev, ...result }));

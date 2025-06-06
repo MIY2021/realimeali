@@ -3,7 +3,7 @@ import { useState, useRef } from "react";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Camera } from "lucide-react";
+import { Camera, FolderOpen } from "lucide-react";
 
 interface RecipeImageTabProps {
   isProcessing: boolean;
@@ -19,7 +19,8 @@ export function RecipeImageTab({
   progressValue = 0 
 }: RecipeImageTabProps) {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -28,8 +29,12 @@ export function RecipeImageTab({
     }
   };
 
-  const handleChooseFile = () => {
-    fileInputRef.current?.click();
+  const handleTakePhoto = () => {
+    cameraInputRef.current?.click();
+  };
+
+  const handleChooseFromGallery = () => {
+    galleryInputRef.current?.click();
   };
 
   const handleProcess = () => {
@@ -53,9 +58,9 @@ export function RecipeImageTab({
       <div className="space-y-4">
         <Label className="text-base font-medium">Upload Recipe Photo</Label>
         
-        {/* Hidden file input */}
+        {/* Hidden file inputs */}
         <input
-          ref={fileInputRef}
+          ref={cameraInputRef}
           type="file"
           accept="image/*"
           capture="environment"
@@ -64,18 +69,41 @@ export function RecipeImageTab({
           disabled={isProcessing}
         />
         
-        {/* Custom styled button */}
-        <Button
-          type="button"
-          onClick={handleChooseFile}
+        <input
+          ref={galleryInputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleFileChange}
+          className="hidden"
           disabled={isProcessing}
-          variant="outline"
-          className="w-full h-20 border-2 border-dashed border-gray-300 hover:border-blue-400 hover:bg-blue-50 transition-colors flex flex-col items-center justify-center gap-2 text-gray-600 hover:text-blue-600"
-        >
-          <Camera className="h-6 w-6" />
-          <span className="font-medium">Choose Photo</span>
-          <span className="text-xs text-muted-foreground">Camera or Gallery</span>
-        </Button>
+        />
+        
+        {/* Two separate buttons */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <Button
+            type="button"
+            onClick={handleTakePhoto}
+            disabled={isProcessing}
+            variant="outline"
+            className="h-20 border-2 border-dashed border-gray-300 hover:border-blue-400 hover:bg-blue-50 transition-colors flex flex-col items-center justify-center gap-2 text-gray-600 hover:text-blue-600"
+          >
+            <Camera className="h-6 w-6" />
+            <span className="font-medium">Take Photo</span>
+            <span className="text-xs text-muted-foreground">Use Camera</span>
+          </Button>
+          
+          <Button
+            type="button"
+            onClick={handleChooseFromGallery}
+            disabled={isProcessing}
+            variant="outline"
+            className="h-20 border-2 border-dashed border-gray-300 hover:border-green-400 hover:bg-green-50 transition-colors flex flex-col items-center justify-center gap-2 text-gray-600 hover:text-green-600"
+          >
+            <FolderOpen className="h-6 w-6" />
+            <span className="font-medium">Choose Photo</span>
+            <span className="text-xs text-muted-foreground">From Gallery</span>
+          </Button>
+        </div>
         
         {uploadedFile && (
           <div className="space-y-3">
