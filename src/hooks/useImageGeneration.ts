@@ -1,7 +1,7 @@
 
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { FUNNY_LOADING_MESSAGES } from "./useUrlRecipeProcessing/constants";
+import { IMAGE_LOADING_MESSAGES } from "./useUrlRecipeProcessing/constants";
 
 export function useImageGeneration() {
   const { toast } = useToast();
@@ -26,8 +26,8 @@ export function useImageGeneration() {
     setIsGeneratingImage(true);
     
     try {
-      // Start the funny loading animation
-      const shuffledMessages = [...FUNNY_LOADING_MESSAGES].sort(() => Math.random() - 0.5);
+      // Start the imagery-focused loading animation
+      const shuffledMessages = [...IMAGE_LOADING_MESSAGES].sort(() => Math.random() - 0.5);
       let messageIndex = 0;
       
       const progressInterval = setInterval(() => {
