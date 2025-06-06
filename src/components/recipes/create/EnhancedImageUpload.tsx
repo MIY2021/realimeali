@@ -1,8 +1,7 @@
-
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Upload, Camera, Sparkles, X, ArrowRight, Globe, Check } from "lucide-react";
+import { Upload, Camera, Star, X, ArrowRight, Globe, Check } from "lucide-react";
 
 interface StoredImage {
   originalUrl: string;
@@ -235,12 +234,12 @@ export function EnhancedImageUpload({
           >
             {isGenerating ? (
               <>
-                <Sparkles className="h-4 w-4 mr-2 animate-spin" />
-                {generationProgress || "Generating..."}
+                <Star className="h-4 w-4 mr-2 animate-spin" />
+                Generating...
               </>
             ) : (
               <>
-                <Sparkles className="h-4 w-4 mr-2" />
+                <Camera className="h-4 w-4 mr-2" />
                 Generate with AI
               </>
             )}
@@ -404,12 +403,12 @@ export function EnhancedImageUpload({
         >
           {isGenerating ? (
             <>
-              <Sparkles className="h-4 w-4 mr-2 animate-spin" />
+              <Star className="h-4 w-4 mr-2 animate-spin" />
               {generationProgress || "Generating..."}
             </>
           ) : (
             <>
-              <Sparkles className="h-4 w-4 mr-2" />
+              <Camera className="h-4 w-4 mr-2" />
               Generate with AI
             </>
           )}
