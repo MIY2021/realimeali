@@ -318,6 +318,27 @@ async function callOpenAI(systemPrompt: string, userPrompt: string, imageData?: 
   });
 }
 
+// Helper function to clean JSON response from OpenAI
+function cleanJsonResponse(content: string): string {
+  // Remove markdown code blocks if present
+  let cleaned = content.trim();
+  
+  // Remove ```json at the start
+  if (cleaned.startsWith('```json')) {
+    cleaned = cleaned.replace(/^```json\s*/, '');
+  }
+  
+  // Remove ``` at the end
+  if (cleaned.endsWith('```')) {
+    cleaned = cleaned.replace(/\s*```$/, '');
+  }
+  
+  // Remove any remaining markdown formatting
+  cleaned = cleaned.replace(/^```\w*\s*/, '').replace(/\s*```$/, '');
+  
+  return cleaned.trim();
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -566,7 +587,11 @@ Create realistic recipes with proper ingredient amounts and detailed cooking ste
     console.log('OpenAI response received, parsing JSON...');
 
     try {
-      const parsedRecipe = JSON.parse(content_text);
+      // Clean the JSON response before parsing
+      const cleanedContent = cleanJsonResponse(content_text);
+      console.log('Cleaned content:', cleanedContent);
+      
+      const parsedRecipe = JSON.parse(cleanedContent);
       
       // Validate and clean the response
       const cleanedRecipe = {
