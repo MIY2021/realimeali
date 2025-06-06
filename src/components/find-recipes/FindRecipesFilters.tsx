@@ -1,15 +1,14 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
-import { DropdownFilterSection } from "@/components/recipes/filters/DropdownFilterSection";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { Search, Filter } from "lucide-react";
 import {
-  MEAL_TYPE_OPTIONS,
-  CUISINE_REGION_OPTIONS,
-  COMPLEXITY_LEVEL_OPTIONS,
-  DIET_LIFESTYLE_OPTIONS,
-} from "@/utils/recipeClassification";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface FindRecipesFiltersProps {
   searchQuery: string;
@@ -44,31 +43,8 @@ export const FindRecipesFilters = ({
   categories,
   categoriesLoading,
 }: FindRecipesFiltersProps) => {
-  const isMobile = useIsMobile();
-
-  // Convert selections to arrays for dropdown components
-  const categorySelections = selectedCategory === "all" ? [] : [selectedCategory];
-  const areaSelections = selectedArea === "all" ? [] : [selectedArea];
-  const ingredientSelections = selectedIngredient === "all" ? [] : [selectedIngredient];
-
-  const handleCategoryToggle = (value: string) => {
-    setSelectedCategory(categorySelections.includes(value) ? "all" : value);
-  };
-
-  const handleAreaToggle = (value: string) => {
-    setSelectedArea(areaSelections.includes(value) ? "all" : value);
-  };
-
-  const handleIngredientToggle = (value: string) => {
-    setSelectedIngredient(ingredientSelections.includes(value) ? "all" : value);
-  };
-
-  const hasActiveFilters = selectedCategory !== "all" || selectedArea !== "all" || selectedIngredient !== "all";
-  const activeFilterCount = categorySelections.length + areaSelections.length + ingredientSelections.length;
-
   return (
     <div className="space-y-4 mb-6">
-      {/* Search Bar */}
       <div className="flex gap-2">
         <div className="flex-1">
           <Input
@@ -84,47 +60,80 @@ export const FindRecipesFilters = ({
         </Button>
       </div>
 
-      {/* Filter Dropdowns - Exact same layout as My Recipes */}
-      <div className="mb-4">
-        <div className="flex flex-wrap gap-2 sm:gap-3">
-          <DropdownFilterSection
-            title="🕒 Meal Type"
-            options={MEAL_TYPE_OPTIONS}
-            selectedValues={categorySelections}
-            onToggle={handleCategoryToggle}
-          />
+      {/* Filters */}
+      <div className="flex flex-wrap gap-4">
+        <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Meal Type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Any Meal Type</SelectItem>
+            {categoriesLoading ? (
+              <SelectItem value="loading" disabled>Loading categories...</SelectItem>
+            ) : (
+              categories.map((category) => (
+                <SelectItem key={category} value={category}>
+                  {category}
+                </SelectItem>
+              ))
+            )}
+          </SelectContent>
+        </Select>
 
-          <DropdownFilterSection
-            title="🌍 Cuisine"
-            options={CUISINE_REGION_OPTIONS}
-            selectedValues={areaSelections}
-            onToggle={handleAreaToggle}
-          />
+        <Select value={selectedArea} onValueChange={setSelectedArea}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Cuisine" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Any Cuisine</SelectItem>
+            <SelectItem value="American">American</SelectItem>
+            <SelectItem value="British">British</SelectItem>
+            <SelectItem value="Canadian">Canadian</SelectItem>
+            <SelectItem value="Chinese">Chinese</SelectItem>
+            <SelectItem value="Croatian">Croatian</SelectItem>
+            <SelectItem value="Dutch">Dutch</SelectItem>
+            <SelectItem value="Egyptian">Egyptian</SelectItem>
+            <SelectItem value="French">French</SelectItem>
+            <SelectItem value="Greek">Greek</SelectItem>
+            <SelectItem value="Indian">Indian</SelectItem>
+            <SelectItem value="Irish">Irish</SelectItem>
+            <SelectItem value="Italian">Italian</SelectItem>
+            <SelectItem value="Jamaican">Jamaican</SelectItem>
+            <SelectItem value="Japanese">Japanese</SelectItem>
+            <SelectItem value="Kenyan">Kenyan</SelectItem>
+            <SelectItem value="Malaysian">Malaysian</SelectItem>
+            <SelectItem value="Mexican">Mexican</SelectItem>
+            <SelectItem value="Moroccan">Moroccan</SelectItem>
+            <SelectItem value="Polish">Polish</SelectItem>
+            <SelectItem value="Portuguese">Portuguese</SelectItem>
+            <SelectItem value="Russian">Russian</SelectItem>
+            <SelectItem value="Spanish">Spanish</SelectItem>
+            <SelectItem value="Thai">Thai</SelectItem>
+            <SelectItem value="Tunisian">Tunisian</SelectItem>
+            <SelectItem value="Turkish">Turkish</SelectItem>
+            <SelectItem value="Unknown">Unknown</SelectItem>
+            <SelectItem value="Vietnamese">Vietnamese</SelectItem>
+          </SelectContent>
+        </Select>
 
-          <DropdownFilterSection
-            title="⚡ Complexity"
-            options={COMPLEXITY_LEVEL_OPTIONS}
-            selectedValues={ingredientSelections}
-            onToggle={handleIngredientToggle}
-          />
+        <Select value={selectedIngredient} onValueChange={setSelectedIngredient}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Main Ingredient" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Any Ingredient</SelectItem>
+            {popularIngredients.map((ingredient) => (
+              <SelectItem key={ingredient} value={ingredient}>
+                {ingredient.charAt(0).toUpperCase() + ingredient.slice(1)}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
-          <DropdownFilterSection
-            title="🍎 Diet & Lifestyle"
-            options={DIET_LIFESTYLE_OPTIONS}
-            selectedValues={[]}
-            onToggle={() => {}}
-          />
-        </div>
-        {hasActiveFilters && (
-          <div className="mt-3">
-            <button
-              onClick={onClearFilters}
-              className="text-sm text-muted-foreground hover:text-foreground underline"
-            >
-              Clear all filters ({activeFilterCount})
-            </button>
-          </div>
-        )}
+        <Button variant="outline" onClick={onClearFilters}>
+          <Filter className="h-4 w-4 mr-2" />
+          Clear Filters
+        </Button>
       </div>
     </div>
   );
