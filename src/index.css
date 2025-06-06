@@ -93,7 +93,7 @@
   /* Mobile-specific styles for dropdowns on add recipes page */
   @media (max-width: 767px) {
     :root {
-      --popover: 50 47% 91%; /* Cream color #F4F1DE */
+      --popover: 39 42% 91%; /* Cream color #F4F1DE - matching --background */
     }
   }
 }
