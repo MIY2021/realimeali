@@ -112,9 +112,9 @@ export const FindRecipesFilters = ({
         </Button>
       </div>
 
-      {/* Filters - ensure they use the full width like the search bar above */}
-      <div className="w-full">
-        <div className="flex flex-wrap gap-2 sm:gap-3 w-full">
+      {/* Filters row - matching the exact width of the search/button row above */}
+      <div className="flex gap-2 w-full">
+        <div className="flex-1 flex flex-wrap gap-2 sm:gap-3">
           <DropdownFilterSection
             title="🕒 Meal Type"
             options={categoryOptions}
@@ -136,18 +136,21 @@ export const FindRecipesFilters = ({
             onToggle={(value) => toggleArrayFilter(selectedIngredients, value, setSelectedIngredients)}
           />
         </div>
-
-        {hasActiveFilters && (
-          <div className="flex justify-end mt-3 w-full">
-            <button
-              onClick={onClearFilters}
-              className="text-sm text-muted-foreground hover:text-foreground underline"
-            >
-              Clear all filters ({activeFilterCount})
-            </button>
-          </div>
-        )}
+        
+        {/* Invisible button placeholder to match the search button width */}
+        <div className="w-[44px]"></div>
       </div>
+
+      {hasActiveFilters && (
+        <div className="flex justify-end w-full">
+          <button
+            onClick={onClearFilters}
+            className="text-sm text-muted-foreground hover:text-foreground underline"
+          >
+            Clear all filters ({activeFilterCount})
+          </button>
+        </div>
+      )}
     </div>
   );
 };

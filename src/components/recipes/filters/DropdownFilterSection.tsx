@@ -49,7 +49,7 @@ export function DropdownFilterSection({
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent 
-          className="w-56 max-h-96 overflow-y-auto bg-popover border border-border shadow-lg z-50" 
+          className="w-56 max-h-96 overflow-y-auto bg-white border border-border shadow-lg z-50" 
           align="start"
           onCloseAutoFocus={(e) => e.preventDefault()}
         >
