@@ -82,8 +82,8 @@ export function CreateRecipeContainer() {
 
     setIsSaving(true);
     
-    // For image imports, disable community sharing as there's no source URL
-    const effectiveShareWithCommunity = recipeOrigin === 'image' ? false : recipeFormHook.shareWithCommunity;
+    // Only allow community sharing for URL imports
+    const effectiveShareWithCommunity = recipeOrigin === 'url' ? recipeFormHook.shareWithCommunity : false;
     
     // Log the shareWithCommunity flag for debugging
     console.log("🔄 Saving recipe with shareWithCommunity:", effectiveShareWithCommunity, "origin:", recipeOrigin);
@@ -97,7 +97,7 @@ export function CreateRecipeContainer() {
       const savedRecipe = await createRecipe(recipeToSave, currentHousehold.id);
       
       if (savedRecipe) {
-        // Handle community sharing if enabled and not from image import
+        // Handle community sharing if enabled and is from URL import
         if (effectiveShareWithCommunity) {
           console.log("🌍 Community sharing enabled, submitting to community_recipes...");
           
@@ -150,17 +150,17 @@ export function CreateRecipeContainer() {
             });
           }
         } else {
-          if (recipeOrigin === 'image') {
-            console.log("🎉 Recipe saved successfully, community sharing disabled for image import");
-            toast({
-              title: "Success",
-              description: "Recipe saved successfully! Community sharing is disabled for photo imports.",
-            });
-          } else {
-            console.log("🎉 Recipe saved successfully, no community sharing requested");
+          if (recipeOrigin === 'url') {
+            console.log("🎉 Recipe saved successfully, community sharing was not selected");
             toast({
               title: "Success",
               description: "Recipe saved successfully!",
+            });
+          } else {
+            console.log("🎉 Recipe saved successfully, community sharing only available for URL imports");
+            toast({
+              title: "Success",
+              description: "Recipe saved successfully! Community sharing is only available for recipes imported from URLs.",
             });
           }
         }
@@ -186,6 +186,8 @@ export function CreateRecipeContainer() {
   // Wrapper functions to match expected signatures and track origin
   const wrappedProcessText = () => {
     setRecipeOrigin('text');
+    // Disable community sharing for non-URL imports
+    recipeFormHook.setShareWithCommunity(false);
     return recipeProcessingHook.handleProcessText(
       (recipe) => recipeFormHook.setNewRecipe(prev => ({ ...prev, ...recipe })), 
       recipeFormHook.newRecipe, 
@@ -206,6 +208,8 @@ export function CreateRecipeContainer() {
   
   const wrappedGenerateRecipe = async () => {
     setRecipeOrigin('generate');
+    // Disable community sharing for generated recipes
+    recipeFormHook.setShareWithCommunity(false);
     const result = await recipeProcessingHook.generateRecipe({});
     if (result) {
       recipeFormHook.setNewRecipe(prev => ({ ...prev, ...result }));
@@ -215,6 +219,8 @@ export function CreateRecipeContainer() {
   
   const wrappedImportFromUrl = () => {
     setRecipeOrigin('url');
+    // Only URL imports can be shared with community by default
+    recipeFormHook.setShareWithCommunity(true);
     return recipeProcessingHook.handleImportFromUrl(
       (recipe) => recipeFormHook.setNewRecipe(prev => ({ ...prev, ...recipe })), 
       recipeFormHook.newRecipe, 
@@ -230,11 +236,22 @@ export function CreateRecipeContainer() {
       if (recipeOrigin === 'manual' && activeTab !== 'manual') {
         // This means they started elsewhere but we haven't tracked it yet
         setRecipeOrigin(activeTab as RecipeOrigin);
+        // Disable community sharing for non-URL origins
+        if (activeTab !== 'url') {
+          recipeFormHook.setShareWithCommunity(false);
+        }
       }
     } else if (tab !== 'manual') {
       // User is switching to a different tab - reset origin to manual only if truly starting fresh
       if (activeTab === 'manual' && recipeOrigin === 'manual') {
         setRecipeOrigin('manual');
+      }
+      
+      // Set sharing status based on destination tab
+      if (tab === 'url') {
+        recipeFormHook.setShareWithCommunity(true);
+      } else {
+        recipeFormHook.setShareWithCommunity(false);
       }
     }
     setActiveTab(tab);

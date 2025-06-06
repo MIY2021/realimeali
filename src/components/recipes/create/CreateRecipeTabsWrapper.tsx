@@ -71,6 +71,7 @@ export function CreateRecipeTabsWrapper({
           isProcessing={recipeProcessingHook.isProcessing}
           onSave={onSave}
           onCancel={onCancel}
+          recipeOrigin={recipeOrigin}
         />
       )}
     </div>
