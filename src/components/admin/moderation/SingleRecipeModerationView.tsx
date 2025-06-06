@@ -1,14 +1,10 @@
 
-import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
 import { CommunityRecipe } from "@/hooks/useCommunityRecipes";
 import { Link, Clock, Users, Globe } from "lucide-react";
 import { ModerationActions } from "./ModerationActions";
 import { ImageManagementPanel } from "./ImageManagementPanel";
+import { ModerationRecipeEditor } from "./ModerationRecipeEditor";
 
 interface SingleRecipeModerationViewProps {
   recipe: CommunityRecipe;
@@ -17,8 +13,10 @@ interface SingleRecipeModerationViewProps {
   onGenerateAI: (recipe: CommunityRecipe) => void;
   onUploadFile: (recipe: CommunityRecipe, file: File) => void;
   onUpdateImageUrl: (recipe: CommunityRecipe, imageUrl: string) => void;
+  onSaveFields: (recipe: CommunityRecipe, updates: Partial<CommunityRecipe>) => void;
   generatingAI: { [key: string]: boolean };
   uploadingFile: { [key: string]: boolean };
+  savingFields: { [key: string]: boolean };
 }
 
 export function SingleRecipeModerationView({
@@ -28,11 +26,11 @@ export function SingleRecipeModerationView({
   onGenerateAI,
   onUploadFile,
   onUpdateImageUrl,
+  onSaveFields,
   generatingAI,
   uploadingFile,
+  savingFields,
 }: SingleRecipeModerationViewProps) {
-  const [moderatorNotes, setModeratorNotes] = useState(recipe.moderator_notes || "");
-
   const getStatusColor = (status: string) => {
     switch (status) {
       case "pending": return "bg-yellow-100 text-yellow-800";
@@ -55,147 +53,133 @@ export function SingleRecipeModerationView({
 
   const isGeneratingAIImage = generatingAI[`${recipe.id}-image`] || false;
   const isUploadingFile = uploadingFile[recipe.id] || false;
+  const isSavingFields = savingFields[recipe.id] || false;
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      {/* Main Recipe Content - Left/Top */}
-      <div className="lg:col-span-2 space-y-6">
-        {/* Recipe Image Management */}
-        <ImageManagementPanel
-          recipe={recipe}
-          onGenerateAI={onGenerateAI}
-          onUploadFile={onUploadFile}
-          onUpdateImageUrl={onUpdateImageUrl}
-          isGeneratingAI={isGeneratingAIImage}
-          isUploadingFile={isUploadingFile}
-        />
+    <div className="space-y-6">
+      {/* Recipe Title and Status - At the very top */}
+      <div className="bg-white rounded-lg border p-6">
+        <h1 className="text-2xl font-bold text-navy mb-4">{recipe.title}</h1>
+        
+        <div className="flex flex-wrap gap-2 mb-4">
+          <Badge className={getStatusColor(recipe.moderation_status)}>
+            {recipe.moderation_status}
+          </Badge>
+          {recipe.category && (
+            <Badge variant="secondary">{recipe.category}</Badge>
+          )}
+          {recipe.cuisine && (
+            <Badge variant="outline">{recipe.cuisine}</Badge>
+          )}
+          {recipe.difficulty_level && (
+            <Badge variant="outline">{recipe.difficulty_level}</Badge>
+          )}
+        </div>
 
-        {/* Recipe Details */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-xl">{recipe.title}</CardTitle>
-            <div className="flex flex-wrap gap-2">
-              <Badge className={getStatusColor(recipe.moderation_status)}>
-                {recipe.moderation_status}
-              </Badge>
-              {recipe.category && (
-                <Badge variant="secondary">{recipe.category}</Badge>
-              )}
-              {recipe.cuisine && (
-                <Badge variant="outline">{recipe.cuisine}</Badge>
-              )}
-              {recipe.difficulty_level && (
-                <Badge variant="outline">{recipe.difficulty_level}</Badge>
-              )}
+        {/* Source URL Display */}
+        <div className="bg-muted/30 rounded-lg p-4">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex-1">
+              <p className="text-sm font-medium text-muted-foreground mb-1">Source URL:</p>
+              <p className="text-sm font-mono bg-white p-2 rounded border break-all">
+                {recipe.source_url}
+              </p>
             </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {/* Recipe Meta */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 bg-muted/50 rounded-lg">
-              <div className="flex items-center gap-2">
-                <Clock className="h-4 w-4 text-muted-foreground" />
-                <div>
-                  <p className="text-xs text-muted-foreground">Prep</p>
-                  <p className="text-sm font-medium">{recipe.prep_time}m</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <Clock className="h-4 w-4 text-muted-foreground" />
-                <div>
-                  <p className="text-xs text-muted-foreground">Cook</p>
-                  <p className="text-sm font-medium">{recipe.cook_time}m</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <Users className="h-4 w-4 text-muted-foreground" />
-                <div>
-                  <p className="text-xs text-muted-foreground">Servings</p>
-                  <p className="text-sm font-medium">{recipe.servings}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <Globe className="h-4 w-4 text-muted-foreground" />
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => window.open(recipe.source_url, '_blank')}
-                  className="text-xs"
-                >
-                  <Link className="h-3 w-3 mr-1" />
-                  Source
-                </Button>
-              </div>
+            <div className="flex items-center gap-2">
+              <Globe className="h-4 w-4 text-muted-foreground" />
+              <button
+                onClick={() => window.open(recipe.source_url, '_blank')}
+                className="text-sm bg-primary text-primary-foreground px-3 py-1 rounded hover:bg-primary/90 transition-colors flex items-center gap-1"
+              >
+                <Link className="h-3 w-3" />
+                Visit
+              </button>
             </div>
+          </div>
+        </div>
 
-            {/* Description Comparison */}
-            <div className="space-y-4">
-              <div>
-                <Label className="text-sm font-medium">Original Description</Label>
-                <div className="mt-1 p-3 bg-muted/30 rounded border text-sm">
-                  {recipe.description || "No original description provided"}
-                </div>
-              </div>
-              
-              <div>
-                <Label className="text-sm font-medium">AI Generated Description</Label>
-                <div className="mt-1 p-3 bg-green-50 rounded border text-sm">
-                  {recipe.ai_generated_description || "No AI description generated yet"}
-                </div>
-              </div>
+        {/* Recipe Meta */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-4 p-4 bg-muted/50 rounded-lg">
+          <div className="flex items-center gap-2">
+            <Clock className="h-4 w-4 text-muted-foreground" />
+            <div>
+              <p className="text-xs text-muted-foreground">Prep</p>
+              <p className="text-sm font-medium">{recipe.prep_time}m</p>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+          <div className="flex items-center gap-2">
+            <Clock className="h-4 w-4 text-muted-foreground" />
+            <div>
+              <p className="text-xs text-muted-foreground">Cook</p>
+              <p className="text-sm font-medium">{recipe.cook_time}m</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Users className="h-4 w-4 text-muted-foreground" />
+            <div>
+              <p className="text-xs text-muted-foreground">Servings</p>
+              <p className="text-sm font-medium">{recipe.servings}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <div>
+              <p className="text-xs text-muted-foreground">Submitted</p>
+              <p className="text-sm font-medium">{formatDate(recipe.created_at)}</p>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Actions Panel - Right/Bottom */}
-      <div className="space-y-6">
-        {/* Submission Info */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Submission Info</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div>
-              <Label className="text-xs text-muted-foreground">Submitted By</Label>
-              <p className="text-sm font-medium">{recipe.submitted_by_name || "Anonymous"}</p>
-            </div>
-            <div>
-              <Label className="text-xs text-muted-foreground">Submitted At</Label>
-              <p className="text-sm">{formatDate(recipe.created_at)}</p>
-            </div>
-            <div>
-              <Label className="text-xs text-muted-foreground">View Count</Label>
-              <p className="text-sm">{recipe.view_count}</p>
-            </div>
-            <div>
-              <Label className="text-xs text-muted-foreground">Save Count</Label>
-              <p className="text-sm">{recipe.save_count}</p>
-            </div>
-          </CardContent>
-        </Card>
+      {/* Main Content Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left Column - Image and Editor */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Recipe Image Management */}
+          <ImageManagementPanel
+            recipe={recipe}
+            onGenerateAI={onGenerateAI}
+            onUploadFile={onUploadFile}
+            onUpdateImageUrl={onUpdateImageUrl}
+            isGeneratingAI={isGeneratingAIImage}
+            isUploadingFile={isUploadingFile}
+          />
 
-        {/* Moderator Notes */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Moderator Notes</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Textarea
-              value={moderatorNotes}
-              onChange={(e) => setModeratorNotes(e.target.value)}
-              placeholder="Add notes about this recipe submission..."
-              rows={4}
-            />
-          </CardContent>
-        </Card>
+          {/* Recipe Editor */}
+          <ModerationRecipeEditor
+            recipe={recipe}
+            onSave={(updates) => onSaveFields(recipe, updates)}
+            isSaving={isSavingFields}
+          />
+        </div>
 
-        {/* Moderation Actions */}
-        <ModerationActions
-          recipe={recipe}
-          onApprove={onApprove}
-          onReject={onReject}
-          moderatorNotes={moderatorNotes}
-        />
+        {/* Right Column - Actions and Info */}
+        <div className="space-y-6">
+          {/* Submission Info */}
+          <div className="bg-white rounded-lg border p-6">
+            <h3 className="text-lg font-semibold mb-4">Submission Info</h3>
+            <div className="space-y-3">
+              <div>
+                <p className="text-xs text-muted-foreground">Submitted By</p>
+                <p className="text-sm font-medium">{recipe.submitted_by_name || "Anonymous"}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">View Count</p>
+                <p className="text-sm">{recipe.view_count}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Save Count</p>
+                <p className="text-sm">{recipe.save_count}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Moderation Actions */}
+          <ModerationActions
+            recipe={recipe}
+            onApprove={onApprove}
+            onReject={onReject}
+          />
+        </div>
       </div>
     </div>
   );

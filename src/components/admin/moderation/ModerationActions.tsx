@@ -8,16 +8,14 @@ interface ModerationActionsProps {
   recipe: CommunityRecipe;
   onApprove: (recipeId: string) => void;
   onReject: (recipeId: string) => void;
-  moderatorNotes: string;
 }
 
 export function ModerationActions({
   recipe,
   onApprove,
   onReject,
-  moderatorNotes,
 }: ModerationActionsProps) {
-  const canApprove = recipe.ai_generated_description && recipe.ai_generated_image_url;
+  const canApprove = recipe.ai_generated_image_url;
   
   const handleApprove = () => {
     onApprove(recipe.id);
@@ -36,20 +34,12 @@ export function ModerationActions({
         {/* Requirements Check */}
         <div className="space-y-2">
           <div className="flex items-center gap-2 text-sm">
-            {recipe.ai_generated_description ? (
-              <Check className="h-4 w-4 text-green-500" />
-            ) : (
-              <X className="h-4 w-4 text-red-500" />
-            )}
-            <span>AI Description Generated</span>
-          </div>
-          <div className="flex items-center gap-2 text-sm">
             {recipe.ai_generated_image_url ? (
               <Check className="h-4 w-4 text-green-500" />
             ) : (
               <X className="h-4 w-4 text-red-500" />
             )}
-            <span>AI Image URL Set</span>
+            <span>Image Available</span>
           </div>
         </div>
 
@@ -57,7 +47,7 @@ export function ModerationActions({
           <div className="flex items-start gap-2 p-3 bg-amber-50 rounded-lg border border-amber-200">
             <span className="text-amber-600 font-semibold text-sm">⚠</span>
             <div className="text-sm text-amber-800">
-              Recipe requires both AI description and image URL before it can be approved.
+              Recipe requires an image before it can be approved.
             </div>
           </div>
         )}

@@ -7,48 +7,7 @@ import { CommunityRecipe } from "@/hooks/useCommunityRecipes";
 export function useRecipeModerationOperations(onUpdate: () => Promise<void>) {
   const [generatingAI, setGeneratingAI] = useState<{ [key: string]: boolean }>({});
   const [uploadingFile, setUploadingFile] = useState<{ [key: string]: boolean }>({});
-
-  const generateAIDescription = async (recipe: CommunityRecipe) => {
-    setGeneratingAI(prev => ({ ...prev, [`${recipe.id}-desc`]: true }));
-    
-    try {
-      const response = await fetch(`https://bdjzefekuahfofwzxqxd.supabase.co/functions/v1/generate-community-description`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJkanplZmVrdWFoZm9md3p4cXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY3MjE1ODQsImV4cCI6MjA2MjI5NzU4NH0.AyzVwsNDgyjeveMtz4-6mVnJGr7DaU8ZUJhr5Yk_us8`,
-        },
-        body: JSON.stringify({
-          recipeTitle: recipe.title,
-          originalDescription: recipe.description,
-          sourceUrl: recipe.source_url,
-        }),
-      });
-
-      if (!response.ok) throw new Error('Failed to generate description');
-
-      const data = await response.json();
-      
-      // Update the recipe in the database
-      const { error } = await supabase
-        .from('community_recipes')
-        .update({ 
-          ai_generated_description: data.description,
-          moderation_status: 'in_review'
-        })
-        .eq('id', recipe.id);
-
-      if (error) throw error;
-
-      toast.success("AI description generated successfully");
-      await onUpdate();
-    } catch (error) {
-      console.error('Error generating AI description:', error);
-      toast.error("Failed to generate AI description");
-    } finally {
-      setGeneratingAI(prev => ({ ...prev, [`${recipe.id}-desc`]: false }));
-    }
-  };
+  const [savingFields, setSavingFields] = useState<{ [key: string]: boolean }>({});
 
   const generateAIImage = async (recipe: CommunityRecipe) => {
     setGeneratingAI(prev => ({ ...prev, [`${recipe.id}-image`]: true }));
@@ -70,7 +29,7 @@ export function useRecipeModerationOperations(onUpdate: () => Promise<void>) {
         throw new Error('No image URL returned from AI generation');
       }
 
-      // Update the recipe in the database
+      // Update the recipe in the database (don't change moderation status to approved)
       const { error: updateError } = await supabase
         .from('community_recipes')
         .update({ 
@@ -155,6 +114,31 @@ export function useRecipeModerationOperations(onUpdate: () => Promise<void>) {
     }
   };
 
+  const updateRecipeFields = async (recipe: CommunityRecipe, updates: Partial<CommunityRecipe>) => {
+    setSavingFields(prev => ({ ...prev, [recipe.id]: true }));
+    
+    try {
+      const { error } = await supabase
+        .from('community_recipes')
+        .update({ 
+          ...updates,
+          moderation_status: 'in_review',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', recipe.id);
+
+      if (error) throw error;
+
+      toast.success("Recipe details updated successfully");
+      await onUpdate();
+    } catch (error) {
+      console.error('Error updating recipe fields:', error);
+      toast.error("Failed to update recipe details");
+    } finally {
+      setSavingFields(prev => ({ ...prev, [recipe.id]: false }));
+    }
+  };
+
   const approveRecipe = async (recipeId: string) => {
     try {
       const { error } = await supabase
@@ -198,13 +182,14 @@ export function useRecipeModerationOperations(onUpdate: () => Promise<void>) {
   };
 
   return {
-    generateAIDescription,
     generateAIImage,
     uploadImageFile,
     updateAIImageUrl,
+    updateRecipeFields,
     approveRecipe,
     rejectRecipe,
     generatingAI,
     uploadingFile,
+    savingFields,
   };
 }

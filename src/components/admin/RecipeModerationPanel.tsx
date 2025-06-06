@@ -45,10 +45,12 @@ export function RecipeModerationPanel() {
     generateAIImage,
     uploadImageFile,
     updateAIImageUrl,
+    updateRecipeFields,
     approveRecipe,
     rejectRecipe,
     generatingAI,
-    uploadingFile
+    uploadingFile,
+    savingFields
   } = useRecipeModerationOperations(fetchRecipes);
 
   // Filter recipes based on current filter
@@ -75,7 +77,7 @@ export function RecipeModerationPanel() {
     setCurrentIndex(0); // Reset to first item when filter changes
   }, [allRecipes, currentFilter]);
 
-  // Keyboard navigation
+  // Keyboard navigation (removed auto-approval logic)
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
       if (filteredRecipes.length === 0) return;
@@ -96,7 +98,7 @@ export function RecipeModerationPanel() {
           if (event.ctrlKey || event.metaKey) return; // Don't interfere with Ctrl+A
           event.preventDefault();
           const currentRecipe = filteredRecipes[currentIndex];
-          if (currentRecipe && currentRecipe.ai_generated_description && currentRecipe.ai_generated_image_url) {
+          if (currentRecipe && currentRecipe.ai_generated_image_url) {
             approveRecipe(currentRecipe.id);
           }
           break;
@@ -167,8 +169,10 @@ export function RecipeModerationPanel() {
           onGenerateAI={generateAIImage}
           onUploadFile={uploadImageFile}
           onUpdateImageUrl={updateAIImageUrl}
+          onSaveFields={updateRecipeFields}
           generatingAI={generatingAI}
           uploadingFile={uploadingFile}
+          savingFields={savingFields}
         />
       ) : null}
     </div>
