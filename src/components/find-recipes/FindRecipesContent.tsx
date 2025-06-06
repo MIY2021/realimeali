@@ -202,35 +202,40 @@ export const FindRecipesContent = () => {
             </div>
           </div>
 
-          {/* Row 2: All filters on equal width - using the exact same gap as My Recipes */}
-          <div className="flex flex-wrap gap-2 sm:gap-3">
-            <DropdownFilterSection
-              title="🕒 Meal"
-              options={MEAL_TYPE_OPTIONS}
-              selectedValues={filters.mealTypes}
-              onToggle={(value) => toggleArrayFilter('mealTypes', value)}
-            />
+          {/* Row 2: All filters - using the same grid structure as Row 1 */}
+          <div className="grid grid-cols-[1fr_1fr_auto] gap-2">
+            <div className="col-span-2 flex flex-wrap gap-2 sm:gap-3">
+              <DropdownFilterSection
+                title="🕒 Meal"
+                options={MEAL_TYPE_OPTIONS}
+                selectedValues={filters.mealTypes}
+                onToggle={(value) => toggleArrayFilter('mealTypes', value)}
+              />
 
-            <DropdownFilterSection
-              title="🌍 Cuisine"
-              options={CUISINE_REGION_OPTIONS}
-              selectedValues={filters.cuisineRegions}
-              onToggle={(value) => toggleArrayFilter('cuisineRegions', value)}
-            />
+              <DropdownFilterSection
+                title="🌍 Cuisine"
+                options={CUISINE_REGION_OPTIONS}
+                selectedValues={filters.cuisineRegions}
+                onToggle={(value) => toggleArrayFilter('cuisineRegions', value)}
+              />
 
-            <DropdownFilterSection
-              title="🥗 Diet"
-              options={DIET_LIFESTYLE_OPTIONS}
-              selectedValues={filters.dietLifestyle}
-              onToggle={(value) => toggleArrayFilter('dietLifestyle', value)}
-            />
+              <DropdownFilterSection
+                title="🥗 Diet"
+                options={DIET_LIFESTYLE_OPTIONS}
+                selectedValues={filters.dietLifestyle}
+                onToggle={(value) => toggleArrayFilter('dietLifestyle', value)}
+              />
 
-            <DropdownFilterSection
-              title="⚡ Level"
-              options={COMPLEXITY_LEVEL_OPTIONS}
-              selectedValues={filters.complexityLevels}
-              onToggle={(value) => toggleArrayFilter('complexityLevels', value)}
-            />
+              <DropdownFilterSection
+                title="⚡ Level"
+                options={COMPLEXITY_LEVEL_OPTIONS}
+                selectedValues={filters.complexityLevels}
+                onToggle={(value) => toggleArrayFilter('complexityLevels', value)}
+              />
+            </div>
+            
+            {/* Invisible placeholder to match layout selector width */}
+            <div className="w-[60px]"></div>
           </div>
 
           {/* Row 3: Clear filters */}
