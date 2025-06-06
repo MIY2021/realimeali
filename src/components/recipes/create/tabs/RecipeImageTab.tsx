@@ -3,7 +3,7 @@ import { useState, useRef } from "react";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Camera, FolderIcon } from "lucide-react";
+import { Camera, Folder } from "lucide-react";
 
 interface RecipeImageTabProps {
   isProcessing: boolean;
@@ -99,7 +99,7 @@ export function RecipeImageTab({
             variant="outline"
             className="h-20 border-2 border-dashed border-gray-300 hover:border-green-400 hover:bg-green-50 transition-colors flex flex-col items-center justify-center gap-2 text-gray-600 hover:text-green-600"
           >
-            <FolderIcon className="h-6 w-6" />
+            <Folder className="h-6 w-6" />
             <span className="font-medium">Choose Photo</span>
             <span className="text-xs text-muted-foreground">From Gallery</span>
           </Button>
