@@ -53,7 +53,11 @@ export function ModerationNavigation({
 
   const getFilterCounts = () => {
     return {
-      pending: recipes.filter(r => r.moderation_status === 'pending' || !r.moderation_status).length,
+      pending: recipes.filter(r => 
+        r.moderation_status === 'pending' || 
+        r.moderation_status === 'in_review' || 
+        !r.moderation_status
+      ).length,
       approved: recipes.filter(r => r.moderation_status === 'approved').length,
       rejected: recipes.filter(r => r.moderation_status === 'rejected').length,
     };

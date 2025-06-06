@@ -60,7 +60,9 @@ export function RecipeModerationPanel() {
     switch (currentFilter) {
       case 'pending':
         filtered = allRecipes.filter(r => 
-          r.moderation_status === 'pending' || !r.moderation_status
+          r.moderation_status === 'pending' || 
+          r.moderation_status === 'in_review' || 
+          !r.moderation_status
         );
         break;
       case 'approved':
@@ -77,7 +79,7 @@ export function RecipeModerationPanel() {
     setCurrentIndex(0); // Reset to first item when filter changes
   }, [allRecipes, currentFilter]);
 
-  // Keyboard navigation (removed auto-approval logic)
+  // Keyboard navigation (no auto-approval logic)
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
       if (filteredRecipes.length === 0) return;

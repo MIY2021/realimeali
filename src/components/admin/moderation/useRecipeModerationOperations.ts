@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -29,12 +28,11 @@ export function useRecipeModerationOperations(onUpdate: () => Promise<void>) {
         throw new Error('No image URL returned from AI generation');
       }
 
-      // Update the recipe in the database (don't change moderation status to approved)
+      // Update the recipe in the database - keep current moderation status
       const { error: updateError } = await supabase
         .from('community_recipes')
         .update({ 
-          ai_generated_image_url: data.imageUrl,
-          moderation_status: 'in_review'
+          ai_generated_image_url: data.imageUrl
         })
         .eq('id', recipe.id);
 
@@ -73,12 +71,11 @@ export function useRecipeModerationOperations(onUpdate: () => Promise<void>) {
         .from('recipe-images')
         .getPublicUrl(fileName);
 
-      // Update the recipe in the database
+      // Update the recipe in the database - keep current moderation status
       const { error: updateError } = await supabase
         .from('community_recipes')
         .update({ 
-          ai_generated_image_url: urlData.publicUrl,
-          moderation_status: 'in_review'
+          ai_generated_image_url: urlData.publicUrl
         })
         .eq('id', recipe.id);
 
@@ -96,11 +93,11 @@ export function useRecipeModerationOperations(onUpdate: () => Promise<void>) {
 
   const updateAIImageUrl = async (recipe: CommunityRecipe, imageUrl: string) => {
     try {
+      // Update the recipe in the database - keep current moderation status
       const { error } = await supabase
         .from('community_recipes')
         .update({ 
-          ai_generated_image_url: imageUrl,
-          moderation_status: 'in_review'
+          ai_generated_image_url: imageUrl
         })
         .eq('id', recipe.id);
 

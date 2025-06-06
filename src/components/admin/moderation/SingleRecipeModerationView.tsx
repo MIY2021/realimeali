@@ -76,20 +76,16 @@ export function SingleRecipeModerationView({
           )}
         </div>
 
-        {/* Source URL Display */}
+        {/* Source URL Display - Single line for better readability */}
         <div className="bg-muted/30 rounded-lg p-4">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex-1">
-              <p className="text-sm font-medium text-muted-foreground mb-1">Source URL:</p>
-              <p className="text-sm font-mono bg-white p-2 rounded border break-all">
-                {recipe.source_url}
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <Globe className="h-4 w-4 text-muted-foreground" />
+          <div className="flex items-center gap-3">
+            <Globe className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+              <span className="text-sm font-medium text-muted-foreground">Source:</span>
+              <span className="text-sm font-mono text-foreground truncate">{recipe.source_url}</span>
               <button
                 onClick={() => window.open(recipe.source_url, '_blank')}
-                className="text-sm bg-primary text-primary-foreground px-3 py-1 rounded hover:bg-primary/90 transition-colors flex items-center gap-1"
+                className="text-sm bg-primary text-primary-foreground px-3 py-1 rounded hover:bg-primary/90 transition-colors flex items-center gap-1 flex-shrink-0"
               >
                 <Link className="h-3 w-3" />
                 Visit
