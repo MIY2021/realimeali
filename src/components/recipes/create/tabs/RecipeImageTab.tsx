@@ -1,9 +1,9 @@
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { Camera } from "lucide-react";
 
 interface RecipeImageTabProps {
   isProcessing: boolean;
@@ -19,12 +19,17 @@ export function RecipeImageTab({
   progressValue = 0 
 }: RecipeImageTabProps) {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setUploadedFile(file);
     }
+  };
+
+  const handleChooseFile = () => {
+    fileInputRef.current?.click();
   };
 
   const handleProcess = () => {
@@ -35,7 +40,7 @@ export function RecipeImageTab({
 
   return (
     <div className="space-y-4">
-      {/* Helper text - left aligned, reduced padding */}
+      {/* Helper text */}
       <div className="text-sm text-muted-foreground">
         <div className="hidden sm:block bg-blue-50 p-3 rounded-lg">
           📷 Upload a photo of a recipe from a cookbook, magazine, or handwritten note and I'll read all the details and organize them automatically!
@@ -45,16 +50,32 @@ export function RecipeImageTab({
         </div>
       </div>
       
-      <div className="space-y-3">
-        <Label htmlFor="upload-file" className="text-base font-medium">Upload Recipe Photo</Label>
-        <Input
-          id="upload-file"
+      <div className="space-y-4">
+        <Label className="text-base font-medium">Upload Recipe Photo</Label>
+        
+        {/* Hidden file input */}
+        <input
+          ref={fileInputRef}
           type="file"
           accept="image/*"
           onChange={handleFileChange}
-          className="text-base p-4 h-12"
+          className="hidden"
           disabled={isProcessing}
         />
+        
+        {/* Custom styled button */}
+        <Button
+          type="button"
+          onClick={handleChooseFile}
+          disabled={isProcessing}
+          variant="outline"
+          className="w-full h-20 border-2 border-dashed border-gray-300 hover:border-blue-400 hover:bg-blue-50 transition-colors flex flex-col items-center justify-center gap-2 text-gray-600 hover:text-blue-600"
+        >
+          <Camera className="h-6 w-6" />
+          <span className="font-medium">Choose Photo</span>
+          <span className="text-xs text-muted-foreground">Camera or Gallery</span>
+        </Button>
+        
         {uploadedFile && (
           <div className="space-y-3">
             <p className="text-sm text-green-600 font-medium">📷 Photo uploaded successfully!</p>
