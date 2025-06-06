@@ -96,14 +96,37 @@
       --popover: 39 42% 91%; /* Cream color #F4F1DE - matching --background */
     }
     
-    /* Force dropdown content to use cream background on mobile */
-    [data-radix-select-content] {
+    /* Target Radix UI Select content with high specificity */
+    [data-radix-select-content],
+    [data-radix-popper-content-wrapper] [data-radix-select-content],
+    .radix-select-content {
       background-color: hsl(39 42% 91%) !important;
+      background: hsl(39 42% 91%) !important;
     }
     
-    /* Also target the SelectContent component */
-    .select-content {
+    /* Target the viewport inside Select content */
+    [data-radix-select-content] [data-radix-select-viewport],
+    [data-radix-select-viewport] {
       background-color: hsl(39 42% 91%) !important;
+      background: hsl(39 42% 91%) !important;
+    }
+    
+    /* Target Select items to ensure they inherit the background */
+    [data-radix-select-content] [data-radix-select-item] {
+      background-color: transparent !important;
+    }
+    
+    /* Target by class names as well */
+    .select-content,
+    .select-content > div {
+      background-color: hsl(39 42% 91%) !important;
+      background: hsl(39 42% 91%) !important;
+    }
+    
+    /* Override any shadcn/ui Select component styles */
+    [role="listbox"] {
+      background-color: hsl(39 42% 91%) !important;
+      background: hsl(39 42% 91%) !important;
     }
   }
 }
