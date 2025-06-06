@@ -86,7 +86,7 @@ export const FindRecipesFilters = ({
 
       {/* Filter Dropdowns - Exact same layout as My Recipes */}
       <div className="mb-4">
-        <div className="flex flex-wrap gap-2 sm:gap-3">
+        <div className="flex flex-wrap gap-3">
           <DropdownFilterSection
             title="🕒 Meal Type"
             options={MEAL_TYPE_OPTIONS}
