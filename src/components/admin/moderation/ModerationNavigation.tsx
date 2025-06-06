@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { ChevronLeft, ChevronRight, SkipForward, SkipBack } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 import { CommunityRecipe } from "@/hooks/useCommunityRecipes";
 
 interface ModerationNavigationProps {
@@ -113,7 +113,7 @@ export function ModerationNavigation({
             onClick={handleFirst}
             disabled={currentIndex === 0}
           >
-            <SkipBack className="h-4 w-4" />
+            <ChevronsLeft className="h-4 w-4" />
           </Button>
           
           <Button
@@ -142,7 +142,7 @@ export function ModerationNavigation({
             onClick={handleLast}
             disabled={currentIndex === totalCount - 1}
           >
-            <SkipForward className="h-4 w-4" />
+            <ChevronsRight className="h-4 w-4" />
           </Button>
         </div>
       )}

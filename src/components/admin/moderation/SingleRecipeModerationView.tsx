@@ -7,7 +7,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CommunityRecipe } from "@/hooks/useCommunityRecipes";
-import { ExternalLink, Clock, Users, ChefHat, Globe } from "lucide-react";
+import { Link, Clock, Users, Globe } from "lucide-react";
+import { UtensilsCrossed } from "lucide-react";
 import { ModerationActions } from "./ModerationActions";
 
 interface SingleRecipeModerationViewProps {
@@ -72,7 +73,7 @@ export function SingleRecipeModerationView({
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                  <ChefHat className="h-12 w-12" />
+                  <UtensilsCrossed className="h-12 w-12" />
                 </div>
               )}
             </div>
@@ -168,7 +169,7 @@ export function SingleRecipeModerationView({
                   onClick={() => window.open(recipe.source_url, '_blank')}
                   className="text-xs"
                 >
-                  <ExternalLink className="h-3 w-3 mr-1" />
+                  <Link className="h-3 w-3 mr-1" />
                   Source
                 </Button>
               </div>

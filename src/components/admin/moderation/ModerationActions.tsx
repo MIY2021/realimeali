@@ -1,7 +1,8 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Check, X, AlertTriangle } from "lucide-react";
+import { Check, X } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 import { CommunityRecipe } from "@/hooks/useCommunityRecipes";
 
 interface ModerationActionsProps {
