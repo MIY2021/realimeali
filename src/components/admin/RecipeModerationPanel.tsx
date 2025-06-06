@@ -53,6 +53,40 @@ export function RecipeModerationPanel() {
     savingFields
   } = useRecipeModerationOperations(fetchRecipes);
 
+  // Enhanced approve function that handles navigation
+  const handleApproveRecipe = async (recipeId: string) => {
+    const currentRecipeIndex = currentIndex;
+    await approveRecipe(recipeId);
+    
+    // After approval, navigate to next pending recipe or stay in bounds
+    setTimeout(() => {
+      if (currentFilter === 'pending' && filteredRecipes.length > 1) {
+        // If we're on the last item, go to previous, otherwise stay at same index
+        if (currentRecipeIndex >= filteredRecipes.length - 1) {
+          setCurrentIndex(Math.max(0, currentRecipeIndex - 1));
+        }
+        // If we're not on the last item, the index will naturally point to the next recipe
+      }
+    }, 100); // Small delay to ensure data is refreshed
+  };
+
+  // Enhanced reject function that handles navigation
+  const handleRejectRecipe = async (recipeId: string) => {
+    const currentRecipeIndex = currentIndex;
+    await rejectRecipe(recipeId);
+    
+    // After rejection, navigate to next pending recipe or stay in bounds
+    setTimeout(() => {
+      if (currentFilter === 'pending' && filteredRecipes.length > 1) {
+        // If we're on the last item, go to previous, otherwise stay at same index
+        if (currentRecipeIndex >= filteredRecipes.length - 1) {
+          setCurrentIndex(Math.max(0, currentRecipeIndex - 1));
+        }
+        // If we're not on the last item, the index will naturally point to the next recipe
+      }
+    }, 100); // Small delay to ensure data is refreshed
+  };
+
   // Filter recipes based on current filter
   useEffect(() => {
     let filtered: CommunityRecipe[] = [];
@@ -76,7 +110,13 @@ export function RecipeModerationPanel() {
     }
     
     setFilteredRecipes(filtered);
-    setCurrentIndex(0); // Reset to first item when filter changes
+    
+    // Ensure currentIndex is within bounds
+    if (filtered.length > 0) {
+      setCurrentIndex(prev => Math.min(prev, filtered.length - 1));
+    } else {
+      setCurrentIndex(0);
+    }
   }, [allRecipes, currentFilter]);
 
   // Keyboard navigation (no auto-approval logic)
@@ -101,7 +141,7 @@ export function RecipeModerationPanel() {
           event.preventDefault();
           const currentRecipe = filteredRecipes[currentIndex];
           if (currentRecipe && currentRecipe.ai_generated_image_url) {
-            approveRecipe(currentRecipe.id);
+            handleApproveRecipe(currentRecipe.id);
           }
           break;
         case 'r':
@@ -110,7 +150,7 @@ export function RecipeModerationPanel() {
           event.preventDefault();
           const currentRecipeToReject = filteredRecipes[currentIndex];
           if (currentRecipeToReject) {
-            rejectRecipe(currentRecipeToReject.id);
+            handleRejectRecipe(currentRecipeToReject.id);
           }
           break;
       }
@@ -118,7 +158,7 @@ export function RecipeModerationPanel() {
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [currentIndex, filteredRecipes, approveRecipe, rejectRecipe]);
+  }, [currentIndex, filteredRecipes]);
 
   useEffect(() => {
     fetchRecipes();
@@ -166,8 +206,8 @@ export function RecipeModerationPanel() {
       ) : currentRecipe ? (
         <SingleRecipeModerationView
           recipe={currentRecipe}
-          onApprove={approveRecipe}
-          onReject={rejectRecipe}
+          onApprove={handleApproveRecipe}
+          onReject={handleRejectRecipe}
           onGenerateAI={generateAIImage}
           onUploadFile={uploadImageFile}
           onUpdateImageUrl={updateAIImageUrl}

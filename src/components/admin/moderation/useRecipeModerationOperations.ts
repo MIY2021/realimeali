@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -138,6 +139,37 @@ export function useRecipeModerationOperations(onUpdate: () => Promise<void>) {
 
   const approveRecipe = async (recipeId: string) => {
     try {
+      // First get the current recipe data to ensure we have all the details
+      const { data: currentRecipe, error: fetchError } = await supabase
+        .from('community_recipes')
+        .select('*')
+        .eq('id', recipeId)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      // Generate AI description if not already present
+      let aiDescription = currentRecipe.ai_generated_description;
+      
+      if (!aiDescription && currentRecipe.description) {
+        try {
+          const { data: aiData, error: aiError } = await supabase.functions.invoke('generate-community-description', {
+            body: { 
+              title: currentRecipe.title,
+              originalDescription: currentRecipe.description,
+              sourceUrl: currentRecipe.source_url
+            },
+          });
+
+          if (!aiError && aiData?.description) {
+            aiDescription = aiData.description;
+          }
+        } catch (error) {
+          console.warn('Failed to generate AI description, proceeding without it:', error);
+        }
+      }
+
+      // Update the recipe with approval status and ensure AI description is set
       const { error } = await supabase
         .from('community_recipes')
         .update({
@@ -145,6 +177,8 @@ export function useRecipeModerationOperations(onUpdate: () => Promise<void>) {
           is_approved: true,
           approved_at: new Date().toISOString(),
           approved_by: (await supabase.auth.getUser()).data.user?.id,
+          ai_generated_description: aiDescription || currentRecipe.description, // Fallback to original description
+          updated_at: new Date().toISOString()
         })
         .eq('id', recipeId);
 
@@ -165,6 +199,7 @@ export function useRecipeModerationOperations(onUpdate: () => Promise<void>) {
         .update({
           moderation_status: 'rejected',
           is_active: false,
+          updated_at: new Date().toISOString()
         })
         .eq('id', recipeId);
 
