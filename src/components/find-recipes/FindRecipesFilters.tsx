@@ -96,8 +96,8 @@ export const FindRecipesFilters = ({
                            selectedIngredients.length;
 
   return (
-    <div className="space-y-4 mb-6">
-      <div className="flex gap-2">
+    <div className="space-y-4 mb-6 w-full">
+      <div className="flex gap-2 w-full">
         <div className="flex-1">
           <Input
             placeholder="Search by recipe name or ingredient (e.g., 'chicken curry' or 'bacon')..."
@@ -112,40 +112,42 @@ export const FindRecipesFilters = ({
         </Button>
       </div>
 
-      {/* Filters */}
-      <div className="flex flex-wrap gap-2 sm:gap-3">
-        <DropdownFilterSection
-          title="🕒 Meal Type"
-          options={categoryOptions}
-          selectedValues={selectedCategories}
-          onToggle={(value) => toggleArrayFilter(selectedCategories, value, setSelectedCategories)}
-        />
+      {/* Filters - ensure they use the full width like the search bar above */}
+      <div className="w-full">
+        <div className="flex flex-wrap gap-2 sm:gap-3 w-full">
+          <DropdownFilterSection
+            title="🕒 Meal Type"
+            options={categoryOptions}
+            selectedValues={selectedCategories}
+            onToggle={(value) => toggleArrayFilter(selectedCategories, value, setSelectedCategories)}
+          />
 
-        <DropdownFilterSection
-          title="🌍 Cuisine"
-          options={AREA_OPTIONS}
-          selectedValues={selectedAreas}
-          onToggle={(value) => toggleArrayFilter(selectedAreas, value, setSelectedAreas)}
-        />
+          <DropdownFilterSection
+            title="🌍 Cuisine"
+            options={AREA_OPTIONS}
+            selectedValues={selectedAreas}
+            onToggle={(value) => toggleArrayFilter(selectedAreas, value, setSelectedAreas)}
+          />
 
-        <DropdownFilterSection
-          title="🥘 Main Ingredient"
-          options={ingredientOptions}
-          selectedValues={selectedIngredients}
-          onToggle={(value) => toggleArrayFilter(selectedIngredients, value, setSelectedIngredients)}
-        />
-      </div>
-
-      {hasActiveFilters && (
-        <div className="flex justify-end">
-          <button
-            onClick={onClearFilters}
-            className="text-sm text-muted-foreground hover:text-foreground underline"
-          >
-            Clear all filters ({activeFilterCount})
-          </button>
+          <DropdownFilterSection
+            title="🥘 Main Ingredient"
+            options={ingredientOptions}
+            selectedValues={selectedIngredients}
+            onToggle={(value) => toggleArrayFilter(selectedIngredients, value, setSelectedIngredients)}
+          />
         </div>
-      )}
+
+        {hasActiveFilters && (
+          <div className="flex justify-end mt-3 w-full">
+            <button
+              onClick={onClearFilters}
+              className="text-sm text-muted-foreground hover:text-foreground underline"
+            >
+              Clear all filters ({activeFilterCount})
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
