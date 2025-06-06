@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Sparkles, Upload, Loader2 } from "lucide-react";
+import { Sparkles, Upload, Loader } from "lucide-react";
 import { CommunityRecipe } from "@/hooks/useCommunityRecipes";
 import { UtensilsCrossed } from "lucide-react";
 
@@ -81,7 +81,7 @@ export function ImageManagementPanel({
           >
             {isGeneratingAI ? (
               <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                <Loader className="h-4 w-4 mr-2 animate-spin" />
                 Generating AI Image...
               </>
             ) : (
@@ -114,7 +114,7 @@ export function ImageManagementPanel({
               variant="outline"
             >
               {isUploadingFile ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <Loader className="h-4 w-4 animate-spin" />
               ) : (
                 <Upload className="h-4 w-4" />
               )}
