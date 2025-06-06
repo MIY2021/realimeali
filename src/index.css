@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -87,6 +88,13 @@
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  /* Mobile-specific styles for dropdowns on add recipes page */
+  @media (max-width: 767px) {
+    :root {
+      --popover: 50 47% 91%; /* Cream color #F4F1DE */
+    }
   }
 }
 
