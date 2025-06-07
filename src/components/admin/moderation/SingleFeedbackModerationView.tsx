@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -39,7 +39,15 @@ export function SingleFeedbackModerationView({
 }: SingleFeedbackModerationViewProps) {
   const [adminNotes, setAdminNotes] = useState(feedback.admin_notes || '');
   const [imageDialogOpen, setImageDialogOpen] = useState(false);
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+  const [isUpdatingPriority, setIsUpdatingPriority] = useState(false);
+  const [isSavingNotes, setIsSavingNotes] = useState(false);
   const isMobile = useIsMobile();
+
+  // Update notes when feedback changes
+  useEffect(() => {
+    setAdminNotes(feedback.admin_notes || '');
+  }, [feedback.admin_notes]);
 
   const getStatusIcon = (status: string) => {
     const normalizedStatus = normalizeStatus(status);
@@ -78,8 +86,40 @@ export function SingleFeedbackModerationView({
     }
   };
 
-  const handleSaveNotes = () => {
-    onSaveNotes(feedback.id, adminNotes);
+  const handleStatusChange = async (newStatus: string) => {
+    setIsUpdatingStatus(true);
+    try {
+      console.log('Changing status from', feedback.status, 'to', newStatus);
+      await onUpdateStatus(feedback.id, newStatus);
+    } catch (error) {
+      console.error('Error updating status:', error);
+    } finally {
+      setIsUpdatingStatus(false);
+    }
+  };
+
+  const handlePriorityChange = async (newPriority: string) => {
+    setIsUpdatingPriority(true);
+    try {
+      console.log('Changing priority from', feedback.priority, 'to', newPriority);
+      await onUpdatePriority(feedback.id, newPriority);
+    } catch (error) {
+      console.error('Error updating priority:', error);
+    } finally {
+      setIsUpdatingPriority(false);
+    }
+  };
+
+  const handleSaveNotes = async () => {
+    setIsSavingNotes(true);
+    try {
+      console.log('Saving notes:', adminNotes);
+      await onSaveNotes(feedback.id, adminNotes);
+    } catch (error) {
+      console.error('Error saving notes:', error);
+    } finally {
+      setIsSavingNotes(false);
+    }
   };
 
   const openImageDialog = () => {
@@ -87,6 +127,8 @@ export function SingleFeedbackModerationView({
       setImageDialogOpen(true);
     }
   };
+
+  const currentStatus = normalizeStatus(feedback.status);
 
   return (
     <>
@@ -127,6 +169,13 @@ export function SingleFeedbackModerationView({
                   {feedback.priority} priority
                 </Badge>
               )}
+              <Badge variant="outline" className={`text-xs ${
+                currentStatus === 'pending' ? 'bg-amber-100 text-amber-800' :
+                currentStatus === 'in_progress' ? 'bg-blue-100 text-blue-800' :
+                'bg-green-100 text-green-800'
+              }`}>
+                {currentStatus.replace('_', ' ')}
+              </Badge>
             </div>
 
             {/* Contact and Date Info */}
@@ -162,8 +211,9 @@ export function SingleFeedbackModerationView({
               <div>
                 <label className="text-sm font-medium mb-1 block">Status</label>
                 <Select
-                  value={normalizeStatus(feedback.status)}
-                  onValueChange={(value) => onUpdateStatus(feedback.id, value)}
+                  value={currentStatus}
+                  onValueChange={handleStatusChange}
+                  disabled={isUpdatingStatus}
                 >
                   <SelectTrigger className="w-full">
                     <SelectValue />
@@ -174,13 +224,17 @@ export function SingleFeedbackModerationView({
                     <SelectItem value="complete">Complete</SelectItem>
                   </SelectContent>
                 </Select>
+                {isUpdatingStatus && (
+                  <p className="text-xs text-muted-foreground mt-1">Updating status...</p>
+                )}
               </div>
 
               <div>
                 <label className="text-sm font-medium mb-1 block">Priority</label>
                 <Select
                   value={feedback.priority || 'medium'}
-                  onValueChange={(value) => onUpdatePriority(feedback.id, value)}
+                  onValueChange={handlePriorityChange}
+                  disabled={isUpdatingPriority}
                 >
                   <SelectTrigger className="w-full">
                     <SelectValue />
@@ -191,6 +245,9 @@ export function SingleFeedbackModerationView({
                     <SelectItem value="low">Low</SelectItem>
                   </SelectContent>
                 </Select>
+                {isUpdatingPriority && (
+                  <p className="text-xs text-muted-foreground mt-1">Updating priority...</p>
+                )}
               </div>
             </div>
 
@@ -209,8 +266,9 @@ export function SingleFeedbackModerationView({
                 size="sm"
                 onClick={handleSaveNotes}
                 className="w-full"
+                disabled={isSavingNotes}
               >
-                Save Notes
+                {isSavingNotes ? "Saving..." : "Save Notes"}
               </Button>
             </div>
           </div>

@@ -1,5 +1,5 @@
 
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,15 +7,109 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
-import { Settings as SettingsIcon, User, Bell, Trash2 } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Settings as SettingsIcon, User, Bell, Trash2, Upload, Shuffle } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+
+const FRUIT_OPTIONS = ['🍎', '🍊', '🍌', '🍇', '🍓', '🥝', '🍑', '🥭', '🍍', '🥥', '🍒', '🍈', '🥑', '🍐', '🥔'];
 
 export default function Settings() {
   useDocumentTitle("Settings | RealiMeali");
+  const { user } = useAuth();
+  const { toast } = useToast();
+
+  // Profile state
+  const [profile, setProfile] = useState<any>(null);
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [selectedFruit, setSelectedFruit] = useState("");
+  const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
 
   // Scroll to top when component mounts
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
+  // Fetch user profile
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchProfile = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+
+        if (error) throw error;
+
+        setProfile(data);
+        const fullName = data.full_name || '';
+        const nameParts = fullName.split(' ');
+        setFirstName(nameParts[0] || '');
+        setLastName(nameParts.slice(1).join(' ') || '');
+        setEmail(data.email || user.email || '');
+        setSelectedFruit(data.avatar_data || '🍎');
+      } catch (error) {
+        console.error('Error fetching profile:', error);
+      }
+    };
+
+    fetchProfile();
+  }, [user]);
+
+  const handleRandomizeFruit = () => {
+    const randomIndex = Math.floor(Math.random() * FRUIT_OPTIONS.length);
+    setSelectedFruit(FRUIT_OPTIONS[randomIndex]);
+  };
+
+  const handleUpdateProfile = async () => {
+    if (!user) return;
+
+    setIsUpdatingProfile(true);
+    try {
+      const fullName = `${firstName.trim()} ${lastName.trim()}`.trim();
+      
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          full_name: fullName,
+          email: email,
+          avatar_type: 'fruit',
+          avatar_data: selectedFruit,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', user.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Profile Updated",
+        description: "Your profile has been updated successfully.",
+      });
+
+      // Refresh profile data
+      setProfile(prev => ({
+        ...prev,
+        full_name: fullName,
+        email: email,
+        avatar_data: selectedFruit
+      }));
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update profile. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUpdatingProfile(false);
+    }
+  };
 
   return (
     <div className="container max-w-4xl py-8 px-4">
@@ -38,25 +132,96 @@ export default function Settings() {
               Profile Settings
             </CardTitle>
             <CardDescription>
-              Update your personal information and preferences.
+              Update your personal information and profile picture.
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-6">
+            {/* Avatar Selection */}
+            <div className="space-y-4">
+              <Label>Profile Picture</Label>
+              <div className="flex items-center gap-4">
+                <Avatar className="h-16 w-16">
+                  <AvatarFallback className="text-2xl bg-terracotta/20">
+                    {selectedFruit}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="space-y-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleRandomizeFruit}
+                    className="flex items-center gap-2"
+                  >
+                    <Shuffle className="h-4 w-4" />
+                    Random
+                  </Button>
+                  <p className="text-xs text-muted-foreground">
+                    Choose from available fruit avatars
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-8 gap-2 max-w-md">
+                {FRUIT_OPTIONS.map((fruit) => (
+                  <button
+                    key={fruit}
+                    type="button"
+                    onClick={() => setSelectedFruit(fruit)}
+                    className={`h-10 w-10 rounded-lg border-2 flex items-center justify-center text-lg transition-colors ${
+                      selectedFruit === fruit
+                        ? 'border-terracotta bg-terracotta/10'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    {fruit}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <Separator />
+
+            {/* Name Fields */}
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="firstName">First Name</Label>
-                <Input id="firstName" placeholder="Your first name" />
+                <Input 
+                  id="firstName" 
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  placeholder="Your first name" 
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="lastName">Last Name</Label>
-                <Input id="lastName" placeholder="Your last name" />
+                <Input 
+                  id="lastName" 
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  placeholder="Your last name" 
+                />
               </div>
             </div>
+
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" placeholder="your@email.com" />
+              <Input 
+                id="email" 
+                type="email" 
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="your@email.com" 
+              />
             </div>
-            <Button className="w-full sm:w-auto">Save Changes</Button>
+
+            <Button 
+              onClick={handleUpdateProfile}
+              disabled={isUpdatingProfile}
+              className="w-full sm:w-auto"
+            >
+              {isUpdatingProfile ? "Saving..." : "Save Changes"}
+            </Button>
           </CardContent>
         </Card>
 

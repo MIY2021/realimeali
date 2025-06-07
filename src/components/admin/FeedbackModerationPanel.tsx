@@ -38,6 +38,7 @@ export function FeedbackModerationPanel() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
+      console.log('Fetched feedback data:', data);
       setAllFeedback(data || []);
     } catch (error) {
       console.error('Error fetching feedback:', error);
@@ -49,34 +50,58 @@ export function FeedbackModerationPanel() {
 
   const updateFeedback = async (feedbackId: string, updates: Partial<FeedbackItem>) => {
     try {
-      const { error } = await supabase
+      console.log('Updating feedback:', { feedbackId, updates });
+      
+      const { data, error } = await supabase
         .from('feedback_suggestions')
         .update({ ...updates, updated_at: new Date().toISOString() })
-        .eq('id', feedbackId);
+        .eq('id', feedbackId)
+        .select()
+        .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Database error updating feedback:', error);
+        throw error;
+      }
+
+      console.log('Updated feedback result:', data);
 
       // Update local state immediately for better UX
-      setAllFeedback(prev => prev.map(item => 
-        item.id === feedbackId ? { ...item, ...updates } : item
-      ));
+      setAllFeedback(prev => {
+        const updated = prev.map(item => 
+          item.id === feedbackId ? { ...item, ...updates, updated_at: new Date().toISOString() } : item
+        );
+        console.log('Updated local state:', updated.find(item => item.id === feedbackId));
+        return updated;
+      });
 
       toast.success("Feedback updated successfully");
+      return true;
     } catch (error) {
       console.error('Error updating feedback:', error);
       toast.error("Failed to update feedback");
+      return false;
     }
   };
 
   const handleUpdateStatus = async (feedbackId: string, status: string) => {
-    await updateFeedback(feedbackId, { status });
+    console.log('Handling status update:', { feedbackId, status });
+    const success = await updateFeedback(feedbackId, { status });
+    if (success) {
+      // Optionally refresh data to ensure consistency
+      setTimeout(() => {
+        fetchFeedback();
+      }, 500);
+    }
   };
 
   const handleUpdatePriority = async (feedbackId: string, priority: string) => {
+    console.log('Handling priority update:', { feedbackId, priority });
     await updateFeedback(feedbackId, { priority });
   };
 
   const handleSaveNotes = async (feedbackId: string, notes: string) => {
+    console.log('Handling notes save:', { feedbackId, notes });
     await updateFeedback(feedbackId, { admin_notes: notes });
   };
 
@@ -116,6 +141,7 @@ export function FeedbackModerationPanel() {
         filtered = allFeedback;
     }
     
+    console.log('Filtering feedback:', { currentFilter, allCount: allFeedback.length, filteredCount: filtered.length });
     setFilteredFeedback(filtered);
     
     // Ensure currentIndex is within bounds

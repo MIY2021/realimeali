@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { EnhancedAvatar } from "@/components/ui/enhanced-avatar";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,9 +14,22 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { User, Trash2, RotateCcw } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { User, Trash2, RotateCcw, Edit3, Shuffle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+
+const FRUIT_OPTIONS = ['🍎', '🍊', '🍌', '🍇', '🍓', '🥝', '🍑', '🥭', '🍍', '🥥', '🍒', '🍈', '🥑', '🍐', '🥔'];
 
 interface HouseholdMember {
   id: string;
@@ -27,6 +40,8 @@ interface HouseholdMember {
     full_name: string;
     email: string;
     avatar_url?: string;
+    avatar_type?: string;
+    avatar_data?: string;
   };
 }
 
@@ -39,9 +54,12 @@ interface HouseholdMembersCardProps {
 
 export const HouseholdMembersCard = ({ members, isOwner, onRemoveMember, isLoading }: HouseholdMembersCardProps) => {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
   const [refreshingProfiles, setRefreshingProfiles] = useState(false);
   const [removingMember, setRemovingMember] = useState<string | null>(null);
+  const [editingProfile, setEditingProfile] = useState<string | null>(null);
+  const [selectedFruit, setSelectedFruit] = useState("");
 
   const handleImageError = (memberId: string, avatar_url?: string) => {
     console.error(`Avatar image failed to load for member ${memberId}:`, {
@@ -94,6 +112,51 @@ export const HouseholdMembersCard = ({ members, isOwner, onRemoveMember, isLoadi
       console.error('Error in handleRemoveMember:', error);
     } finally {
       setRemovingMember(null);
+    }
+  };
+
+  const handleEditProfile = (member: HouseholdMember) => {
+    if (member.user_id !== user?.id) return; // Only allow editing own profile
+    
+    setEditingProfile(member.user_id);
+    setSelectedFruit(member.profile?.avatar_data || '🍎');
+  };
+
+  const handleRandomizeFruit = () => {
+    const randomIndex = Math.floor(Math.random() * FRUIT_OPTIONS.length);
+    setSelectedFruit(FRUIT_OPTIONS[randomIndex]);
+  };
+
+  const handleSaveProfileChanges = async () => {
+    if (!editingProfile || !user || editingProfile !== user.id) return;
+
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          avatar_type: 'fruit',
+          avatar_data: selectedFruit,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', editingProfile);
+
+      if (error) throw error;
+
+      toast({
+        title: "Profile Updated",
+        description: "Your avatar has been updated successfully.",
+      });
+
+      setEditingProfile(null);
+      // Refresh the page to show updated avatar
+      setTimeout(() => window.location.reload(), 1000);
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update avatar. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -153,21 +216,15 @@ export const HouseholdMembersCard = ({ members, isOwner, onRemoveMember, isLoadi
                 <div key={member.id} className="flex items-center justify-between p-3 border rounded gap-3">
                   <div className="flex items-center space-x-3 min-w-0 flex-1">
                     <div className="relative">
-                      <Avatar className="h-8 w-8 flex-shrink-0">
-                        <AvatarImage 
-                          src={member.profile?.avatar_url} 
-                          alt={member.profile?.full_name || 'User'}
-                          onError={() => handleImageError(member.id, member.profile?.avatar_url)}
-                          onLoad={() => handleImageLoad(member.id, member.profile?.avatar_url)}
-                          className="object-cover"
-                        />
-                        <AvatarFallback className="bg-terracotta/20 text-terracotta">
-                          {member.profile?.full_name 
-                            ? member.profile.full_name.charAt(0).toUpperCase()
-                            : <User className="h-4 w-4" />
-                          }
-                        </AvatarFallback>
-                      </Avatar>
+                      <EnhancedAvatar
+                        src={member.profile?.avatar_url}
+                        alt={member.profile?.full_name || 'User'}
+                        fallbackText={member.profile?.full_name}
+                        avatarType={member.profile?.avatar_type as any}
+                        avatarData={member.profile?.avatar_data}
+                        size="md"
+                        className="h-10 w-10"
+                      />
                       {imageErrors.has(member.id) && member.profile?.avatar_url && (
                         <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border border-white" 
                              title="Avatar failed to load" />
@@ -186,6 +243,81 @@ export const HouseholdMembersCard = ({ members, isOwner, onRemoveMember, isLoadi
                     <Badge variant={member.role === 'owner' ? 'default' : 'secondary'}>
                       {member.role}
                     </Badge>
+                    
+                    {/* Edit Profile Button (only for own profile) */}
+                    {member.user_id === user?.id && (
+                      <Dialog open={editingProfile === member.user_id} onOpenChange={(open) => {
+                        if (!open) setEditingProfile(null);
+                      }}>
+                        <DialogTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleEditProfile(member)}
+                            className="text-terracotta hover:text-terracotta"
+                          >
+                            <Edit3 className="h-4 w-4" />
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-md">
+                          <DialogHeader>
+                            <DialogTitle>Edit Your Avatar</DialogTitle>
+                            <DialogDescription>
+                              Choose a new fruit avatar for your profile.
+                            </DialogDescription>
+                          </DialogHeader>
+                          
+                          <div className="space-y-4">
+                            <div className="flex items-center gap-4">
+                              <EnhancedAvatar
+                                avatarType="fruit"
+                                avatarData={selectedFruit}
+                                size="lg"
+                                className="h-16 w-16"
+                              />
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={handleRandomizeFruit}
+                                className="flex items-center gap-2"
+                              >
+                                <Shuffle className="h-4 w-4" />
+                                Random
+                              </Button>
+                            </div>
+
+                            <div className="grid grid-cols-5 gap-2">
+                              {FRUIT_OPTIONS.map((fruit) => (
+                                <button
+                                  key={fruit}
+                                  type="button"
+                                  onClick={() => setSelectedFruit(fruit)}
+                                  className={`h-12 w-12 rounded-lg border-2 flex items-center justify-center text-xl transition-colors ${
+                                    selectedFruit === fruit
+                                      ? 'border-terracotta bg-terracotta/10'
+                                      : 'border-gray-200 hover:border-gray-300'
+                                  }`}
+                                >
+                                  {fruit}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          <DialogFooter>
+                            <Button variant="outline" onClick={() => setEditingProfile(null)}>
+                              Cancel
+                            </Button>
+                            <Button onClick={handleSaveProfileChanges} className="bg-terracotta hover:bg-terracotta/90">
+                              Save Changes
+                            </Button>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
+                    )}
+                    
+                    {/* Remove Member Button (only for owners, not themselves) */}
                     {isOwner && member.user_id !== user?.id && (
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
