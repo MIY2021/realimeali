@@ -21,15 +21,8 @@ export function CommunityRecipeCard({ recipe, mobileLayout = "1" }: CommunityRec
   // Use AI-generated description if available, otherwise fall back to original description
   const displayDescription = recipe.ai_generated_description || recipe.description;
 
-  // Dynamic text truncation based on layout - matching My Recipes behavior
-  const getDescriptionClasses = () => {
-    if (isMobile && mobileLayout === '2') {
-      // 2-column mobile: 1 line
-      return "line-clamp-1";
-    }
-    // Desktop and 1-column mobile: 2 lines
-    return "line-clamp-2";
-  };
+  // Determine if we should use compact layout (mobile two-column layout)
+  const isCompactLayout = isMobile && mobileLayout === '2';
 
   return (
     <Card className="overflow-hidden h-full flex flex-col hover:shadow-lg transition-shadow duration-200">
@@ -70,9 +63,19 @@ export function CommunityRecipeCard({ recipe, mobileLayout = "1" }: CommunityRec
           {recipe.title}
         </h3>
 
-        {/* Description with dynamic truncation */}
+        {/* Description with dynamic truncation using inline styles */}
         {displayDescription && (
-          <p className={`text-sm text-muted-foreground mb-3 flex-1 ${getDescriptionClasses()}`}>
+          <p 
+            className="text-sm text-muted-foreground mb-3 flex-1"
+            style={{
+              display: '-webkit-box',
+              WebkitLineClamp: isCompactLayout ? 1 : 2,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+              lineHeight: '1.4em',
+              maxHeight: isCompactLayout ? '1.4em' : '2.8em'
+            }}
+          >
             {displayDescription}
           </p>
         )}
