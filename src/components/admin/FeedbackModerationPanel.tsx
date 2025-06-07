@@ -56,8 +56,12 @@ export function FeedbackModerationPanel() {
 
       if (error) throw error;
 
+      // Update local state immediately for better UX
+      setAllFeedback(prev => prev.map(item => 
+        item.id === feedbackId ? { ...item, ...updates } : item
+      ));
+
       toast.success("Feedback updated successfully");
-      await fetchFeedback();
     } catch (error) {
       console.error('Error updating feedback:', error);
       toast.error("Failed to update feedback");
@@ -198,7 +202,7 @@ export function FeedbackModerationPanel() {
         </Card>
       ) : currentFeedback ? (
         <SingleFeedbackModerationView
-          key={`feedback-${currentFeedback.id}`}
+          key={`feedback-${currentFeedback.id}-${currentFeedback.status}`}
           feedback={currentFeedback}
           onUpdateStatus={handleUpdateStatus}
           onUpdatePriority={handleUpdatePriority}

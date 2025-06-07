@@ -68,6 +68,12 @@ const AdminDashboard = () => {
           <TabsTrigger value="feedback" className={`${isMobile ? 'text-xs px-2' : ''}`}>
             {isMobile ? 'Feedback' : 'Feedback & Suggestions'}
           </TabsTrigger>
+          {isMobile && (
+            <>
+              <TabsTrigger value="stats" className="text-xs px-2">Stats</TabsTrigger>
+              <TabsTrigger value="users" className="text-xs px-2">Users</TabsTrigger>
+            </>
+          )}
           {!isMobile && (
             <>
               <TabsTrigger value="stats">Statistics</TabsTrigger>
@@ -104,27 +110,23 @@ const AdminDashboard = () => {
           </Card>
         </TabsContent>
 
-        {!isMobile && (
-          <>
-            <TabsContent value="stats" className="space-y-6">
-              <AdminStats />
-            </TabsContent>
+        <TabsContent value="stats" className="space-y-6">
+          <AdminStats />
+        </TabsContent>
 
-            <TabsContent value="users" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>User Management</CardTitle>
-                  <CardDescription>
-                    Manage user accounts and permissions
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <UserManagement />
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </>
-        )}
+        <TabsContent value="users" className="space-y-6">
+          <Card>
+            <CardHeader className={`${isMobile ? 'px-4 py-4' : ''}`}>
+              <CardTitle className={`${isMobile ? 'text-lg' : ''}`}>User Management</CardTitle>
+              <CardDescription className={`${isMobile ? 'text-xs' : ''}`}>
+                Manage user accounts and permissions
+              </CardDescription>
+            </CardHeader>
+            <CardContent className={`${isMobile ? 'px-4 pb-4' : ''}`}>
+              <UserManagement />
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
     </div>
   );
