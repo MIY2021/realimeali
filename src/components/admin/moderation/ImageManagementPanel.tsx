@@ -62,12 +62,14 @@ export function ImageManagementPanel({
           )}
         </div>
         
-        {/* Current Image URL Display */}
+        {/* Current Image URL Display - Multi-line layout */}
         <div className="mb-4">
-          <Label className="text-sm font-medium">Current Image URL</Label>
-          <p className="text-sm text-muted-foreground mt-1">
-            {recipe.ai_generated_image_url || "No image URL set"}
-          </p>
+          <Label className="text-sm font-medium mb-2 block">Current Image URL</Label>
+          <div className="bg-muted/50 rounded p-2 break-all">
+            <p className="text-sm text-muted-foreground">
+              {recipe.ai_generated_image_url || "No image URL set"}
+            </p>
+          </div>
         </div>
 
         {/* AI Generation Section */}
