@@ -44,10 +44,10 @@ serve(async (req) => {
       console.log('Using reference image:', referenceImageUrl);
     }
 
-    // For community recipes with reference images, use enhanced prompt for maximum similarity
+    // Use the new simplified prompt for community recipes with reference images
     let enhancedPrompt = prompt;
     if (isCommunityRecipe && referenceImageUrl) {
-      enhancedPrompt = `Create an exact visual replica of the food shown in the reference image. Recreate EVERY detail identically: the exact same dish, identical ingredients, same garnishes, same plate/bowl, same food arrangement, same lighting, same colors, same textures, and same presentation style. The only change allowed is to use a different table surface or background material (such as wood, stone, marble, or linen) to ensure this is a new image for copyright purposes. Keep all changes minimal and subtle - the food itself must look absolutely identical to the original. ${prompt}`;
+      enhancedPrompt = 'Recreate this image as accurately as possible. Match the composition, colors, lighting, food arrangement, background, props, and style. The final result should look nearly identical to the original, but be AI-generated — not a pixel-for-pixel copy.';
     } else if (isCommunityRecipe) {
       // If it's a community recipe without reference image, use standard template
       if (!prompt.includes('hyper-realistic, top-down food photograph')) {
