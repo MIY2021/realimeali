@@ -25,6 +25,7 @@ export function CreateRecipeContainer() {
   const [activeTab, setActiveTab] = useState("url");
   const [isSaving, setIsSaving] = useState(false);
   const [recipeOrigin, setRecipeOrigin] = useState<RecipeOrigin>('manual');
+  const [originalSourceUrl, setOriginalSourceUrl] = useState<string>(''); // Track original source URL
 
   // Keep hooks as objects instead of destructuring
   const recipeFormHook = useRecipeForm();
@@ -105,7 +106,7 @@ export function CreateRecipeContainer() {
             const communityRecipeData = {
               title: savedRecipe.title,
               description: savedRecipe.description || `A delicious ${savedRecipe.meal_type || 'recipe'} recipe with ${savedRecipe.ingredients.length} ingredients.`,
-              source_url: `${window.location.origin}/my-recipes/${savedRecipe.id}`,
+              source_url: originalSourceUrl || `${window.location.origin}/my-recipes/${savedRecipe.id}`, // Use original URL if available
               image_url: savedRecipe.image,
               prep_time: savedRecipe.prep_time,
               cook_time: savedRecipe.cook_time,
@@ -186,6 +187,7 @@ export function CreateRecipeContainer() {
   // Wrapper functions to match expected signatures and track origin
   const wrappedProcessText = () => {
     setRecipeOrigin('text');
+    setOriginalSourceUrl(''); // Clear source URL for text imports
     // Disable community sharing for non-URL imports
     recipeFormHook.setShareWithCommunity(false);
     return recipeProcessingHook.handleProcessText(
@@ -197,6 +199,7 @@ export function CreateRecipeContainer() {
   
   const wrappedProcessImage = async (file: File) => {
     setRecipeOrigin('image');
+    setOriginalSourceUrl(''); // Clear source URL for image imports
     // Disable community sharing for image imports
     recipeFormHook.setShareWithCommunity(false);
     const result = await recipeProcessingHook.processImage(file);
@@ -208,6 +211,7 @@ export function CreateRecipeContainer() {
   
   const wrappedGenerateRecipe = async () => {
     setRecipeOrigin('generate');
+    setOriginalSourceUrl(''); // Clear source URL for generated recipes
     // Disable community sharing for generated recipes
     recipeFormHook.setShareWithCommunity(false);
     const result = await recipeProcessingHook.generateRecipe({});
@@ -219,6 +223,8 @@ export function CreateRecipeContainer() {
   
   const wrappedImportFromUrl = () => {
     setRecipeOrigin('url');
+    // Store the original URL before import
+    setOriginalSourceUrl(recipeProcessingHook.recipeUrl);
     // Only URL imports can be shared with community by default
     recipeFormHook.setShareWithCommunity(true);
     return recipeProcessingHook.handleImportFromUrl(
@@ -252,6 +258,7 @@ export function CreateRecipeContainer() {
         recipeFormHook.setShareWithCommunity(true);
       } else {
         recipeFormHook.setShareWithCommunity(false);
+        setOriginalSourceUrl(''); // Clear source URL for non-URL tabs
       }
     }
     setActiveTab(tab);

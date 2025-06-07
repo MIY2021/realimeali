@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -129,6 +130,16 @@ export const useUrlRecipeProcessing = () => {
         description: `Successfully imported "${transformedRecipe.title}" from ${domain}. Community sharing enabled by default.`,
       });
 
+      // Store parsed recipe data with original URL for potential community submission
+      setParsedRecipeData({
+        ...recipeData,
+        source_url: url.trim(), // Preserve the original external URL
+        image_url: transformedRecipe.image,
+        prep_time: transformedRecipe.prep_time,
+        cook_time: transformedRecipe.cook_time,
+        servings: transformedRecipe.servings,
+      });
+
       // Reset the URL input
       setUrl("");
       
@@ -147,6 +158,7 @@ export const useUrlRecipeProcessing = () => {
     setIsProcessing(false);
     progressTracking.resetProgress(true);
     imageHandling.resetImages();
+    setParsedRecipeData(null);
   };
 
   return {

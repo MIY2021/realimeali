@@ -16,7 +16,7 @@ interface CommunityRecipeSubmissionDialogProps {
   initialData: {
     title: string;
     description: string;
-    source_url: string;
+    source_url: string; // This should be the original external URL
     image_url?: string;
     prep_time: number;
     cook_time: number;
@@ -58,14 +58,20 @@ export function CommunityRecipeSubmissionDialog({
     setIsSubmitting(true);
 
     try {
-      // Extract domain for image credit
-      const url = new URL(initialData.source_url);
-      const imageCredit = initialData.image_url ? `Image from ${url.hostname}` : undefined;
+      // Extract domain for image credit - use the original source URL
+      let imageCredit: string | undefined;
+      try {
+        const url = new URL(initialData.source_url);
+        imageCredit = initialData.image_url ? `Image from ${url.hostname}` : undefined;
+      } catch (error) {
+        console.warn('Could not parse source URL for image credit:', initialData.source_url);
+        imageCredit = initialData.image_url ? 'Image from source website' : undefined;
+      }
 
       const success = await submitCommunityRecipe({
         title: formData.title,
         description: formData.description,
-        source_url: initialData.source_url,
+        source_url: initialData.source_url, // Use the original external URL
         image_url: initialData.image_url,
         image_credit: imageCredit,
         prep_time: initialData.prep_time,
@@ -118,6 +124,17 @@ export function CommunityRecipeSubmissionDialog({
             />
             <p className={`${isMobile ? 'text-xs' : 'text-xs'} text-muted-foreground mt-1`}>
               This helps our team understand your recipe for approval
+            </p>
+          </div>
+
+          {/* Show the source URL to the user for transparency */}
+          <div>
+            <Label className={`${isMobile ? 'text-sm' : ''}`}>Original Source</Label>
+            <div className="text-xs text-muted-foreground bg-gray-50 p-2 rounded border break-all">
+              {initialData.source_url}
+            </div>
+            <p className={`${isMobile ? 'text-xs' : 'text-xs'} text-muted-foreground mt-1`}>
+              This is the original website where the recipe was found
             </p>
           </div>
 

@@ -1,4 +1,3 @@
-
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useRecipes } from "@/contexts/RecipesContext";
@@ -15,13 +14,15 @@ export function useRecipeSave() {
 
   const handleSave = async (
     newRecipe: Omit<Recipe, 'id' | 'created_at' | 'updated_at' | 'created_by'>, 
-    shareWithCommunity: boolean = false
+    shareWithCommunity: boolean = false,
+    originalSourceUrl?: string // Add parameter to preserve original URL
   ) => {
     console.log("🍳 Save recipe called with:", { 
       newRecipe, 
       user: user?.id, 
       household: currentHousehold?.id,
       shareWithCommunity,
+      originalSourceUrl, // Log the original source URL
       recipeData: {
         title: newRecipe.title,
         ingredients: newRecipe.ingredients?.length || 0,
@@ -36,6 +37,7 @@ export function useRecipeSave() {
         }
       }
     });
+    
     
     if (!user || !currentHousehold) {
       console.error("❌ Missing user or household:", { user: !!user, household: !!currentHousehold });
@@ -107,7 +109,7 @@ export function useRecipeSave() {
             const communityRecipeData = {
               title: recipe.title,
               description: recipe.description || `A delicious ${recipe.meal_type || 'recipe'} recipe with ${recipe.ingredients.length} ingredients.`,
-              source_url: `${window.location.origin}/my-recipes/${recipe.id}`,
+              source_url: originalSourceUrl || `${window.location.origin}/my-recipes/${recipe.id}`, // Use original URL if available
               image_url: recipe.image,
               prep_time: recipe.prep_time,
               cook_time: recipe.cook_time,
