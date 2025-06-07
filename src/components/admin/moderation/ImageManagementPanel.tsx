@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Sparkles, Upload, Loader, Eye, AlertTriangle } from "lucide-react";
+import { Sparkles, Upload, Loader, Eye, AlertCircle } from "lucide-react";
 import { CommunityRecipe } from "@/hooks/useCommunityRecipes";
 import { UtensilsCrossed } from "lucide-react";
 
@@ -90,7 +90,7 @@ export function ImageManagementPanel({
             <div className="flex items-center gap-2">
               <Label className="text-sm font-medium">Original Submitted Image</Label>
               <div className="flex items-center gap-1 text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded">
-                <AlertTriangle className="h-3 w-3" />
+                <AlertCircle className="h-3 w-3" />
                 Reference Only - Not for Public Use
               </div>
             </div>

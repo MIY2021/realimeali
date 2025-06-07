@@ -27,7 +27,11 @@ export function useRecipeModerationOperations(onRefresh: () => void) {
 
       console.log("🎨 Generated prompt:", prompt);
 
-      const requestBody = { 
+      const requestBody: { 
+        prompt: string; 
+        isCommunityRecipe: boolean;
+        referenceImageUrl?: string;
+      } = { 
         prompt: prompt,
         isCommunityRecipe: true
       };
