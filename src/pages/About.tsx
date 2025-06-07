@@ -1,218 +1,314 @@
 
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
-import { UtensilsCrossed, Search, CalendarDays, ListChecks, Users, Lightbulb, Share } from "lucide-react";
+import { UtensilsCrossed, Search, CalendarDays, ListChecks, Users, Lightbulb, Share, Heart, Target, Zap, Shield } from "lucide-react";
+import { useEffect } from "react";
 
 export default function About() {
   useDocumentTitle("About RealiMeali");
 
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   return (
-    <div className="min-h-screen bg-cream">
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-navy mb-4">
-            RealiMeali: Your Complete Meal Planning Companion
-          </h1>
-          <p className="text-lg text-muted-foreground">
-            RealiMeali is a comprehensive, all-in-one meal planning and recipe management system designed to simplify cooking and make meal preparation stress-free for households of all sizes.
-          </p>
+    <div className="min-h-screen bg-gradient-to-br from-cream via-white to-sage/10">
+      <div className="container mx-auto px-4 py-8 max-w-6xl">
+        {/* Hero Section */}
+        <div className="text-center mb-16 relative">
+          <div className="absolute inset-0 bg-gradient-to-r from-terracotta/5 to-sage/5 rounded-3xl blur-3xl"></div>
+          <div className="relative bg-white/80 backdrop-blur-sm rounded-2xl p-8 shadow-lg border">
+            <div className="flex items-center justify-center gap-3 mb-6">
+              <div className="p-3 bg-gradient-to-br from-terracotta to-terracotta/80 rounded-full">
+                <UtensilsCrossed className="h-8 w-8 text-white" />
+              </div>
+              <h1 className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-navy to-terracotta bg-clip-text text-transparent">
+                RealiMeali
+              </h1>
+            </div>
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+              Your complete meal planning companion that transforms the daily "what's for dinner?" struggle into an organized, collaborative, and enjoyable cooking experience.
+            </p>
+          </div>
         </div>
 
-        {/* What is RealiMeali */}
-        <section className="mb-12">
-          <h2 className="text-2xl font-bold text-navy mb-4">What is RealiMeali?</h2>
-          <p className="text-muted-foreground leading-relaxed">
-            RealiMeali is a web-based application that brings together recipe management, meal planning, and grocery shopping into one seamless platform. Built for both individual users and households, it eliminates the daily "what's for dinner?" struggle by providing intelligent tools to plan, organize, and execute your meals efficiently.
-          </p>
+        {/* Mission Statement */}
+        <section className="mb-16">
+          <div className="bg-gradient-to-r from-sage/10 to-terracotta/10 rounded-2xl p-8 text-center">
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <Target className="h-6 w-6 text-terracotta" />
+              <h2 className="text-2xl font-bold text-navy">Our Mission</h2>
+            </div>
+            <p className="text-lg text-muted-foreground max-w-4xl mx-auto leading-relaxed">
+              RealiMeali brings together recipe management, meal planning, and grocery shopping into one seamless platform, 
+              eliminating stress and making home cooking accessible and efficient for households of all sizes.
+            </p>
+          </div>
         </section>
 
-        {/* Core Features */}
-        <section className="mb-12">
-          <h2 className="text-2xl font-bold text-navy mb-6">Core Features</h2>
+        {/* Core Features Grid */}
+        <section className="mb-16">
+          <h2 className="text-3xl font-bold text-navy mb-8 text-center">Powerful Features</h2>
           <div className="grid md:grid-cols-2 gap-8">
-            <div className="bg-white p-6 rounded-lg shadow-md">
-              <div className="flex items-center mb-4">
-                <div className="rounded-full bg-terracotta/10 p-3 mr-4">
-                  <UtensilsCrossed className="h-6 w-6 text-terracotta" />
+            <div className="group hover:scale-105 transition-transform duration-300">
+              <div className="bg-white p-8 rounded-2xl shadow-lg border hover:shadow-xl transition-shadow h-full">
+                <div className="flex items-center mb-6">
+                  <div className="rounded-full bg-gradient-to-br from-terracotta/20 to-terracotta/10 p-4 mr-4">
+                    <UtensilsCrossed className="h-8 w-8 text-terracotta" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-navy">My Recipes</h3>
                 </div>
-                <h3 className="text-xl font-bold text-navy">🍳 My Recipes</h3>
+                <div className="space-y-3 text-muted-foreground">
+                  <div className="flex items-start gap-3">
+                    <div className="w-2 h-2 bg-terracotta rounded-full mt-2 flex-shrink-0"></div>
+                    <p>Store and organize your favorite recipes in one centralized location</p>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-2 h-2 bg-terracotta rounded-full mt-2 flex-shrink-0"></div>
+                    <p>Import from websites, photos, text, or generate with AI</p>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-2 h-2 bg-terracotta rounded-full mt-2 flex-shrink-0"></div>
+                    <p>Smart categorization by cuisine, difficulty, and dietary preferences</p>
+                  </div>
+                </div>
               </div>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li>• Personal Recipe Collection: Store and organize your favorite recipes in one centralized location</li>
-                <li>• Multiple Import Methods: Add recipes by importing from websites, taking photos, copying text, manual entry, or AI generation</li>
-                <li>• Smart Organization: Categorize recipes by cuisine, difficulty, dietary restrictions, and custom tags</li>
-                <li>• Visual Management: Upload or generate AI-created recipe images</li>
-                <li>• Detailed Information: Track prep time, cook time, servings, ingredients, and step-by-step instructions</li>
-              </ul>
             </div>
 
-            <div className="bg-white p-6 rounded-lg shadow-md">
-              <div className="flex items-center mb-4">
-                <div className="rounded-full bg-sage/10 p-3 mr-4">
-                  <Search className="h-6 w-6 text-sage" />
+            <div className="group hover:scale-105 transition-transform duration-300">
+              <div className="bg-white p-8 rounded-2xl shadow-lg border hover:shadow-xl transition-shadow h-full">
+                <div className="flex items-center mb-6">
+                  <div className="rounded-full bg-gradient-to-br from-sage/20 to-sage/10 p-4 mr-4">
+                    <Search className="h-8 w-8 text-sage" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-navy">Find Recipes</h3>
                 </div>
-                <h3 className="text-xl font-bold text-navy">🔍 Find Recipes</h3>
+                <div className="space-y-3 text-muted-foreground">
+                  <div className="flex items-start gap-3">
+                    <div className="w-2 h-2 bg-sage rounded-full mt-2 flex-shrink-0"></div>
+                    <p>Discover recipes shared by the RealiMeali community</p>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-2 h-2 bg-sage rounded-full mt-2 flex-shrink-0"></div>
+                    <p>Curated collection of high-quality, moderated recipes</p>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-2 h-2 bg-sage rounded-full mt-2 flex-shrink-0"></div>
+                    <p>Advanced search and filtering by preferences</p>
+                  </div>
+                </div>
               </div>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li>• Community Recipe Sharing: Discover recipes shared by other RealiMeali users</li>
-                <li>• Curated Collection: Access moderated, high-quality recipes from the community</li>
-                <li>• Save to Collection: Easily add discovered recipes to your personal collection</li>
-                <li>• Search and Filter: Find recipes by cuisine, category, cooking time, and dietary preferences</li>
-              </ul>
             </div>
 
-            <div className="bg-white p-6 rounded-lg shadow-md">
-              <div className="flex items-center mb-4">
-                <div className="rounded-full bg-sage/10 p-3 mr-4">
-                  <CalendarDays className="h-6 w-6 text-sage" />
+            <div className="group hover:scale-105 transition-transform duration-300">
+              <div className="bg-white p-8 rounded-2xl shadow-lg border hover:shadow-xl transition-shadow h-full">
+                <div className="flex items-center mb-6">
+                  <div className="rounded-full bg-gradient-to-br from-navy/20 to-navy/10 p-4 mr-4">
+                    <CalendarDays className="h-8 w-8 text-navy" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-navy">Meal Planner</h3>
                 </div>
-                <h3 className="text-xl font-bold text-navy">📅 Meal Planner</h3>
+                <div className="space-y-3 text-muted-foreground">
+                  <div className="flex items-start gap-3">
+                    <div className="w-2 h-2 bg-navy rounded-full mt-2 flex-shrink-0"></div>
+                    <p>Visual calendar for planning meals up to 2 weeks ahead</p>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-2 h-2 bg-navy rounded-full mt-2 flex-shrink-0"></div>
+                    <p>Drag & drop simplicity with leftover management</p>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-2 h-2 bg-navy rounded-full mt-2 flex-shrink-0"></div>
+                    <p>Household collaboration and approval workflows</p>
+                  </div>
+                </div>
               </div>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li>• Weekly Planning: Visual calendar interface for planning meals up to 2 weeks in advance</li>
-                <li>• Drag & Drop Simplicity: Easily move recipes between days and meal types</li>
-                <li>• Leftover Management: Track and plan leftover portions to reduce food waste</li>
-                <li>• Household Collaboration: Share meal plans with family members</li>
-                <li>• Flexible Scheduling: Plan for breakfast, lunch, dinner, and snacks</li>
-              </ul>
             </div>
 
-            <div className="bg-white p-6 rounded-lg shadow-md">
-              <div className="flex items-center mb-4">
-                <div className="rounded-full bg-navy/10 p-3 mr-4">
-                  <ListChecks className="h-6 w-6 text-navy" />
+            <div className="group hover:scale-105 transition-transform duration-300">
+              <div className="bg-white p-8 rounded-2xl shadow-lg border hover:shadow-xl transition-shadow h-full">
+                <div className="flex items-center mb-6">
+                  <div className="rounded-full bg-gradient-to-br from-terracotta/20 to-terracotta/10 p-4 mr-4">
+                    <ListChecks className="h-8 w-8 text-terracotta" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-navy">Shopping List</h3>
                 </div>
-                <h3 className="text-xl font-bold text-navy">🛒 Shopping List</h3>
+                <div className="space-y-3 text-muted-foreground">
+                  <div className="flex items-start gap-3">
+                    <div className="w-2 h-2 bg-terracotta rounded-full mt-2 flex-shrink-0"></div>
+                    <p>Automatically generated from your meal plans</p>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-2 h-2 bg-terracotta rounded-full mt-2 flex-shrink-0"></div>
+                    <p>Smart consolidation and store section organization</p>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-2 h-2 bg-terracotta rounded-full mt-2 flex-shrink-0"></div>
+                    <p>Interactive checking for efficient shopping</p>
+                  </div>
+                </div>
               </div>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li>• Automatic Generation: Create shopping lists directly from your meal plans</li>
-                <li>• Smart Consolidation: Automatically combines similar ingredients</li>
-                <li>• Category Organization: Ingredients grouped by store sections for efficient shopping</li>
-                <li>• Interactive Checking: Mark items as purchased with a simple tap</li>
-                <li>• Week-by-Week Lists: Generate lists for specific weeks</li>
-              </ul>
             </div>
           </div>
         </section>
 
         {/* Advanced Capabilities */}
-        <section className="mb-12">
-          <h2 className="text-2xl font-bold text-navy mb-6">Advanced Capabilities</h2>
+        <section className="mb-16">
+          <h2 className="text-3xl font-bold text-navy mb-8 text-center">Advanced Capabilities</h2>
           <div className="grid md:grid-cols-3 gap-6">
-            <div className="bg-white p-6 rounded-lg shadow-md">
+            <div className="bg-gradient-to-br from-terracotta/5 to-white p-6 rounded-xl border">
               <div className="flex items-center mb-4">
-                <div className="rounded-full bg-terracotta/10 p-3 mr-4">
+                <div className="rounded-full bg-terracotta/10 p-3 mr-3">
                   <Users className="h-6 w-6 text-terracotta" />
                 </div>
-                <h3 className="text-lg font-bold text-navy">🏠 Household Management</h3>
+                <h3 className="text-lg font-bold text-navy">Household Management</h3>
               </div>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li>• Multi-User Support</li>
-                <li>• Shared Recipe Collections</li>
-                <li>• Collaborative Planning</li>
-                <li>• Approval Workflows</li>
+                <li>• Multi-user collaboration</li>
+                <li>• Shared recipe collections</li>
+                <li>• Approval workflows</li>
+                <li>• Role-based permissions</li>
               </ul>
             </div>
 
-            <div className="bg-white p-6 rounded-lg shadow-md">
+            <div className="bg-gradient-to-br from-sage/5 to-white p-6 rounded-xl border">
               <div className="flex items-center mb-4">
-                <div className="rounded-full bg-sage/10 p-3 mr-4">
+                <div className="rounded-full bg-sage/10 p-3 mr-3">
                   <Lightbulb className="h-6 w-6 text-sage" />
                 </div>
-                <h3 className="text-lg font-bold text-navy">🤖 AI-Powered Features</h3>
+                <h3 className="text-lg font-bold text-navy">AI-Powered</h3>
               </div>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li>• Recipe Generation</li>
-                <li>• Image Recognition</li>
-                <li>• Smart Parsing</li>
-                <li>• Image Generation</li>
+                <li>• Recipe generation</li>
+                <li>• Image recognition</li>
+                <li>• Smart parsing</li>
+                <li>• Auto-categorization</li>
               </ul>
             </div>
 
-            <div className="bg-white p-6 rounded-lg shadow-md">
+            <div className="bg-gradient-to-br from-navy/5 to-white p-6 rounded-xl border">
               <div className="flex items-center mb-4">
-                <div className="rounded-full bg-navy/10 p-3 mr-4">
+                <div className="rounded-full bg-navy/10 p-3 mr-3">
                   <Share className="h-6 w-6 text-navy" />
                 </div>
-                <h3 className="text-lg font-bold text-navy">🔗 Integration & Sharing</h3>
+                <h3 className="text-lg font-bold text-navy">Integration & Sharing</h3>
               </div>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li>• Website Integration</li>
-                <li>• Community Contributions</li>
-                <li>• Public Recipe Sharing</li>
-                <li>• Cross-Platform Access</li>
+                <li>• Website integration</li>
+                <li>• Community sharing</li>
+                <li>• Public recipe links</li>
+                <li>• Cross-platform access</li>
               </ul>
             </div>
           </div>
         </section>
 
-        {/* Who Is RealiMeali For */}
-        <section className="mb-12">
-          <h2 className="text-2xl font-bold text-navy mb-6">Who Is RealiMeali For?</h2>
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <div className="grid md:grid-cols-2 gap-4 text-sm text-muted-foreground">
-              <div>
-                <p className="mb-2"><strong>Busy Families:</strong> Streamline meal planning and reduce the stress of daily cooking decisions</p>
-                <p className="mb-2"><strong>Meal Prep Enthusiasts:</strong> Organize bulk cooking sessions and track portions</p>
-                <p className="mb-2"><strong>Recipe Collectors:</strong> Digitize and organize physical recipe collections</p>
-                <p className="mb-2"><strong>Cooking Beginners:</strong> Access guided recipes with clear instructions and timing</p>
-              </div>
-              <div>
-                <p className="mb-2"><strong>Health-Conscious Cooks:</strong> Plan balanced meals and track dietary preferences</p>
-                <p className="mb-2"><strong>Roommates & Couples:</strong> Collaborate on meal planning and share cooking responsibilities</p>
-                <p className="mb-2"><strong>Anyone Who Cooks:</strong> From occasional cooks to culinary enthusiasts</p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Benefits */}
-        <section className="mb-12">
-          <h2 className="text-2xl font-bold text-navy mb-6">Benefits</h2>
+        {/* Benefits Section */}
+        <section className="mb-16">
+          <h2 className="text-3xl font-bold text-navy mb-8 text-center">Why Choose RealiMeali?</h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="bg-white p-6 rounded-lg shadow-md text-center">
-              <h3 className="text-lg font-bold text-terracotta mb-3">Save Time</h3>
-              <ul className="space-y-1 text-sm text-muted-foreground">
-                <li>• No more daily "what's for dinner?" decisions</li>
-                <li>• Streamlined grocery shopping</li>
-                <li>• Quick recipe imports</li>
-              </ul>
+            <div className="text-center group">
+              <div className="bg-gradient-to-br from-terracotta/10 to-terracotta/5 p-6 rounded-full w-20 h-20 mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+                <Zap className="h-8 w-8 text-terracotta mx-auto mt-2" />
+              </div>
+              <h3 className="text-lg font-bold text-navy mb-2">Save Time</h3>
+              <p className="text-sm text-muted-foreground">Eliminate daily cooking decisions and streamline grocery shopping</p>
             </div>
 
-            <div className="bg-white p-6 rounded-lg shadow-md text-center">
-              <h3 className="text-lg font-bold text-sage mb-3">Reduce Food Waste</h3>
-              <ul className="space-y-1 text-sm text-muted-foreground">
-                <li>• Plan exact portions</li>
-                <li>• Use ingredients efficiently</li>
-                <li>• Smart inventory awareness</li>
-              </ul>
+            <div className="text-center group">
+              <div className="bg-gradient-to-br from-sage/10 to-sage/5 p-6 rounded-full w-20 h-20 mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+                <Heart className="h-8 w-8 text-sage mx-auto mt-2" />
+              </div>
+              <h3 className="text-lg font-bold text-navy mb-2">Reduce Waste</h3>
+              <p className="text-sm text-muted-foreground">Plan exact portions and use ingredients efficiently</p>
             </div>
 
-            <div className="bg-white p-6 rounded-lg shadow-md text-center">
-              <h3 className="text-lg font-bold text-navy mb-3">Improve Organization</h3>
-              <ul className="space-y-1 text-sm text-muted-foreground">
-                <li>• Central hub for cooking</li>
-                <li>• Visual meal planning</li>
-                <li>• Searchable recipe database</li>
-              </ul>
+            <div className="text-center group">
+              <div className="bg-gradient-to-br from-navy/10 to-navy/5 p-6 rounded-full w-20 h-20 mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+                <Target className="h-8 w-8 text-navy mx-auto mt-2" />
+              </div>
+              <h3 className="text-lg font-bold text-navy mb-2">Stay Organized</h3>
+              <p className="text-sm text-muted-foreground">Central hub for all your cooking needs with smart organization</p>
             </div>
 
-            <div className="bg-white p-6 rounded-lg shadow-md text-center">
-              <h3 className="text-lg font-bold text-terracotta mb-3">Enhance Collaboration</h3>
-              <ul className="space-y-1 text-sm text-muted-foreground">
-                <li>• Share responsibilities</li>
-                <li>• Get input and approval</li>
-                <li>• Build shared collections</li>
-              </ul>
+            <div className="text-center group">
+              <div className="bg-gradient-to-br from-terracotta/10 to-terracotta/5 p-6 rounded-full w-20 h-20 mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+                <Users className="h-8 w-8 text-terracotta mx-auto mt-2" />
+              </div>
+              <h3 className="text-lg font-bold text-navy mb-2">Collaborate</h3>
+              <p className="text-sm text-muted-foreground">Share responsibilities and build collections together</p>
+            </div>
+          </div>
+        </section>
+
+        {/* Who It's For */}
+        <section className="mb-16">
+          <h2 className="text-3xl font-bold text-navy mb-8 text-center">Perfect For</h2>
+          <div className="bg-white rounded-2xl p-8 shadow-lg border">
+            <div className="grid md:grid-cols-2 gap-8">
+              <div className="space-y-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-3 h-3 bg-terracotta rounded-full mt-1 flex-shrink-0"></div>
+                  <div>
+                    <h4 className="font-semibold text-navy">Busy Families</h4>
+                    <p className="text-sm text-muted-foreground">Streamline meal planning and reduce daily cooking stress</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-3 h-3 bg-sage rounded-full mt-1 flex-shrink-0"></div>
+                  <div>
+                    <h4 className="font-semibold text-navy">Meal Prep Enthusiasts</h4>
+                    <p className="text-sm text-muted-foreground">Organize bulk cooking sessions and track portions</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-3 h-3 bg-navy rounded-full mt-1 flex-shrink-0"></div>
+                  <div>
+                    <h4 className="font-semibold text-navy">Recipe Collectors</h4>
+                    <p className="text-sm text-muted-foreground">Digitize and organize physical recipe collections</p>
+                  </div>
+                </div>
+              </div>
+              <div className="space-y-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-3 h-3 bg-terracotta rounded-full mt-1 flex-shrink-0"></div>
+                  <div>
+                    <h4 className="font-semibold text-navy">Health-Conscious Cooks</h4>
+                    <p className="text-sm text-muted-foreground">Plan balanced meals and track dietary preferences</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-3 h-3 bg-sage rounded-full mt-1 flex-shrink-0"></div>
+                  <div>
+                    <h4 className="font-semibold text-navy">Roommates & Couples</h4>
+                    <p className="text-sm text-muted-foreground">Collaborate on planning and share cooking responsibilities</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-3 h-3 bg-navy rounded-full mt-1 flex-shrink-0"></div>
+                  <div>
+                    <h4 className="font-semibold text-navy">Anyone Who Cooks</h4>
+                    <p className="text-sm text-muted-foreground">From occasional cooks to culinary enthusiasts</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </section>
 
         {/* Conclusion */}
-        <section className="text-center bg-white p-8 rounded-lg shadow-md">
-          <p className="text-lg text-muted-foreground leading-relaxed">
-            RealiMeali transforms the often stressful task of meal planning into an organized, collaborative, and enjoyable experience, making home cooking more accessible and efficient for everyone.
-          </p>
+        <section className="text-center">
+          <div className="bg-gradient-to-r from-terracotta/10 via-sage/5 to-navy/10 rounded-2xl p-12 border">
+            <div className="flex items-center justify-center gap-2 mb-6">
+              <Shield className="h-8 w-8 text-terracotta" />
+              <h2 className="text-2xl font-bold text-navy">The RealiMeali Promise</h2>
+            </div>
+            <p className="text-lg text-muted-foreground max-w-4xl mx-auto leading-relaxed">
+              RealiMeali transforms the often stressful task of meal planning into an organized, collaborative, 
+              and enjoyable experience. We're committed to making home cooking more accessible, efficient, 
+              and fun for everyone—because great meals bring people together.
+            </p>
+          </div>
         </section>
       </div>
     </div>

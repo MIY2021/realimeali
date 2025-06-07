@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -217,9 +216,6 @@ export default function Contact() {
                 <p className="text-sm text-muted-foreground">
                   We typically respond within 24 hours during business days.
                 </p>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Direct email: <span className="font-medium">benalexbeard@gmail.com</span>
-                </p>
               </div>
               
               <div>
@@ -239,7 +235,7 @@ export default function Contact() {
                   <div>
                     <h5 className="text-sm font-medium text-amber-800">Having trouble with the form?</h5>
                     <p className="text-xs text-amber-700 mt-1">
-                      If the contact form isn't working, please email us directly at the address above.
+                      Please try refreshing the page or contact us through the feedback page.
                     </p>
                   </div>
                 </div>

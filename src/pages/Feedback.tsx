@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -8,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -15,12 +15,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Upload, X, Camera, ArrowLeft } from "lucide-react";
+import { Upload, X, Camera, ArrowLeft, MessageSquare } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Link, useNavigate } from "react-router-dom";
 
 export default function Feedback() {
   useDocumentTitle("Feedback | RealiMeali");
+
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
   
   const { user } = useAuth();
   const { toast } = useToast();
@@ -165,153 +170,189 @@ export default function Feedback() {
   };
 
   return (
-    <div className="container py-6 max-w-2xl">
-      {/* Header */}
-      <div className="mb-6">
-        <div className="flex items-center gap-4 mb-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate(-1)}
-            className="flex items-center gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back
-          </Button>
+    <div className="container max-w-4xl py-8 px-4">
+      <div className="mb-8 text-center">
+        <div className="flex items-center justify-center gap-2 mb-4">
+          <MessageSquare className="h-8 w-8 text-terracotta" />
+          <h1 className="text-3xl font-bold text-navy">Send Feedback</h1>
         </div>
-        
-        <div className="space-y-2">
-          <h1 className="text-2xl sm:text-3xl font-bold text-navy">
-            Send Feedback
-          </h1>
-          <p className="text-muted-foreground text-sm sm:text-base">
-            Help us improve RealiMeali by sharing your suggestions, reporting bugs, or requesting features.
-          </p>
-        </div>
+        <p className="text-muted-foreground max-w-2xl mx-auto">
+          Help us improve RealiMeali by sharing your suggestions, reporting bugs, or requesting features.
+        </p>
       </div>
 
-      {/* Form */}
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="space-y-2">
-          <Label htmlFor="type">Type</Label>
-          <Select value={formData.type} onValueChange={(value: any) => setFormData(prev => ({ ...prev, type: value }))}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="suggestion">Suggestion</SelectItem>
-              <SelectItem value="bug">Bug Report</SelectItem>
-              <SelectItem value="feature_request">Feature Request</SelectItem>
-              <SelectItem value="other">Other</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+      <div className="grid gap-8 lg:grid-cols-3">
+        {/* Feedback Form */}
+        <div className="lg:col-span-2">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <MessageSquare className="h-5 w-5" />
+                Share your feedback
+              </CardTitle>
+              <CardDescription>
+                Your input helps us make RealiMeali better for everyone.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="space-y-2">
+                  <Label htmlFor="type">Type</Label>
+                  <Select value={formData.type} onValueChange={(value: any) => setFormData(prev => ({ ...prev, type: value }))}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="suggestion">Suggestion</SelectItem>
+                      <SelectItem value="bug">Bug Report</SelectItem>
+                      <SelectItem value="feature_request">Feature Request</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
 
-        {!user && (
-          <div className="space-y-2">
-            <Label htmlFor="email">Email (optional)</Label>
-            <Input
-              id="email"
-              type="email"
-              value={formData.email}
-              onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-              placeholder="your.email@example.com"
-            />
-          </div>
-        )}
+                {!user && (
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email (optional)</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                      placeholder="your.email@example.com"
+                    />
+                  </div>
+                )}
 
-        <div className="space-y-2">
-          <Label htmlFor="subject">Subject</Label>
-          <Input
-            id="subject"
-            value={formData.subject}
-            onChange={(e) => setFormData(prev => ({ ...prev, subject: e.target.value }))}
-            placeholder="Brief description of your feedback"
-            required
-          />
-        </div>
+                <div className="space-y-2">
+                  <Label htmlFor="subject">Subject *</Label>
+                  <Input
+                    id="subject"
+                    value={formData.subject}
+                    onChange={(e) => setFormData(prev => ({ ...prev, subject: e.target.value }))}
+                    placeholder="Brief description of your feedback"
+                    required
+                  />
+                </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="message">Message</Label>
-          <Textarea
-            id="message"
-            value={formData.message}
-            onChange={(e) => setFormData(prev => ({ ...prev, message: e.target.value }))}
-            placeholder="Detailed description of your feedback..."
-            className="min-h-[120px] sm:min-h-[150px]"
-            required
-          />
-        </div>
+                <div className="space-y-2">
+                  <Label htmlFor="message">Message *</Label>
+                  <Textarea
+                    id="message"
+                    value={formData.message}
+                    onChange={(e) => setFormData(prev => ({ ...prev, message: e.target.value }))}
+                    placeholder="Detailed description of your feedback..."
+                    rows={6}
+                    required
+                  />
+                </div>
 
-        <div className="space-y-2">
-          <Label>Attachment (optional)</Label>
-          {!selectedImage ? (
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6">
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleImageSelect}
-                className="hidden"
-                id="image-upload"
-              />
-              <label
-                htmlFor="image-upload"
-                className="flex flex-col items-center justify-center cursor-pointer"
-              >
-                <Upload className="h-8 w-8 text-gray-400 mb-2" />
-                <span className="text-gray-600 text-center text-sm">
-                  Click to upload an image
-                  <br />
-                  <span className="text-xs text-gray-500">Max size: 5MB</span>
-                </span>
-              </label>
-            </div>
-          ) : (
-            <div className="relative border rounded-lg p-4">
-              <div className="flex items-center gap-3 mb-3">
-                <Camera className="h-4 w-4 text-gray-500" />
-                <span className="flex-1 truncate text-sm">
-                  {selectedImage.name}
-                </span>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={removeImage}
-                  className="h-6 w-6 p-0"
+                <div className="space-y-2">
+                  <Label>Attachment (optional)</Label>
+                  {!selectedImage ? (
+                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageSelect}
+                        className="hidden"
+                        id="image-upload"
+                      />
+                      <label
+                        htmlFor="image-upload"
+                        className="flex flex-col items-center justify-center cursor-pointer"
+                      >
+                        <Upload className="h-8 w-8 text-gray-400 mb-2" />
+                        <span className="text-gray-600 text-center text-sm">
+                          Click to upload an image
+                          <br />
+                          <span className="text-xs text-gray-500">Max size: 5MB</span>
+                        </span>
+                      </label>
+                    </div>
+                  ) : (
+                    <div className="relative border rounded-lg p-4">
+                      <div className="flex items-center gap-3 mb-3">
+                        <Camera className="h-4 w-4 text-gray-500" />
+                        <span className="flex-1 truncate text-sm">
+                          {selectedImage.name}
+                        </span>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={removeImage}
+                          className="h-6 w-6 p-0"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      {selectedImage && (
+                        <img
+                          src={URL.createObjectURL(selectedImage)}
+                          alt="Preview"
+                          className="max-h-48 w-auto rounded border mx-auto"
+                        />
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                <Button 
+                  type="submit" 
+                  className="w-full" 
+                  style={{ backgroundColor: '#81b29a' }}
+                  disabled={isSubmitting || isUploadingImage}
                 >
-                  <X className="h-4 w-4" />
+                  {isSubmitting ? "Submitting..." : isUploadingImage ? "Uploading..." : "Submit Feedback"}
                 </Button>
-              </div>
-              {selectedImage && (
-                <img
-                  src={URL.createObjectURL(selectedImage)}
-                  alt="Preview"
-                  className="max-h-48 w-auto rounded border mx-auto"
-                />
-              )}
-            </div>
-          )}
+              </form>
+            </CardContent>
+          </Card>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-3 pt-4">
-          <Button 
-            type="button" 
-            variant="outline" 
-            onClick={() => navigate(-1)}
-            className="flex-1 sm:flex-none"
-          >
-            Cancel
-          </Button>
-          <Button 
-            type="submit" 
-            disabled={isSubmitting || isUploadingImage} 
-            className="flex-1 bg-terracotta hover:bg-terracotta/90"
-          >
-            {isSubmitting ? "Submitting..." : isUploadingImage ? "Uploading..." : "Submit Feedback"}
-          </Button>
+        {/* Feedback Information */}
+        <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Feedback Guidelines</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <h4 className="font-medium text-navy mb-2">What to include</h4>
+                <ul className="text-sm text-muted-foreground space-y-1">
+                  <li>• Clear description of the issue or suggestion</li>
+                  <li>• Steps to reproduce (for bugs)</li>
+                  <li>• Expected vs actual behavior</li>
+                  <li>• Screenshots if helpful</li>
+                </ul>
+              </div>
+              
+              <div>
+                <h4 className="font-medium text-navy mb-2">Feedback types</h4>
+                <ul className="text-sm text-muted-foreground space-y-1">
+                  <li>• <strong>Suggestion:</strong> Ideas for improvement</li>
+                  <li>• <strong>Bug Report:</strong> Something isn't working</li>
+                  <li>• <strong>Feature Request:</strong> New functionality</li>
+                  <li>• <strong>Other:</strong> General feedback</li>
+                </ul>
+              </div>
+
+              <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="flex items-start gap-2">
+                  <MessageSquare className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <h5 className="text-sm font-medium text-blue-800">Thank you!</h5>
+                    <p className="text-xs text-blue-700 mt-1">
+                      Your feedback helps us make RealiMeali better for everyone.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
-      </form>
+      </div>
     </div>
   );
 }
