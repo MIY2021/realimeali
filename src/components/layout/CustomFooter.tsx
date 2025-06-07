@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 
@@ -39,6 +38,9 @@ const CustomFooter = () => {
               <nav className="flex flex-col space-y-2">
                 <Link to="/about" className="text-muted-foreground hover:text-terracotta transition-colors">
                   About
+                </Link>
+                <Link to="/contact" className="text-muted-foreground hover:text-terracotta transition-colors">
+                  Contact
                 </Link>
                 <Link to="/feedback" className="text-muted-foreground hover:text-terracotta transition-colors">
                   Feedback
