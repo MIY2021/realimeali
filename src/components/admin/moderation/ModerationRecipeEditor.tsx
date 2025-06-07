@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Save, Loader, Wand2 } from "lucide-react";
+import { Save, Loader, Wand } from "lucide-react";
 import { CommunityRecipe } from "@/hooks/useCommunityRecipes";
 import {
   MEAL_TYPE_OPTIONS,
@@ -129,7 +129,7 @@ export function ModerationRecipeEditor({
                 </>
               ) : (
                 <>
-                  <Wand2 className="h-3 w-3 mr-1" />
+                  <Wand className="h-3 w-3 mr-1" />
                   Generate AI Description
                 </>
               )}
