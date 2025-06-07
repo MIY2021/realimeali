@@ -23,7 +23,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { User, Trash2, RotateCcw, Edit3, Shuffle } from "lucide-react";
+import { User, Trash2, RotateCcw, Edit, Shuffle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -256,7 +256,7 @@ export const HouseholdMembersCard = ({ members, isOwner, onRemoveMember, isLoadi
                             onClick={() => handleEditProfile(member)}
                             className="text-terracotta hover:text-terracotta"
                           >
-                            <Edit3 className="h-4 w-4" />
+                            <Edit className="h-4 w-4" />
                           </Button>
                         </DialogTrigger>
                         <DialogContent className="sm:max-w-md">
