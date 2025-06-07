@@ -91,9 +91,18 @@ export function useRecipeModerationOperations(onRefresh: () => void) {
       setSavingFields(prev => ({ ...prev, [recipe.id]: true }));
       console.log("💾 Updating recipe fields for:", recipe.id, updates);
       
+      // Create the update object with only the fields that exist in the database
+      const dbUpdates: any = {};
+      
+      if (updates.title !== undefined) dbUpdates.title = updates.title;
+      if (updates.description !== undefined) dbUpdates.description = updates.description;
+      if (updates.category !== undefined) dbUpdates.category = updates.category;
+      if (updates.cuisine !== undefined) dbUpdates.cuisine = updates.cuisine;
+      if (updates.difficulty_level !== undefined) dbUpdates.difficulty_level = updates.difficulty_level;
+      
       const { error } = await supabase
         .from('community_recipes')
-        .update(updates)
+        .update(dbUpdates)
         .eq('id', recipe.id);
 
       if (error) throw error;
