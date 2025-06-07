@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -15,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Upload, X, Camera, ArrowLeft, MessageSquare } from "lucide-react";
+import { Upload, X, Camera, ArrowLeft, Mail } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -173,7 +174,7 @@ export default function Feedback() {
     <div className="container max-w-4xl py-8 px-4">
       <div className="mb-8 text-center">
         <div className="flex items-center justify-center gap-2 mb-4">
-          <MessageSquare className="h-8 w-8 text-terracotta" />
+          <Mail className="h-8 w-8 text-terracotta" />
           <h1 className="text-3xl font-bold text-navy">Send Feedback</h1>
         </div>
         <p className="text-muted-foreground max-w-2xl mx-auto">
@@ -187,7 +188,7 @@ export default function Feedback() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <MessageSquare className="h-5 w-5" />
+                <Mail className="h-5 w-5" />
                 Share your feedback
               </CardTitle>
               <CardDescription>
@@ -340,7 +341,7 @@ export default function Feedback() {
 
               <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                 <div className="flex items-start gap-2">
-                  <MessageSquare className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                  <Mail className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
                   <div>
                     <h5 className="text-sm font-medium text-blue-800">Thank you!</h5>
                     <p className="text-xs text-blue-700 mt-1">

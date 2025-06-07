@@ -1,6 +1,6 @@
 
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
-import { UtensilsCrossed, Search, CalendarDays, ListChecks, Users, Lightbulb, Share, Heart, Target, Zap, Shield } from "lucide-react";
+import { UtensilsCrossed, Search, CalendarDays, ListChecks, Users, Lightbulb, Share, Heart } from "lucide-react";
 import { useEffect } from "react";
 
 export default function About() {
@@ -36,7 +36,7 @@ export default function About() {
         <section className="mb-16">
           <div className="bg-gradient-to-r from-sage/10 to-terracotta/10 rounded-2xl p-8 text-center">
             <div className="flex items-center justify-center gap-2 mb-4">
-              <Target className="h-6 w-6 text-terracotta" />
+              <UtensilsCrossed className="h-6 w-6 text-terracotta" />
               <h2 className="text-2xl font-bold text-navy">Our Mission</h2>
             </div>
             <p className="text-lg text-muted-foreground max-w-4xl mx-auto leading-relaxed">
@@ -209,7 +209,7 @@ export default function About() {
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             <div className="text-center group">
               <div className="bg-gradient-to-br from-terracotta/10 to-terracotta/5 p-6 rounded-full w-20 h-20 mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
-                <Zap className="h-8 w-8 text-terracotta mx-auto mt-2" />
+                <UtensilsCrossed className="h-8 w-8 text-terracotta mx-auto mt-2" />
               </div>
               <h3 className="text-lg font-bold text-navy mb-2">Save Time</h3>
               <p className="text-sm text-muted-foreground">Eliminate daily cooking decisions and streamline grocery shopping</p>
@@ -225,7 +225,7 @@ export default function About() {
 
             <div className="text-center group">
               <div className="bg-gradient-to-br from-navy/10 to-navy/5 p-6 rounded-full w-20 h-20 mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
-                <Target className="h-8 w-8 text-navy mx-auto mt-2" />
+                <Search className="h-8 w-8 text-navy mx-auto mt-2" />
               </div>
               <h3 className="text-lg font-bold text-navy mb-2">Stay Organized</h3>
               <p className="text-sm text-muted-foreground">Central hub for all your cooking needs with smart organization</p>
@@ -300,7 +300,7 @@ export default function About() {
         <section className="text-center">
           <div className="bg-gradient-to-r from-terracotta/10 via-sage/5 to-navy/10 rounded-2xl p-12 border">
             <div className="flex items-center justify-center gap-2 mb-6">
-              <Shield className="h-8 w-8 text-terracotta" />
+              <Heart className="h-8 w-8 text-terracotta" />
               <h2 className="text-2xl font-bold text-navy">The RealiMeali Promise</h2>
             </div>
             <p className="text-lg text-muted-foreground max-w-4xl mx-auto leading-relaxed">

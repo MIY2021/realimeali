@@ -1,3 +1,4 @@
+
 import { useEffect } from "react";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
-import { Settings as SettingsIcon, User, Bell, Shield, Trash2 } from "lucide-react";
+import { Settings as SettingsIcon, User, Bell, Trash2 } from "lucide-react";
 
 export default function Settings() {
   useDocumentTitle("Settings | RealiMeali");
@@ -107,7 +108,7 @@ export default function Settings() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Shield className="h-5 w-5" />
+              <User className="h-5 w-5" />
               Privacy & Security
             </CardTitle>
             <CardDescription>
