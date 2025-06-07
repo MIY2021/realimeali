@@ -27,7 +27,7 @@ serve(async (req) => {
       throw new Error('Supabase configuration is missing');
     }
 
-    const { prompt, isCommunityRecipe = false, referenceImageUrl } = await req.json();
+    const { prompt, isCommunityRecipe = false } = await req.json();
 
     if (!prompt) {
       return new Response(
@@ -40,40 +40,32 @@ serve(async (req) => {
     }
 
     console.log('Generating image with prompt:', prompt);
-    if (referenceImageUrl) {
-      console.log('Using reference image:', referenceImageUrl);
-    }
 
-    // Use the new simplified prompt for community recipes with reference images
+    // Enhanced prompt for community recipes or standard prompt for user recipes
     let enhancedPrompt = prompt;
-    if (isCommunityRecipe && referenceImageUrl) {
-      enhancedPrompt = 'Recreate this image as accurately as possible. Match the composition, colors, lighting, food arrangement, background, props, and style. The final result should look nearly identical to the original, but be AI-generated — not a pixel-for-pixel copy.';
-    } else if (isCommunityRecipe) {
-      // If it's a community recipe without reference image, use standard template
+    if (isCommunityRecipe) {
+      // For community recipes, ensure we have a comprehensive prompt
       if (!prompt.includes('hyper-realistic, top-down food photograph')) {
-        enhancedPrompt = `Generate a hyper-realistic, top-down food photograph of ${prompt}. Do not invent ingredients or styling outside what's described. Use natural lighting with soft shadows and realistic textures. Plate the dish in a ceramic or rustic-style plate or bowl. Garnish only with ingredients specifically mentioned or clearly implied in the description. The background should vary between images (e.g., linen, wood, stone, concrete) but always remain clean and natural. Include minimal, relevant props (e.g., a fork, a napkin, or a wedge of cheese) only if they are contextually appropriate. The result must look like a professional, real-life food photograph with no digital or artificial appearance. Do not use imaginary or stylized elements.`;
+        enhancedPrompt = `Generate a hyper-realistic, top-down food photograph of ${prompt}. Use natural lighting with soft shadows and realistic textures. Plate the dish in an appropriate ceramic or rustic-style plate or bowl. Garnish only with ingredients that would naturally accompany this dish. The background should be clean and natural (wood, stone, concrete, or linen). Include minimal, contextually appropriate props. The result must look like a professional, real-life food photograph with no digital or artificial appearance. Focus on authentic food presentation and natural colors.`;
       }
     }
 
-    // Prepare the request body for OpenAI
-    const requestBody = {
-      model: 'dall-e-3',
-      prompt: enhancedPrompt,
-      n: 1,
-      size: '1024x1024',
-      quality: 'standard',
-    };
+    console.log('Using enhanced prompt:', enhancedPrompt);
 
-    console.log('Sending request to OpenAI with enhanced prompt:', enhancedPrompt);
-
-    // Generate image with OpenAI
+    // Generate image with OpenAI DALL-E 3
     const response = await fetch('https://api.openai.com/v1/images/generations', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${openAIApiKey}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(requestBody),
+      body: JSON.stringify({
+        model: 'dall-e-3',
+        prompt: enhancedPrompt,
+        n: 1,
+        size: '1024x1024',
+        quality: 'standard',
+      }),
     });
 
     if (!response.ok) {
@@ -106,8 +98,7 @@ serve(async (req) => {
     // Generate unique filename
     const timestamp = Date.now();
     const prefix = isCommunityRecipe ? 'community-recipe' : 'recipe';
-    const suffix = referenceImageUrl ? 'reference-based' : 'generated';
-    const fileName = `${prefix}-${suffix}-${timestamp}.png`;
+    const fileName = `${prefix}-generated-${timestamp}.png`;
 
     // Upload to Supabase storage
     const { data: uploadData, error: uploadError } = await supabase.storage
@@ -133,7 +124,7 @@ serve(async (req) => {
       JSON.stringify({ 
         imageUrl: urlData.publicUrl,
         fileName: fileName,
-        usedReference: !!referenceImageUrl
+        prompt: enhancedPrompt
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

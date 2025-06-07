@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -16,34 +15,20 @@ export function useRecipeModerationOperations(onRefresh: () => void) {
     try {
       console.log("🎨 Starting AI image generation for recipe:", recipe.id, recipe.title);
       
-      // Create a proper prompt from title and description
-      let prompt = `Using the reference image provided, recreate the food and plating shown as authentically as possible. Keep the dish, ingredients, garnishes, and plate/bowl exactly as shown in the reference. Change ONLY the background, table surface, lighting setup, and surrounding environment. Ensure the food itself looks identical to the original while creating a completely new setting. Recipe: "${recipe.title}"`;
+      // Create a comprehensive prompt from title and description
+      let prompt = `${recipe.title}`;
       
       if (recipe.description && recipe.description.trim()) {
         prompt += ` - ${recipe.description.trim()}`;
       }
-      
-      prompt += `. Create a hyper-realistic, top-down food photograph with natural lighting and realistic textures. Use a different background material (wood, stone, concrete, linen) and new lighting setup while keeping the food presentation identical.`;
 
       console.log("🎨 Generated prompt:", prompt);
 
-      const requestBody: { 
-        prompt: string; 
-        isCommunityRecipe: boolean;
-        referenceImageUrl?: string;
-      } = { 
-        prompt: prompt,
-        isCommunityRecipe: true
-      };
-
-      // Include reference image if available
-      if (recipe.image_url) {
-        requestBody.referenceImageUrl = recipe.image_url;
-        console.log("🖼️ Using reference image:", recipe.image_url);
-      }
-
       const { data, error } = await supabase.functions.invoke('generate-recipe-image', {
-        body: requestBody,
+        body: { 
+          prompt: prompt,
+          isCommunityRecipe: true
+        },
       });
 
       if (error) {
