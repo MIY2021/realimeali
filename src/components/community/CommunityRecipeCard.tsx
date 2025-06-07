@@ -4,12 +4,16 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Clock, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface CommunityRecipeCardProps {
   recipe: CommunityRecipe;
+  mobileLayout?: string;
 }
 
-export function CommunityRecipeCard({ recipe }: CommunityRecipeCardProps) {
+export function CommunityRecipeCard({ recipe, mobileLayout = "1" }: CommunityRecipeCardProps) {
+  const isMobile = useIsMobile();
+
   const handleVisitSource = () => {
     window.open(recipe.source_url, '_blank', 'noopener,noreferrer');
   };
@@ -17,10 +21,30 @@ export function CommunityRecipeCard({ recipe }: CommunityRecipeCardProps) {
   // Use AI-generated description if available, otherwise fall back to original description
   const displayDescription = recipe.ai_generated_description || recipe.description;
 
+  // Dynamic text truncation based on layout - matching My Recipes behavior
+  const getDescriptionStyle = () => {
+    if (isMobile && mobileLayout === '2') {
+      // 2-column mobile: 1 line
+      return {
+        display: '-webkit-box',
+        WebkitLineClamp: 1,
+        WebkitBoxOrient: 'vertical' as const,
+        overflow: 'hidden',
+      };
+    }
+    // Desktop and 1-column mobile: 2 lines
+    return {
+      display: '-webkit-box',
+      WebkitLineClamp: 2,
+      WebkitBoxOrient: 'vertical' as const,
+      overflow: 'hidden',
+    };
+  };
+
   return (
     <Card className="overflow-hidden h-full flex flex-col hover:shadow-lg transition-shadow duration-200">
-      {/* Image Container */}
-      <div className="relative aspect-square overflow-hidden">
+      {/* Image Container - Changed from aspect-square to aspect-[4/3] */}
+      <div className="relative aspect-[4/3] overflow-hidden">
         {recipe.ai_generated_image_url ? (
           <img
             src={recipe.ai_generated_image_url}
@@ -56,9 +80,12 @@ export function CommunityRecipeCard({ recipe }: CommunityRecipeCardProps) {
           {recipe.title}
         </h3>
 
-        {/* Description */}
+        {/* Description with dynamic truncation */}
         {displayDescription && (
-          <p className="text-sm text-muted-foreground mb-3 line-clamp-3 flex-1">
+          <p 
+            className="text-sm text-muted-foreground mb-3 flex-1"
+            style={getDescriptionStyle()}
+          >
             {displayDescription}
           </p>
         )}

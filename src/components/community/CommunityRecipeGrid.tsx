@@ -22,6 +22,7 @@ export function CommunityRecipeGrid({ recipes, mobileLayout = "1" }: CommunityRe
         <CommunityRecipeCard
           key={recipe.id}
           recipe={recipe}
+          mobileLayout={mobileLayout}
         />
       ))}
     </div>
