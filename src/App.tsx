@@ -35,13 +35,13 @@ const queryClient = new QueryClient();
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <HouseholdProvider>
-          <RecipesProvider>
-            <MealPlanProvider>
-              <MealPlanApprovalProvider>
-                <HouseholdShoppingProvider>
-                  <BrowserRouter>
+      <BrowserRouter>
+        <AuthProvider>
+          <HouseholdProvider>
+            <RecipesProvider>
+              <MealPlanProvider>
+                <MealPlanApprovalProvider>
+                  <HouseholdShoppingProvider>
                     <Layout>
                       <Routes>
                         <Route path="/" element={<Index />} />
@@ -68,13 +68,13 @@ function App() {
                         <Route path="*" element={<NotFound />} />
                       </Routes>
                     </Layout>
-                  </BrowserRouter>
-                </HouseholdShoppingProvider>
-              </MealPlanApprovalProvider>
-            </MealPlanProvider>
-          </RecipesProvider>
-        </HouseholdProvider>
-      </AuthProvider>
+                  </HouseholdShoppingProvider>
+                </MealPlanApprovalProvider>
+              </MealPlanProvider>
+            </RecipesProvider>
+          </HouseholdProvider>
+        </AuthProvider>
+      </BrowserRouter>
     </QueryClientProvider>
   );
 }
