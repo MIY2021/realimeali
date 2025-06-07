@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -5,6 +6,7 @@ import { GoogleLoginButton } from "@/components/auth/GoogleLoginButton";
 import { EmailLoginButton } from "@/components/auth/EmailLoginButton";
 import { Heart, Calendar, ShoppingBag, Users } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { Link } from "react-router-dom";
 
 interface LoginPromptDialogProps {
   isOpen: boolean;
@@ -86,7 +88,23 @@ export function LoginPromptDialog({ isOpen, onClose, trigger = "timer" }: LoginP
             <EmailLoginButton onSuccess={() => handleDismiss("later")} />
             
             <p className="text-xs text-center text-muted-foreground px-2 leading-relaxed">
-              By signing in, you agree to our Terms & Privacy Policy
+              By signing in, you agree to our{" "}
+              <Link 
+                to="/terms-of-service" 
+                className="text-terracotta hover:underline" 
+                onClick={onClose}
+              >
+                Terms of Service
+              </Link>
+              {" "}and{" "}
+              <Link 
+                to="/privacy-policy" 
+                className="text-terracotta hover:underline"
+                onClick={onClose}
+              >
+                Privacy Policy
+              </Link>
+              .
             </p>
           </div>
 
