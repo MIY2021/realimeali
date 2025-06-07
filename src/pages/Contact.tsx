@@ -1,11 +1,11 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Mail, FileText } from "lucide-react";
+import { Mail, FileText, AlertTriangle } from "lucide-react";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -20,6 +20,11 @@ interface ContactFormData {
 
 export default function Contact() {
   useDocumentTitle("Contact Us | RealiMeali");
+
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   const [formData, setFormData] = useState<ContactFormData>({
     name: "",
@@ -57,12 +62,25 @@ export default function Contact() {
     setIsSubmitting(true);
 
     try {
+      console.log('Submitting contact form with data:', formData);
+      
       const { data, error } = await supabase.functions.invoke('send-contact-email', {
         body: formData,
       });
 
+      console.log('Contact email response:', { data, error });
+
       if (error) {
-        throw error;
+        console.error('Supabase function error:', error);
+        
+        // Check if it's a configuration error
+        if (error.message?.includes('Email service not configured') || 
+            error.message?.includes('RESEND_API_KEY')) {
+          toast.error("Email service is not properly configured. Please contact support directly.");
+        } else {
+          toast.error(`Failed to send message: ${error.message}`);
+        }
+        return;
       }
 
       toast.success("Your message has been sent successfully! We'll get back to you soon.");
@@ -77,7 +95,7 @@ export default function Contact() {
       });
     } catch (error) {
       console.error('Error sending contact email:', error);
-      toast.error("Failed to send your message. Please try again later.");
+      toast.error("Failed to send your message. Please try again later or contact us directly.");
     } finally {
       setIsSubmitting(false);
     }
@@ -199,6 +217,9 @@ export default function Contact() {
                 <p className="text-sm text-muted-foreground">
                   We typically respond within 24 hours during business days.
                 </p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Direct email: <span className="font-medium">benalexbeard@gmail.com</span>
+                </p>
               </div>
               
               <div>
@@ -210,6 +231,18 @@ export default function Contact() {
                   <li>• Bug reports</li>
                   <li>• General feedback</li>
                 </ul>
+              </div>
+
+              <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                <div className="flex items-start gap-2">
+                  <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <h5 className="text-sm font-medium text-amber-800">Having trouble with the form?</h5>
+                    <p className="text-xs text-amber-700 mt-1">
+                      If the contact form isn't working, please email us directly at the address above.
+                    </p>
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
