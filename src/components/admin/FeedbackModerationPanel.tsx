@@ -1,16 +1,11 @@
 
 import { useState, useEffect, useCallback } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Clock, AlertCircle, Check, Camera, Eye } from "lucide-react";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { Clock, AlertCircle, Check } from "lucide-react";
+import { SingleFeedbackModerationView } from "./moderation/SingleFeedbackModerationView";
+import { FeedbackModerationNavigation } from "./moderation/FeedbackModerationNavigation";
 
 interface FeedbackItem {
   id: string;
@@ -28,14 +23,11 @@ interface FeedbackItem {
 }
 
 export function FeedbackModerationPanel() {
-  const [feedback, setFeedback] = useState<FeedbackItem[]>([]);
+  const [allFeedback, setAllFeedback] = useState<FeedbackItem[]>([]);
+  const [filteredFeedback, setFilteredFeedback] = useState<FeedbackItem[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentFilter, setCurrentFilter] = useState("pending");
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedStatus, setSelectedStatus] = useState<{ [key: string]: string }>({});
-  const [selectedPriority, setSelectedPriority] = useState<{ [key: string]: string }>({});
-  const [adminNotes, setAdminNotes] = useState<{ [key: string]: string }>({});
-  const [imageDialogOpen, setImageDialogOpen] = useState(false);
-  const [selectedImageUrl, setSelectedImageUrl] = useState<string>("");
-  const isMobile = useIsMobile();
 
   const fetchFeedback = useCallback(async () => {
     setIsLoading(true);
@@ -46,7 +38,7 @@ export function FeedbackModerationPanel() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setFeedback(data || []);
+      setAllFeedback(data || []);
     } catch (error) {
       console.error('Error fetching feedback:', error);
       toast.error("Failed to load feedback");
@@ -72,42 +64,19 @@ export function FeedbackModerationPanel() {
     }
   };
 
-  const updateFeedbackStatus = async (feedbackId: string, status: string) => {
+  const handleUpdateStatus = async (feedbackId: string, status: string) => {
     await updateFeedback(feedbackId, { status });
   };
 
-  const updateFeedbackPriority = async (feedbackId: string, priority: string) => {
+  const handleUpdatePriority = async (feedbackId: string, priority: string) => {
     await updateFeedback(feedbackId, { priority });
   };
 
-  const saveAdminNotes = async (feedbackId: string, notes: string) => {
+  const handleSaveNotes = async (feedbackId: string, notes: string) => {
     await updateFeedback(feedbackId, { admin_notes: notes });
   };
 
-  const openImageDialog = (imageUrl: string) => {
-    setSelectedImageUrl(imageUrl);
-    setImageDialogOpen(true);
-  };
-
-  useEffect(() => {
-    fetchFeedback();
-  }, [fetchFeedback]);
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'pending': return <Clock className="h-4 w-4 text-amber-500" />;
-      case 'in_progress': return <AlertCircle className="h-4 w-4 text-blue-500" />;
-      case 'complete': return <Check className="h-4 w-4 text-green-500" />;
-      // Legacy status mapping
-      case 'new': return <Clock className="h-4 w-4 text-amber-500" />;
-      case 'completed': return <Check className="h-4 w-4 text-green-500" />;
-      case 'closed': return <Check className="h-4 w-4 text-gray-500" />;
-      default: return <Clock className="h-4 w-4" />;
-    }
-  };
-
   const normalizeStatus = (status: string) => {
-    // Map legacy statuses to new ones
     switch (status) {
       case 'new': return 'pending';
       case 'completed': return 'complete';
@@ -116,38 +85,72 @@ export function FeedbackModerationPanel() {
     }
   };
 
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case 'bug': return 'bg-red-100 text-red-800';
-      case 'feature_request': return 'bg-blue-100 text-blue-800';
-      case 'suggestion': return 'bg-green-100 text-green-800';
-      default: return 'bg-gray-100 text-gray-800';
+  // Filter feedback based on current filter
+  useEffect(() => {
+    let filtered: FeedbackItem[] = [];
+    
+    switch (currentFilter) {
+      case 'pending':
+        filtered = allFeedback.filter(f => {
+          const status = normalizeStatus(f.status);
+          return status === 'pending';
+        });
+        break;
+      case 'in_progress':
+        filtered = allFeedback.filter(f => {
+          const status = normalizeStatus(f.status);
+          return status === 'in_progress';
+        });
+        break;
+      case 'complete':
+        filtered = allFeedback.filter(f => {
+          const status = normalizeStatus(f.status);
+          return status === 'complete';
+        });
+        break;
+      default:
+        filtered = allFeedback;
     }
-  };
-
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'high': return 'bg-red-100 text-red-800';
-      case 'medium': return 'bg-yellow-100 text-yellow-800';
-      case 'low': return 'bg-green-100 text-green-800';
-      default: return 'bg-gray-100 text-gray-800';
+    
+    setFilteredFeedback(filtered);
+    
+    // Ensure currentIndex is within bounds
+    if (filtered.length > 0) {
+      const newIndex = Math.min(currentIndex, filtered.length - 1);
+      if (newIndex !== currentIndex) {
+        setCurrentIndex(newIndex);
+      }
+    } else {
+      setCurrentIndex(0);
     }
-  };
+  }, [allFeedback, currentFilter, currentIndex]);
 
-  const groupedFeedback = {
-    pending: feedback.filter(f => {
-      const status = normalizeStatus(f.status);
-      return status === 'pending';
-    }),
-    in_progress: feedback.filter(f => {
-      const status = normalizeStatus(f.status);
-      return status === 'in_progress';
-    }),
-    complete: feedback.filter(f => {
-      const status = normalizeStatus(f.status);
-      return status === 'complete';
-    })
-  };
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyPress = (event: KeyboardEvent) => {
+      if (filteredFeedback.length === 0) return;
+      
+      switch (event.key) {
+        case 'ArrowLeft':
+          if (currentIndex > 0) {
+            setCurrentIndex(currentIndex - 1);
+          }
+          break;
+        case 'ArrowRight':
+          if (currentIndex < filteredFeedback.length - 1) {
+            setCurrentIndex(currentIndex + 1);
+          }
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [currentIndex, filteredFeedback]);
+
+  useEffect(() => {
+    fetchFeedback();
+  }, [fetchFeedback]);
 
   if (isLoading) {
     return (
@@ -157,158 +160,58 @@ export function FeedbackModerationPanel() {
     );
   }
 
+  const currentFeedback = filteredFeedback[currentIndex];
+
   return (
-    <div className="w-full">
-      <Tabs defaultValue="pending" className="w-full">
-        <TabsList className={`grid w-full grid-cols-3`}>
-          <TabsTrigger value="pending" className="flex items-center gap-2">
-            <Clock className="h-4 w-4" />
-            {!isMobile && `Pending (${groupedFeedback.pending.length})`}
-            {isMobile && groupedFeedback.pending.length}
-          </TabsTrigger>
-          <TabsTrigger value="in_progress" className="flex items-center gap-2">
-            <AlertCircle className="h-4 w-4" />
-            {!isMobile && `In Progress (${groupedFeedback.in_progress.length})`}
-            {isMobile && groupedFeedback.in_progress.length}
-          </TabsTrigger>
-          <TabsTrigger value="complete" className="flex items-center gap-2">
-            <Check className="h-4 w-4" />
-            {!isMobile && `Complete (${groupedFeedback.complete.length})`}
-            {isMobile && groupedFeedback.complete.length}
-          </TabsTrigger>
-        </TabsList>
+    <div className="space-y-6">
+      {/* Navigation Header */}
+      <FeedbackModerationNavigation
+        currentIndex={currentIndex}
+        totalCount={filteredFeedback.length}
+        currentFilter={currentFilter}
+        onFilterChange={setCurrentFilter}
+        onNavigate={setCurrentIndex}
+        allFeedback={allFeedback}
+      />
 
-        {Object.entries(groupedFeedback).map(([status, items]) => (
-          <TabsContent key={status} value={status} className="mt-6">
-            {items.length === 0 ? (
-              <div className="text-center py-8">
-                {getStatusIcon(status)}
-                <p className="text-muted-foreground mt-2">No {status.replace('_', ' ')} feedback</p>
+      {/* Main Content */}
+      {filteredFeedback.length === 0 ? (
+        <Card>
+          <CardContent className="py-8">
+            <div className="text-center">
+              <div className="flex justify-center mb-4">
+                {currentFilter === 'pending' && <Clock className="h-12 w-12 text-amber-500" />}
+                {currentFilter === 'in_progress' && <AlertCircle className="h-12 w-12 text-blue-500" />}
+                {currentFilter === 'complete' && <Check className="h-12 w-12 text-green-500" />}
               </div>
-            ) : (
-              <div className="space-y-4">
-                {items.map((item) => (
-                  <Card key={item.id} className="w-full">
-                    <CardHeader className={`pb-3 ${isMobile ? 'px-3 py-3' : ''}`}>
-                      <div className={`flex ${isMobile ? 'flex-col' : 'items-start justify-between'} gap-2`}>
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            {getStatusIcon(normalizeStatus(item.status))}
-                            <CardTitle className={`${isMobile ? 'text-base' : 'text-lg'}`}>
-                              {item.subject}
-                            </CardTitle>
-                            {item.image_url && (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => openImageDialog(item.image_url!)}
-                                className="h-6 px-2"
-                              >
-                                <Camera className="h-3 w-3 mr-1" />
-                                {!isMobile && "View Image"}
-                              </Button>
-                            )}
-                          </div>
-                          <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-                            <Badge variant="outline" className={`text-xs ${getTypeColor(item.type)}`}>
-                              {item.type.replace('_', ' ')}
-                            </Badge>
-                            {item.priority && (
-                              <Badge variant="outline" className={`text-xs ${getPriorityColor(item.priority)}`}>
-                                {item.priority} priority
-                              </Badge>
-                            )}
-                            <span>{item.email || 'Anonymous'}</span>
-                            <span>•</span>
-                            <span>{new Date(item.created_at).toLocaleDateString()}</span>
-                          </div>
-                        </div>
-                        <div className={`flex ${isMobile ? 'flex-col w-full' : 'items-center'} gap-2`}>
-                          <Select
-                            value={selectedStatus[item.id] || normalizeStatus(item.status)}
-                            onValueChange={(value) => {
-                              setSelectedStatus(prev => ({ ...prev, [item.id]: value }));
-                              updateFeedbackStatus(item.id, value);
-                            }}
-                          >
-                            <SelectTrigger className={`${isMobile ? 'w-full' : 'w-32'}`}>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="pending">Pending</SelectItem>
-                              <SelectItem value="in_progress">In Progress</SelectItem>
-                              <SelectItem value="complete">Complete</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <Select
-                            value={selectedPriority[item.id] || item.priority || 'medium'}
-                            onValueChange={(value) => {
-                              setSelectedPriority(prev => ({ ...prev, [item.id]: value }));
-                              updateFeedbackPriority(item.id, value);
-                            }}
-                          >
-                            <SelectTrigger className={`${isMobile ? 'w-full' : 'w-28'}`}>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="high">High</SelectItem>
-                              <SelectItem value="medium">Medium</SelectItem>
-                              <SelectItem value="low">Low</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent className={`${isMobile ? 'px-3 pb-3' : ''}`}>
-                      <div className="bg-muted rounded-md p-3 mb-3">
-                        <p className={`text-sm ${isMobile ? 'text-xs' : ''}`}>{item.message}</p>
-                      </div>
-                      
-                      <div className="space-y-3">
-                        <div>
-                          <label className="text-sm font-medium mb-1 block">Admin Notes</label>
-                          <Textarea
-                            placeholder="Add notes about this feedback..."
-                            value={adminNotes[item.id] || item.admin_notes || ''}
-                            onChange={(e) => setAdminNotes(prev => ({ ...prev, [item.id]: e.target.value }))}
-                            className={`min-h-16 ${isMobile ? 'text-xs' : 'text-sm'}`}
-                          />
-                          <Button
-                            size="sm"
-                            className="mt-2"
-                            onClick={() => saveAdminNotes(item.id, adminNotes[item.id] || '')}
-                          >
-                            Save Notes
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </TabsContent>
-        ))}
-      </Tabs>
+              <h3 className="text-lg font-medium text-muted-foreground mb-2">
+                No {currentFilter.replace('_', ' ')} feedback
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                {currentFilter === 'pending' 
+                  ? "All feedback has been reviewed!" 
+                  : `No ${currentFilter.replace('_', ' ')} feedback found.`
+                }
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      ) : currentFeedback ? (
+        <SingleFeedbackModerationView
+          key={`feedback-${currentFeedback.id}`}
+          feedback={currentFeedback}
+          onUpdateStatus={handleUpdateStatus}
+          onUpdatePriority={handleUpdatePriority}
+          onSaveNotes={handleSaveNotes}
+        />
+      ) : null}
 
-      {/* Image View Dialog */}
-      <Dialog open={imageDialogOpen} onOpenChange={setImageDialogOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Eye className="h-4 w-4" />
-              Feedback Attachment
-            </DialogTitle>
-          </DialogHeader>
-          <div className="flex justify-center">
-            <img
-              src={selectedImageUrl}
-              alt="Feedback attachment"
-              className="max-w-full max-h-[70vh] object-contain rounded-lg"
-            />
-          </div>
-        </DialogContent>
-      </Dialog>
+      {/* Keyboard shortcuts info */}
+      {filteredFeedback.length > 0 && (
+        <div className="text-xs text-muted-foreground text-center py-2 border-t">
+          <p><strong>Keyboard shortcuts:</strong> ← → Navigate between feedback items</p>
+        </div>
+      )}
     </div>
   );
 }
