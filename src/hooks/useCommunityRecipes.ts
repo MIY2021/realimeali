@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -55,7 +54,6 @@ export function useCommunityRecipes() {
         .select('*', { count: 'exact' })
         .eq('is_approved', true)
         .eq('is_active', true)
-        .not('ai_generated_description', 'is', null) // Only show recipes with AI content
         .order('created_at', { ascending: false });
 
       if (filters?.category && filters.category !== 'all') {
@@ -67,8 +65,8 @@ export function useCommunityRecipes() {
       }
 
       if (filters?.search) {
-        // Search only in AI-generated descriptions since that's what's displayed
-        query = query.ilike('ai_generated_description', `%${filters.search}%`);
+        // Search in original description since it's safe and available for all recipes
+        query = query.ilike('description', `%${filters.search}%`);
       }
 
       if (filters?.limit) {
