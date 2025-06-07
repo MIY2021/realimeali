@@ -1,127 +1,116 @@
 
-import { useState } from "react";
+import { CommunityRecipe } from "@/hooks/useCommunityRecipes";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Globe, UtensilsCrossed } from "lucide-react";
+import { Clock, Users, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { CommunityRecipe } from "@/hooks/useCommunityRecipes";
-import { useIsMobile } from "@/hooks/use-mobile";
 
 interface CommunityRecipeCardProps {
   recipe: CommunityRecipe;
 }
 
 export function CommunityRecipeCard({ recipe }: CommunityRecipeCardProps) {
-  const isMobile = useIsMobile();
-  const [imgError, setImgError] = useState(false);
-
-  const handleVisitRecipe = () => {
-    window.open(recipe.source_url, '_blank');
+  const handleVisitSource = () => {
+    window.open(recipe.source_url, '_blank', 'noopener,noreferrer');
   };
 
-  const capitalizeFirst = (str: string) => {
-    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-  };
-
-  const getSourceDomain = (url: string) => {
-    try {
-      const domain = new URL(url).hostname;
-      return domain.replace('www.', '');
-    } catch {
-      return 'External Source';
-    }
-  };
-
-  // Only use AI-generated content for public display
-  const displayImageUrl = recipe.ai_generated_image_url;
-  const displayDescription = recipe.ai_generated_description;
-
-  // TODO: Implement image compression for bandwidth optimization
-  // Recommendations:
-  // 1. Use Cloudflare Images or similar service for automatic WebP conversion
-  // 2. Serve different sizes based on viewport (responsive images)
-  // 3. Consider lazy loading for images below the fold
-  // 4. Implement progressive JPEG loading for better perceived performance
-  // Example: displayImageUrl could be transformed to include size params like:
-  // `${displayImageUrl}?w=400&h=300&f=webp&q=80` for optimized delivery
+  // Use AI-generated description if available, otherwise fall back to original description
+  const displayDescription = recipe.ai_generated_description || recipe.description;
 
   return (
-    <Card className="bg-card rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 flex flex-col h-full">
-      <div className="relative overflow-hidden rounded-t-lg">
-        <div onClick={handleVisitRecipe} className="cursor-pointer">
-          {displayImageUrl && !imgError ? (
-            <img
-              src={displayImageUrl}
-              alt={recipe.title}
-              className={`w-full aspect-[4/3] object-cover transition-transform duration-300 ${!isMobile ? 'hover:scale-110' : ''}`}
-              onError={() => setImgError(true)}
-              // TODO: Add responsive image attributes for better performance
-              // srcSet and sizes attributes would help with different screen densities
-            />
-          ) : (
-            <div className="w-full aspect-[4/3] flex items-center justify-center bg-muted">
-              <UtensilsCrossed className="h-8 w-8 text-muted-foreground" />
-            </div>
-          )}
-        </div>
-        <Badge
-          variant="secondary"
-          className="absolute top-2 left-2 bg-sage text-white font-semibold px-2 py-1 text-xs shadow-lg border-0"
-        >
-          External
-        </Badge>
-      </div>
-      
-      <CardContent className="p-4 flex-1 flex flex-col">
-        <div onClick={handleVisitRecipe} className="cursor-pointer">
-          <h3 className="text-lg font-semibold text-gray-900 mb-2 hover:text-primary transition-colors">
-            {recipe.title}
-          </h3>
-        </div>
+    <Card className="overflow-hidden h-full flex flex-col hover:shadow-lg transition-shadow duration-200">
+      {/* Image Container */}
+      <div className="relative aspect-square overflow-hidden">
+        {recipe.ai_generated_image_url ? (
+          <img
+            src={recipe.ai_generated_image_url}
+            alt={recipe.title}
+            className="w-full h-full object-cover"
+            loading="lazy"
+          />
+        ) : recipe.image_url ? (
+          <img
+            src={recipe.image_url}
+            alt={recipe.title}
+            className="w-full h-full object-cover"
+            loading="lazy"
+          />
+        ) : (
+          <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+            <span className="text-gray-400 text-sm">No image</span>
+          </div>
+        )}
         
+        {/* External badge */}
+        <div className="absolute top-2 left-2">
+          <Badge variant="secondary" className="bg-sage text-white text-xs">
+            External
+          </Badge>
+        </div>
+      </div>
+
+      {/* Content */}
+      <CardContent className="p-4 flex-1 flex flex-col">
+        {/* Title */}
+        <h3 className="font-semibold text-lg mb-2 line-clamp-2">
+          {recipe.title}
+        </h3>
+
+        {/* Description */}
         {displayDescription && (
-          <p 
-            className="text-sm text-gray-600 mb-2 flex-1"
-            style={{
-              display: '-webkit-box',
-              WebkitLineClamp: 2,
-              WebkitBoxOrient: 'vertical',
-              overflow: 'hidden',
-              lineHeight: '1.4em',
-              maxHeight: '2.8em'
-            }}
-          >
+          <p className="text-sm text-muted-foreground mb-3 line-clamp-3 flex-1">
             {displayDescription}
           </p>
         )}
-        
-        <div className="flex items-center gap-2 mb-3">
+
+        {/* Recipe Details */}
+        <div className="flex items-center gap-4 text-sm text-muted-foreground mb-3">
+          {recipe.prep_time > 0 && (
+            <div className="flex items-center gap-1">
+              <Clock className="h-4 w-4" />
+              <span>{recipe.prep_time + recipe.cook_time}m</span>
+            </div>
+          )}
+          {recipe.servings > 0 && (
+            <div className="flex items-center gap-1">
+              <Users className="h-4 w-4" />
+              <span>{recipe.servings}</span>
+            </div>
+          )}
+        </div>
+
+        {/* Categories */}
+        <div className="flex flex-wrap gap-1 mb-3">
           {recipe.category && (
-            <Badge variant="secondary">
-              {capitalizeFirst(recipe.category)}
+            <Badge variant="outline" className="text-xs">
+              {recipe.category}
             </Badge>
           )}
           {recipe.cuisine && (
-            <Badge variant="outline">
-              {capitalizeFirst(recipe.cuisine)}
+            <Badge variant="outline" className="text-xs">
+              {recipe.cuisine}
             </Badge>
           )}
         </div>
 
-        <div className="text-xs text-muted-foreground mb-3">
-          Source: {getSourceDomain(recipe.source_url)}
+        {/* Source and Visit Button */}
+        <div className="mt-auto">
+          {recipe.source_url && (
+            <>
+              <p className="text-xs text-muted-foreground mb-2">
+                Source: {new URL(recipe.source_url).hostname}
+              </p>
+              <Button 
+                onClick={handleVisitSource}
+                className="w-full bg-terracotta hover:bg-terracotta/90 text-white"
+                size="sm"
+              >
+                <ExternalLink className="h-4 w-4 mr-2" />
+                Visit Recipe Site
+              </Button>
+            </>
+          )}
         </div>
-
-        {/* Action button */}
-        <Button
-          variant="default"
-          size="sm"
-          className="w-full text-xs px-2"
-          onClick={handleVisitRecipe}
-        >
-          <Globe className="h-3 w-3 mr-1" />
-          Visit Recipe Site
-        </Button>
       </CardContent>
     </Card>
   );
