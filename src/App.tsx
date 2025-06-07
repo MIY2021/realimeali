@@ -25,6 +25,8 @@ import AdminDashboard from "@/pages/AdminDashboard";
 import NotFound from "@/pages/NotFound";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import Settings from "@/pages/Settings";
+import PrivacyPolicy from "@/pages/PrivacyPolicy";
+import TermsOfService from "@/pages/TermsOfService";
 
 const queryClient = new QueryClient();
 
@@ -42,6 +44,8 @@ const App = () => (
                     <Routes>
                       <Route path="/" element={<Index />} />
                       <Route path="/about" element={<About />} />
+                      <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                      <Route path="/terms-of-service" element={<TermsOfService />} />
                       <Route path="/login" element={<Login />} />
                       <Route path="/signup" element={<Signup />} />
                       <Route path="/share/:slug" element={<PublicRecipe />} />

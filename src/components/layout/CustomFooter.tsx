@@ -27,6 +27,12 @@ const CustomFooter = () => {
               <Link to="/shopping-list" className="hover:text-terracotta transition-colors">
                 Shopping List
               </Link>
+              <Link to="/privacy-policy" className="hover:text-terracotta transition-colors">
+                Privacy Policy
+              </Link>
+              <Link to="/terms-of-service" className="hover:text-terracotta transition-colors">
+                Terms of Service
+              </Link>
               <button 
                 onClick={() => setFeedbackOpen(true)}
                 className="hover:text-terracotta transition-colors"

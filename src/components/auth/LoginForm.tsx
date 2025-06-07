@@ -1,9 +1,9 @@
-
 import { GoogleLoginButton } from "@/components/auth/GoogleLoginButton";
 import { EmailLoginButton } from "@/components/auth/EmailLoginButton";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 export function LoginForm() {
   const { user, isLoading } = useAuth();
@@ -48,7 +48,15 @@ export function LoginForm() {
         <EmailLoginButton />
         
         <div className="text-center text-sm text-muted-foreground">
-          By continuing, you agree to our Terms of Service and Privacy Policy.
+          By continuing, you agree to our{" "}
+          <Link to="/terms-of-service" className="text-terracotta hover:underline">
+            Terms of Service
+          </Link>
+          {" "}and{" "}
+          <Link to="/privacy-policy" className="text-terracotta hover:underline">
+            Privacy Policy
+          </Link>
+          .
         </div>
       </div>
     </div>
