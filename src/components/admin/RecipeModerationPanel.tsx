@@ -90,6 +90,11 @@ export function RecipeModerationPanel() {
     }, 100); // Small delay to ensure data is refreshed
   };
 
+  // Wrapper function to match the expected signature
+  const handleSaveFields = (recipe: CommunityRecipe, updates: Partial<CommunityRecipe>) => {
+    updateRecipeFields(recipe.id, updates);
+  };
+
   // Filter recipes based on current filter
   useEffect(() => {
     let filtered: CommunityRecipe[] = [];
@@ -229,7 +234,7 @@ export function RecipeModerationPanel() {
           onGenerateAI={generateAIImage}
           onUploadFile={uploadImageFile}
           onUpdateImageUrl={updateAIImageUrl}
-          onSaveFields={updateRecipeFields}
+          onSaveFields={handleSaveFields}
           onGenerateAIDescription={generateAIDescription}
           generatingAI={generatingAI}
           uploadingFile={uploadingFile}
