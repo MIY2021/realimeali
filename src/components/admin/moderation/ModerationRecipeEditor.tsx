@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -29,12 +29,23 @@ export function ModerationRecipeEditor({
   isSaving,
   isGeneratingAIDescription,
 }: ModerationRecipeEditorProps) {
-  const [title, setTitle] = useState(recipe.title);
-  const [description, setDescription] = useState(recipe.description || "");
-  const [category, setCategory] = useState(recipe.category || "");
-  const [cuisine, setCuisine] = useState(recipe.cuisine || "");
-  const [difficultyLevel, setDifficultyLevel] = useState(recipe.difficulty_level || "");
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [category, setCategory] = useState("");
+  const [cuisine, setCuisine] = useState("");
+  const [difficultyLevel, setDifficultyLevel] = useState("");
   const [selectedDietLifestyle, setSelectedDietLifestyle] = useState<string[]>([]);
+
+  // Reset state whenever recipe changes
+  useEffect(() => {
+    console.log("🔄 Recipe changed in editor, updating state:", recipe.id, recipe.title);
+    setTitle(recipe.title || "");
+    setDescription(recipe.description || "");
+    setCategory(recipe.category || "");
+    setCuisine(recipe.cuisine || "");
+    setDifficultyLevel(recipe.difficulty_level || "");
+    setSelectedDietLifestyle([]);
+  }, [recipe.id, recipe.title, recipe.description, recipe.category, recipe.cuisine, recipe.difficulty_level]);
 
   const handleSave = () => {
     const updates: Partial<CommunityRecipe> = {
@@ -44,6 +55,7 @@ export function ModerationRecipeEditor({
       cuisine,
       difficulty_level: difficultyLevel,
     };
+    console.log("💾 Saving recipe updates:", updates);
     onSave(updates);
   };
 
@@ -98,6 +110,9 @@ export function ModerationRecipeEditor({
     <Card className="bg-white/60 backdrop-blur-sm border-white/30">
       <CardHeader className="pb-3">
         <CardTitle className="text-lg">Edit Recipe Details</CardTitle>
+        <div className="text-sm text-muted-foreground">
+          Editing: {recipe.title} (ID: {recipe.id.slice(0, 8)}...)
+        </div>
       </CardHeader>
       <CardContent className="space-y-5">
         {/* Title */}

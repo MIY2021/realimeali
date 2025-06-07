@@ -57,6 +57,7 @@ export function RecipeModerationPanel() {
   // Enhanced approve function that handles navigation
   const handleApproveRecipe = async (recipeId: string) => {
     const currentRecipeIndex = currentIndex;
+    console.log("✅ Approving recipe at index:", currentRecipeIndex, "Recipe ID:", recipeId);
     await approveRecipe(recipeId);
     
     // After approval, navigate to next pending recipe or stay in bounds
@@ -74,6 +75,7 @@ export function RecipeModerationPanel() {
   // Enhanced reject function that handles navigation
   const handleRejectRecipe = async (recipeId: string) => {
     const currentRecipeIndex = currentIndex;
+    console.log("❌ Rejecting recipe at index:", currentRecipeIndex, "Recipe ID:", recipeId);
     await rejectRecipe(recipeId);
     
     // After rejection, navigate to next pending recipe or stay in bounds
@@ -110,15 +112,20 @@ export function RecipeModerationPanel() {
         filtered = allRecipes;
     }
     
+    console.log("🔄 Filtering recipes:", currentFilter, "Found:", filtered.length);
     setFilteredRecipes(filtered);
     
     // Ensure currentIndex is within bounds
     if (filtered.length > 0) {
-      setCurrentIndex(prev => Math.min(prev, filtered.length - 1));
+      const newIndex = Math.min(currentIndex, filtered.length - 1);
+      if (newIndex !== currentIndex) {
+        console.log("📍 Adjusting current index from", currentIndex, "to", newIndex);
+        setCurrentIndex(newIndex);
+      }
     } else {
       setCurrentIndex(0);
     }
-  }, [allRecipes, currentFilter]);
+  }, [allRecipes, currentFilter, currentIndex]);
 
   // Keyboard navigation (no auto-approval logic)
   useEffect(() => {
@@ -128,11 +135,13 @@ export function RecipeModerationPanel() {
       switch (event.key) {
         case 'ArrowLeft':
           if (currentIndex > 0) {
+            console.log("⬅️ Navigate left to index:", currentIndex - 1);
             setCurrentIndex(currentIndex - 1);
           }
           break;
         case 'ArrowRight':
           if (currentIndex < filteredRecipes.length - 1) {
+            console.log("➡️ Navigate right to index:", currentIndex + 1);
             setCurrentIndex(currentIndex + 1);
           }
           break;
@@ -175,6 +184,13 @@ export function RecipeModerationPanel() {
 
   const currentRecipe = filteredRecipes[currentIndex];
 
+  console.log("🎯 Current recipe display:", {
+    index: currentIndex,
+    total: filteredRecipes.length,
+    recipeId: currentRecipe?.id,
+    recipeTitle: currentRecipe?.title
+  });
+
   return (
     <div className="space-y-6">
       {/* Navigation Header */}
@@ -206,6 +222,7 @@ export function RecipeModerationPanel() {
         </Card>
       ) : currentRecipe ? (
         <SingleRecipeModerationView
+          key={`recipe-${currentRecipe.id}`}
           recipe={currentRecipe}
           onApprove={handleApproveRecipe}
           onReject={handleRejectRecipe}
