@@ -120,8 +120,7 @@ export function useRecipeModerationOperations(onRefresh: () => void) {
         body: { 
           title: recipe.title,
           description: recipe.description || "",
-          ingredients: recipe.ingredients || [],
-          instructions: recipe.instructions || []
+          source_url: recipe.source_url || ""
         }
       });
 
