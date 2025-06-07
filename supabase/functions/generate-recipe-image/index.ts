@@ -27,7 +27,7 @@ serve(async (req) => {
       throw new Error('Supabase configuration is missing');
     }
 
-    const { prompt, isCommunityRecipe = false } = await req.json();
+    const { prompt, isCommunityRecipe = false, referenceImageUrl } = await req.json();
 
     if (!prompt) {
       return new Response(
@@ -40,16 +40,31 @@ serve(async (req) => {
     }
 
     console.log('Generating image with prompt:', prompt);
+    if (referenceImageUrl) {
+      console.log('Using reference image:', referenceImageUrl);
+    }
 
-    // For community recipes, use the same hyper-realistic template but ensure it's applied
+    // For community recipes with reference images, use enhanced prompt
     let enhancedPrompt = prompt;
-    if (isCommunityRecipe) {
-      // If it's a community recipe and doesn't already contain our new template,
-      // apply the hyper-realistic styling while preserving the core prompt
+    if (isCommunityRecipe && referenceImageUrl) {
+      enhancedPrompt = `Using the reference image provided, recreate the food and plating shown as authentically as possible. Keep the dish, ingredients, garnishes, and plate/bowl exactly as shown in the reference. Change ONLY the background, table surface, lighting setup, and surrounding environment. Ensure the food itself looks identical to the original while creating a completely new setting. ${prompt}`;
+    } else if (isCommunityRecipe) {
+      // If it's a community recipe without reference image, use standard template
       if (!prompt.includes('hyper-realistic, top-down food photograph')) {
         enhancedPrompt = `Generate a hyper-realistic, top-down food photograph of ${prompt}. Do not invent ingredients or styling outside what's described. Use natural lighting with soft shadows and realistic textures. Plate the dish in a ceramic or rustic-style plate or bowl. Garnish only with ingredients specifically mentioned or clearly implied in the description. The background should vary between images (e.g., linen, wood, stone, concrete) but always remain clean and natural. Include minimal, relevant props (e.g., a fork, a napkin, or a wedge of cheese) only if they are contextually appropriate. The result must look like a professional, real-life food photograph with no digital or artificial appearance. Do not use imaginary or stylized elements.`;
       }
     }
+
+    // Prepare the request body for OpenAI
+    const requestBody = {
+      model: 'dall-e-3',
+      prompt: enhancedPrompt,
+      n: 1,
+      size: '1024x1024',
+      quality: 'standard',
+    };
+
+    console.log('Sending request to OpenAI with enhanced prompt:', enhancedPrompt);
 
     // Generate image with OpenAI
     const response = await fetch('https://api.openai.com/v1/images/generations', {
@@ -58,13 +73,7 @@ serve(async (req) => {
         'Authorization': `Bearer ${openAIApiKey}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        model: 'dall-e-3',
-        prompt: enhancedPrompt,
-        n: 1,
-        size: '1024x1024',
-        quality: 'standard',
-      }),
+      body: JSON.stringify(requestBody),
     });
 
     if (!response.ok) {
@@ -97,7 +106,8 @@ serve(async (req) => {
     // Generate unique filename
     const timestamp = Date.now();
     const prefix = isCommunityRecipe ? 'community-recipe' : 'recipe';
-    const fileName = `${prefix}-${timestamp}.png`;
+    const suffix = referenceImageUrl ? 'reference-based' : 'generated';
+    const fileName = `${prefix}-${suffix}-${timestamp}.png`;
 
     // Upload to Supabase storage
     const { data: uploadData, error: uploadError } = await supabase.storage
@@ -122,7 +132,8 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         imageUrl: urlData.publicUrl,
-        fileName: fileName 
+        fileName: fileName,
+        usedReference: !!referenceImageUrl
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

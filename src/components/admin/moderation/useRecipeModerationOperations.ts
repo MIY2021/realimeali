@@ -5,31 +5,41 @@ import { toast } from "sonner";
 import { CommunityRecipe } from "@/hooks/useCommunityRecipes";
 
 export function useRecipeModerationOperations(onRefresh: () => void) {
-  const [generatingAI, setGeneratingAI] = useState(false);
-  const [uploadingFile, setUploadingFile] = useState(false);
-  const [savingFields, setSavingFields] = useState(false);
+  const [generatingAI, setGeneratingAI] = useState<{ [key: string]: boolean }>({});
+  const [uploadingFile, setUploadingFile] = useState<{ [key: string]: boolean }>({});
+  const [savingFields, setSavingFields] = useState<{ [key: string]: boolean }>({});
 
   const generateAIImage = useCallback(async (recipe: CommunityRecipe) => {
-    setGeneratingAI(true);
+    const loadingKey = `${recipe.id}-image`;
+    setGeneratingAI(prev => ({ ...prev, [loadingKey]: true }));
+    
     try {
       console.log("🎨 Starting AI image generation for recipe:", recipe.id, recipe.title);
       
       // Create a proper prompt from title and description
-      let prompt = `Generate a hyper-realistic, top-down food photograph of the recipe: "${recipe.title}"`;
+      let prompt = `Using the reference image provided, recreate the food and plating shown as authentically as possible. Keep the dish, ingredients, garnishes, and plate/bowl exactly as shown in the reference. Change ONLY the background, table surface, lighting setup, and surrounding environment. Ensure the food itself looks identical to the original while creating a completely new setting. Recipe: "${recipe.title}"`;
       
       if (recipe.description && recipe.description.trim()) {
         prompt += ` - ${recipe.description.trim()}`;
       }
       
-      prompt += `. Do not invent ingredients or styling outside what's described. Use natural lighting with soft shadows and realistic textures. Plate the dish in a ceramic or rustic-style plate or bowl. Garnish only with ingredients specifically mentioned or clearly implied in the description. The background should vary between images (e.g., linen, wood, stone, concrete) but always remain clean and natural. Include minimal, relevant props (e.g., a fork, a napkin, or a wedge of cheese) only if they are contextually appropriate. The result must look like a professional, real-life food photograph with no digital or artificial appearance. Do not use imaginary or stylized elements.`;
+      prompt += `. Create a hyper-realistic, top-down food photograph with natural lighting and realistic textures. Use a different background material (wood, stone, concrete, linen) and new lighting setup while keeping the food presentation identical.`;
 
       console.log("🎨 Generated prompt:", prompt);
 
+      const requestBody = { 
+        prompt: prompt,
+        isCommunityRecipe: true
+      };
+
+      // Include reference image if available
+      if (recipe.image_url) {
+        requestBody.referenceImageUrl = recipe.image_url;
+        console.log("🖼️ Using reference image:", recipe.image_url);
+      }
+
       const { data, error } = await supabase.functions.invoke('generate-recipe-image', {
-        body: { 
-          prompt: prompt,
-          isCommunityRecipe: true
-        },
+        body: requestBody,
       });
 
       if (error) {
@@ -69,11 +79,14 @@ export function useRecipeModerationOperations(onRefresh: () => void) {
           : "Failed to generate AI image. Please try again."
       );
     } finally {
-      setGeneratingAI(false);
+      setGeneratingAI(prev => ({ ...prev, [loadingKey]: false }));
     }
   }, [onRefresh]);
 
   const generateAIDescription = useCallback(async (recipe: CommunityRecipe): Promise<string | null> => {
+    const loadingKey = `${recipe.id}-description`;
+    setGeneratingAI(prev => ({ ...prev, [loadingKey]: true }));
+
     try {
       console.log("🤖 Starting AI description generation for recipe:", recipe.id, recipe.title);
 
@@ -106,11 +119,14 @@ export function useRecipeModerationOperations(onRefresh: () => void) {
           : "Failed to generate AI description. Please try again."
       );
       return null;
+    } finally {
+      setGeneratingAI(prev => ({ ...prev, [loadingKey]: false }));
     }
   }, []);
 
   const uploadImageFile = useCallback(async (recipe: CommunityRecipe, file: File) => {
-    setUploadingFile(true);
+    setUploadingFile(prev => ({ ...prev, [recipe.id]: true }));
+    
     try {
       console.log("📤 Starting file upload for recipe:", recipe.id, "File:", file.name);
 
@@ -172,7 +188,7 @@ export function useRecipeModerationOperations(onRefresh: () => void) {
           : "Failed to upload image. Please try again."
       );
     } finally {
-      setUploadingFile(false);
+      setUploadingFile(prev => ({ ...prev, [recipe.id]: false }));
     }
   }, [onRefresh]);
 
@@ -212,7 +228,8 @@ export function useRecipeModerationOperations(onRefresh: () => void) {
   }, [onRefresh]);
 
   const updateRecipeFields = useCallback(async (recipeId: string, updates: Partial<CommunityRecipe>) => {
-    setSavingFields(true);
+    setSavingFields(prev => ({ ...prev, [recipeId]: true }));
+    
     try {
       console.log("💾 Starting recipe fields update for recipe:", recipeId, "Updates:", updates);
 
@@ -261,7 +278,7 @@ export function useRecipeModerationOperations(onRefresh: () => void) {
           : "Failed to save changes. Please try again."
       );
     } finally {
-      setSavingFields(false);
+      setSavingFields(prev => ({ ...prev, [recipeId]: false }));
     }
   }, [onRefresh]);
 

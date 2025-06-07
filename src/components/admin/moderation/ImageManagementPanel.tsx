@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Sparkles, Upload, Loader } from "lucide-react";
+import { Sparkles, Upload, Loader, Eye, AlertTriangle } from "lucide-react";
 import { CommunityRecipe } from "@/hooks/useCommunityRecipes";
 import { UtensilsCrossed } from "lucide-react";
 
@@ -28,7 +28,7 @@ export function ImageManagementPanel({
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [manualImageUrl, setManualImageUrl] = useState("");
 
-  // Reset state whenever recipe changes with enhanced logging
+  // Reset state whenever recipe changes
   useEffect(() => {
     console.log("🖼️ Recipe changed in image panel, resetting state:", {
       newRecipeId: recipe.id,
@@ -40,7 +40,7 @@ export function ImageManagementPanel({
     setManualImageUrl(recipe.ai_generated_image_url || "");
     
     console.log("🖼️ State reset for recipe:", recipe.id);
-  }, [recipe.id]); // Only depend on recipe.id
+  }, [recipe.id]);
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -72,42 +72,90 @@ export function ImageManagementPanel({
 
   return (
     <Card>
-      <CardContent className="p-6">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Eye className="h-5 w-5" />
+          Image Management
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-6">
         {/* Recipe identifier for debugging */}
-        <div className="text-xs text-muted-foreground mb-2">
+        <div className="text-xs text-muted-foreground">
           Recipe: {recipe.title} (ID: {recipe.id.slice(0, 8)}...)
         </div>
-        
-        <div className="aspect-video w-full bg-muted rounded-lg overflow-hidden mb-4">
-          {recipe.ai_generated_image_url ? (
-            <img
-              src={recipe.ai_generated_image_url}
-              alt={recipe.title}
-              className="w-full h-full object-cover"
-              key={`${recipe.id}-${recipe.ai_generated_image_url}`}
-              onError={(e) => {
-                console.error("🖼️ Image failed to load:", recipe.ai_generated_image_url);
-                e.currentTarget.style.display = 'none';
-              }}
-              onLoad={() => {
-                console.log("🖼️ Image loaded successfully:", recipe.ai_generated_image_url);
-              }}
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-              <UtensilsCrossed className="h-12 w-12" />
+
+        {/* Original Submitted Image - Reference Only */}
+        {recipe.image_url && (
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <Label className="text-sm font-medium">Original Submitted Image</Label>
+              <div className="flex items-center gap-1 text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded">
+                <AlertTriangle className="h-3 w-3" />
+                Reference Only - Not for Public Use
+              </div>
             </div>
-          )}
+            <div className="aspect-video w-full bg-muted rounded-lg overflow-hidden">
+              <img
+                src={recipe.image_url}
+                alt={`Original submission: ${recipe.title}`}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  console.error("🖼️ Original image failed to load:", recipe.image_url);
+                  e.currentTarget.style.display = 'none';
+                }}
+                onLoad={() => {
+                  console.log("🖼️ Original image loaded successfully:", recipe.image_url);
+                }}
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              This image is used as reference for AI generation but cannot be used directly due to copyright restrictions.
+            </p>
+          </div>
+        )}
+
+        {/* AI Generated Image - Public Use */}
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <Label className="text-sm font-medium">AI Generated Image</Label>
+            <div className="flex items-center gap-1 text-xs text-green-600 bg-green-50 px-2 py-1 rounded">
+              ✓ Safe for Public Use
+            </div>
+          </div>
+          <div className="aspect-video w-full bg-muted rounded-lg overflow-hidden">
+            {recipe.ai_generated_image_url ? (
+              <img
+                src={recipe.ai_generated_image_url}
+                alt={`AI generated: ${recipe.title}`}
+                className="w-full h-full object-cover"
+                key={`${recipe.id}-${recipe.ai_generated_image_url}`}
+                onError={(e) => {
+                  console.error("🖼️ AI image failed to load:", recipe.ai_generated_image_url);
+                  e.currentTarget.style.display = 'none';
+                }}
+                onLoad={() => {
+                  console.log("🖼️ AI image loaded successfully:", recipe.ai_generated_image_url);
+                }}
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+                <UtensilsCrossed className="h-12 w-12" />
+              </div>
+            )}
+          </div>
+          <p className="text-xs text-muted-foreground">
+            This AI-generated image will be used publicly for the community recipe.
+          </p>
         </div>
         
         {/* Manual Image URL Input */}
-        <div className="mb-4">
-          <Label className="text-sm font-medium mb-2 block">Image URL</Label>
+        <div className="space-y-3">
+          <Label className="text-sm font-medium">AI Image URL</Label>
           <div className="flex gap-2">
             <Input
               value={manualImageUrl}
               onChange={(e) => setManualImageUrl(e.target.value)}
-              placeholder="Enter image URL"
+              placeholder="Enter AI-generated image URL"
               className="flex-1"
             />
             <Button
@@ -122,7 +170,7 @@ export function ImageManagementPanel({
         </div>
 
         {/* AI Generation Section */}
-        <div className="space-y-3 mb-6">
+        <div className="space-y-3">
           <Label className="text-sm font-medium">AI Image Generation</Label>
           <Button
             onClick={handleGenerateAI}
@@ -138,7 +186,7 @@ export function ImageManagementPanel({
             ) : (
               <>
                 <Sparkles className="h-4 w-4 mr-2" />
-                Generate AI Image
+                {recipe.image_url ? 'Recreate with Reference Image' : 'Generate AI Image'}
               </>
             )}
           </Button>
@@ -147,11 +195,16 @@ export function ImageManagementPanel({
               Recipe title and description are required for AI generation
             </p>
           )}
+          {recipe.image_url && (
+            <p className="text-xs text-green-600">
+              Will use original image as reference to recreate food while changing background
+            </p>
+          )}
         </div>
 
         {/* File Upload Section */}
         <div className="space-y-3">
-          <Label className="text-sm font-medium">Upload Image File</Label>
+          <Label className="text-sm font-medium">Upload AI Image File</Label>
           <div className="flex gap-2">
             <Input
               type="file"
@@ -177,6 +230,9 @@ export function ImageManagementPanel({
               Selected: {selectedFile.name}
             </p>
           )}
+          <p className="text-xs text-muted-foreground">
+            Only upload AI-generated or copyright-free images
+          </p>
         </div>
       </CardContent>
     </Card>
