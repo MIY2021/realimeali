@@ -22,23 +22,13 @@ export function CommunityRecipeCard({ recipe, mobileLayout = "1" }: CommunityRec
   const displayDescription = recipe.ai_generated_description || recipe.description;
 
   // Dynamic text truncation based on layout - matching My Recipes behavior
-  const getDescriptionStyle = () => {
+  const getDescriptionClasses = () => {
     if (isMobile && mobileLayout === '2') {
       // 2-column mobile: 1 line
-      return {
-        display: '-webkit-box',
-        WebkitLineClamp: 1,
-        WebkitBoxOrient: 'vertical' as const,
-        overflow: 'hidden',
-      };
+      return "line-clamp-1";
     }
     // Desktop and 1-column mobile: 2 lines
-    return {
-      display: '-webkit-box',
-      WebkitLineClamp: 2,
-      WebkitBoxOrient: 'vertical' as const,
-      overflow: 'hidden',
-    };
+    return "line-clamp-2";
   };
 
   return (
@@ -82,10 +72,7 @@ export function CommunityRecipeCard({ recipe, mobileLayout = "1" }: CommunityRec
 
         {/* Description with dynamic truncation */}
         {displayDescription && (
-          <p 
-            className="text-sm text-muted-foreground mb-3 flex-1"
-            style={getDescriptionStyle()}
-          >
+          <p className={`text-sm text-muted-foreground mb-3 flex-1 ${getDescriptionClasses()}`}>
             {displayDescription}
           </p>
         )}
