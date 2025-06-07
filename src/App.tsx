@@ -11,6 +11,7 @@ import Layout from "@/components/layout/Layout";
 import { ScrollToTop } from "@/components/layout/ScrollToTop";
 import Index from "@/pages/Index";
 import About from "@/pages/About";
+import Feedback from "@/pages/Feedback";
 import RecipesPage from "@/pages/RecipesPage";
 import FindRecipesPage from "@/pages/FindRecipesPage";
 import CreateRecipePage from "@/pages/CreateRecipePage";
@@ -44,6 +45,7 @@ const App = () => (
                     <Routes>
                       <Route path="/" element={<Index />} />
                       <Route path="/about" element={<About />} />
+                      <Route path="/feedback" element={<Feedback />} />
                       <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                       <Route path="/terms-of-service" element={<TermsOfService />} />
                       <Route path="/login" element={<Login />} />
