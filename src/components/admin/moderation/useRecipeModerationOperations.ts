@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -112,6 +111,35 @@ export function useRecipeModerationOperations(onUpdate: () => Promise<void>) {
     }
   };
 
+  const generateAIDescription = async (recipe: CommunityRecipe) => {
+    setGeneratingAI(prev => ({ ...prev, [`${recipe.id}-description`]: true }));
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-community-description', {
+        body: { 
+          title: recipe.title,
+          originalDescription: recipe.description,
+          sourceUrl: recipe.source_url
+        },
+      });
+
+      if (error) throw error;
+
+      if (!data?.description) {
+        throw new Error('No description returned from AI generation');
+      }
+
+      toast.success("AI description generated successfully");
+      return data.description;
+    } catch (error) {
+      console.error('Error generating AI description:', error);
+      toast.error("Failed to generate AI description");
+      return null;
+    } finally {
+      setGeneratingAI(prev => ({ ...prev, [`${recipe.id}-description`]: false }));
+    }
+  };
+
   const updateRecipeFields = async (recipe: CommunityRecipe, updates: Partial<CommunityRecipe>) => {
     setSavingFields(prev => ({ ...prev, [recipe.id]: true }));
     
@@ -139,7 +167,7 @@ export function useRecipeModerationOperations(onUpdate: () => Promise<void>) {
 
   const approveRecipe = async (recipeId: string) => {
     try {
-      // First get the current recipe data to ensure we have all the details
+      // Get the current recipe data
       const { data: currentRecipe, error: fetchError } = await supabase
         .from('community_recipes')
         .select('*')
@@ -148,28 +176,7 @@ export function useRecipeModerationOperations(onUpdate: () => Promise<void>) {
 
       if (fetchError) throw fetchError;
 
-      // Generate AI description if not already present
-      let aiDescription = currentRecipe.ai_generated_description;
-      
-      if (!aiDescription && currentRecipe.description) {
-        try {
-          const { data: aiData, error: aiError } = await supabase.functions.invoke('generate-community-description', {
-            body: { 
-              title: currentRecipe.title,
-              originalDescription: currentRecipe.description,
-              sourceUrl: currentRecipe.source_url
-            },
-          });
-
-          if (!aiError && aiData?.description) {
-            aiDescription = aiData.description;
-          }
-        } catch (error) {
-          console.warn('Failed to generate AI description, proceeding without it:', error);
-        }
-      }
-
-      // Update the recipe with approval status and ensure AI description is set
+      // Update the recipe with approval status - no automatic AI description generation
       const { error } = await supabase
         .from('community_recipes')
         .update({
@@ -177,7 +184,6 @@ export function useRecipeModerationOperations(onUpdate: () => Promise<void>) {
           is_approved: true,
           approved_at: new Date().toISOString(),
           approved_by: (await supabase.auth.getUser()).data.user?.id,
-          ai_generated_description: aiDescription || currentRecipe.description, // Fallback to original description
           updated_at: new Date().toISOString()
         })
         .eq('id', recipeId);
@@ -218,6 +224,7 @@ export function useRecipeModerationOperations(onUpdate: () => Promise<void>) {
     uploadImageFile,
     updateAIImageUrl,
     updateRecipeFields,
+    generateAIDescription,
     approveRecipe,
     rejectRecipe,
     generatingAI,

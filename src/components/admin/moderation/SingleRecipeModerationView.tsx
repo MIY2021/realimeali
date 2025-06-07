@@ -14,6 +14,7 @@ interface SingleRecipeModerationViewProps {
   onUploadFile: (recipe: CommunityRecipe, file: File) => void;
   onUpdateImageUrl: (recipe: CommunityRecipe, imageUrl: string) => void;
   onSaveFields: (recipe: CommunityRecipe, updates: Partial<CommunityRecipe>) => void;
+  onGenerateAIDescription: (recipe: CommunityRecipe) => Promise<string | null>;
   generatingAI: { [key: string]: boolean };
   uploadingFile: { [key: string]: boolean };
   savingFields: { [key: string]: boolean };
@@ -27,6 +28,7 @@ export function SingleRecipeModerationView({
   onUploadFile,
   onUpdateImageUrl,
   onSaveFields,
+  onGenerateAIDescription,
   generatingAI,
   uploadingFile,
   savingFields,
@@ -54,6 +56,7 @@ export function SingleRecipeModerationView({
   const isGeneratingAIImage = generatingAI[`${recipe.id}-image`] || false;
   const isUploadingFile = uploadingFile[recipe.id] || false;
   const isSavingFields = savingFields[recipe.id] || false;
+  const isGeneratingAIDescription = generatingAI[`${recipe.id}-description`] || false;
 
   return (
     <div className="space-y-6">
@@ -144,7 +147,9 @@ export function SingleRecipeModerationView({
           <ModerationRecipeEditor
             recipe={recipe}
             onSave={(updates) => onSaveFields(recipe, updates)}
+            onGenerateAIDescription={onGenerateAIDescription}
             isSaving={isSavingFields}
+            isGeneratingAIDescription={isGeneratingAIDescription}
           />
         </div>
 

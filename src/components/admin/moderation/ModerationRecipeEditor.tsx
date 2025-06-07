@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Save, Loader } from "lucide-react";
+import { Save, Loader, Wand2 } from "lucide-react";
 import { CommunityRecipe } from "@/hooks/useCommunityRecipes";
 import {
   MEAL_TYPE_OPTIONS,
@@ -17,13 +17,17 @@ import {
 interface ModerationRecipeEditorProps {
   recipe: CommunityRecipe;
   onSave: (updates: Partial<CommunityRecipe>) => void;
+  onGenerateAIDescription: (recipe: CommunityRecipe) => Promise<string | null>;
   isSaving: boolean;
+  isGeneratingAIDescription: boolean;
 }
 
 export function ModerationRecipeEditor({
   recipe,
   onSave,
+  onGenerateAIDescription,
   isSaving,
+  isGeneratingAIDescription,
 }: ModerationRecipeEditorProps) {
   const [title, setTitle] = useState(recipe.title);
   const [description, setDescription] = useState(recipe.description || "");
@@ -41,6 +45,13 @@ export function ModerationRecipeEditor({
       difficulty_level: difficultyLevel,
     };
     onSave(updates);
+  };
+
+  const handleGenerateAIDescription = async () => {
+    const aiDescription = await onGenerateAIDescription(recipe);
+    if (aiDescription) {
+      setDescription(aiDescription);
+    }
   };
 
   const toggleDietLifestyle = (value: string) => {
@@ -100,9 +111,30 @@ export function ModerationRecipeEditor({
           />
         </div>
 
-        {/* Description */}
+        {/* Description with AI Generation */}
         <div>
-          <Label className="text-sm font-medium mb-2 block">Description</Label>
+          <div className="flex items-center justify-between mb-2">
+            <Label className="text-sm font-medium">Description</Label>
+            <Button
+              onClick={handleGenerateAIDescription}
+              disabled={isGeneratingAIDescription}
+              variant="outline"
+              size="sm"
+              className="text-xs"
+            >
+              {isGeneratingAIDescription ? (
+                <>
+                  <Loader className="h-3 w-3 mr-1 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <Wand2 className="h-3 w-3 mr-1" />
+                  Generate AI Description
+                </>
+              )}
+            </Button>
+          </div>
           <Textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}

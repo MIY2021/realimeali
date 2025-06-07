@@ -46,6 +46,7 @@ export function RecipeModerationPanel() {
     uploadImageFile,
     updateAIImageUrl,
     updateRecipeFields,
+    generateAIDescription,
     approveRecipe,
     rejectRecipe,
     generatingAI,
@@ -212,6 +213,7 @@ export function RecipeModerationPanel() {
           onUploadFile={uploadImageFile}
           onUpdateImageUrl={updateAIImageUrl}
           onSaveFields={updateRecipeFields}
+          onGenerateAIDescription={generateAIDescription}
           generatingAI={generatingAI}
           uploadingFile={uploadingFile}
           savingFields={savingFields}
