@@ -26,22 +26,33 @@ export function ImageManagementPanel({
   isUploadingFile,
 }: ImageManagementPanelProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [manualImageUrl, setManualImageUrl] = useState("");
 
-  // Reset file selection when recipe changes
+  // Reset state whenever recipe changes with enhanced logging
   useEffect(() => {
-    console.log("🖼️ Recipe changed in image panel, resetting file selection:", recipe.id);
+    console.log("🖼️ Recipe changed in image panel, resetting state:", {
+      newRecipeId: recipe.id,
+      newRecipeTitle: recipe.title,
+      currentImageUrl: recipe.ai_generated_image_url
+    });
+    
     setSelectedFile(null);
-  }, [recipe.id]);
+    setManualImageUrl(recipe.ai_generated_image_url || "");
+    
+    console.log("🖼️ State reset for recipe:", recipe.id);
+  }, [recipe.id]); // Only depend on recipe.id
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      console.log("📁 File selected:", file.name, file.size, file.type);
       setSelectedFile(file);
     }
   };
 
   const handleFileUpload = () => {
     if (selectedFile) {
+      console.log("📤 Starting file upload for recipe:", recipe.id);
       onUploadFile(recipe, selectedFile);
       setSelectedFile(null);
     }
@@ -50,6 +61,13 @@ export function ImageManagementPanel({
   const handleGenerateAI = () => {
     console.log("🎨 Generating AI image for recipe:", recipe.id, recipe.title);
     onGenerateAI(recipe);
+  };
+
+  const handleUpdateImageUrl = () => {
+    if (manualImageUrl.trim() !== recipe.ai_generated_image_url) {
+      console.log("🔗 Updating image URL for recipe:", recipe.id, "New URL:", manualImageUrl.trim());
+      onUpdateImageUrl(recipe, manualImageUrl.trim());
+    }
   };
 
   return (
@@ -67,6 +85,13 @@ export function ImageManagementPanel({
               alt={recipe.title}
               className="w-full h-full object-cover"
               key={`${recipe.id}-${recipe.ai_generated_image_url}`}
+              onError={(e) => {
+                console.error("🖼️ Image failed to load:", recipe.ai_generated_image_url);
+                e.currentTarget.style.display = 'none';
+              }}
+              onLoad={() => {
+                console.log("🖼️ Image loaded successfully:", recipe.ai_generated_image_url);
+              }}
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-muted-foreground">
@@ -75,13 +100,24 @@ export function ImageManagementPanel({
           )}
         </div>
         
-        {/* Current Image URL Display - Multi-line layout */}
+        {/* Manual Image URL Input */}
         <div className="mb-4">
-          <Label className="text-sm font-medium mb-2 block">Current Image URL</Label>
-          <div className="bg-muted/50 rounded p-3 break-all">
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              {recipe.ai_generated_image_url || "No image URL set"}
-            </p>
+          <Label className="text-sm font-medium mb-2 block">Image URL</Label>
+          <div className="flex gap-2">
+            <Input
+              value={manualImageUrl}
+              onChange={(e) => setManualImageUrl(e.target.value)}
+              placeholder="Enter image URL"
+              className="flex-1"
+            />
+            <Button
+              onClick={handleUpdateImageUrl}
+              disabled={!manualImageUrl.trim() || manualImageUrl.trim() === recipe.ai_generated_image_url}
+              variant="outline"
+              size="sm"
+            >
+              Update
+            </Button>
           </div>
         </div>
 

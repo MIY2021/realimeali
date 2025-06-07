@@ -36,32 +36,57 @@ export function ModerationRecipeEditor({
   const [difficultyLevel, setDifficultyLevel] = useState("");
   const [selectedDietLifestyle, setSelectedDietLifestyle] = useState<string[]>([]);
 
-  // Reset state whenever recipe changes
+  // Reset state whenever recipe changes with enhanced logging
   useEffect(() => {
-    console.log("🔄 Recipe changed in editor, updating state:", recipe.id, recipe.title);
+    console.log("🔄 Recipe changed in editor, updating state:", {
+      newRecipeId: recipe.id,
+      newRecipeTitle: recipe.title,
+      previousTitle: title
+    });
+    
     setTitle(recipe.title || "");
     setDescription(recipe.description || "");
     setCategory(recipe.category || "");
     setCuisine(recipe.cuisine || "");
     setDifficultyLevel(recipe.difficulty_level || "");
     setSelectedDietLifestyle([]);
-  }, [recipe.id, recipe.title, recipe.description, recipe.category, recipe.cuisine, recipe.difficulty_level]);
+    
+    console.log("🔄 State updated for recipe:", recipe.id);
+  }, [recipe.id]); // Only depend on recipe.id to prevent excessive re-renders
 
   const handleSave = () => {
-    const updates: Partial<CommunityRecipe> = {
-      title,
-      description,
+    console.log("💾 Preparing to save recipe updates:", {
+      recipeId: recipe.id,
+      title: title.trim(),
+      description: description.trim(),
       category,
       cuisine,
-      difficulty_level: difficultyLevel,
+      difficultyLevel
+    });
+
+    // Validate required fields
+    if (!title.trim()) {
+      console.error("❌ Cannot save: Title is required");
+      return;
+    }
+
+    const updates: Partial<CommunityRecipe> = {
+      title: title.trim(),
+      description: description.trim(),
+      category: category || null,
+      cuisine: cuisine || null,
+      difficulty_level: difficultyLevel || null,
     };
-    console.log("💾 Saving recipe updates:", updates);
+    
+    console.log("💾 Calling onSave with updates:", updates);
     onSave(updates);
   };
 
   const handleGenerateAIDescription = async () => {
+    console.log("🤖 Generating AI description for recipe:", recipe.id);
     const aiDescription = await onGenerateAIDescription(recipe);
     if (aiDescription) {
+      console.log("✅ AI description received, updating state");
       setDescription(aiDescription);
     }
   };
