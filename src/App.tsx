@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { QueryClient } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './contexts/AuthContext';
 import { HouseholdProvider } from './contexts/HouseholdContext';
 import { RecipesProvider } from './contexts/RecipesContext';
@@ -29,9 +29,12 @@ import AdminDashboard from './pages/AdminDashboard';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import Contact from "@/pages/Contact";
 
+// Create a QueryClient instance
+const queryClient = new QueryClient();
+
 function App() {
   return (
-    <QueryClient>
+    <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <HouseholdProvider>
           <RecipesProvider>
@@ -72,7 +75,7 @@ function App() {
           </RecipesProvider>
         </HouseholdProvider>
       </AuthProvider>
-    </QueryClient>
+    </QueryClientProvider>
   );
 }
 
