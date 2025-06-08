@@ -44,38 +44,52 @@ export function CreateRecipeContainer() {
     );
   };
 
+  const validateRecipe = () => {
+    const errors: string[] = [];
+    
+    if (!recipeFormHook.newRecipe.title.trim()) {
+      errors.push("Recipe title is required");
+    }
+    
+    if (recipeFormHook.newRecipe.ingredients.length === 0) {
+      errors.push("At least one ingredient is required");
+    }
+    
+    if (recipeFormHook.newRecipe.instructions.length === 0) {
+      errors.push("At least one instruction is required");
+    }
+    
+    if (!recipeFormHook.newRecipe.prep_time || recipeFormHook.newRecipe.prep_time <= 0) {
+      errors.push("Prep time must be greater than 0 minutes");
+    }
+    
+    if (!recipeFormHook.newRecipe.cook_time || recipeFormHook.newRecipe.cook_time < 0) {
+      errors.push("Cook time must be 0 or greater");
+    }
+    
+    if (!recipeFormHook.newRecipe.servings || recipeFormHook.newRecipe.servings <= 0) {
+      errors.push("Servings must be greater than 0");
+    }
+
+    return errors;
+  };
+
   const handleSaveRecipe = async () => {
     if (!user || !currentHousehold) {
       toast({
-        title: "Error",
-        description: "You must be logged in and have a household to save recipes",
+        title: "Authentication Required",
+        description: "You must be logged in and have a household to save recipes. Please check your login status.",
         variant: "destructive",
       });
       return;
     }
 
-    if (!recipeFormHook.newRecipe.title.trim()) {
+    // Validate the recipe
+    const validationErrors = validateRecipe();
+    if (validationErrors.length > 0) {
       toast({
-        title: "Error",
-        description: "Recipe title is required",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (recipeFormHook.newRecipe.ingredients.length === 0) {
-      toast({
-        title: "Error",
-        description: "At least one ingredient is required",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (recipeFormHook.newRecipe.instructions.length === 0) {
-      toast({
-        title: "Error",
-        description: "At least one instruction is required",
+        title: "Recipe Incomplete",
+        description: `Please fix the following issues: ${validationErrors.join(', ')}`,
         variant: "destructive",
       });
       return;
@@ -133,35 +147,35 @@ export function CreateRecipeContainer() {
             if (communityError) {
               console.error("❌ Community submission error:", communityError);
               toast({
-                title: "Recipe saved!",
-                description: `${savedRecipe.title} has been saved. Community sharing failed but recipe is saved.`,
+                title: "Recipe Saved Successfully! 🎉",
+                description: `${savedRecipe.title} has been saved to your recipes. Community sharing failed but your recipe is safely saved.`,
               });
             } else {
               console.log("✅ Recipe successfully submitted to community:", communityRecipe);
               toast({
-                title: "Recipe saved and submitted!",
+                title: "Recipe Saved & Shared! 🌟",
                 description: `${savedRecipe.title} has been saved and submitted to the community for moderation.`,
               });
             }
           } catch (communityError) {
             console.error("❌ Community submission failed:", communityError);
             toast({
-              title: "Recipe saved!",
-              description: `${savedRecipe.title} has been saved. Community sharing failed but recipe is saved.`,
+              title: "Recipe Saved Successfully! 🎉",
+              description: `${savedRecipe.title} has been saved to your recipes. Community sharing failed but your recipe is safely saved.`,
             });
           }
         } else {
           if (recipeOrigin === 'url') {
             console.log("🎉 Recipe saved successfully, community sharing was not selected");
             toast({
-              title: "Success",
-              description: "Recipe saved successfully!",
+              title: "Recipe Saved Successfully! 🎉",
+              description: `${savedRecipe.title} has been added to your recipe collection.`,
             });
           } else {
             console.log("🎉 Recipe saved successfully, community sharing only available for URL imports");
             toast({
-              title: "Success",
-              description: "Recipe saved successfully! Community sharing is only available for recipes imported from URLs.",
+              title: "Recipe Saved Successfully! 🎉",
+              description: `${savedRecipe.title} has been added to your recipes. (Community sharing is only available for recipes imported from URLs.)`,
             });
           }
         }
@@ -170,9 +184,21 @@ export function CreateRecipeContainer() {
       }
     } catch (error) {
       console.error("Error saving recipe:", error);
+      let errorMessage = "Failed to save recipe. Please try again.";
+      
+      if (error instanceof Error) {
+        if (error.message.includes('Network')) {
+          errorMessage = "Network error. Please check your connection and try again.";
+        } else if (error.message.includes('duplicate')) {
+          errorMessage = "A recipe with this title already exists. Please use a different title.";
+        } else if (error.message.includes('unauthorized')) {
+          errorMessage = "You don't have permission to save recipes. Please check your household membership.";
+        }
+      }
+      
       toast({
-        title: "Error",
-        description: "Failed to save recipe. Please try again.",
+        title: "Save Failed",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {

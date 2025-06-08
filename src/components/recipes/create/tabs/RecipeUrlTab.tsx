@@ -3,8 +3,10 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CommunityRecipeSubmissionDialog } from "@/components/recipes/CommunityRecipeSubmissionDialog";
 import { EnhancedImageSelection } from "@/components/recipes/dialog/EnhancedImageSelection";
+import { AlertCircle, CheckCircle, Info } from "lucide-react";
 
 interface RecipeUrlTabProps {
   recipeUrl: string;
@@ -64,6 +66,18 @@ export function RecipeUrlTab({
           🔗 Import recipes from cooking websites! I'll try to automatically grab the recipe details and find photos. If it doesn't work, try the "Paste Recipe Text" tab instead.
         </div>
       </div>
+
+      {/* Helpful tips when not processing */}
+      {!isProcessing && !parsedRecipeData && (
+        <Alert>
+          <Info className="h-4 w-4" />
+          <AlertDescription>
+            <strong>Best results with:</strong> AllRecipes, Food Network, BBC Good Food, Serious Eats, and most recipe blogs. 
+            <br />
+            <strong>Having trouble?</strong> Copy the recipe text and use the "Paste Recipe Text" tab for guaranteed results.
+          </AlertDescription>
+        </Alert>
+      )}
       
       <div className="space-y-3">
         <Label htmlFor="website-url" className="text-base font-medium">Recipe Website URL</Label>
@@ -74,6 +88,7 @@ export function RecipeUrlTab({
           onChange={(e) => setRecipeUrl(e.target.value)}
           placeholder="https://example-recipe-website.com/recipe/your-recipe"
           className="text-base p-4 h-12"
+          disabled={isProcessing}
         />
       </div>
       
@@ -85,7 +100,24 @@ export function RecipeUrlTab({
           </div>
           <Progress value={progressValue} className="w-full" />
           <p className="text-sm text-blue-600">{importProgress}</p>
+          
+          <Alert>
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              If this is taking too long, you can cancel and try copying the recipe text instead using the "Paste Recipe Text" tab.
+            </AlertDescription>
+          </Alert>
         </div>
+      )}
+
+      {/* Success state with images */}
+      {hasImages && !isProcessing && (
+        <Alert>
+          <CheckCircle className="h-4 w-4" />
+          <AlertDescription>
+            ✅ Recipe imported successfully! Found {websiteImages.length} images. Select one below or proceed to edit the recipe.
+          </AlertDescription>
+        </Alert>
       )}
 
       {/* Show image selection if we have images */}

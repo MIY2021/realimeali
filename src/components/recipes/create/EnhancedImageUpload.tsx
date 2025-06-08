@@ -1,3 +1,4 @@
+
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -64,20 +65,44 @@ export function EnhancedImageUpload({
     if (files.length > 0) {
       const file = files[0];
       if (file.type.startsWith('image/')) {
-        if (fileInputRef.current) {
-          const dataTransfer = new DataTransfer();
-          dataTransfer.items.add(file);
-          fileInputRef.current.files = dataTransfer.files;
-          fileInputRef.current.dispatchEvent(new Event('change', { bubbles: true }));
-        }
+        handleFileSelection(file);
       }
+    }
+  };
+
+  const handleFileSelection = (file: File) => {
+    if (fileInputRef.current) {
+      const dataTransfer = new DataTransfer();
+      dataTransfer.items.add(file);
+      fileInputRef.current.files = dataTransfer.files;
+      
+      // Create and dispatch the change event
+      const event = new Event('change', { bubbles: true });
+      Object.defineProperty(event, 'target', {
+        writable: false,
+        value: fileInputRef.current
+      });
+      onImageChange(event as React.ChangeEvent<HTMLInputElement>);
+    }
+  };
+
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    onImageChange(e);
+    // Switch back to showing the image once uploaded
+    if (e.target.files && e.target.files.length > 0) {
+      setShowUploadMode(false);
     }
   };
 
   const handleRemoveImage = () => {
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
-      fileInputRef.current.dispatchEvent(new Event('change', { bubbles: true }));
+      const event = new Event('change', { bubbles: true });
+      Object.defineProperty(event, 'target', {
+        writable: false,
+        value: fileInputRef.current
+      });
+      onImageChange(event as React.ChangeEvent<HTMLInputElement>);
     }
     if (onImageSelect) {
       onImageSelect('');
@@ -382,7 +407,7 @@ export function EnhancedImageUpload({
             ref={fileInputRef}
             type="file"
             accept="image/*"
-            onChange={onImageChange}
+            onChange={handleFileInputChange}
             className="hidden"
             id="recipe-image-upload"
           />
