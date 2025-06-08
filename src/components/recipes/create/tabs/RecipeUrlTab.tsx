@@ -6,7 +6,7 @@ import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CommunityRecipeSubmissionDialog } from "@/components/recipes/CommunityRecipeSubmissionDialog";
 import { EnhancedImageSelection } from "@/components/recipes/dialog/EnhancedImageSelection";
-import { AlertCircle, CheckCircle, Info } from "lucide-react";
+import { AlertCircle, Check, Info } from "lucide-react";
 
 interface RecipeUrlTabProps {
   recipeUrl: string;
@@ -113,7 +113,7 @@ export function RecipeUrlTab({
       {/* Success state with images */}
       {hasImages && !isProcessing && (
         <Alert>
-          <CheckCircle className="h-4 w-4" />
+          <Check className="h-4 w-4" />
           <AlertDescription>
             ✅ Recipe imported successfully! Found {websiteImages.length} images. Select one below or proceed to edit the recipe.
           </AlertDescription>

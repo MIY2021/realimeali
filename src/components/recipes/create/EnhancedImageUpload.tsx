@@ -76,13 +76,25 @@ export function EnhancedImageUpload({
       dataTransfer.items.add(file);
       fileInputRef.current.files = dataTransfer.files;
       
-      // Create and dispatch the change event
-      const event = new Event('change', { bubbles: true });
-      Object.defineProperty(event, 'target', {
-        writable: false,
-        value: fileInputRef.current
-      });
-      onImageChange(event as React.ChangeEvent<HTMLInputElement>);
+      // Create a proper React change event
+      const syntheticEvent = {
+        target: fileInputRef.current,
+        currentTarget: fileInputRef.current,
+        bubbles: true,
+        cancelable: true,
+        timeStamp: Date.now(),
+        defaultPrevented: false,
+        isTrusted: true,
+        nativeEvent: new Event('change'),
+        isDefaultPrevented: () => false,
+        isPropagationStopped: () => false,
+        persist: () => {},
+        preventDefault: () => {},
+        stopPropagation: () => {},
+        type: 'change'
+      } as React.ChangeEvent<HTMLInputElement>;
+      
+      onImageChange(syntheticEvent);
     }
   };
 
@@ -97,12 +109,25 @@ export function EnhancedImageUpload({
   const handleRemoveImage = () => {
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
-      const event = new Event('change', { bubbles: true });
-      Object.defineProperty(event, 'target', {
-        writable: false,
-        value: fileInputRef.current
-      });
-      onImageChange(event as React.ChangeEvent<HTMLInputElement>);
+      // Create a proper React change event for clearing
+      const syntheticEvent = {
+        target: fileInputRef.current,
+        currentTarget: fileInputRef.current,
+        bubbles: true,
+        cancelable: true,
+        timeStamp: Date.now(),
+        defaultPrevented: false,
+        isTrusted: true,
+        nativeEvent: new Event('change'),
+        isDefaultPrevented: () => false,
+        isPropagationStopped: () => false,
+        persist: () => {},
+        preventDefault: () => {},
+        stopPropagation: () => {},
+        type: 'change'
+      } as React.ChangeEvent<HTMLInputElement>;
+      
+      onImageChange(syntheticEvent);
     }
     if (onImageSelect) {
       onImageSelect('');
