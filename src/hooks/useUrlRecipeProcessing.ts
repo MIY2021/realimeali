@@ -106,10 +106,11 @@ export const useUrlRecipeProcessing = () => {
         imageHandling.setWebsiteImages(data.websiteImages);
         imageHandling.setShowImageSelection(true);
         
-        // Auto-select the first image but don't force it into the recipe yet
+        // Auto-select the first image and apply it to the recipe
         const firstImage = data.websiteImages[0];
         imageHandling.setSelectedImage(firstImage);
-        console.log('🎯 Auto-selected first image:', firstImage);
+        transformedRecipe.image = firstImage; // Auto-apply first image
+        console.log('🎯 Auto-selected and applied first image:', firstImage);
       }
 
       console.log('✅ Recipe imported successfully');
@@ -133,7 +134,7 @@ export const useUrlRecipeProcessing = () => {
       setParsedRecipeData({
         ...recipeData,
         source_url: url.trim(), // Preserve the original external URL
-        image_url: undefined, // Don't set image until user selects one
+        image_url: transformedRecipe.image, // Include selected image
         prep_time: transformedRecipe.prep_time,
         cook_time: transformedRecipe.cook_time,
         servings: transformedRecipe.servings,

@@ -1,3 +1,4 @@
+
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -25,7 +26,7 @@ interface RecipeManualTabProps {
   imagePreview: string | null;
   isGeneratingImage: boolean;
   generationProgress: string;
-  onImageChange: (file: File) => void;
+  onImageChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onGenerateImage: () => void;
   onAddIngredient: () => void;
   onRemoveIngredient: (index: number) => void;
@@ -63,13 +64,6 @@ export function RecipeManualTab({
   onDownloadImages,
   isDownloadingImages = false,
 }: RecipeManualTabProps) {
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      onImageChange(file);
-    }
-  };
 
   const handleIngredientsChange = (ingredients: string[]) => {
     setNewRecipe({ ...newRecipe, ingredients });
@@ -169,7 +163,7 @@ export function RecipeManualTab({
               imagePreview={imagePreview}
               isGenerating={isGeneratingImage}
               generationProgress={generationProgress}
-              onImageChange={handleImageChange}
+              onImageChange={onImageChange}
               onGenerateImage={onGenerateImage}
               recipeTitle={newRecipe.title}
               websiteImages={websiteImages}
@@ -203,7 +197,7 @@ export function RecipeManualTab({
         <div className="lg:col-span-1">
           <EnhancedInstructionManager
             instructions={newRecipe.instructions || []}
-            onInstructionsChange={handleInstructionsChange}
+            onInstrctionsChange={handleInstructionsChange}
           />
         </div>
       </div>
