@@ -45,8 +45,15 @@ export function EnhancedImageUpload({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const hasWebsiteImages = websiteImages.length > 0;
-  // Use uploaded image preview first, then selected image from website
+  // IMPORTANT: Prioritize uploaded image preview first, then selected image from website
   const currentImage = imagePreview || selectedImage;
+
+  console.log('EnhancedImageUpload Debug:', {
+    imagePreview: imagePreview ? 'has preview' : 'no preview',
+    selectedImage: selectedImage ? 'has selected' : 'no selected',
+    currentImage: currentImage ? 'has current' : 'no current',
+    showUploadMode
+  });
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -102,7 +109,7 @@ export function EnhancedImageUpload({
         onImageSelect('');
       }
       
-      // Exit upload mode once image is selected
+      // Make sure we're not in upload mode when we have an image
       setShowUploadMode(false);
     }
   };
@@ -187,7 +194,7 @@ export function EnhancedImageUpload({
     }
   };
 
-  // Show current image if available (prioritize uploaded image)
+  // Show current image if available (uploaded image takes priority)
   if (currentImage && !showUploadMode) {
     return (
       <div className="space-y-4">
@@ -219,7 +226,8 @@ export function EnhancedImageUpload({
           </div>
         </div>
 
-        {hasWebsiteImages && (
+        {/* Show website images only if we don't have an uploaded image and there are website images */}
+        {hasWebsiteImages && !imagePreview && (
           <div className="space-y-3">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
               <span className="text-sm font-medium sm:pr-2">Available images from URL:</span>
@@ -242,7 +250,7 @@ export function EnhancedImageUpload({
                 const displayUrl = getDisplayUrl(imageUrl);
                 const hasError = imageErrors.has(imageUrl);
                 const imageIsStored = isStored(imageUrl);
-                const isSelected = selectedImage === displayUrl && !imagePreview;
+                const isSelected = selectedImage === displayUrl;
                 
                 return (
                   <div
