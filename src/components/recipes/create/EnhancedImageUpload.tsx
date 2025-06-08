@@ -87,7 +87,7 @@ export function EnhancedImageUpload({
       setLocalImagePreview(null);
     }
     
-    // Always call the parent handler
+    // Always call the parent handler to ensure the file is processed properly
     onImageChange(e);
   };
 
