@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -102,6 +103,7 @@ export function CreateRecipeContainer() {
     
     // Log the shareWithCommunity flag for debugging
     console.log("🔄 Saving recipe with shareWithCommunity:", effectiveShareWithCommunity, "origin:", recipeOrigin);
+    console.log("🖼️ Recipe image:", recipeFormHook.newRecipe.image ? 'has image' : 'no image');
     
     try {
       const recipeToSave = {

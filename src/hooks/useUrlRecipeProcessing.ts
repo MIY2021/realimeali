@@ -97,7 +97,7 @@ export const useUrlRecipeProcessing = () => {
         household_id: newRecipe.household_id,
         is_favorite: newRecipe.is_favorite,
         has_cooked: newRecipe.has_cooked,
-        image: newRecipe.image,
+        image: undefined, // Start with no image so user can select or upload
       };
 
       // Store images for selection if available
@@ -106,10 +106,9 @@ export const useUrlRecipeProcessing = () => {
         imageHandling.setWebsiteImages(data.websiteImages);
         imageHandling.setShowImageSelection(true);
         
-        // Auto-select the first image and apply it to the recipe
+        // Auto-select the first image but don't force it into the recipe yet
         const firstImage = data.websiteImages[0];
         imageHandling.setSelectedImage(firstImage);
-        transformedRecipe.image = firstImage;
         console.log('🎯 Auto-selected first image:', firstImage);
       }
 
@@ -134,7 +133,7 @@ export const useUrlRecipeProcessing = () => {
       setParsedRecipeData({
         ...recipeData,
         source_url: url.trim(), // Preserve the original external URL
-        image_url: transformedRecipe.image,
+        image_url: undefined, // Don't set image until user selects one
         prep_time: transformedRecipe.prep_time,
         cook_time: transformedRecipe.cook_time,
         servings: transformedRecipe.servings,
