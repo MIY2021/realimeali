@@ -1,4 +1,3 @@
-
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -42,13 +41,15 @@ export function EnhancedImageUpload({
   const [isDragOver, setIsDragOver] = useState(false);
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
   const [showUploadMode, setShowUploadMode] = useState(false);
+  const [localImagePreview, setLocalImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const hasWebsiteImages = websiteImages.length > 0;
-  // IMPORTANT: Prioritize uploaded image preview first, then selected image from website
-  const currentImage = imagePreview || selectedImage;
+  // IMPORTANT: Prioritize local preview first, then uploaded image preview, then selected image from website
+  const currentImage = localImagePreview || imagePreview || selectedImage;
 
   console.log('EnhancedImageUpload Debug:', {
+    localImagePreview: localImagePreview ? 'has local preview' : 'no local preview',
     imagePreview: imagePreview ? 'has preview' : 'no preview',
     selectedImage: selectedImage ? 'has selected' : 'no selected',
     currentImage: currentImage ? 'has current' : 'no current',
@@ -78,7 +79,23 @@ export function EnhancedImageUpload({
     }
   };
 
+  const createImagePreview = (file: File) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const result = e.target?.result as string;
+      console.log('Created local image preview:', result ? 'success' : 'failed');
+      setLocalImagePreview(result);
+      setShowUploadMode(false);
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleFileSelection = (file: File) => {
+    console.log('File selected:', file.name, file.type);
+    
+    // Create immediate preview
+    createImagePreview(file);
+    
     if (fileInputRef.current) {
       const dataTransfer = new DataTransfer();
       dataTransfer.items.add(file);
@@ -108,28 +125,36 @@ export function EnhancedImageUpload({
       if (onImageSelect) {
         onImageSelect('');
       }
-      
-      // Make sure we're not in upload mode when we have an image
-      setShowUploadMode(false);
     }
   };
 
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     console.log('File input changed:', e.target.files);
-    onImageChange(e);
     
-    // Clear website image selection when uploading manually
-    if (onImageSelect && e.target.files && e.target.files.length > 0) {
-      onImageSelect('');
-    }
-    
-    // Switch back to showing the image once uploaded
     if (e.target.files && e.target.files.length > 0) {
-      setShowUploadMode(false);
+      const file = e.target.files[0];
+      console.log('Processing file:', file.name);
+      
+      // Create immediate preview
+      createImagePreview(file);
+      
+      // Clear website image selection when uploading manually
+      if (onImageSelect) {
+        onImageSelect('');
+      }
+    } else {
+      // If no file, clear local preview
+      setLocalImagePreview(null);
     }
+    
+    // Always call the parent handler
+    onImageChange(e);
   };
 
   const handleRemoveImage = () => {
+    console.log('Removing image');
+    setLocalImagePreview(null);
+    
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
       // Create a proper React change event for clearing
@@ -191,6 +216,7 @@ export function EnhancedImageUpload({
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
+      setLocalImagePreview(null);
     }
   };
 
@@ -227,7 +253,7 @@ export function EnhancedImageUpload({
         </div>
 
         {/* Show website images only if we don't have an uploaded image and there are website images */}
-        {hasWebsiteImages && !imagePreview && (
+        {hasWebsiteImages && !localImagePreview && !imagePreview && (
           <div className="space-y-3">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
               <span className="text-sm font-medium sm:pr-2">Available images from URL:</span>
