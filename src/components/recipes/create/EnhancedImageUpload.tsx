@@ -45,7 +45,8 @@ export function EnhancedImageUpload({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const hasWebsiteImages = websiteImages.length > 0;
-  const currentImage = selectedImage || imagePreview;
+  // Use uploaded image preview first, then selected image from website
+  const currentImage = imagePreview || selectedImage;
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -95,11 +96,25 @@ export function EnhancedImageUpload({
       } as React.ChangeEvent<HTMLInputElement>;
       
       onImageChange(syntheticEvent);
+      
+      // Clear website image selection when uploading manually
+      if (onImageSelect) {
+        onImageSelect('');
+      }
+      
+      // Exit upload mode once image is selected
+      setShowUploadMode(false);
     }
   };
 
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onImageChange(e);
+    
+    // Clear website image selection when uploading manually
+    if (onImageSelect && e.target.files && e.target.files.length > 0) {
+      onImageSelect('');
+    }
+    
     // Switch back to showing the image once uploaded
     if (e.target.files && e.target.files.length > 0) {
       setShowUploadMode(false);
@@ -151,7 +166,21 @@ export function EnhancedImageUpload({
     return storedImages.some(stored => stored.originalUrl === originalUrl);
   };
 
-  // Show current image if available
+  const handleUploadClick = () => {
+    setShowUploadMode(true);
+  };
+
+  const handleWebsiteImageSelect = (imageUrl: string) => {
+    if (onImageSelect) {
+      onImageSelect(imageUrl);
+      // Clear any uploaded image when selecting from website
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  // Show current image if available (prioritize uploaded image)
   if (currentImage && !showUploadMode) {
     return (
       <div className="space-y-4">
@@ -166,7 +195,7 @@ export function EnhancedImageUpload({
               <Button
                 variant="secondary"
                 size="sm"
-                onClick={() => setShowUploadMode(true)}
+                onClick={handleUploadClick}
               >
                 <Upload className="h-4 w-4 mr-1" />
                 Change
@@ -206,7 +235,7 @@ export function EnhancedImageUpload({
                 const displayUrl = getDisplayUrl(imageUrl);
                 const hasError = imageErrors.has(imageUrl);
                 const imageIsStored = isStored(imageUrl);
-                const isSelected = selectedImage === displayUrl;
+                const isSelected = selectedImage === displayUrl && !imagePreview;
                 
                 return (
                   <div
@@ -216,7 +245,7 @@ export function EnhancedImageUpload({
                         ? 'border-terracotta shadow-md'
                         : 'border-gray-200 hover:border-gray-300'
                     }`}
-                    onClick={() => onImageSelect && onImageSelect(displayUrl)}
+                    onClick={() => handleWebsiteImageSelect(displayUrl)}
                   >
                     {!hasError ? (
                       <img
@@ -268,12 +297,12 @@ export function EnhancedImageUpload({
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Button
-            onClick={() => setShowUploadMode(true)}
+            onClick={handleUploadClick}
             variant="outline"
             className="w-full"
           >
             <Upload className="h-4 w-4 mr-2" />
-            Change Image
+            Upload Different Image
           </Button>
 
           <Button
@@ -330,7 +359,7 @@ export function EnhancedImageUpload({
                 <div
                   key={index}
                   className="relative cursor-pointer rounded-lg overflow-hidden border-2 border-gray-200 hover:border-gray-300 transition-all"
-                  onClick={() => onImageSelect && onImageSelect(displayUrl)}
+                  onClick={() => handleWebsiteImageSelect(displayUrl)}
                 >
                   {!hasError ? (
                     <img
@@ -379,7 +408,7 @@ export function EnhancedImageUpload({
 
         <div className="border-t pt-4">
           <Button
-            onClick={() => setShowUploadMode(true)}
+            onClick={handleUploadClick}
             variant="outline"
             className="w-full"
           >
