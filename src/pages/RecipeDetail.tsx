@@ -14,26 +14,23 @@ import { Recipe } from "@/types";
 import { generateSlug } from "@/utils/slugUtils";
 
 export default function RecipeDetail() {
-  const { id, slug } = useParams<{ id?: string; slug?: string }>();
+  const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
-  const { recipes, getRecipeById, deleteRecipe, updateRecipe, isLoading } = useRecipes();
+  const { recipes, getRecipeById, updateRecipe, deleteRecipe, isLoading } = useRecipes();
   const { user } = useAuth();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isAddToMealPlanOpen, setIsAddToMealPlanOpen] = useState(false);
 
   // Find recipe by slug or legacy ID
   const recipe = (() => {
-    if (id) {
-      // Legacy URL with ID - try to find by ID first
-      return getRecipeById(id);
-    }
+    if (!slug) return undefined;
     
-    if (slug) {
-      // New URL structure - find by matching slug
-      return recipes.find(r => generateSlug(r.title) === slug);
-    }
+    // First try to find by slug (generated from title)
+    const recipeBySlug = recipes.find(r => generateSlug(r.title) === slug);
+    if (recipeBySlug) return recipeBySlug;
     
-    return undefined;
+    // Fall back to legacy ID lookup (for backwards compatibility)
+    return getRecipeById(slug);
   })();
 
   useDocumentTitle(recipe ? `${recipe.title} | RealiMeali` : "Recipe | RealiMeali");

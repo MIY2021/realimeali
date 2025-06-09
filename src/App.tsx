@@ -50,7 +50,8 @@ function App() {
                         <Route path="/meal-planner" element={<MealPlanner />} />
                         <Route path="/my-recipes" element={<RecipesPage />} />
                         <Route path="/my-recipes/new" element={<CreateRecipePage />} />
-                        <Route path="/my-recipes/:id" element={<RecipeDetail />} />
+                        {/* Updated route to handle both slug and legacy ID formats */}
+                        <Route path="/my-recipes/:slug" element={<RecipeDetail />} />
                         <Route path="/find-recipes" element={<FindRecipesPage />} />
                         <Route path="/shopping-list" element={<ShoppingList />} />
                         <Route path="/settings" element={<Settings />} />
@@ -60,6 +61,7 @@ function App() {
                         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                         <Route path="/terms-of-service" element={<TermsOfService />} />
                         <Route path="/recipes/shared/:shareId" element={<PublicRecipe />} />
+                        <Route path="/share/:slug" element={<PublicRecipe />} />
                         <Route path="/admin" element={
                           <ProtectedRoute>
                             <AdminDashboard />
