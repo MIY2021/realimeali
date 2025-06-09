@@ -9,7 +9,8 @@ interface MealPlanApproval {
   approval_request_id: string;
   user_id: string;
   approved: boolean;
-  notes?: string;
+  comments?: string;
+  responded_at: string;
   created_at: string;
   approval_request?: {
     id: string;
@@ -21,25 +22,29 @@ interface MealPlanApproval {
   };
 }
 
-interface MealPlanApprovalRequest {
+export interface ApprovalRequest {
   id: string;
   household_id: string;
   requested_by: string;
-  meal_plan_data: any;
-  status: 'pending' | 'approved' | 'rejected';
+  week_number: number;
+  message?: string;
+  status: 'pending' | 'approved' | 'rejected' | 'expired';
   created_at: string;
   updated_at: string;
+  expires_at: string;
 }
 
 interface MealPlanApprovalContextType {
   approvals: MealPlanApproval[];
-  approvalRequests: MealPlanApprovalRequest[];
+  approvalRequests: ApprovalRequest[];
   loading: boolean;
   error: string | null;
   fetchApprovals: () => Promise<void>;
   fetchApprovalRequests: () => Promise<void>;
   submitApproval: (requestId: string, approved: boolean, notes?: string) => Promise<void>;
-  createApprovalRequest: (mealPlanData: any) => Promise<void>;
+  createApprovalRequest: (weekNumber: number, message?: string) => Promise<void>;
+  respondToRequest: (requestId: string, approved: boolean, comments?: string) => Promise<void>;
+  getRequestApprovals: (requestId: string) => MealPlanApproval[];
 }
 
 const MealPlanApprovalContext = createContext<MealPlanApprovalContextType | undefined>(undefined);
@@ -49,14 +54,24 @@ export function MealPlanApprovalProvider({ children }: { children: React.ReactNo
   const { currentHousehold } = useHousehold();
   
   const [approvals, setApprovals] = useState<MealPlanApproval[]>([]);
-  const [approvalRequests, setApprovalRequests] = useState<MealPlanApprovalRequest[]>([]);
+  const [approvalRequests, setApprovalRequests] = useState<ApprovalRequest[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // Memoized fetch functions to prevent infinite loops
+  // Debounced API calls to prevent resource exhaustion
+  const [lastFetchTime, setLastFetchTime] = useState(0);
+  const FETCH_COOLDOWN = 2000; // 2 seconds
+
   const fetchApprovals = useCallback(async () => {
     if (!currentHousehold?.id || !user) return;
+    
+    const now = Date.now();
+    if (now - lastFetchTime < FETCH_COOLDOWN) {
+      console.log('⏳ Skipping fetch - too soon after last call');
+      return;
+    }
+    setLastFetchTime(now);
     
     setLoading(true);
     setError(null);
@@ -67,10 +82,14 @@ export function MealPlanApprovalProvider({ children }: { children: React.ReactNo
       const { data, error: fetchError } = await supabase
         .from('meal_plan_approvals')
         .select(`
-          *,
-          approval_request:meal_plan_approval_requests!inner(household_id)
-        `)
-        .eq('approval_request.household_id', currentHousehold.id);
+          id,
+          approval_request_id,
+          user_id,
+          approved,
+          comments,
+          responded_at,
+          created_at
+        `);
 
       if (fetchError) {
         console.error('❌ Error fetching approvals:', fetchError);
@@ -86,10 +105,17 @@ export function MealPlanApprovalProvider({ children }: { children: React.ReactNo
     } finally {
       setLoading(false);
     }
-  }, [currentHousehold?.id, user]);
+  }, [currentHousehold?.id, user, lastFetchTime]);
 
   const fetchApprovalRequests = useCallback(async () => {
     if (!currentHousehold?.id || !user) return;
+    
+    const now = Date.now();
+    if (now - lastFetchTime < FETCH_COOLDOWN) {
+      console.log('⏳ Skipping fetch - too soon after last call');
+      return;
+    }
+    setLastFetchTime(now);
     
     setLoading(true);
     setError(null);
@@ -99,7 +125,17 @@ export function MealPlanApprovalProvider({ children }: { children: React.ReactNo
       
       const { data, error: fetchError } = await supabase
         .from('meal_plan_approval_requests')
-        .select('*')
+        .select(`
+          id,
+          household_id,
+          requested_by,
+          week_number,
+          message,
+          status,
+          created_at,
+          updated_at,
+          expires_at
+        `)
         .eq('household_id', currentHousehold.id)
         .order('created_at', { ascending: false });
 
@@ -117,7 +153,7 @@ export function MealPlanApprovalProvider({ children }: { children: React.ReactNo
     } finally {
       setLoading(false);
     }
-  }, [currentHousehold?.id, user]);
+  }, [currentHousehold?.id, user, lastFetchTime]);
 
   const submitApproval = useCallback(async (requestId: string, approved: boolean, notes?: string) => {
     if (!user) return;
@@ -129,7 +165,8 @@ export function MealPlanApprovalProvider({ children }: { children: React.ReactNo
           approval_request_id: requestId,
           user_id: user.id,
           approved,
-          notes
+          comments: notes,
+          responded_at: new Date().toISOString()
         });
 
       if (error) throw error;
@@ -142,7 +179,11 @@ export function MealPlanApprovalProvider({ children }: { children: React.ReactNo
     }
   }, [user, fetchApprovals, fetchApprovalRequests]);
 
-  const createApprovalRequest = useCallback(async (mealPlanData: any) => {
+  const respondToRequest = useCallback(async (requestId: string, approved: boolean, comments?: string) => {
+    return submitApproval(requestId, approved, comments);
+  }, [submitApproval]);
+
+  const createApprovalRequest = useCallback(async (weekNumber: number, message?: string) => {
     if (!user || !currentHousehold?.id) return;
     
     try {
@@ -151,8 +192,10 @@ export function MealPlanApprovalProvider({ children }: { children: React.ReactNo
         .insert({
           household_id: currentHousehold.id,
           requested_by: user.id,
-          meal_plan_data: mealPlanData,
-          status: 'pending'
+          week_number: weekNumber,
+          message: message,
+          status: 'pending',
+          expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() // 7 days from now
         });
 
       if (error) throw error;
@@ -164,6 +207,10 @@ export function MealPlanApprovalProvider({ children }: { children: React.ReactNo
       setError('Failed to create approval request');
     }
   }, [user, currentHousehold?.id, fetchApprovalRequests]);
+
+  const getRequestApprovals = useCallback((requestId: string) => {
+    return approvals.filter(approval => approval.approval_request_id === requestId);
+  }, [approvals]);
 
   // Initialize data when household changes, but only once per household
   useEffect(() => {
@@ -177,7 +224,7 @@ export function MealPlanApprovalProvider({ children }: { children: React.ReactNo
         Promise.all([fetchApprovals(), fetchApprovalRequests()]).finally(() => {
           setIsInitialized(true);
         });
-      }, 500);
+      }, 1000);
     }
 
     return () => {
@@ -202,6 +249,8 @@ export function MealPlanApprovalProvider({ children }: { children: React.ReactNo
     fetchApprovalRequests,
     submitApproval,
     createApprovalRequest,
+    respondToRequest,
+    getRequestApprovals,
   };
 
   return (
