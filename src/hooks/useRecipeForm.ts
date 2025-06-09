@@ -8,7 +8,7 @@ export function useRecipeForm(isEditing: boolean = false, existingRecipe?: Recip
   const [imagePreview, setImagePreview] = useState<string>('');
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [generationProgress, setGenerationProgress] = useState('');
-  const [shareWithCommunity, setShareWithCommunity] = useState(true); // Default to true
+  const [shareWithCommunity, setShareWithCommunity] = useState(true);
   const [newRecipe, setNewRecipe] = useState<Recipe>(
     existingRecipe || {
       id: '',
@@ -38,7 +38,7 @@ export function useRecipeForm(isEditing: boolean = false, existingRecipe?: Recip
   const [newInstruction, setNewInstruction] = useState({ text: "" });
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log('📁 useRecipeForm handleImageChange called:', e.target.files);
+    console.log('📁 useRecipeForm handleImageChange called:', e.target.files?.length || 'no files');
     
     const file = e.target.files?.[0];
     if (file) {
@@ -46,26 +46,26 @@ export function useRecipeForm(isEditing: boolean = false, existingRecipe?: Recip
       const reader = new FileReader();
       reader.onloadend = () => {
         const result = reader.result as string;
-        console.log('📁 Image processed, updating states:', result ? 'success' : 'failed');
+        console.log('📁 File read complete, updating states');
         
         // Update both preview and recipe image
         setImagePreview(result);
-        setNewRecipe(prev => ({ 
-          ...prev, 
-          image: result 
-        }));
-        console.log('📁 Updated newRecipe.image with uploaded file data');
+        setNewRecipe(prev => {
+          const updated = { ...prev, image: result };
+          console.log('📁 Updated newRecipe.image with file data');
+          return updated;
+        });
       };
       reader.readAsDataURL(file);
     } else {
       console.log('📁 No file selected, clearing image states');
       // Clear both preview and recipe image
       setImagePreview('');
-      setNewRecipe(prev => ({ 
-        ...prev, 
-        image: undefined 
-      }));
-      console.log('📁 Cleared newRecipe.image');
+      setNewRecipe(prev => {
+        const updated = { ...prev, image: undefined };
+        console.log('📁 Cleared newRecipe.image');
+        return updated;
+      });
     }
   };
 
@@ -76,7 +76,7 @@ export function useRecipeForm(isEditing: boolean = false, existingRecipe?: Recip
         ...prev,
         ingredients: [...prev.ingredients, ingredientText],
       }));
-      setNewIngredient({ name: "", quantity: "" }); // Clear input fields
+      setNewIngredient({ name: "", quantity: "" });
     } else {
       toast({
         title: "Error",
@@ -99,7 +99,7 @@ export function useRecipeForm(isEditing: boolean = false, existingRecipe?: Recip
         ...prev,
         instructions: [...prev.instructions, newInstruction.text],
       }));
-      setNewInstruction({ text: "" }); // Clear input field
+      setNewInstruction({ text: "" });
     } else {
       toast({
         title: "Error",

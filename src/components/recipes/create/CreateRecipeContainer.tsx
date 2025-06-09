@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -26,7 +25,7 @@ export function CreateRecipeContainer() {
   const [activeTab, setActiveTab] = useState("url");
   const [isSaving, setIsSaving] = useState(false);
   const [recipeOrigin, setRecipeOrigin] = useState<RecipeOrigin>('manual');
-  const [originalSourceUrl, setOriginalSourceUrl] = useState<string>(''); // Track original source URL
+  const [originalSourceUrl, setOriginalSourceUrl] = useState<string>('');
 
   // Keep hooks as objects instead of destructuring
   const recipeFormHook = useRecipeForm();
@@ -40,7 +39,7 @@ export function CreateRecipeContainer() {
       recipeFormHook.setImagePreview,
       (url: string) => recipeFormHook.setNewRecipe({ ...recipeFormHook.newRecipe, image: url }),
       recipeFormHook.setIsGeneratingImage,
-      recipeFormHook.setGenerationProgress, // Use the actual setter function
+      recipeFormHook.setGenerationProgress,
       recipeFormHook.newRecipe.description
     );
   };
@@ -48,15 +47,25 @@ export function CreateRecipeContainer() {
   const validateRecipe = () => {
     const errors: string[] = [];
     
-    if (!recipeFormHook.newRecipe.title.trim()) {
+    console.log('🔍 Validating recipe:', {
+      title: recipeFormHook.newRecipe.title,
+      ingredients: recipeFormHook.newRecipe.ingredients?.length || 0,
+      instructions: recipeFormHook.newRecipe.instructions?.length || 0,
+      prep_time: recipeFormHook.newRecipe.prep_time,
+      cook_time: recipeFormHook.newRecipe.cook_time,
+      servings: recipeFormHook.newRecipe.servings,
+      image: recipeFormHook.newRecipe.image ? 'has image' : 'no image'
+    });
+    
+    if (!recipeFormHook.newRecipe.title?.trim()) {
       errors.push("Recipe title is required");
     }
     
-    if (recipeFormHook.newRecipe.ingredients.length === 0) {
+    if (!recipeFormHook.newRecipe.ingredients || recipeFormHook.newRecipe.ingredients.length === 0) {
       errors.push("At least one ingredient is required");
     }
     
-    if (recipeFormHook.newRecipe.instructions.length === 0) {
+    if (!recipeFormHook.newRecipe.instructions || recipeFormHook.newRecipe.instructions.length === 0) {
       errors.push("At least one instruction is required");
     }
     
@@ -64,7 +73,7 @@ export function CreateRecipeContainer() {
       errors.push("Prep time must be greater than 0 minutes");
     }
     
-    if (!recipeFormHook.newRecipe.cook_time || recipeFormHook.newRecipe.cook_time < 0) {
+    if (recipeFormHook.newRecipe.cook_time === undefined || recipeFormHook.newRecipe.cook_time < 0) {
       errors.push("Cook time must be 0 or greater");
     }
     
@@ -72,14 +81,18 @@ export function CreateRecipeContainer() {
       errors.push("Servings must be greater than 0");
     }
 
+    console.log('🔍 Validation errors:', errors);
     return errors;
   };
 
   const handleSaveRecipe = async () => {
+    console.log('💾 Starting save recipe process...');
+    
     if (!user || !currentHousehold) {
+      console.error('❌ Missing authentication:', { user: !!user, household: !!currentHousehold });
       toast({
         title: "Authentication Required",
-        description: "You must be logged in and have a household to save recipes. Please check your login status.",
+        description: "You must be logged in and have a household to save recipes.",
         variant: "destructive",
       });
       return;
@@ -88,6 +101,7 @@ export function CreateRecipeContainer() {
     // Validate the recipe
     const validationErrors = validateRecipe();
     if (validationErrors.length > 0) {
+      console.error('❌ Validation failed:', validationErrors);
       toast({
         title: "Recipe Incomplete",
         description: `Please fix the following issues: ${validationErrors.join(', ')}`,
@@ -98,23 +112,37 @@ export function CreateRecipeContainer() {
 
     setIsSaving(true);
     
-    // Only allow community sharing for URL imports
-    const effectiveShareWithCommunity = recipeOrigin === 'url' ? recipeFormHook.shareWithCommunity : false;
-    
-    // Log the shareWithCommunity flag for debugging
-    console.log("🔄 Saving recipe with shareWithCommunity:", effectiveShareWithCommunity, "origin:", recipeOrigin);
-    console.log("🖼️ Recipe image:", recipeFormHook.newRecipe.image ? 'has image' : 'no image');
-    
     try {
+      console.log('💾 Preparing recipe data for save...');
+      
+      // Clean the recipe data
       const recipeToSave = {
         ...recipeFormHook.newRecipe,
+        title: recipeFormHook.newRecipe.title?.trim() || '',
+        description: recipeFormHook.newRecipe.description?.trim() || '',
+        top_tip: recipeFormHook.newRecipe.top_tip?.trim() || "Enjoy cooking this delicious recipe!",
+        ingredients: recipeFormHook.newRecipe.ingredients?.filter(ing => ing?.trim()) || [],
+        instructions: recipeFormHook.newRecipe.instructions?.filter(inst => inst?.trim()) || [],
+        diet_lifestyle: recipeFormHook.newRecipe.diet_lifestyle || [],
+        prep_time: Math.max(0, recipeFormHook.newRecipe.prep_time || 0),
+        cook_time: Math.max(0, recipeFormHook.newRecipe.cook_time || 0),
+        servings: Math.max(1, recipeFormHook.newRecipe.servings || 1),
         household_id: currentHousehold.id,
       };
+
+      console.log('💾 Final recipe data to save:', {
+        ...recipeToSave,
+        image: recipeToSave.image ? 'has image data' : 'no image'
+      });
 
       const savedRecipe = await createRecipe(recipeToSave, currentHousehold.id);
       
       if (savedRecipe) {
+        console.log('✅ Recipe saved successfully:', savedRecipe.id);
+        
         // Handle community sharing if enabled and is from URL import
+        const effectiveShareWithCommunity = recipeOrigin === 'url' ? recipeFormHook.shareWithCommunity : false;
+        
         if (effectiveShareWithCommunity) {
           console.log("🌍 Community sharing enabled, submitting to community_recipes...");
           
@@ -122,7 +150,7 @@ export function CreateRecipeContainer() {
             const communityRecipeData = {
               title: savedRecipe.title,
               description: savedRecipe.description || `A delicious ${savedRecipe.meal_type || 'recipe'} recipe with ${savedRecipe.ingredients.length} ingredients.`,
-              source_url: originalSourceUrl || `${window.location.origin}/my-recipes/${savedRecipe.id}`, // Use original URL if available
+              source_url: originalSourceUrl || `${window.location.origin}/my-recipes/${savedRecipe.id}`,
               image_url: savedRecipe.image,
               prep_time: savedRecipe.prep_time,
               cook_time: savedRecipe.cook_time,
@@ -137,8 +165,6 @@ export function CreateRecipeContainer() {
               is_active: true,
               moderation_status: 'pending'
             };
-
-            console.log("📝 Submitting community recipe data:", communityRecipeData);
 
             const { data: communityRecipe, error: communityError } = await supabase
               .from('community_recipes')
@@ -167,28 +193,23 @@ export function CreateRecipeContainer() {
             });
           }
         } else {
-          if (recipeOrigin === 'url') {
-            console.log("🎉 Recipe saved successfully, community sharing was not selected");
-            toast({
-              title: "Recipe Saved Successfully! 🎉",
-              description: `${savedRecipe.title} has been added to your recipe collection.`,
-            });
-          } else {
-            console.log("🎉 Recipe saved successfully, community sharing only available for URL imports");
-            toast({
-              title: "Recipe Saved Successfully! 🎉",
-              description: `${savedRecipe.title} has been added to your recipes. (Community sharing is only available for recipes imported from URLs.)`,
-            });
-          }
+          console.log("🎉 Recipe saved successfully, no community sharing");
+          toast({
+            title: "Recipe Saved Successfully! 🎉",
+            description: `${savedRecipe.title} has been added to your recipe collection.`,
+          });
         }
         
         navigate("/my-recipes");
+      } else {
+        throw new Error('Recipe creation returned null');
       }
     } catch (error) {
-      console.error("Error saving recipe:", error);
+      console.error("❌ Error saving recipe:", error);
       let errorMessage = "Failed to save recipe. Please try again.";
       
       if (error instanceof Error) {
+        console.error("❌ Error details:", error.message);
         if (error.message.includes('Network')) {
           errorMessage = "Network error. Please check your connection and try again.";
         } else if (error.message.includes('duplicate')) {
@@ -212,11 +233,9 @@ export function CreateRecipeContainer() {
     navigate("/my-recipes");
   };
 
-  // Wrapper functions to match expected signatures and track origin
   const wrappedProcessText = () => {
     setRecipeOrigin('text');
-    setOriginalSourceUrl(''); // Clear source URL for text imports
-    // Disable community sharing for non-URL imports
+    setOriginalSourceUrl('');
     recipeFormHook.setShareWithCommunity(false);
     return recipeProcessingHook.handleProcessText(
       (recipe) => recipeFormHook.setNewRecipe(prev => ({ ...prev, ...recipe })), 
@@ -227,8 +246,7 @@ export function CreateRecipeContainer() {
   
   const wrappedProcessImage = async (file: File) => {
     setRecipeOrigin('image');
-    setOriginalSourceUrl(''); // Clear source URL for image imports
-    // Disable community sharing for image imports
+    setOriginalSourceUrl('');
     recipeFormHook.setShareWithCommunity(false);
     const result = await recipeProcessingHook.processImage(file);
     if (result) {
@@ -239,8 +257,7 @@ export function CreateRecipeContainer() {
   
   const wrappedGenerateRecipe = async () => {
     setRecipeOrigin('generate');
-    setOriginalSourceUrl(''); // Clear source URL for generated recipes
-    // Disable community sharing for generated recipes
+    setOriginalSourceUrl('');
     recipeFormHook.setShareWithCommunity(false);
     const result = await recipeProcessingHook.generateRecipe({});
     if (result) {
@@ -251,42 +268,34 @@ export function CreateRecipeContainer() {
   
   const wrappedImportFromUrl = () => {
     setRecipeOrigin('url');
-    // Store the original URL before import
     setOriginalSourceUrl(recipeProcessingHook.recipeUrl);
-    // Only URL imports can be shared with community by default
     recipeFormHook.setShareWithCommunity(true);
     return recipeProcessingHook.handleImportFromUrl(
       (recipe) => recipeFormHook.setNewRecipe(prev => ({ ...prev, ...recipe })), 
       recipeFormHook.newRecipe, 
       setActiveTab,
-      recipeFormHook.setShareWithCommunity // Pass the function to enable default sharing
+      recipeFormHook.setShareWithCommunity
     );
   };
 
-  // Handle when user manually switches to manual tab
   const handleTabChange = (tab: string) => {
     if (tab === 'manual' && activeTab !== 'manual') {
-      // User is switching to manual tab - keep existing origin unless it was never set
       if (recipeOrigin === 'manual' && activeTab !== 'manual') {
-        // This means they started elsewhere but we haven't tracked it yet
         setRecipeOrigin(activeTab as RecipeOrigin);
-        // Disable community sharing for non-URL origins
         if (activeTab !== 'url') {
           recipeFormHook.setShareWithCommunity(false);
         }
       }
     } else if (tab !== 'manual') {
-      // User is switching to a different tab - reset origin to manual only if truly starting fresh
       if (activeTab === 'manual' && recipeOrigin === 'manual') {
         setRecipeOrigin('manual');
       }
       
-      // Set sharing status based on destination tab
       if (tab === 'url') {
         recipeFormHook.setShareWithCommunity(true);
       } else {
         recipeFormHook.setShareWithCommunity(false);
-        setOriginalSourceUrl(''); // Clear source URL for non-URL tabs
+        setOriginalSourceUrl('');
       }
     }
     setActiveTab(tab);
