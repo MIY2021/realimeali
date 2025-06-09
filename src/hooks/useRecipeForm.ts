@@ -5,7 +5,6 @@ import { Recipe } from "@/types";
 
 export function useRecipeForm(isEditing: boolean = false, existingRecipe?: Recipe) {
   const { toast } = useToast();
-  const [imagePreview, setImagePreview] = useState<string>('');
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [generationProgress, setGenerationProgress] = useState('');
   const [shareWithCommunity, setShareWithCommunity] = useState(true);
@@ -37,6 +36,9 @@ export function useRecipeForm(isEditing: boolean = false, existingRecipe?: Recip
   const [newIngredient, setNewIngredient] = useState({ name: "", quantity: "" });
   const [newInstruction, setNewInstruction] = useState({ text: "" });
 
+  // Use recipe.image as the single source of truth for image preview
+  const imagePreview = newRecipe.image || '';
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     console.log('📁 useRecipeForm handleImageChange called:', e.target.files?.length || 'no files');
     
@@ -46,27 +48,42 @@ export function useRecipeForm(isEditing: boolean = false, existingRecipe?: Recip
       const reader = new FileReader();
       reader.onloadend = () => {
         const result = reader.result as string;
-        console.log('📁 File read complete, updating states');
+        console.log('📁 File read complete, updating recipe image');
         
-        // Update both preview and recipe image
-        setImagePreview(result);
+        // Update recipe image directly - single source of truth
         setNewRecipe(prev => {
           const updated = { ...prev, image: result };
-          console.log('📁 Updated newRecipe.image with file data');
+          console.log('📁 Updated newRecipe.image with uploaded file data');
           return updated;
+        });
+      };
+      reader.onerror = (error) => {
+        console.error('❌ Error reading file:', error);
+        toast({
+          title: "Error",
+          description: "Failed to read the image file. Please try again.",
+          variant: "destructive",
         });
       };
       reader.readAsDataURL(file);
     } else {
-      console.log('📁 No file selected, clearing image states');
-      // Clear both preview and recipe image
-      setImagePreview('');
+      console.log('📁 No file selected, clearing recipe image');
+      // Clear recipe image
       setNewRecipe(prev => {
         const updated = { ...prev, image: undefined };
         console.log('📁 Cleared newRecipe.image');
         return updated;
       });
     }
+  };
+
+  // Function to set image from URL or generation
+  const setImageFromUrl = (imageUrl: string) => {
+    console.log('🌐 Setting image from URL:', imageUrl ? 'has URL' : 'clearing');
+    setNewRecipe(prev => ({
+      ...prev,
+      image: imageUrl || undefined
+    }));
   };
 
   const handleAddIngredient = () => {
@@ -123,8 +140,8 @@ export function useRecipeForm(isEditing: boolean = false, existingRecipe?: Recip
     setNewIngredient,
     newInstruction,
     setNewInstruction,
-    imagePreview,
-    setImagePreview,
+    imagePreview, // This now directly uses newRecipe.image
+    setImagePreview: setImageFromUrl, // Use the URL setter function
     isGeneratingImage,
     setIsGeneratingImage,
     generationProgress,
@@ -132,6 +149,7 @@ export function useRecipeForm(isEditing: boolean = false, existingRecipe?: Recip
     shareWithCommunity,
     setShareWithCommunity,
     handleImageChange,
+    setImageFromUrl, // Add this for external image setting
     handleAddIngredient,
     handleRemoveIngredient,
     handleAddInstruction,

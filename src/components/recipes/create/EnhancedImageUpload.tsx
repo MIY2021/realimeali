@@ -1,8 +1,7 @@
 
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Upload, Camera, Star } from "lucide-react";
-import { ImagePreviewDisplay } from "./components/ImagePreviewDisplay";
+import { Upload, Camera, Star, X } from "lucide-react";
 import { WebsiteImageSelection } from "./components/WebsiteImageSelection";
 import { ImageUploadInterface } from "./components/ImageUploadInterface";
 
@@ -18,11 +17,11 @@ interface EnhancedImageUploadProps {
   generationProgress: string;
   onImageChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onGenerateImage: () => void;
+  onImageSelect?: (url: string) => void;
   recipeTitle: string;
   websiteImages?: string[];
   storedImages?: StoredImage[];
   selectedImage?: string;
-  onImageSelect?: (url: string) => void;
   onDownloadImages?: () => void;
   isDownloadingImages?: boolean;
 }
@@ -33,129 +32,95 @@ export function EnhancedImageUpload({
   generationProgress,
   onImageChange,
   onGenerateImage,
+  onImageSelect,
   recipeTitle,
   websiteImages = [],
   storedImages = [],
   selectedImage = "",
-  onImageSelect,
   onDownloadImages,
   isDownloadingImages = false
 }: EnhancedImageUploadProps) {
   const [showUploadMode, setShowUploadMode] = useState(false);
-  const [localImagePreview, setLocalImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const hasWebsiteImages = websiteImages.length > 0;
-  // IMPORTANT: Prioritize local preview first, then uploaded image preview, then selected image from website
-  const currentImage = localImagePreview || imagePreview || selectedImage;
+  const hasCurrentImage = Boolean(imagePreview);
 
   console.log('EnhancedImageUpload Debug:', {
-    localImagePreview: localImagePreview ? 'has local preview' : 'no local preview',
+    hasCurrentImage,
     imagePreview: imagePreview ? 'has preview' : 'no preview',
-    selectedImage: selectedImage ? 'has selected' : 'no selected',
-    currentImage: currentImage ? 'has current' : 'no current',
-    showUploadMode
+    showUploadMode,
+    hasWebsiteImages
   });
 
-  const createImagePreview = (file: File) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const result = e.target?.result as string;
-      console.log('📷 Created local image preview:', result ? 'success' : 'failed');
-      setLocalImagePreview(result);
-      setShowUploadMode(false);
-    };
-    reader.readAsDataURL(file);
-  };
-
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log('📁 File input changed in EnhancedImageUpload:', e.target.files);
+    console.log('📁 File input changed in EnhancedImageUpload');
     
-    if (e.target.files && e.target.files.length > 0) {
-      const file = e.target.files[0];
-      console.log('📁 Processing file in EnhancedImageUpload:', file.name);
-      
-      // Create immediate preview
-      createImagePreview(file);
-      
-      // Clear website image selection when uploading manually
-      if (onImageSelect) {
-        console.log('📁 Clearing website image selection due to file upload');
-        onImageSelect('');
-      }
-    } else {
-      // If no file, clear local preview
-      console.log('📁 No file selected, clearing local preview');
-      setLocalImagePreview(null);
+    // Clear website image selection when uploading manually
+    if (e.target.files && e.target.files.length > 0 && onImageSelect) {
+      console.log('📁 Clearing website image selection due to file upload');
+      onImageSelect('');
     }
     
-    // Always call the parent handler to ensure the file is processed properly
-    console.log('📁 Calling parent onImageChange handler');
+    // Call the parent handler
     onImageChange(e);
+    setShowUploadMode(false);
   };
 
   const handleRemoveImage = () => {
     console.log('🗑️ Removing image in EnhancedImageUpload');
-    setLocalImagePreview(null);
     
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
-      // Create a proper React change event for clearing
+      // Create a synthetic event for clearing
       const syntheticEvent = {
         target: fileInputRef.current,
         currentTarget: fileInputRef.current,
-        bubbles: true,
-        cancelable: true,
-        timeStamp: Date.now(),
-        defaultPrevented: false,
-        isTrusted: true,
-        nativeEvent: new Event('change') as any,
-        isDefaultPrevented: () => false,
-        isPropagationStopped: () => false,
-        persist: () => {},
-        preventDefault: () => {},
-        stopPropagation: () => {},
-        type: 'change'
       } as React.ChangeEvent<HTMLInputElement>;
       
-      console.log('🗑️ Calling parent onImageChange with clear event');
       onImageChange(syntheticEvent);
     }
+    
     if (onImageSelect) {
-      console.log('🗑️ Clearing website image selection');
       onImageSelect('');
     }
-  };
-
-  const handleUploadClick = () => {
-    setShowUploadMode(true);
   };
 
   const handleWebsiteImageSelect = (imageUrl: string) => {
     console.log('🌐 Website image selected in EnhancedImageUpload:', imageUrl);
     if (onImageSelect) {
       onImageSelect(imageUrl);
-      // Clear any uploaded image when selecting from website
+      // Clear any uploaded file when selecting from website
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
-      setLocalImagePreview(null);
     }
   };
 
-  // Show current image if available (uploaded image takes priority)
-  if (currentImage && !showUploadMode) {
+  // Show current image if available
+  if (hasCurrentImage && !showUploadMode) {
     return (
       <div className="space-y-4">
-        <ImagePreviewDisplay
-          currentImage={currentImage}
-          onChangeImage={handleUploadClick}
-          onRemoveImage={handleRemoveImage}
-        />
+        <div className="relative">
+          <img
+            src={imagePreview}
+            alt="Recipe preview"
+            className="w-full h-48 object-cover rounded-lg border"
+          />
+          <Button
+            onClick={handleRemoveImage}
+            variant="destructive"
+            size="sm"
+            className="absolute top-2 right-2"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
 
-        {/* Show website images only if we don't have an uploaded image and there are website images */}
-        {hasWebsiteImages && !localImagePreview && !imagePreview && (
+        {/* Show website images only if available and not from upload */}
+        {hasWebsiteImages && (
           <div className="space-y-3">
+            <h4 className="text-sm font-medium">Or choose from imported images:</h4>
             <WebsiteImageSelection
               websiteImages={websiteImages}
               storedImages={storedImages}
@@ -170,7 +135,7 @@ export function EnhancedImageUpload({
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Button
-            onClick={handleUploadClick}
+            onClick={() => setShowUploadMode(true)}
             variant="outline"
             className="w-full"
           >
@@ -201,8 +166,8 @@ export function EnhancedImageUpload({
     );
   }
 
-  // Show image selection from URL if available and no current image
-  if (hasWebsiteImages && !currentImage && !showUploadMode) {
+  // Show website images if available and no current image
+  if (hasWebsiteImages && !hasCurrentImage && !showUploadMode) {
     return (
       <div className="space-y-4">
         <WebsiteImageSelection
@@ -216,7 +181,7 @@ export function EnhancedImageUpload({
 
         <div className="border-t pt-4">
           <Button
-            onClick={handleUploadClick}
+            onClick={() => setShowUploadMode(true)}
             variant="outline"
             className="w-full"
           >
@@ -228,7 +193,7 @@ export function EnhancedImageUpload({
     );
   }
 
-  // Show upload interface (default or when specifically requested)
+  // Show upload interface
   return (
     <ImageUploadInterface
       onFileChange={handleFileInputChange}

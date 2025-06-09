@@ -1,11 +1,13 @@
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Recipe } from "@/types";
 import { useProgressTracking } from "./useUrlRecipeProcessing/useProgressTracking";
 import { useImageHandling } from "./useUrlRecipeProcessing/useImageHandling";
 import { handleProcessingError } from "./useUrlRecipeProcessing/errorHandling";
+
+let debounceTimeout: NodeJS.Timeout | null = null;
 
 export const useUrlRecipeProcessing = () => {
   const { toast } = useToast();
@@ -17,12 +19,17 @@ export const useUrlRecipeProcessing = () => {
   const progressTracking = useProgressTracking();
   const imageHandling = useImageHandling();
 
-  const handleImportFromUrl = async (
+  const handleImportFromUrl = useCallback(async (
     setNewRecipe: (recipe: Omit<Recipe, 'id' | 'created_at' | 'updated_at' | 'created_by'>) => void,
     newRecipe: Omit<Recipe, 'id' | 'created_at' | 'updated_at' | 'created_by'>,
     setActiveTab: (tab: string) => void,
     setShareWithCommunity?: (share: boolean) => void
   ) => {
+    // Clear any existing debounce
+    if (debounceTimeout) {
+      clearTimeout(debounceTimeout);
+    }
+
     if (!url.trim()) {
       toast({
         title: "Error",
@@ -32,27 +39,32 @@ export const useUrlRecipeProcessing = () => {
       return;
     }
 
-    // Basic URL validation - just check if it's a valid URL format
+    // Basic URL validation
     try {
       new URL(url.trim());
     } catch {
       toast({
         title: "Invalid URL",
-        description: "Please enter a valid website URL",
+        description: "Please enter a valid website URL (e.g., https://example.com/recipe)",
         variant: "destructive",
       });
       return;
     }
 
+    // Prevent multiple simultaneous requests
+    if (isProcessing) {
+      console.log('⏳ Recipe import already in progress, ignoring duplicate request');
+      return;
+    }
+
     setIsProcessing(true);
-    // Immediately reset progress to avoid flickering
     progressTracking.resetProgress(true);
     
-    // Start the funny loading animation
+    // Start progress animation
     const progressInterval = progressTracking.startProgressAnimation();
     
     try {
-      console.log('🔗 Processing URL:', url);
+      console.log('🔗 Processing URL:', url.trim());
       
       const { data, error } = await supabase.functions.invoke('parse-recipe-ai', {
         body: { 
@@ -61,20 +73,24 @@ export const useUrlRecipeProcessing = () => {
         },
       });
 
+      // Clear progress interval
+      clearInterval(progressInterval);
+
       if (error) {
+        console.error('❌ Function error:', error);
         throw error;
       }
 
       if (!data?.parsedRecipe) {
+        console.error('❌ No recipe data in response:', data);
         throw new Error('No recipe data could be extracted from this website. This might happen if:\n• The page doesn\'t contain a recipe\n• The website blocks automated access\n• The recipe format isn\'t recognized\n\nTry copying the recipe text and using the "Paste Recipe Text" tab instead.');
       }
 
-      // Clear the progress animation and complete
-      clearInterval(progressInterval);
-      progressTracking.completeProgress();
-
       const recipeData = data.parsedRecipe;
-      console.log('📄 Parsed recipe data:', recipeData);
+      console.log('📄 Parsed recipe data:', recipeData.title);
+
+      // Complete progress
+      progressTracking.completeProgress();
 
       // Transform the data to match our Recipe interface
       const transformedRecipe = {
@@ -87,17 +103,15 @@ export const useUrlRecipeProcessing = () => {
         cook_time: recipeData.cookTime || 0,
         servings: recipeData.servings || 1,
         top_tip: recipeData.topTip || "",
-        // Apply AI classification
         meal_type: recipeData.mealType || newRecipe.meal_type,
         cuisine_region: recipeData.cuisineRegion || newRecipe.cuisine_region,
         diet_lifestyle: recipeData.dietLifestyle || newRecipe.diet_lifestyle || [],
         complexity_level: recipeData.complexityLevel || newRecipe.complexity_level,
         main_ingredient: recipeData.mainIngredient || newRecipe.main_ingredient,
-        // Preserve any existing household_id and other fields
         household_id: newRecipe.household_id,
         is_favorite: newRecipe.is_favorite,
         has_cooked: newRecipe.has_cooked,
-        image: undefined, // Start with no image so user can select or upload
+        image: undefined, // Start with no image so user can select
       };
 
       // Store images for selection if available
@@ -106,20 +120,20 @@ export const useUrlRecipeProcessing = () => {
         imageHandling.setWebsiteImages(data.websiteImages);
         imageHandling.setShowImageSelection(true);
         
-        // Auto-select the first image and apply it to the recipe
+        // Auto-select the first image
         const firstImage = data.websiteImages[0];
         imageHandling.setSelectedImage(firstImage);
-        transformedRecipe.image = firstImage; // Auto-apply first image
-        console.log('🎯 Auto-selected and applied first image:', firstImage);
+        transformedRecipe.image = firstImage;
+        console.log('🎯 Auto-selected first image:', firstImage);
       }
 
-      console.log('✅ Recipe imported successfully');
+      console.log('✅ Recipe imported successfully:', transformedRecipe.title);
       setNewRecipe(transformedRecipe);
       
       // Set community sharing to checked by default for imported recipes
       if (setShareWithCommunity) {
         setShareWithCommunity(true);
-        console.log('🌍 Community sharing enabled by default for imported recipe');
+        console.log('🌍 Community sharing enabled by default');
       }
       
       setActiveTab("manual");
@@ -127,14 +141,14 @@ export const useUrlRecipeProcessing = () => {
       const domain = new URL(url).hostname;
       toast({
         title: "Recipe imported!",
-        description: `Successfully imported "${transformedRecipe.title}" from ${domain}. Community sharing enabled by default.`,
+        description: `Successfully imported "${transformedRecipe.title}" from ${domain}`,
       });
 
-      // Store parsed recipe data with original URL for potential community submission
+      // Store parsed recipe data with original URL
       setParsedRecipeData({
         ...recipeData,
-        source_url: url.trim(), // Preserve the original external URL
-        image_url: transformedRecipe.image, // Include selected image
+        source_url: url.trim(),
+        image_url: transformedRecipe.image,
         prep_time: transformedRecipe.prep_time,
         cook_time: transformedRecipe.cook_time,
         servings: transformedRecipe.servings,
@@ -144,22 +158,25 @@ export const useUrlRecipeProcessing = () => {
       setUrl("");
       
     } catch (error) {
+      console.error('❌ Error importing recipe:', error);
       clearInterval(progressInterval);
       handleProcessingError(error, toast);
     } finally {
       setIsProcessing(false);
-      // Use delayed reset for cleanup
-      progressTracking.resetProgress();
+      // Reset progress after delay
+      setTimeout(() => {
+        progressTracking.resetProgress();
+      }, 2000);
     }
-  };
+  }, [url, isProcessing, toast, progressTracking, imageHandling]);
 
-  const reset = () => {
+  const reset = useCallback(() => {
     setUrl("");
     setIsProcessing(false);
     progressTracking.resetProgress(true);
     imageHandling.resetImages();
     setParsedRecipeData(null);
-  };
+  }, [progressTracking, imageHandling]);
 
   return {
     // URL state
@@ -186,7 +203,7 @@ export const useUrlRecipeProcessing = () => {
     showImageSelection: imageHandling.showImageSelection,
     selectedImage: imageHandling.selectedImage,
     handleImageSelect: imageHandling.handleImageSelect,
-    handleDownloadImages: imageHandling.handleDownloadImages,
+    handleDownloadImages: (url: string) => imageHandling.handleDownloadImages(url),
     
     // Dialog state
     showCommunityDialog,

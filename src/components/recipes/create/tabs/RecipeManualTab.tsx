@@ -75,24 +75,11 @@ export function RecipeManualTab({
 
   const handleUrlImageSelect = (url: string) => {
     console.log('🖼️ URL image selected in manual tab:', url);
+    // Update the recipe image directly
+    setNewRecipe({ ...newRecipe, image: url });
+    // Also call the external handler if provided
     if (onImageSelect) {
       onImageSelect(url);
-    }
-    // Apply the selected image to the recipe data
-    setNewRecipe({ ...newRecipe, image: url });
-  };
-
-  // Handle image changes from upload - ensure recipe state is updated
-  const handleImageChangeWrapper = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log('📁 Image change in manual tab:', e.target.files);
-    onImageChange(e);
-    
-    // If a file was selected, clear any selected website image
-    if (e.target.files && e.target.files.length > 0) {
-      console.log('📁 Clearing website image selection due to file upload');
-      if (onImageSelect) {
-        onImageSelect('');
-      }
     }
   };
 
@@ -177,13 +164,13 @@ export function RecipeManualTab({
               imagePreview={imagePreview}
               isGenerating={isGeneratingImage}
               generationProgress={generationProgress}
-              onImageChange={handleImageChangeWrapper}
+              onImageChange={onImageChange}
               onGenerateImage={onGenerateImage}
+              onImageSelect={handleUrlImageSelect}
               recipeTitle={newRecipe.title}
               websiteImages={websiteImages}
               storedImages={storedImages}
               selectedImage={selectedImage}
-              onImageSelect={handleUrlImageSelect}
               onDownloadImages={onDownloadImages}
               isDownloadingImages={isDownloadingImages}
             />

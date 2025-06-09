@@ -1,94 +1,70 @@
 
-import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
-import { useHousehold } from "@/contexts/HouseholdContext";
-import { useToast } from "@/hooks/use-toast";
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { useAuth } from './AuthContext';
+import { useHousehold } from './HouseholdContext';
+import { supabase } from '@/integrations/supabase/client';
 
-export interface ApprovalRequest {
-  id: string;
-  household_id: string;
-  week_number: 1 | 2;
-  requested_by: string;
-  status: 'pending' | 'approved' | 'rejected' | 'expired';
-  message?: string;
-  created_at: string;
-  expires_at: string;
-  updated_at: string;
-}
-
-export interface Approval {
+interface MealPlanApproval {
   id: string;
   approval_request_id: string;
   user_id: string;
   approved: boolean;
-  comments?: string;
-  responded_at: string;
+  notes?: string;
+  created_at: string;
+  approval_request?: {
+    id: string;
+    household_id: string;
+    requested_by: string;
+    meal_plan_data: any;
+    status: string;
+    created_at: string;
+  };
+}
+
+interface MealPlanApprovalRequest {
+  id: string;
+  household_id: string;
+  requested_by: string;
+  meal_plan_data: any;
+  status: 'pending' | 'approved' | 'rejected';
+  created_at: string;
+  updated_at: string;
 }
 
 interface MealPlanApprovalContextType {
-  approvalRequests: ApprovalRequest[];
-  approvals: Approval[];
-  pendingRequests: ApprovalRequest[];
-  isLoading: boolean;
-  createApprovalRequest: (weekNumber: 1 | 2, message?: string) => Promise<void>;
-  respondToRequest: (requestId: string, approved: boolean, comments?: string) => Promise<void>;
-  getRequestApprovals: (requestId: string) => Approval[];
+  approvals: MealPlanApproval[];
+  approvalRequests: MealPlanApprovalRequest[];
+  loading: boolean;
+  error: string | null;
+  fetchApprovals: () => Promise<void>;
+  fetchApprovalRequests: () => Promise<void>;
+  submitApproval: (requestId: string, approved: boolean, notes?: string) => Promise<void>;
+  createApprovalRequest: (mealPlanData: any) => Promise<void>;
 }
 
 const MealPlanApprovalContext = createContext<MealPlanApprovalContextType | undefined>(undefined);
 
-export const MealPlanApprovalProvider = ({ children }: { children: ReactNode }) => {
+export function MealPlanApprovalProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
   const { currentHousehold } = useHousehold();
-  const { toast } = useToast();
-  const [approvalRequests, setApprovalRequests] = useState<ApprovalRequest[]>([]);
-  const [approvals, setApprovals] = useState<Approval[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  
+  const [approvals, setApprovals] = useState<MealPlanApproval[]>([]);
+  const [approvalRequests, setApprovalRequests] = useState<MealPlanApprovalRequest[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
 
-  const fetchApprovalRequests = useCallback(async () => {
-    if (!user || !currentHousehold) {
-      setApprovalRequests([]);
-      return;
-    }
-
-    try {
-      setIsLoading(true);
-      const { data, error } = await supabase
-        .from('meal_plan_approval_requests')
-        .select('*')
-        .eq('household_id', currentHousehold.id)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      
-      // Transform the data to ensure week_number is typed as 1 | 2
-      const transformedData: ApprovalRequest[] = (data || []).map(item => ({
-        ...item,
-        week_number: item.week_number as 1 | 2,
-      }));
-      
-      setApprovalRequests(transformedData);
-    } catch (error) {
-      console.error('Error fetching approval requests:', error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch approval requests.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  }, [user?.id, currentHousehold?.id, toast]);
-
+  // Memoized fetch functions to prevent infinite loops
   const fetchApprovals = useCallback(async () => {
-    if (!user || !currentHousehold) {
-      setApprovals([]);
-      return;
-    }
-
+    if (!currentHousehold?.id || !user) return;
+    
+    setLoading(true);
+    setError(null);
+    
     try {
-      const { data, error } = await supabase
+      console.log('🔄 Fetching meal plan approvals for household:', currentHousehold.id);
+      
+      const { data, error: fetchError } = await supabase
         .from('meal_plan_approvals')
         .select(`
           *,
@@ -96,155 +72,149 @@ export const MealPlanApprovalProvider = ({ children }: { children: ReactNode }) 
         `)
         .eq('approval_request.household_id', currentHousehold.id);
 
-      if (error) throw error;
-      setApprovals(data?.map(item => ({
-        id: item.id,
-        approval_request_id: item.approval_request_id,
-        user_id: item.user_id,
-        approved: item.approved,
-        comments: item.comments,
-        responded_at: item.responded_at,
-      })) || []);
-    } catch (error) {
-      console.error('Error fetching approvals:', error);
+      if (fetchError) {
+        console.error('❌ Error fetching approvals:', fetchError);
+        setError('Failed to fetch approvals');
+        return;
+      }
+
+      console.log('✅ Successfully fetched approvals:', data?.length || 0);
+      setApprovals(data || []);
+    } catch (err) {
+      console.error('❌ Error fetching approvals:', err);
+      setError('Failed to fetch approvals');
+    } finally {
+      setLoading(false);
     }
-  }, [user?.id, currentHousehold?.id]);
+  }, [currentHousehold?.id, user]);
 
-  useEffect(() => {
-    fetchApprovalRequests();
-    fetchApprovals();
-  }, [fetchApprovalRequests, fetchApprovals]);
+  const fetchApprovalRequests = useCallback(async () => {
+    if (!currentHousehold?.id || !user) return;
+    
+    setLoading(true);
+    setError(null);
+    
+    try {
+      console.log('🔄 Fetching meal plan approval requests for household:', currentHousehold.id);
+      
+      const { data, error: fetchError } = await supabase
+        .from('meal_plan_approval_requests')
+        .select('*')
+        .eq('household_id', currentHousehold.id)
+        .order('created_at', { ascending: false });
 
-  // Set up real-time subscriptions
-  useEffect(() => {
-    if (!user || !currentHousehold) return;
+      if (fetchError) {
+        console.error('❌ Error fetching approval requests:', fetchError);
+        setError('Failed to fetch approval requests');
+        return;
+      }
 
-    const requestsChannel = supabase
-      .channel('approval-requests')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'meal_plan_approval_requests',
-          filter: `household_id=eq.${currentHousehold.id}`,
-        },
-        () => {
-          fetchApprovalRequests();
-        }
-      )
-      .subscribe();
+      console.log('✅ Successfully fetched approval requests:', data?.length || 0);
+      setApprovalRequests(data || []);
+    } catch (err) {
+      console.error('❌ Error fetching approval requests:', err);
+      setError('Failed to fetch approval requests');
+    } finally {
+      setLoading(false);
+    }
+  }, [currentHousehold?.id, user]);
 
-    const approvalsChannel = supabase
-      .channel('approvals')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'meal_plan_approvals',
-        },
-        () => {
-          fetchApprovals();
-        }
-      )
-      .subscribe();
+  const submitApproval = useCallback(async (requestId: string, approved: boolean, notes?: string) => {
+    if (!user) return;
+    
+    try {
+      const { error } = await supabase
+        .from('meal_plan_approvals')
+        .insert({
+          approval_request_id: requestId,
+          user_id: user.id,
+          approved,
+          notes
+        });
 
-    return () => {
-      supabase.removeChannel(requestsChannel);
-      supabase.removeChannel(approvalsChannel);
-    };
-  }, [user?.id, currentHousehold?.id, fetchApprovalRequests, fetchApprovals]);
+      if (error) throw error;
 
-  const createApprovalRequest = useCallback(async (weekNumber: 1 | 2, message?: string) => {
-    if (!user || !currentHousehold) return;
+      // Refresh data
+      await Promise.all([fetchApprovals(), fetchApprovalRequests()]);
+    } catch (err) {
+      console.error('Error submitting approval:', err);
+      setError('Failed to submit approval');
+    }
+  }, [user, fetchApprovals, fetchApprovalRequests]);
 
+  const createApprovalRequest = useCallback(async (mealPlanData: any) => {
+    if (!user || !currentHousehold?.id) return;
+    
     try {
       const { error } = await supabase
         .from('meal_plan_approval_requests')
         .insert({
           household_id: currentHousehold.id,
-          week_number: weekNumber,
           requested_by: user.id,
-          message,
+          meal_plan_data: mealPlanData,
+          status: 'pending'
         });
 
       if (error) throw error;
 
-      toast({
-        title: "Approval Request Sent",
-        description: `Approval request for Week ${weekNumber} has been sent to all household members.`,
-      });
-    } catch (error) {
-      console.error('Error creating approval request:', error);
-      toast({
-        title: "Error",
-        description: "Failed to send approval request.",
-        variant: "destructive",
-      });
+      // Refresh data
+      await fetchApprovalRequests();
+    } catch (err) {
+      console.error('Error creating approval request:', err);
+      setError('Failed to create approval request');
     }
-  }, [user?.id, currentHousehold?.id, toast]);
+  }, [user, currentHousehold?.id, fetchApprovalRequests]);
 
-  const respondToRequest = useCallback(async (requestId: string, approved: boolean, comments?: string) => {
-    if (!user) return;
-
-    try {
-      const { error } = await supabase
-        .from('meal_plan_approvals')
-        .upsert({
-          approval_request_id: requestId,
-          user_id: user.id,
-          approved,
-          comments,
+  // Initialize data when household changes, but only once per household
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+    
+    if (currentHousehold?.id && user && !isInitialized) {
+      console.log('🏠 Initializing meal plan approval context for household:', currentHousehold.id);
+      
+      // Debounce the initialization to prevent rapid calls
+      timeoutId = setTimeout(() => {
+        Promise.all([fetchApprovals(), fetchApprovalRequests()]).finally(() => {
+          setIsInitialized(true);
         });
-
-      if (error) throw error;
-
-      toast({
-        title: approved ? "Meal Plan Approved" : "Meal Plan Rejected",
-        description: `You have ${approved ? 'approved' : 'rejected'} the meal plan.`,
-      });
-    } catch (error) {
-      console.error('Error responding to approval request:', error);
-      toast({
-        title: "Error",
-        description: "Failed to respond to approval request.",
-        variant: "destructive",
-      });
+      }, 500);
     }
-  }, [user?.id, toast]);
 
-  const getRequestApprovals = useCallback((requestId: string) => {
-    return approvals.filter(approval => approval.approval_request_id === requestId);
-  }, [approvals]);
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [currentHousehold?.id, user, isInitialized, fetchApprovals, fetchApprovalRequests]);
 
-  const pendingRequests = approvalRequests.filter(request => 
-    request.status === 'pending' && 
-    !approvals.some(approval => 
-      approval.approval_request_id === request.id && 
-      approval.user_id === user?.id
-    )
-  );
+  // Reset when household changes
+  useEffect(() => {
+    setIsInitialized(false);
+    setApprovals([]);
+    setApprovalRequests([]);
+    setError(null);
+  }, [currentHousehold?.id]);
+
+  const value = {
+    approvals,
+    approvalRequests,
+    loading,
+    error,
+    fetchApprovals,
+    fetchApprovalRequests,
+    submitApproval,
+    createApprovalRequest,
+  };
 
   return (
-    <MealPlanApprovalContext.Provider value={{
-      approvalRequests,
-      approvals,
-      pendingRequests,
-      isLoading,
-      createApprovalRequest,
-      respondToRequest,
-      getRequestApprovals,
-    }}>
+    <MealPlanApprovalContext.Provider value={value}>
       {children}
     </MealPlanApprovalContext.Provider>
   );
-};
+}
 
-export const useMealPlanApproval = () => {
+export function useMealPlanApproval() {
   const context = useContext(MealPlanApprovalContext);
   if (context === undefined) {
-    throw new Error("useMealPlanApproval must be used within a MealPlanApprovalProvider");
+    throw new Error('useMealPlanApproval must be used within a MealPlanApprovalProvider');
   }
   return context;
-};
+}
