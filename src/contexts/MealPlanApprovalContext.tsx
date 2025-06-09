@@ -11,7 +11,6 @@ interface MealPlanApproval {
   approved: boolean;
   comments?: string;
   responded_at: string;
-  created_at: string;
   approval_request?: {
     id: string;
     household_id: string;
@@ -61,7 +60,7 @@ export function MealPlanApprovalProvider({ children }: { children: React.ReactNo
 
   // Debounced API calls to prevent resource exhaustion
   const [lastFetchTime, setLastFetchTime] = useState(0);
-  const FETCH_COOLDOWN = 2000; // 2 seconds
+  const FETCH_COOLDOWN = 3000; // 3 seconds cooldown
 
   const fetchApprovals = useCallback(async () => {
     if (!currentHousehold?.id || !user) return;
@@ -79,6 +78,7 @@ export function MealPlanApprovalProvider({ children }: { children: React.ReactNo
     try {
       console.log('🔄 Fetching meal plan approvals for household:', currentHousehold.id);
       
+      // Only select columns that actually exist in the meal_plan_approvals table
       const { data, error: fetchError } = await supabase
         .from('meal_plan_approvals')
         .select(`
@@ -87,8 +87,7 @@ export function MealPlanApprovalProvider({ children }: { children: React.ReactNo
           user_id,
           approved,
           comments,
-          responded_at,
-          created_at
+          responded_at
         `);
 
       if (fetchError) {
