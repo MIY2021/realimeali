@@ -82,6 +82,20 @@ export function RecipeManualTab({
     setNewRecipe({ ...newRecipe, image: url });
   };
 
+  // Handle image changes from upload - ensure recipe state is updated
+  const handleImageChangeWrapper = (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log('📁 Image change in manual tab:', e.target.files);
+    onImageChange(e);
+    
+    // If a file was selected, clear any selected website image
+    if (e.target.files && e.target.files.length > 0) {
+      console.log('📁 Clearing website image selection due to file upload');
+      if (onImageSelect) {
+        onImageSelect('');
+      }
+    }
+  };
+
   return (
     <div className="space-y-4">
       {/* Basic Information + Image - Two column layout on desktop */}
@@ -163,7 +177,7 @@ export function RecipeManualTab({
               imagePreview={imagePreview}
               isGenerating={isGeneratingImage}
               generationProgress={generationProgress}
-              onImageChange={onImageChange}
+              onImageChange={handleImageChangeWrapper}
               onGenerateImage={onGenerateImage}
               recipeTitle={newRecipe.title}
               websiteImages={websiteImages}
@@ -197,7 +211,7 @@ export function RecipeManualTab({
         <div className="lg:col-span-1">
           <EnhancedInstructionManager
             instructions={newRecipe.instructions || []}
-            onInstrctionsChange={handleInstructionsChange}
+            onInstructionsChange={handleInstructionsChange}
           />
         </div>
       </div>

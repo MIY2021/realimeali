@@ -61,7 +61,7 @@ export function EnhancedImageUpload({
     const reader = new FileReader();
     reader.onload = (e) => {
       const result = e.target?.result as string;
-      console.log('Created local image preview:', result ? 'success' : 'failed');
+      console.log('📷 Created local image preview:', result ? 'success' : 'failed');
       setLocalImagePreview(result);
       setShowUploadMode(false);
     };
@@ -69,30 +69,33 @@ export function EnhancedImageUpload({
   };
 
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log('File input changed:', e.target.files);
+    console.log('📁 File input changed in EnhancedImageUpload:', e.target.files);
     
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
-      console.log('Processing file:', file.name);
+      console.log('📁 Processing file in EnhancedImageUpload:', file.name);
       
       // Create immediate preview
       createImagePreview(file);
       
       // Clear website image selection when uploading manually
       if (onImageSelect) {
+        console.log('📁 Clearing website image selection due to file upload');
         onImageSelect('');
       }
     } else {
       // If no file, clear local preview
+      console.log('📁 No file selected, clearing local preview');
       setLocalImagePreview(null);
     }
     
     // Always call the parent handler to ensure the file is processed properly
+    console.log('📁 Calling parent onImageChange handler');
     onImageChange(e);
   };
 
   const handleRemoveImage = () => {
-    console.log('Removing image');
+    console.log('🗑️ Removing image in EnhancedImageUpload');
     setLocalImagePreview(null);
     
     if (fileInputRef.current) {
@@ -115,9 +118,11 @@ export function EnhancedImageUpload({
         type: 'change'
       } as React.ChangeEvent<HTMLInputElement>;
       
+      console.log('🗑️ Calling parent onImageChange with clear event');
       onImageChange(syntheticEvent);
     }
     if (onImageSelect) {
+      console.log('🗑️ Clearing website image selection');
       onImageSelect('');
     }
   };
@@ -127,6 +132,7 @@ export function EnhancedImageUpload({
   };
 
   const handleWebsiteImageSelect = (imageUrl: string) => {
+    console.log('🌐 Website image selected in EnhancedImageUpload:', imageUrl);
     if (onImageSelect) {
       onImageSelect(imageUrl);
       // Clear any uploaded image when selecting from website

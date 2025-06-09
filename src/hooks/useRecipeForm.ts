@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Recipe } from "@/types";
@@ -37,15 +38,15 @@ export function useRecipeForm(isEditing: boolean = false, existingRecipe?: Recip
   const [newInstruction, setNewInstruction] = useState({ text: "" });
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log('useRecipeForm handleImageChange called:', e.target.files);
+    console.log('📁 useRecipeForm handleImageChange called:', e.target.files);
     
     const file = e.target.files?.[0];
     if (file) {
-      console.log('Processing uploaded file:', file.name, file.size);
+      console.log('📁 Processing uploaded file:', file.name, file.size);
       const reader = new FileReader();
       reader.onloadend = () => {
         const result = reader.result as string;
-        console.log('Image processed, updating states:', result ? 'success' : 'failed');
+        console.log('📁 Image processed, updating states:', result ? 'success' : 'failed');
         
         // Update both preview and recipe image
         setImagePreview(result);
@@ -53,16 +54,18 @@ export function useRecipeForm(isEditing: boolean = false, existingRecipe?: Recip
           ...prev, 
           image: result 
         }));
+        console.log('📁 Updated newRecipe.image with uploaded file data');
       };
       reader.readAsDataURL(file);
     } else {
-      console.log('No file selected, clearing image states');
+      console.log('📁 No file selected, clearing image states');
       // Clear both preview and recipe image
       setImagePreview('');
       setNewRecipe(prev => ({ 
         ...prev, 
         image: undefined 
       }));
+      console.log('📁 Cleared newRecipe.image');
     }
   };
 
