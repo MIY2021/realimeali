@@ -84,7 +84,7 @@ export function FeedbackModerationPanel() {
     }
   };
 
-  const handleUpdateStatus = async (feedbackId: string, status: string) => {
+  const handleUpdateStatus = async (feedbackId: string, status: string): Promise<boolean> => {
     console.log('Handling status update:', { feedbackId, status });
     const success = await updateFeedback(feedbackId, { status });
     if (success) {
@@ -93,6 +93,7 @@ export function FeedbackModerationPanel() {
         fetchFeedback();
       }, 500);
     }
+    return success;
   };
 
   const handleUpdatePriority = async (feedbackId: string, priority: string) => {

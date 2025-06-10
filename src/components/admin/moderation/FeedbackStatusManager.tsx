@@ -7,7 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 interface FeedbackStatusManagerProps {
   feedbackId: string;
   currentStatus: string;
-  onStatusUpdate: (feedbackId: string, newStatus: string) => void;
+  onStatusUpdate: (feedbackId: string, newStatus: string) => Promise<boolean>;
 }
 
 export function FeedbackStatusManager({ 
@@ -44,12 +44,16 @@ export function FeedbackStatusManager({
     setIsUpdating(true);
     try {
       console.log('FeedbackStatusManager: Updating status from', normalizedCurrentStatus, 'to', selectedStatus);
-      await onStatusUpdate(feedbackId, selectedStatus);
+      const success = await onStatusUpdate(feedbackId, selectedStatus);
       
-      toast({
-        title: "Status Updated",
-        description: `Feedback status changed to ${statusOptions.find(s => s.value === selectedStatus)?.label}`,
-      });
+      if (success) {
+        toast({
+          title: "Status Updated",
+          description: `Feedback status changed to ${statusOptions.find(s => s.value === selectedStatus)?.label}`,
+        });
+      } else {
+        throw new Error('Status update failed');
+      }
     } catch (error) {
       console.error('Error updating feedback status:', error);
       toast({

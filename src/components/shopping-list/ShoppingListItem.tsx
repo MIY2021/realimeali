@@ -3,9 +3,11 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
-import { Pencil, Trash2, X, Check } from "lucide-react";
+import { Pencil, Copy, X, Check } from "lucide-react";
 import { generateSlug } from "@/utils/slugUtils";
 import { Link } from "react-router-dom";
+import { useShoppingListInteractions } from "./ShoppingListInteractions";
+import { useToast } from "@/hooks/use-toast";
 
 interface ShoppingListItemProps {
   id: string;
@@ -36,6 +38,26 @@ export function ShoppingListItem({
   const [editName, setEditName] = useState(name);
   const [editQuantity, setEditQuantity] = useState(quantity?.toString() || '');
   const [editUnit, setEditUnit] = useState(unit || '');
+  const { toast } = useToast();
+
+  const handleCopyName = () => {
+    navigator.clipboard.writeText(name);
+    onCopy(); // This triggers the visual feedback
+    toast({
+      title: "Copied to clipboard",
+      description: `"${name}" copied to clipboard`,
+    });
+  };
+
+  // Set up touch interactions
+  const {
+    handleTouchStart,
+    handleTouchEnd,
+    handleTouchMove,
+    handleMouseDown,
+    handleMouseUp,
+    handleMouseLeave
+  } = useShoppingListInteractions(isChecked, onCheck, handleCopyName);
 
   const handleSaveEdit = () => {
     // Note: Since we don't have updateShoppingListItem in the context,
@@ -59,9 +81,17 @@ export function ShoppingListItem({
   const individualRecipeNames = recipeNames.split(', ');
 
   return (
-    <div className={`flex items-center justify-between p-3 border rounded-lg ${
-      isChecked ? 'bg-gray-50 opacity-75' : 'bg-white'
-    }`}>
+    <div 
+      className={`flex items-center justify-between p-3 border rounded-lg transition-colors ${
+        isChecked ? 'bg-gray-50 opacity-75' : 'bg-white'
+      } ${copiedItemId === id ? 'bg-green-50 border-green-200' : ''}`}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      onTouchMove={handleTouchMove}
+      onMouseDown={handleMouseDown}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseLeave}
+    >
       <div className="flex items-center space-x-3 flex-1">
         <Checkbox
           checked={isChecked}
@@ -106,21 +136,19 @@ export function ShoppingListItem({
             </div>
             
             {recipeIds.length > 0 && (
-              <div className="mt-1">
-                <span className="text-xs text-green-600">
-                  from{' '}
-                  {individualRecipeNames.map((recipeName, index) => (
-                    <span key={`${recipeIds[index] || index}-${recipeName}`}>
-                      <Link 
-                        to={`/my-recipes/${generateSlug(recipeName.trim())}`}
-                        className="hover:underline"
-                      >
-                        {recipeName.trim()}
-                      </Link>
-                      {index < individualRecipeNames.length - 1 && ', '}
-                    </span>
-                  ))}
-                </span>
+              <div className="mt-1 text-xs text-green-600">
+                from{' '}
+                {individualRecipeNames.map((recipeName, index) => (
+                  <span key={`${recipeIds[index] || index}-${recipeName}`}>
+                    <Link 
+                      to={`/my-recipes/${generateSlug(recipeName.trim())}`}
+                      className="hover:underline"
+                    >
+                      {recipeName.trim()}
+                    </Link>
+                    {index < individualRecipeNames.length - 1 && ', '}
+                  </span>
+                ))}
               </div>
             )}
           </div>
@@ -139,9 +167,9 @@ export function ShoppingListItem({
           <Button 
             size="sm" 
             variant="ghost" 
-            onClick={onCopy}
+            onClick={handleCopyName}
           >
-            <Trash2 className="h-4 w-4" />
+            <Copy className="h-4 w-4" />
           </Button>
         </div>
       )}
