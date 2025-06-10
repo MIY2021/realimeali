@@ -26,7 +26,7 @@ interface FeedbackItem {
 
 interface SingleFeedbackModerationViewProps {
   feedback: FeedbackItem;
-  onUpdateStatus: (feedbackId: string, status: string) => void;
+  onUpdateStatus: (feedbackId: string, status: string) => Promise<boolean>;
   onUpdatePriority: (feedbackId: string, priority: string) => void;
   onSaveNotes: (feedbackId: string, notes: string) => void;
 }
