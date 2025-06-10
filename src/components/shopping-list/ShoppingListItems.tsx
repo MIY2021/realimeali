@@ -1,6 +1,6 @@
 
 import { Card, CardContent } from "@/components/ui/card";
-import ShoppingListItem from "./ShoppingListItem";
+import { ShoppingListItem } from "./ShoppingListItem";
 import { ShoppingListItem as ShoppingListItemType } from "@/types/shoppingList";
 import { useIsMobile } from "@/hooks/use-mobile";
 
