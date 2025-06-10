@@ -3,8 +3,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Pencil, Trash2, X, Check, ArrowRight } from "lucide-react";
+import { Pencil, Trash2, X, Check } from "lucide-react";
 import { generateSlug } from "@/utils/slugUtils";
 import { Link } from "react-router-dom";
 
@@ -21,7 +20,7 @@ interface ShoppingListItemProps {
   getRecipeNames: (recipeIds: string[]) => string;
 }
 
-export default function ShoppingListItem({ 
+export function ShoppingListItem({ 
   id,
   name,
   quantity,
@@ -107,22 +106,21 @@ export default function ShoppingListItem({
             </div>
             
             {recipeIds.length > 0 && (
-              <div className="flex flex-wrap gap-1 mt-1">
-                {individualRecipeNames.map((recipeName, index) => (
-                  <Badge 
-                    key={`${recipeIds[index] || index}-${recipeName}`}
-                    variant="outline" 
-                    className="text-xs cursor-pointer hover:bg-blue-50"
-                  >
-                    <Link 
-                      to={`/my-recipes/${generateSlug(recipeName.trim())}`}
-                      className="flex items-center gap-1"
-                    >
-                      {recipeName.trim()}
-                      <ArrowRight className="h-3 w-3" />
-                    </Link>
-                  </Badge>
-                ))}
+              <div className="mt-1">
+                <span className="text-xs text-green-600">
+                  from{' '}
+                  {individualRecipeNames.map((recipeName, index) => (
+                    <span key={`${recipeIds[index] || index}-${recipeName}`}>
+                      <Link 
+                        to={`/my-recipes/${generateSlug(recipeName.trim())}`}
+                        className="hover:underline"
+                      >
+                        {recipeName.trim()}
+                      </Link>
+                      {index < individualRecipeNames.length - 1 && ', '}
+                    </span>
+                  ))}
+                </span>
               </div>
             )}
           </div>

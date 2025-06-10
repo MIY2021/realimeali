@@ -21,6 +21,11 @@ export default function RecipeDetail() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isAddToMealPlanOpen, setIsAddToMealPlanOpen] = useState(false);
 
+  // Scroll to top when component mounts or recipe changes
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [slug]);
+
   // Find recipe by slug or legacy ID
   const recipe = (() => {
     if (!slug) return undefined;

@@ -3,12 +3,11 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 
 interface FeedbackStatusManagerProps {
   feedbackId: string;
   currentStatus: string;
-  onStatusUpdate: (newStatus: string) => void;
+  onStatusUpdate: (feedbackId: string, newStatus: string) => void;
 }
 
 export function FeedbackStatusManager({ 
@@ -21,28 +20,32 @@ export function FeedbackStatusManager({
   const { toast } = useToast();
 
   const statusOptions = [
-    { value: 'new', label: 'New' },
+    { value: 'pending', label: 'Pending' },
     { value: 'in_progress', label: 'In Progress' },
-    { value: 'resolved', label: 'Resolved' },
+    { value: 'complete', label: 'Complete' },
     { value: 'dismissed', label: 'Dismissed' }
   ];
 
+  const normalizeStatus = (status: string) => {
+    switch (status) {
+      case 'new': return 'pending';
+      case 'completed': return 'complete';
+      case 'closed': return 'complete';
+      case 'resolved': return 'complete';
+      default: return status;
+    }
+  };
+
+  const normalizedCurrentStatus = normalizeStatus(currentStatus);
+
   const handleStatusChange = async () => {
-    if (selectedStatus === currentStatus) return;
+    if (selectedStatus === normalizedCurrentStatus) return;
 
     setIsUpdating(true);
     try {
-      const { error } = await supabase
-        .from('feedback_suggestions')
-        .update({ 
-          status: selectedStatus,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', feedbackId);
-
-      if (error) throw error;
-
-      onStatusUpdate(selectedStatus);
+      console.log('FeedbackStatusManager: Updating status from', normalizedCurrentStatus, 'to', selectedStatus);
+      await onStatusUpdate(feedbackId, selectedStatus);
+      
       toast({
         title: "Status Updated",
         description: `Feedback status changed to ${statusOptions.find(s => s.value === selectedStatus)?.label}`,
@@ -54,7 +57,7 @@ export function FeedbackStatusManager({
         description: "Failed to update feedback status",
         variant: "destructive",
       });
-      setSelectedStatus(currentStatus); // Reset on error
+      setSelectedStatus(normalizedCurrentStatus); // Reset on error
     } finally {
       setIsUpdating(false);
     }
@@ -75,7 +78,7 @@ export function FeedbackStatusManager({
         </SelectContent>
       </Select>
       
-      {selectedStatus !== currentStatus && (
+      {selectedStatus !== normalizedCurrentStatus && (
         <Button 
           onClick={handleStatusChange} 
           disabled={isUpdating}

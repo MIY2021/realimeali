@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Clock, AlertCircle, Check, Camera, Eye, User, Mail, Calendar } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { FeedbackStatusManager } from "./FeedbackStatusManager";
 
 interface FeedbackItem {
   id: string;
@@ -39,12 +39,10 @@ export function SingleFeedbackModerationView({
 }: SingleFeedbackModerationViewProps) {
   const [adminNotes, setAdminNotes] = useState(feedback.admin_notes || '');
   const [imageDialogOpen, setImageDialogOpen] = useState(false);
-  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
   const [isUpdatingPriority, setIsUpdatingPriority] = useState(false);
   const [isSavingNotes, setIsSavingNotes] = useState(false);
   const isMobile = useIsMobile();
 
-  // Update notes when feedback changes
   useEffect(() => {
     setAdminNotes(feedback.admin_notes || '');
   }, [feedback.admin_notes]);
@@ -83,18 +81,6 @@ export function SingleFeedbackModerationView({
       case 'medium': return 'bg-yellow-100 text-yellow-800';
       case 'low': return 'bg-green-100 text-green-800';
       default: return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const handleStatusChange = async (newStatus: string) => {
-    setIsUpdatingStatus(true);
-    try {
-      console.log('Changing status from', feedback.status, 'to', newStatus);
-      await onUpdateStatus(feedback.id, newStatus);
-    } catch (error) {
-      console.error('Error updating status:', error);
-    } finally {
-      setIsUpdatingStatus(false);
     }
   };
 
@@ -210,23 +196,11 @@ export function SingleFeedbackModerationView({
             <div className="space-y-3">
               <div>
                 <label className="text-sm font-medium mb-1 block">Status</label>
-                <Select
-                  value={currentStatus}
-                  onValueChange={handleStatusChange}
-                  disabled={isUpdatingStatus}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="pending">Pending</SelectItem>
-                    <SelectItem value="in_progress">In Progress</SelectItem>
-                    <SelectItem value="complete">Complete</SelectItem>
-                  </SelectContent>
-                </Select>
-                {isUpdatingStatus && (
-                  <p className="text-xs text-muted-foreground mt-1">Updating status...</p>
-                )}
+                <FeedbackStatusManager
+                  feedbackId={feedback.id}
+                  currentStatus={feedback.status}
+                  onStatusUpdate={onUpdateStatus}
+                />
               </div>
 
               <div>
