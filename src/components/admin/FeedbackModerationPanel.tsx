@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
@@ -96,12 +95,12 @@ export function FeedbackModerationPanel() {
     return success;
   };
 
-  const handleUpdatePriority = async (feedbackId: string, priority: string) => {
+  const handleUpdatePriority = async (feedbackId: string, priority: string): Promise<void> => {
     console.log('Handling priority update:', { feedbackId, priority });
     await updateFeedback(feedbackId, { priority });
   };
 
-  const handleSaveNotes = async (feedbackId: string, notes: string) => {
+  const handleSaveNotes = async (feedbackId: string, notes: string): Promise<void> => {
     console.log('Handling notes save:', { feedbackId, notes });
     await updateFeedback(feedbackId, { admin_notes: notes });
   };

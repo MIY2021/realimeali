@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -27,8 +28,8 @@ interface FeedbackItem {
 interface SingleFeedbackModerationViewProps {
   feedback: FeedbackItem;
   onUpdateStatus: (feedbackId: string, status: string) => Promise<boolean>;
-  onUpdatePriority: (feedbackId: string, priority: string) => void;
-  onSaveNotes: (feedbackId: string, notes: string) => void;
+  onUpdatePriority: (feedbackId: string, priority: string) => Promise<void>;
+  onSaveNotes: (feedbackId: string, notes: string) => Promise<void>;
 }
 
 export function SingleFeedbackModerationView({

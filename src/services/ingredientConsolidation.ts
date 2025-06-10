@@ -1,4 +1,3 @@
-
 export interface ConsolidatedIngredient {
   name: string;
   consolidatedQuantity: number;
@@ -88,12 +87,12 @@ export class IngredientConsolidationService {
   } {
     const trimmed = ingredient.trim();
     
-    // Pattern to match quantity, optional unit, and ingredient name
+    // Pattern to match quantity (including fractions), optional unit, and ingredient name
     const patterns = [
-      // "2 cups flour", "3 tbsp olive oil"
-      /^(\d+(?:\.\d+)?)\s*(cups?|tbsp|tsp|tablespoons?|teaspoons?|oz|ounces?|lb|lbs|pounds?|g|grams?|kg|kilograms?|ml|l|liters?|cloves?|pieces?|slices?|cans?|packages?|sticks?)\s+(.+)$/i,
-      // "2 cloves garlic", "3 large onions"
-      /^(\d+(?:\.\d+)?)\s+(large|medium|small|whole)?\s*(.+)$/i,
+      // "2 1/2 cups flour", "1/2 cup olive oil", "3.5 tbsp sugar"
+      /^(\d+(?:\s+\d+\/\d+|\.\d+|\/\d+)?)\s*(cups?|tbsp|tsp|tablespoons?|teaspoons?|oz|ounces?|lb|lbs|pounds?|g|grams?|kg|kilograms?|ml|l|liters?|cloves?|pieces?|slices?|cans?|packages?|sticks?)\s+(.+)$/i,
+      // "2 1/2 large onions", "1/2 garlic clove"
+      /^(\d+(?:\s+\d+\/\d+|\.\d+|\/\d+)?)\s+(large|medium|small|whole)?\s*(.+)$/i,
       // "flour", "salt" (no quantity)
       /^(.+)$/
     ];
@@ -104,14 +103,14 @@ export class IngredientConsolidationService {
         if (match.length === 4 && match[1]) {
           // Has quantity and unit
           return {
-            quantity: parseFloat(match[1]) || 1,
+            quantity: this.parseFractionOrDecimal(match[1]) || 1,
             unit: this.standardizeUnit(match[2] || ''),
             name: this.cleanIngredientName(match[3] || match[1])
           };
         } else if (match.length === 4 && !match[2]) {
           // Has quantity but no clear unit (like "2 onions")
           return {
-            quantity: parseFloat(match[1]) || 1,
+            quantity: this.parseFractionOrDecimal(match[1]) || 1,
             unit: '',
             name: this.cleanIngredientName(match[3] || match[1])
           };
@@ -132,6 +131,36 @@ export class IngredientConsolidationService {
       unit: '',
       name: this.cleanIngredientName(trimmed)
     };
+  }
+
+  private static parseFractionOrDecimal(quantityStr: string): number {
+    const trimmed = quantityStr.trim();
+    
+    // Handle mixed numbers like "2 1/2"
+    const mixedMatch = trimmed.match(/^(\d+)\s+(\d+)\/(\d+)$/);
+    if (mixedMatch) {
+      const whole = parseInt(mixedMatch[1], 10);
+      const numerator = parseInt(mixedMatch[2], 10);
+      const denominator = parseInt(mixedMatch[3], 10);
+      return whole + (numerator / denominator);
+    }
+    
+    // Handle simple fractions like "1/2"
+    const fractionMatch = trimmed.match(/^(\d+)\/(\d+)$/);
+    if (fractionMatch) {
+      const numerator = parseInt(fractionMatch[1], 10);
+      const denominator = parseInt(fractionMatch[2], 10);
+      return numerator / denominator;
+    }
+    
+    // Handle decimals like "2.5"
+    const decimal = parseFloat(trimmed);
+    if (!isNaN(decimal)) {
+      return decimal;
+    }
+    
+    // Fallback
+    return 1;
   }
 
   private static standardizeUnit(unit: string): string {
