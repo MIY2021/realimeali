@@ -32,8 +32,8 @@ export default function ShoppingListItems({
             <ShoppingListItem
               id={item.id}
               name={item.name}
-              quantity={item.consolidatedQuantity || 1}
-              unit={item.consolidatedUnit}
+              quantity={item.consolidatedQuantity || item.quantity || 1}
+              unit={item.consolidatedUnit || item.unit}
               isChecked={item.isChecked}
               recipeIds={[...new Set(item.recipeIds)]}
               copiedItemId={copiedItemId}
