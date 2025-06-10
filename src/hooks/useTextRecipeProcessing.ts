@@ -29,7 +29,10 @@ export function useTextRecipeProcessing() {
       console.log('Processing recipe text:', recipeText.substring(0, 100) + '...');
       
       const { data, error } = await supabase.functions.invoke('parse-recipe-ai', {
-        body: { recipeText: recipeText.trim() }
+        body: { 
+          recipeText: recipeText.trim(),
+          preserveQuantities: true // Add flag to preserve quantities
+        }
       });
 
       if (error) {
@@ -43,13 +46,15 @@ export function useTextRecipeProcessing() {
 
       console.log('Received processed recipe:', data.parsedRecipe);
       
-      // Sanitize the recipe data
+      // Sanitize the recipe data while preserving original ingredient formatting
       const sanitizedRecipe = sanitizeRecipeData(data.parsedRecipe);
       
-      // Apply AI categorization
+      // Ensure ingredients maintain their original quantities and formatting
       const recipeData = { 
         ...currentRecipe, 
         ...sanitizedRecipe,
+        // Preserve original ingredient strings with quantities
+        ingredients: data.parsedRecipe.ingredients || sanitizedRecipe.ingredients || [],
         // Apply AI classification
         meal_type: data.parsedRecipe.mealType || currentRecipe.meal_type,
         cuisine_region: data.parsedRecipe.cuisineRegion || currentRecipe.cuisine_region,
@@ -64,7 +69,7 @@ export function useTextRecipeProcessing() {
       
       toast({
         title: "Recipe Processed! 🎉",
-        description: "Your recipe has been organized and categorized automatically.",
+        description: "Your recipe has been organized and categorized automatically with quantities preserved.",
       });
     } catch (error) {
       console.error('Error processing recipe text:', error);

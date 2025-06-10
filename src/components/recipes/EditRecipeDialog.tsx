@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import {
   Dialog,
@@ -69,8 +68,7 @@ export function EditRecipeDialog({
 
     setIsLoading(true);
     try {
-      onRecipeUpdate(editedRecipe);
-      onOpenChange(false);
+      await onRecipeUpdate(editedRecipe);
       toast({
         title: "Success",
         description: "Recipe updated successfully!",

@@ -55,8 +55,16 @@ export default function RecipeDetail() {
     if (!recipe) return;
     
     try {
-      await updateRecipe(recipe.id, updatedRecipe);
-      setIsEditDialogOpen(false);
+      const updated = await updateRecipe(recipe.id, updatedRecipe);
+      if (updated) {
+        setIsEditDialogOpen(false);
+        // Force a refresh by navigating to the new slug if title changed
+        const newSlug = generateSlug(updatedRecipe.title);
+        const currentSlug = generateSlug(recipe.title);
+        if (newSlug !== currentSlug) {
+          navigate(`/my-recipes/${newSlug}`, { replace: true });
+        }
+      }
     } catch (error) {
       console.error('Error updating recipe:', error);
     }
@@ -136,7 +144,7 @@ export default function RecipeDetail() {
       />
 
       {/* Dialogs */}
-      {isEditDialogOpen && (
+      {isEditDialogOpen && recipe && (
         <EditRecipeDialog
           recipe={recipe}
           open={isEditDialogOpen}
@@ -145,7 +153,7 @@ export default function RecipeDetail() {
         />
       )}
 
-      {isAddToMealPlanOpen && (
+      {isAddToMealPlanOpen && recipe && (
         <AddToMealPlanDialog
           recipe={recipe}
           open={isAddToMealPlanOpen}

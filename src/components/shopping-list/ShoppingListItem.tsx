@@ -1,176 +1,156 @@
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Copy, Check } from "lucide-react";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { useNavigate } from "react-router-dom";
-import { extractIngredientName, capitalizeShoppingItem } from "@/utils/shoppingListUtils";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Pencil, Trash2, X, Check, ExternalLink } from "lucide-react";
+import { useHouseholdShopping } from "@/contexts/HouseholdShoppingContext";
 import { useRecipes } from "@/contexts/RecipesContext";
-import { useScrollPosition } from "@/hooks/useScrollPosition";
-import { useShoppingListInteractions } from "./ShoppingListInteractions";
+import { generateSlug } from "@/utils/slugUtils";
+import { Link } from "react-router-dom";
 
 interface ShoppingListItemProps {
-  id: string;
-  name: string;
-  quantity: number;
-  unit?: string;
-  isChecked: boolean;
-  recipeIds: string[];
-  copiedItemId: string | null;
-  onCheck: (checked: boolean) => void;
-  onCopy: () => void;
-  getRecipeNames: (recipeIds: string[]) => string;
+  item: {
+    id: string;
+    name: string;
+    quantity?: number;
+    consolidated_quantity?: number;
+    unit?: string;
+    consolidated_unit?: string;
+    is_checked: boolean;
+    is_custom: boolean;
+    recipe_ids?: string[];
+  };
 }
 
-export default function ShoppingListItem({
-  id,
-  name,
-  quantity,
-  unit,
-  isChecked,
-  recipeIds,
-  copiedItemId,
-  onCheck,
-  onCopy,
-}: ShoppingListItemProps) {
-  const isMobile = useIsMobile();
-  const navigate = useNavigate();
+export function ShoppingListItem({ item }: ShoppingListItemProps) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editName, setEditName] = useState(item.name);
+  const [editQuantity, setEditQuantity] = useState(item.consolidated_quantity?.toString() || '');
+  const [editUnit, setEditUnit] = useState(item.consolidated_unit || '');
+  
+  const { updateShoppingListItem, deleteShoppingListItem } = useHouseholdShopping();
   const { recipes } = useRecipes();
-  const { saveScrollPosition } = useScrollPosition();
 
-  const createSlug = (title: string) => {
-    return title
-      .toLowerCase()
-      .replace(/[^a-z0-9 -]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-')
-      .trim();
+  // Get recipe names for this item
+  const itemRecipes = item.recipe_ids ? 
+    recipes.filter(recipe => item.recipe_ids!.includes(recipe.id)) : [];
+
+  const handleSaveEdit = async () => {
+    const quantity = editQuantity ? parseFloat(editQuantity) : undefined;
+    await updateShoppingListItem(item.id, {
+      name: editName.trim(),
+      consolidated_quantity: quantity,
+      consolidated_unit: editUnit.trim() || undefined,
+    });
+    setIsEditing(false);
   };
 
-  const handleRecipeClick = (recipeId: string, e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    const recipe = recipes.find(r => r.id === recipeId);
-    if (recipe) {
-      // Save current scroll position before navigating
-      const currentUrl = window.location.pathname;
-      const weekMatch = currentUrl.match(/week=(\d)/);
-      const weekNumber = weekMatch ? weekMatch[1] : '1';
-      const scrollKey = `shopping-list-week-${weekNumber}`;
-      
-      console.log('Saving shopping list scroll position before navigating to recipe:', window.scrollY);
-      saveScrollPosition(scrollKey);
-      
-      // Set flags for proper restoration
-      sessionStorage.setItem('restoreShoppingListScroll', 'true');
-      sessionStorage.setItem('previousRoute', '/shopping-list');
-      sessionStorage.setItem('returnToShoppingList', 'true');
-      
-      const slug = createSlug(recipe.title);
-      navigate(`/recipes/${slug}`, { 
-        state: { 
-          fromShoppingList: true,
-          restoreScroll: true,
-          scrollPosition: window.scrollY
-        } 
-      });
-    }
+  const handleCancelEdit = () => {
+    setEditName(item.name);
+    setEditQuantity(item.consolidated_quantity?.toString() || '');
+    setEditUnit(item.consolidated_unit || '');
+    setIsEditing(false);
   };
 
-  const handleCopy = () => {
-    // Only copy the clean ingredient name without quantities or units
-    const ingredientName = extractIngredientName(name);
-    navigator.clipboard.writeText(ingredientName);
-    onCopy();
+  const handleToggleCheck = async () => {
+    await updateShoppingListItem(item.id, {
+      is_checked: !item.is_checked,
+    });
   };
 
-  const handleCheckboxChange = (checked: boolean | string) => {
-    onCheck(checked as boolean);
-  };
-
-  const interactions = useShoppingListInteractions(isChecked, onCheck, handleCopy);
-
-  const displayName = capitalizeShoppingItem(name.replace(/^week\d+-/, ''));
-
-  // Format quantity and unit display - ALWAYS show quantity, including 1
-  const formatQuantityAndUnit = () => {
-    const formattedQuantity = quantity && quantity % 1 === 0 ? quantity.toString() : (quantity || 1).toFixed(1);
-    
-    if (unit && unit.trim()) {
-      return `${formattedQuantity} ${unit.trim()} `;
-    } else {
-      // Always show "1" for single items to be clear
-      return `${formattedQuantity} `;
-    }
-  };
+  const displayQuantity = item.consolidated_quantity || item.quantity;
+  const displayUnit = item.consolidated_unit || item.unit;
 
   return (
-    <div 
-      className={`flex items-start space-x-${isMobile ? '2' : '3'} ${isMobile ? 'p-1.5' : 'p-2'} rounded select-none`}
-      style={{ 
-        WebkitTouchCallout: 'none',
-        WebkitUserSelect: 'none',
-        userSelect: 'none',
-        WebkitTapHighlightColor: 'transparent'
-      }}
-      onTouchStart={interactions.handleTouchStart}
-      onTouchEnd={interactions.handleTouchEnd}
-      onTouchMove={interactions.handleTouchMove}
-      onMouseDown={interactions.handleMouseDown}
-      onMouseUp={interactions.handleMouseUp}
-      onMouseLeave={interactions.handleMouseLeave}
-    >
-      <div className="flex-1 min-w-0">
-        <div className={`${isChecked ? 'line-through text-muted-foreground' : ''}`}>
-          <span className={`font-medium ${isMobile ? 'text-sm' : ''}`}>
-            {formatQuantityAndUnit()}{displayName}
-          </span>
-        </div>
-        {recipeIds.length > 0 && (
-          <div className={`${isMobile ? 'text-xs' : 'text-xs'} text-green-600 mt-1`}>
-            From: {recipeIds.map((recipeId, index) => {
-              const recipe = recipes.find(r => r.id === recipeId);
-              const recipeName = recipe ? recipe.title : `Recipe ${recipeId.substring(0, 8)}`;
-              
-              return (
-                <span key={recipeId}>
-                  {recipe ? (
-                    <button
-                      onClick={(e) => handleRecipeClick(recipeId, e)}
-                      className="hover:underline cursor-pointer text-green-600 hover:text-green-700 font-medium transition-colors"
-                    >
-                      {recipeName}
-                    </button>
-                  ) : (
-                    <span className="text-gray-500">{recipeName}</span>
-                  )}
-                  {index < recipeIds.length - 1 && ', '}
+    <div className={`flex items-center justify-between p-3 border rounded-lg ${
+      item.is_checked ? 'bg-gray-50 opacity-75' : 'bg-white'
+    }`}>
+      <div className="flex items-center space-x-3 flex-1">
+        <Checkbox
+          checked={item.is_checked}
+          onCheckedChange={handleToggleCheck}
+        />
+        
+        {isEditing ? (
+          <div className="flex items-center space-x-2 flex-1">
+            <Input
+              value={editQuantity}
+              onChange={(e) => setEditQuantity(e.target.value)}
+              placeholder="Qty"
+              className="w-20"
+            />
+            <Input
+              value={editUnit}
+              onChange={(e) => setEditUnit(e.target.value)}
+              placeholder="Unit"
+              className="w-20"
+            />
+            <Input
+              value={editName}
+              onChange={(e) => setEditName(e.target.value)}
+              className="flex-1"
+            />
+            <Button size="sm" onClick={handleSaveEdit}>
+              <Check className="h-4 w-4" />
+            </Button>
+            <Button size="sm" variant="outline" onClick={handleCancelEdit}>
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+        ) : (
+          <div className="flex-1">
+            <div className={`${item.is_checked ? 'line-through text-gray-500' : ''}`}>
+              {displayQuantity && (
+                <span className="font-medium">
+                  {displayQuantity} {displayUnit && displayUnit}{' '}
                 </span>
-              );
-            })}
+              )}
+              <span>{item.name}</span>
+            </div>
+            
+            {itemRecipes.length > 0 && (
+              <div className="flex flex-wrap gap-1 mt-1">
+                {itemRecipes.map((recipe) => (
+                  <Badge 
+                    key={recipe.id} 
+                    variant="outline" 
+                    className="text-xs cursor-pointer hover:bg-blue-50"
+                  >
+                    <Link 
+                      to={`/my-recipes/${generateSlug(recipe.title)}`}
+                      className="flex items-center gap-1"
+                    >
+                      {recipe.title}
+                      <ExternalLink className="h-3 w-3" />
+                    </Link>
+                  </Badge>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>
-      <div className="flex items-center space-x-2 flex-shrink-0">
-        <Checkbox
-          checked={isChecked}
-          onCheckedChange={handleCheckboxChange}
-          className={`${isMobile ? 'h-4 w-4' : 'h-4 w-4'}`}
-        />
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={handleCopy}
-          className={`${isMobile ? 'h-8 w-8' : 'h-8 w-8'} text-muted-foreground hover:text-primary`}
-        >
-          {copiedItemId === id ? (
-            <Check className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'} text-green-600`} />
-          ) : (
-            <Copy className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
-          )}
-        </Button>
-      </div>
+
+      {!isEditing && (
+        <div className="flex items-center space-x-2">
+          <Button 
+            size="sm" 
+            variant="ghost" 
+            onClick={() => setIsEditing(true)}
+          >
+            <Pencil className="h-4 w-4" />
+          </Button>
+          <Button 
+            size="sm" 
+            variant="ghost" 
+            onClick={() => deleteShoppingListItem(item.id)}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
