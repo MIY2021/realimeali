@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Minus, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface ServingsSelectorProps {
@@ -67,7 +67,7 @@ export function ServingsSelector({
         disabled={currentServings <= 1 || disabled || isUpdating}
         className="h-full w-8 p-0 hover:bg-gray-100 transition-colors"
       >
-        <Minus className="h-3 w-3" />
+        <span className="text-lg font-bold">−</span>
       </Button>
       
       <span className={`${textSize} font-medium text-center min-w-[2rem] px-1`}>

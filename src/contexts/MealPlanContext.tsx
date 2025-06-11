@@ -104,10 +104,10 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
     try {
       await mealPlanService.updateMealPlanServings(mealPlanId, newServings, currentHousehold.id);
       
-      // Update local state
+      // Update local state - update original_servings since that's what we're using
       setMealPlans(prev => prev.map(plan => 
         plan.id === mealPlanId 
-          ? { ...plan, planned_servings: newServings }
+          ? { ...plan, original_servings: newServings }
           : plan
       ));
     } catch (error) {

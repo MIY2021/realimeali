@@ -61,8 +61,8 @@ export function EnhancedMealCard({
       return mealPlan.leftover_servings;
     }
     
-    // Use planned_servings if available, otherwise fall back to original_servings or recipe servings
-    const plannedServings = mealPlan.planned_servings || mealPlan.original_servings || displayRecipe.servings;
+    // Use original_servings as the planned servings for now
+    const plannedServings = mealPlan.original_servings || displayRecipe.servings;
     
     // For dinner meals, show reduced servings if leftovers were allocated
     if (mealPlan.meal_type === 'dinner' && mealPlan.leftover_servings && mealPlan.leftover_servings > 0) {
@@ -126,7 +126,7 @@ export function EnhancedMealCard({
 
   const showLeftoverButton = mealPlan.meal_type === 'dinner' && !mealPlan.is_leftover && onCreateLeftover;
   const effectiveServings = getEffectiveServings();
-  const plannedServings = mealPlan.planned_servings || mealPlan.original_servings || displayRecipe?.servings || 1;
+  const plannedServings = mealPlan.original_servings || displayRecipe?.servings || 1;
 
   const handleServingsUpdate = async (newServings: number) => {
     if (onUpdateServings) {

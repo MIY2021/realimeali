@@ -19,6 +19,7 @@ export default function MealPlannerContainer() {
   useDocumentTitle("Meal Planner | RealiMeali");
   
   const { user } = useAuth();
+  const { currentHousehold } = useHousehold();
   const { recipes, isLoading: recipesLoading } = useRecipes();
   const { 
     getMealPlansForWeek, 

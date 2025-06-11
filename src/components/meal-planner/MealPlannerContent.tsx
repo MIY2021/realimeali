@@ -39,8 +39,18 @@ export function MealPlannerContent({
 
   return (
     <>
-      <WeekSelector currentWeek={currentWeek} setCurrentWeek={setCurrentWeek} />
-      <MealPlannerActions onRandomize={onRandomize} onShare={onShare} onClearAll={onClearAll} />
+      <WeekSelector 
+        week={currentWeek} 
+        onWeekChange={setCurrentWeek} 
+        isLoading={isLoading}
+      />
+      <MealPlannerActions 
+        onRandomize={onRandomize} 
+        onShare={onShare} 
+        onClearAll={onClearAll}
+        isLoading={isLoading}
+        currentWeek={currentWeek}
+      />
 
       {isLoading ? (
         <div className="py-10 text-center">

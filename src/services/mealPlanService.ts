@@ -96,7 +96,7 @@ export const mealPlanService = {
     
     const { data, error } = await supabase
       .from('household_meal_plans')
-      .update({ planned_servings: newServings })
+      .update({ original_servings: newServings })
       .eq('id', mealPlanId)
       .eq('household_id', householdId)
       .select()
@@ -177,7 +177,7 @@ export const mealPlanService = {
       original_servings: dbPlan.original_servings,
       household_id: dbPlan.household_id,
       week_number: dbPlan.week_number as 1 | 2,
-      planned_servings: dbPlan.planned_servings,
+      planned_servings: dbPlan.original_servings,
     };
   }
 };

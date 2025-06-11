@@ -1,6 +1,7 @@
+
 import { useState } from "react";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
-import { MealListSection } from "@/components/MealListSection";
+import MealListSection from "@/components/MealListSection";
 import { MealType } from "@/types";
 
 interface MealPlannerDragAndDropProps {
