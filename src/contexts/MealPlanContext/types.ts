@@ -28,7 +28,6 @@ export interface MealPlanContextType {
   removeMealPlan: (id: string) => Promise<void>;
   clearWeek: (weekNumber: 1 | 2) => Promise<void>;
   reorderMealPlans: (mealType: MealType, weekNumber: 1 | 2, sourceIndex: number, destinationIndex: number) => Promise<void>;
-  updateMealPlanServings: (mealPlanId: string, newServings: number) => Promise<void>;
   isLoading: boolean;
-  fetchMealPlans?: () => Promise<void>;
+  fetchMealPlans?: () => Promise<void>; // Add the refresh function
 }

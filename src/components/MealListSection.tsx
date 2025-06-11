@@ -14,11 +14,10 @@ interface MealListSectionProps {
   onAddMeal: (mealType: MealType) => void;
   onRemoveMeal: (planId: string) => void;
   onCreateLeftover?: (mealPlan: MealPlan, recipe: Recipe) => void;
-  onUpdateServings?: (mealPlanId: string, newServings: number) => Promise<void>;
   onReorderMeals?: (mealType: MealType, sourceIndex: number, destinationIndex: number) => void;
   dragHandleProps?: DraggableProvidedDragHandleProps | null;
   collapsed?: boolean;
-  sectionIndex?: number;
+  sectionIndex?: number; // For section-level staggered animations
 }
 
 export default function MealListSection({
@@ -28,7 +27,6 @@ export default function MealListSection({
   onAddMeal,
   onRemoveMeal,
   onCreateLeftover,
-  onUpdateServings,
   onReorderMeals,
   dragHandleProps,
   collapsed = false,
@@ -149,10 +147,9 @@ export default function MealListSection({
                                 recipe={recipe}
                                 onRemove={onRemoveMeal}
                                 onCreateLeftover={onCreateLeftover}
-                                onUpdateServings={onUpdateServings}
                                 parentRecipe={parentRecipe}
                                 dragHandleProps={provided.dragHandleProps}
-                                animationDelay={(sectionIndex * 100) + (index * 50)}
+                                animationDelay={(sectionIndex * 100) + (index * 50)} // Stagger card animations
                               />
                             </div>
                           )}
