@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
@@ -49,7 +50,7 @@ export function FeedbackModerationPanel() {
 
   const updateFeedback = async (feedbackId: string, updates: Partial<FeedbackItem>) => {
     try {
-      console.log('Updating feedback:', { feedbackId, updates });
+      console.log('Updating feedback with ID:', feedbackId, 'Updates:', updates);
       
       const { data, error } = await supabase
         .from('feedback_suggestions')
@@ -63,18 +64,24 @@ export function FeedbackModerationPanel() {
         throw error;
       }
 
-      console.log('Updated feedback result:', data);
+      console.log('Database update successful:', data);
 
-      // Update local state immediately for better UX
+      // Update local state immediately
       setAllFeedback(prev => {
         const updated = prev.map(item => 
           item.id === feedbackId ? { ...item, ...updates, updated_at: new Date().toISOString() } : item
         );
-        console.log('Updated local state:', updated.find(item => item.id === feedbackId));
+        console.log('Local state updated for feedback:', feedbackId);
         return updated;
       });
 
       toast.success("Feedback updated successfully");
+      
+      // Refresh data from server to ensure consistency
+      setTimeout(() => {
+        fetchFeedback();
+      }, 500);
+      
       return true;
     } catch (error) {
       console.error('Error updating feedback:', error);
@@ -84,24 +91,17 @@ export function FeedbackModerationPanel() {
   };
 
   const handleUpdateStatus = async (feedbackId: string, status: string): Promise<boolean> => {
-    console.log('Handling status update:', { feedbackId, status });
-    const success = await updateFeedback(feedbackId, { status });
-    if (success) {
-      // Optionally refresh data to ensure consistency
-      setTimeout(() => {
-        fetchFeedback();
-      }, 500);
-    }
-    return success;
+    console.log('Handling status update for feedback:', feedbackId, 'New status:', status);
+    return await updateFeedback(feedbackId, { status });
   };
 
   const handleUpdatePriority = async (feedbackId: string, priority: string): Promise<void> => {
-    console.log('Handling priority update:', { feedbackId, priority });
+    console.log('Handling priority update for feedback:', feedbackId, 'New priority:', priority);
     await updateFeedback(feedbackId, { priority });
   };
 
   const handleSaveNotes = async (feedbackId: string, notes: string): Promise<void> => {
-    console.log('Handling notes save:', { feedbackId, notes });
+    console.log('Handling notes save for feedback:', feedbackId, 'Notes length:', notes.length);
     await updateFeedback(feedbackId, { admin_notes: notes });
   };
 
@@ -228,7 +228,7 @@ export function FeedbackModerationPanel() {
         </Card>
       ) : currentFeedback ? (
         <SingleFeedbackModerationView
-          key={`feedback-${currentFeedback.id}-${currentFeedback.status}`}
+          key={`feedback-${currentFeedback.id}-${currentFeedback.status}-${currentFeedback.updated_at}`}
           feedback={currentFeedback}
           onUpdateStatus={handleUpdateStatus}
           onUpdatePriority={handleUpdatePriority}

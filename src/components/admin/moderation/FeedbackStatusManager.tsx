@@ -26,24 +26,12 @@ export function FeedbackStatusManager({
     { value: 'dismissed', label: 'Dismissed' }
   ];
 
-  const normalizeStatus = (status: string) => {
-    switch (status) {
-      case 'new': return 'pending';
-      case 'completed': return 'complete';
-      case 'closed': return 'complete';
-      case 'resolved': return 'complete';
-      default: return status;
-    }
-  };
-
-  const normalizedCurrentStatus = normalizeStatus(currentStatus);
-
   const handleStatusChange = async () => {
-    if (selectedStatus === normalizedCurrentStatus) return;
+    if (selectedStatus === currentStatus) return;
 
     setIsUpdating(true);
     try {
-      console.log('FeedbackStatusManager: Updating status from', normalizedCurrentStatus, 'to', selectedStatus);
+      console.log('FeedbackStatusManager: Updating status from', currentStatus, 'to', selectedStatus);
       const success = await onStatusUpdate(feedbackId, selectedStatus);
       
       if (success) {
@@ -61,7 +49,7 @@ export function FeedbackStatusManager({
         description: "Failed to update feedback status",
         variant: "destructive",
       });
-      setSelectedStatus(normalizedCurrentStatus); // Reset on error
+      setSelectedStatus(currentStatus); // Reset on error
     } finally {
       setIsUpdating(false);
     }
@@ -82,7 +70,7 @@ export function FeedbackStatusManager({
         </SelectContent>
       </Select>
       
-      {selectedStatus !== normalizedCurrentStatus && (
+      {selectedStatus !== currentStatus && (
         <Button 
           onClick={handleStatusChange} 
           disabled={isUpdating}

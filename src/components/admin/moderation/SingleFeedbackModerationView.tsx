@@ -46,7 +46,7 @@ export function SingleFeedbackModerationView({
 
   useEffect(() => {
     setAdminNotes(feedback.admin_notes || '');
-  }, [feedback.admin_notes]);
+  }, [feedback.admin_notes, feedback.id]);
 
   const getStatusIcon = (status: string) => {
     const normalizedStatus = normalizeStatus(status);
@@ -54,6 +54,7 @@ export function SingleFeedbackModerationView({
       case 'pending': return <Clock className="h-4 w-4 text-amber-500" />;
       case 'in_progress': return <AlertCircle className="h-4 w-4 text-blue-500" />;
       case 'complete': return <Check className="h-4 w-4 text-green-500" />;
+      case 'dismissed': return <Check className="h-4 w-4 text-gray-500" />;
       default: return <Clock className="h-4 w-4" />;
     }
   };
@@ -98,9 +99,14 @@ export function SingleFeedbackModerationView({
   };
 
   const handleSaveNotes = async () => {
+    if (adminNotes === (feedback.admin_notes || '')) {
+      console.log('Notes unchanged, skipping save');
+      return;
+    }
+
     setIsSavingNotes(true);
     try {
-      console.log('Saving notes:', adminNotes);
+      console.log('Saving notes for feedback:', feedback.id, 'Notes:', adminNotes);
       await onSaveNotes(feedback.id, adminNotes);
     } catch (error) {
       console.error('Error saving notes:', error);
@@ -159,6 +165,7 @@ export function SingleFeedbackModerationView({
               <Badge variant="outline" className={`text-xs ${
                 currentStatus === 'pending' ? 'bg-amber-100 text-amber-800' :
                 currentStatus === 'in_progress' ? 'bg-blue-100 text-blue-800' :
+                currentStatus === 'dismissed' ? 'bg-gray-100 text-gray-800' :
                 'bg-green-100 text-green-800'
               }`}>
                 {currentStatus.replace('_', ' ')}
@@ -241,7 +248,7 @@ export function SingleFeedbackModerationView({
                 size="sm"
                 onClick={handleSaveNotes}
                 className="w-full"
-                disabled={isSavingNotes}
+                disabled={isSavingNotes || adminNotes === (feedback.admin_notes || '')}
               >
                 {isSavingNotes ? "Saving..." : "Save Notes"}
               </Button>
