@@ -87,6 +87,29 @@ export const mealPlanService = {
     console.log("Successfully updated leftover allocation:", data);
   },
 
+  async updateMealPlanServings(
+    mealPlanId: string, 
+    newServings: number,
+    householdId: string
+  ): Promise<void> {
+    console.log("Updating meal plan servings:", { mealPlanId, newServings, householdId });
+    
+    const { data, error } = await supabase
+      .from('household_meal_plans')
+      .update({ planned_servings: newServings })
+      .eq('id', mealPlanId)
+      .eq('household_id', householdId)
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Error updating meal plan servings:", error);
+      throw error;
+    }
+
+    console.log("Successfully updated servings:", data);
+  },
+
   async removeMealPlan(id: string, householdId: string): Promise<void> {
     console.log("Removing meal plan:", id);
     
@@ -154,6 +177,7 @@ export const mealPlanService = {
       original_servings: dbPlan.original_servings,
       household_id: dbPlan.household_id,
       week_number: dbPlan.week_number as 1 | 2,
+      planned_servings: dbPlan.planned_servings,
     };
   }
 };

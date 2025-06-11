@@ -20,13 +20,13 @@ export default function MealPlannerContainer() {
   
   const { user } = useAuth();
   const { recipes, isLoading: recipesLoading } = useRecipes();
-  const { currentHousehold } = useHousehold();
   const { 
     getMealPlansForWeek, 
     addMealPlan, 
     removeMealPlan, 
     clearWeek, 
     reorderMealPlans,
+    updateMealPlanServings,
     fetchMealPlans 
   } = useMealPlan();
   const { toast } = useToast();
@@ -123,6 +123,23 @@ export default function MealPlannerContainer() {
     refreshMealPlans: fetchMealPlans,
     currentMealPlans,
   });
+
+  const handleUpdateServings = useCallback(async (mealPlanId: string, newServings: number) => {
+    try {
+      await updateMealPlanServings(mealPlanId, newServings);
+      toast({
+        title: "Servings Updated",
+        description: `Meal plan servings updated to ${newServings}`,
+      });
+    } catch (error) {
+      console.error("Error updating servings:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update servings",
+        variant: "destructive",
+      });
+    }
+  }, [updateMealPlanServings, toast]);
 
   const handleAddMeal = useCallback((mealType: MealType) => {
     console.log("🍽️ handleAddMeal called with mealType:", mealType);
@@ -233,6 +250,7 @@ export default function MealPlannerContainer() {
         onAddMeal={handleAddMeal}
         onRemoveMeal={handleRemoveMeal}
         onCreateLeftover={handleCreateLeftoverWithDialog}
+        onUpdateServings={handleUpdateServings}
         onReorderMeals={handleReorderMeals}
       />
 

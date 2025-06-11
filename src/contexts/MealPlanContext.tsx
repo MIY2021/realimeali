@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef } from "react";
 import { MealPlan, Recipe, MealType } from "@/types";
 import { useAuth } from "@/contexts/AuthContext";
@@ -93,6 +92,29 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
       fetchMealPlans();
     }
   }, [stableUserId, stableHouseholdId, fetchMealPlans]);
+
+  const updateMealPlanServings = useCallback(async (
+    mealPlanId: string, 
+    newServings: number
+  ): Promise<void> => {
+    if (!user || !currentHousehold) {
+      throw new Error('User and household required');
+    }
+
+    try {
+      await mealPlanService.updateMealPlanServings(mealPlanId, newServings, currentHousehold.id);
+      
+      // Update local state
+      setMealPlans(prev => prev.map(plan => 
+        plan.id === mealPlanId 
+          ? { ...plan, planned_servings: newServings }
+          : plan
+      ));
+    } catch (error) {
+      console.error("Error updating meal plan servings:", error);
+      throw error;
+    }
+  }, [user, currentHousehold, setMealPlans, toast]);
 
   const getMealPlansForWeek = useCallback((weekNumber: 1 | 2): MealPlan[] => {
     if (!stableUserId || !stableHouseholdId) return [];
@@ -200,7 +222,7 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
       console.error("Error reordering meal plans:", err);
       throw err;
     }
-  }, [user?.id, currentHousehold?.id, mealPlans]);
+  }, [user?.id, currentHousehold?.id, mealPlans, setMealPlans]);
 
   // Memoize context value with only stable dependencies
   const contextValue: MealPlanContextType = {
@@ -212,6 +234,7 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
     removeMealPlan,
     clearWeek,
     reorderMealPlans,
+    updateMealPlanServings,
     isLoading,
     fetchMealPlans
   };

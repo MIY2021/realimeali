@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,12 +8,14 @@ import { RecipeImage } from "@/components/ui/recipe-image";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { DeleteMealDialog } from "@/components/meal-planner/DeleteMealDialog";
 import { createRecipeUrl } from "@/utils/slugUtils";
+import { ServingsSelector } from "@/components/meal-planner/ServingsSelector";
 
 interface EnhancedMealCardProps {
   mealPlan: MealPlan;
   recipe: Recipe | undefined;
   onRemove: (planId: string) => void;
   onCreateLeftover?: (mealPlan: MealPlan, recipe: Recipe) => void;
+  onUpdateServings?: (mealPlanId: string, newServings: number) => Promise<void>;
   parentRecipe?: Recipe; // For leftover meals
   dragHandleProps?: any; // Props from react-beautiful-dnd
   animationDelay?: number; // For staggered animations
@@ -25,6 +26,7 @@ export function EnhancedMealCard({
   recipe, 
   onRemove, 
   onCreateLeftover,
+  onUpdateServings,
   parentRecipe,
   dragHandleProps,
   animationDelay = 0
@@ -59,12 +61,14 @@ export function EnhancedMealCard({
       return mealPlan.leftover_servings;
     }
     
+    // Use planned_servings if available, otherwise fall back to original_servings or recipe servings
+    const plannedServings = mealPlan.planned_servings || mealPlan.original_servings || displayRecipe.servings;
+    
     // For dinner meals, show reduced servings if leftovers were allocated
     if (mealPlan.meal_type === 'dinner' && mealPlan.leftover_servings && mealPlan.leftover_servings > 0) {
-      const originalServings = mealPlan.original_servings || displayRecipe.servings;
-      const effectiveServings = originalServings - mealPlan.leftover_servings;
+      const effectiveServings = plannedServings - mealPlan.leftover_servings;
       console.log("🍽️ Calculating effective servings for dinner:", {
-        originalServings,
+        plannedServings,
         leftoverServings: mealPlan.leftover_servings,
         effectiveServings,
         mealPlanId: mealPlan.id
@@ -72,7 +76,7 @@ export function EnhancedMealCard({
       return effectiveServings;
     }
     
-    return mealPlan.original_servings || displayRecipe.servings;
+    return plannedServings;
   };
 
   const hasLeftoversAllocated = mealPlan.meal_type === 'dinner' && mealPlan.leftover_servings && mealPlan.leftover_servings > 0;
@@ -122,6 +126,13 @@ export function EnhancedMealCard({
 
   const showLeftoverButton = mealPlan.meal_type === 'dinner' && !mealPlan.is_leftover && onCreateLeftover;
   const effectiveServings = getEffectiveServings();
+  const plannedServings = mealPlan.planned_servings || mealPlan.original_servings || displayRecipe?.servings || 1;
+
+  const handleServingsUpdate = async (newServings: number) => {
+    if (onUpdateServings) {
+      await onUpdateServings(mealPlan.id, newServings);
+    }
+  };
 
   return (
     <Card className={`mb-${isMobile ? '1.5' : '2'} transform transition-all duration-500 ease-out hover:shadow-md ${
@@ -181,7 +192,21 @@ export function EnhancedMealCard({
             )}
           </div>
           
-          <div className={`flex items-center gap-${isMobile ? '2' : '3'} flex-shrink-0`}>
+          <div className={`flex items-center gap-${isMobile ? '1' : '2'} flex-shrink-0`}>
+            {/* Servings Selector - only show for non-leftover meals */}
+            {!mealPlan.is_leftover && onUpdateServings && (
+              <div className="flex flex-col items-center gap-1">
+                <span className={`${isMobile ? 'text-xs' : 'text-xs'} text-muted-foreground`}>
+                  servings
+                </span>
+                <ServingsSelector
+                  currentServings={plannedServings}
+                  onServingsChange={handleServingsUpdate}
+                  size="sm"
+                />
+              </div>
+            )}
+
             {showLeftoverButton && (
               <Button
                 variant="ghost"

@@ -1,26 +1,24 @@
-
-import { useCallback } from "react";
-import { MealPlannerActions } from "@/components/meal-planner/MealPlannerActions";
 import { WeekSelector } from "@/components/meal-planner/WeekSelector";
-import MealListSection from "@/components/MealListSection";
-import { MealType, Recipe, MealPlan } from "@/types";
+import { MealPlannerActions } from "@/components/meal-planner/MealPlannerActions";
+import { MealPlannerDragAndDrop } from "@/components/meal-planner/MealPlannerDragAndDrop";
 
 interface MealPlannerContentProps {
   currentWeek: 1 | 2;
   setCurrentWeek: (week: 1 | 2) => void;
   isLoading: boolean;
-  currentMealPlans: MealPlan[];
-  recipes: Recipe[];
+  currentMealPlans: any[];
+  recipes: any[];
   onRandomize: () => void;
   onShare: () => void;
   onClearAll: () => void;
-  onAddMeal: (mealType: MealType) => void;
+  onAddMeal: (mealType: any) => void;
   onRemoveMeal: (planId: string) => void;
-  onCreateLeftover: (mealPlan: MealPlan, recipe: Recipe) => void;
-  onReorderMeals: (mealType: MealType, sourceIndex: number, destinationIndex: number) => Promise<void>;
+  onCreateLeftover: (mealPlan: any, recipe: any) => void;
+  onUpdateServings: (mealPlanId: string, newServings: number) => Promise<void>;
+  onReorderMeals: (mealType: any, sourceIndex: number, destinationIndex: number) => void;
 }
 
-export const MealPlannerContent = ({
+export function MealPlannerContent({
   currentWeek,
   setCurrentWeek,
   isLoading,
@@ -32,51 +30,33 @@ export const MealPlannerContent = ({
   onAddMeal,
   onRemoveMeal,
   onCreateLeftover,
+  onUpdateServings,
   onReorderMeals,
-}: MealPlannerContentProps) => {
-  const mealTypes: MealType[] = ["dinner", "lunch", "breakfast", "snacks", "sides", "desserts", "drinks"];
-
-  const getMealPlansForType = useCallback((mealType: MealType): MealPlan[] => {
-    return currentMealPlans
-      .filter(plan => plan.meal_type === mealType)
-      .sort((a, b) => (a.slot_index || 0) - (b.slot_index || 0));
-  }, [currentMealPlans]);
-
-  const getRecipeById = useCallback((id: string): Recipe | undefined => {
-    return recipes.find(recipe => recipe.id === id);
-  }, [recipes]);
+}: MealPlannerContentProps) {
+  const getRecipeById = (id: string) => {
+    return recipes.find((recipe) => recipe.id === id);
+  };
 
   return (
     <>
-      <MealPlannerActions
-        onRandomize={onRandomize}
-        onShare={onShare}
-        onClearAll={onClearAll}
-        isLoading={isLoading}
-        currentWeek={currentWeek}
-      />
+      <WeekSelector currentWeek={currentWeek} setCurrentWeek={setCurrentWeek} />
+      <MealPlannerActions onRandomize={onRandomize} onShare={onShare} onClearAll={onClearAll} />
 
-      <WeekSelector
-        week={currentWeek}
-        onWeekChange={setCurrentWeek}
-        isLoading={isLoading}
-      />
-
-      <div className="space-y-6">
-        {mealTypes.map((mealType, index) => (
-          <MealListSection
-            key={mealType}
-            mealType={mealType}
-            mealPlans={getMealPlansForType(mealType)}
-            getRecipeById={getRecipeById}
-            onAddMeal={onAddMeal}
-            onRemoveMeal={onRemoveMeal}
-            onCreateLeftover={onCreateLeftover}
-            onReorderMeals={onReorderMeals}
-            sectionIndex={index}
-          />
-        ))}
-      </div>
+      {isLoading ? (
+        <div className="py-10 text-center">
+          <p className="text-muted-foreground mb-4">Loading meal plans...</p>
+        </div>
+      ) : (
+        <MealPlannerDragAndDrop
+          currentMealPlans={currentMealPlans}
+          getRecipeById={getRecipeById}
+          onAddMeal={onAddMeal}
+          onRemoveMeal={onRemoveMeal}
+          onCreateLeftover={onCreateLeftover}
+          onUpdateServings={onUpdateServings}
+          onReorderMeals={onReorderMeals}
+        />
+      )}
     </>
   );
-};
+}
