@@ -119,7 +119,8 @@ export const useShoppingList = (weekNumber: 1 | 2) => {
     const newItem = await ShoppingListService.addCustomItem(name, currentHousehold.id, user.id, weekNumber);
     
     if (newItem) {
-      setShoppingList(prev => [...prev, newItem]);
+      // Add new items to the top of the list
+      setShoppingList(prev => [newItem, ...prev]);
 
       toast({
         title: "Item added",

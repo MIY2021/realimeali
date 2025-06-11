@@ -101,6 +101,10 @@ export default function ShoppingList() {
   const mealPlans = getMealPlansForWeek(weekNumber);
   const hasMealPlans = mealPlans.length > 0;
 
+  // Calculate item counts
+  const totalItems = shoppingList.length;
+  const completedItems = shoppingList.filter(item => item.isChecked).length;
+
   const getRecipeNames = (recipeIds: string[]): string => {
     const uniqueRecipeIds = [...new Set(recipeIds)];
     const recipeNames = uniqueRecipeIds
@@ -215,6 +219,8 @@ export default function ShoppingList() {
                   <ShoppingListCreationInfo 
                     lastGenerated={lastGenerated}
                     createdByUserId={shoppingList.length > 0 ? shoppingList[0].createdBy : undefined}
+                    totalItems={totalItems}
+                    completedItems={completedItems}
                   />
                   <ShoppingListItems
                     shoppingList={shoppingList}

@@ -85,12 +85,12 @@ export function ShoppingListItem({
       className={`flex items-center justify-between p-3 border rounded-lg transition-colors ${
         isChecked ? 'bg-gray-50 opacity-75' : 'bg-white'
       } ${copiedItemId === id ? 'bg-green-50 border-green-200' : ''}`}
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
-      onTouchMove={handleTouchMove}
-      onMouseDown={handleMouseDown}
-      onMouseUp={handleMouseUp}
-      onMouseLeave={handleMouseLeave}
+      onTouchStart={!isEditing ? handleTouchStart : undefined}
+      onTouchEnd={!isEditing ? handleTouchEnd : undefined}
+      onTouchMove={!isEditing ? handleTouchMove : undefined}
+      onMouseDown={!isEditing ? handleMouseDown : undefined}
+      onMouseUp={!isEditing ? handleMouseUp : undefined}
+      onMouseLeave={!isEditing ? handleMouseLeave : undefined}
     >
       <div className="flex items-center space-x-3 flex-1">
         <Checkbox
@@ -105,17 +105,24 @@ export function ShoppingListItem({
               onChange={(e) => setEditQuantity(e.target.value)}
               placeholder="Qty"
               className="w-20"
+              autoFocus={false}
             />
             <Input
               value={editUnit}
               onChange={(e) => setEditUnit(e.target.value)}
               placeholder="Unit"
               className="w-20"
+              autoFocus={false}
             />
             <Input
               value={editName}
               onChange={(e) => setEditName(e.target.value)}
               className="flex-1"
+              autoFocus={true}
+              onFocus={(e) => {
+                // Select all text when input is focused
+                e.target.select();
+              }}
             />
             <Button size="sm" onClick={handleSaveEdit}>
               <Check className="h-4 w-4" />
