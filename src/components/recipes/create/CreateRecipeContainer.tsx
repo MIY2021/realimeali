@@ -11,6 +11,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { CreateRecipeTabsWrapper } from "./CreateRecipeTabsWrapper";
 import { Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { Recipe } from "@/types";
 
 export type RecipeOrigin = 'url' | 'image' | 'generate' | 'text' | 'manual';
 
@@ -40,7 +41,9 @@ export function CreateRecipeContainer() {
       (url: string) => recipeFormHook.setNewRecipe({ ...recipeFormHook.newRecipe, image: url }),
       recipeFormHook.setIsGeneratingImage,
       recipeFormHook.setGenerationProgress,
-      recipeFormHook.newRecipe.description
+      recipeFormHook.newRecipe.description,
+      recipeFormHook.newRecipe.ingredients,
+      recipeFormHook.newRecipe.instructions
     );
   };
 
@@ -157,8 +160,8 @@ export function CreateRecipeContainer() {
               servings: savedRecipe.servings,
               category: savedRecipe.meal_type || null,
               cuisine: savedRecipe.cuisine_region || null,
-              difficulty_level: savedRecipe.complexity_level === 'quick_easy' ? 'Easy' : 
-                             savedRecipe.complexity_level === 'complex' ? 'Hard' : 'Standard',
+              difficulty_level: recipeToSave.complexity_level === 'quick_easy' ? 'Easy' : 
+                             recipeToSave.complexity_level === 'complex' ? 'Hard' : 'Standard',
               submitted_by: user.id,
               submitted_by_name: user.email || 'Anonymous',
               is_approved: false,

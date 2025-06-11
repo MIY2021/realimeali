@@ -12,7 +12,9 @@ export function useImageGeneration() {
     setRecipeImage: (url: string) => void,
     setIsGeneratingImage: (loading: boolean) => void,
     setGenerationProgress?: (progress: string) => void,
-    description?: string
+    description?: string,
+    ingredients?: string[],
+    instructions?: string[]
   ) => {
     if (!title.trim()) {
       toast({
@@ -37,16 +39,38 @@ export function useImageGeneration() {
         }
       }, 800);
       
-      // Create new hyper-realistic prompt that strictly uses title and description
-      let prompt = `Generate a hyper-realistic, top-down food photograph of the recipe described in the provided title and description only: "${title}"`;
+      // Create enhanced prompt that includes title, description, ingredients, and instructions
+      let prompt = `Generate a hyper-realistic, top-down food photograph of the recipe: "${title}"`;
       
       // Add description context if available
       if (description && description.trim()) {
         prompt += ` - ${description.trim()}`;
       }
       
-      // Add the new detailed instructions
-      prompt += `. Do not invent ingredients or styling outside what's described. Use natural lighting with soft shadows and realistic textures. Plate the dish in a ceramic or rustic-style plate or bowl. Garnish only with ingredients specifically mentioned or clearly implied in the description. The background should vary between images (e.g., linen, wood, stone, concrete) but always remain clean and natural. Include minimal, relevant props (e.g., a fork, a napkin, or a wedge of cheese) only if they are contextually appropriate. The result must look like a professional, real-life food photograph with no digital or artificial appearance. Do not use imaginary or stylized elements. Use only the provided title and description as the source of truth for what the image contains.`;
+      // Add ingredients context if available
+      if (ingredients && ingredients.length > 0) {
+        const mainIngredients = ingredients.slice(0, 5); // Use first 5 ingredients to avoid overly long prompts
+        prompt += `. Key ingredients include: ${mainIngredients.join(', ')}`;
+      }
+      
+      // Add cooking method context from instructions if available
+      if (instructions && instructions.length > 0) {
+        const cookingMethods = instructions.join(' ').toLowerCase();
+        if (cookingMethods.includes('bake') || cookingMethods.includes('oven')) {
+          prompt += '. Baked dish';
+        } else if (cookingMethods.includes('fry') || cookingMethods.includes('pan')) {
+          prompt += '. Pan-fried dish';
+        } else if (cookingMethods.includes('grill')) {
+          prompt += '. Grilled dish';
+        } else if (cookingMethods.includes('boil') || cookingMethods.includes('simmer')) {
+          prompt += '. Boiled/simmered dish';
+        } else if (cookingMethods.includes('roast')) {
+          prompt += '. Roasted dish';
+        }
+      }
+      
+      // Add the detailed styling instructions
+      prompt += `. Use natural lighting with soft shadows and realistic textures. Plate the dish in a ceramic or rustic-style plate or bowl. Garnish only with ingredients specifically mentioned or clearly implied. The background should vary between images (e.g., linen, wood, stone, concrete) but always remain clean and natural. Include minimal, relevant props (e.g., a fork, a napkin, or herbs) only if they are contextually appropriate. The result must look like a professional, real-life food photograph with no digital or artificial appearance. Focus on authentic food presentation and natural colors.`;
       
       const { data, error } = await supabase.functions.invoke('generate-recipe-image', {
         body: { 
@@ -72,7 +96,7 @@ export function useImageGeneration() {
       
       toast({
         title: "Image Generated!",
-        description: "Hyper-realistic recipe image has been generated and saved successfully!",
+        description: "Enhanced recipe image has been generated using recipe details for better accuracy!",
       });
 
       // Reset progress after a delay

@@ -39,18 +39,23 @@ serve(async (req) => {
       );
     }
 
-    console.log('Generating image with prompt:', prompt);
+    console.log('Generating image with enhanced prompt:', prompt);
 
-    // Enhanced prompt for community recipes or standard prompt for user recipes
+    // Enhanced prompt processing for better recipe context
     let enhancedPrompt = prompt;
     if (isCommunityRecipe) {
       // For community recipes, ensure we have a comprehensive prompt
       if (!prompt.includes('hyper-realistic, top-down food photograph')) {
         enhancedPrompt = `Generate a hyper-realistic, top-down food photograph of ${prompt}. Use natural lighting with soft shadows and realistic textures. Plate the dish in an appropriate ceramic or rustic-style plate or bowl. Garnish only with ingredients that would naturally accompany this dish. The background should be clean and natural (wood, stone, concrete, or linen). Include minimal, contextually appropriate props. The result must look like a professional, real-life food photograph with no digital or artificial appearance. Focus on authentic food presentation and natural colors.`;
       }
+    } else {
+      // For user recipes, the prompt is already enhanced with ingredients and instructions
+      if (!prompt.includes('hyper-realistic, top-down food photograph')) {
+        enhancedPrompt = `Generate a hyper-realistic, top-down food photograph of ${prompt}. Use natural lighting with soft shadows and realistic textures. Plate the dish appropriately. The result must look like a professional, real-life food photograph.`;
+      }
     }
 
-    console.log('Using enhanced prompt:', enhancedPrompt);
+    console.log('Using enhanced prompt with recipe context:', enhancedPrompt);
 
     // Generate image with OpenAI DALL-E 3
     const response = await fetch('https://api.openai.com/v1/images/generations', {

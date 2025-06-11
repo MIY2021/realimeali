@@ -15,14 +15,36 @@ export function useRecipeModerationOperations(onRefresh: () => void) {
     try {
       console.log("🎨 Starting AI image generation for recipe:", recipe.id, recipe.title);
       
-      // Create a comprehensive prompt from title and description
-      let prompt = `${recipe.title}`;
+      // Create a comprehensive prompt from title, description, and any available recipe details
+      let prompt = `Generate a hyper-realistic, top-down food photograph of the recipe: "${recipe.title}"`;
       
       if (recipe.description && recipe.description.trim()) {
         prompt += ` - ${recipe.description.trim()}`;
       }
 
-      console.log("🎨 Generated prompt:", prompt);
+      // Add ingredients context if available (community recipes might have ingredients in description)
+      const description = recipe.description || '';
+      if (description.toLowerCase().includes('ingredients:')) {
+        prompt += '. Recipe includes detailed ingredients for authentic presentation';
+      }
+
+      // Add cooking context from description
+      const lowerDesc = description.toLowerCase();
+      if (lowerDesc.includes('bake') || lowerDesc.includes('oven')) {
+        prompt += '. Baked dish';
+      } else if (lowerDesc.includes('fry') || lowerDesc.includes('pan')) {
+        prompt += '. Pan-fried dish';
+      } else if (lowerDesc.includes('grill')) {
+        prompt += '. Grilled dish';
+      } else if (lowerDesc.includes('boil') || lowerDesc.includes('simmer')) {
+        prompt += '. Boiled/simmered dish';
+      } else if (lowerDesc.includes('roast')) {
+        prompt += '. Roasted dish';
+      }
+
+      prompt += `. Use natural lighting with soft shadows and realistic textures. Plate the dish in a ceramic or rustic-style plate or bowl. Garnish only with ingredients that would naturally accompany this dish. The background should be clean and natural (wood, stone, concrete, or linen). Include minimal, contextually appropriate props. The result must look like a professional, real-life food photograph with no digital or artificial appearance. Focus on authentic food presentation and natural colors.`;
+
+      console.log("🎨 Enhanced prompt with recipe context:", prompt);
 
       const { data, error } = await supabase.functions.invoke('generate-recipe-image', {
         body: { 
