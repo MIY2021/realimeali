@@ -1,3 +1,4 @@
+
 export interface Recipe {
   id: string;
   title: string;
@@ -32,6 +33,7 @@ export interface MealPlan {
   is_leftover: boolean;
   leftover_servings?: number;
   original_servings: number;
+  planned_servings: number; // New field for user-selected serving size
   created_at: string;
   updated_at: string;
   household_id: string;

@@ -39,11 +39,12 @@ export const useShoppingListGenerator = () => {
       console.log('Clearing existing items for week', weekNumber);
       await ShoppingListService.clearAll(currentHousehold.id, weekNumber);
 
-      // Step 2: Collect ingredients from meal plans
+      // Step 2: Collect ingredients from meal plans with serving calculations
       const ingredientInputs: Array<{
         name: string;
         recipeId: string;
         recipeTitle: string;
+        servingMultiplier: number; // New field for serving calculation
       }> = [];
 
       mealPlans.forEach(mealPlan => {
@@ -58,7 +59,12 @@ export const useShoppingListGenerator = () => {
           return;
         }
 
-        console.log('Processing recipe:', recipe.title, 'with', recipe.ingredients.length, 'ingredients');
+        // Calculate serving multiplier based on planned vs recipe servings
+        const plannedServings = mealPlan.planned_servings || recipe.servings;
+        const servingMultiplier = plannedServings / recipe.servings;
+
+        console.log('Processing recipe:', recipe.title, 'with', recipe.ingredients.length, 'ingredients', 
+                   `(${plannedServings} planned vs ${recipe.servings} recipe servings, multiplier: ${servingMultiplier})`);
 
         recipe.ingredients.forEach(ingredient => {
           // Filter out empty or invalid ingredients
@@ -67,7 +73,8 @@ export const useShoppingListGenerator = () => {
             ingredientInputs.push({
               name: trimmed,
               recipeId: recipe.id,
-              recipeTitle: recipe.title
+              recipeTitle: recipe.title,
+              servingMultiplier: servingMultiplier
             });
           }
         });
@@ -80,11 +87,19 @@ export const useShoppingListGenerator = () => {
         return [];
       }
 
-      // Step 3: Use fast local consolidation
-      console.log('Starting fast local consolidation...');
+      // Step 3: Use fast local consolidation with serving multipliers
+      console.log('Starting fast local consolidation with serving calculations...');
       const startTime = performance.now();
       
-      const consolidatedIngredients = IngredientConsolidationService.consolidateIngredients(ingredientInputs);
+      // Convert to the format expected by the consolidation service
+      const consolidationInputs = ingredientInputs.map(item => ({
+        name: item.name,
+        recipeId: item.recipeId,
+        recipeTitle: item.recipeTitle,
+        servingMultiplier: item.servingMultiplier
+      }));
+      
+      const consolidatedIngredients = IngredientConsolidationService.consolidateIngredientsWithServings(consolidationInputs);
       
       const endTime = performance.now();
       console.log(`Consolidation completed in ${Math.round(endTime - startTime)}ms`);

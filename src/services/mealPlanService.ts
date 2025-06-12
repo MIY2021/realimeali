@@ -41,6 +41,7 @@ export const mealPlanService = {
       is_leftover: mealPlanData.is_leftover || false,
       leftover_servings: mealPlanData.leftover_servings || null,
       original_servings: mealPlanData.original_servings || null,
+      planned_servings: mealPlanData.planned_servings, // Include planned_servings
     };
 
     if (!silentMode) {
@@ -62,6 +63,29 @@ export const mealPlanService = {
       console.log("Meal plan added successfully:", data);
     }
     return this.transformDbToMealPlan(data);
+  },
+
+  async updateMealPlanServings(
+    mealPlanId: string, 
+    plannedServings: number,
+    householdId: string
+  ): Promise<void> {
+    console.log("Updating meal plan servings:", { mealPlanId, plannedServings, householdId });
+    
+    const { data, error } = await supabase
+      .from('household_meal_plans')
+      .update({ planned_servings: plannedServings })
+      .eq('id', mealPlanId)
+      .eq('household_id', householdId)
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Error updating meal plan servings:", error);
+      throw error;
+    }
+
+    console.log("Successfully updated servings:", data);
   },
 
   async updateMealPlanLeftoverAllocation(
@@ -152,6 +176,7 @@ export const mealPlanService = {
       is_leftover: dbPlan.is_leftover,
       leftover_servings: dbPlan.leftover_servings,
       original_servings: dbPlan.original_servings,
+      planned_servings: dbPlan.planned_servings, // Include planned_servings
       household_id: dbPlan.household_id,
       week_number: dbPlan.week_number as 1 | 2,
     };

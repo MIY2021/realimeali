@@ -251,6 +251,7 @@ export type Database = {
           notes: string | null
           original_servings: number | null
           parent_meal_plan_id: string | null
+          planned_servings: number | null
           recipe_id: string
           slot_index: number
           updated_at: string
@@ -268,6 +269,7 @@ export type Database = {
           notes?: string | null
           original_servings?: number | null
           parent_meal_plan_id?: string | null
+          planned_servings?: number | null
           recipe_id: string
           slot_index?: number
           updated_at?: string
@@ -285,6 +287,7 @@ export type Database = {
           notes?: string | null
           original_servings?: number | null
           parent_meal_plan_id?: string | null
+          planned_servings?: number | null
           recipe_id?: string
           slot_index?: number
           updated_at?: string

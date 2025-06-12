@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef } from "react";
 import { MealPlan, Recipe, MealType } from "@/types";
 import { useAuth } from "@/contexts/AuthContext";
@@ -106,6 +105,26 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
     return recipes.find(recipe => recipe.id === mealPlan.recipe_id);
   }, [recipes]);
 
+  const updateMealPlanServings = useCallback(async (mealPlanId: string, plannedServings: number) => {
+    if (!user || !currentHousehold) {
+      throw new Error('User must be logged in and have a household');
+    }
+
+    try {
+      await mealPlanService.updateMealPlanServings(mealPlanId, plannedServings, currentHousehold.id);
+      
+      // Update local state
+      setMealPlans(prev => prev.map(plan => 
+        plan.id === mealPlanId 
+          ? { ...plan, planned_servings: plannedServings }
+          : plan
+      ));
+    } catch (error) {
+      console.error('Error updating meal plan servings:', error);
+      throw error;
+    }
+  }, [user?.id, currentHousehold?.id]);
+
   const addMealPlanWithLeftovers = useCallback(async (
     mealPlanData: Omit<MealPlan, 'id' | 'created_at' | 'updated_at'>, 
     weekNumber: 1 | 2, 
@@ -212,6 +231,7 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
     removeMealPlan,
     clearWeek,
     reorderMealPlans,
+    updateMealPlanServings,
     isLoading,
     fetchMealPlans
   };
