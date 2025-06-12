@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Recipe, MealType } from "@/types";
 import { mealPlanService } from "@/services/mealPlanService";
@@ -67,6 +66,7 @@ export function useRandomMealSelection() {
           household_id: currentHousehold.id,
           week_number: weekNumber,
           original_servings: recipe.servings || 4,
+          planned_servings: recipe.servings || 4, // Add planned_servings field
         };
 
         await mealPlanService.addMealPlan(

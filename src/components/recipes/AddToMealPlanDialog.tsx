@@ -42,6 +42,7 @@ export function AddToMealPlanDialog({ recipe, open, onOpenChange }: AddToMealPla
         household_id: currentHousehold.id,
         week_number: selectedWeek,
         original_servings: recipe.servings,
+        planned_servings: recipe.servings, // Add the required planned_servings field
       }, selectedWeek);
 
       toast({

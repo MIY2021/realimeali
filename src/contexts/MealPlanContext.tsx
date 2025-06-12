@@ -140,6 +140,7 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
       await addMealPlan({
         ...mealPlanData,
         original_servings: recipe.servings,
+        planned_servings: mealPlanData.planned_servings || recipe.servings, // Ensure planned_servings is set
         is_leftover: false,
         household_id: currentHousehold.id,
         week_number: weekNumber,
@@ -160,6 +161,7 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
             is_leftover: true,
             leftover_servings: leftoverServings,
             original_servings: recipe.servings,
+            planned_servings: leftoverServings, // Add planned_servings for leftover
             household_id: currentHousehold.id,
             week_number: weekNumber,
           }, weekNumber, silentMode);
