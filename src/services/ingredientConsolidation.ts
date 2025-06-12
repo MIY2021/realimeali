@@ -1,4 +1,3 @@
-import { parse } from 'ingredient-parser-nlp';
 
 interface ParsedIngredient {
   quantity?: number;
@@ -17,11 +16,33 @@ interface ConsolidatedIngredient {
 export class IngredientConsolidationService {
   private static parseIngredient(ingredient: string): ParsedIngredient {
     try {
-      const parsed = parse(ingredient);
+      // Basic ingredient parsing logic
+      const trimmed = ingredient.trim().toLowerCase();
+      
+      // Extract quantity (look for numbers at the beginning)
+      const quantityMatch = trimmed.match(/^(\d+(?:\.\d+)?(?:\/\d+)?)\s*/);
+      const quantity = quantityMatch ? parseFloat(quantityMatch[1]) : undefined;
+      
+      // Extract unit (common cooking units)
+      const unitMatch = trimmed.match(/\b(cups?|tbsp|tablespoons?|tsp|teaspoons?|oz|ounces?|lbs?|pounds?|cloves?|pieces?|slices?)\b/);
+      const unit = unitMatch ? unitMatch[1] : undefined;
+      
+      // Extract ingredient name (everything after quantity and unit)
+      let name = trimmed;
+      if (quantityMatch) {
+        name = name.replace(quantityMatch[0], '').trim();
+      }
+      if (unitMatch) {
+        name = name.replace(unitMatch[0], '').trim();
+      }
+      
+      // Clean up the name
+      name = name.replace(/^(of\s+|,\s*)/g, '').trim();
+      
       return {
-        quantity: parsed?.quantity || undefined,
-        unit: parsed?.unit || undefined,
-        name: parsed?.ingredient || ingredient
+        quantity,
+        unit,
+        name: name || ingredient
       };
     } catch (error) {
       console.error('Error parsing ingredient:', ingredient, error);
