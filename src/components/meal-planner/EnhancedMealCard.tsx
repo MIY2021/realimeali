@@ -5,6 +5,7 @@ import { Recipe, MealPlan } from "@/types";
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal, Pencil, Plus, X } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useNavigate } from "react-router-dom";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,6 +16,7 @@ import {
 import { cn } from "@/lib/utils";
 import { ServingsSelector } from "./ServingsSelector";
 import { useMealPlan } from "@/contexts/MealPlanContext";
+import { generateSlug } from "@/utils/slugUtils";
 
 interface EnhancedMealCardProps {
   mealPlan: MealPlan;
@@ -36,6 +38,7 @@ export const EnhancedMealCard = ({
   animationDelay = 0,
 }: EnhancedMealCardProps) => {
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
   const [isVisible, setIsVisible] = useState(false);
   const [isRemoving, setIsRemoving] = useState(false);
   const { updateMealPlanServings } = useMealPlan();
@@ -63,9 +66,16 @@ export const EnhancedMealCard = ({
     }
   };
 
+  const handleTitleClick = () => {
+    const recipeToUse = parentRecipe || recipe;
+    if (recipeToUse) {
+      const slug = generateSlug(recipeToUse.title);
+      navigate(`/my-recipes/${slug}`);
+    }
+  };
+
   const recipeImage = parentRecipe?.image || recipe?.image || "/images/placeholder.png";
   const recipeTitle = parentRecipe?.title || recipe?.title || "Unknown Recipe";
-  const recipeServings = parentRecipe?.servings || recipe?.servings || 1;
 
   return (
     <div
@@ -93,12 +103,17 @@ export const EnhancedMealCard = ({
             className="h-16 w-16 rounded-lg object-cover object-center aspect-square ml-2 mt-2"
           />
           <div className="flex flex-col">
-            <h4 className={`font-semibold ${isMobile ? 'text-sm' : 'text-base'} line-clamp-1 text-navy`}>
+            <h4 
+              className={`font-semibold ${isMobile ? 'text-sm' : 'text-base'} line-clamp-1 text-navy cursor-pointer hover:text-terracotta transition-colors`}
+              onClick={handleTitleClick}
+            >
               {recipeTitle}
             </h4>
-            <p className={`text-muted-foreground ${isMobile ? 'text-xs' : 'text-sm'}`}>
-              {mealPlan.is_leftover ? `Leftover from ${parentRecipe?.title || 'original meal'}` : `${recipeServings} servings`}
-            </p>
+            {mealPlan.is_leftover && (
+              <p className={`text-muted-foreground ${isMobile ? 'text-xs' : 'text-sm'}`}>
+                Leftover from {parentRecipe?.title || 'original meal'}
+              </p>
+            )}
           </div>
         </div>
 
