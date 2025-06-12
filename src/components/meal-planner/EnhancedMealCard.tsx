@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Recipe, MealPlan } from "@/types";
 import { Button } from "@/components/ui/button";
-import { MoreVertical, Pencil, Plus, X } from "lucide-react";
+import { MoreHorizontal, Pencil, Plus, X } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
   DropdownMenu,

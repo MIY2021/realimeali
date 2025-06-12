@@ -1,7 +1,6 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Minus, Plus } from "lucide-react";
+import { X, Plus } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ServingsSelectorProps {
@@ -57,7 +56,7 @@ export const ServingsSelector = ({
         disabled={disabled || isUpdating || currentServings <= minServings}
         className={`${isMobile ? 'h-6 w-6 p-0' : 'h-8 w-8 p-0'} border-gray-300 hover:bg-gray-50`}
       >
-        <Minus className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
+        <X className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
       </Button>
       
       <span className={`${isMobile ? 'text-sm' : 'text-base'} font-medium min-w-[2rem] text-center ${isUpdating ? 'opacity-50' : ''}`}>
