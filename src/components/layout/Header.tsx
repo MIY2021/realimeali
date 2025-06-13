@@ -21,7 +21,6 @@ import {
 } from "@/components/ui/sheet";
 import { useState, useEffect } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { MobileMenuIndicator } from "./MobileMenuIndicator";
 import { supabase } from "@/integrations/supabase/client";
 
 const Header = () => {
@@ -98,48 +97,6 @@ const Header = () => {
       });
     }
   }, [user]);
-
-  // Add swipe gesture detection for mobile
-  useEffect(() => {
-    if (!isMobile) return;
-
-    let startX = 0;
-    let startY = 0;
-    const threshold = 50; // minimum distance for swipe
-    const edgeThreshold = 30; // pixels from right edge to start detecting
-
-    const handleTouchStart = (e: TouchEvent) => {
-      const touch = e.touches[0];
-      startX = touch.clientX;
-      startY = touch.clientY;
-    };
-
-    const handleTouchEnd = (e: TouchEvent) => {
-      const touch = e.changedTouches[0];
-      const endX = touch.clientX;
-      const endY = touch.clientY;
-      
-      const deltaX = startX - endX;
-      const deltaY = Math.abs(startY - endY);
-      
-      // Check if swipe started from right edge and moved left significantly
-      const isFromRightEdge = startX >= window.innerWidth - edgeThreshold;
-      const isLeftSwipe = deltaX > threshold;
-      const isHorizontal = deltaY < threshold;
-      
-      if (isFromRightEdge && isLeftSwipe && isHorizontal) {
-        setMobileMenuOpen(true);
-      }
-    };
-
-    document.addEventListener('touchstart', handleTouchStart, { passive: true });
-    document.addEventListener('touchend', handleTouchEnd, { passive: true });
-
-    return () => {
-      document.removeEventListener('touchstart', handleTouchStart);
-      document.removeEventListener('touchend', handleTouchEnd);
-    };
-  }, [isMobile]);
 
   return (
     <>
@@ -293,12 +250,6 @@ const Header = () => {
           </div>
         </div>
       </header>
-
-      {/* Mobile Menu Indicator */}
-      <MobileMenuIndicator 
-        onClick={() => setMobileMenuOpen(true)}
-        isMenuOpen={mobileMenuOpen}
-      />
     </>
   );
 };
