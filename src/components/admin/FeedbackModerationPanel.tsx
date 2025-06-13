@@ -117,10 +117,13 @@ export function FeedbackModerationPanel() {
         }
 
         console.log('Update succeeded despite error, using fallback data:', checkData);
-        data = checkData;
+        // Use the verified data
+        const verifiedData = checkData;
+        
+        console.log('Database update successful:', verifiedData);
+      } else {
+        console.log('Database update successful:', data);
       }
-
-      console.log('Database update successful:', data);
 
       // Update local state immediately
       setAllFeedback(prev => {
