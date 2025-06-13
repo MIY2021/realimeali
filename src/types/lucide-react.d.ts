@@ -8,6 +8,7 @@ declare module 'lucide-react' {
   export const CalendarDays: LucideIcon;
   export const Book: LucideIcon;
   export const Plus: LucideIcon;
+  export const Minus: LucideIcon;
   export const Trash2: LucideIcon;
   export const Clock: LucideIcon;
   export const Users: LucideIcon;
