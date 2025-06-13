@@ -81,7 +81,7 @@ export function FeedbackModerationPanel() {
 
       console.log('User is admin, proceeding with update...');
 
-      // Use upsert to handle the update more reliably
+      // Use update without .single() to avoid the PGRST116 error
       const { data, error } = await supabase
         .from('feedback_suggestions')
         .update({ 
@@ -89,41 +89,19 @@ export function FeedbackModerationPanel() {
           updated_at: new Date().toISOString() 
         })
         .eq('id', feedbackId)
-        .select()
-        .single();
+        .select();
 
       if (error) {
         console.error('Database error updating feedback:', error);
-        
-        // If single() fails, try without it to see if the update succeeded
-        const { data: checkData, error: checkError } = await supabase
-          .from('feedback_suggestions')
-          .select('*')
-          .eq('id', feedbackId)
-          .single();
-
-        if (checkError) {
-          console.error('Failed to verify update:', checkError);
-          throw error;
-        }
-
-        // Check if the update actually went through
-        const wasUpdated = Object.keys(updates).every(key => 
-          checkData[key] === updates[key]
-        );
-
-        if (!wasUpdated) {
-          throw error;
-        }
-
-        console.log('Update succeeded despite error, using fallback data:', checkData);
-        // Use the verified data
-        const verifiedData = checkData;
-        
-        console.log('Database update successful:', verifiedData);
-      } else {
-        console.log('Database update successful:', data);
+        throw error;
       }
+
+      if (!data || data.length === 0) {
+        console.error('No rows were updated - check permissions and feedback ID');
+        throw new Error('Failed to update feedback - no rows affected');
+      }
+
+      console.log('Database update successful:', data[0]);
 
       // Update local state immediately
       setAllFeedback(prev => {
