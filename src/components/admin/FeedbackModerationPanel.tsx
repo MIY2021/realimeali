@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
@@ -32,12 +31,17 @@ export function FeedbackModerationPanel() {
   const fetchFeedback = useCallback(async () => {
     setIsLoading(true);
     try {
+      console.log('Fetching feedback suggestions...');
       const { data, error } = await supabase
         .from('feedback_suggestions')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching feedback:', error);
+        throw error;
+      }
+      
       console.log('Fetched feedback data:', data);
       setAllFeedback(data || []);
     } catch (error) {
@@ -52,16 +56,68 @@ export function FeedbackModerationPanel() {
     try {
       console.log('Updating feedback with ID:', feedbackId, 'Updates:', updates);
       
+      // First, check if the current user is an admin
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        console.error('No authenticated user found');
+        throw new Error('User not authenticated');
+      }
+
+      console.log('Current user:', user.id);
+
+      // Check admin status
+      const { data: adminCheck, error: adminError } = await supabase
+        .rpc('is_admin');
+
+      if (adminError) {
+        console.error('Error checking admin status:', adminError);
+        throw new Error('Failed to verify admin permissions');
+      }
+
+      if (!adminCheck) {
+        console.error('User is not an admin');
+        throw new Error('Insufficient permissions');
+      }
+
+      console.log('User is admin, proceeding with update...');
+
+      // Use upsert to handle the update more reliably
       const { data, error } = await supabase
         .from('feedback_suggestions')
-        .update({ ...updates, updated_at: new Date().toISOString() })
+        .update({ 
+          ...updates, 
+          updated_at: new Date().toISOString() 
+        })
         .eq('id', feedbackId)
         .select()
         .single();
 
       if (error) {
         console.error('Database error updating feedback:', error);
-        throw error;
+        
+        // If single() fails, try without it to see if the update succeeded
+        const { data: checkData, error: checkError } = await supabase
+          .from('feedback_suggestions')
+          .select('*')
+          .eq('id', feedbackId)
+          .single();
+
+        if (checkError) {
+          console.error('Failed to verify update:', checkError);
+          throw error;
+        }
+
+        // Check if the update actually went through
+        const wasUpdated = Object.keys(updates).every(key => 
+          checkData[key] === updates[key]
+        );
+
+        if (!wasUpdated) {
+          throw error;
+        }
+
+        console.log('Update succeeded despite error, using fallback data:', checkData);
+        data = checkData;
       }
 
       console.log('Database update successful:', data);
@@ -77,15 +133,10 @@ export function FeedbackModerationPanel() {
 
       toast.success("Feedback updated successfully");
       
-      // Refresh data from server to ensure consistency
-      setTimeout(() => {
-        fetchFeedback();
-      }, 500);
-      
       return true;
     } catch (error) {
       console.error('Error updating feedback:', error);
-      toast.error("Failed to update feedback");
+      toast.error("Failed to update feedback: " + (error.message || 'Unknown error'));
       return false;
     }
   };
