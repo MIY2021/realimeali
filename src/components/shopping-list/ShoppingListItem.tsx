@@ -82,9 +82,9 @@ export function ShoppingListItem({
 
   return (
     <div 
-      className={`flex items-center justify-between p-3 border rounded-lg transition-colors ${
+      className={`flex items-center justify-between p-3 rounded-lg transition-colors ${
         isChecked ? 'bg-gray-50 opacity-75' : 'bg-white'
-      } ${copiedItemId === id ? 'bg-green-50 border-green-200' : ''}`}
+      } ${copiedItemId === id ? 'bg-green-50' : ''}`}
       onTouchStart={!isEditing ? handleTouchStart : undefined}
       onTouchEnd={!isEditing ? handleTouchEnd : undefined}
       onTouchMove={!isEditing ? handleTouchMove : undefined}
@@ -149,7 +149,7 @@ export function ShoppingListItem({
                   <span key={`${recipeIds[index] || index}-${recipeName}`}>
                     <Link 
                       to={`/my-recipes/${generateSlug(recipeName.trim())}`}
-                      className="hover:underline"
+                      className="hover:underline cursor-pointer"
                     >
                       {recipeName.trim()}
                     </Link>

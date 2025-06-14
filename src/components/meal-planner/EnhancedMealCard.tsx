@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Recipe, MealPlan } from "@/types";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Pencil, Plus, X } from "lucide-react";
+import { MoreHorizontal, Pencil, Plus, Check } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useNavigate } from "react-router-dom";
 import {
@@ -41,6 +41,7 @@ export const EnhancedMealCard = ({
   const navigate = useNavigate();
   const [isVisible, setIsVisible] = useState(false);
   const [isRemoving, setIsRemoving] = useState(false);
+  const [isCompleted, setIsCompleted] = useState(false);
   const { updateMealPlanServings } = useMealPlan();
 
   useEffect(() => {
@@ -55,6 +56,10 @@ export const EnhancedMealCard = ({
     setTimeout(() => {
       onRemove(mealPlan.id);
     }, 300);
+  };
+
+  const handleComplete = () => {
+    setIsCompleted(!isCompleted);
   };
 
   const handleServingsChange = async (newServings: number) => {
@@ -81,7 +86,9 @@ export const EnhancedMealCard = ({
     <div
       className={`relative bg-white rounded-lg border shadow-sm transition-all duration-500 ease-out hover:shadow-md group ${
         isVisible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
-      } ${isRemoving ? 'animate-out slide-out-to-right-full duration-300' : ''}`}
+      } ${isRemoving ? 'animate-out slide-out-to-right-full duration-300' : ''} ${
+        isCompleted ? 'opacity-75 bg-green-50' : ''
+      }`}
       style={{ 
         transitionDelay: `${animationDelay}ms`,
         willChange: 'transform, opacity'
@@ -126,6 +133,36 @@ export const EnhancedMealCard = ({
                 Leftover from {parentRecipe?.title || 'original meal'}
               </p>
             )}
+
+            {/* Actions Section moved up */}
+            <div className="flex items-center gap-2 mt-2">
+              {/* Leftover Button */}
+              {!mealPlan.is_leftover && recipe && onCreateLeftover && (
+                <Button
+                  size={isMobile ? "sm" : "sm"}
+                  variant="outline"
+                  onClick={() => onCreateLeftover(mealPlan, recipe)}
+                  className={`text-green-600 border-green-200 hover:bg-green-50 transition-all duration-200 hover:scale-105 ${isMobile ? 'h-7 px-2 text-xs' : 'h-8 px-3 text-sm'}`}
+                >
+                  <Plus className={`${isMobile ? 'h-3 w-3 mr-0.5' : 'h-4 w-4 mr-1'}`} />
+                  Lunch
+                </Button>
+              )}
+
+              {/* Complete Button */}
+              <Button
+                size={isMobile ? "sm" : "sm"}
+                variant="ghost"
+                onClick={handleComplete}
+                className={`transition-all duration-200 hover:scale-105 ${
+                  isCompleted 
+                    ? 'text-green-600 hover:text-green-700 hover:bg-green-50' 
+                    : 'text-gray-500 hover:text-green-600 hover:bg-green-50'
+                } ${isMobile ? 'h-7 w-7 p-0' : 'h-8 w-8 p-0'}`}
+              >
+                <Check className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -143,38 +180,12 @@ export const EnhancedMealCard = ({
               <span>Edit Recipe</span>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-red-500 focus:text-red-500 hover:bg-red-50">
-              <X className="mr-2 h-4 w-4" />
+            <DropdownMenuItem className="text-red-500 focus:text-red-500 hover:bg-red-50" onClick={handleRemove}>
+              <Check className="mr-2 h-4 w-4" />
               <span>Delete Meal</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-      </div>
-
-      {/* Actions Section */}
-      <div className={`flex items-center justify-end gap-2 ${isMobile ? 'px-3 pb-2' : 'px-4 pb-3'}`}>
-        {/* Leftover Button */}
-        {!mealPlan.is_leftover && recipe && onCreateLeftover && (
-          <Button
-            size={isMobile ? "sm" : "sm"}
-            variant="outline"
-            onClick={() => onCreateLeftover(mealPlan, recipe)}
-            className={`text-green-600 border-green-200 hover:bg-green-50 transition-all duration-200 hover:scale-105 ${isMobile ? 'h-7 px-2 text-xs' : 'h-8 px-3 text-sm'}`}
-          >
-            <Plus className={`${isMobile ? 'h-3 w-3 mr-0.5' : 'h-4 w-4 mr-1'}`} />
-            Lunch
-          </Button>
-        )}
-
-        {/* Remove Button */}
-        <Button
-          size={isMobile ? "sm" : "sm"}
-          variant="ghost"
-          onClick={handleRemove}
-          className={`text-red-500 hover:text-red-700 hover:bg-red-50 transition-all duration-200 hover:scale-105 ${isMobile ? 'h-7 w-7 p-0' : 'h-8 w-8 p-0'}`}
-        >
-          <X className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
-        </Button>
       </div>
 
       {/* Bottom Drag Handle */}
