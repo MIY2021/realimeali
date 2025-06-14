@@ -17,7 +17,8 @@ export interface HouseholdMealPlan {
   is_leftover: boolean;
   leftover_servings?: number;
   original_servings?: number;
-  planned_servings: number; // New field for user-selected serving size
+  planned_servings: number;
+  is_completed?: boolean; // New field for completion status
 }
 
 export interface MealPlanContextType {
@@ -29,7 +30,8 @@ export interface MealPlanContextType {
   removeMealPlan: (id: string) => Promise<void>;
   clearWeek: (weekNumber: 1 | 2) => Promise<void>;
   reorderMealPlans: (mealType: MealType, weekNumber: 1 | 2, sourceIndex: number, destinationIndex: number) => Promise<void>;
-  updateMealPlanServings: (mealPlanId: string, plannedServings: number) => Promise<void>; // New function
+  updateMealPlanServings: (mealPlanId: string, plannedServings: number) => Promise<void>;
+  updateMealPlanCompletion: (mealPlanId: string, isCompleted: boolean) => Promise<void>; // New function
   isLoading: boolean;
   fetchMealPlans?: () => Promise<void>;
 }

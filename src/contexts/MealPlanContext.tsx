@@ -125,6 +125,26 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [user?.id, currentHousehold?.id]);
 
+  const updateMealPlanCompletion = useCallback(async (mealPlanId: string, isCompleted: boolean) => {
+    if (!user || !currentHousehold) {
+      throw new Error('User must be logged in and have a household');
+    }
+
+    try {
+      await mealPlanService.updateMealPlanCompletion(mealPlanId, isCompleted, currentHousehold.id);
+      
+      // Update local state
+      setMealPlans(prev => prev.map(plan => 
+        plan.id === mealPlanId 
+          ? { ...plan, is_completed: isCompleted }
+          : plan
+      ));
+    } catch (error) {
+      console.error('Error updating meal plan completion:', error);
+      throw error;
+    }
+  }, [user?.id, currentHousehold?.id]);
+
   const addMealPlanWithLeftovers = useCallback(async (
     mealPlanData: Omit<MealPlan, 'id' | 'created_at' | 'updated_at'>, 
     weekNumber: 1 | 2, 
@@ -234,6 +254,7 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
     clearWeek,
     reorderMealPlans,
     updateMealPlanServings,
+    updateMealPlanCompletion,
     isLoading,
     fetchMealPlans
   };
