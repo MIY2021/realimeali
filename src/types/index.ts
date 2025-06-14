@@ -1,157 +1,130 @@
-export type Category =
-  | "breakfast"
-  | "lunch"
-  | "dinner"
-  | "snack"
-  | "dessert"
-  | "side dish"
-  | "appetizer"
-  | "salad"
-  | "soup"
-  | "sauce"
-  | "drink"
-  | "baking"
-  | "other";
 
-export type Cuisine =
-  | "american"
-  | "italian"
-  | "mexican"
-  | "chinese"
-  | "indian"
-  | "thai"
-  | "japanese"
-  | "korean"
-  | "vietnamese"
-  | "mediterranean"
-  | "greek"
-  | "spanish"
-  | "french"
-  | "german"
-  | "irish"
-  | "british"
-  | "cajun"
-  | "creole"
-  | "moroccan"
-  | "lebanese"
-  | "israeli"
-  | "turkish"
-  | "russian"
-  | "brazilian"
-  | "caribbean"
-  | "african"
-  | "fusion"
-  | "other";
-
-export type Diet =
-  | "vegetarian"
-  | "vegan"
-  | "gluten-free"
-  | "dairy-free"
-  | "keto"
-  | "paleo"
-  | "low-carb"
-  | "mediterranean"
-  | "pescatarian"
-  | "whole30"
-  | "other";
-
-export type Allergy =
-  | "dairy"
-  | "eggs"
-  | "gluten"
-  | "peanuts"
-  | "soy"
-  | "tree nuts"
-  | "fish"
-  | "shellfish"
-  | "sesame"
-  | "mustard"
-  | "celery"
-  | "lupin"
-  | "molluscs"
-  | "sulfites"
-  | "other";
-
-export type Ingredient = {
-  id: string;
-  name: string;
-  quantity: string;
-  unit: string;
-  notes?: string;
-};
-
-export type Step = {
-  id: string;
-  order: number;
-  text: string;
-};
-
-export type Recipe = {
+export interface Recipe {
   id: string;
   title: string;
-  description?: string;
+  description: string;
+  ingredients: string[];
+  instructions: string[];
+  prep_time: number;
+  cook_time: number;
+  servings: number;
   image?: string;
-  categories: Category[];
-  cuisine?: Cuisine;
-  diet?: Diet[];
-  allergies?: Allergy[];
-  ingredients: Ingredient[];
-  steps: Step[];
-  prep_time?: number;
-  cook_time?: number;
-  servings?: number;
-  notes?: string;
+  is_favorite: boolean;
+  created_at: string;
+  updated_at: string;
   created_by: string;
-  created_at: string;
-  updated_at: string;
-  household_id?: string;
-  community_owned: boolean;
-  source_url?: string;
-};
-
-export type User = {
-  id: string;
-  email: string;
-  name?: string;
-  image?: string;
-  households?: Household[];
-};
-
-export type Household = {
-  id: string;
-  name: string;
-  created_at: string;
-  updated_at: string;
-  owner_id: string;
-};
-
-export type Invitation = {
-  id: string;
   household_id: string;
-  invited_email: string;
-  sent_by: string;
-  created_at: string;
-  accepted_at?: string;
-};
-
-export type MealType = "breakfast" | "lunch" | "dinner" | "snack";
+  meal_type?: MealType;
+  cuisine_region?: CuisineRegion;
+  diet_lifestyle?: DietLifestyle[];
+  complexity_level?: ComplexityLevel;
+  slug?: string;
+  top_tip?: string;
+  main_ingredient?: MainIngredient;
+  has_cooked?: boolean; // New field to track if household has cooked this recipe
+}
 
 export interface MealPlan {
   id: string;
   date: string;
-  meal_type: MealType;
+  meal_type: string;
   recipe_id: string;
-  created_by: string;
-  created_at: string;
-  updated_at: string;
   slot_index: number;
-  parent_meal_plan_id?: string;
   is_leftover: boolean;
   leftover_servings?: number;
-  original_servings?: number;
-  planned_servings?: number;
+  original_servings: number;
+  planned_servings: number; // New field for user-selected serving size
+  created_at: string;
+  updated_at: string;
   household_id: string;
+  prep_time?: number;
+  cook_time?: number;
+  servings?: number;
   week_number: 1 | 2;
-  is_completed?: boolean; // New field for completion status
+  parent_meal_plan_id?: string;
+  created_by: string;
 }
+
+export interface Household {
+  id: string;
+  name: string;
+  created_at: string;
+  updated_at: string;
+  created_by: string;
+}
+
+export interface HouseholdMember {
+  id: string;
+  user_id: string;
+  household_id: string;
+  role: 'owner' | 'member';
+  joined_at: string;
+  profile?: {
+    full_name: string;
+    email: string;
+    avatar_url?: string;
+    auth_provider?: string;
+    avatar_type?: string;
+    avatar_data?: string;
+  };
+}
+
+export interface HouseholdJoinRequest {
+  id: string;
+  household_id: string;
+  user_id: string;
+  status: 'pending' | 'approved' | 'rejected';
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PublicRecipeShare {
+  public_share_id: string;
+  original_recipe_id: string;
+  shared_by_user_id: string;
+  shared_by_name: string;
+  shared_by_household_name: string;
+  title: string;
+  description: string[];
+  ingredients: string[];
+  instructions: string[];
+  prep_time: number;
+  cook_time: number;
+  servings: number;
+  image?: string;
+  expires_at: string;
+  created_at: string;
+  meal_type?: string;
+  original_household_id: string;
+  view_count: number;
+}
+
+export interface UserProfile {
+  id: string;
+  email: string;
+  full_name?: string;
+  first_name?: string;
+  last_name?: string;
+  avatar_url?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface HouseholdMealPlan {
+  [date: string]: {
+    [meal_type: string]: Recipe[];
+  };
+}
+
+// Updated to include sides, desserts, drinks in meal plans
+export type MealType = "breakfast" | "lunch" | "dinner" | "snacks" | "sides" | "desserts" | "drinks";
+
+// Updated to match database cuisine_region enum exactly (with greek added)
+export type CuisineRegion = "british" | "american" | "italian" | "french" | "mexican" | "indian" | "chinese" | "japanese" | "thai" | "mediterranean" | "middle_eastern" | "african" | "korean" | "caribbean" | "nordic" | "eastern_european" | "greek";
+
+export type DietLifestyle = "vegetarian" | "vegan" | "gluten_free" | "dairy_free" | "high_protein" | "kid_friendly" | "pescatarian" | "low_carb_keto" | "paleo" | "diabetic_friendly" | "budget_meals" | "pregnancy_safe";
+
+// Updated to match database exactly (changed easy to quick_easy)
+export type ComplexityLevel = "quick_easy" | "standard" | "complex";
+
+export type MainIngredient = "chicken" | "beef" | "pork" | "lamb" | "fish" | "tofu_tempeh" | "eggs" | "cheese" | "pasta" | "rice" | "lentils_beans" | "vegetables" | "potatoes" | "fruit" | "nuts_seeds" | "chocolate";

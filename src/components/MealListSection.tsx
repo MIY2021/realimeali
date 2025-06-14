@@ -118,7 +118,6 @@ export default function MealListSection({
                     className={`space-y-${isMobile ? '1.5' : '2'} transition-all duration-300 ease-out ${
                       snapshot.isDraggingOver ? 'bg-gray-50/50 rounded-lg p-2 scale-[1.01] border-2 border-dashed border-gray-300' : ''
                     }`}
-                    style={{ minHeight: '50px' }}
                   >
                     {mealPlans.map((plan, index) => {
                       const recipe = getRecipeById(plan.recipe_id);
@@ -133,16 +132,16 @@ export default function MealListSection({
                             <div
                               ref={provided.innerRef}
                               {...provided.draggableProps}
-                              className={`transition-all duration-200 ease-out ${
+                              className={`transition-all duration-300 ease-out transform-gpu ${
                                 snapshot.isDragging ? 
-                                  'z-50 rotate-1 scale-105 shadow-xl ring-2 ring-blue-300 bg-white rounded-lg' : 
-                                  'hover:shadow-sm'
+                                  'z-50 rotate-2 scale-105 shadow-2xl ring-2 ring-blue-300' : 
+                                  'hover:shadow-md'
                               }`}
                               style={{
                                 ...provided.draggableProps.style,
+                                willChange: 'transform',
                                 ...(snapshot.isDragging && {
-                                  transform: `${provided.draggableProps.style?.transform} rotate(2deg)`,
-                                  boxShadow: '0 20px 25px rgba(0, 0, 0, 0.1)',
+                                  filter: 'drop-shadow(0 20px 25px rgb(0 0 0 / 0.15))',
                                 }),
                               }}
                             >

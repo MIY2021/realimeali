@@ -41,10 +41,8 @@ export const EnhancedMealCard = ({
   const navigate = useNavigate();
   const [isVisible, setIsVisible] = useState(false);
   const [isRemoving, setIsRemoving] = useState(false);
-  const { updateMealPlanServings, updateMealPlanCompletion } = useMealPlan();
-
-  // Use the household-level completion status from the meal plan
-  const isCompleted = mealPlan.is_completed || false;
+  const [isCompleted, setIsCompleted] = useState(false);
+  const { updateMealPlanServings } = useMealPlan();
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -60,12 +58,8 @@ export const EnhancedMealCard = ({
     }, 300);
   };
 
-  const handleComplete = async () => {
-    try {
-      await updateMealPlanCompletion(mealPlan.id, !isCompleted);
-    } catch (error) {
-      console.error('Error updating completion status:', error);
-    }
+  const handleComplete = () => {
+    setIsCompleted(!isCompleted);
   };
 
   const handleServingsChange = async (newServings: number) => {
