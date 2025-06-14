@@ -79,12 +79,18 @@ export const EnhancedMealCard = ({
     }
   };
 
+  const handleCreateLeftover = () => {
+    if (recipe && onCreateLeftover) {
+      onCreateLeftover(mealPlan, recipe);
+    }
+  };
+
   const recipeImage = parentRecipe?.image || recipe?.image || "/images/placeholder.png";
   const recipeTitle = parentRecipe?.title || recipe?.title || "Unknown Recipe";
 
   return (
     <div
-      className={`relative bg-white rounded-lg border shadow-sm transition-all duration-500 ease-out hover:shadow-md group ${
+      className={`relative bg-white rounded-lg border shadow-sm transition-all duration-300 ease-out hover:shadow-md group ${
         isVisible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
       } ${isRemoving ? 'animate-out slide-out-to-right-full duration-300' : ''} ${
         isCompleted ? 'opacity-60 bg-gray-50' : ''
@@ -99,7 +105,7 @@ export const EnhancedMealCard = ({
         <div className="flex-1 flex items-start gap-3">
           {/* Drag Handle */}
           {dragHandleProps && (
-            <div {...dragHandleProps} className="flex-shrink-0 cursor-grab active:cursor-grabbing mt-2">
+            <div {...dragHandleProps} className="flex-shrink-0 cursor-grab active:cursor-grabbing mt-2 opacity-60 hover:opacity-100 transition-opacity">
               <GripVertical className="h-4 w-4 text-gray-400 transition-all duration-200 hover:scale-110 active:scale-95" />
             </div>
           )}
@@ -142,20 +148,6 @@ export const EnhancedMealCard = ({
 
         {/* Right side actions */}
         <div className="flex items-center gap-2 flex-shrink-0">
-          {/* Leftover Button */}
-          {!mealPlan.is_leftover && recipe && onCreateLeftover && (
-            <Button
-              size={isMobile ? "sm" : "sm"}
-              variant="outline"
-              onClick={() => onCreateLeftover(mealPlan, recipe)}
-              className={`text-green-600 border-green-200 hover:bg-green-50 transition-all duration-200 hover:scale-105 ${isMobile ? 'h-7 px-2 text-xs' : 'h-8 px-3 text-sm'}`}
-              disabled={isCompleted}
-            >
-              <Plus className={`${isMobile ? 'h-3 w-3 mr-0.5' : 'h-4 w-4 mr-1'}`} />
-              Lunch
-            </Button>
-          )}
-
           {/* Complete Button */}
           <Button
             size={isMobile ? "sm" : "sm"}
@@ -178,7 +170,16 @@ export const EnhancedMealCard = ({
                 <span className="sr-only">Open menu</span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-[160px]">
+            <DropdownMenuContent align="end" className="w-[180px] bg-white border shadow-lg">
+              {!mealPlan.is_leftover && recipe && onCreateLeftover && (
+                <>
+                  <DropdownMenuItem onClick={handleCreateLeftover} className="text-green-600 focus:text-green-600 hover:bg-green-50">
+                    <Plus className="mr-2 h-4 w-4" />
+                    <span>Add Leftover Lunch</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                </>
+              )}
               <DropdownMenuItem>
                 <Pencil className="mr-2 h-4 w-4" />
                 <span>Edit Recipe</span>

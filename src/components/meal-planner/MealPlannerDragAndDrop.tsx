@@ -32,35 +32,35 @@ export const MealPlannerDragAndDrop = ({
 }: MealPlannerDragAndDropProps) => {
   return (
     <DragDropContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
-      <Droppable droppableId="meal-types">
+      <Droppable droppableId="meal-types" type="CATEGORY">
         {(provided, snapshot) => (
           <div
             {...provided.droppableProps}
             ref={provided.innerRef}
-            className={`space-y-6 transition-all duration-200 ${
-              snapshot.isDraggingOver ? 'bg-blue-50/50 rounded-lg p-4' : ''
+            className={`space-y-6 transition-all duration-300 ease-out ${
+              snapshot.isDraggingOver ? 'bg-blue-50/30 rounded-xl p-4 border-2 border-dashed border-blue-300' : ''
             }`}
           >
             {mealTypes.map((mealType, index) => (
-              <Draggable key={mealType} draggableId={mealType} index={index}>
+              <Draggable key={mealType} draggableId={`category-${mealType}`} index={index}>
                 {(provided, snapshot) => (
                   <div
                     ref={provided.innerRef}
                     {...provided.draggableProps}
                     className={`
-                      transition-all duration-200 ease-in-out
+                      transition-all duration-300 ease-out transform-gpu
                       ${snapshot.isDragging ? 
-                        'shadow-2xl scale-105 rotate-1 z-50 bg-white rounded-lg border-2 border-blue-300' : 
-                        isDraggingCategory && draggedCategoryId !== mealType ? 
-                          'opacity-60 scale-95' : 
-                          'opacity-100 scale-100'
+                        'shadow-2xl scale-[1.02] rotate-1 z-50 bg-white rounded-xl border-2 border-blue-400 ring-4 ring-blue-200' : 
+                        isDraggingCategory && draggedCategoryId !== `category-${mealType}` ? 
+                          'opacity-50 scale-95 blur-sm' : 
+                          'opacity-100 scale-100 hover:shadow-lg'
                       }
-                      ${snapshot.isDragging ? 'transform-gpu' : ''}
                     `}
                     style={{
                       ...provided.draggableProps.style,
                       ...(snapshot.isDragging && {
-                        transform: `${provided.draggableProps.style?.transform} translateY(-8px)`,
+                        transform: `${provided.draggableProps.style?.transform} translateY(-12px)`,
+                        filter: 'drop-shadow(0 25px 25px rgb(0 0 0 / 0.15))',
                       }),
                     }}
                   >
@@ -73,7 +73,7 @@ export const MealPlannerDragAndDrop = ({
                       onCreateLeftover={onCreateLeftover}
                       onReorderMeals={onReorderMeals}
                       dragHandleProps={provided.dragHandleProps}
-                      collapsed={isDraggingCategory && draggedCategoryId !== mealType}
+                      collapsed={isDraggingCategory && draggedCategoryId !== `category-${mealType}`}
                     />
                   </div>
                 )}

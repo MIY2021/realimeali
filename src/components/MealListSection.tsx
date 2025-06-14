@@ -17,7 +17,7 @@ interface MealListSectionProps {
   onReorderMeals?: (mealType: MealType, sourceIndex: number, destinationIndex: number) => void;
   dragHandleProps?: DraggableProvidedDragHandleProps | null;
   collapsed?: boolean;
-  sectionIndex?: number; // For section-level staggered animations
+  sectionIndex?: number;
 }
 
 export default function MealListSection({
@@ -35,11 +35,10 @@ export default function MealListSection({
   const isMobile = useIsMobile();
   const [isVisible, setIsVisible] = useState(false);
 
-  // Trigger section animation on mount
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsVisible(true);
-    }, sectionIndex * 100); // Stagger section animations by 100ms
+    }, sectionIndex * 100);
     
     return () => clearTimeout(timer);
   }, [sectionIndex]);
@@ -58,7 +57,7 @@ export default function MealListSection({
   };
 
   return (
-    <div className={`mb-${isMobile ? '4' : '6'} transform transition-all duration-700 ease-out ${
+    <div className={`mb-${isMobile ? '4' : '6'} transform transition-all duration-500 ease-out ${
       isVisible 
         ? 'translate-y-0 opacity-100 scale-100' 
         : 'translate-y-6 opacity-0 scale-98'
@@ -68,12 +67,12 @@ export default function MealListSection({
       willChange: 'transform, opacity'
     }}>
       <div className={`flex items-center justify-between mb-3 ${isMobile ? 'px-1' : ''} ${
-        collapsed ? 'bg-gray-50 rounded-lg px-3 py-2' : ''
+        collapsed ? 'bg-blue-50 rounded-lg px-3 py-2 border border-blue-200' : ''
       }`}>
-        <div className="flex items-center gap-2">
-          <div {...dragHandleProps} className="touch-none">
+        <div className="flex items-center gap-3">
+          <div {...dragHandleProps} className="touch-none group">
             <GripVertical className={`${isMobile ? 'h-4 w-4' : 'h-5 w-5'} ${
-              collapsed ? 'text-blue-500' : 'text-gray-400'
+              collapsed ? 'text-blue-500' : 'text-gray-400 group-hover:text-gray-600'
             } cursor-grab active:cursor-grabbing transition-all duration-200 hover:scale-110 active:scale-95`} />
           </div>
           <h3 className={`${isMobile ? 'text-base' : 'text-lg'} font-semibold capitalize ${
@@ -82,7 +81,7 @@ export default function MealListSection({
             {mealType}
           </h3>
           {collapsed && (
-            <span className={`${isMobile ? 'text-xs' : 'text-sm'} text-muted-foreground bg-white px-2 py-1 rounded-full animate-fade-in`}>
+            <span className={`${isMobile ? 'text-xs' : 'text-sm'} text-blue-600 bg-blue-100 px-2 py-1 rounded-full animate-fade-in`}>
               {mealPlans.length} meal{mealPlans.length !== 1 ? 's' : ''}
             </span>
           )}
@@ -111,19 +110,18 @@ export default function MealListSection({
             </div>
           ) : (
             <DragDropContext onDragEnd={handleDragEnd}>
-              <Droppable droppableId={`${mealType}-meals`}>
+              <Droppable droppableId={`${mealType}-meals`} type="MEAL">
                 {(provided, snapshot) => (
                   <div
                     {...provided.droppableProps}
                     ref={provided.innerRef}
-                    className={`space-y-${isMobile ? '1.5' : '2'} transition-all duration-300 ${
-                      snapshot.isDraggingOver ? 'bg-gray-50 rounded-lg p-2 scale-105' : ''
+                    className={`space-y-${isMobile ? '1.5' : '2'} transition-all duration-300 ease-out ${
+                      snapshot.isDraggingOver ? 'bg-gray-50/50 rounded-lg p-2 scale-[1.01] border-2 border-dashed border-gray-300' : ''
                     }`}
                   >
                     {mealPlans.map((plan, index) => {
                       const recipe = getRecipeById(plan.recipe_id);
                       
-                      // For leftover meals, get the parent recipe if the current recipe is not found
                       const parentRecipe = plan.is_leftover && plan.parent_meal_plan_id 
                         ? getRecipeById(plan.recipe_id) 
                         : undefined;
@@ -134,12 +132,17 @@ export default function MealListSection({
                             <div
                               ref={provided.innerRef}
                               {...provided.draggableProps}
-                              className={`transition-all duration-300 ${
-                                snapshot.isDragging ? 'z-50 rotate-2 scale-105 shadow-lg' : ''
+                              className={`transition-all duration-300 ease-out transform-gpu ${
+                                snapshot.isDragging ? 
+                                  'z-50 rotate-2 scale-105 shadow-2xl ring-2 ring-blue-300' : 
+                                  'hover:shadow-md'
                               }`}
                               style={{
                                 ...provided.draggableProps.style,
-                                willChange: 'transform'
+                                willChange: 'transform',
+                                ...(snapshot.isDragging && {
+                                  filter: 'drop-shadow(0 20px 25px rgb(0 0 0 / 0.15))',
+                                }),
                               }}
                             >
                               <EnhancedMealCard
@@ -149,7 +152,7 @@ export default function MealListSection({
                                 onCreateLeftover={onCreateLeftover}
                                 parentRecipe={parentRecipe}
                                 dragHandleProps={provided.dragHandleProps}
-                                animationDelay={(sectionIndex * 100) + (index * 50)} // Stagger card animations
+                                animationDelay={(sectionIndex * 100) + (index * 50)}
                               />
                             </div>
                           )}
