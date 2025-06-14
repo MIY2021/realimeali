@@ -95,20 +95,32 @@ export const EnhancedMealCard = ({
       )}
 
       {/* Recipe Content */}
-      <div className="flex items-center justify-between">
-        <div className="flex-1 flex items-center gap-3">
+      <div className="flex items-start justify-between p-3">
+        <div className="flex-1 flex items-start gap-3">
           <img
             src={recipeImage}
             alt={recipeTitle}
-            className="h-16 w-16 rounded-lg object-cover object-center aspect-square ml-2 mt-2"
+            className="h-16 w-16 rounded-lg object-cover object-center aspect-square flex-shrink-0"
           />
-          <div className="flex flex-col">
+          <div className="flex flex-col min-w-0 flex-1">
             <h4 
-              className={`font-semibold ${isMobile ? 'text-sm' : 'text-base'} line-clamp-1 text-navy cursor-pointer hover:text-terracotta transition-colors`}
+              className={`font-semibold ${isMobile ? 'text-sm' : 'text-base'} line-clamp-1 text-navy cursor-pointer hover:text-terracotta transition-colors mb-1`}
               onClick={handleTitleClick}
             >
               {recipeTitle}
             </h4>
+            
+            {/* Servings moved directly under title */}
+            <div className="flex items-center gap-2 mb-1">
+              <span className={`${isMobile ? 'text-xs' : 'text-sm'} text-muted-foreground`}>
+                Servings:
+              </span>
+              <ServingsSelector
+                currentServings={mealPlan.planned_servings || recipe?.servings || 1}
+                onServingsChange={handleServingsChange}
+              />
+            </div>
+            
             {mealPlan.is_leftover && (
               <p className={`text-muted-foreground ${isMobile ? 'text-xs' : 'text-sm'}`}>
                 Leftover from {parentRecipe?.title || 'original meal'}
@@ -120,7 +132,7 @@ export const EnhancedMealCard = ({
         {/* Dropdown Menu */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0 data-[state=open]:bg-muted hover:bg-accent mr-2 mt-2">
+            <Button variant="ghost" className="h-8 w-8 p-0 data-[state=open]:bg-muted hover:bg-accent flex-shrink-0">
               <MoreHorizontal className="h-4 w-4" />
               <span className="sr-only">Open menu</span>
             </Button>
@@ -140,44 +152,29 @@ export const EnhancedMealCard = ({
       </div>
 
       {/* Actions Section */}
-      <div className={`flex items-center justify-between ${isMobile ? 'px-3 pb-2' : 'px-4 pb-3'}`}>
-        <div className="flex items-center gap-2">
-          {/* Servings Selector */}
-          <div className="flex items-center gap-2">
-            <span className={`${isMobile ? 'text-xs' : 'text-sm'} text-muted-foreground`}>
-              Servings:
-            </span>
-            <ServingsSelector
-              currentServings={mealPlan.planned_servings || recipe?.servings || 1}
-              onServingsChange={handleServingsChange}
-            />
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
-          {/* Leftover Button */}
-          {!mealPlan.is_leftover && recipe && onCreateLeftover && (
-            <Button
-              size={isMobile ? "sm" : "sm"}
-              variant="outline"
-              onClick={() => onCreateLeftover(mealPlan, recipe)}
-              className={`text-green-600 border-green-200 hover:bg-green-50 transition-all duration-200 hover:scale-105 ${isMobile ? 'h-7 px-2 text-xs' : 'h-8 px-3 text-sm'}`}
-            >
-              <Plus className={`${isMobile ? 'h-3 w-3 mr-0.5' : 'h-4 w-4 mr-1'}`} />
-              Lunch
-            </Button>
-          )}
-
-          {/* Remove Button */}
+      <div className={`flex items-center justify-end gap-2 ${isMobile ? 'px-3 pb-2' : 'px-4 pb-3'}`}>
+        {/* Leftover Button */}
+        {!mealPlan.is_leftover && recipe && onCreateLeftover && (
           <Button
             size={isMobile ? "sm" : "sm"}
-            variant="ghost"
-            onClick={handleRemove}
-            className={`text-red-500 hover:text-red-700 hover:bg-red-50 transition-all duration-200 hover:scale-105 ${isMobile ? 'h-7 w-7 p-0' : 'h-8 w-8 p-0'}`}
+            variant="outline"
+            onClick={() => onCreateLeftover(mealPlan, recipe)}
+            className={`text-green-600 border-green-200 hover:bg-green-50 transition-all duration-200 hover:scale-105 ${isMobile ? 'h-7 px-2 text-xs' : 'h-8 px-3 text-sm'}`}
           >
-            <X className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
+            <Plus className={`${isMobile ? 'h-3 w-3 mr-0.5' : 'h-4 w-4 mr-1'}`} />
+            Lunch
           </Button>
-        </div>
+        )}
+
+        {/* Remove Button */}
+        <Button
+          size={isMobile ? "sm" : "sm"}
+          variant="ghost"
+          onClick={handleRemove}
+          className={`text-red-500 hover:text-red-700 hover:bg-red-50 transition-all duration-200 hover:scale-105 ${isMobile ? 'h-7 w-7 p-0' : 'h-8 w-8 p-0'}`}
+        >
+          <X className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
+        </Button>
       </div>
 
       {/* Bottom Drag Handle */}

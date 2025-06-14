@@ -27,7 +27,7 @@ export default function ShoppingListItems({
       data-shopping-list-container
     >
       {shoppingList.map((item) => (
-        <Card key={item.id} className="w-full" data-shopping-list-item>
+        <Card key={item.id} className="w-full border-0 shadow-sm" data-shopping-list-item>
           <CardContent className={`${isMobile ? 'p-2' : 'p-3'}`}>
             <ShoppingListItem
               id={item.id}

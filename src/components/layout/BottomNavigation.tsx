@@ -28,12 +28,17 @@ const BottomNavigation = () => {
     { 
       to: "/shopping-list", 
       icon: ListChecks, 
-      label: "Groceries",
+      label: "Shopping List",
       activePattern: /^\/shopping-list/
     },
   ];
 
   const isActive = (pattern: RegExp) => pattern.test(location.pathname);
+
+  const handleNavClick = () => {
+    // Scroll to top when navigation item is clicked
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 md:hidden">
@@ -44,6 +49,7 @@ const BottomNavigation = () => {
             <Link
               key={item.to}
               to={item.to}
+              onClick={handleNavClick}
               className={cn(
                 "flex flex-col items-center justify-center min-w-0 flex-1 py-2 px-1 transition-colors",
                 active 
