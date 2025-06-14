@@ -145,17 +145,22 @@ export function ShoppingListItem({
             {recipeIds.length > 0 && (
               <div className="mt-1 text-xs text-green-600">
                 from{' '}
-                {individualRecipeNames.map((recipeName, index) => (
-                  <span key={`${recipeIds[index] || index}-${recipeName}`}>
-                    <Link 
-                      to={`/my-recipes/${generateSlug(recipeName.trim())}`}
-                      className="hover:underline cursor-pointer"
-                    >
-                      {recipeName.trim()}
-                    </Link>
-                    {index < individualRecipeNames.length - 1 && ', '}
-                  </span>
-                ))}
+                {individualRecipeNames.map((recipeName, index) => {
+                  const recipeId = recipeIds[index];
+                  const slug = generateSlug(recipeName.trim());
+                  return (
+                    <span key={`${recipeId || index}-${recipeName}`}>
+                      <Link 
+                        to={`/my-recipes/${slug}`}
+                        className="hover:underline cursor-pointer"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {recipeName.trim()}
+                      </Link>
+                      {index < individualRecipeNames.length - 1 && ', '}
+                    </span>
+                  );
+                })}
               </div>
             )}
           </div>

@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Recipe, MealPlan } from "@/types";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Pencil, Plus, Check } from "lucide-react";
+import { MoreHorizontal, Pencil, Plus, Check, X, GripVertical } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useNavigate } from "react-router-dom";
 import {
@@ -87,23 +87,23 @@ export const EnhancedMealCard = ({
       className={`relative bg-white rounded-lg border shadow-sm transition-all duration-500 ease-out hover:shadow-md group ${
         isVisible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
       } ${isRemoving ? 'animate-out slide-out-to-right-full duration-300' : ''} ${
-        isCompleted ? 'opacity-75 bg-green-50' : ''
+        isCompleted ? 'opacity-60 bg-gray-50' : ''
       }`}
       style={{ 
         transitionDelay: `${animationDelay}ms`,
         willChange: 'transform, opacity'
       }}
     >
-      {/* Drag Handle */}
-      {dragHandleProps && (
-        <div {...dragHandleProps} className="absolute top-2 left-2 cursor-grab active:cursor-grabbing z-10">
-          {/* <GripVertical className="h-4 w-4 text-gray-400 transition-all duration-200 hover:scale-110 active:scale-95" /> */}
-        </div>
-      )}
-
       {/* Recipe Content */}
       <div className="flex items-start justify-between p-3">
         <div className="flex-1 flex items-start gap-3">
+          {/* Drag Handle */}
+          {dragHandleProps && (
+            <div {...dragHandleProps} className="flex-shrink-0 cursor-grab active:cursor-grabbing mt-2">
+              <GripVertical className="h-4 w-4 text-gray-400 transition-all duration-200 hover:scale-110 active:scale-95" />
+            </div>
+          )}
+
           <img
             src={recipeImage}
             alt={recipeTitle}
@@ -111,14 +111,16 @@ export const EnhancedMealCard = ({
           />
           <div className="flex flex-col min-w-0 flex-1">
             <h4 
-              className={`font-semibold ${isMobile ? 'text-sm' : 'text-base'} line-clamp-1 text-navy cursor-pointer hover:text-terracotta transition-colors mb-1`}
+              className={`font-semibold ${isMobile ? 'text-sm' : 'text-base'} line-clamp-1 text-navy cursor-pointer hover:text-terracotta transition-colors mb-1 ${
+                isCompleted ? 'line-through' : ''
+              }`}
               onClick={handleTitleClick}
             >
               {recipeTitle}
             </h4>
             
             {/* Servings moved directly under title */}
-            <div className="flex items-center gap-2 mb-1">
+            <div className={`flex items-center gap-2 mb-1 ${isCompleted ? 'opacity-60' : ''}`}>
               <span className={`${isMobile ? 'text-xs' : 'text-sm'} text-muted-foreground`}>
                 Servings:
               </span>
@@ -129,71 +131,67 @@ export const EnhancedMealCard = ({
             </div>
             
             {mealPlan.is_leftover && (
-              <p className={`text-muted-foreground ${isMobile ? 'text-xs' : 'text-sm'}`}>
+              <p className={`text-muted-foreground ${isMobile ? 'text-xs' : 'text-sm'} ${
+                isCompleted ? 'opacity-60 line-through' : ''
+              }`}>
                 Leftover from {parentRecipe?.title || 'original meal'}
               </p>
             )}
-
-            {/* Actions Section moved up */}
-            <div className="flex items-center gap-2 mt-2">
-              {/* Leftover Button */}
-              {!mealPlan.is_leftover && recipe && onCreateLeftover && (
-                <Button
-                  size={isMobile ? "sm" : "sm"}
-                  variant="outline"
-                  onClick={() => onCreateLeftover(mealPlan, recipe)}
-                  className={`text-green-600 border-green-200 hover:bg-green-50 transition-all duration-200 hover:scale-105 ${isMobile ? 'h-7 px-2 text-xs' : 'h-8 px-3 text-sm'}`}
-                >
-                  <Plus className={`${isMobile ? 'h-3 w-3 mr-0.5' : 'h-4 w-4 mr-1'}`} />
-                  Lunch
-                </Button>
-              )}
-
-              {/* Complete Button */}
-              <Button
-                size={isMobile ? "sm" : "sm"}
-                variant="ghost"
-                onClick={handleComplete}
-                className={`transition-all duration-200 hover:scale-105 ${
-                  isCompleted 
-                    ? 'text-green-600 hover:text-green-700 hover:bg-green-50' 
-                    : 'text-gray-500 hover:text-green-600 hover:bg-green-50'
-                } ${isMobile ? 'h-7 w-7 p-0' : 'h-8 w-8 p-0'}`}
-              >
-                <Check className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
-              </Button>
-            </div>
           </div>
         </div>
 
-        {/* Dropdown Menu */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0 data-[state=open]:bg-muted hover:bg-accent flex-shrink-0">
-              <MoreHorizontal className="h-4 w-4" />
-              <span className="sr-only">Open menu</span>
+        {/* Right side actions */}
+        <div className="flex items-center gap-2 flex-shrink-0">
+          {/* Leftover Button */}
+          {!mealPlan.is_leftover && recipe && onCreateLeftover && (
+            <Button
+              size={isMobile ? "sm" : "sm"}
+              variant="outline"
+              onClick={() => onCreateLeftover(mealPlan, recipe)}
+              className={`text-green-600 border-green-200 hover:bg-green-50 transition-all duration-200 hover:scale-105 ${isMobile ? 'h-7 px-2 text-xs' : 'h-8 px-3 text-sm'}`}
+              disabled={isCompleted}
+            >
+              <Plus className={`${isMobile ? 'h-3 w-3 mr-0.5' : 'h-4 w-4 mr-1'}`} />
+              Lunch
             </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-[160px]">
-            <DropdownMenuItem>
-              <Pencil className="mr-2 h-4 w-4" />
-              <span>Edit Recipe</span>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-red-500 focus:text-red-500 hover:bg-red-50" onClick={handleRemove}>
-              <Check className="mr-2 h-4 w-4" />
-              <span>Delete Meal</span>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+          )}
 
-      {/* Bottom Drag Handle */}
-      {dragHandleProps && (
-        <div {...dragHandleProps} className="absolute bottom-1 right-1 cursor-grab active:cursor-grabbing">
-          {/* <GripVertical className="h-4 w-4 text-gray-400 transition-all duration-200 hover:scale-110 active:scale-95" /> */}
+          {/* Complete Button */}
+          <Button
+            size={isMobile ? "sm" : "sm"}
+            variant="ghost"
+            onClick={handleComplete}
+            className={`transition-all duration-200 hover:scale-105 ${
+              isCompleted 
+                ? 'text-green-600 hover:text-green-700 hover:bg-green-50' 
+                : 'text-gray-500 hover:text-green-600 hover:bg-green-50'
+            } ${isMobile ? 'h-7 w-7 p-0' : 'h-8 w-8 p-0'}`}
+          >
+            <Check className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
+          </Button>
+
+          {/* Dropdown Menu */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0 data-[state=open]:bg-muted hover:bg-accent flex-shrink-0">
+                <MoreHorizontal className="h-4 w-4" />
+                <span className="sr-only">Open menu</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-[160px]">
+              <DropdownMenuItem>
+                <Pencil className="mr-2 h-4 w-4" />
+                <span>Edit Recipe</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="text-red-500 focus:text-red-500 hover:bg-red-50" onClick={handleRemove}>
+                <X className="mr-2 h-4 w-4" />
+                <span>Remove from plan</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
-      )}
+      </div>
     </div>
   );
 };
