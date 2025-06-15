@@ -39,7 +39,7 @@ const BottomNavigation = () => {
   useEffect(() => {
     const handleFlashMealPlan = () => {
       setFlashMealPlan(true);
-      setTimeout(() => setFlashMealPlan(false), 1000);
+      setTimeout(() => setFlashMealPlan(false), 2000); // Extended to 2 seconds
     };
 
     window.addEventListener('flash-meal-plan', handleFlashMealPlan);
@@ -66,24 +66,28 @@ const BottomNavigation = () => {
               to={item.to}
               onClick={handleNavClick}
               className={cn(
-                "flex flex-col items-center justify-center min-w-0 flex-1 py-2 px-1 transition-colors",
+                "flex flex-col items-center justify-center min-w-0 flex-1 py-2 px-1 transition-all duration-300",
                 active 
                   ? "text-sage" 
                   : "text-gray-500 hover:text-gray-700",
-                isMealPlan && flashMealPlan && "animate-pulse"
+                isMealPlan && flashMealPlan && "animate-bounce"
               )}
+              style={{
+                transform: isMealPlan && flashMealPlan ? 'scale(1.2)' : 'scale(1)',
+                transition: 'all 0.3s ease-in-out'
+              }}
             >
               <item.icon 
                 className={cn(
-                  "h-5 w-5 mb-1 transition-all duration-200",
+                  "h-5 w-5 mb-1 transition-all duration-300",
                   active ? "text-sage" : "text-gray-500",
-                  isMealPlan && flashMealPlan && "scale-110 text-sage"
+                  isMealPlan && flashMealPlan && "text-terracotta scale-125 drop-shadow-lg"
                 )} 
               />
               <span className={cn(
-                "text-xs font-medium truncate",
+                "text-xs font-medium truncate transition-all duration-300",
                 active ? "text-sage" : "text-gray-500",
-                isMealPlan && flashMealPlan && "text-sage"
+                isMealPlan && flashMealPlan && "text-terracotta font-bold"
               )}>
                 {item.label}
               </span>
