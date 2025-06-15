@@ -106,13 +106,6 @@ export const EnhancedMealCard = ({
       {/* Recipe Content */}
       <div className="flex items-start justify-between p-3">
         <div className="flex-1 flex items-start gap-3">
-          {/* Drag Handle */}
-          {dragHandleProps && (
-            <div {...dragHandleProps} className="flex-shrink-0 cursor-grab active:cursor-grabbing mt-2 opacity-60 hover:opacity-100 transition-opacity">
-              <GripVertical className="h-4 w-4 text-gray-400 transition-all duration-200 hover:scale-110 active:scale-95" />
-            </div>
-          )}
-
           <img
             src={recipeImage}
             alt={recipeTitle}
@@ -194,6 +187,13 @@ export const EnhancedMealCard = ({
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+
+          {/* Drag Handle - moved to the rightmost position */}
+          {dragHandleProps && (
+            <div {...dragHandleProps} className="flex-shrink-0 cursor-grab active:cursor-grabbing opacity-60 hover:opacity-100 transition-opacity">
+              <GripVertical className="h-4 w-4 text-gray-400 transition-all duration-200 hover:scale-110 active:scale-95" />
+            </div>
+          )}
         </div>
       </div>
     </div>
