@@ -72,7 +72,7 @@ const BottomNavigation = () => {
 
   return (
     <>
-      <style jsx>{`
+      <style>{`
         @keyframes float-up {
           0% {
             transform: translateY(0) scale(1);
