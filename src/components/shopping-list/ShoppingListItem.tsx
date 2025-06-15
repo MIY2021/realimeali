@@ -149,9 +149,13 @@ export function ShoppingListItem({
                 from{' '}
                 {recipeIds.map((recipeId, index) => {
                   const recipe = recipes.find(r => r.id === recipeId);
-                  if (!recipe) return null;
+                  if (!recipe) {
+                    console.log('ShoppingListItem: Recipe not found for ID:', recipeId);
+                    return null;
+                  }
                   
                   const recipeUrl = createRecipeUrl(recipe);
+                  console.log('ShoppingListItem: Generated URL for recipe:', recipe.title, '→', recipeUrl);
                   
                   return (
                     <span key={recipeId}>
@@ -159,6 +163,7 @@ export function ShoppingListItem({
                         to={recipeUrl}
                         className="hover:underline cursor-pointer"
                         onClick={(e) => {
+                          console.log('ShoppingListItem: Link clicked, navigating to:', recipeUrl);
                           e.stopPropagation();
                           // Save scroll position for shopping list
                           sessionStorage.setItem('restoreShoppingListScroll', 'true');
