@@ -51,6 +51,11 @@ export function ShoppingListItem({
     });
   };
 
+  // Simple toggle function for interactions that don't provide checked value
+  const handleSimpleToggle = () => {
+    onCheck(!isChecked);
+  };
+
   // Set up touch interactions
   const {
     handleTouchStart,
