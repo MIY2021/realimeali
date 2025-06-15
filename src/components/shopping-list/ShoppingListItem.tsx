@@ -74,8 +74,10 @@ export function ShoppingListItem({
     setIsEditing(false);
   };
 
-  const handleToggleCheck = () => {
-    onCheck(!isChecked);
+  const handleToggleCheck = (checked: boolean | string) => {
+    // Handle both boolean and string types from Checkbox component
+    const isCheckedValue = typeof checked === 'string' ? checked === 'true' : checked;
+    onCheck(isCheckedValue);
   };
 
   // Get recipe names for display
