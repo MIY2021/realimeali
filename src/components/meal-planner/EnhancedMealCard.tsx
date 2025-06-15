@@ -1,11 +1,22 @@
 
 import { useState, useEffect } from "react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Recipe, MealPlan } from "@/types";
-import { GripVertical } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { MoreHorizontal, Pencil, Plus, Check, X, GripVertical } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { useNavigate } from "react-router-dom";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { cn } from "@/lib/utils";
+import { ServingsSelector } from "./ServingsSelector";
 import { useMealPlan } from "@/contexts/MealPlanContext";
-import { MealCardContent } from "./MealCardContent";
-import { MealCardDetails } from "./MealCardDetails";
-import { MealCardActions } from "./MealCardActions";
+import { generateSlug } from "@/utils/slugUtils";
 
 interface EnhancedMealCardProps {
   mealPlan: MealPlan;
@@ -26,6 +37,8 @@ export const EnhancedMealCard = ({
   dragHandleProps,
   animationDelay = 0,
 }: EnhancedMealCardProps) => {
+  const isMobile = useIsMobile();
+  const navigate = useNavigate();
   const [isVisible, setIsVisible] = useState(false);
   const [isRemoving, setIsRemoving] = useState(false);
   const { updateMealPlanServings, updateMealPlanCompletion } = useMealPlan();
@@ -57,6 +70,15 @@ export const EnhancedMealCard = ({
       await updateMealPlanServings(mealPlan.id, newServings);
     } catch (error) {
       console.error('Error updating servings:', error);
+      // The error is already handled in the context
+    }
+  };
+
+  const handleTitleClick = () => {
+    const recipeToUse = parentRecipe || recipe;
+    if (recipeToUse) {
+      const slug = generateSlug(recipeToUse.title);
+      navigate(`/my-recipes/${slug}`);
     }
   };
 
@@ -81,34 +103,90 @@ export const EnhancedMealCard = ({
         willChange: 'transform, opacity'
       }}
     >
+      {/* Recipe Content */}
       <div className="flex items-start justify-between p-3">
         <div className="flex-1 flex items-start gap-3">
-          <MealCardContent
-            recipeImage={recipeImage}
-            recipeTitle={recipeTitle}
-            isCompleted={mealPlan.is_completed}
-            parentRecipe={parentRecipe}
-            recipe={recipe}
+          <img
+            src={recipeImage}
+            alt={recipeTitle}
+            className="h-16 w-16 rounded-lg object-cover object-center aspect-square flex-shrink-0"
           />
-          <MealCardDetails
-            mealPlan={mealPlan}
-            recipe={recipe}
-            parentRecipe={parentRecipe}
-            onServingsChange={handleServingsChange}
-          />
+          <div className="flex flex-col min-w-0 flex-1">
+            <h4 
+              className={`font-semibold ${isMobile ? 'text-sm' : 'text-base'} line-clamp-1 text-navy cursor-pointer hover:text-terracotta transition-colors mb-1 ${
+                mealPlan.is_completed ? 'line-through' : ''
+              }`}
+              onClick={handleTitleClick}
+            >
+              {recipeTitle}
+            </h4>
+            
+            {/* Servings moved directly under title */}
+            <div className={`flex items-center gap-2 mb-1 ${mealPlan.is_completed ? 'opacity-60' : ''}`}>
+              <span className={`${isMobile ? 'text-xs' : 'text-sm'} text-muted-foreground`}>
+                Servings:
+              </span>
+              <ServingsSelector
+                currentServings={mealPlan.planned_servings || recipe?.servings || 1}
+                onServingsChange={handleServingsChange}
+              />
+            </div>
+            
+            {mealPlan.is_leftover && (
+              <p className={`text-muted-foreground ${isMobile ? 'text-xs' : 'text-sm'} ${
+                mealPlan.is_completed ? 'opacity-60 line-through' : ''
+              }`}>
+                Leftover from {parentRecipe?.title || 'original meal'}
+              </p>
+            )}
+          </div>
         </div>
 
         {/* Right side actions */}
         <div className="flex items-center gap-2 flex-shrink-0">
-          <MealCardActions
-            mealPlan={mealPlan}
-            recipe={recipe}
-            onComplete={handleComplete}
-            onCreateLeftover={onCreateLeftover ? handleCreateLeftover : undefined}
-            onRemove={handleRemove}
-          />
+          {/* Dropdown Menu */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0 data-[state=open]:bg-muted hover:bg-accent flex-shrink-0">
+                <MoreHorizontal className="h-4 w-4" />
+                <span className="sr-only">Open menu</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-[180px] bg-white border shadow-lg">
+              <DropdownMenuItem 
+                onClick={handleComplete} 
+                className={`${
+                  mealPlan.is_completed 
+                    ? 'text-green-600 focus:text-green-600 hover:bg-green-50' 
+                    : 'text-gray-600 focus:text-gray-600 hover:bg-gray-50'
+                }`}
+              >
+                <Check className="mr-2 h-4 w-4" />
+                <span>Meal Made!</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              {!mealPlan.is_leftover && recipe && onCreateLeftover && (
+                <>
+                  <DropdownMenuItem onClick={handleCreateLeftover} className="text-green-600 focus:text-green-600 hover:bg-green-50">
+                    <Plus className="mr-2 h-4 w-4" />
+                    <span>Add Leftover Lunch</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                </>
+              )}
+              <DropdownMenuItem>
+                <Pencil className="mr-2 h-4 w-4" />
+                <span>Edit Recipe</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="text-red-500 focus:text-red-500 hover:bg-red-50" onClick={handleRemove}>
+                <X className="mr-2 h-4 w-4" />
+                <span>Remove from plan</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
-          {/* Drag Handle */}
+          {/* Drag Handle - moved to the rightmost position */}
           {dragHandleProps && (
             <div {...dragHandleProps} className="flex-shrink-0 cursor-grab active:cursor-grabbing opacity-60 hover:opacity-100 transition-opacity">
               <GripVertical className="h-4 w-4 text-gray-400 transition-all duration-200 hover:scale-110 active:scale-95" />
