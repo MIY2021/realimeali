@@ -67,6 +67,7 @@ export function useRandomMealSelection() {
           week_number: weekNumber,
           original_servings: recipe.servings || 4,
           planned_servings: recipe.servings || 4, // Add planned_servings field
+          is_completed: false, // Add the required is_completed field
         };
 
         await mealPlanService.addMealPlan(

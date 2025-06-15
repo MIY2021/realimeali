@@ -164,6 +164,7 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
         is_leftover: false,
         household_id: currentHousehold.id,
         week_number: weekNumber,
+        is_completed: false, // Add the required is_completed field
       }, weekNumber, silentMode);
 
       if (leftoverServings && leftoverServings > 0) {
@@ -184,6 +185,7 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
             planned_servings: leftoverServings, // Add planned_servings for leftover
             household_id: currentHousehold.id,
             week_number: weekNumber,
+            is_completed: false, // Add the required is_completed field
           }, weekNumber, silentMode);
 
           if (!silentMode) {
