@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -56,7 +55,7 @@ export function ShoppingListItem({
     onCheck(!isChecked);
   };
 
-  // Set up touch interactions
+  // Set up touch interactions - using handleSimpleToggle instead of onCheck
   const {
     handleTouchStart,
     handleTouchEnd,
@@ -64,7 +63,7 @@ export function ShoppingListItem({
     handleMouseDown,
     handleMouseUp,
     handleMouseLeave
-  } = useShoppingListInteractions(isChecked, onCheck, handleCopyName);
+  } = useShoppingListInteractions(isChecked, handleSimpleToggle, handleCopyName);
 
   const handleSaveEdit = () => {
     // Note: Since we don't have updateShoppingListItem in the context,
