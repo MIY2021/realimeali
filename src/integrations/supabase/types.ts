@@ -130,11 +130,13 @@ export type Database = {
       }
       feedback_suggestions: {
         Row: {
+          admin_notes: string | null
           created_at: string
           email: string | null
           id: string
           image_url: string | null
           message: string
+          priority: string | null
           status: string
           subject: string
           type: string
@@ -142,11 +144,13 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          admin_notes?: string | null
           created_at?: string
           email?: string | null
           id?: string
           image_url?: string | null
           message: string
+          priority?: string | null
           status?: string
           subject: string
           type?: string
@@ -154,11 +158,13 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          admin_notes?: string | null
           created_at?: string
           email?: string | null
           id?: string
           image_url?: string | null
           message?: string
+          priority?: string | null
           status?: string
           subject?: string
           type?: string

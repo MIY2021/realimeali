@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Clock, AlertCircle, Check, Camera, Eye, User, Mail, Calendar } from "lucide-react";
+import { Clock, AlertCircle, Check, Camera, Eye, User, Mail, Calendar, X } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { FeedbackStatusManager } from "./FeedbackStatusManager";
 
@@ -49,22 +49,12 @@ export function SingleFeedbackModerationView({
   }, [feedback.admin_notes, feedback.id]);
 
   const getStatusIcon = (status: string) => {
-    const normalizedStatus = normalizeStatus(status);
-    switch (normalizedStatus) {
+    switch (status) {
       case 'pending': return <Clock className="h-4 w-4 text-amber-500" />;
       case 'in_progress': return <AlertCircle className="h-4 w-4 text-blue-500" />;
       case 'complete': return <Check className="h-4 w-4 text-green-500" />;
-      case 'dismissed': return <Check className="h-4 w-4 text-gray-500" />;
+      case 'dismissed': return <X className="h-4 w-4 text-gray-500" />;
       default: return <Clock className="h-4 w-4" />;
-    }
-  };
-
-  const normalizeStatus = (status: string) => {
-    switch (status) {
-      case 'new': return 'pending';
-      case 'completed': return 'complete';
-      case 'closed': return 'complete';
-      default: return status;
     }
   };
 
@@ -82,6 +72,16 @@ export function SingleFeedbackModerationView({
       case 'high': return 'bg-red-100 text-red-800';
       case 'medium': return 'bg-yellow-100 text-yellow-800';
       case 'low': return 'bg-green-100 text-green-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'pending': return 'bg-amber-100 text-amber-800';
+      case 'in_progress': return 'bg-blue-100 text-blue-800';
+      case 'complete': return 'bg-green-100 text-green-800';
+      case 'dismissed': return 'bg-gray-100 text-gray-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
@@ -120,8 +120,6 @@ export function SingleFeedbackModerationView({
       setImageDialogOpen(true);
     }
   };
-
-  const currentStatus = normalizeStatus(feedback.status);
 
   return (
     <>
@@ -162,13 +160,8 @@ export function SingleFeedbackModerationView({
                   {feedback.priority} priority
                 </Badge>
               )}
-              <Badge variant="outline" className={`text-xs ${
-                currentStatus === 'pending' ? 'bg-amber-100 text-amber-800' :
-                currentStatus === 'in_progress' ? 'bg-blue-100 text-blue-800' :
-                currentStatus === 'dismissed' ? 'bg-gray-100 text-gray-800' :
-                'bg-green-100 text-green-800'
-              }`}>
-                {currentStatus.replace('_', ' ')}
+              <Badge variant="outline" className={`text-xs ${getStatusColor(feedback.status)}`}>
+                {feedback.status.replace('_', ' ')}
               </Badge>
             </div>
 

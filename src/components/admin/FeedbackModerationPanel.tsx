@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
@@ -137,37 +138,22 @@ export function FeedbackModerationPanel() {
     await updateFeedback(feedbackId, { admin_notes: notes });
   };
 
-  const normalizeStatus = (status: string) => {
-    switch (status) {
-      case 'new': return 'pending';
-      case 'completed': return 'complete';
-      case 'closed': return 'complete';
-      default: return status;
-    }
-  };
-
   // Filter feedback based on current filter
   useEffect(() => {
     let filtered: FeedbackItem[] = [];
     
     switch (currentFilter) {
       case 'pending':
-        filtered = allFeedback.filter(f => {
-          const status = normalizeStatus(f.status);
-          return status === 'pending';
-        });
+        filtered = allFeedback.filter(f => f.status === 'pending');
         break;
       case 'in_progress':
-        filtered = allFeedback.filter(f => {
-          const status = normalizeStatus(f.status);
-          return status === 'in_progress';
-        });
+        filtered = allFeedback.filter(f => f.status === 'in_progress');
         break;
       case 'complete':
-        filtered = allFeedback.filter(f => {
-          const status = normalizeStatus(f.status);
-          return status === 'complete';
-        });
+        filtered = allFeedback.filter(f => f.status === 'complete');
+        break;
+      case 'dismissed':
+        filtered = allFeedback.filter(f => f.status === 'dismissed');
         break;
       default:
         filtered = allFeedback;
@@ -245,6 +231,7 @@ export function FeedbackModerationPanel() {
                 {currentFilter === 'pending' && <Clock className="h-12 w-12 text-amber-500" />}
                 {currentFilter === 'in_progress' && <AlertCircle className="h-12 w-12 text-blue-500" />}
                 {currentFilter === 'complete' && <Check className="h-12 w-12 text-green-500" />}
+                {currentFilter === 'dismissed' && <Check className="h-12 w-12 text-gray-500" />}
               </div>
               <h3 className="text-lg font-medium text-muted-foreground mb-2">
                 No {currentFilter.replace('_', ' ')} feedback
