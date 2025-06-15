@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import ShoppingListHeader from "@/components/shopping-list/ShoppingListHeader";
 import ShoppingListWeekSelector from "@/components/shopping-list/ShoppingListWeekSelector";
 import ShoppingListSkeleton from "@/components/shopping-list/ShoppingListSkeleton";
@@ -30,6 +30,8 @@ export default function ShoppingList() {
   const { setScrollKey, restoreScrollPosition, saveScrollPosition } = useScrollPosition();
   const [weekNumber, setWeekNumber] = useState<1 | 2>(1);
   const [copiedItemId, setCopiedItemId] = useState<string | null>(null);
+  const [hasInitiallyLoaded, setHasInitiallyLoaded] = useState(false);
+  const initialLoadRef = useRef(false);
   
   const {
     shoppingList,
@@ -48,6 +50,14 @@ export default function ShoppingList() {
     handleGenerate
   } = useShoppingListGeneration(weekNumber, clearAll, refreshList);
 
+  // Track when we've initially loaded to prevent unnecessary skeleton flashing
+  useEffect(() => {
+    if (!initialLoadRef.current && (shoppingList.length > 0 || !isLoading)) {
+      initialLoadRef.current = true;
+      setHasInitiallyLoaded(true);
+    }
+  }, [shoppingList.length, isLoading]);
+
   // Set up scroll position management
   useEffect(() => {
     const scrollKey = `shopping-list-week-${weekNumber}`;
@@ -59,12 +69,14 @@ export default function ShoppingList() {
       console.log('Restoring shopping list scroll position');
       sessionStorage.removeItem('restoreShoppingListScroll');
       
-      // Delay restoration to ensure content is rendered
-      setTimeout(() => {
-        restoreScrollPosition(scrollKey);
-      }, 100);
+      // Only restore if we have data to avoid flashing
+      if (hasInitiallyLoaded || shoppingList.length > 0) {
+        setTimeout(() => {
+          restoreScrollPosition(scrollKey);
+        }, 50); // Reduced delay for faster restoration
+      }
     }
-  }, [weekNumber, setScrollKey, restoreScrollPosition]);
+  }, [weekNumber, setScrollKey, restoreScrollPosition, hasInitiallyLoaded, shoppingList.length]);
 
   // Save scroll position before unmounting and when navigating
   useEffect(() => {
@@ -148,8 +160,8 @@ export default function ShoppingList() {
     }
   };
 
-  // Show loading state while recipes are loading
-  if (recipesLoading) {
+  // Show loading state while recipes are loading, but only on initial load
+  if (recipesLoading && !hasInitiallyLoaded) {
     return (
       <div className="container max-w-4xl py-4 px-4 sm:py-8 sm:px-6">
         <ShoppingListHeader 
@@ -205,10 +217,11 @@ export default function ShoppingList() {
             generationProgress={generationProgress}
           />
 
-          {isLoading ? (
+          {/* Only show skeleton if we're loading AND we haven't loaded before AND we don't have data */}
+          {isLoading && !hasInitiallyLoaded && shoppingList.length === 0 ? (
             <ShoppingListSkeleton />
           ) : (
-            <>
+            <div className={`transition-opacity duration-200 ${isLoading && !hasInitiallyLoaded ? 'opacity-50' : 'opacity-100'}`}>
               {shoppingList.length === 0 ? (
                 <ShoppingListEmptyState
                   weekNumber={weekNumber}
@@ -231,7 +244,7 @@ export default function ShoppingList() {
                   />
                 </>
               )}
-            </>
+            </div>
           )}
         </>
       )}

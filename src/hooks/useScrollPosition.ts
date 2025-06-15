@@ -110,11 +110,11 @@ export const useScrollPosition = () => {
 
       checkForItems();
       
-      // Reduced timeout for faster response
+      // Reduced timeout for mobile - faster response
       setTimeout(() => {
         console.log('Content wait timeout, proceeding anyway');
         resolve(true);
-      }, 1500);
+      }, 800); // Reduced from 1500ms to 800ms for mobile
     });
   };
 
@@ -143,19 +143,20 @@ export const useScrollPosition = () => {
         // Wait for content to be ready
         await waitForContent();
 
-        // Additional small delay for layout stabilization
-        await new Promise(resolve => setTimeout(resolve, 150));
+        // Reduced delay for mobile - smoother experience
+        await new Promise(resolve => setTimeout(resolve, 50)); // Reduced from 150ms
 
         console.log('Content ready, restoring scroll position to:', position.y);
         
-        // Restore scroll position immediately
+        // Restore scroll position immediately with smooth behavior on mobile
+        const isMobile = window.innerWidth < 768;
         window.scrollTo({
           left: position.x,
           top: position.y,
-          behavior: 'auto'
+          behavior: isMobile ? 'auto' : 'smooth' // Instant on mobile to prevent flashing
         });
 
-        // Verify and retry if needed
+        // Reduced verification delay for mobile
         setTimeout(() => {
           const currentScroll = window.scrollY;
           const targetScroll = position.y;
@@ -169,7 +170,7 @@ export const useScrollPosition = () => {
               behavior: 'auto'
             });
             
-            // Final verification
+            // Final verification with reduced delay
             setTimeout(() => {
               const finalScroll = window.scrollY;
               if (Math.abs(finalScroll - targetScroll) > threshold) {
@@ -178,11 +179,11 @@ export const useScrollPosition = () => {
               } else {
                 console.log('Scroll position restored successfully');
               }
-            }, 100);
+            }, 50); // Reduced from 100ms
           } else {
             console.log('Scroll position restored successfully');
           }
-        }, 100);
+        }, 50); // Reduced from 100ms
 
       } catch (error) {
         console.error('Error restoring scroll position:', error);
