@@ -42,39 +42,48 @@ export const RecipeMetaInfo = ({ recipe, onServingsChange, currentServings }: Re
   };
 
   return (
-    <div className="flex items-center gap-8 mb-6 px-2">
+    <div className="space-y-4 mb-6 px-2">
+      {/* Time info - always on its own row on mobile */}
       <div className="flex items-center gap-2">
         <Clock className="h-5 w-5 text-terracotta" />
         <span className="text-navy font-medium">{totalTime} min total</span>
       </div>
-      <div className="flex items-center gap-2">
-        <Users className="h-5 w-5 text-terracotta" />
+      
+      {/* Servings controls - stacked layout for mobile */}
+      <div className="space-y-3">
         <div className="flex items-center gap-2">
-          <ServingsSelector
-            currentServings={adjustedServings}
-            onServingsChange={handleServingsChange}
-            minServings={1}
-            maxServings={20}
-          />
-          <span className="text-navy font-medium">servings</span>
+          <Users className="h-5 w-5 text-terracotta" />
+          <span className="text-navy font-medium">Servings</span>
+        </div>
+        
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+          <div className="flex items-center gap-2">
+            <ServingsSelector
+              currentServings={adjustedServings}
+              onServingsChange={handleServingsChange}
+              minServings={1}
+              maxServings={20}
+            />
+            {isAdjusted && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleReset}
+                className="h-6 px-2 text-xs text-gray-500 hover:text-gray-700 flex-shrink-0"
+                title="Reset to original servings"
+              >
+                <RotateCcw className="h-3 w-3" />
+              </Button>
+            )}
+          </div>
+          
           {isAdjusted && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleReset}
-              className="h-6 px-2 text-xs text-gray-500 hover:text-gray-700"
-              title="Reset to original servings"
-            >
-              <RotateCcw className="h-3 w-3" />
-            </Button>
+            <div className="text-xs text-gray-500">
+              (Original: {recipe.servings} servings)
+            </div>
           )}
         </div>
       </div>
-      {isAdjusted && (
-        <div className="text-xs text-gray-500">
-          (Original: {recipe.servings} servings)
-        </div>
-      )}
     </div>
   );
 };
