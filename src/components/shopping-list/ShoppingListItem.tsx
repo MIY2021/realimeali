@@ -1,13 +1,13 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Pencil, Copy, X, Check } from "lucide-react";
+import { generateSlug } from "@/utils/slugUtils";
 import { Link } from "react-router-dom";
 import { useShoppingListInteractions } from "./ShoppingListInteractions";
 import { useToast } from "@/hooks/use-toast";
-import { useRecipes } from "@/contexts/RecipesContext";
-import { createRecipeUrl } from "@/utils/slugUtils";
 
 interface ShoppingListItemProps {
   id: string;
@@ -39,7 +39,6 @@ export function ShoppingListItem({
   const [editQuantity, setEditQuantity] = useState(quantity?.toString() || '');
   const [editUnit, setEditUnit] = useState(unit || '');
   const { toast } = useToast();
-  const { recipes } = useRecipes();
 
   const handleCopyName = () => {
     navigator.clipboard.writeText(name);
@@ -50,12 +49,7 @@ export function ShoppingListItem({
     });
   };
 
-  // Simple toggle function for interactions that don't provide checked value
-  const handleSimpleToggle = () => {
-    onCheck(!isChecked);
-  };
-
-  // Set up touch interactions - using handleSimpleToggle instead of onCheck
+  // Set up touch interactions
   const {
     handleTouchStart,
     handleTouchEnd,
@@ -63,7 +57,7 @@ export function ShoppingListItem({
     handleMouseDown,
     handleMouseUp,
     handleMouseLeave
-  } = useShoppingListInteractions(isChecked, handleSimpleToggle, handleCopyName);
+  } = useShoppingListInteractions(isChecked, onCheck, handleCopyName);
 
   const handleSaveEdit = () => {
     // Note: Since we don't have updateShoppingListItem in the context,
@@ -78,88 +72,25 @@ export function ShoppingListItem({
     setIsEditing(false);
   };
 
-  const handleToggleCheck = (checked: boolean | string) => {
-    // Handle both boolean and string types from Checkbox component
-    const isCheckedValue = typeof checked === 'string' ? checked === 'true' : checked;
-    onCheck(isCheckedValue);
+  const handleToggleCheck = () => {
+    onCheck(!isChecked);
   };
 
   // Get recipe names for display
   const recipeNames = getRecipeNames(recipeIds);
   const individualRecipeNames = recipeNames.split(', ');
 
-  // Handle container interactions - but not when clicking on recipe links
-  const handleContainerTouchStart = (e: React.TouchEvent) => {
-    // Don't handle touch if clicking on a link
-    if ((e.target as HTMLElement).closest('a')) {
-      return;
-    }
-    if (!isEditing) {
-      handleTouchStart(e);
-    }
-  };
-
-  const handleContainerTouchEnd = (e: React.TouchEvent) => {
-    // Don't handle touch if clicking on a link
-    if ((e.target as HTMLElement).closest('a')) {
-      return;
-    }
-    if (!isEditing) {
-      handleTouchEnd(e);
-    }
-  };
-
-  const handleContainerTouchMove = (e: React.TouchEvent) => {
-    // Don't handle touch if clicking on a link
-    if ((e.target as HTMLElement).closest('a')) {
-      return;
-    }
-    if (!isEditing) {
-      handleTouchMove(e);
-    }
-  };
-
-  const handleContainerMouseDown = (e: React.MouseEvent) => {
-    // Don't handle mouse if clicking on a link
-    if ((e.target as HTMLElement).closest('a')) {
-      return;
-    }
-    if (!isEditing) {
-      handleMouseDown(e);
-    }
-  };
-
-  const handleContainerMouseUp = (e: React.MouseEvent) => {
-    // Don't handle mouse if clicking on a link
-    if ((e.target as HTMLElement).closest('a')) {
-      return;
-    }
-    if (!isEditing) {
-      handleMouseUp(e);
-    }
-  };
-
-  const handleContainerMouseLeave = (e: React.MouseEvent) => {
-    // Don't handle mouse if clicking on a link
-    if ((e.target as HTMLElement).closest('a')) {
-      return;
-    }
-    if (!isEditing) {
-      handleMouseLeave(e);
-    }
-  };
-
   return (
     <div 
       className={`flex items-center justify-between p-3 rounded-lg transition-colors ${
         isChecked ? 'bg-gray-50 opacity-75' : 'bg-white'
       } ${copiedItemId === id ? 'bg-green-50' : ''}`}
-      onTouchStart={handleContainerTouchStart}
-      onTouchEnd={handleContainerTouchEnd}
-      onTouchMove={handleContainerTouchMove}
-      onMouseDown={handleContainerMouseDown}
-      onMouseUp={handleContainerMouseUp}
-      onMouseLeave={handleContainerMouseLeave}
+      onTouchStart={!isEditing ? handleTouchStart : undefined}
+      onTouchEnd={!isEditing ? handleTouchEnd : undefined}
+      onTouchMove={!isEditing ? handleTouchMove : undefined}
+      onMouseDown={!isEditing ? handleMouseDown : undefined}
+      onMouseUp={!isEditing ? handleMouseUp : undefined}
+      onMouseLeave={!isEditing ? handleMouseLeave : undefined}
     >
       <div className="flex items-center space-x-3 flex-1">
         <Checkbox
@@ -214,34 +145,22 @@ export function ShoppingListItem({
             {recipeIds.length > 0 && (
               <div className="mt-1 text-xs text-green-600">
                 from{' '}
-                {recipeIds.map((recipeId, index) => {
-                  const recipe = recipes.find(r => r.id === recipeId);
-                  if (!recipe) {
-                    console.log('ShoppingListItem: Recipe not found for ID:', recipeId);
-                    return null;
-                  }
-                  
-                  const recipeUrl = createRecipeUrl(recipe);
-                  console.log('ShoppingListItem: Generated URL for recipe:', recipe.title, '→', recipeUrl);
-                  
+                {individualRecipeNames.map((recipeName, index) => {
+                  const recipeId = recipeIds[index];
+                  const slug = generateSlug(recipeName.trim());
                   return (
-                    <span key={recipeId}>
+                    <span key={`${recipeId || index}-${recipeName}`}>
                       <Link 
-                        to={recipeUrl}
+                        to={`/my-recipes/${slug}`}
                         className="hover:underline cursor-pointer"
-                        onClick={(e) => {
-                          console.log('ShoppingListItem: Link clicked, navigating to:', recipeUrl);
-                          // Don't stop propagation here - let the link work normally
-                          // Save scroll position for shopping list
-                          sessionStorage.setItem('restoreShoppingListScroll', 'true');
-                        }}
+                        onClick={(e) => e.stopPropagation()}
                       >
-                        {recipe.title}
+                        {recipeName.trim()}
                       </Link>
-                      {index < recipeIds.length - 1 && ', '}
+                      {index < individualRecipeNames.length - 1 && ', '}
                     </span>
                   );
-                }).filter(Boolean)}
+                })}
               </div>
             )}
           </div>
