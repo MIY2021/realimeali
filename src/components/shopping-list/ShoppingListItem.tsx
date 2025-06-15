@@ -82,17 +82,78 @@ export function ShoppingListItem({
   const recipeNames = getRecipeNames(recipeIds);
   const individualRecipeNames = recipeNames.split(', ');
 
+  // Handle container interactions - but not when clicking on recipe links
+  const handleContainerTouchStart = (e: React.TouchEvent) => {
+    // Don't handle touch if clicking on a link
+    if ((e.target as HTMLElement).closest('a')) {
+      return;
+    }
+    if (!isEditing) {
+      handleTouchStart(e);
+    }
+  };
+
+  const handleContainerTouchEnd = (e: React.TouchEvent) => {
+    // Don't handle touch if clicking on a link
+    if ((e.target as HTMLElement).closest('a')) {
+      return;
+    }
+    if (!isEditing) {
+      handleTouchEnd(e);
+    }
+  };
+
+  const handleContainerTouchMove = (e: React.TouchEvent) => {
+    // Don't handle touch if clicking on a link
+    if ((e.target as HTMLElement).closest('a')) {
+      return;
+    }
+    if (!isEditing) {
+      handleTouchMove(e);
+    }
+  };
+
+  const handleContainerMouseDown = (e: React.MouseEvent) => {
+    // Don't handle mouse if clicking on a link
+    if ((e.target as HTMLElement).closest('a')) {
+      return;
+    }
+    if (!isEditing) {
+      handleMouseDown(e);
+    }
+  };
+
+  const handleContainerMouseUp = (e: React.MouseEvent) => {
+    // Don't handle mouse if clicking on a link
+    if ((e.target as HTMLElement).closest('a')) {
+      return;
+    }
+    if (!isEditing) {
+      handleMouseUp(e);
+    }
+  };
+
+  const handleContainerMouseLeave = (e: React.MouseEvent) => {
+    // Don't handle mouse if clicking on a link
+    if ((e.target as HTMLElement).closest('a')) {
+      return;
+    }
+    if (!isEditing) {
+      handleMouseLeave(e);
+    }
+  };
+
   return (
     <div 
       className={`flex items-center justify-between p-3 rounded-lg transition-colors ${
         isChecked ? 'bg-gray-50 opacity-75' : 'bg-white'
       } ${copiedItemId === id ? 'bg-green-50' : ''}`}
-      onTouchStart={!isEditing ? handleTouchStart : undefined}
-      onTouchEnd={!isEditing ? handleTouchEnd : undefined}
-      onTouchMove={!isEditing ? handleTouchMove : undefined}
-      onMouseDown={!isEditing ? handleMouseDown : undefined}
-      onMouseUp={!isEditing ? handleMouseUp : undefined}
-      onMouseLeave={!isEditing ? handleMouseLeave : undefined}
+      onTouchStart={handleContainerTouchStart}
+      onTouchEnd={handleContainerTouchEnd}
+      onTouchMove={handleContainerTouchMove}
+      onMouseDown={handleContainerMouseDown}
+      onMouseUp={handleContainerMouseUp}
+      onMouseLeave={handleContainerMouseLeave}
     >
       <div className="flex items-center space-x-3 flex-1">
         <Checkbox
@@ -164,7 +225,7 @@ export function ShoppingListItem({
                         className="hover:underline cursor-pointer"
                         onClick={(e) => {
                           console.log('ShoppingListItem: Link clicked, navigating to:', recipeUrl);
-                          e.stopPropagation();
+                          // Don't stop propagation here - let the link work normally
                           // Save scroll position for shopping list
                           sessionStorage.setItem('restoreShoppingListScroll', 'true');
                         }}
