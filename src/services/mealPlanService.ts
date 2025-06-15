@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { MealPlan, MealType } from "@/types";
 import { HouseholdMealPlan } from "@/contexts/MealPlanContext";
@@ -41,7 +42,8 @@ export const mealPlanService = {
       is_leftover: mealPlanData.is_leftover || false,
       leftover_servings: mealPlanData.leftover_servings || null,
       original_servings: mealPlanData.original_servings || null,
-      planned_servings: mealPlanData.planned_servings, // Include planned_servings
+      planned_servings: mealPlanData.planned_servings,
+      is_completed: false, // New meals start as not completed
     };
 
     if (!silentMode) {
@@ -86,6 +88,29 @@ export const mealPlanService = {
     }
 
     console.log("Successfully updated servings:", data);
+  },
+
+  async updateMealPlanCompletion(
+    mealPlanId: string, 
+    isCompleted: boolean,
+    householdId: string
+  ): Promise<void> {
+    console.log("Updating meal plan completion:", { mealPlanId, isCompleted, householdId });
+    
+    const { data, error } = await supabase
+      .from('household_meal_plans')
+      .update({ is_completed: isCompleted })
+      .eq('id', mealPlanId)
+      .eq('household_id', householdId)
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Error updating meal plan completion:", error);
+      throw error;
+    }
+
+    console.log("Successfully updated completion status:", data);
   },
 
   async updateMealPlanLeftoverAllocation(
@@ -176,9 +201,10 @@ export const mealPlanService = {
       is_leftover: dbPlan.is_leftover,
       leftover_servings: dbPlan.leftover_servings,
       original_servings: dbPlan.original_servings,
-      planned_servings: dbPlan.planned_servings, // Include planned_servings
+      planned_servings: dbPlan.planned_servings,
       household_id: dbPlan.household_id,
       week_number: dbPlan.week_number as 1 | 2,
+      is_completed: dbPlan.is_completed, // Include completion status
     };
   }
 };

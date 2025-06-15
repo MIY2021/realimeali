@@ -245,6 +245,7 @@ export type Database = {
           date_scheduled: string
           household_id: string
           id: string
+          is_completed: boolean
           is_leftover: boolean
           leftover_servings: number | null
           meal_type: string
@@ -263,6 +264,7 @@ export type Database = {
           date_scheduled?: string
           household_id: string
           id?: string
+          is_completed?: boolean
           is_leftover?: boolean
           leftover_servings?: number | null
           meal_type: string
@@ -281,6 +283,7 @@ export type Database = {
           date_scheduled?: string
           household_id?: string
           id?: string
+          is_completed?: boolean
           is_leftover?: boolean
           leftover_servings?: number | null
           meal_type?: string

@@ -41,8 +41,7 @@ export const EnhancedMealCard = ({
   const navigate = useNavigate();
   const [isVisible, setIsVisible] = useState(false);
   const [isRemoving, setIsRemoving] = useState(false);
-  const [isCompleted, setIsCompleted] = useState(false);
-  const { updateMealPlanServings } = useMealPlan();
+  const { updateMealPlanServings, updateMealPlanCompletion } = useMealPlan();
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -58,8 +57,12 @@ export const EnhancedMealCard = ({
     }, 300);
   };
 
-  const handleComplete = () => {
-    setIsCompleted(!isCompleted);
+  const handleComplete = async () => {
+    try {
+      await updateMealPlanCompletion(mealPlan.id, !mealPlan.is_completed);
+    } catch (error) {
+      console.error('Error updating completion status:', error);
+    }
   };
 
   const handleServingsChange = async (newServings: number) => {
@@ -93,7 +96,7 @@ export const EnhancedMealCard = ({
       className={`relative bg-white rounded-lg border shadow-sm transition-all duration-300 ease-out hover:shadow-md group ${
         isVisible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
       } ${isRemoving ? 'animate-out slide-out-to-right-full duration-300' : ''} ${
-        isCompleted ? 'opacity-60 bg-gray-50' : ''
+        mealPlan.is_completed ? 'opacity-60 bg-gray-50' : ''
       }`}
       style={{ 
         transitionDelay: `${animationDelay}ms`,
@@ -118,7 +121,7 @@ export const EnhancedMealCard = ({
           <div className="flex flex-col min-w-0 flex-1">
             <h4 
               className={`font-semibold ${isMobile ? 'text-sm' : 'text-base'} line-clamp-1 text-navy cursor-pointer hover:text-terracotta transition-colors mb-1 ${
-                isCompleted ? 'line-through' : ''
+                mealPlan.is_completed ? 'line-through' : ''
               }`}
               onClick={handleTitleClick}
             >
@@ -126,7 +129,7 @@ export const EnhancedMealCard = ({
             </h4>
             
             {/* Servings moved directly under title */}
-            <div className={`flex items-center gap-2 mb-1 ${isCompleted ? 'opacity-60' : ''}`}>
+            <div className={`flex items-center gap-2 mb-1 ${mealPlan.is_completed ? 'opacity-60' : ''}`}>
               <span className={`${isMobile ? 'text-xs' : 'text-sm'} text-muted-foreground`}>
                 Servings:
               </span>
@@ -138,7 +141,7 @@ export const EnhancedMealCard = ({
             
             {mealPlan.is_leftover && (
               <p className={`text-muted-foreground ${isMobile ? 'text-xs' : 'text-sm'} ${
-                isCompleted ? 'opacity-60 line-through' : ''
+                mealPlan.is_completed ? 'opacity-60 line-through' : ''
               }`}>
                 Leftover from {parentRecipe?.title || 'original meal'}
               </p>
@@ -154,7 +157,7 @@ export const EnhancedMealCard = ({
             variant="ghost"
             onClick={handleComplete}
             className={`transition-all duration-200 hover:scale-105 ${
-              isCompleted 
+              mealPlan.is_completed 
                 ? 'text-green-600 hover:text-green-700 hover:bg-green-50' 
                 : 'text-gray-500 hover:text-green-600 hover:bg-green-50'
             } ${isMobile ? 'h-7 w-7 p-0' : 'h-8 w-8 p-0'}`}

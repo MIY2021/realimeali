@@ -1,4 +1,3 @@
-
 export interface Recipe {
   id: string;
   title: string;
@@ -43,6 +42,7 @@ export interface MealPlan {
   week_number: 1 | 2;
   parent_meal_plan_id?: string;
   created_by: string;
+  is_completed: boolean; // Add completion status
 }
 
 export interface Household {
