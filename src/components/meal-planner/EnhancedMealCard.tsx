@@ -144,20 +144,6 @@ export const EnhancedMealCard = ({
 
         {/* Right side actions */}
         <div className="flex items-center gap-2 flex-shrink-0">
-          {/* Complete Button */}
-          <Button
-            size={isMobile ? "sm" : "sm"}
-            variant="ghost"
-            onClick={handleComplete}
-            className={`transition-all duration-200 hover:scale-105 ${
-              mealPlan.is_completed 
-                ? 'text-green-600 hover:text-green-700 hover:bg-green-50' 
-                : 'text-gray-500 hover:text-green-600 hover:bg-green-50'
-            } ${isMobile ? 'h-7 w-7 p-0' : 'h-8 w-8 p-0'}`}
-          >
-            <Check className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
-          </Button>
-
           {/* Dropdown Menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -167,6 +153,18 @@ export const EnhancedMealCard = ({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-[180px] bg-white border shadow-lg">
+              <DropdownMenuItem 
+                onClick={handleComplete} 
+                className={`${
+                  mealPlan.is_completed 
+                    ? 'text-green-600 focus:text-green-600 hover:bg-green-50' 
+                    : 'text-gray-600 focus:text-gray-600 hover:bg-gray-50'
+                }`}
+              >
+                <Check className="mr-2 h-4 w-4" />
+                <span>Meal Made!</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
               {!mealPlan.is_leftover && recipe && onCreateLeftover && (
                 <>
                   <DropdownMenuItem onClick={handleCreateLeftover} className="text-green-600 focus:text-green-600 hover:bg-green-50">
