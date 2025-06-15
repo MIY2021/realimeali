@@ -74,16 +74,16 @@ export const RecipeMetaInfo = ({ recipe, onServingsChange, currentServings }: Re
         </div>
       </div>
 
-      {/* Desktop layout */}
-      <div className="hidden sm:flex flex-col gap-3">
+      {/* Desktop layout - all on one row */}
+      <div className="hidden sm:flex items-center gap-6 flex-wrap">
         {/* Time info */}
         <div className="flex items-center gap-2">
           <Clock className="h-5 w-5 text-terracotta" />
           <span className="text-navy font-medium">{totalTime} min total</span>
         </div>
         
-        {/* Servings controls with original text inline */}
-        <div className="flex items-center gap-2 flex-wrap">
+        {/* Servings controls */}
+        <div className="flex items-center gap-2">
           <Users className="h-5 w-5 text-terracotta" />
           <ServingsSelector
             currentServings={adjustedServings}
@@ -103,7 +103,7 @@ export const RecipeMetaInfo = ({ recipe, onServingsChange, currentServings }: Re
               >
                 <RotateCcw className="h-3 w-3" />
               </Button>
-              <span className="text-xs text-gray-500 ml-2">
+              <span className="text-xs text-gray-500">
                 (Original: {recipe.servings} servings)
               </span>
             </>
