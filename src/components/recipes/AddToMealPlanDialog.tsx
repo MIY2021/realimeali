@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -7,6 +6,7 @@ import { useMealPlan } from "@/contexts/MealPlanContext";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface AddToMealPlanDialogProps {
   recipe: Recipe | null;
@@ -24,6 +24,7 @@ export function AddToMealPlanDialog({ recipe, open, onOpenChange, adjustedServin
   const { toast } = useToast();
   const { user } = useAuth();
   const { currentHousehold } = useHousehold();
+  const isMobile = useIsMobile();
 
   const handleAddToMealPlan = async () => {
     if (!recipe || !user || !currentHousehold) return;
@@ -58,6 +59,11 @@ export function AddToMealPlanDialog({ recipe, open, onOpenChange, adjustedServin
         title: "Added to Meal Plan",
         description: `${recipe.title}${servingsText} has been added to Week ${selectedWeek}.`,
       });
+
+      // Flash the meal plan icon on mobile
+      if (isMobile) {
+        window.dispatchEvent(new CustomEvent('flash-meal-plan'));
+      }
 
       onOpenChange(false);
     } catch (error) {

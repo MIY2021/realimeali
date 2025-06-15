@@ -2,9 +2,11 @@
 import { Link, useLocation } from "react-router-dom";
 import { Book, Search, CalendarDays, ListChecks } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useState, useEffect } from "react";
 
 const BottomNavigation = () => {
   const location = useLocation();
+  const [flashMealPlan, setFlashMealPlan] = useState(false);
   
   const navigationItems = [
     { 
@@ -33,6 +35,17 @@ const BottomNavigation = () => {
     },
   ];
 
+  // Listen for meal plan flash events
+  useEffect(() => {
+    const handleFlashMealPlan = () => {
+      setFlashMealPlan(true);
+      setTimeout(() => setFlashMealPlan(false), 1000);
+    };
+
+    window.addEventListener('flash-meal-plan', handleFlashMealPlan);
+    return () => window.removeEventListener('flash-meal-plan', handleFlashMealPlan);
+  }, []);
+
   const isActive = (pattern: RegExp) => pattern.test(location.pathname);
 
   const handleNavClick = () => {
@@ -45,6 +58,8 @@ const BottomNavigation = () => {
       <div className="flex items-center justify-around h-16 px-2">
         {navigationItems.map((item) => {
           const active = isActive(item.activePattern);
+          const isMealPlan = item.to === "/meal-planner";
+          
           return (
             <Link
               key={item.to}
@@ -54,18 +69,21 @@ const BottomNavigation = () => {
                 "flex flex-col items-center justify-center min-w-0 flex-1 py-2 px-1 transition-colors",
                 active 
                   ? "text-sage" 
-                  : "text-gray-500 hover:text-gray-700"
+                  : "text-gray-500 hover:text-gray-700",
+                isMealPlan && flashMealPlan && "animate-pulse"
               )}
             >
               <item.icon 
                 className={cn(
-                  "h-5 w-5 mb-1",
-                  active ? "text-sage" : "text-gray-500"
+                  "h-5 w-5 mb-1 transition-all duration-200",
+                  active ? "text-sage" : "text-gray-500",
+                  isMealPlan && flashMealPlan && "scale-110 text-sage"
                 )} 
               />
               <span className={cn(
                 "text-xs font-medium truncate",
-                active ? "text-sage" : "text-gray-500"
+                active ? "text-sage" : "text-gray-500",
+                isMealPlan && flashMealPlan && "text-sage"
               )}>
                 {item.label}
               </span>
