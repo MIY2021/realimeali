@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Clock, Users, RotateCcw } from "lucide-react";
 import { Recipe } from "@/types";
@@ -42,15 +43,46 @@ export const RecipeMetaInfo = ({ recipe, onServingsChange, currentServings }: Re
 
   return (
     <div className="space-y-3 mb-6 px-2">
-      {/* Time and Servings in a compact row */}
-      <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-8">
+      {/* Mobile layout - compact single row */}
+      <div className="flex sm:hidden items-center justify-between gap-4">
+        {/* Time info */}
+        <div className="flex items-center gap-2">
+          <Clock className="h-5 w-5 text-terracotta" />
+          <span className="text-navy font-medium">{totalTime} min</span>
+        </div>
+        
+        {/* Compact servings */}
+        <div className="flex items-center gap-1">
+          <Users className="h-4 w-4 text-terracotta" />
+          <ServingsSelector
+            currentServings={adjustedServings}
+            onServingsChange={handleServingsChange}
+            minServings={1}
+            maxServings={20}
+          />
+          {isAdjusted && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleReset}
+              className="h-6 w-6 p-0 text-gray-500 hover:text-gray-700 ml-1"
+              title="Reset to original servings"
+            >
+              <RotateCcw className="h-3 w-3" />
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {/* Desktop layout */}
+      <div className="hidden sm:flex flex-col gap-3">
         {/* Time info */}
         <div className="flex items-center gap-2">
           <Clock className="h-5 w-5 text-terracotta" />
           <span className="text-navy font-medium">{totalTime} min total</span>
         </div>
         
-        {/* Servings controls */}
+        {/* Servings controls with original text inline */}
         <div className="flex items-center gap-2 flex-wrap">
           <Users className="h-5 w-5 text-terracotta" />
           <ServingsSelector
@@ -61,25 +93,23 @@ export const RecipeMetaInfo = ({ recipe, onServingsChange, currentServings }: Re
           />
           <span className="text-navy font-medium">servings</span>
           {isAdjusted && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleReset}
-              className="h-6 px-2 text-xs text-gray-500 hover:text-gray-700 flex-shrink-0"
-              title="Reset to original servings"
-            >
-              <RotateCcw className="h-3 w-3" />
-            </Button>
+            <>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleReset}
+                className="h-6 px-2 text-xs text-gray-500 hover:text-gray-700 flex-shrink-0"
+                title="Reset to original servings"
+              >
+                <RotateCcw className="h-3 w-3" />
+              </Button>
+              <span className="text-xs text-gray-500 ml-2">
+                (Original: {recipe.servings} servings)
+              </span>
+            </>
           )}
         </div>
       </div>
-      
-      {/* Original servings note - only show when adjusted */}
-      {isAdjusted && (
-        <div className="text-xs text-gray-500 pl-7">
-          (Original: {recipe.servings} servings)
-        </div>
-      )}
     </div>
   );
 };
