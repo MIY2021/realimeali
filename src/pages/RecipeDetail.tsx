@@ -75,6 +75,13 @@ export default function RecipeDetail() {
     }
   };
 
+  const [adjustedServings, setAdjustedServings] = useState<number | undefined>(undefined);
+
+  const handleAddToMealPlan = (servings?: number) => {
+    setAdjustedServings(servings);
+    setIsAddToMealPlanOpen(true);
+  };
+
   const canEdit = user && recipe && recipe.created_by === user.id;
 
   // Show loading state while recipes are being fetched
@@ -145,7 +152,7 @@ export default function RecipeDetail() {
         onEdit={canEdit ? handleEdit : undefined}
         onDelete={canEdit ? handleDelete : undefined}
         isOwner={canEdit}
-        onAddToMealPlan={() => setIsAddToMealPlanOpen(true)}
+        onAddToMealPlan={handleAddToMealPlan}
       />
 
       {/* Dialogs */}
@@ -163,6 +170,7 @@ export default function RecipeDetail() {
           recipe={recipe}
           open={isAddToMealPlanOpen}
           onOpenChange={setIsAddToMealPlanOpen}
+          adjustedServings={adjustedServings}
         />
       )}
     </div>

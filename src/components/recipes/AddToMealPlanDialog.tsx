@@ -12,9 +12,10 @@ interface AddToMealPlanDialogProps {
   recipe: Recipe | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  adjustedServings?: number;
 }
 
-export function AddToMealPlanDialog({ recipe, open, onOpenChange }: AddToMealPlanDialogProps) {
+export function AddToMealPlanDialog({ recipe, open, onOpenChange, adjustedServings }: AddToMealPlanDialogProps) {
   const [selectedWeek, setSelectedWeek] = useState<1 | 2>(1);
   const [selectedMealType, setSelectedMealType] = useState<MealType>("dinner");
   const [isLoading, setIsLoading] = useState(false);
@@ -32,6 +33,9 @@ export function AddToMealPlanDialog({ recipe, open, onOpenChange }: AddToMealPla
       // Use current date as default
       const currentDate = new Date().toISOString().split('T')[0];
       
+      // Use adjusted servings if provided, otherwise use recipe servings
+      const plannedServings = adjustedServings || recipe.servings;
+      
       await addMealPlan({
         date: currentDate,
         meal_type: selectedMealType,
@@ -42,13 +46,17 @@ export function AddToMealPlanDialog({ recipe, open, onOpenChange }: AddToMealPla
         household_id: currentHousehold.id,
         week_number: selectedWeek,
         original_servings: recipe.servings,
-        planned_servings: recipe.servings, // Add the required planned_servings field
-        is_completed: false, // Add the required is_completed field
+        planned_servings: plannedServings,
+        is_completed: false,
       }, selectedWeek);
+
+      const servingsText = adjustedServings && adjustedServings !== recipe.servings 
+        ? ` (${adjustedServings} servings)` 
+        : '';
 
       toast({
         title: "Added to Meal Plan",
-        description: `${recipe.title} has been added to Week ${selectedWeek}.`,
+        description: `${recipe.title}${servingsText} has been added to Week ${selectedWeek}.`,
       });
 
       onOpenChange(false);
@@ -73,11 +81,19 @@ export function AddToMealPlanDialog({ recipe, open, onOpenChange }: AddToMealPla
     { value: "snacks", label: "Snacks" },
   ];
 
+  const servingsToAdd = adjustedServings || recipe.servings;
+  const isAdjusted = adjustedServings && adjustedServings !== recipe.servings;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Add {recipe.title} to Meal Plan</DialogTitle>
+          {isAdjusted && (
+            <p className="text-sm text-gray-600 mt-2">
+              Will be added with {servingsToAdd} servings (adjusted from original {recipe.servings})
+            </p>
+          )}
         </DialogHeader>
 
         <div className="space-y-6">

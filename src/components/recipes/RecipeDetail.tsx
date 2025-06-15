@@ -1,17 +1,19 @@
 
+import { useState } from "react";
 import { Recipe } from "@/types";
 import { RecipeHeroSection } from "./RecipeHeroSection";
 import { RecipeActionButtons } from "./RecipeActionButtons";
 import { RecipeMetaInfo } from "./RecipeMetaInfo";
 import { RecipeTabContent } from "./RecipeTabContent";
 import { RecipeFooter } from "./RecipeFooter";
+import { RecipeScalingService } from "@/utils/recipeScaling";
 
 interface RecipeDetailProps {
   recipe: Recipe;
   onEdit?: (recipe: Recipe) => void;
   onDelete?: () => Promise<void>;
   isOwner?: boolean;
-  onAddToMealPlan?: () => void;
+  onAddToMealPlan?: (adjustedServings?: number) => void;
 }
 
 export const RecipeDetail = ({ 
@@ -21,6 +23,25 @@ export const RecipeDetail = ({
   isOwner, 
   onAddToMealPlan 
 }: RecipeDetailProps) => {
+  const [currentServings, setCurrentServings] = useState(recipe.servings);
+  const [scaledIngredients, setScaledIngredients] = useState<string[]>(recipe.ingredients);
+
+  const handleServingsChange = (newServings: number) => {
+    setCurrentServings(newServings);
+    const scaled = RecipeScalingService.scaleIngredients(
+      recipe.ingredients, 
+      recipe.servings, 
+      newServings
+    );
+    setScaledIngredients(scaled);
+  };
+
+  const handleAddToMealPlan = () => {
+    onAddToMealPlan?.(currentServings);
+  };
+
+  const isScaled = currentServings !== recipe.servings;
+
   return (
     <div className="max-w-4xl mx-auto">
       <RecipeHeroSection recipe={recipe} />
@@ -30,17 +51,25 @@ export const RecipeDetail = ({
         onEdit={onEdit}
         onDelete={onDelete}
         isOwner={isOwner}
-        onAddToMealPlan={onAddToMealPlan}
+        onAddToMealPlan={handleAddToMealPlan}
       />
 
-      <RecipeMetaInfo recipe={recipe} />
+      <RecipeMetaInfo 
+        recipe={recipe} 
+        onServingsChange={handleServingsChange}
+        currentServings={currentServings}
+      />
 
       {/* Description */}
       {recipe.description && (
         <p className="text-gray-600 text-lg mb-6 px-2">{recipe.description}</p>
       )}
 
-      <RecipeTabContent recipe={recipe} />
+      <RecipeTabContent 
+        recipe={recipe} 
+        scaledIngredients={scaledIngredients}
+        isScaled={isScaled}
+      />
 
       <RecipeFooter recipe={recipe} />
     </div>

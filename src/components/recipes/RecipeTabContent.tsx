@@ -4,9 +4,13 @@ import { Recipe } from "@/types";
 
 interface RecipeTabContentProps {
   recipe: Recipe;
+  scaledIngredients?: string[];
+  isScaled?: boolean;
 }
 
-export const RecipeTabContent = ({ recipe }: RecipeTabContentProps) => {
+export const RecipeTabContent = ({ recipe, scaledIngredients, isScaled }: RecipeTabContentProps) => {
+  const ingredientsToShow = scaledIngredients || recipe.ingredients;
+
   return (
     <Tabs defaultValue="ingredients" className="w-full">
       <TabsList className="grid w-full grid-cols-2 bg-gray-100 rounded-lg p-1 mb-6">
@@ -15,6 +19,7 @@ export const RecipeTabContent = ({ recipe }: RecipeTabContentProps) => {
           className="text-gray-600 data-[state=active]:bg-sage data-[state=active]:text-white font-medium rounded-md transition-all"
         >
           Ingredients
+          {isScaled && <span className="ml-1 text-xs opacity-75">(scaled)</span>}
         </TabsTrigger>
         <TabsTrigger 
           value="instructions" 
@@ -26,9 +31,16 @@ export const RecipeTabContent = ({ recipe }: RecipeTabContentProps) => {
 
       <TabsContent value="ingredients" className="mt-0">
         <div className="space-y-3">
-          <h2 className="text-xl font-bold text-navy mb-4">Ingredients</h2>
-          {recipe.ingredients.map((ingredient, index) => (
-            <div key={index} className="p-4 bg-gray-50 rounded-lg">
+          <h2 className="text-xl font-bold text-navy mb-4">
+            Ingredients
+            {isScaled && (
+              <span className="ml-2 text-sm font-normal text-gray-500">
+                (adjusted quantities)
+              </span>
+            )}
+          </h2>
+          {ingredientsToShow.map((ingredient, index) => (
+            <div key={index} className={`p-4 rounded-lg ${isScaled ? 'bg-blue-50 border border-blue-200' : 'bg-gray-50'}`}>
               <p className="text-gray-700 leading-relaxed">{ingredient}</p>
             </div>
           ))}
