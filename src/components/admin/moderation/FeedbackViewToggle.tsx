@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { LayoutList, Table2 } from "lucide-react";
+import { LayoutList, Grid3X3 } from "lucide-react";
 
 interface FeedbackViewToggleProps {
   currentView: 'table' | 'cards';
@@ -16,7 +16,7 @@ export function FeedbackViewToggle({ currentView, onViewChange }: FeedbackViewTo
         onClick={() => onViewChange('table')}
         className="h-8 px-3"
       >
-        <Table2 className="h-4 w-4 mr-1" />
+        <Grid3X3 className="h-4 w-4 mr-1" />
         Table
       </Button>
       <Button
