@@ -4,10 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Pencil, Copy, X, Check } from "lucide-react";
-import { generateSlug } from "@/utils/slugUtils";
 import { Link } from "react-router-dom";
 import { useShoppingListInteractions } from "./ShoppingListInteractions";
 import { useToast } from "@/hooks/use-toast";
+import { useRecipes } from "@/contexts/RecipesContext";
+import { createRecipeUrl } from "@/utils/slugUtils";
 
 interface ShoppingListItemProps {
   id: string;
@@ -39,6 +40,7 @@ export function ShoppingListItem({
   const [editQuantity, setEditQuantity] = useState(quantity?.toString() || '');
   const [editUnit, setEditUnit] = useState(unit || '');
   const { toast } = useToast();
+  const { recipes } = useRecipes();
 
   const handleCopyName = () => {
     navigator.clipboard.writeText(name);
@@ -145,22 +147,29 @@ export function ShoppingListItem({
             {recipeIds.length > 0 && (
               <div className="mt-1 text-xs text-green-600">
                 from{' '}
-                {individualRecipeNames.map((recipeName, index) => {
-                  const recipeId = recipeIds[index];
-                  const slug = generateSlug(recipeName.trim());
+                {recipeIds.map((recipeId, index) => {
+                  const recipe = recipes.find(r => r.id === recipeId);
+                  if (!recipe) return null;
+                  
+                  const recipeUrl = createRecipeUrl(recipe);
+                  
                   return (
-                    <span key={`${recipeId || index}-${recipeName}`}>
+                    <span key={recipeId}>
                       <Link 
-                        to={`/my-recipes/${slug}`}
+                        to={recipeUrl}
                         className="hover:underline cursor-pointer"
-                        onClick={(e) => e.stopPropagation()}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          // Save scroll position for shopping list
+                          sessionStorage.setItem('restoreShoppingListScroll', 'true');
+                        }}
                       >
-                        {recipeName.trim()}
+                        {recipe.title}
                       </Link>
-                      {index < individualRecipeNames.length - 1 && ', '}
+                      {index < recipeIds.length - 1 && ', '}
                     </span>
                   );
-                })}
+                }).filter(Boolean)}
               </div>
             )}
           </div>
