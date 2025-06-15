@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,6 +5,8 @@ import { toast } from "sonner";
 import { Clock, AlertCircle, Check } from "lucide-react";
 import { SingleFeedbackModerationView } from "./moderation/SingleFeedbackModerationView";
 import { FeedbackModerationNavigation } from "./moderation/FeedbackModerationNavigation";
+import { FeedbackTableView } from "./moderation/FeedbackTableView";
+import { FeedbackViewToggle } from "./moderation/FeedbackViewToggle";
 
 interface FeedbackItem {
   id: string;
@@ -22,12 +23,31 @@ interface FeedbackItem {
   updated_at: string;
 }
 
+const VIEW_STORAGE_KEY = "feedback-moderation-view";
+
 export function FeedbackModerationPanel() {
   const [allFeedback, setAllFeedback] = useState<FeedbackItem[]>([]);
   const [filteredFeedback, setFilteredFeedback] = useState<FeedbackItem[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [currentFilter, setCurrentFilter] = useState("pending");
   const [isLoading, setIsLoading] = useState(true);
+  const [currentView, setCurrentView] = useState<'table' | 'cards'>(() => {
+    try {
+      const savedView = localStorage.getItem(VIEW_STORAGE_KEY);
+      return (savedView === 'table' || savedView === 'cards') ? savedView : 'table';
+    } catch {
+      return 'table';
+    }
+  });
+
+  const handleViewChange = (view: 'table' | 'cards') => {
+    setCurrentView(view);
+    try {
+      localStorage.setItem(VIEW_STORAGE_KEY, view);
+    } catch (error) {
+      console.warn("Failed to save view preference:", error);
+    }
+  };
 
   const fetchFeedback = useCallback(async () => {
     setIsLoading(true);
@@ -138,7 +158,6 @@ export function FeedbackModerationPanel() {
     await updateFeedback(feedbackId, { admin_notes: notes });
   };
 
-  // Filter feedback based on current filter
   useEffect(() => {
     let filtered: FeedbackItem[] = [];
     
@@ -173,10 +192,9 @@ export function FeedbackModerationPanel() {
     }
   }, [allFeedback, currentFilter, currentIndex]);
 
-  // Keyboard navigation
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
-      if (filteredFeedback.length === 0) return;
+      if (filteredFeedback.length === 0 || currentView === 'table') return;
       
       switch (event.key) {
         case 'ArrowLeft':
@@ -194,7 +212,7 @@ export function FeedbackModerationPanel() {
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [currentIndex, filteredFeedback]);
+  }, [currentIndex, filteredFeedback, currentView]);
 
   useEffect(() => {
     fetchFeedback();
@@ -212,54 +230,75 @@ export function FeedbackModerationPanel() {
 
   return (
     <div className="space-y-6">
-      {/* Navigation Header */}
-      <FeedbackModerationNavigation
-        currentIndex={currentIndex}
-        totalCount={filteredFeedback.length}
-        currentFilter={currentFilter}
-        onFilterChange={setCurrentFilter}
-        onNavigate={setCurrentIndex}
-        allFeedback={allFeedback}
-      />
+      {/* View Toggle and Navigation Header */}
+      <div className="flex justify-between items-start gap-4">
+        <div className="flex-1">
+          {currentView === 'cards' && (
+            <FeedbackModerationNavigation
+              currentIndex={currentIndex}
+              totalCount={filteredFeedback.length}
+              currentFilter={currentFilter}
+              onFilterChange={setCurrentFilter}
+              onNavigate={setCurrentIndex}
+              allFeedback={allFeedback}
+            />
+          )}
+        </div>
+        <FeedbackViewToggle
+          currentView={currentView}
+          onViewChange={handleViewChange}
+        />
+      </div>
 
       {/* Main Content */}
-      {filteredFeedback.length === 0 ? (
-        <Card>
-          <CardContent className="py-8">
-            <div className="text-center">
-              <div className="flex justify-center mb-4">
-                {currentFilter === 'pending' && <Clock className="h-12 w-12 text-amber-500" />}
-                {currentFilter === 'in_progress' && <AlertCircle className="h-12 w-12 text-blue-500" />}
-                {currentFilter === 'complete' && <Check className="h-12 w-12 text-green-500" />}
-                {currentFilter === 'dismissed' && <Check className="h-12 w-12 text-gray-500" />}
-              </div>
-              <h3 className="text-lg font-medium text-muted-foreground mb-2">
-                No {currentFilter.replace('_', ' ')} feedback
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                {currentFilter === 'pending' 
-                  ? "All feedback has been reviewed!" 
-                  : `No ${currentFilter.replace('_', ' ')} feedback found.`
-                }
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      ) : currentFeedback ? (
-        <SingleFeedbackModerationView
-          key={`feedback-${currentFeedback.id}-${currentFeedback.status}-${currentFeedback.updated_at}`}
-          feedback={currentFeedback}
+      {currentView === 'table' ? (
+        <FeedbackTableView
+          feedback={allFeedback}
           onUpdateStatus={handleUpdateStatus}
           onUpdatePriority={handleUpdatePriority}
           onSaveNotes={handleSaveNotes}
         />
-      ) : null}
+      ) : (
+        <>
+          {filteredFeedback.length === 0 ? (
+            <Card>
+              <CardContent className="py-8">
+                <div className="text-center">
+                  <div className="flex justify-center mb-4">
+                    {currentFilter === 'pending' && <Clock className="h-12 w-12 text-amber-500" />}
+                    {currentFilter === 'in_progress' && <AlertCircle className="h-12 w-12 text-blue-500" />}
+                    {currentFilter === 'complete' && <Check className="h-12 w-12 text-green-500" />}
+                    {currentFilter === 'dismissed' && <Check className="h-12 w-12 text-gray-500" />}
+                  </div>
+                  <h3 className="text-lg font-medium text-muted-foreground mb-2">
+                    No {currentFilter.replace('_', ' ')} feedback
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    {currentFilter === 'pending' 
+                      ? "All feedback has been reviewed!" 
+                      : `No ${currentFilter.replace('_', ' ')} feedback found.`
+                    }
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          ) : currentFeedback ? (
+            <SingleFeedbackModerationView
+              key={`feedback-${currentFeedback.id}-${currentFeedback.status}-${currentFeedback.updated_at}`}
+              feedback={currentFeedback}
+              onUpdateStatus={handleUpdateStatus}
+              onUpdatePriority={handleUpdatePriority}
+              onSaveNotes={handleSaveNotes}
+            />
+          ) : null}
 
-      {/* Keyboard shortcuts info */}
-      {filteredFeedback.length > 0 && (
-        <div className="text-xs text-muted-foreground text-center py-2 border-t">
-          <p><strong>Keyboard shortcuts:</strong> ← → Navigate between feedback items</p>
-        </div>
+          {/* Keyboard shortcuts info - only show in cards view */}
+          {filteredFeedback.length > 0 && (
+            <div className="text-xs text-muted-foreground text-center py-2 border-t">
+              <p><strong>Keyboard shortcuts:</strong> ← → Navigate between feedback items</p>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
