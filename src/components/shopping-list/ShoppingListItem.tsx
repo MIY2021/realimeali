@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -8,6 +7,7 @@ import { generateSlug } from "@/utils/slugUtils";
 import { Link } from "react-router-dom";
 import { useShoppingListInteractions } from "./ShoppingListInteractions";
 import { useToast } from "@/hooks/use-toast";
+import { extractIngredientName } from "@/utils/shoppingListUtils";
 
 interface ShoppingListItemProps {
   id: string;
@@ -40,13 +40,25 @@ export function ShoppingListItem({
   const [editUnit, setEditUnit] = useState(unit || '');
   const { toast } = useToast();
 
-  const handleCopyName = () => {
-    navigator.clipboard.writeText(name);
-    onCopy(); // This triggers the visual feedback
-    toast({
-      title: "Copied to clipboard",
-      description: `"${name}" copied to clipboard`,
-    });
+  const handleCopyName = async () => {
+    try {
+      // Use AI to extract clean ingredient name
+      const cleanName = await extractIngredientName(name);
+      navigator.clipboard.writeText(cleanName);
+      onCopy(); // This triggers the visual feedback
+      toast({
+        title: "Copied to clipboard",
+        description: `"${cleanName}" copied to clipboard`,
+      });
+    } catch (error) {
+      // Fallback to copying the original name
+      navigator.clipboard.writeText(name);
+      onCopy();
+      toast({
+        title: "Copied to clipboard",
+        description: `"${name}" copied to clipboard`,
+      });
+    }
   };
 
   // Set up touch interactions

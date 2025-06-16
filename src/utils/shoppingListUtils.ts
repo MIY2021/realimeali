@@ -1,5 +1,17 @@
+import { AIIngredientExtractionService } from "@/services/aiIngredientExtraction";
 
-export const extractIngredientName = (fullText: string): string => {
+export const extractIngredientName = async (fullText: string): Promise<string> => {
+  // For better performance, try AI extraction first, fall back to regex if needed
+  try {
+    return await AIIngredientExtractionService.extractIngredientName(fullText);
+  } catch (error) {
+    console.error('AI extraction failed, using fallback:', error);
+    return extractIngredientNameFallback(fullText);
+  }
+};
+
+// Keep the existing regex-based extraction as a fallback
+export const extractIngredientNameFallback = (fullText: string): string => {
   // Remove week prefixes like "week1-", "week2-"
   let cleanText = fullText.replace(/^week\d+-/, '');
   
