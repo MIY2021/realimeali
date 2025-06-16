@@ -52,11 +52,14 @@ export type Database = {
           difficulty_level: string | null
           id: string
           image_credit: string | null
+          image_source_type: string | null
           image_url: string | null
           is_active: boolean | null
           is_approved: boolean | null
           moderation_status: string | null
           moderator_notes: string | null
+          photographer_name: string | null
+          photographer_profile_url: string | null
           prep_time: number | null
           reported_count: number | null
           save_count: number | null
@@ -65,6 +68,7 @@ export type Database = {
           submitted_by: string
           submitted_by_name: string | null
           title: string
+          unsplash_image_url: string | null
           updated_at: string | null
           view_count: number | null
         }
@@ -81,11 +85,14 @@ export type Database = {
           difficulty_level?: string | null
           id?: string
           image_credit?: string | null
+          image_source_type?: string | null
           image_url?: string | null
           is_active?: boolean | null
           is_approved?: boolean | null
           moderation_status?: string | null
           moderator_notes?: string | null
+          photographer_name?: string | null
+          photographer_profile_url?: string | null
           prep_time?: number | null
           reported_count?: number | null
           save_count?: number | null
@@ -94,6 +101,7 @@ export type Database = {
           submitted_by: string
           submitted_by_name?: string | null
           title: string
+          unsplash_image_url?: string | null
           updated_at?: string | null
           view_count?: number | null
         }
@@ -110,11 +118,14 @@ export type Database = {
           difficulty_level?: string | null
           id?: string
           image_credit?: string | null
+          image_source_type?: string | null
           image_url?: string | null
           is_active?: boolean | null
           is_approved?: boolean | null
           moderation_status?: string | null
           moderator_notes?: string | null
+          photographer_name?: string | null
+          photographer_profile_url?: string | null
           prep_time?: number | null
           reported_count?: number | null
           save_count?: number | null
@@ -123,6 +134,7 @@ export type Database = {
           submitted_by?: string
           submitted_by_name?: string | null
           title?: string
+          unsplash_image_url?: string | null
           updated_at?: string | null
           view_count?: number | null
         }

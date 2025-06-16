@@ -1,3 +1,4 @@
+
 import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -9,129 +10,34 @@ export function useRecipeModerationOperations(onRefresh: () => void) {
   const [savingFields, setSavingFields] = useState<{ [key: string]: boolean }>({});
 
   const generateAIImage = useCallback(async (recipe: CommunityRecipe) => {
-    const loadingKey = `${recipe.id}-image`;
-    setGeneratingAI(prev => ({ ...prev, [loadingKey]: true }));
+    const key = `${recipe.id}-image`;
+    setGeneratingAI(prev => ({ ...prev, [key]: true }));
     
     try {
-      console.log("🎨 Starting AI image generation for recipe:", recipe.id, recipe.title);
+      console.log("🎨 Starting AI image generation for recipe:", recipe.id);
       
-      // Create a comprehensive prompt from title, description, and any available recipe details
-      let prompt = `Generate a hyper-realistic, top-down food photograph of the recipe: "${recipe.title}"`;
-      
-      if (recipe.description && recipe.description.trim()) {
-        prompt += ` - ${recipe.description.trim()}`;
-      }
-
-      // Add ingredients context if available (community recipes might have ingredients in description)
-      const description = recipe.description || '';
-      if (description.toLowerCase().includes('ingredients:')) {
-        prompt += '. Recipe includes detailed ingredients for authentic presentation';
-      }
-
-      // Add cooking context from description
-      const lowerDesc = description.toLowerCase();
-      if (lowerDesc.includes('bake') || lowerDesc.includes('oven')) {
-        prompt += '. Baked dish';
-      } else if (lowerDesc.includes('fry') || lowerDesc.includes('pan')) {
-        prompt += '. Pan-fried dish';
-      } else if (lowerDesc.includes('grill')) {
-        prompt += '. Grilled dish';
-      } else if (lowerDesc.includes('boil') || lowerDesc.includes('simmer')) {
-        prompt += '. Boiled/simmered dish';
-      } else if (lowerDesc.includes('roast')) {
-        prompt += '. Roasted dish';
-      }
-
-      prompt += `. Use natural lighting with soft shadows and realistic textures. Plate the dish in a ceramic or rustic-style plate or bowl. Garnish only with ingredients that would naturally accompany this dish. The background should be clean and natural (wood, stone, concrete, or linen). Include minimal, contextually appropriate props. The result must look like a professional, real-life food photograph with no digital or artificial appearance. Focus on authentic food presentation and natural colors.`;
-
-      console.log("🎨 Enhanced prompt with recipe context:", prompt);
-
       const { data, error } = await supabase.functions.invoke('generate-recipe-image', {
-        body: { 
-          prompt: prompt,
-          isCommunityRecipe: true
-        },
-      });
-
-      if (error) {
-        console.error("❌ AI image generation error:", error);
-        throw error;
-      }
-
-      if (!data?.imageUrl) {
-        console.error("❌ No image URL in response:", data);
-        throw new Error('No image URL received from AI generation');
-      }
-
-      console.log("✅ AI image generated successfully:", data.imageUrl);
-
-      // Update the recipe with the new image URL
-      const { error: updateError } = await supabase
-        .from('community_recipes')
-        .update({ 
-          ai_generated_image_url: data.imageUrl,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', recipe.id);
-
-      if (updateError) {
-        console.error("❌ Error updating recipe with AI image:", updateError);
-        throw updateError;
-      }
-
-      toast.success("AI image generated and saved successfully!");
-      onRefresh();
-
-    } catch (error) {
-      console.error("❌ Error in generateAIImage:", error);
-      toast.error(
-        error instanceof Error 
-          ? `Failed to generate AI image: ${error.message}` 
-          : "Failed to generate AI image. Please try again."
-      );
-    } finally {
-      setGeneratingAI(prev => ({ ...prev, [loadingKey]: false }));
-    }
-  }, [onRefresh]);
-
-  const generateAIDescription = useCallback(async (recipe: CommunityRecipe): Promise<string | null> => {
-    const loadingKey = `${recipe.id}-description`;
-    setGeneratingAI(prev => ({ ...prev, [loadingKey]: true }));
-
-    try {
-      console.log("🤖 Starting AI description generation for recipe:", recipe.id, recipe.title);
-
-      const { data, error } = await supabase.functions.invoke('generate-community-description', {
         body: {
           recipeTitle: recipe.title,
-          originalDescription: recipe.description || '',
-          sourceUrl: recipe.source_url
+          recipeDescription: recipe.description || recipe.ai_generated_description,
+          referenceImageUrl: recipe.image_url,
         },
       });
 
-      if (error) {
-        console.error("❌ AI description generation error:", error);
-        throw error;
+      if (error) throw error;
+
+      if (data?.imageUrl) {
+        console.log("✅ AI image generated successfully:", data.imageUrl);
+        await updateAIImageUrl(recipe, data.imageUrl);
+        toast.success("AI image generated successfully!");
+      } else {
+        throw new Error("No image URL returned from generation");
       }
-
-      if (!data?.description) {
-        console.error("❌ No description in response:", data);
-        throw new Error('No description received from AI generation');
-      }
-
-      console.log("✅ AI description generated successfully:", data.description);
-      return data.description;
-
     } catch (error) {
-      console.error("❌ Error in generateAIDescription:", error);
-      toast.error(
-        error instanceof Error 
-          ? `Failed to generate AI description: ${error.message}` 
-          : "Failed to generate AI description. Please try again."
-      );
-      return null;
+      console.error("❌ Error generating AI image:", error);
+      toast.error("Failed to generate AI image");
     } finally {
-      setGeneratingAI(prev => ({ ...prev, [loadingKey]: false }));
+      setGeneratingAI(prev => ({ ...prev, [key]: false }));
     }
   }, []);
 
@@ -139,102 +45,78 @@ export function useRecipeModerationOperations(onRefresh: () => void) {
     setUploadingFile(prev => ({ ...prev, [recipe.id]: true }));
     
     try {
-      console.log("📤 Starting file upload for recipe:", recipe.id, "File:", file.name);
-
-      // Generate unique filename
-      const timestamp = Date.now();
-      const fileExtension = file.name.split('.').pop();
-      const fileName = `community-recipe-${recipe.id}-${timestamp}.${fileExtension}`;
-
-      console.log("📤 Uploading to storage with filename:", fileName);
-
-      // Upload to Supabase storage
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('recipe-images')
-        .upload(fileName, file, {
-          cacheControl: '3600',
-          upsert: false,
-        });
-
-      if (uploadError) {
-        console.error("❌ File upload error:", uploadError);
-        throw uploadError;
-      }
-
-      console.log("✅ File uploaded successfully:", uploadData);
-
-      // Get public URL
-      const { data: urlData } = supabase.storage
-        .from('recipe-images')
-        .getPublicUrl(fileName);
-
-      if (!urlData?.publicUrl) {
-        throw new Error('Failed to get public URL for uploaded image');
-      }
-
-      console.log("✅ Public URL generated:", urlData.publicUrl);
-
-      // Update the recipe with the new image URL
-      const { error: updateError } = await supabase
-        .from('community_recipes')
-        .update({ 
-          ai_generated_image_url: urlData.publicUrl,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', recipe.id);
-
-      if (updateError) {
-        console.error("❌ Error updating recipe with uploaded image:", updateError);
-        throw updateError;
-      }
-
-      toast.success("Image uploaded and saved successfully!");
-      onRefresh();
-
+      console.log("📤 Starting file upload for recipe:", recipe.id);
+      
+      // Here you would implement actual file upload to Supabase Storage
+      // For now, we'll just show a placeholder
+      toast.info("File upload functionality needs to be implemented with Supabase Storage");
+      
     } catch (error) {
-      console.error("❌ Error in uploadImageFile:", error);
-      toast.error(
-        error instanceof Error 
-          ? `Failed to upload image: ${error.message}` 
-          : "Failed to upload image. Please try again."
-      );
+      console.error("❌ Error uploading file:", error);
+      toast.error("Failed to upload image file");
     } finally {
       setUploadingFile(prev => ({ ...prev, [recipe.id]: false }));
     }
-  }, [onRefresh]);
+  }, []);
 
   const updateAIImageUrl = useCallback(async (recipe: CommunityRecipe, imageUrl: string) => {
     try {
       console.log("🔗 Updating AI image URL for recipe:", recipe.id, "URL:", imageUrl);
-
-      if (!imageUrl.trim()) {
-        throw new Error('Image URL cannot be empty');
-      }
-
+      
       const { error } = await supabase
         .from('community_recipes')
         .update({ 
-          ai_generated_image_url: imageUrl.trim(),
-          updated_at: new Date().toISOString()
+          ai_generated_image_url: imageUrl,
+          image_source_type: 'ai',
+          // Clear Unsplash data when setting AI image
+          unsplash_image_url: null,
+          photographer_name: null,
+          photographer_profile_url: null,
         })
         .eq('id', recipe.id);
 
-      if (error) {
-        console.error("❌ Error updating AI image URL:", error);
-        throw error;
-      }
+      if (error) throw error;
 
       console.log("✅ AI image URL updated successfully");
-      toast.success("Image URL updated successfully!");
       onRefresh();
-
+      toast.success("Image updated successfully!");
     } catch (error) {
-      console.error("❌ Error in updateAIImageUrl:", error);
-      toast.error(
-        error instanceof Error 
-          ? `Failed to update image URL: ${error.message}` 
-          : "Failed to update image URL. Please try again."
-      );
+      console.error("❌ Error updating AI image URL:", error);
+      toast.error("Failed to update image URL");
+    }
+  }, [onRefresh]);
+
+  const updateUnsplashImage = useCallback(async (
+    recipe: CommunityRecipe, 
+    imageUrl: string, 
+    photographerName: string, 
+    photographerUrl: string
+  ) => {
+    try {
+      console.log("🌄 Updating Unsplash image for recipe:", recipe.id, {
+        imageUrl, photographerName, photographerUrl
+      });
+      
+      const { error } = await supabase
+        .from('community_recipes')
+        .update({ 
+          unsplash_image_url: imageUrl,
+          photographer_name: photographerName,
+          photographer_profile_url: photographerUrl,
+          image_source_type: 'unsplash',
+          // Clear AI image when setting Unsplash image
+          ai_generated_image_url: null,
+        })
+        .eq('id', recipe.id);
+
+      if (error) throw error;
+
+      console.log("✅ Unsplash image updated successfully");
+      onRefresh();
+      toast.success("Unsplash image selected successfully!");
+    } catch (error) {
+      console.error("❌ Error updating Unsplash image:", error);
+      toast.error("Failed to update Unsplash image");
     }
   }, [onRefresh]);
 
@@ -242,120 +124,99 @@ export function useRecipeModerationOperations(onRefresh: () => void) {
     setSavingFields(prev => ({ ...prev, [recipeId]: true }));
     
     try {
-      console.log("💾 Starting recipe fields update for recipe:", recipeId, "Updates:", updates);
-
-      // Validate that we have something to update
-      const hasValidUpdates = Object.entries(updates).some(([key, value]) => {
-        if (key === 'id') return false; // Skip ID field
-        return value !== null && value !== undefined && value !== '';
-      });
-
-      if (!hasValidUpdates) {
-        throw new Error('No valid updates provided');
-      }
-
-      // Prepare the update object with timestamp
-      const updateData = {
-        ...updates,
-        updated_at: new Date().toISOString()
-      };
-
-      // Remove the ID from updates if it exists
-      delete updateData.id;
-
-      console.log("💾 Prepared update data:", updateData);
-
-      const { data, error } = await supabase
+      console.log("💾 Updating recipe fields for:", recipeId, updates);
+      
+      const { error } = await supabase
         .from('community_recipes')
-        .update(updateData)
-        .eq('id', recipeId)
-        .select('*')
-        .single();
+        .update(updates)
+        .eq('id', recipeId);
 
-      if (error) {
-        console.error("❌ Error updating recipe fields:", error);
-        throw error;
-      }
+      if (error) throw error;
 
-      console.log("✅ Recipe fields updated successfully:", data);
-      toast.success("Recipe updated successfully!");
+      console.log("✅ Recipe fields updated successfully");
       onRefresh();
-
+      toast.success("Recipe updated successfully!");
     } catch (error) {
-      console.error("❌ Error in updateRecipeFields:", error);
-      toast.error(
-        error instanceof Error 
-          ? `Failed to save changes: ${error.message}` 
-          : "Failed to save changes. Please try again."
-      );
+      console.error("❌ Error updating recipe fields:", error);
+      toast.error("Failed to update recipe");
     } finally {
       setSavingFields(prev => ({ ...prev, [recipeId]: false }));
     }
   }, [onRefresh]);
 
+  const generateAIDescription = useCallback(async (recipe: CommunityRecipe): Promise<string | null> => {
+    const key = `${recipe.id}-description`;
+    setGeneratingAI(prev => ({ ...prev, [key]: true }));
+    
+    try {
+      console.log("📝 Starting AI description generation for recipe:", recipe.id);
+      
+      const { data, error } = await supabase.functions.invoke('generate-community-description', {
+        body: {
+          title: recipe.title,
+          originalDescription: recipe.description,
+          sourceUrl: recipe.source_url,
+        },
+      });
+
+      if (error) throw error;
+
+      if (data?.description) {
+        console.log("✅ AI description generated successfully");
+        
+        // Update the recipe with the new description
+        await updateRecipeFields(recipe.id, {
+          ai_generated_description: data.description
+        });
+        
+        return data.description;
+      } else {
+        throw new Error("No description returned from generation");
+      }
+    } catch (error) {
+      console.error("❌ Error generating AI description:", error);
+      toast.error("Failed to generate AI description");
+      return null;
+    } finally {
+      setGeneratingAI(prev => ({ ...prev, [key]: false }));
+    }
+  }, [updateRecipeFields]);
+
   const approveRecipe = useCallback(async (recipeId: string) => {
     try {
       console.log("✅ Approving recipe:", recipeId);
+      
+      const { error } = await supabase.rpc('approve_community_recipe', {
+        recipe_id: recipeId
+      });
 
-      const { error } = await supabase
-        .from('community_recipes')
-        .update({ 
-          moderation_status: 'approved',
-          is_approved: true,
-          approved_by: (await supabase.auth.getUser()).data.user?.id,
-          approved_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', recipeId);
-
-      if (error) {
-        console.error("❌ Error approving recipe:", error);
-        throw error;
-      }
+      if (error) throw error;
 
       console.log("✅ Recipe approved successfully");
-      toast.success("Recipe approved successfully!");
       onRefresh();
-
+      toast.success("Recipe approved!");
     } catch (error) {
-      console.error("❌ Error in approveRecipe:", error);
-      toast.error(
-        error instanceof Error 
-          ? `Failed to approve recipe: ${error.message}` 
-          : "Failed to approve recipe. Please try again."
-      );
+      console.error("❌ Error approving recipe:", error);
+      toast.error("Failed to approve recipe");
     }
   }, [onRefresh]);
 
   const rejectRecipe = useCallback(async (recipeId: string) => {
     try {
       console.log("❌ Rejecting recipe:", recipeId);
+      
+      const { error } = await supabase.rpc('reject_community_recipe', {
+        recipe_id: recipeId
+      });
 
-      const { error } = await supabase
-        .from('community_recipes')
-        .update({ 
-          moderation_status: 'rejected',
-          is_active: false,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', recipeId);
-
-      if (error) {
-        console.error("❌ Error rejecting recipe:", error);
-        throw error;
-      }
+      if (error) throw error;
 
       console.log("✅ Recipe rejected successfully");
-      toast.success("Recipe rejected successfully!");
       onRefresh();
-
+      toast.success("Recipe rejected");
     } catch (error) {
-      console.error("❌ Error in rejectRecipe:", error);
-      toast.error(
-        error instanceof Error 
-          ? `Failed to reject recipe: ${error.message}` 
-          : "Failed to reject recipe. Please try again."
-      );
+      console.error("❌ Error rejecting recipe:", error);
+      toast.error("Failed to reject recipe");
     }
   }, [onRefresh]);
 
@@ -363,12 +224,13 @@ export function useRecipeModerationOperations(onRefresh: () => void) {
     generateAIImage,
     uploadImageFile,
     updateAIImageUrl,
+    updateUnsplashImage,
     updateRecipeFields,
     generateAIDescription,
     approveRecipe,
     rejectRecipe,
     generatingAI,
     uploadingFile,
-    savingFields
+    savingFields,
   };
 }

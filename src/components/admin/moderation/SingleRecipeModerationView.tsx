@@ -13,6 +13,7 @@ interface SingleRecipeModerationViewProps {
   onGenerateAI: (recipe: CommunityRecipe) => void;
   onUploadFile: (recipe: CommunityRecipe, file: File) => void;
   onUpdateImageUrl: (recipe: CommunityRecipe, imageUrl: string) => void;
+  onUpdateUnsplashImage: (recipe: CommunityRecipe, imageUrl: string, photographerName: string, photographerUrl: string) => void;
   onSaveFields: (recipe: CommunityRecipe, updates: Partial<CommunityRecipe>) => void;
   onGenerateAIDescription: (recipe: CommunityRecipe) => Promise<string | null>;
   generatingAI: { [key: string]: boolean };
@@ -27,6 +28,7 @@ export function SingleRecipeModerationView({
   onGenerateAI,
   onUploadFile,
   onUpdateImageUrl,
+  onUpdateUnsplashImage,
   onSaveFields,
   onGenerateAIDescription,
   generatingAI,
@@ -139,6 +141,7 @@ export function SingleRecipeModerationView({
             onGenerateAI={onGenerateAI}
             onUploadFile={onUploadFile}
             onUpdateImageUrl={onUpdateImageUrl}
+            onUpdateUnsplashImage={onUpdateUnsplashImage}
             isGeneratingAI={isGeneratingAIImage}
             isUploadingFile={isUploadingFile}
           />

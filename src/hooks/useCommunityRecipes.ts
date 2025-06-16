@@ -1,3 +1,4 @@
+
 import { useState, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,6 +12,10 @@ export interface CommunityRecipe {
   source_url: string;
   image_url: string | null; // Original image for moderator reference
   ai_generated_image_url: string | null; // AI-generated image for public display
+  unsplash_image_url: string | null; // Unsplash image for public display
+  photographer_name: string | null; // Unsplash photographer name
+  photographer_profile_url: string | null; // Unsplash photographer profile URL
+  image_source_type: string | null; // 'ai', 'unsplash', 'upload', etc.
   image_credit: string | null;
   prep_time: number;
   cook_time: number;
@@ -135,6 +140,7 @@ export function useCommunityRecipes() {
           submitted_by: user.id,
           submitted_by_name: user.email || 'Anonymous',
           moderation_status: 'pending',
+          image_source_type: 'unknown',
         });
 
       if (error) throw error;
