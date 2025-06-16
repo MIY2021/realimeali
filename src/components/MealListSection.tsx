@@ -51,8 +51,16 @@ export default function MealListSection({
     const sourceIndex = result.source.index;
     const destinationIndex = result.destination.index;
 
+    // Only proceed if the item was actually moved to a different position
     if (sourceIndex !== destinationIndex) {
       onReorderMeals(mealType, sourceIndex, destinationIndex);
+    }
+  };
+
+  const handleDragStart = () => {
+    // Add haptic feedback on mobile
+    if (isMobile && navigator.vibrate) {
+      navigator.vibrate(50);
     }
   };
 
@@ -109,14 +117,14 @@ export default function MealListSection({
               <span className={`${isMobile ? 'text-sm' : ''}`}>No {mealType} planned yet</span>
             </div>
           ) : (
-            <DragDropContext onDragEnd={handleDragEnd}>
+            <DragDropContext onDragEnd={handleDragEnd} onDragStart={handleDragStart}>
               <Droppable droppableId={`${mealType}-meals`} type="MEAL">
                 {(provided, snapshot) => (
                   <div
                     {...provided.droppableProps}
                     ref={provided.innerRef}
                     className={`space-y-${isMobile ? '1.5' : '2'} transition-all duration-300 ease-out ${
-                      snapshot.isDraggingOver ? 'bg-gray-50/50 rounded-lg p-2 scale-[1.01] border-2 border-dashed border-gray-300' : ''
+                      snapshot.isDraggingOver ? 'bg-blue-50/50 rounded-lg p-2 scale-[1.01] border-2 border-dashed border-blue-300' : ''
                     }`}
                   >
                     {mealPlans.map((plan, index) => {
@@ -132,9 +140,9 @@ export default function MealListSection({
                             <div
                               ref={provided.innerRef}
                               {...provided.draggableProps}
-                              className={`transition-all duration-300 ease-out transform-gpu ${
+                              className={`transition-all duration-300 ease-out transform-gpu select-none ${
                                 snapshot.isDragging ? 
-                                  'z-50 rotate-2 scale-105 shadow-2xl ring-2 ring-blue-300' : 
+                                  'z-50 rotate-1 scale-[1.02] shadow-2xl ring-2 ring-blue-300 bg-white rounded-lg' : 
                                   'hover:shadow-md'
                               }`}
                               style={{
@@ -142,6 +150,7 @@ export default function MealListSection({
                                 willChange: 'transform',
                                 ...(snapshot.isDragging && {
                                   filter: 'drop-shadow(0 20px 25px rgb(0 0 0 / 0.15))',
+                                  transform: `${provided.draggableProps.style?.transform} rotate(1deg)`,
                                 }),
                               }}
                             >

@@ -41,6 +41,7 @@ export const EnhancedMealCard = ({
   const navigate = useNavigate();
   const [isVisible, setIsVisible] = useState(false);
   const [isRemoving, setIsRemoving] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const { updateMealPlanServings, updateMealPlanCompletion } = useMealPlan();
 
   useEffect(() => {
@@ -74,7 +75,19 @@ export const EnhancedMealCard = ({
     }
   };
 
-  const handleTitleClick = () => {
+  const handleTitleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const recipeToUse = parentRecipe || recipe;
+    if (recipeToUse) {
+      const slug = generateSlug(recipeToUse.title);
+      navigate(`/my-recipes/${slug}`);
+    }
+  };
+
+  const handleImageClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     const recipeToUse = parentRecipe || recipe;
     if (recipeToUse) {
       const slug = generateSlug(recipeToUse.title);
@@ -88,12 +101,22 @@ export const EnhancedMealCard = ({
     }
   };
 
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Prevent any unwanted navigation when clicking the card itself
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDropdownToggle = (open: boolean) => {
+    setIsDropdownOpen(open);
+  };
+
   const recipeImage = parentRecipe?.image || recipe?.image || "/images/placeholder.png";
   const recipeTitle = parentRecipe?.title || recipe?.title || "Unknown Recipe";
 
   return (
     <div
-      className={`relative bg-white rounded-lg border shadow-sm transition-all duration-300 ease-out hover:shadow-md group ${
+      className={`relative bg-white rounded-lg border shadow-sm transition-all duration-300 ease-out hover:shadow-md group select-none ${
         isVisible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
       } ${isRemoving ? 'animate-out slide-out-to-right-full duration-300' : ''} ${
         mealPlan.is_completed ? 'opacity-60 bg-gray-50' : ''
@@ -102,6 +125,7 @@ export const EnhancedMealCard = ({
         transitionDelay: `${animationDelay}ms`,
         willChange: 'transform, opacity'
       }}
+      onClick={handleCardClick}
     >
       {/* Recipe Content */}
       <div className="flex items-start justify-between p-3">
@@ -109,7 +133,8 @@ export const EnhancedMealCard = ({
           <img
             src={recipeImage}
             alt={recipeTitle}
-            className="h-16 w-16 rounded-lg object-cover object-center aspect-square flex-shrink-0"
+            className="h-16 w-16 rounded-lg object-cover object-center aspect-square flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
+            onClick={handleImageClick}
           />
           <div className="flex flex-col min-w-0 flex-1">
             <h4 
@@ -144,17 +169,40 @@ export const EnhancedMealCard = ({
 
         {/* Right side actions */}
         <div className="flex items-center gap-2 flex-shrink-0">
-          {/* Dropdown Menu */}
-          <DropdownMenu>
+          {/* Dropdown Menu - improved for mobile */}
+          <DropdownMenu open={isDropdownOpen} onOpenChange={handleDropdownToggle}>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0 data-[state=open]:bg-muted hover:bg-accent flex-shrink-0">
+              <Button 
+                variant="ghost" 
+                className={`h-8 w-8 p-0 data-[state=open]:bg-muted hover:bg-accent flex-shrink-0 ${
+                  isMobile ? 'active:scale-95' : ''
+                }`}
+                onTouchStart={(e) => {
+                  // Prevent accidental touches during scroll
+                  if (isMobile) {
+                    e.preventDefault();
+                  }
+                }}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }}
+              >
                 <MoreHorizontal className="h-4 w-4" />
                 <span className="sr-only">Open menu</span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-[180px] bg-white border shadow-lg">
+            <DropdownMenuContent 
+              align="end" 
+              className="w-[180px] bg-white border shadow-lg z-50"
+              onClick={(e) => e.stopPropagation()}
+            >
               <DropdownMenuItem 
-                onClick={handleComplete} 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleComplete();
+                  setIsDropdownOpen(false);
+                }} 
                 className={`${
                   mealPlan.is_completed 
                     ? 'text-green-600 focus:text-green-600 hover:bg-green-50' 
@@ -167,19 +215,38 @@ export const EnhancedMealCard = ({
               <DropdownMenuSeparator />
               {!mealPlan.is_leftover && recipe && onCreateLeftover && (
                 <>
-                  <DropdownMenuItem onClick={handleCreateLeftover} className="text-green-600 focus:text-green-600 hover:bg-green-50">
+                  <DropdownMenuItem 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleCreateLeftover();
+                      setIsDropdownOpen(false);
+                    }} 
+                    className="text-green-600 focus:text-green-600 hover:bg-green-50"
+                  >
                     <Plus className="mr-2 h-4 w-4" />
                     <span>Add Leftover Lunch</span>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                 </>
               )}
-              <DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsDropdownOpen(false);
+                }}
+              >
                 <Pencil className="mr-2 h-4 w-4" />
                 <span>Edit Recipe</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-red-500 focus:text-red-500 hover:bg-red-50" onClick={handleRemove}>
+              <DropdownMenuItem 
+                className="text-red-500 focus:text-red-500 hover:bg-red-50" 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleRemove();
+                  setIsDropdownOpen(false);
+                }}
+              >
                 <X className="mr-2 h-4 w-4" />
                 <span>Remove from plan</span>
               </DropdownMenuItem>
@@ -188,7 +255,14 @@ export const EnhancedMealCard = ({
 
           {/* Drag Handle - moved to the rightmost position */}
           {dragHandleProps && (
-            <div {...dragHandleProps} className="flex-shrink-0 cursor-grab active:cursor-grabbing opacity-60 hover:opacity-100 transition-opacity">
+            <div 
+              {...dragHandleProps} 
+              className="flex-shrink-0 cursor-grab active:cursor-grabbing opacity-60 hover:opacity-100 transition-opacity touch-none"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+              }}
+            >
               <GripVertical className="h-4 w-4 text-gray-400 transition-all duration-200 hover:scale-110 active:scale-95" />
             </div>
           )}
