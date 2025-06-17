@@ -151,11 +151,11 @@ export const EnhancedMealCard = ({
               {/* Meal Made button */}
               <Button
                 size="sm"
-                variant={mealPlan.is_completed ? "default" : "outline"}
+                variant={mealPlan.is_completed ? "outline" : "outline"}
                 onClick={handleComplete}
                 className={`${isMobile ? 'h-7 px-2 text-xs' : 'h-8 px-3 text-sm'} ${
                   mealPlan.is_completed 
-                    ? 'bg-green-600 hover:bg-green-700 text-white' 
+                    ? 'text-gray-600 border-gray-400' 
                     : 'text-green-600 border-green-600 hover:bg-green-50'
                 }`}
               >
@@ -176,15 +176,15 @@ export const EnhancedMealCard = ({
                 </Button>
               )}
 
-              {/* Remove button */}
+              {/* Remove button - X only on mobile */}
               <Button
                 size="sm"
                 variant="outline"
                 onClick={handleRemove}
                 className={`${isMobile ? 'h-7 px-2 text-xs' : 'h-8 px-3 text-sm'} text-red-500 border-red-500 hover:bg-red-50`}
               >
-                <X className={`${isMobile ? 'h-3 w-3 mr-1' : 'h-4 w-4 mr-1'}`} />
-                Remove
+                <X className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4 mr-1'}`} />
+                {!isMobile && 'Remove'}
               </Button>
             </div>
             

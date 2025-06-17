@@ -13,7 +13,7 @@ export const WeekSelector = ({
   isLoading = false 
 }: WeekSelectorProps) => {
   return (
-    <div className="flex justify-start items-center gap-2 mb-4">
+    <div className="flex justify-start items-center gap-2 mb-2">
       <div className="flex gap-2">
         {[1, 2].map((val) => (
           <Button
