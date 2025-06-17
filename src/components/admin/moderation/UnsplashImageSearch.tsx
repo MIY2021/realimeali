@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,11 +6,14 @@ import { Search, Loader } from "lucide-react";
 import { UnsplashService } from "@/services/unsplashService";
 import { CommunityRecipe } from "@/hooks/useCommunityRecipes";
 
+// Import the interface from the service to avoid duplication
 interface UnsplashPhoto {
   id: string;
   urls: {
     thumb: string;
+    small: string;
     regular: string;
+    full: string;
   };
   user: {
     name: string;
