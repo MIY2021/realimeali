@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Search, Loader, ExternalLink } from "lucide-react";
+import { Search, Loader } from "lucide-react";
 import { UnsplashService } from "@/services/unsplashService";
 import { CommunityRecipe } from "@/hooks/useCommunityRecipes";
 
@@ -18,6 +18,9 @@ interface UnsplashPhoto {
     links: {
       html: string;
     };
+  };
+  links: {
+    html: string;
   };
   alt_description?: string;
 }
@@ -116,7 +119,9 @@ export function UnsplashImageSearch({ recipe, onImageSelect }: UnsplashImageSear
                 <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs p-1">
                   <div className="flex items-center justify-between">
                     <span className="truncate">{photo.user.name}</span>
-                    <ExternalLink className="h-3 w-3 flex-shrink-0" />
+                    <svg className="h-3 w-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
                   </div>
                 </div>
                 {selectedPhotoId === photo.id && (

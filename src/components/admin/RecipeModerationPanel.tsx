@@ -45,6 +45,7 @@ export function RecipeModerationPanel() {
     generateAIImage,
     uploadImageFile,
     updateAIImageUrl,
+    updateUnsplashImage,
     updateRecipeFields,
     generateAIDescription,
     approveRecipe,
@@ -234,6 +235,7 @@ export function RecipeModerationPanel() {
           onGenerateAI={generateAIImage}
           onUploadFile={uploadImageFile}
           onUpdateImageUrl={updateAIImageUrl}
+          onUpdateUnsplashImage={updateUnsplashImage}
           onSaveFields={handleSaveFields}
           onGenerateAIDescription={generateAIDescription}
           generatingAI={generatingAI}
