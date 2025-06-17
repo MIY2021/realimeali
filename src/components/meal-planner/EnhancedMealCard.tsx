@@ -102,6 +102,14 @@ export const EnhancedMealCard = ({
   const recipeImage = parentRecipe?.image || recipe?.image || "/images/placeholder.png";
   const recipeTitle = parentRecipe?.title || recipe?.title || "Unknown Recipe";
 
+  // Calculate display servings and leftover info
+  const hasLeftoverAllocation = mealPlan.leftover_servings && mealPlan.leftover_servings > 0;
+  const displayServings = mealPlan.is_leftover 
+    ? mealPlan.leftover_servings || mealPlan.planned_servings || 1
+    : hasLeftoverAllocation 
+      ? (mealPlan.planned_servings || recipe?.servings || 1) - mealPlan.leftover_servings
+      : mealPlan.planned_servings || recipe?.servings || 1;
+
   return (
     <div
       className={`relative bg-white rounded-lg border shadow-sm transition-all duration-300 ease-out hover:shadow-md group select-none ${
@@ -135,15 +143,22 @@ export const EnhancedMealCard = ({
               {recipeTitle}
             </h4>
             
-            {/* Servings selector */}
+            {/* Servings selector with leftover indication */}
             <div className={`flex items-center gap-2 mb-2 ${mealPlan.is_completed ? 'opacity-60' : ''}`}>
               <span className={`${isMobile ? 'text-xs' : 'text-sm'} text-muted-foreground`}>
                 Servings:
               </span>
               <ServingsSelector
-                currentServings={mealPlan.planned_servings || recipe?.servings || 1}
+                currentServings={displayServings}
                 onServingsChange={handleServingsChange}
               />
+              
+              {/* Leftover allocation indicator */}
+              {hasLeftoverAllocation && !mealPlan.is_leftover && (
+                <div className={`${isMobile ? 'text-xs' : 'text-sm'} text-blue-600 bg-blue-50 px-2 py-1 rounded-full border border-blue-200`}>
+                  {mealPlan.leftover_servings} saved for lunch
+                </div>
+              )}
             </div>
             
             {/* Action buttons underneath servings */}
