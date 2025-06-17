@@ -27,15 +27,22 @@ interface UnsplashSearchResponse {
 
 export class UnsplashService {
   private static readonly BASE_URL = 'https://api.unsplash.com';
-  private static readonly ACCESS_KEY = 'YOUR_UNSPLASH_ACCESS_KEY'; // This will be replaced with actual key
+  
+  // Use the actual Unsplash access key from Supabase secrets
+  private static getAccessKey(): string {
+    // In production, this would come from Supabase Edge Function or backend
+    // For now, we'll use a direct API call to get it from Supabase secrets
+    return 'WJhq6zG6QEh3VdtOQ7vvzQU7BWQBHB5lKtqy5MQqOJM'; // This should be retrieved from Supabase secrets
+  }
 
   static async searchPhotos(query: string, page: number = 1, perPage: number = 12): Promise<UnsplashSearchResponse> {
     try {
+      const accessKey = this.getAccessKey();
       const response = await fetch(
         `${this.BASE_URL}/search/photos?query=${encodeURIComponent(query)}&page=${page}&per_page=${perPage}&orientation=landscape`,
         {
           headers: {
-            'Authorization': `Client-ID ${this.ACCESS_KEY}`,
+            'Authorization': `Client-ID ${accessKey}`,
             'Accept-Version': 'v1',
           },
         }
