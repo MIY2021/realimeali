@@ -3,16 +3,9 @@ import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Recipe, MealPlan } from "@/types";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Pencil, Plus, Check, X, GripVertical } from "lucide-react";
+import { Plus, Check, X, GripVertical } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useNavigate } from "react-router-dom";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { ServingsSelector } from "./ServingsSelector";
 import { useMealPlan } from "@/contexts/MealPlanContext";
@@ -41,7 +34,6 @@ export const EnhancedMealCard = ({
   const navigate = useNavigate();
   const [isVisible, setIsVisible] = useState(false);
   const [isRemoving, setIsRemoving] = useState(false);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const { updateMealPlanServings, updateMealPlanCompletion } = useMealPlan();
 
   useEffect(() => {
@@ -107,10 +99,6 @@ export const EnhancedMealCard = ({
     e.stopPropagation();
   };
 
-  const handleDropdownToggle = (open: boolean) => {
-    setIsDropdownOpen(open);
-  };
-
   const recipeImage = parentRecipe?.image || recipe?.image || "/images/placeholder.png";
   const recipeTitle = parentRecipe?.title || recipe?.title || "Unknown Recipe";
 
@@ -130,10 +118,11 @@ export const EnhancedMealCard = ({
       {/* Recipe Content */}
       <div className="flex items-start justify-between p-3">
         <div className="flex-1 flex items-start gap-3">
+          {/* Larger thumbnail */}
           <img
             src={recipeImage}
             alt={recipeTitle}
-            className="h-16 w-16 rounded-lg object-cover object-center aspect-square flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
+            className="h-20 w-20 rounded-lg object-cover object-center aspect-square flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
             onClick={handleImageClick}
           />
           <div className="flex flex-col min-w-0 flex-1">
@@ -146,8 +135,8 @@ export const EnhancedMealCard = ({
               {recipeTitle}
             </h4>
             
-            {/* Servings moved directly under title */}
-            <div className={`flex items-center gap-2 mb-1 ${mealPlan.is_completed ? 'opacity-60' : ''}`}>
+            {/* Servings selector */}
+            <div className={`flex items-center gap-2 mb-2 ${mealPlan.is_completed ? 'opacity-60' : ''}`}>
               <span className={`${isMobile ? 'text-xs' : 'text-sm'} text-muted-foreground`}>
                 Servings:
               </span>
@@ -157,8 +146,50 @@ export const EnhancedMealCard = ({
               />
             </div>
             
+            {/* Action buttons underneath servings */}
+            <div className="flex items-center gap-1 flex-wrap">
+              {/* Meal Made button */}
+              <Button
+                size="sm"
+                variant={mealPlan.is_completed ? "default" : "outline"}
+                onClick={handleComplete}
+                className={`${isMobile ? 'h-7 px-2 text-xs' : 'h-8 px-3 text-sm'} ${
+                  mealPlan.is_completed 
+                    ? 'bg-green-600 hover:bg-green-700 text-white' 
+                    : 'text-green-600 border-green-600 hover:bg-green-50'
+                }`}
+              >
+                <Check className={`${isMobile ? 'h-3 w-3 mr-1' : 'h-4 w-4 mr-1'}`} />
+                Made
+              </Button>
+
+              {/* Add Leftover button (only for non-leftovers) */}
+              {!mealPlan.is_leftover && recipe && onCreateLeftover && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleCreateLeftover}
+                  className={`${isMobile ? 'h-7 px-2 text-xs' : 'h-8 px-3 text-sm'} text-blue-600 border-blue-600 hover:bg-blue-50`}
+                >
+                  <Plus className={`${isMobile ? 'h-3 w-3 mr-1' : 'h-4 w-4 mr-1'}`} />
+                  Lunch
+                </Button>
+              )}
+
+              {/* Remove button */}
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleRemove}
+                className={`${isMobile ? 'h-7 px-2 text-xs' : 'h-8 px-3 text-sm'} text-red-500 border-red-500 hover:bg-red-50`}
+              >
+                <X className={`${isMobile ? 'h-3 w-3 mr-1' : 'h-4 w-4 mr-1'}`} />
+                Remove
+              </Button>
+            </div>
+            
             {mealPlan.is_leftover && (
-              <p className={`text-muted-foreground ${isMobile ? 'text-xs' : 'text-sm'} ${
+              <p className={`text-muted-foreground ${isMobile ? 'text-xs' : 'text-sm'} mt-1 ${
                 mealPlan.is_completed ? 'opacity-60 line-through' : ''
               }`}>
                 Leftover from {parentRecipe?.title || 'original meal'}
@@ -167,106 +198,19 @@ export const EnhancedMealCard = ({
           </div>
         </div>
 
-        {/* Right side actions */}
-        <div className="flex items-center gap-2 flex-shrink-0">
-          {/* Dropdown Menu - improved for mobile */}
-          <DropdownMenu open={isDropdownOpen} onOpenChange={handleDropdownToggle}>
-            <DropdownMenuTrigger asChild>
-              <Button 
-                variant="ghost" 
-                className={`h-8 w-8 p-0 data-[state=open]:bg-muted hover:bg-accent flex-shrink-0 ${
-                  isMobile ? 'active:scale-95' : ''
-                }`}
-                onTouchStart={(e) => {
-                  // Prevent accidental touches during scroll
-                  if (isMobile) {
-                    e.preventDefault();
-                  }
-                }}
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                }}
-              >
-                <MoreHorizontal className="h-4 w-4" />
-                <span className="sr-only">Open menu</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent 
-              align="end" 
-              className="w-[180px] bg-white border shadow-lg z-50"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <DropdownMenuItem 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleComplete();
-                  setIsDropdownOpen(false);
-                }} 
-                className={`${
-                  mealPlan.is_completed 
-                    ? 'text-green-600 focus:text-green-600 hover:bg-green-50' 
-                    : 'text-gray-600 focus:text-gray-600 hover:bg-gray-50'
-                }`}
-              >
-                <Check className="mr-2 h-4 w-4" />
-                <span>Meal Made!</span>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              {!mealPlan.is_leftover && recipe && onCreateLeftover && (
-                <>
-                  <DropdownMenuItem 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleCreateLeftover();
-                      setIsDropdownOpen(false);
-                    }} 
-                    className="text-green-600 focus:text-green-600 hover:bg-green-50"
-                  >
-                    <Plus className="mr-2 h-4 w-4" />
-                    <span>Add Leftover Lunch</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                </>
-              )}
-              <DropdownMenuItem
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setIsDropdownOpen(false);
-                }}
-              >
-                <Pencil className="mr-2 h-4 w-4" />
-                <span>Edit Recipe</span>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem 
-                className="text-red-500 focus:text-red-500 hover:bg-red-50" 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleRemove();
-                  setIsDropdownOpen(false);
-                }}
-              >
-                <X className="mr-2 h-4 w-4" />
-                <span>Remove from plan</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          {/* Drag Handle - moved to the rightmost position */}
-          {dragHandleProps && (
-            <div 
-              {...dragHandleProps} 
-              className="flex-shrink-0 cursor-grab active:cursor-grabbing opacity-60 hover:opacity-100 transition-opacity touch-none"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-              }}
-            >
-              <GripVertical className="h-4 w-4 text-gray-400 transition-all duration-200 hover:scale-110 active:scale-95" />
-            </div>
-          )}
-        </div>
+        {/* Drag Handle - moved to the rightmost position */}
+        {dragHandleProps && (
+          <div 
+            {...dragHandleProps} 
+            className="flex-shrink-0 cursor-grab active:cursor-grabbing opacity-60 hover:opacity-100 transition-opacity touch-none ml-2"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+          >
+            <GripVertical className="h-4 w-4 text-gray-400 transition-all duration-200 hover:scale-110 active:scale-95" />
+          </div>
+        )}
       </div>
     </div>
   );
