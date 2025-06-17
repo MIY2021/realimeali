@@ -28,16 +28,26 @@ interface UnsplashSearchResponse {
 export class UnsplashService {
   private static readonly BASE_URL = 'https://api.unsplash.com';
   
-  // Use the actual Unsplash access key from Supabase secrets
-  private static getAccessKey(): string {
-    // In production, this would come from Supabase Edge Function or backend
-    // For now, we'll use a direct API call to get it from Supabase secrets
-    return 'WJhq6zG6QEh3VdtOQ7vvzQU7BWQBHB5lKtqy5MQqOJM'; // This should be retrieved from Supabase secrets
+  // This should be handled by a Supabase Edge Function in production
+  private static getAccessKey(): string | null {
+    // For now, return null to disable Unsplash until proper backend integration
+    // In production, this would come from a Supabase Edge Function
+    return null;
   }
 
   static async searchPhotos(query: string, page: number = 1, perPage: number = 12): Promise<UnsplashSearchResponse> {
+    const accessKey = this.getAccessKey();
+    
+    if (!accessKey) {
+      // Return empty results when no API key is available
+      return {
+        results: [],
+        total: 0,
+        total_pages: 0
+      };
+    }
+
     try {
-      const accessKey = this.getAccessKey();
       const response = await fetch(
         `${this.BASE_URL}/search/photos?query=${encodeURIComponent(query)}&page=${page}&per_page=${perPage}&orientation=landscape`,
         {
@@ -56,7 +66,12 @@ export class UnsplashService {
       return data;
     } catch (error) {
       console.error('Error searching Unsplash photos:', error);
-      throw error;
+      // Return empty results on error instead of throwing
+      return {
+        results: [],
+        total: 0,
+        total_pages: 0
+      };
     }
   }
 
