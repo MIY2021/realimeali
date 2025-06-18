@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { ChefHat, Send, X, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
