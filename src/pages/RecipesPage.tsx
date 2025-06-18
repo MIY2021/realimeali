@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus, UtensilsCrossed } from "lucide-react";
@@ -69,7 +70,7 @@ export default function RecipesPage() {
   // Update RealiChef with recipes context
   useRealiChefContext({
     totalRecipes: recipes.length,
-    recipeCategories: [...new Set(recipes.flatMap(r => r.categories || []))],
+    recipeMealTypes: [...new Set(recipes.map(r => r.meal_type).filter(Boolean))],
     favoriteRecipes: recipes.filter(r => r.is_favorite).length
   });
 

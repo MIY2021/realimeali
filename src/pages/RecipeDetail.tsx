@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -41,7 +42,7 @@ export default function RecipeDetail() {
   // Update RealiChef context with recipe information
   useRealiChefContext({
     recipeTitle: recipe?.title,
-    recipeCategories: recipe?.categories,
+    recipeMealType: recipe?.meal_type,
     recipeIngredients: recipe?.ingredients,
     servings: recipe?.servings
   });
@@ -90,7 +91,7 @@ export default function RecipeDetail() {
     setIsAddToMealPlanOpen(true);
   };
 
-  const canEdit = user && recipe && recipe.created_by === user.id;
+  const canEdit = user && recipe && recipe.user_id === user.id;
 
   // Show loading state while recipes are being fetched
   if (isLoading) {
