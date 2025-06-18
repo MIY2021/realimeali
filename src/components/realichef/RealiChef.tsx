@@ -1,5 +1,6 @@
+
 import { useState, useEffect, useRef } from 'react';
-import { Send, X, Sparkles } from 'lucide-react';
+import { send, X, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useRealiChef } from '@/contexts/RealiChefContext';
@@ -216,7 +217,7 @@ export const RealiChef = () => {
                   size="sm"
                   className="bg-sage hover:bg-sage/90"
                 >
-                  <Send className="h-4 w-4" />
+                  <send className="h-4 w-4" />
                 </Button>
               </div>
             </div>
