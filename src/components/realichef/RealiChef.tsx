@@ -1,5 +1,6 @@
+
 import { useState, useEffect, useRef } from 'react';
-import { ChefHat, Send, X, Sparkles } from 'lucide-react';
+import { Send, X, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useRealiChef } from '@/contexts/RealiChefContext';
@@ -122,7 +123,11 @@ export const RealiChef = () => {
           size="sm"
         >
           <div className="relative">
-            <ChefHat className="h-6 w-6 text-white" />
+            <img 
+              src="/lovable-uploads/48f73020-608a-4375-a69f-2e7bc147e319.png" 
+              alt="Chef Hat"
+              className="h-6 w-6 text-white"
+            />
             <Sparkles 
               className="absolute -top-1 -right-1 h-3 w-3 text-yellow-300 animate-pulse" 
             />
@@ -138,7 +143,11 @@ export const RealiChef = () => {
             <div className="bg-gradient-to-r from-sage to-terracotta p-4 text-white">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <ChefHat className="h-5 w-5" />
+                  <img 
+                    src="/lovable-uploads/48f73020-608a-4375-a69f-2e7bc147e319.png" 
+                    alt="Chef Hat"
+                    className="h-5 w-5"
+                  />
                   <span className="font-semibold">RealiChef</span>
                   <Sparkles className="h-4 w-4 animate-pulse" />
                 </div>
