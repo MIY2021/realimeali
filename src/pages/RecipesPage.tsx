@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus, UtensilsCrossed } from "lucide-react";
@@ -14,6 +13,7 @@ import { useScrollPosition } from "@/hooks/useScrollPosition";
 import { useNavigationState } from "@/hooks/useNavigationState";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Recipe } from "@/types";
+import { useRealiChefContext } from "@/hooks/useRealiChefContext";
 
 export default function RecipesPage() {
   useDocumentTitle("My Recipes | RealiMeali");
@@ -65,6 +65,13 @@ export default function RecipesPage() {
     }
     return "Curate your household's favourite meals — a private collection just for you.";
   };
+
+  // Update RealiChef with recipes context
+  useRealiChefContext({
+    totalRecipes: recipes.length,
+    recipeCategories: [...new Set(recipes.flatMap(r => r.categories || []))],
+    favoriteRecipes: recipes.filter(r => r.is_favorite).length
+  });
 
   // Show loading state while household is being determined
   if (isLoadingHousehold) {

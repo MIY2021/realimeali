@@ -1,82 +1,76 @@
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+} from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import Layout from "@/components/layout/Layout";
+import Index from "@/pages/Index";
+import Login from "@/pages/Login";
+import Register from "@/pages/Register";
+import Settings from "@/pages/Settings";
+import RecipesPage from "@/pages/RecipesPage";
+import RecipeDetail from "@/pages/RecipeDetail";
+import NewRecipe from "@/pages/NewRecipe";
+import EditRecipe from "@/pages/EditRecipe";
+import FindRecipes from "@/pages/FindRecipes";
+import MealPlanner from "@/pages/MealPlanner";
+import ShoppingList from "@/pages/ShoppingList";
+import Admin from "@/pages/Admin";
+import Household from "@/pages/Household";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { HouseholdProvider } from "@/contexts/HouseholdContext";
+import { RecipesProvider } from "@/contexts/RecipesContext";
+import { MealPlanProvider } from "@/contexts/MealPlanContext";
+import { MealPlanApprovalProvider } from "@/contexts/MealPlanApprovalContext";
+import { HouseholdShoppingProvider } from "@/contexts/HouseholdShoppingContext";
+import { Toaster } from "@/components/ui/toaster";
 
-import React from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { AuthProvider } from './contexts/AuthContext';
-import { HouseholdProvider } from './contexts/HouseholdContext';
-import { RecipesProvider } from './contexts/RecipesContext';
-import { MealPlanProvider } from './contexts/MealPlanContext';
-import { MealPlanApprovalProvider } from './contexts/MealPlanApprovalContext';
-import { HouseholdShoppingProvider } from './contexts/HouseholdShoppingContext';
-import Layout from './components/layout/Layout';
-import Index from './pages/Index';
-import Login from './pages/Login';
-import Signup from './pages/Signup';
-import MealPlanner from './pages/MealPlanner';
-import RecipesPage from './pages/RecipesPage';
-import CreateRecipePage from './pages/CreateRecipePage';
-import RecipeDetail from './pages/RecipeDetail';
-import FindRecipesPage from './pages/FindRecipesPage';
-import ShoppingList from './pages/ShoppingList';
-import Settings from './pages/Settings';
-import About from './pages/About';
-import Feedback from './pages/Feedback';
-import PrivacyPolicy from './pages/PrivacyPolicy';
-import TermsOfService from './pages/TermsOfService';
-import NotFound from './pages/NotFound';
-import PublicRecipe from './pages/PublicRecipe';
-import AdminDashboard from './pages/AdminDashboard';
-import { ProtectedRoute } from './components/auth/ProtectedRoute';
-import Contact from "@/pages/Contact";
+import { RealiChefProvider } from "@/contexts/RealiChefContext";
+import { RealiChef } from "@/components/realichef/RealiChef";
 
-// Create a QueryClient instance
 const queryClient = new QueryClient();
 
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <AuthProvider>
-          <HouseholdProvider>
+      <AuthProvider>
+        <HouseholdProvider>
+          <MealPlanProvider>
             <RecipesProvider>
-              <MealPlanProvider>
-                <MealPlanApprovalProvider>
-                  <HouseholdShoppingProvider>
-                    <Layout>
-                      <Routes>
-                        <Route path="/" element={<Index />} />
-                        <Route path="/login" element={<Login />} />
-                        <Route path="/signup" element={<Signup />} />
-                        <Route path="/meal-planner" element={<MealPlanner />} />
-                        <Route path="/my-recipes" element={<RecipesPage />} />
-                        <Route path="/my-recipes/new" element={<CreateRecipePage />} />
-                        {/* Updated route to handle both slug and legacy ID formats */}
-                        <Route path="/my-recipes/:slug" element={<RecipeDetail />} />
-                        <Route path="/find-recipes" element={<FindRecipesPage />} />
-                        <Route path="/shopping-list" element={<ShoppingList />} />
-                        <Route path="/settings" element={<Settings />} />
-                        <Route path="/about" element={<About />} />
-                        <Route path="/contact" element={<Contact />} />
-                        <Route path="/feedback" element={<Feedback />} />
-                        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-                        <Route path="/terms-of-service" element={<TermsOfService />} />
-                        <Route path="/recipes/shared/:shareId" element={<PublicRecipe />} />
-                        <Route path="/share/:slug" element={<PublicRecipe />} />
-                        <Route path="/admin" element={
-                          <ProtectedRoute>
-                            <AdminDashboard />
-                          </ProtectedRoute>
-                        } />
-                        <Route path="*" element={<NotFound />} />
-                      </Routes>
-                    </Layout>
-                  </HouseholdShoppingProvider>
-                </MealPlanApprovalProvider>
-              </MealPlanProvider>
+              <MealPlanApprovalProvider>
+                <HouseholdShoppingProvider>
+                  <RealiChefProvider>
+                    <BrowserRouter>
+                      <div className="App">
+                        <Layout>
+                          <Routes>
+                            <Route path="/" element={<Index />} />
+                            <Route path="/login" element={<Login />} />
+                            <Route path="/register" element={<Register />} />
+                            <Route path="/settings" element={<Settings />} />
+                            <Route path="/household" element={<Household />} />
+                            <Route path="/my-recipes" element={<RecipesPage />} />
+                            <Route path="/my-recipes/new" element={<NewRecipe />} />
+                            <Route path="/my-recipes/:slug" element={<RecipeDetail />} />
+                            <Route path="/my-recipes/:id/edit" element={<EditRecipe />} />
+                            <Route path="/find-recipes" element={<FindRecipes />} />
+                            <Route path="/meal-planner" element={<MealPlanner />} />
+                            <Route path="/shopping-list" element={<ShoppingList />} />
+                            <Route path="/admin" element={<Admin />} />
+                          </Routes>
+                        </Layout>
+                        <RealiChef />
+                        <Toaster />
+                      </div>
+                    </BrowserRouter>
+                  </RealiChefProvider>
+                </HouseholdShoppingProvider>
+              </MealPlanApprovalProvider>
             </RecipesProvider>
-          </HouseholdProvider>
-        </AuthProvider>
-      </BrowserRouter>
+          </MealPlanProvider>
+        </HouseholdProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }

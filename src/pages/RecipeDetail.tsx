@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -12,6 +11,7 @@ import { EditRecipeDialog } from "@/components/recipes/EditRecipeDialog";
 import { AddToMealPlanDialog } from "@/components/recipes/AddToMealPlanDialog";
 import { Recipe } from "@/types";
 import { generateSlug } from "@/utils/slugUtils";
+import { useRealiChefContext } from "@/hooks/useRealiChefContext";
 
 export default function RecipeDetail() {
   const { slug } = useParams<{ slug: string }>();
@@ -37,6 +37,14 @@ export default function RecipeDetail() {
     // Fall back to legacy ID lookup (for backwards compatibility)
     return getRecipeById(slug);
   })();
+
+  // Update RealiChef context with recipe information
+  useRealiChefContext({
+    recipeTitle: recipe?.title,
+    recipeCategories: recipe?.categories,
+    recipeIngredients: recipe?.ingredients,
+    servings: recipe?.servings
+  });
 
   useDocumentTitle(recipe ? `${recipe.title} | RealiMeali` : "Recipe | RealiMeali");
 
@@ -146,32 +154,36 @@ export default function RecipeDetail() {
         </Button>
       </div>
 
-      {/* Use the elegant RecipeDetail component */}
-      <RecipeDetailComponent
-        recipe={recipe}
-        onEdit={canEdit ? handleEdit : undefined}
-        onDelete={canEdit ? handleDelete : undefined}
-        isOwner={canEdit}
-        onAddToMealPlan={handleAddToMealPlan}
-      />
+      {recipe && (
+        <>
+          {/* Use the elegant RecipeDetail component */}
+          <RecipeDetailComponent
+            recipe={recipe}
+            onEdit={canEdit ? handleEdit : undefined}
+            onDelete={canEdit ? handleDelete : undefined}
+            isOwner={canEdit}
+            onAddToMealPlan={handleAddToMealPlan}
+          />
 
-      {/* Dialogs */}
-      {isEditDialogOpen && recipe && (
-        <EditRecipeDialog
-          recipe={recipe}
-          open={isEditDialogOpen}
-          onOpenChange={setIsEditDialogOpen}
-          onRecipeUpdate={handleRecipeUpdate}
-        />
-      )}
+          {/* Dialogs */}
+          {isEditDialogOpen && recipe && (
+            <EditRecipeDialog
+              recipe={recipe}
+              open={isEditDialogOpen}
+              onOpenChange={setIsEditDialogOpen}
+              onRecipeUpdate={handleRecipeUpdate}
+            />
+          )}
 
-      {isAddToMealPlanOpen && recipe && (
-        <AddToMealPlanDialog
-          recipe={recipe}
-          open={isAddToMealPlanOpen}
-          onOpenChange={setIsAddToMealPlanOpen}
-          adjustedServings={adjustedServings}
-        />
+          {isAddToMealPlanOpen && recipe && (
+            <AddToMealPlanDialog
+              recipe={recipe}
+              open={isAddToMealPlanOpen}
+              onOpenChange={setIsAddToMealPlanOpen}
+              adjustedServings={adjustedServings}
+            />
+          )}
+        </>
       )}
     </div>
   );
