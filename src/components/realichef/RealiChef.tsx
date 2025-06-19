@@ -18,6 +18,7 @@ export const RealiChef = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [hasError, setHasError] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -64,6 +65,7 @@ export const RealiChef = () => {
     setMessages(prev => [...prev, userMessage]);
     setInputMessage('');
     setIsLoading(true);
+    setHasError(false);
 
     try {
       // Get conversation history for context
@@ -91,6 +93,7 @@ export const RealiChef = () => {
       setMessages(prev => [...prev, assistantMessage]);
     } catch (error) {
       console.error('Error sending message to RealiChef:', error);
+      setHasError(true);
       const errorMessage: ChatMessage = {
         role: 'assistant',
         content: "👩‍🍳 Oops! I had trouble processing that. Please try again in a moment!",

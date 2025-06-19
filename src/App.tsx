@@ -23,8 +23,31 @@ import { Toaster } from "@/components/ui/toaster";
 
 import { RealiChefProvider } from "@/contexts/RealiChefContext";
 import { RealiChef } from "@/components/realichef/RealiChef";
+import { useAuth } from "@/contexts/AuthContext";
 
 const queryClient = new QueryClient();
+
+function AppContent() {
+  const { user } = useAuth();
+
+  return (
+    <div className="App">
+      <Layout>
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/my-recipes" element={<RecipesPage />} />
+          <Route path="/my-recipes/:slug" element={<RecipeDetail />} />
+          <Route path="/meal-planner" element={<MealPlanner />} />
+          <Route path="/shopping-list" element={<ShoppingList />} />
+        </Routes>
+      </Layout>
+      {user && <RealiChef />}
+      <Toaster />
+    </div>
+  );
+}
 
 function App() {
   return (
@@ -37,21 +60,7 @@ function App() {
                 <HouseholdShoppingProvider>
                   <RealiChefProvider>
                     <BrowserRouter>
-                      <div className="App">
-                        <Layout>
-                          <Routes>
-                            <Route path="/" element={<Index />} />
-                            <Route path="/login" element={<Login />} />
-                            <Route path="/settings" element={<Settings />} />
-                            <Route path="/my-recipes" element={<RecipesPage />} />
-                            <Route path="/my-recipes/:slug" element={<RecipeDetail />} />
-                            <Route path="/meal-planner" element={<MealPlanner />} />
-                            <Route path="/shopping-list" element={<ShoppingList />} />
-                          </Routes>
-                        </Layout>
-                        <RealiChef />
-                        <Toaster />
-                      </div>
+                      <AppContent />
                     </BrowserRouter>
                   </RealiChefProvider>
                 </HouseholdShoppingProvider>
