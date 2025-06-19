@@ -52,23 +52,23 @@ function AppContent() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <HouseholdProvider>
-          <MealPlanProvider>
-            <RecipesProvider>
-              <MealPlanApprovalProvider>
-                <HouseholdShoppingProvider>
-                  <RealiChefProvider>
-                    <BrowserRouter>
+      <BrowserRouter>
+        <AuthProvider>
+          <HouseholdProvider>
+            <MealPlanProvider>
+              <RecipesProvider>
+                <MealPlanApprovalProvider>
+                  <HouseholdShoppingProvider>
+                    <RealiChefProvider>
                       <AppContent />
-                    </BrowserRouter>
-                  </RealiChefProvider>
-                </HouseholdShoppingProvider>
-              </MealPlanApprovalProvider>
-            </RecipesProvider>
-          </MealPlanProvider>
-        </HouseholdProvider>
-      </AuthProvider>
+                    </RealiChefProvider>
+                  </HouseholdShoppingProvider>
+                </MealPlanApprovalProvider>
+              </RecipesProvider>
+            </MealPlanProvider>
+          </HouseholdProvider>
+        </AuthProvider>
+      </BrowserRouter>
     </QueryClientProvider>
   );
 }
