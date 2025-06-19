@@ -1,232 +1,126 @@
 
-import { useState, useEffect } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Recipe, MealPlan } from "@/types";
+import { useState } from "react";
+import { Trash2, Copy, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Plus, Check, X, GripVertical } from "lucide-react";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { useNavigate } from "react-router-dom";
-import { cn } from "@/lib/utils";
-import { ServingsSelector } from "./ServingsSelector";
-import { useMealPlan } from "@/contexts/MealPlanContext";
-import { generateSlug } from "@/utils/slugUtils";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { MealPlan, Recipe } from "@/types";
+import { MealServingsDialog } from "./MealServingsDialog";
 
 interface EnhancedMealCardProps {
   mealPlan: MealPlan;
-  recipe: Recipe | undefined;
+  recipe?: Recipe;
+  parentRecipe?: Recipe;
   onRemove: (planId: string) => void;
-  onCreateLeftover?: (mealPlan: MealPlan, recipe: Recipe) => void;
-  parentRecipe?: Recipe | undefined;
-  dragHandleProps?: any;
-  animationDelay?: number;
+  onCreateLeftover: (mealPlan: MealPlan, recipe: Recipe) => void;
 }
 
-export const EnhancedMealCard = ({
+export function EnhancedMealCard({
   mealPlan,
   recipe,
+  parentRecipe,
   onRemove,
   onCreateLeftover,
-  parentRecipe,
-  dragHandleProps,
-  animationDelay = 0,
-}: EnhancedMealCardProps) => {
-  const isMobile = useIsMobile();
-  const navigate = useNavigate();
-  const [isVisible, setIsVisible] = useState(false);
-  const [isRemoving, setIsRemoving] = useState(false);
-  const { updateMealPlanServings, updateMealPlanCompletion } = useMealPlan();
+}: EnhancedMealCardProps) {
+  const [showServingsDialog, setShowServingsDialog] = useState(false);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsVisible(true);
-    }, animationDelay);
-    return () => clearTimeout(timer);
-  }, [animationDelay]);
-
-  const handleRemove = () => {
-    setIsRemoving(true);
-    setTimeout(() => {
-      onRemove(mealPlan.id);
-    }, 300);
-  };
-
-  const handleComplete = async () => {
-    try {
-      await updateMealPlanCompletion(mealPlan.id, !mealPlan.is_completed);
-    } catch (error) {
-      console.error('Error updating completion status:', error);
-    }
-  };
-
-  const handleServingsChange = async (newServings: number) => {
-    try {
-      await updateMealPlanServings(mealPlan.id, newServings);
-    } catch (error) {
-      console.error('Error updating servings:', error);
-      // The error is already handled in the context
-    }
-  };
-
-  const handleTitleClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const recipeToUse = parentRecipe || recipe;
-    if (recipeToUse) {
-      const slug = generateSlug(recipeToUse.title);
-      navigate(`/my-recipes/${slug}`);
-    }
-  };
-
-  const handleImageClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const recipeToUse = parentRecipe || recipe;
-    if (recipeToUse) {
-      const slug = generateSlug(recipeToUse.title);
-      navigate(`/my-recipes/${slug}`);
-    }
-  };
+  if (!recipe) {
+    return (
+      <Card className="bg-gray-50 border-dashed">
+        <CardContent className="p-3">
+          <p className="text-sm text-muted-foreground">Recipe not found</p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   const handleCreateLeftover = () => {
-    if (recipe && onCreateLeftover) {
-      onCreateLeftover(mealPlan, recipe);
-    }
+    onCreateLeftover(mealPlan, recipe);
   };
 
-  const handleCardClick = (e: React.MouseEvent) => {
-    // Prevent any unwanted navigation when clicking the card itself
-    e.preventDefault();
-    e.stopPropagation();
-  };
-
-  const recipeImage = parentRecipe?.image || recipe?.image || "/images/placeholder.png";
-  const recipeTitle = parentRecipe?.title || recipe?.title || "Unknown Recipe";
-
-  // Calculate display servings and leftover info
-  const hasLeftoverAllocation = mealPlan.leftover_servings && mealPlan.leftover_servings > 0;
-  const displayServings = mealPlan.is_leftover 
-    ? mealPlan.leftover_servings || mealPlan.planned_servings || 1
-    : hasLeftoverAllocation 
-      ? (mealPlan.planned_servings || recipe?.servings || 1) - mealPlan.leftover_servings
-      : mealPlan.planned_servings || recipe?.servings || 1;
+  const isLeftover = mealPlan.is_leftover;
+  const isLunchLeftover = isLeftover && mealPlan.meal_type === 'lunch';
 
   return (
-    <div
-      className={`relative bg-white rounded-lg border shadow-sm transition-all duration-300 ease-out hover:shadow-md group select-none ${
-        isVisible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
-      } ${isRemoving ? 'animate-out slide-out-to-right-full duration-300' : ''} ${
-        mealPlan.is_completed ? 'opacity-60 bg-gray-50' : ''
-      }`}
-      style={{ 
-        transitionDelay: `${animationDelay}ms`,
-        willChange: 'transform, opacity'
-      }}
-      onClick={handleCardClick}
-    >
-      {/* Recipe Content */}
-      <div className="flex items-start justify-between p-3">
-        <div className="flex-1 flex items-start gap-3">
-          {/* Larger thumbnail */}
-          <img
-            src={recipeImage}
-            alt={recipeTitle}
-            className="h-20 w-20 rounded-lg object-cover object-center aspect-square flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
-            onClick={handleImageClick}
-          />
-          <div className="flex flex-col min-w-0 flex-1">
-            <h4 
-              className={`font-semibold ${isMobile ? 'text-sm' : 'text-base'} line-clamp-1 text-navy cursor-pointer hover:text-terracotta transition-colors mb-1 ${
-                mealPlan.is_completed ? 'line-through' : ''
-              }`}
-              onClick={handleTitleClick}
-            >
-              {recipeTitle}
-            </h4>
-            
-            {/* Servings selector with leftover indication */}
-            <div className={`flex items-center gap-2 mb-2 ${mealPlan.is_completed ? 'opacity-60' : ''}`}>
-              <span className={`${isMobile ? 'text-xs' : 'text-sm'} text-muted-foreground`}>
-                Servings:
-              </span>
-              <ServingsSelector
-                currentServings={displayServings}
-                onServingsChange={handleServingsChange}
-              />
-              
-              {/* Leftover allocation indicator */}
-              {hasLeftoverAllocation && !mealPlan.is_leftover && (
-                <div className={`${isMobile ? 'text-xs' : 'text-sm'} text-blue-600 bg-blue-50 px-2 py-1 rounded-full border border-blue-200`}>
-                  {mealPlan.leftover_servings} saved for lunch
-                </div>
+    <>
+      <Card className={`transition-colors ${isLeftover ? 'bg-green-50 border-green-200' : 'bg-white'}`}>
+        <CardContent className="p-3">
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-1">
+                <h4 className="text-sm font-medium truncate">
+                  {recipe.title}
+                </h4>
+                {isLeftover && (
+                  <Badge 
+                    variant="outline" 
+                    className={`text-xs ${
+                      isLunchLeftover 
+                        ? 'bg-green-50 text-green-700 border-green-200' 
+                        : 'bg-green-50 text-green-700 border-green-200'
+                    }`}
+                  >
+                    Leftover
+                  </Badge>
+                )}
+              </div>
+
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <span>
+                  {mealPlan.planned_servings || recipe.servings} serving{(mealPlan.planned_servings || recipe.servings) !== 1 ? 's' : ''}
+                </span>
+                {recipe.prep_time && <span>• {recipe.prep_time}min prep</span>}
+                {recipe.cook_time && <span>• {recipe.cook_time}min cook</span>}
+              </div>
+
+              {isLeftover && parentRecipe && (
+                <p className="text-xs text-green-600 mt-1">
+                  From {parentRecipe.title}
+                </p>
               )}
             </div>
-            
-            {/* Action buttons underneath servings */}
-            <div className="flex items-center gap-1 flex-wrap">
-              {/* Meal Made button */}
-              <Button
-                size="sm"
-                variant={mealPlan.is_completed ? "outline" : "outline"}
-                onClick={handleComplete}
-                className={`${isMobile ? 'h-7 px-2 text-xs' : 'h-8 px-3 text-sm'} ${
-                  mealPlan.is_completed 
-                    ? 'text-gray-600 border-gray-400' 
-                    : 'text-green-600 border-green-600 hover:bg-green-50'
-                }`}
-              >
-                <Check className={`${isMobile ? 'h-3 w-3 mr-1' : 'h-4 w-4 mr-1'}`} />
-                Made
-              </Button>
 
-              {/* Add Leftover button (only for non-leftovers) */}
-              {!mealPlan.is_leftover && recipe && onCreateLeftover && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={handleCreateLeftover}
-                  className={`${isMobile ? 'h-7 px-2 text-xs' : 'h-8 px-3 text-sm'} text-blue-600 border-blue-600 hover:bg-blue-50`}
-                >
-                  <Plus className={`${isMobile ? 'h-3 w-3 mr-1' : 'h-4 w-4 mr-1'}`} />
-                  Lunch
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-6 w-6 p-0 opacity-60 hover:opacity-100">
+                  <MoreHorizontal className="h-3 w-3" />
                 </Button>
-              )}
-
-              {/* Remove button - X only on mobile */}
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={handleRemove}
-                className={`${isMobile ? 'h-7 px-2 text-xs' : 'h-8 px-3 text-sm'} text-red-500 border-red-500 hover:bg-red-50`}
-              >
-                <X className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4 mr-1'}`} />
-                {!isMobile && 'Remove'}
-              </Button>
-            </div>
-            
-            {mealPlan.is_leftover && (
-              <p className={`text-muted-foreground ${isMobile ? 'text-xs' : 'text-sm'} mt-1 ${
-                mealPlan.is_completed ? 'opacity-60 line-through' : ''
-              }`}>
-                Leftover from {parentRecipe?.title || 'original meal'}
-              </p>
-            )}
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-40">
+                <DropdownMenuItem onClick={() => setShowServingsDialog(true)}>
+                  Adjust Servings
+                </DropdownMenuItem>
+                {!isLeftover && mealPlan.meal_type === 'dinner' && (
+                  <DropdownMenuItem onClick={handleCreateLeftover}>
+                    <Copy className="h-3 w-3 mr-2" />
+                    Create Leftover
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuItem 
+                  onClick={() => onRemove(mealPlan.id)}
+                  className="text-red-600 focus:text-red-600"
+                >
+                  <Trash2 className="h-3 w-3 mr-2" />
+                  Remove
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
-        </div>
+        </CardContent>
+      </Card>
 
-        {/* Drag Handle - moved to the rightmost position */}
-        {dragHandleProps && (
-          <div 
-            {...dragHandleProps} 
-            className="flex-shrink-0 cursor-grab active:cursor-grabbing opacity-60 hover:opacity-100 transition-opacity touch-none ml-2"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-            }}
-          >
-            <GripVertical className="h-4 w-4 text-gray-400 transition-all duration-200 hover:scale-110 active:scale-95" />
-          </div>
-        )}
-      </div>
-    </div>
+      <MealServingsDialog
+        isOpen={showServingsDialog}
+        onClose={() => setShowServingsDialog(false)}
+        mealPlan={mealPlan}
+        recipe={recipe}
+      />
+    </>
   );
-};
+}

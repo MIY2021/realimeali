@@ -1,6 +1,5 @@
-
 import { useState, useEffect, useRef } from 'react';
-import { X, Sparkles } from 'lucide-react';
+import { Dash, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useRealiChef } from '@/contexts/RealiChefContext';
@@ -28,6 +27,16 @@ export const RealiChef = () => {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Scroll to bottom when chat is opened
+  useEffect(() => {
+    if (isOpen) {
+      // Small delay to ensure the chat UI is rendered before scrolling
+      setTimeout(() => {
+        scrollToBottom();
+      }, 100);
+    }
+  }, [isOpen]);
 
   // Welcome message based on page context
   useEffect(() => {
@@ -160,7 +169,7 @@ export const RealiChef = () => {
                   onClick={() => setIsOpen(false)}
                   className="text-white hover:bg-white/20 h-6 w-6 p-0"
                 >
-                  <X className="h-4 w-4" />
+                  <Dash className="h-4 w-4" />
                 </Button>
               </div>
             </div>
