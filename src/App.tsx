@@ -55,8 +55,8 @@ function App() {
       <BrowserRouter>
         <AuthProvider>
           <HouseholdProvider>
-            <MealPlanProvider>
-              <RecipesProvider>
+            <RecipesProvider>
+              <MealPlanProvider>
                 <MealPlanApprovalProvider>
                   <HouseholdShoppingProvider>
                     <RealiChefProvider>
@@ -64,8 +64,8 @@ function App() {
                     </RealiChefProvider>
                   </HouseholdShoppingProvider>
                 </MealPlanApprovalProvider>
-              </RecipesProvider>
-            </MealPlanProvider>
+              </MealPlanProvider>
+            </RecipesProvider>
           </HouseholdProvider>
         </AuthProvider>
       </BrowserRouter>
