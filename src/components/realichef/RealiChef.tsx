@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { Minus, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -12,6 +11,21 @@ interface ChatMessage {
   content: string;
   timestamp: Date;
 }
+
+// Simple markdown renderer for bold text
+const renderMarkdown = (text: string) => {
+  // Replace **text** with <strong>text</strong>
+  const boldRegex = /\*\*(.*?)\*\*/g;
+  const parts = text.split(boldRegex);
+  
+  return parts.map((part, index) => {
+    // Every odd index is the content inside **
+    if (index % 2 === 1) {
+      return <strong key={index}>{part}</strong>;
+    }
+    return part;
+  });
+};
 
 export const RealiChef = () => {
   const { pageContext, isOpen, setIsOpen } = useRealiChef();
@@ -194,7 +208,7 @@ export const RealiChef = () => {
                     )}
                   >
                     <div className="whitespace-pre-wrap break-words">
-                      {message.content}
+                      {message.role === 'assistant' ? renderMarkdown(message.content) : message.content}
                     </div>
                   </div>
                 </div>

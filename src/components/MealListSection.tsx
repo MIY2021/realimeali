@@ -1,4 +1,3 @@
-
 import { MealType, MealPlan, Recipe } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Plus, GripVertical } from "lucide-react";
@@ -10,6 +9,7 @@ import { useState, useEffect } from "react";
 interface MealListSectionProps {
   mealType: MealType;
   mealPlans: MealPlan[];
+  allMealPlans?: MealPlan[]; // Add this prop
   getRecipeById: (id: string) => Recipe | undefined;
   onAddMeal: (mealType: MealType) => void;
   onRemoveMeal: (planId: string) => void;
@@ -23,6 +23,7 @@ interface MealListSectionProps {
 export default function MealListSection({
   mealType,
   mealPlans,
+  allMealPlans = [], // Default value
   getRecipeById,
   onAddMeal,
   onRemoveMeal,
@@ -162,6 +163,7 @@ export default function MealListSection({
                                 parentRecipe={parentRecipe}
                                 dragHandleProps={provided.dragHandleProps}
                                 animationDelay={(sectionIndex * 100) + (index * 50)}
+                                allMealPlans={allMealPlans}
                               />
                             </div>
                           )}

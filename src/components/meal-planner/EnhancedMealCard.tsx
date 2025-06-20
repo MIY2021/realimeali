@@ -4,8 +4,10 @@ import { Trash2, Plus, Minus, GripVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { MealPlan, Recipe, MealType } from "@/types";
 import { DraggableProvidedDragHandleProps } from "react-beautiful-dnd";
+import { useMealPlan } from "@/contexts/MealPlanContext";
 
 interface EnhancedMealCardProps {
   mealPlan: MealPlan;
@@ -15,7 +17,7 @@ interface EnhancedMealCardProps {
   onCreateLeftover: (mealPlan: MealPlan, recipe: Recipe) => void;
   dragHandleProps?: DraggableProvidedDragHandleProps | null;
   animationDelay?: number;
-  allMealPlans?: MealPlan[]; // Add this to check for existing leftovers
+  allMealPlans?: MealPlan[];
 }
 
 export function EnhancedMealCard({
@@ -29,6 +31,7 @@ export function EnhancedMealCard({
   allMealPlans = [],
 }: EnhancedMealCardProps) {
   const [servings, setServings] = useState(mealPlan.planned_servings || recipe?.servings || 1);
+  const { updateMealPlanCompletion } = useMealPlan();
 
   if (!recipe) {
     return (
@@ -42,6 +45,14 @@ export function EnhancedMealCard({
 
   const handleCreateLeftover = () => {
     onCreateLeftover(mealPlan, recipe);
+  };
+
+  const handleCompletionChange = async (completed: boolean) => {
+    try {
+      await updateMealPlanCompletion(mealPlan.id, completed);
+    } catch (error) {
+      console.error('Error updating meal completion:', error);
+    }
   };
 
   const isLeftover = mealPlan.is_leftover;
@@ -68,16 +79,23 @@ export function EnhancedMealCard({
             />
           </div>
 
-          {/* Content Area */}
-          <div className="flex-1 p-4 flex flex-col justify-between min-w-0">
+          {/* Content Area - Reduced left padding to minimize white space */}
+          <div className="flex-1 pl-2 pr-4 py-4 flex flex-col justify-between min-w-0">
             {/* Header */}
             <div className="flex items-start justify-between mb-2">
               <div className="flex items-start gap-2 flex-1 min-w-0">
-                <div {...dragHandleProps} className="touch-none cursor-grab active:cursor-grabbing pt-1 flex-shrink-0">
-                  <GripVertical className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+                {/* Completion Checkbox */}
+                <div className="pt-1 flex-shrink-0">
+                  <Checkbox
+                    checked={mealPlan.is_completed || false}
+                    onCheckedChange={handleCompletionChange}
+                    className="h-4 w-4"
+                  />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h4 className="font-medium text-gray-900 text-sm leading-tight truncate">
+                  <h4 className={`font-medium text-sm leading-tight truncate ${
+                    mealPlan.is_completed ? 'text-gray-500 line-through' : 'text-gray-900'
+                  }`}>
                     {recipe.title}
                   </h4>
                   {isLunchLeftover && parentRecipe && (
@@ -87,14 +105,20 @@ export function EnhancedMealCard({
                   )}
                 </div>
               </div>
-              {isLeftover && (
-                <Badge 
-                  variant="secondary" 
-                  className="text-xs bg-gray-100 text-gray-600 border-gray-200 ml-2 flex-shrink-0"
-                >
-                  Leftover
-                </Badge>
-              )}
+              <div className="flex items-center gap-2 flex-shrink-0">
+                {isLeftover && (
+                  <Badge 
+                    variant="secondary" 
+                    className="text-xs bg-gray-100 text-gray-600 border-gray-200"
+                  >
+                    Leftover
+                  </Badge>
+                )}
+                {/* Drag Handle - Moved to right side */}
+                <div {...dragHandleProps} className="touch-none cursor-grab active:cursor-grabbing">
+                  <GripVertical className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+                </div>
+              </div>
             </div>
 
             {/* Bottom Controls */}
