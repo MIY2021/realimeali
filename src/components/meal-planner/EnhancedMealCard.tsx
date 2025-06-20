@@ -51,7 +51,7 @@ export function EnhancedMealCard({
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <img 
-              src={recipe.image_url || "/placeholder.svg"} 
+              src={recipe.image || "/placeholder.svg"} 
               alt={recipe.title}
               className="w-12 h-12 rounded object-cover"
             />
