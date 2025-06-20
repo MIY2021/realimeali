@@ -1,17 +1,10 @@
 
 import { useState } from "react";
-import { Trash2, Copy, MoreHorizontal } from "lucide-react";
+import { Trash2, Plus, Minus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { MealPlan, Recipe, MealType } from "@/types";
-import { MealServingsDialog } from "./MealServingsDialog";
 import { DraggableProvidedDragHandleProps } from "react-beautiful-dnd";
 
 interface EnhancedMealCardProps {
@@ -33,7 +26,7 @@ export function EnhancedMealCard({
   dragHandleProps,
   animationDelay = 0,
 }: EnhancedMealCardProps) {
-  const [showServingsDialog, setShowServingsDialog] = useState(false);
+  const [servings, setServings] = useState(mealPlan.planned_servings || recipe?.servings || 1);
 
   if (!recipe) {
     return (
@@ -53,82 +46,84 @@ export function EnhancedMealCard({
   const isLunchLeftover = isLeftover && mealPlan.meal_type === 'lunch';
 
   return (
-    <>
-      <Card className={`transition-colors ${isLeftover ? 'bg-green-50 border-green-200' : 'bg-white'}`}>
-        <CardContent className="p-3">
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <h4 className="text-sm font-medium truncate">
-                  {recipe.title}
-                </h4>
-                {isLeftover && (
-                  <Badge 
-                    variant="outline" 
-                    className={`text-xs ${
-                      isLunchLeftover 
-                        ? 'bg-green-50 text-green-600 border-green-300' 
-                        : 'bg-green-50 text-green-700 border-green-200'
-                    }`}
-                  >
-                    Leftover
-                  </Badge>
-                )}
-              </div>
-
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <span>
-                  {mealPlan.planned_servings || recipe.servings} serving{(mealPlan.planned_servings || recipe.servings) !== 1 ? 's' : ''}
-                </span>
-                {recipe.prep_time && <span>• {recipe.prep_time}min prep</span>}
-                {recipe.cook_time && <span>• {recipe.cook_time}min cook</span>}
-              </div>
-
-              {isLeftover && parentRecipe && (
-                <p className="text-xs text-green-600 mt-1">
+    <Card className="bg-white border border-gray-200 hover:shadow-md transition-shadow">
+      <CardContent className="p-4">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <img 
+              src={recipe.image_url || "/placeholder.svg"} 
+              alt={recipe.title}
+              className="w-12 h-12 rounded object-cover"
+            />
+            <div>
+              <h4 className="font-medium text-gray-900">
+                {recipe.title}
+              </h4>
+              {isLunchLeftover && parentRecipe && (
+                <p className="text-xs text-gray-500">
                   From {parentRecipe.title}
                 </p>
               )}
             </div>
-
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-6 w-6 p-0 opacity-60 hover:opacity-100">
-                  <MoreHorizontal className="h-3 w-3" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-40">
-                <DropdownMenuItem onClick={() => setShowServingsDialog(true)}>
-                  Adjust Servings
-                </DropdownMenuItem>
-                {!isLeftover && mealPlan.meal_type === 'dinner' && (
-                  <DropdownMenuItem onClick={handleCreateLeftover}>
-                    <Copy className="h-3 w-3 mr-2" />
-                    Create Leftover
-                  </DropdownMenuItem>
-                )}
-                <DropdownMenuItem 
-                  onClick={() => onRemove(mealPlan.id)}
-                  className="text-red-600 focus:text-red-600"
-                >
-                  <Trash2 className="h-3 w-3 mr-2" />
-                  Remove
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
           </div>
-        </CardContent>
-      </Card>
+          {isLeftover && (
+            <Badge 
+              variant="secondary" 
+              className="text-xs bg-gray-100 text-gray-600 border-gray-200"
+            >
+              Leftover
+            </Badge>
+          )}
+        </div>
 
-      <MealServingsDialog
-        isOpen={showServingsDialog}
-        onClose={() => setShowServingsDialog(false)}
-        mealType={mealPlan.meal_type as MealType}
-        onConfirm={(mealType, servings) => {
-          // Handle servings update logic here
-          console.log('Update servings:', mealType, servings);
-        }}
-      />
-    </>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-600">Servings:</span>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-6 w-6 p-0 rounded-full"
+                  onClick={() => setServings(Math.max(1, servings - 1))}
+                >
+                  <Minus className="h-3 w-3" />
+                </Button>
+                <span className="text-sm font-medium w-4 text-center">{servings}</span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-6 w-6 p-0 rounded-full"
+                  onClick={() => setServings(servings + 1)}
+                >
+                  <Plus className="h-3 w-3" />
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            {!isLeftover && mealPlan.meal_type === 'dinner' && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 px-3 text-xs bg-green-50 text-green-600 border-green-200 hover:bg-green-100"
+                onClick={handleCreateLeftover}
+              >
+                + Lunch
+              </Button>
+            )}
+            <Button
+              variant="outline" 
+              size="sm"
+              className="h-8 w-8 p-0 text-red-500 hover:text-red-600 hover:bg-red-50"
+              onClick={() => onRemove(mealPlan.id)}
+            >
+              <Trash2 className="h-3 w-3" />
+            </Button>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
