@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Dash, Sparkles } from 'lucide-react';
+import { Minus, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useRealiChef } from '@/contexts/RealiChefContext';
@@ -169,7 +169,7 @@ export const RealiChef = () => {
                   onClick={() => setIsOpen(false)}
                   className="text-white hover:bg-white/20 h-6 w-6 p-0"
                 >
-                  <Dash className="h-4 w-4" />
+                  <Minus className="h-4 w-4" />
                 </Button>
               </div>
             </div>

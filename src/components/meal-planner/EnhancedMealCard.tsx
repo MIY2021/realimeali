@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { MealPlan, Recipe } from "@/types";
 import { MealServingsDialog } from "./MealServingsDialog";
+import { DraggableProvidedDragHandleProps } from "react-beautiful-dnd";
 
 interface EnhancedMealCardProps {
   mealPlan: MealPlan;
@@ -19,6 +20,8 @@ interface EnhancedMealCardProps {
   parentRecipe?: Recipe;
   onRemove: (planId: string) => void;
   onCreateLeftover: (mealPlan: MealPlan, recipe: Recipe) => void;
+  dragHandleProps?: DraggableProvidedDragHandleProps | null;
+  animationDelay?: number;
 }
 
 export function EnhancedMealCard({
@@ -27,6 +30,8 @@ export function EnhancedMealCard({
   parentRecipe,
   onRemove,
   onCreateLeftover,
+  dragHandleProps,
+  animationDelay = 0,
 }: EnhancedMealCardProps) {
   const [showServingsDialog, setShowServingsDialog] = useState(false);
 
@@ -62,7 +67,7 @@ export function EnhancedMealCard({
                     variant="outline" 
                     className={`text-xs ${
                       isLunchLeftover 
-                        ? 'bg-green-50 text-green-700 border-green-200' 
+                        ? 'bg-green-50 text-green-600 border-green-300' 
                         : 'bg-green-50 text-green-700 border-green-200'
                     }`}
                   >
@@ -118,8 +123,11 @@ export function EnhancedMealCard({
       <MealServingsDialog
         isOpen={showServingsDialog}
         onClose={() => setShowServingsDialog(false)}
-        mealPlan={mealPlan}
-        recipe={recipe}
+        mealType={mealPlan.meal_type}
+        onConfirm={(mealType, servings) => {
+          // Handle servings update logic here
+          console.log('Update servings:', mealType, servings);
+        }}
       />
     </>
   );
