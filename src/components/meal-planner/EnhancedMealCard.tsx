@@ -15,6 +15,7 @@ interface EnhancedMealCardProps {
   onCreateLeftover: (mealPlan: MealPlan, recipe: Recipe) => void;
   dragHandleProps?: DraggableProvidedDragHandleProps | null;
   animationDelay?: number;
+  allMealPlans?: MealPlan[]; // Add this to check for existing leftovers
 }
 
 export function EnhancedMealCard({
@@ -25,6 +26,7 @@ export function EnhancedMealCard({
   onCreateLeftover,
   dragHandleProps,
   animationDelay = 0,
+  allMealPlans = [],
 }: EnhancedMealCardProps) {
   const [servings, setServings] = useState(mealPlan.planned_servings || recipe?.servings || 1);
 
@@ -44,30 +46,38 @@ export function EnhancedMealCard({
 
   const isLeftover = mealPlan.is_leftover;
   const isLunchLeftover = isLeftover && mealPlan.meal_type === 'lunch';
+  
+  // Check if this dinner meal already has leftovers created
+  const existingLeftover = allMealPlans.find(plan => 
+    plan.parent_meal_plan_id === mealPlan.id && 
+    plan.is_leftover && 
+    plan.meal_type === 'lunch'
+  );
+  const leftoverServings = existingLeftover?.planned_servings || existingLeftover?.leftover_servings;
 
   return (
     <Card className="bg-white border border-gray-200 hover:shadow-md transition-shadow overflow-hidden">
       <CardContent className="p-0">
         <div className="flex h-24">
-          {/* Recipe Image - Full Height, Left Aligned */}
-          <div className="w-24 h-24 flex-shrink-0">
+          {/* Recipe Image - Slightly smaller with padding */}
+          <div className="w-20 h-20 flex-shrink-0 m-2">
             <img 
               src={recipe.image || "/placeholder.svg"} 
               alt={recipe.title}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover rounded"
             />
           </div>
 
           {/* Content Area */}
-          <div className="flex-1 p-4 flex flex-col justify-between">
+          <div className="flex-1 p-4 flex flex-col justify-between min-w-0">
             {/* Header */}
             <div className="flex items-start justify-between mb-2">
-              <div className="flex items-start gap-2 flex-1">
-                <div {...dragHandleProps} className="touch-none cursor-grab active:cursor-grabbing pt-1">
+              <div className="flex items-start gap-2 flex-1 min-w-0">
+                <div {...dragHandleProps} className="touch-none cursor-grab active:cursor-grabbing pt-1 flex-shrink-0">
                   <GripVertical className="h-4 w-4 text-gray-400 hover:text-gray-600" />
                 </div>
-                <div className="flex-1">
-                  <h4 className="font-medium text-gray-900 text-sm leading-tight">
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-medium text-gray-900 text-sm leading-tight truncate">
                     {recipe.title}
                   </h4>
                   {isLunchLeftover && parentRecipe && (
@@ -80,7 +90,7 @@ export function EnhancedMealCard({
               {isLeftover && (
                 <Badge 
                   variant="secondary" 
-                  className="text-xs bg-gray-100 text-gray-600 border-gray-200 ml-2"
+                  className="text-xs bg-gray-100 text-gray-600 border-gray-200 ml-2 flex-shrink-0"
                 >
                   Leftover
                 </Badge>
@@ -117,10 +127,18 @@ export function EnhancedMealCard({
                   <Button
                     variant="outline"
                     size="sm"
-                    className="h-7 px-2 text-xs bg-green-50 text-green-600 border-green-200 hover:bg-green-100"
+                    className={`h-7 px-2 text-xs ${
+                      existingLeftover 
+                        ? 'bg-blue-50 text-blue-600 border-blue-200 hover:bg-blue-100' 
+                        : 'bg-green-50 text-green-600 border-green-200 hover:bg-green-100'
+                    }`}
                     onClick={handleCreateLeftover}
+                    disabled={!!existingLeftover}
                   >
-                    + Lunch
+                    {existingLeftover 
+                      ? `${leftoverServings} for lunch` 
+                      : '+ Lunch'
+                    }
                   </Button>
                 )}
                 <Button
