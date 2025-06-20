@@ -10,7 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MealPlan, Recipe } from "@/types";
+import { MealPlan, Recipe, MealType } from "@/types";
 import { MealServingsDialog } from "./MealServingsDialog";
 import { DraggableProvidedDragHandleProps } from "react-beautiful-dnd";
 
@@ -123,7 +123,7 @@ export function EnhancedMealCard({
       <MealServingsDialog
         isOpen={showServingsDialog}
         onClose={() => setShowServingsDialog(false)}
-        mealType={mealPlan.meal_type}
+        mealType={mealPlan.meal_type as MealType}
         onConfirm={(mealType, servings) => {
           // Handle servings update logic here
           console.log('Update servings:', mealType, servings);
