@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from 'react';
 import { Minus, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -186,19 +187,21 @@ export const RealiChef = () => {
                 >
                   <div
                     className={cn(
-                      "max-w-[80%] rounded-lg px-3 py-2 text-sm",
+                      "max-w-[85%] rounded-lg px-4 py-3 text-sm leading-relaxed",
                       message.role === 'user'
                         ? 'bg-sage text-white'
                         : 'bg-white text-gray-800 shadow-sm border'
                     )}
                   >
-                    {message.content}
+                    <div className="whitespace-pre-wrap break-words">
+                      {message.content}
+                    </div>
                   </div>
                 </div>
               ))}
               {isLoading && (
                 <div className="flex justify-start">
-                  <div className="bg-white rounded-lg px-3 py-2 text-sm shadow-sm border">
+                  <div className="bg-white rounded-lg px-4 py-3 text-sm shadow-sm border">
                     <div className="flex items-center gap-1">
                       <div className="flex space-x-1">
                         <div className="w-2 h-2 bg-sage rounded-full animate-bounce"></div>

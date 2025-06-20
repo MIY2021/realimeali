@@ -13,6 +13,7 @@ import RecipesPage from "@/pages/RecipesPage";
 import RecipeDetail from "@/pages/RecipeDetail";
 import MealPlanner from "@/pages/MealPlanner";
 import ShoppingList from "@/pages/ShoppingList";
+import FindRecipesPage from "@/pages/FindRecipesPage";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { HouseholdProvider } from "@/contexts/HouseholdContext";
 import { RecipesProvider } from "@/contexts/RecipesContext";
@@ -39,6 +40,7 @@ function AppContent() {
           <Route path="/settings" element={<Settings />} />
           <Route path="/my-recipes" element={<RecipesPage />} />
           <Route path="/my-recipes/:slug" element={<RecipeDetail />} />
+          <Route path="/find-recipes" element={<FindRecipesPage />} />
           <Route path="/meal-planner" element={<MealPlanner />} />
           <Route path="/shopping-list" element={<ShoppingList />} />
         </Routes>
