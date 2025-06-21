@@ -2,7 +2,6 @@
 import { useState } from "react";
 import { Trash2, Plus, Minus, GripVertical, UtensilsCrossed, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { MealPlan, Recipe, MealType } from "@/types";
 import { DraggableProvidedDragHandleProps } from "react-beautiful-dnd";
@@ -95,19 +94,11 @@ export function EnhancedMealCard({
                 </h4>
                 {isLunchLeftover && parentRecipe && (
                   <p className="text-xs text-gray-500 mt-1">
-                    Leftover from dinner
+                    Leftover
                   </p>
                 )}
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
-                {isLeftover && (
-                  <Badge 
-                    variant="secondary" 
-                    className="text-xs bg-gray-100 text-gray-600 border-gray-200"
-                  >
-                    Leftover
-                  </Badge>
-                )}
                 {/* Drag Handle - Moved to right side */}
                 <div {...dragHandleProps} className="touch-none cursor-grab active:cursor-grabbing">
                   <GripVertical className="h-4 w-4 text-gray-400 hover:text-gray-600" />
@@ -140,7 +131,7 @@ export function EnhancedMealCard({
                 </div>
               </div>
 
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
                 {/* Completion Tick Icon */}
                 <Button
                   variant="outline"
