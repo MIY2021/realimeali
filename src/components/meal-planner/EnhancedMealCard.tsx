@@ -1,10 +1,9 @@
 
 import { useState } from "react";
-import { Trash2, Plus, Minus, GripVertical, UtensilsCrossed } from "lucide-react";
+import { Trash2, Plus, Minus, GripVertical, UtensilsCrossed, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
 import { MealPlan, Recipe, MealType } from "@/types";
 import { DraggableProvidedDragHandleProps } from "react-beautiful-dnd";
 import { useMealPlan } from "@/contexts/MealPlanContext";
@@ -47,9 +46,9 @@ export function EnhancedMealCard({
     onCreateLeftover(mealPlan, recipe);
   };
 
-  const handleCompletionChange = async (completed: boolean) => {
+  const handleCompletionChange = async () => {
     try {
-      await updateMealPlanCompletion(mealPlan.id, completed);
+      await updateMealPlanCompletion(mealPlan.id, !mealPlan.is_completed);
     } catch (error) {
       console.error('Error updating meal completion:', error);
     }
@@ -136,23 +135,31 @@ export function EnhancedMealCard({
                 </div>
               </div>
 
-              <div className="flex items-center gap-1">
-                {/* Completion Checkbox */}
-                <Checkbox
-                  checked={mealPlan.is_completed || false}
-                  onCheckedChange={handleCompletionChange}
-                  className="h-4 w-4"
-                />
+              <div className="flex items-center gap-2">
+                {/* Completion Tick Icon */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className={`h-7 w-7 p-0 ${
+                    mealPlan.is_completed 
+                      ? 'bg-green-50 text-green-600 border-green-200 hover:bg-green-100' 
+                      : 'bg-gray-50 text-gray-400 border-gray-200 hover:bg-gray-100'
+                  }`}
+                  onClick={handleCompletionChange}
+                  title={mealPlan.is_completed ? 'Mark as incomplete' : 'Mark as complete'}
+                >
+                  <Check className="h-3 w-3" />
+                </Button>
                 
                 {/* Lunch Button - Icon only */}
                 {!isLeftover && mealPlan.meal_type === 'dinner' && (
                   <Button
                     variant="outline"
                     size="sm"
-                    className={`h-7 w-7 p-0 ${
+                    className={`h-7 px-2 text-xs ${
                       existingLeftover 
-                        ? 'bg-blue-50 text-blue-600 border-blue-200 hover:bg-blue-100' 
-                        : 'bg-green-50 text-green-600 border-green-200 hover:bg-green-100'
+                        ? 'bg-orange-50 text-orange-600 border-orange-200 hover:bg-orange-100' 
+                        : 'bg-orange-50 text-orange-600 border-orange-200 hover:bg-orange-100'
                     }`}
                     onClick={handleCreateLeftover}
                     disabled={!!existingLeftover}
@@ -161,7 +168,7 @@ export function EnhancedMealCard({
                       : 'Save leftovers for lunch'
                     }
                   >
-                    <UtensilsCrossed className="h-3 w-3" />
+                    {existingLeftover ? `+ ${leftoverServings}` : <UtensilsCrossed className="h-3 w-3" />}
                   </Button>
                 )}
                 
