@@ -9,12 +9,14 @@ export const useMealPlannerState = () => {
   const [currentWeek, setCurrentWeekState] = useState<1 | 2>(() => {
     try {
       const savedWeek = localStorage.getItem(WEEK_STORAGE_KEY);
+      console.log('Loading saved week from localStorage:', savedWeek);
       if (savedWeek && (savedWeek === "1" || savedWeek === "2")) {
         return parseInt(savedWeek) as 1 | 2;
       }
     } catch (error) {
       console.warn("Failed to read week from localStorage:", error);
     }
+    console.log('Defaulting to week 1');
     return 1;
   });
 
@@ -33,8 +35,10 @@ export const useMealPlannerState = () => {
 
   // Wrapper function to persist week changes to localStorage
   const setCurrentWeek = (week: 1 | 2) => {
+    console.log('Setting current week to:', week);
     try {
       localStorage.setItem(WEEK_STORAGE_KEY, week.toString());
+      console.log('Successfully saved week to localStorage:', week);
     } catch (error) {
       console.warn("Failed to save week to localStorage:", error);
     }

@@ -29,7 +29,7 @@ export function EnhancedMealCard({
   allMealPlans = [],
 }: EnhancedMealCardProps) {
   const [servings, setServings] = useState(mealPlan.planned_servings || recipe?.servings || 1);
-  const { updateMealPlanCompletion } = useMealPlan();
+  const { updateMealPlanCompletion, updateMealPlanServings } = useMealPlan();
 
   if (!recipe) {
     return (
@@ -50,6 +50,28 @@ export function EnhancedMealCard({
       await updateMealPlanCompletion(mealPlan.id, !mealPlan.is_completed);
     } catch (error) {
       console.error('Error updating meal completion:', error);
+    }
+  };
+
+  const handleServingsDecrease = async () => {
+    const newServings = Math.max(1, servings - 1);
+    setServings(newServings);
+    try {
+      await updateMealPlanServings(mealPlan.id, newServings);
+    } catch (error) {
+      console.error('Error updating servings:', error);
+      setServings(servings); // Revert on error
+    }
+  };
+
+  const handleServingsIncrease = async () => {
+    const newServings = servings + 1;
+    setServings(newServings);
+    try {
+      await updateMealPlanServings(mealPlan.id, newServings);
+    } catch (error) {
+      console.error('Error updating servings:', error);
+      setServings(servings); // Revert on error
     }
   };
 
@@ -115,7 +137,7 @@ export function EnhancedMealCard({
                     variant="outline"
                     size="sm"
                     className="h-6 w-6 p-0 rounded-full"
-                    onClick={() => setServings(Math.max(1, servings - 1))}
+                    onClick={handleServingsDecrease}
                   >
                     <Minus className="h-3 w-3" />
                   </Button>
@@ -124,7 +146,7 @@ export function EnhancedMealCard({
                     variant="outline"
                     size="sm"
                     className="h-6 w-6 p-0 rounded-full"
-                    onClick={() => setServings(servings + 1)}
+                    onClick={handleServingsIncrease}
                   >
                     <Plus className="h-3 w-3" />
                   </Button>
