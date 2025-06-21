@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Trash2, Plus, Minus, GripVertical } from "lucide-react";
+import { Trash2, Plus, Minus, GripVertical, UtensilsCrossed } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -83,27 +83,17 @@ export function EnhancedMealCard({
           <div className="flex-1 pl-2 pr-4 py-4 flex flex-col justify-between min-w-0">
             {/* Header */}
             <div className="flex items-start justify-between mb-2">
-              <div className="flex items-start gap-2 flex-1 min-w-0">
-                {/* Completion Checkbox */}
-                <div className="pt-1 flex-shrink-0">
-                  <Checkbox
-                    checked={mealPlan.is_completed || false}
-                    onCheckedChange={handleCompletionChange}
-                    className="h-4 w-4"
-                  />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h4 className={`font-medium text-sm leading-tight truncate ${
-                    mealPlan.is_completed ? 'text-gray-500 line-through' : 'text-gray-900'
-                  }`}>
-                    {recipe.title}
-                  </h4>
-                  {isLunchLeftover && parentRecipe && (
-                    <p className="text-xs text-gray-500 mt-1">
-                      Leftover from dinner
-                    </p>
-                  )}
-                </div>
+              <div className="flex-1 min-w-0">
+                <h4 className={`font-medium text-sm leading-tight truncate ${
+                  mealPlan.is_completed ? 'text-gray-500 line-through' : 'text-gray-900'
+                }`}>
+                  {recipe.title}
+                </h4>
+                {isLunchLeftover && parentRecipe && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    Leftover from dinner
+                  </p>
+                )}
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
                 {isLeftover && (
@@ -147,24 +137,35 @@ export function EnhancedMealCard({
               </div>
 
               <div className="flex items-center gap-1">
+                {/* Completion Checkbox */}
+                <Checkbox
+                  checked={mealPlan.is_completed || false}
+                  onCheckedChange={handleCompletionChange}
+                  className="h-4 w-4"
+                />
+                
+                {/* Lunch Button - Icon only */}
                 {!isLeftover && mealPlan.meal_type === 'dinner' && (
                   <Button
                     variant="outline"
                     size="sm"
-                    className={`h-7 px-2 text-xs ${
+                    className={`h-7 w-7 p-0 ${
                       existingLeftover 
                         ? 'bg-blue-50 text-blue-600 border-blue-200 hover:bg-blue-100' 
                         : 'bg-green-50 text-green-600 border-green-200 hover:bg-green-100'
                     }`}
                     onClick={handleCreateLeftover}
                     disabled={!!existingLeftover}
-                  >
-                    {existingLeftover 
-                      ? `${leftoverServings} for lunch` 
-                      : '+ Lunch'
+                    title={existingLeftover 
+                      ? `${leftoverServings} servings saved for lunch` 
+                      : 'Save leftovers for lunch'
                     }
+                  >
+                    <UtensilsCrossed className="h-3 w-3" />
                   </Button>
                 )}
+                
+                {/* Trash Button */}
                 <Button
                   variant="outline" 
                   size="sm"
