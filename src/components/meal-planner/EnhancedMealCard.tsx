@@ -65,6 +65,11 @@ export function EnhancedMealCard({
   );
   const leftoverServings = existingLeftover?.planned_servings || existingLeftover?.leftover_servings;
 
+  // Calculate actual servings to display for dinner meals
+  const displayServings = mealPlan.meal_type === 'dinner' && existingLeftover && leftoverServings
+    ? (mealPlan.planned_servings || recipe.servings) - leftoverServings
+    : (mealPlan.planned_servings || recipe.servings);
+
   return (
     <Card className="bg-white border border-gray-200 hover:shadow-md transition-shadow overflow-hidden">
       <CardContent className="p-0">
@@ -123,7 +128,7 @@ export function EnhancedMealCard({
                   >
                     <Minus className="h-3 w-3" />
                   </Button>
-                  <span className="text-sm font-medium w-6 text-center">{servings}</span>
+                  <span className="text-sm font-medium w-6 text-center">{displayServings}</span>
                   <Button
                     variant="outline"
                     size="sm"
@@ -135,7 +140,7 @@ export function EnhancedMealCard({
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
                 {/* Completion Tick Icon */}
                 <Button
                   variant="outline"
@@ -158,7 +163,7 @@ export function EnhancedMealCard({
                     size="sm"
                     className={`h-7 px-2 text-xs ${
                       existingLeftover 
-                        ? 'bg-orange-50 text-orange-600 border-orange-200 hover:bg-orange-100' 
+                        ? 'bg-green-50 text-green-600 border-green-200 hover:bg-green-100' 
                         : 'bg-orange-50 text-orange-600 border-orange-200 hover:bg-orange-100'
                     }`}
                     onClick={handleCreateLeftover}

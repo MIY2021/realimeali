@@ -9,7 +9,7 @@ interface UseLeftoverOperationsProps {
   currentWeek: 1 | 2;
   addMealPlan: any;
   toast: any;
-  refreshMealPlans?: () => void; // Add refresh function
+  refreshMealPlans?: () => void;
 }
 
 export const useLeftoverOperations = ({
@@ -42,17 +42,31 @@ export const useLeftoverOperations = ({
         householdId: currentHousehold.id
       });
 
-      // Ensure we have a positive integer servings value - this is crucial for the DB constraint
+      // Ensure we have a positive integer servings value
       let servingsToSave: number;
       if (leftoverServings && Number.isInteger(leftoverServings) && leftoverServings > 0) {
         servingsToSave = leftoverServings;
       } else {
-        servingsToSave = Math.max(1, Math.floor(recipe.servings / 2));
+        servingsToSave = Math.max(1, Math.floor((mealPlan.planned_servings || recipe.servings) / 2));
       }
       
-      console.log("✅ Calculated servings to save (must be positive integer):", servingsToSave, typeof servingsToSave);
-      console.log("✅ Database constraint check: is_leftover=true, leftover_servings > 0:", servingsToSave > 0);
+      console.log("✅ Calculated servings to save:", servingsToSave);
       
+      // Update the original dinner meal servings first (reduce by leftover amount)
+      const originalServings = mealPlan.planned_servings || recipe.servings;
+      const remainingServings = originalServings - servingsToSave;
+      
+      console.log("✅ Updating original meal plan servings:", { originalServings, remainingServings, servingsToSave });
+      
+      // Update the dinner meal to reflect reduced servings
+      await mealPlanService.updateMealPlanServings(
+        mealPlan.id,
+        remainingServings,
+        currentHousehold.id
+      );
+      console.log("✅ Original meal plan servings updated successfully");
+
+      // Create the leftover meal with the allocated servings
       const leftoverData = {
         recipe_id: mealPlan.recipe_id,
         meal_type: 'lunch' as any,
@@ -60,7 +74,8 @@ export const useLeftoverOperations = ({
         created_by: user.id,
         slot_index: 0,
         is_leftover: true,
-        leftover_servings: servingsToSave, // This must be a positive integer for DB constraint
+        leftover_servings: servingsToSave,
+        planned_servings: servingsToSave, // Use planned_servings for the leftover meal
         original_servings: recipe.servings,
         parent_meal_plan_id: mealPlan.id,
         household_id: currentHousehold.id,
@@ -68,18 +83,7 @@ export const useLeftoverOperations = ({
       };
 
       console.log("✅ Creating leftover meal with data:", leftoverData);
-      console.log("✅ Constraint validation: is_leftover=true AND leftover_servings > 0 =", leftoverData.is_leftover === true && leftoverData.leftover_servings > 0);
 
-      // Update the original dinner meal to track leftover allocation FIRST
-      console.log("✅ Updating original meal plan leftover allocation");
-      await mealPlanService.updateMealPlanLeftoverAllocation(
-        mealPlan.id,
-        servingsToSave,
-        currentHousehold.id
-      );
-      console.log("✅ Original meal plan updated successfully");
-
-      // Then create the leftover meal
       await addMealPlan(leftoverData, currentWeek);
       console.log("✅ Leftover meal created successfully");
 
@@ -88,8 +92,6 @@ export const useLeftoverOperations = ({
         console.log("✅ Refreshing meal plans to update UI");
         await refreshMealPlans();
       }
-
-      const remainingServings = recipe.servings - servingsToSave;
       
       toast({
         title: "Leftover Added",
@@ -97,11 +99,6 @@ export const useLeftoverOperations = ({
       });
     } catch (err) {
       console.error("💥 Error creating leftover:", err);
-      console.error("Error details:", {
-        message: err?.message,
-        stack: err?.stack,
-        name: err?.name
-      });
       toast({
         title: "Error",
         description: `Failed to create leftover meal: ${err?.message || 'Unknown error'}`,
