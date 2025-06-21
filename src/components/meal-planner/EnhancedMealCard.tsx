@@ -169,14 +169,14 @@ export function EnhancedMealCard({
                   <Check className="h-3 w-3" />
                 </Button>
                 
-                {/* Lunch Button - Icon only */}
+                {/* Lunch Button - Icon only with proper green styling when leftovers exist */}
                 {!isLeftover && mealPlan.meal_type === 'dinner' && (
                   <Button
                     variant="outline"
                     size="sm"
                     className={`h-7 px-2 text-xs ${
                       existingLeftover 
-                        ? 'bg-green-50 text-green-600 border-green-200 hover:bg-green-100' 
+                        ? 'bg-green-500 text-white border-green-500 hover:bg-green-600' 
                         : 'bg-orange-50 text-orange-600 border-orange-200 hover:bg-orange-100'
                     }`}
                     onClick={handleCreateLeftover}
