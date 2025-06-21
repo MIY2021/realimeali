@@ -91,6 +91,15 @@ export function EnhancedMealCard({
     ? (mealPlan.planned_servings || recipe.servings) - leftoverServings
     : (mealPlan.planned_servings || recipe.servings);
 
+  console.log('EnhancedMealCard - Debug leftover state:', {
+    mealPlanId: mealPlan.id,
+    mealType: mealPlan.meal_type,
+    recipeTitle: recipe.title,
+    existingLeftover: !!existingLeftover,
+    leftoverServings,
+    allMealPlansCount: allMealPlans.length
+  });
+
   return (
     <Card className="bg-white border border-gray-200 hover:shadow-md transition-shadow overflow-hidden">
       <CardContent className="p-0">
@@ -169,12 +178,12 @@ export function EnhancedMealCard({
                   <Check className="h-3 w-3" />
                 </Button>
                 
-                {/* Lunch Button - Icon only with proper green styling when leftovers exist */}
+                {/* Lunch Button - Changes to green when leftovers exist */}
                 {!isLeftover && mealPlan.meal_type === 'dinner' && (
                   <Button
                     variant="outline"
                     size="sm"
-                    className={`h-7 px-2 text-xs ${
+                    className={`h-7 w-7 p-0 ${
                       existingLeftover 
                         ? 'bg-green-500 text-white border-green-500 hover:bg-green-600' 
                         : 'bg-orange-50 text-orange-600 border-orange-200 hover:bg-orange-100'
@@ -186,7 +195,7 @@ export function EnhancedMealCard({
                       : 'Save leftovers for lunch'
                     }
                   >
-                    {existingLeftover ? `+ ${leftoverServings}` : <UtensilsCrossed className="h-3 w-3" />}
+                    <UtensilsCrossed className="h-3 w-3" />
                   </Button>
                 )}
                 

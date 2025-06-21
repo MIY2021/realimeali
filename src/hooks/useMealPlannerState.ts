@@ -1,29 +1,24 @@
-
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { MealType } from "@/types";
 
 const WEEK_STORAGE_KEY = "meal-planner-current-week";
 
 export const useMealPlannerState = () => {
-  // Use ref to track if we've initialized from localStorage
-  const hasInitialized = useRef(false);
-  
   // Initialize currentWeek from localStorage or default to 1
   const [currentWeek, setCurrentWeekState] = useState<1 | 2>(() => {
     if (typeof window === 'undefined') return 1; // SSR safety
     
     try {
       const savedWeek = localStorage.getItem(WEEK_STORAGE_KEY);
-      console.log('Loading saved week from localStorage:', savedWeek);
-      if (savedWeek && (savedWeek === "1" || savedWeek === "2")) {
-        hasInitialized.current = true;
+      console.log('Initial load - saved week from localStorage:', savedWeek);
+      if (savedWeek === "1" || savedWeek === "2") {
+        console.log('Using saved week:', savedWeek);
         return parseInt(savedWeek) as 1 | 2;
       }
     } catch (error) {
       console.warn("Failed to read week from localStorage:", error);
     }
-    console.log('Defaulting to week 1');
-    hasInitialized.current = true;
+    console.log('No valid saved week found, defaulting to week 1');
     return 1;
   });
 
@@ -52,35 +47,20 @@ export const useMealPlannerState = () => {
     setCurrentWeekState(week);
   };
 
-  // Effect to ensure localStorage sync on mount (handles edge cases)
+  // Effect to sync with localStorage changes (for multiple tabs)
   useEffect(() => {
-    if (hasInitialized.current && typeof window !== 'undefined') {
-      try {
-        const savedWeek = localStorage.getItem(WEEK_STORAGE_KEY);
-        if (savedWeek && (savedWeek === "1" || savedWeek === "2")) {
-          const parsedWeek = parseInt(savedWeek) as 1 | 2;
-          if (parsedWeek !== currentWeek) {
-            console.log('Syncing week from localStorage on mount:', parsedWeek);
-            setCurrentWeekState(parsedWeek);
-          }
-        }
-      } catch (error) {
-        console.warn("Failed to sync week from localStorage:", error);
-      }
-    }
-  }, []); // Only run once on mount
-
-  // Cleanup on unmount - save current state
-  useEffect(() => {
-    return () => {
-      if (typeof window !== 'undefined') {
-        try {
-          localStorage.setItem(WEEK_STORAGE_KEY, currentWeek.toString());
-        } catch (error) {
-          console.warn("Failed to save week on cleanup:", error);
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === WEEK_STORAGE_KEY && e.newValue) {
+        const newWeek = parseInt(e.newValue) as 1 | 2;
+        if ((newWeek === 1 || newWeek === 2) && newWeek !== currentWeek) {
+          console.log('Week changed in another tab, syncing:', newWeek);
+          setCurrentWeekState(newWeek);
         }
       }
     };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, [currentWeek]);
 
   return {
