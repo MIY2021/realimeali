@@ -30,17 +30,17 @@ export const MealPlannerHeader = ({ user, currentHousehold }: MealPlannerHeaderP
 
   return (
     <div className="flex items-center justify-between mb-2">
-      <div>
+      <div className="flex-1 min-w-0">
         <h1 className="text-2xl sm:text-3xl font-bold text-navy flex items-center gap-2">
           <CalendarDays className="h-6 w-6 sm:h-8 sm:w-8" />
           Meal Planner
         </h1>
-        <p className="text-sm sm:text-base text-muted-foreground">
+        <p className="text-sm sm:text-base text-muted-foreground pr-3">
           {user ? getWelcomeText() : "Login to create meal plans"}
         </p>
       </div>
       {user && currentHousehold && (
-        <div className="flex items-center">
+        <div className="flex items-center flex-shrink-0">
           <HouseholdMembersDisplay />
         </div>
       )}

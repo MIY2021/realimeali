@@ -91,17 +91,22 @@ export function EnhancedMealCard({
     ? (mealPlan.planned_servings || recipe.servings) - leftoverServings
     : (mealPlan.planned_servings || recipe.servings);
 
-  console.log('EnhancedMealCard - Debug leftover state:', {
+  // Enhanced debugging for leftover button
+  console.log('EnhancedMealCard - Leftover button debug:', {
     mealPlanId: mealPlan.id,
     mealType: mealPlan.meal_type,
     recipeTitle: recipe.title,
-    existingLeftover: !!existingLeftover,
+    hasExistingLeftover: !!existingLeftover,
+    existingLeftoverId: existingLeftover?.id,
     leftoverServings,
-    allMealPlansCount: allMealPlans.length
+    allMealPlansCount: allMealPlans.length,
+    shouldShowGreen: !!(existingLeftover && mealPlan.meal_type === 'dinner' && !isLeftover)
   });
 
   return (
-    <Card className="bg-white border border-gray-200 hover:shadow-md transition-shadow overflow-hidden">
+    <Card className={`bg-white border border-gray-200 hover:shadow-md transition-all overflow-hidden ${
+      mealPlan.is_completed ? 'opacity-40 saturate-50' : ''
+    }`}>
       <CardContent className="p-0">
         <div className="flex h-24">
           {/* Recipe Image - Slightly smaller with padding */}
@@ -109,7 +114,9 @@ export function EnhancedMealCard({
             <img 
               src={recipe.image || "/placeholder.svg"} 
               alt={recipe.title}
-              className="w-full h-full object-cover rounded"
+              className={`w-full h-full object-cover rounded ${
+                mealPlan.is_completed ? 'grayscale' : ''
+              }`}
             />
           </div>
 
@@ -119,7 +126,7 @@ export function EnhancedMealCard({
             <div className="flex items-start justify-between mb-2">
               <div className="flex-1 min-w-0">
                 <h4 className={`font-medium text-sm leading-tight truncate ${
-                  mealPlan.is_completed ? 'text-gray-500 line-through' : 'text-gray-900'
+                  mealPlan.is_completed ? 'text-gray-400 line-through' : 'text-gray-900'
                 }`}>
                   {recipe.title}
                 </h4>
@@ -178,14 +185,14 @@ export function EnhancedMealCard({
                   <Check className="h-3 w-3" />
                 </Button>
                 
-                {/* Lunch Button - Changes to green when leftovers exist */}
+                {/* Lunch Button - Fixed color logic */}
                 {!isLeftover && mealPlan.meal_type === 'dinner' && (
                   <Button
                     variant="outline"
                     size="sm"
-                    className={`h-7 w-7 p-0 ${
+                    className={`h-7 w-7 p-0 transition-all ${
                       existingLeftover 
-                        ? 'bg-green-500 text-white border-green-500 hover:bg-green-600' 
+                        ? 'bg-green-500 text-white border-green-500 hover:bg-green-600 shadow-sm' 
                         : 'bg-orange-50 text-orange-600 border-orange-200 hover:bg-orange-100'
                     }`}
                     onClick={handleCreateLeftover}
