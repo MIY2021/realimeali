@@ -151,8 +151,8 @@ export const RealiChef = () => {
 
   return (
     <>
-      {/* Floating Chef Hat Icon */}
-      <div className="fixed bottom-20 right-4 z-50 md:bottom-4">
+      {/* Floating Chef Hat Icon - Adjusted position for desktop */}
+      <div className="fixed bottom-20 right-4 z-50 md:bottom-20 md:right-8">
         <Button
           onClick={() => setIsOpen(!isOpen)}
           className={cn(
@@ -178,16 +178,16 @@ export const RealiChef = () => {
       {/* Chat Interface */}
       {isOpen && (
         <>
-          {/* Backdrop overlay */}
+          {/* Backdrop overlay - Only on mobile */}
           <div 
-            className="fixed inset-0 bg-black/30 z-40"
+            className="fixed inset-0 bg-black/30 z-40 md:hidden"
             onClick={() => setIsOpen(false)}
           />
           
-          {/* Chat Container */}
+          {/* Chat Container - Full screen mobile, positioned desktop */}
           <div className={cn(
             "fixed z-50",
-            "inset-4 md:bottom-20 md:right-4 md:w-80 md:inset-auto md:h-96"
+            "inset-4 md:bottom-32 md:right-8 md:w-80 md:inset-auto md:h-96"
           )}>
             <div className="bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden h-full flex flex-col">
               {/* Header */}
