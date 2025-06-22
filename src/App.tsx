@@ -10,6 +10,7 @@ import Index from "@/pages/Index";
 import Login from "@/pages/Login";
 import Settings from "@/pages/Settings";
 import RecipesPage from "@/pages/RecipesPage";
+import CreateRecipePage from "@/pages/CreateRecipePage";
 import RecipeDetail from "@/pages/RecipeDetail";
 import MealPlanner from "@/pages/MealPlanner";
 import ShoppingList from "@/pages/ShoppingList";
@@ -39,6 +40,7 @@ function AppContent() {
           <Route path="/login" element={<Login />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/my-recipes" element={<RecipesPage />} />
+          <Route path="/my-recipes/new" element={<CreateRecipePage />} />
           <Route path="/my-recipes/:slug" element={<RecipeDetail />} />
           <Route path="/find-recipes" element={<FindRecipesPage />} />
           <Route path="/meal-planner" element={<MealPlanner />} />

@@ -144,7 +144,7 @@ export const RealiChef = () => {
           onClick={() => setIsOpen(!isOpen)}
           className={cn(
             "h-14 w-14 rounded-full shadow-lg transition-all duration-300 hover:scale-110",
-            "bg-gradient-to-r from-sage to-terracotta hover:from-sage/90 hover:to-terracotta/90",
+            "bg-gradient-to-r from-sage/70 to-terracotta/70 hover:from-sage/80 hover:to-terracotta/80",
             isOpen && "scale-95"
           )}
           size="sm"
