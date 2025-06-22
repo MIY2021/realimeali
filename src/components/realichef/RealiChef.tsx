@@ -44,6 +44,13 @@ export const RealiChef = () => {
     scrollToBottom();
   }, [messages]);
 
+  // Scroll to bottom when loading state changes (to show typing indicator)
+  useEffect(() => {
+    if (isLoading) {
+      scrollToBottom();
+    }
+  }, [isLoading]);
+
   // Scroll to bottom when chat is opened
   useEffect(() => {
     if (isOpen) {
@@ -91,6 +98,11 @@ export const RealiChef = () => {
     setInputMessage('');
     setIsLoading(true);
     setHasError(false);
+
+    // Scroll to bottom immediately after adding user message to show typing indicator
+    setTimeout(() => {
+      scrollToBottom();
+    }, 100);
 
     try {
       // Get conversation history for context
@@ -145,7 +157,7 @@ export const RealiChef = () => {
           onClick={() => setIsOpen(!isOpen)}
           className={cn(
             "h-14 w-14 rounded-full shadow-lg transition-all duration-300 hover:scale-110",
-            "bg-gradient-to-r from-sage/70 to-terracotta/70 hover:from-sage/80 hover:to-terracotta/80",
+            "bg-gradient-to-r from-sage/60 to-terracotta/60 hover:from-sage/70 hover:to-terracotta/70",
             isOpen && "scale-95"
           )}
           size="sm"
@@ -166,16 +178,16 @@ export const RealiChef = () => {
       {/* Chat Interface */}
       {isOpen && (
         <>
-          {/* Backdrop for mobile */}
+          {/* Backdrop overlay */}
           <div 
-            className="fixed inset-0 bg-black/20 z-40 md:hidden"
+            className="fixed inset-0 bg-black/30 z-40"
             onClick={() => setIsOpen(false)}
           />
           
-          {/* Chat Container - Full screen on mobile, floating on desktop */}
+          {/* Chat Container */}
           <div className={cn(
             "fixed z-50",
-            "inset-4 md:bottom-36 md:right-4 md:w-80 md:bottom-20 md:inset-auto"
+            "inset-4 md:bottom-20 md:right-4 md:w-80 md:inset-auto md:h-96"
           )}>
             <div className="bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden h-full flex flex-col">
               {/* Header */}
