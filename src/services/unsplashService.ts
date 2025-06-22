@@ -1,4 +1,6 @@
 
+import { supabase } from "@/integrations/supabase/client";
+
 interface UnsplashPhoto {
   id: string;
   urls: {
@@ -23,63 +25,41 @@ interface UnsplashSearchResponse {
   results: UnsplashPhoto[];
   total: number;
   total_pages: number;
+  error?: string;
 }
 
 export class UnsplashService {
-  private static readonly BASE_URL = 'https://api.unsplash.com';
-  
-  // This should be handled by a Supabase Edge Function in production
-  private static getAccessKey(): string | null {
-    // For now, return null to disable Unsplash until proper backend integration
-    // In production, this would come from a Supabase Edge Function
-    // To enable Unsplash, you would need to:
-    // 1. Add UNSPLASH_ACCESS_KEY to Supabase Edge Function Secrets
-    // 2. Create an edge function to handle Unsplash API calls
-    // 3. Update this service to call that edge function instead
-    console.log('🔍 Unsplash API: No access key configured. Unsplash search is currently disabled.');
-    return null;
-  }
-
   static async searchPhotos(query: string, page: number = 1, perPage: number = 12): Promise<UnsplashSearchResponse> {
-    const accessKey = this.getAccessKey();
-    
-    if (!accessKey) {
-      console.log('🔍 Unsplash API: Search attempted but no API key available');
-      // Return empty results when no API key is available
-      return {
-        results: [],
-        total: 0,
-        total_pages: 0
-      };
-    }
-
     try {
-      console.log('🔍 Unsplash API: Searching for:', query);
+      console.log('🔍 UnsplashService: Searching via Edge Function for:', query);
       
-      const response = await fetch(
-        `${this.BASE_URL}/search/photos?query=${encodeURIComponent(query)}&page=${page}&per_page=${perPage}&orientation=landscape`,
-        {
-          headers: {
-            'Authorization': `Client-ID ${accessKey}`,
-            'Accept-Version': 'v1',
-          },
+      const { data, error } = await supabase.functions.invoke('unsplash-search', {
+        body: {
+          query,
+          page,
+          perPage
         }
-      );
+      });
 
-      if (!response.ok) {
-        throw new Error(`Unsplash API error: ${response.status}`);
+      if (error) {
+        console.error('🔍 UnsplashService: Edge function error:', error);
+        return {
+          results: [],
+          total: 0,
+          total_pages: 0,
+          error: 'Failed to search images'
+        };
       }
 
-      const data = await response.json();
-      console.log('🔍 Unsplash API: Found', data.results?.length || 0, 'photos');
-      return data;
+      console.log('🔍 UnsplashService: Search response:', data);
+      return data as UnsplashSearchResponse;
     } catch (error) {
-      console.error('Error searching Unsplash photos:', error);
-      // Return empty results on error instead of throwing
+      console.error('🔍 UnsplashService: Search failed:', error);
       return {
         results: [],
         total: 0,
-        total_pages: 0
+        total_pages: 0,
+        error: 'Search failed'
       };
     }
   }

@@ -42,18 +42,28 @@ export function UnsplashImageSearch({ recipe, onImageSelect }: UnsplashImageSear
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
 
   const handleSearch = async (page: number = 1) => {
     if (!searchQuery.trim()) return;
 
     setIsLoading(true);
     setHasSearched(true);
+    setSearchError(null);
     
     try {
       console.log('🔍 UnsplashImageSearch: Starting search for:', searchQuery);
       const response = await UnsplashService.searchPhotos(searchQuery, page, 12);
       
       console.log('🔍 UnsplashImageSearch: Search response:', response);
+      
+      if (response.error) {
+        setSearchError(response.error);
+        if (page === 1) {
+          setPhotos([]);
+        }
+        return;
+      }
       
       if (page === 1) {
         setPhotos(response.results);
@@ -65,6 +75,7 @@ export function UnsplashImageSearch({ recipe, onImageSelect }: UnsplashImageSear
       setHasMore(page < response.total_pages);
     } catch (error) {
       console.error('Unsplash search failed:', error);
+      setSearchError('Search failed. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -109,12 +120,25 @@ export function UnsplashImageSearch({ recipe, onImageSelect }: UnsplashImageSear
         </div>
       </div>
 
-      {/* API Not Configured Alert */}
-      {hasSearched && photos.length === 0 && !isLoading && (
+      {/* Error Alert */}
+      {searchError && (
         <Alert>
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
-            Unsplash API is not currently configured. To enable image search, please configure the Unsplash API key in your backend settings.
+            {searchError.includes('not configured') 
+              ? "Unsplash API is not currently configured. Please configure the Unsplash API key in your backend settings."
+              : searchError
+            }
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* No Results Alert */}
+      {hasSearched && photos.length === 0 && !isLoading && !searchError && (
+        <Alert>
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            No images found for "{searchQuery}". Try a different search term.
           </AlertDescription>
         </Alert>
       )}
@@ -184,7 +208,7 @@ export function UnsplashImageSearch({ recipe, onImageSelect }: UnsplashImageSear
         <p>• All images are free to use under the Unsplash License</p>
         <p>• Photographer attribution will be automatically included</p>
         <p>• Images link directly to Unsplash (no download required)</p>
-        <p>• API configuration required for search functionality</p>
+        <p>• High-quality food photography from professional photographers</p>
       </div>
     </div>
   );
