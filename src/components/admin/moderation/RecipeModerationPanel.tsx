@@ -133,10 +133,16 @@ export function RecipeModerationPanel() {
     }
   }, [allRecipes, currentFilter, currentIndex]);
 
-  // Keyboard navigation (no auto-approval logic)
+  // Keyboard navigation - Fixed to not interfere with input fields
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
       if (filteredRecipes.length === 0) return;
+      
+      // Don't trigger shortcuts if user is typing in an input field
+      const target = event.target as HTMLElement;
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
+        return;
+      }
       
       switch (event.key) {
         case 'ArrowLeft':

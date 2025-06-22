@@ -1,10 +1,12 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Search, Loader } from "lucide-react";
+import { Search, Loader, AlertCircle } from "lucide-react";
 import { UnsplashService } from "@/services/unsplashService";
 import { CommunityRecipe } from "@/hooks/useCommunityRecipes";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 // Import the interface from the service to avoid duplication
 interface UnsplashPhoto {
@@ -39,13 +41,19 @@ export function UnsplashImageSearch({ recipe, onImageSelect }: UnsplashImageSear
   const [selectedPhotoId, setSelectedPhotoId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
 
   const handleSearch = async (page: number = 1) => {
     if (!searchQuery.trim()) return;
 
     setIsLoading(true);
+    setHasSearched(true);
+    
     try {
+      console.log('🔍 UnsplashImageSearch: Starting search for:', searchQuery);
       const response = await UnsplashService.searchPhotos(searchQuery, page, 12);
+      
+      console.log('🔍 UnsplashImageSearch: Search response:', response);
       
       if (page === 1) {
         setPhotos(response.results);
@@ -100,6 +108,16 @@ export function UnsplashImageSearch({ recipe, onImageSelect }: UnsplashImageSear
           </Button>
         </div>
       </div>
+
+      {/* API Not Configured Alert */}
+      {hasSearched && photos.length === 0 && !isLoading && (
+        <Alert>
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            Unsplash API is not currently configured. To enable image search, please configure the Unsplash API key in your backend settings.
+          </AlertDescription>
+        </Alert>
+      )}
 
       {/* Results Grid */}
       {photos.length > 0 && (
@@ -166,6 +184,7 @@ export function UnsplashImageSearch({ recipe, onImageSelect }: UnsplashImageSear
         <p>• All images are free to use under the Unsplash License</p>
         <p>• Photographer attribution will be automatically included</p>
         <p>• Images link directly to Unsplash (no download required)</p>
+        <p>• API configuration required for search functionality</p>
       </div>
     </div>
   );

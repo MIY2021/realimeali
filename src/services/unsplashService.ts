@@ -32,6 +32,11 @@ export class UnsplashService {
   private static getAccessKey(): string | null {
     // For now, return null to disable Unsplash until proper backend integration
     // In production, this would come from a Supabase Edge Function
+    // To enable Unsplash, you would need to:
+    // 1. Add UNSPLASH_ACCESS_KEY to Supabase Edge Function Secrets
+    // 2. Create an edge function to handle Unsplash API calls
+    // 3. Update this service to call that edge function instead
+    console.log('🔍 Unsplash API: No access key configured. Unsplash search is currently disabled.');
     return null;
   }
 
@@ -39,6 +44,7 @@ export class UnsplashService {
     const accessKey = this.getAccessKey();
     
     if (!accessKey) {
+      console.log('🔍 Unsplash API: Search attempted but no API key available');
       // Return empty results when no API key is available
       return {
         results: [],
@@ -48,6 +54,8 @@ export class UnsplashService {
     }
 
     try {
+      console.log('🔍 Unsplash API: Searching for:', query);
+      
       const response = await fetch(
         `${this.BASE_URL}/search/photos?query=${encodeURIComponent(query)}&page=${page}&per_page=${perPage}&orientation=landscape`,
         {
@@ -63,6 +71,7 @@ export class UnsplashService {
       }
 
       const data = await response.json();
+      console.log('🔍 Unsplash API: Found', data.results?.length || 0, 'photos');
       return data;
     } catch (error) {
       console.error('Error searching Unsplash photos:', error);
