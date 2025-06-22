@@ -3,10 +3,11 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Search, Loader, AlertCircle } from "lucide-react";
+import { Search, Loader, AlertCircle, Eye } from "lucide-react";
 import { UnsplashService } from "@/services/unsplashService";
 import { CommunityRecipe } from "@/hooks/useCommunityRecipes";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { UnsplashImagePreview } from "./UnsplashImagePreview";
 
 // Import the interface from the service to avoid duplication
 interface UnsplashPhoto {
@@ -43,6 +44,8 @@ export function UnsplashImageSearch({ recipe, onImageSelect }: UnsplashImageSear
   const [hasMore, setHasMore] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
+  const [previewPhoto, setPreviewPhoto] = useState<UnsplashPhoto | null>(null);
+  const [showPreview, setShowPreview] = useState(false);
 
   const handleSearch = async (page: number = 1) => {
     if (!searchQuery.trim()) return;
@@ -81,10 +84,17 @@ export function UnsplashImageSearch({ recipe, onImageSelect }: UnsplashImageSear
     }
   };
 
-  const handlePhotoSelect = (photo: UnsplashPhoto) => {
-    const attribution = UnsplashService.getPhotoAttribution(photo);
-    setSelectedPhotoId(photo.id);
-    onImageSelect(attribution.imageUrl, attribution.photographerName, attribution.photographerUrl);
+  const handlePhotoClick = (photo: UnsplashPhoto) => {
+    setPreviewPhoto(photo);
+    setShowPreview(true);
+  };
+
+  const handleConfirmSelection = () => {
+    if (previewPhoto) {
+      const attribution = UnsplashService.getPhotoAttribution(previewPhoto);
+      setSelectedPhotoId(previewPhoto.id);
+      onImageSelect(attribution.imageUrl, attribution.photographerName, attribution.photographerUrl);
+    }
   };
 
   const loadMore = () => {
@@ -150,16 +160,25 @@ export function UnsplashImageSearch({ recipe, onImageSelect }: UnsplashImageSear
             {photos.map((photo) => (
               <div
                 key={photo.id}
-                className={`relative cursor-pointer border-2 rounded-lg overflow-hidden transition-all ${
+                className={`relative cursor-pointer border-2 rounded-lg overflow-hidden transition-all group ${
                   selectedPhotoId === photo.id ? 'border-blue-500 ring-2 ring-blue-200' : 'border-gray-200 hover:border-gray-300'
                 }`}
-                onClick={() => handlePhotoSelect(photo)}
+                onClick={() => handlePhotoClick(photo)}
               >
                 <img
                   src={photo.urls.thumb}
                   alt={photo.alt_description || 'Food photo'}
                   className="w-full h-24 object-cover"
                 />
+                
+                {/* Hover overlay with preview button */}
+                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all flex items-center justify-center">
+                  <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Eye className="h-6 w-6 text-white" />
+                  </div>
+                </div>
+
+                {/* Photographer attribution */}
                 <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs p-1">
                   <div className="flex items-center justify-between">
                     <span className="truncate">{photo.user.name}</span>
@@ -168,6 +187,8 @@ export function UnsplashImageSearch({ recipe, onImageSelect }: UnsplashImageSear
                     </svg>
                   </div>
                 </div>
+                
+                {/* Selection indicator */}
                 {selectedPhotoId === photo.id && (
                   <div className="absolute inset-0 bg-blue-500 bg-opacity-20 flex items-center justify-center">
                     <div className="bg-blue-500 text-white rounded-full p-1">
@@ -209,7 +230,17 @@ export function UnsplashImageSearch({ recipe, onImageSelect }: UnsplashImageSear
         <p>• Photographer attribution will be automatically included</p>
         <p>• Images link directly to Unsplash (no download required)</p>
         <p>• High-quality food photography from professional photographers</p>
+        <p>• Click any image to preview before selecting</p>
       </div>
+
+      {/* Preview Dialog */}
+      <UnsplashImagePreview
+        isOpen={showPreview}
+        onClose={() => setShowPreview(false)}
+        photo={previewPhoto}
+        onConfirm={handleConfirmSelection}
+        recipeName={recipe.title}
+      />
     </div>
   );
 }
