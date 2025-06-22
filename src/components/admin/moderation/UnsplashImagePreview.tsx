@@ -1,7 +1,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ExternalLink, Check, X } from "lucide-react";
+import { Check, X } from "lucide-react";
 
 interface UnsplashPhoto {
   id: string;
