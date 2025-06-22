@@ -61,9 +61,9 @@ export const RealiChef = () => {
     }
   }, [isOpen]);
 
-  // Welcome message based on page context
+  // Update welcome message when page context changes, even if chat is already open
   useEffect(() => {
-    if (isOpen && messages.length === 0) {
+    if (isOpen) {
       const welcomeMessage = getWelcomeMessage(pageContext.page);
       setMessages([{
         role: 'assistant',
@@ -71,7 +71,7 @@ export const RealiChef = () => {
         timestamp: new Date()
       }]);
     }
-  }, [isOpen, pageContext.page, messages.length]);
+  }, [isOpen, pageContext.page]);
 
   const getWelcomeMessage = (page: string) => {
     const welcomes = {
@@ -157,7 +157,7 @@ export const RealiChef = () => {
           onClick={() => setIsOpen(!isOpen)}
           className={cn(
             "h-14 w-14 rounded-full shadow-lg transition-all duration-300 hover:scale-110",
-            "bg-gradient-to-r from-sage/60 to-terracotta/60 hover:from-sage/70 hover:to-terracotta/70",
+            "bg-gradient-to-r from-sage/40 to-terracotta/40 hover:from-sage/50 hover:to-terracotta/50",
             isOpen && "scale-95"
           )}
           size="sm"
@@ -199,7 +199,7 @@ export const RealiChef = () => {
                       alt="Chef Hat"
                       className="h-5 w-5"
                     />
-                    <span className="font-semibold">RealiChef</span>
+                    <span className="font-semibold">RealiChef | AI Assistant</span>
                     <Sparkles className="h-4 w-4 animate-pulse" />
                   </div>
                   <Button
