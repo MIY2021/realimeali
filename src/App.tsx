@@ -15,6 +15,10 @@ import RecipeDetail from "@/pages/RecipeDetail";
 import MealPlanner from "@/pages/MealPlanner";
 import ShoppingList from "@/pages/ShoppingList";
 import FindRecipesPage from "@/pages/FindRecipesPage";
+import AdminDashboard from "@/pages/AdminDashboard";
+import Feedback from "@/pages/Feedback";
+import Contact from "@/pages/Contact";
+import NotFound from "@/pages/NotFound";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { HouseholdProvider } from "@/contexts/HouseholdContext";
 import { RecipesProvider } from "@/contexts/RecipesContext";
@@ -45,6 +49,10 @@ function AppContent() {
           <Route path="/find-recipes" element={<FindRecipesPage />} />
           <Route path="/meal-planner" element={<MealPlanner />} />
           <Route path="/shopping-list" element={<ShoppingList />} />
+          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/feedback" element={<Feedback />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </Layout>
       {user && <RealiChef />}
