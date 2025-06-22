@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from 'react';
 import { Minus, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -164,94 +165,106 @@ export const RealiChef = () => {
 
       {/* Chat Interface */}
       {isOpen && (
-        <div className="fixed bottom-36 right-4 z-50 w-80 md:bottom-20">
-          <div className="bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden">
-            {/* Header */}
-            <div className="bg-gradient-to-r from-sage to-terracotta p-4 text-white">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <img 
-                    src="/lovable-uploads/48f73020-608a-4375-a69f-2e7bc147e319.png" 
-                    alt="Chef Hat"
-                    className="h-5 w-5"
-                  />
-                  <span className="font-semibold">RealiChef</span>
-                  <Sparkles className="h-4 w-4 animate-pulse" />
+        <>
+          {/* Backdrop for mobile */}
+          <div 
+            className="fixed inset-0 bg-black/20 z-40 md:hidden"
+            onClick={() => setIsOpen(false)}
+          />
+          
+          {/* Chat Container - Full screen on mobile, floating on desktop */}
+          <div className={cn(
+            "fixed z-50",
+            "inset-4 md:bottom-36 md:right-4 md:w-80 md:bottom-20 md:inset-auto"
+          )}>
+            <div className="bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden h-full flex flex-col">
+              {/* Header */}
+              <div className="bg-gradient-to-r from-sage to-terracotta p-4 text-white flex-shrink-0">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <img 
+                      src="/lovable-uploads/48f73020-608a-4375-a69f-2e7bc147e319.png" 
+                      alt="Chef Hat"
+                      className="h-5 w-5"
+                    />
+                    <span className="font-semibold">RealiChef</span>
+                    <Sparkles className="h-4 w-4 animate-pulse" />
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setIsOpen(false)}
+                    className="text-white hover:bg-white/20 h-6 w-6 p-0"
+                  >
+                    <Minus className="h-4 w-4" />
+                  </Button>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setIsOpen(false)}
-                  className="text-white hover:bg-white/20 h-6 w-6 p-0"
-                >
-                  <Minus className="h-4 w-4" />
-                </Button>
               </div>
-            </div>
 
-            {/* Messages */}
-            <div className="h-64 overflow-y-auto p-4 space-y-3 bg-gray-50">
-              {messages.map((message, index) => (
-                <div
-                  key={index}
-                  className={cn(
-                    "flex",
-                    message.role === 'user' ? 'justify-end' : 'justify-start'
-                  )}
-                >
+              {/* Messages - Flexible height */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50 min-h-0">
+                {messages.map((message, index) => (
                   <div
+                    key={index}
                     className={cn(
-                      "max-w-[85%] rounded-lg px-4 py-3 text-sm leading-relaxed",
-                      message.role === 'user'
-                        ? 'bg-sage text-white'
-                        : 'bg-white text-gray-800 shadow-sm border'
+                      "flex",
+                      message.role === 'user' ? 'justify-end' : 'justify-start'
                     )}
                   >
-                    <div className="whitespace-pre-wrap break-words">
-                      {message.role === 'assistant' ? renderMarkdown(message.content) : message.content}
-                    </div>
-                  </div>
-                </div>
-              ))}
-              {isLoading && (
-                <div className="flex justify-start">
-                  <div className="bg-white rounded-lg px-4 py-3 text-sm shadow-sm border">
-                    <div className="flex items-center gap-1">
-                      <div className="flex space-x-1">
-                        <div className="w-2 h-2 bg-sage rounded-full animate-bounce"></div>
-                        <div className="w-2 h-2 bg-sage rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                        <div className="w-2 h-2 bg-sage rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                    <div
+                      className={cn(
+                        "max-w-[85%] rounded-lg px-4 py-3 text-sm leading-relaxed",
+                        message.role === 'user'
+                          ? 'bg-sage text-white'
+                          : 'bg-white text-gray-800 shadow-sm border'
+                      )}
+                    >
+                      <div className="whitespace-pre-wrap break-words">
+                        {message.role === 'assistant' ? renderMarkdown(message.content) : message.content}
                       </div>
                     </div>
                   </div>
-                </div>
-              )}
-              <div ref={messagesEndRef} />
-            </div>
+                ))}
+                {isLoading && (
+                  <div className="flex justify-start">
+                    <div className="bg-white rounded-lg px-4 py-3 text-sm shadow-sm border">
+                      <div className="flex items-center gap-1">
+                        <div className="flex space-x-1">
+                          <div className="w-2 h-2 bg-sage rounded-full animate-bounce"></div>
+                          <div className="w-2 h-2 bg-sage rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                          <div className="w-2 h-2 bg-sage rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                <div ref={messagesEndRef} />
+              </div>
 
-            {/* Input */}
-            <div className="p-4 border-t">
-              <div className="flex gap-2">
-                <Input
-                  value={inputMessage}
-                  onChange={(e) => setInputMessage(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  placeholder="Ask RealiChef anything..."
-                  disabled={isLoading}
-                  className="flex-1"
-                />
-                <Button
-                  onClick={sendMessage}
-                  disabled={isLoading || !inputMessage.trim()}
-                  size="sm"
-                  className="bg-sage hover:bg-sage/90"
-                >
-                  ➤
-                </Button>
+              {/* Input - Fixed at bottom */}
+              <div className="p-4 border-t bg-white flex-shrink-0">
+                <div className="flex gap-2">
+                  <Input
+                    value={inputMessage}
+                    onChange={(e) => setInputMessage(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    placeholder="Ask RealiChef anything..."
+                    disabled={isLoading}
+                    className="flex-1"
+                  />
+                  <Button
+                    onClick={sendMessage}
+                    disabled={isLoading || !inputMessage.trim()}
+                    size="sm"
+                    className="bg-sage hover:bg-sage/90"
+                  >
+                    ➤
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        </>
       )}
     </>
   );
