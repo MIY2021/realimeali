@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -107,6 +106,10 @@ export function ShoppingListItem({
 
   const recipeData = getRecipeNamesWithIds(recipeIds);
 
+  const handleRecipeLinkClick = (e: React.MouseEvent | React.TouchEvent) => {
+    e.stopPropagation();
+  };
+
   return (
     <div 
       className={`flex items-center justify-between p-3 rounded-lg transition-colors ${
@@ -179,7 +182,8 @@ export function ShoppingListItem({
                       <Link 
                         to={`/my-recipes/${slug}`}
                         className="hover:underline cursor-pointer"
-                        onClick={(e) => e.stopPropagation()}
+                        onClick={handleRecipeLinkClick}
+                        onTouchStart={handleRecipeLinkClick}
                       >
                         {recipe.name.trim()}
                       </Link>
