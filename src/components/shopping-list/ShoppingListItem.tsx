@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -88,9 +89,23 @@ export function ShoppingListItem({
     onCheck(!isChecked);
   };
 
-  // Get recipe names for display
-  const recipeNames = getRecipeNames(recipeIds);
-  const individualRecipeNames = recipeNames.split(', ');
+  // Get recipe names for display - need to get individual recipe names with their IDs
+  const getRecipeNamesWithIds = (recipeIds: string[]) => {
+    // Get unique recipe IDs
+    const uniqueRecipeIds = [...new Set(recipeIds)];
+    
+    // Get the full recipe names string and split by commas
+    const recipeNamesString = getRecipeNames(uniqueRecipeIds);
+    const recipeNames = recipeNamesString.split(', ');
+    
+    // Map each recipe name to its corresponding ID
+    return uniqueRecipeIds.map((recipeId, index) => ({
+      id: recipeId,
+      name: recipeNames[index] || `Recipe ${recipeId.substring(0, 8)}`
+    }));
+  };
+
+  const recipeData = getRecipeNamesWithIds(recipeIds);
 
   return (
     <div 
@@ -157,19 +172,18 @@ export function ShoppingListItem({
             {recipeIds.length > 0 && (
               <div className="mt-1 text-xs text-green-600">
                 from{' '}
-                {individualRecipeNames.map((recipeName, index) => {
-                  const recipeId = recipeIds[index];
-                  const slug = generateSlug(recipeName.trim());
+                {recipeData.map((recipe, index) => {
+                  const slug = generateSlug(recipe.name.trim());
                   return (
-                    <span key={`${recipeId || index}-${recipeName}`}>
+                    <span key={`${recipe.id}-${recipe.name}`}>
                       <Link 
                         to={`/my-recipes/${slug}`}
                         className="hover:underline cursor-pointer"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        {recipeName.trim()}
+                        {recipe.name.trim()}
                       </Link>
-                      {index < individualRecipeNames.length - 1 && ', '}
+                      {index < recipeData.length - 1 && ', '}
                     </span>
                   );
                 })}
