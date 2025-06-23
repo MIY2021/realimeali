@@ -39,14 +39,9 @@ serve(async (req) => {
       );
     }
 
-    console.log('Generating high-quality image with clean prompt:', prompt);
+    console.log('Generating image with DALL-E 3:', prompt);
 
-    // Use the prompt directly without double-wrapping or adding redundant prefixes
-    const cleanPrompt = prompt;
-
-    console.log('Using clean prompt for gpt-image-1:', cleanPrompt);
-
-    // Generate image with OpenAI gpt-image-1 with optimized settings
+    // Generate image with DALL-E 3
     const response = await fetch('https://api.openai.com/v1/images/generations', {
       method: 'POST',
       headers: {
@@ -54,13 +49,12 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-image-1',
-        prompt: cleanPrompt,
+        model: 'dall-e-3',
+        prompt: prompt,
         n: 1,
-        size: '1024x1024', // Keep current resolution
-        quality: 'medium', // Keep current quality level
-        output_format: 'webp', // Use WebP for better compression
-        output_compression: 85, // Optimize quality/size balance
+        size: '1024x1024',
+        quality: 'standard',
+        style: 'vivid',
       }),
     });
 
@@ -72,22 +66,27 @@ serve(async (req) => {
 
     const data = await response.json();
     
-    // gpt-image-1 returns base64 data directly
-    const base64ImageData = data.data[0]?.b64_json;
+    // DALL-E 3 returns URL
+    const imageUrl = data.data[0]?.url;
 
-    if (!base64ImageData) {
+    if (!imageUrl) {
       throw new Error('No image data returned from OpenAI');
     }
 
-    console.log('Image generated with gpt-image-1, now uploading to Supabase storage...');
+    console.log('Image generated with DALL-E 3, now downloading and uploading to Supabase storage...');
 
-    // Convert base64 to buffer
-    const imageBuffer = Uint8Array.from(atob(base64ImageData), c => c.charCodeAt(0));
+    // Download the image
+    const imageResponse = await fetch(imageUrl);
+    if (!imageResponse.ok) {
+      throw new Error('Failed to download generated image');
+    }
+
+    const imageBuffer = new Uint8Array(await imageResponse.arrayBuffer());
     
-    // Check file size and log optimization results
+    // Check file size and log results
     const imageSizeBytes = imageBuffer.length;
     const imageSizeMB = (imageSizeBytes / (1024 * 1024)).toFixed(2);
-    console.log(`Generated image size: ${imageSizeMB}MB`);
+    console.log(`Downloaded image size: ${imageSizeMB}MB`);
 
     // Create Supabase client
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
@@ -95,13 +94,13 @@ serve(async (req) => {
     // Generate unique filename
     const timestamp = Date.now();
     const prefix = isCommunityRecipe ? 'community-recipe' : 'recipe';
-    const fileName = `${prefix}-generated-${timestamp}.webp`;
+    const fileName = `${prefix}-generated-${timestamp}.png`;
 
     // Upload to Supabase storage
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from('recipe-images')
       .upload(fileName, imageBuffer, {
-        contentType: 'image/webp',
+        contentType: 'image/png',
         cacheControl: '3600',
       });
 
@@ -115,18 +114,17 @@ serve(async (req) => {
       .from('recipe-images')
       .getPublicUrl(fileName);
 
-    console.log('High-quality image uploaded successfully to Supabase storage');
+    console.log('Image uploaded successfully to Supabase storage');
 
     return new Response(
       JSON.stringify({ 
         imageUrl: urlData.publicUrl,
         fileName: fileName,
-        prompt: cleanPrompt,
+        prompt: prompt,
         fileSize: imageSizeBytes,
         fileSizeMB: imageSizeMB,
-        model: 'gpt-image-1',
-        format: 'webp',
-        compression: 85
+        model: 'dall-e-3',
+        format: 'png'
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

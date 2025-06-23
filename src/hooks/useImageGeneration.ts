@@ -28,7 +28,7 @@ export function useImageGeneration() {
     setIsGeneratingImage(true);
     
     try {
-      // Start the imagery-focused loading animation
+      // Start the slower imagery-focused loading animation
       const shuffledMessages = [...IMAGE_LOADING_MESSAGES].sort(() => Math.random() - 0.5);
       let messageIndex = 0;
       
@@ -37,9 +37,9 @@ export function useImageGeneration() {
           setGenerationProgress?.(shuffledMessages[messageIndex]);
           messageIndex++;
         }
-      }, 800);
+      }, 1500); // Slower animation - changed from 800ms to 1500ms
       
-      // Create the detailed prompt directly (no double-wrapping)
+      // Create the detailed prompt directly
       const detailedPrompt = `A photorealistic, professionally styled cookbook photo of ${title}. The dish is the clear focal point, beautifully plated and shot in a natural home or studio kitchen setting with soft, diffused lighting. The background is clean and minimal, such as wood, marble, linen or slate — subtle and textured but not distracting.
 
 Adjust styling based on the food type:
@@ -93,14 +93,14 @@ Lighting: natural daylight style or softbox imitation — bright but soft shadow
 
       // Clear the progress animation and complete
       clearInterval(progressInterval);
-      setGenerationProgress?.("✨ High-quality image generated successfully!");
+      setGenerationProgress?.("✨ Professional cookbook image generated!");
       
       setImagePreview(data.imageUrl);
       setRecipeImage(data.imageUrl);
       
       toast({
         title: "Image Generated!",
-        description: `Professional cookbook-style image created! (${data.fileSizeMB}MB WebP)`,
+        description: `Professional cookbook-style image created using DALL-E 3! (${data.fileSizeMB}MB PNG)`,
       });
 
       // Reset progress after a delay
