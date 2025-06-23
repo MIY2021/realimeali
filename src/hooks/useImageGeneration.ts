@@ -39,42 +39,46 @@ export function useImageGeneration() {
         }
       }, 800);
       
-      // Create enhanced prompt that includes title, description, ingredients, and instructions
-      let prompt = `Generate a hyper-realistic, top-down food photograph of the recipe: "${title}"`;
-      
-      // Add description context if available
+      // Create the new detailed prompt
+      const detailedPrompt = `A photorealistic, professionally styled cookbook photo of ${title}. The dish is the clear focal point, beautifully plated and shot in a natural home or studio kitchen setting with soft, diffused lighting. The background is clean and minimal, such as wood, marble, linen or slate — subtle and textured but not distracting.
+
+Adjust styling based on the food type:
+
+• **Hearty mains (curries, pasta, stews, rice bowls, roasts):** Presented in a shallow ceramic bowl or rimmed plate, slightly cropped at the edge of the frame. Shot at a 45-degree or overhead angle. Ingredients look fresh, moist, and steaming hot if appropriate. Include subtle garnishes like herbs, lemon wedges, or a spoon.
+
+• **Sandwiches, burgers, wraps:** Shown whole and slightly angled on a rustic board or plate. Use a side angle or close-up 3/4 profile to highlight layers (e.g., fillings, melted cheese, crusty bread). Include crumbs, paper wrapping, or pickle garnish nearby. Background should be soft-focus kitchen wood or linen.
+
+• **Soups and broths:** Served in a deep bowl, with toppings or a drizzle (e.g., cream swirl, croutons, herbs). Shot directly overhead or at a slight 30–45° angle. Spoon and napkin optional at the edge of frame.
+
+• **Salads:** Shot overhead to show color, composition and variety of ingredients. Served in a wide shallow bowl with visible textures — crunchy leaves, shiny dressings, and sprinkled seeds or herbs.
+
+• **Desserts (cakes, brownies, tarts, puddings):** Beautifully styled single portions on a neutral plate, with crumbs, dusted sugar, or fruit garnish. Shot at a 45-degree angle or macro close-up to highlight texture (e.g. gooey centre, flaky crust). Warm, soft lighting enhances richness.
+
+• **Breakfasts (pancakes, eggs, porridge):** Cozy, morning-style setting with natural light. Show stack height or texture up close (e.g. syrup pouring). Angle varies by dish — top-down for porridge or flatlays, 45° for eggs on toast.
+
+• **Drinks (coffee, smoothies, cocktails):** Served in an appropriate glass or mug. Capture light reflecting through the drink. Use close-up or side-profile, with optional props like a napkin, straw, or garnish.
+
+Image composition:
+- The food should fill most of the frame, often with part of the bowl/plate cropped artistically.
+- Depth of field should highlight the food, blurring the background naturally.
+- No filters, no artificial gloss — just clean, vibrant, real-looking food.
+- Styled like a modern, minimal high-end food magazine or cookbook.
+
+Lighting: natural daylight style or softbox imitation — bright but soft shadows. Colors are natural, slightly warm, never oversaturated.`;
+
+      // Add context from ingredients and description if available
+      let contextualPrompt = detailedPrompt;
       if (description && description.trim()) {
-        prompt += ` - ${description.trim()}`;
+        contextualPrompt += `\n\nAdditional context: ${description.trim()}`;
       }
-      
-      // Add ingredients context if available
       if (ingredients && ingredients.length > 0) {
-        const mainIngredients = ingredients.slice(0, 5); // Use first 5 ingredients to avoid overly long prompts
-        prompt += `. Key ingredients include: ${mainIngredients.join(', ')}`;
+        const mainIngredients = ingredients.slice(0, 5);
+        contextualPrompt += `\n\nKey ingredients: ${mainIngredients.join(', ')}`;
       }
-      
-      // Add cooking method context from instructions if available
-      if (instructions && instructions.length > 0) {
-        const cookingMethods = instructions.join(' ').toLowerCase();
-        if (cookingMethods.includes('bake') || cookingMethods.includes('oven')) {
-          prompt += '. Baked dish';
-        } else if (cookingMethods.includes('fry') || cookingMethods.includes('pan')) {
-          prompt += '. Pan-fried dish';
-        } else if (cookingMethods.includes('grill')) {
-          prompt += '. Grilled dish';
-        } else if (cookingMethods.includes('boil') || cookingMethods.includes('simmer')) {
-          prompt += '. Boiled/simmered dish';
-        } else if (cookingMethods.includes('roast')) {
-          prompt += '. Roasted dish';
-        }
-      }
-      
-      // Add the detailed styling instructions
-      prompt += `. Use natural lighting with soft shadows and realistic textures. Plate the dish in a ceramic or rustic-style plate or bowl. Garnish only with ingredients specifically mentioned or clearly implied. The background should vary between images (e.g., linen, wood, stone, concrete) but always remain clean and natural. Include minimal, relevant props (e.g., a fork, a napkin, or herbs) only if they are contextually appropriate. The result must look like a professional, real-life food photograph with no digital or artificial appearance. Focus on authentic food presentation and natural colors.`;
       
       const { data, error } = await supabase.functions.invoke('generate-recipe-image', {
         body: { 
-          prompt: prompt
+          prompt: contextualPrompt
         },
       });
 
@@ -89,14 +93,14 @@ export function useImageGeneration() {
 
       // Clear the progress animation and complete
       clearInterval(progressInterval);
-      setGenerationProgress?.("✨ Image generated successfully!");
+      setGenerationProgress?.("✨ Professional image generated successfully!");
       
       setImagePreview(data.imageUrl);
       setRecipeImage(data.imageUrl);
       
       toast({
         title: "Image Generated!",
-        description: "Enhanced recipe image has been generated using recipe details for better accuracy!",
+        description: "Professional cookbook-style image has been generated!",
       });
 
       // Reset progress after a delay

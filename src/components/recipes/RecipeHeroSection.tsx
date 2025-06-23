@@ -1,51 +1,45 @@
 
-import { Badge } from "@/components/ui/badge";
 import { Recipe } from "@/types";
 import { RecipeImage } from "@/components/ui/recipe-image";
+import { Button } from "@/components/ui/button";
+import { Camera } from "lucide-react";
 
 interface RecipeHeroSectionProps {
   recipe: Recipe;
+  onEditImage?: () => void;
 }
 
-export const RecipeHeroSection = ({ recipe }: RecipeHeroSectionProps) => {
-  const capitalizeFirst = (str: string) => {
-    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-  };
-
+export const RecipeHeroSection = ({ recipe, onEditImage }: RecipeHeroSectionProps) => {
   return (
-    <div className="relative h-80 mb-3 rounded-lg overflow-hidden shadow-lg">
-      <RecipeImage 
-        recipe={recipe} 
-        className="w-full h-full object-cover"
-        iconSize="h-12 w-12"
-      />
-      
-      {/* Dark gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-      
-      {/* Title and meta info overlay - bottom */}
-      <div className="absolute bottom-0 left-0 right-0 p-6">
-        <h1 className="text-3xl font-bold text-white mb-3">{recipe.title}</h1>
+    <div className="relative mb-6">
+      {/* Recipe Image */}
+      <div className="relative h-64 sm:h-80 w-full rounded-lg overflow-hidden mb-4">
+        <RecipeImage
+          recipe={recipe}
+          className="w-full h-full"
+          iconSize="h-16 w-16"
+        />
         
-        {/* Recipe badges */}
-        <div className="flex items-center gap-2 mb-4 flex-wrap">
-          {recipe.meal_type && (
-            <Badge className="bg-terracotta/90 text-white border-0 backdrop-blur-sm">
-              {capitalizeFirst(recipe.meal_type)}
-            </Badge>
-          )}
-          {recipe.complexity_level && (
-            <Badge variant="outline" className="border-white/40 text-white bg-white/10 backdrop-blur-sm">
-              {capitalizeFirst(recipe.complexity_level.replace('_', ' '))}
-            </Badge>
-          )}
-          {recipe.cuisine_region && (
-            <Badge variant="outline" className="border-white/40 text-white bg-white/10 backdrop-blur-sm">
-              {capitalizeFirst(recipe.cuisine_region)}
-            </Badge>
-          )}
-        </div>
+        {/* Edit Image Button - Only show for owners */}
+        {onEditImage && (
+          <div className="absolute top-4 right-4">
+            <Button
+              onClick={onEditImage}
+              size="sm"
+              variant="secondary"
+              className="bg-white/90 hover:bg-white backdrop-blur-sm"
+            >
+              <Camera className="h-4 w-4 mr-2" />
+              Edit Image
+            </Button>
+          </div>
+        )}
       </div>
+
+      {/* Recipe Title */}
+      <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2 px-2">
+        {recipe.title}
+      </h1>
     </div>
   );
 };

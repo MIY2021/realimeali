@@ -6,6 +6,7 @@ import { RecipeActionButtons } from "./RecipeActionButtons";
 import { RecipeMetaInfo } from "./RecipeMetaInfo";
 import { RecipeTabContent } from "./RecipeTabContent";
 import { RecipeFooter } from "./RecipeFooter";
+import { RecipeImageEditor } from "./RecipeImageEditor";
 import { RecipeScalingService } from "@/utils/recipeScaling";
 
 interface RecipeDetailProps {
@@ -14,6 +15,7 @@ interface RecipeDetailProps {
   onDelete?: () => Promise<void>;
   isOwner?: boolean;
   onAddToMealPlan?: (adjustedServings?: number) => void;
+  onImageUpdate?: (imageUrl: string) => void;
 }
 
 export const RecipeDetail = ({ 
@@ -21,10 +23,12 @@ export const RecipeDetail = ({
   onEdit, 
   onDelete, 
   isOwner, 
-  onAddToMealPlan 
+  onAddToMealPlan,
+  onImageUpdate
 }: RecipeDetailProps) => {
   const [currentServings, setCurrentServings] = useState(recipe.servings);
   const [scaledIngredients, setScaledIngredients] = useState<string[]>(recipe.ingredients);
+  const [showImageEditor, setShowImageEditor] = useState(false);
 
   const handleServingsChange = (newServings: number) => {
     setCurrentServings(newServings);
@@ -40,11 +44,19 @@ export const RecipeDetail = ({
     onAddToMealPlan?.(currentServings);
   };
 
+  const handleImageUpdate = (imageUrl: string) => {
+    onImageUpdate?.(imageUrl);
+    setShowImageEditor(false);
+  };
+
   const isScaled = currentServings !== recipe.servings;
 
   return (
     <div className="max-w-4xl mx-auto">
-      <RecipeHeroSection recipe={recipe} />
+      <RecipeHeroSection 
+        recipe={recipe} 
+        onEditImage={isOwner ? () => setShowImageEditor(true) : undefined}
+      />
       
       <RecipeActionButtons
         recipe={recipe}
@@ -72,6 +84,16 @@ export const RecipeDetail = ({
       />
 
       <RecipeFooter recipe={recipe} />
+
+      {/* Image Editor Dialog */}
+      {showImageEditor && isOwner && (
+        <RecipeImageEditor
+          recipe={recipe}
+          isOpen={showImageEditor}
+          onClose={() => setShowImageEditor(false)}
+          onImageUpdate={handleImageUpdate}
+        />
+      )}
     </div>
   );
 };

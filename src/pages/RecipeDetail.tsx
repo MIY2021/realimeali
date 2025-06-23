@@ -12,6 +12,7 @@ import { AddToMealPlanDialog } from "@/components/recipes/AddToMealPlanDialog";
 import { Recipe } from "@/types";
 import { generateSlug } from "@/utils/slugUtils";
 import { useRealiChefContext } from "@/hooks/useRealiChefContext";
+import { RecipeImageEditor } from "@/components/recipes/RecipeImageEditor";
 
 export default function RecipeDetail() {
   const { slug } = useParams<{ slug: string }>();
@@ -83,6 +84,17 @@ export default function RecipeDetail() {
     }
   };
 
+  const handleImageUpdate = async (imageUrl: string) => {
+    if (!recipe) return;
+    
+    try {
+      const updatedRecipe = { ...recipe, image: imageUrl };
+      await updateRecipe(recipe.id, updatedRecipe);
+    } catch (error) {
+      console.error('Error updating recipe image:', error);
+    }
+  };
+
   const [adjustedServings, setAdjustedServings] = useState<number | undefined>(undefined);
 
   const handleAddToMealPlan = (servings?: number) => {
@@ -139,6 +151,16 @@ export default function RecipeDetail() {
     );
   }
 
+  const [adjustedServings, setAdjustedServings] = useState<number | undefined>(undefined);
+
+  const handleAddToMealPlan = (servings?: number) => {
+    setAdjustedServings(servings);
+    setIsAddToMealPlanOpen(true);
+  };
+
+  const canEdit = user && recipe && recipe.created_by === user.id;
+  const [showImageEditor, setShowImageEditor] = useState(false);
+
   return (
     <div className="container max-w-4xl py-1 sm:py-4 px-4 sm:px-6">
       {/* Header with back button only */}
@@ -163,6 +185,7 @@ export default function RecipeDetail() {
             onDelete={canEdit ? handleDelete : undefined}
             isOwner={canEdit}
             onAddToMealPlan={handleAddToMealPlan}
+            onImageUpdate={canEdit ? handleImageUpdate : undefined}
           />
 
           {/* Dialogs */}
