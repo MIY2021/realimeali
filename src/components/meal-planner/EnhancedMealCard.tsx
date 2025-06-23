@@ -6,6 +6,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { MealPlan, Recipe, MealType } from "@/types";
 import { DraggableProvidedDragHandleProps } from "react-beautiful-dnd";
 import { useMealPlan } from "@/contexts/MealPlanContext";
+import { Link } from "react-router-dom";
+import { generateSlug } from "@/utils/slugUtils";
 
 interface EnhancedMealCardProps {
   mealPlan: MealPlan;
@@ -103,6 +105,10 @@ export function EnhancedMealCard({
     shouldShowGreen: !!(existingLeftover && mealPlan.meal_type === 'dinner' && !isLeftover)
   });
 
+  // Generate recipe URL
+  const recipeSlug = generateSlug(recipe.title);
+  const recipeUrl = `/my-recipes/${recipeSlug}`;
+
   return (
     <Card className={`bg-white border border-gray-200 hover:shadow-md transition-all overflow-hidden ${
       mealPlan.is_completed ? 'opacity-40 saturate-50' : ''
@@ -111,13 +117,15 @@ export function EnhancedMealCard({
         <div className="flex h-24">
           {/* Recipe Image - Slightly smaller with padding */}
           <div className="w-20 h-20 flex-shrink-0 m-2">
-            <img 
-              src={recipe.image || "/placeholder.svg"} 
-              alt={recipe.title}
-              className={`w-full h-full object-cover rounded ${
-                mealPlan.is_completed ? 'grayscale' : ''
-              }`}
-            />
+            <Link to={recipeUrl}>
+              <img 
+                src={recipe.image || "/placeholder.svg"} 
+                alt={recipe.title}
+                className={`w-full h-full object-cover rounded cursor-pointer hover:opacity-80 transition-opacity ${
+                  mealPlan.is_completed ? 'grayscale' : ''
+                }`}
+              />
+            </Link>
           </div>
 
           {/* Content Area - Reduced left padding to minimize white space */}
@@ -125,11 +133,13 @@ export function EnhancedMealCard({
             {/* Header */}
             <div className="flex items-start justify-between mb-2">
               <div className="flex-1 min-w-0">
-                <h4 className={`font-medium text-sm leading-tight truncate ${
-                  mealPlan.is_completed ? 'text-gray-400 line-through' : 'text-gray-900'
-                }`}>
-                  {recipe.title}
-                </h4>
+                <Link to={recipeUrl}>
+                  <h4 className={`font-medium text-sm leading-tight truncate cursor-pointer hover:text-blue-600 transition-colors ${
+                    mealPlan.is_completed ? 'text-gray-400 line-through' : 'text-gray-900'
+                  }`}>
+                    {recipe.title}
+                  </h4>
+                </Link>
                 {isLunchLeftover && parentRecipe && (
                   <p className="text-xs text-gray-500 mt-1">
                     Leftover
