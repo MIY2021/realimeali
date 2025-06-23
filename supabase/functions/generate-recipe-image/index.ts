@@ -27,7 +27,7 @@ serve(async (req) => {
       throw new Error('Supabase configuration is missing');
     }
 
-    const { prompt, isCommunityRecipe = false, quality = 'standard', size = '1024x1024' } = await req.json();
+    const { prompt, isCommunityRecipe = false } = await req.json();
 
     if (!prompt) {
       return new Response(
@@ -39,25 +39,14 @@ serve(async (req) => {
       );
     }
 
-    console.log('Generating optimized image with enhanced prompt:', prompt);
+    console.log('Generating high-quality image with clean prompt:', prompt);
 
-    // Enhanced prompt processing for better recipe context
-    let enhancedPrompt = prompt;
-    if (isCommunityRecipe) {
-      // For community recipes, ensure we have a comprehensive prompt
-      if (!prompt.includes('hyper-realistic, top-down food photograph')) {
-        enhancedPrompt = `Generate a hyper-realistic, top-down food photograph of ${prompt}. Use natural lighting with soft shadows and realistic textures. Plate the dish in an appropriate ceramic or rustic-style plate or bowl. Garnish only with ingredients that would naturally accompany this dish. The background should be clean and natural (wood, stone, concrete, or linen). Include minimal, contextually appropriate props. The result must look like a professional, real-life food photograph with no digital or artificial appearance. Focus on authentic food presentation and natural colors. Keep the overall image bright and light.`;
-      }
-    } else {
-      // For user recipes, the prompt is already enhanced with ingredients and instructions
-      if (!prompt.includes('hyper-realistic, top-down food photograph')) {
-        enhancedPrompt = `Generate a hyper-realistic, top-down food photograph of ${prompt}. Use natural lighting with soft shadows and realistic textures. Plate the dish appropriately. The result must look like a professional, real-life food photograph. Keep the overall image bright and light.`;
-      }
-    }
+    // Use the prompt directly without double-wrapping or adding redundant prefixes
+    const cleanPrompt = prompt;
 
-    console.log('Using enhanced prompt with recipe context:', enhancedPrompt);
+    console.log('Using clean prompt for gpt-image-1:', cleanPrompt);
 
-    // Generate image with OpenAI DALL-E 3, optimized for web performance
+    // Generate image with OpenAI gpt-image-1 with optimized settings
     const response = await fetch('https://api.openai.com/v1/images/generations', {
       method: 'POST',
       headers: {
@@ -65,11 +54,13 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'dall-e-3',
-        prompt: enhancedPrompt,
+        model: 'gpt-image-1',
+        prompt: cleanPrompt,
         n: 1,
-        size: size, // Use configurable size for optimization
-        quality: quality, // Use configurable quality for file size control
+        size: '1024x1024', // Keep current resolution
+        quality: 'medium', // Keep current quality level
+        output_format: 'webp', // Use WebP for better compression
+        output_compression: 85, // Optimize quality/size balance
       }),
     });
 
@@ -80,31 +71,23 @@ serve(async (req) => {
     }
 
     const data = await response.json();
-    const tempImageUrl = data.data[0]?.url;
-
-    if (!tempImageUrl) {
-      throw new Error('No image URL returned from OpenAI');
-    }
-
-    console.log('Image generated, now optimizing and uploading to Supabase storage...');
-
-    // Download the image from OpenAI
-    const imageResponse = await fetch(tempImageUrl);
-    if (!imageResponse.ok) {
-      throw new Error('Failed to download generated image');
-    }
-
-    const imageBlob = await imageResponse.blob();
     
-    // Check file size and optimize if needed
-    const maxSizeBytes = 2 * 1024 * 1024; // 2MB limit for web performance
-    let imageBuffer = await imageBlob.arrayBuffer();
-    
-    if (imageBlob.size > maxSizeBytes) {
-      console.log(`Image size (${imageBlob.size} bytes) exceeds limit, using optimized settings`);
-      // The image is already optimized by using 'standard' quality
-      // For future enhancement, we could implement additional compression here
+    // gpt-image-1 returns base64 data directly
+    const base64ImageData = data.data[0]?.b64_json;
+
+    if (!base64ImageData) {
+      throw new Error('No image data returned from OpenAI');
     }
+
+    console.log('Image generated with gpt-image-1, now uploading to Supabase storage...');
+
+    // Convert base64 to buffer
+    const imageBuffer = Uint8Array.from(atob(base64ImageData), c => c.charCodeAt(0));
+    
+    // Check file size and log optimization results
+    const imageSizeBytes = imageBuffer.length;
+    const imageSizeMB = (imageSizeBytes / (1024 * 1024)).toFixed(2);
+    console.log(`Generated image size: ${imageSizeMB}MB`);
 
     // Create Supabase client
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
@@ -112,13 +95,13 @@ serve(async (req) => {
     // Generate unique filename
     const timestamp = Date.now();
     const prefix = isCommunityRecipe ? 'community-recipe' : 'recipe';
-    const fileName = `${prefix}-generated-${timestamp}.png`;
+    const fileName = `${prefix}-generated-${timestamp}.webp`;
 
-    // Upload to Supabase storage with optimization
+    // Upload to Supabase storage
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from('recipe-images')
       .upload(fileName, imageBuffer, {
-        contentType: 'image/png',
+        contentType: 'image/webp',
         cacheControl: '3600',
       });
 
@@ -132,15 +115,18 @@ serve(async (req) => {
       .from('recipe-images')
       .getPublicUrl(fileName);
 
-    console.log('Optimized image uploaded successfully to Supabase storage');
+    console.log('High-quality image uploaded successfully to Supabase storage');
 
     return new Response(
       JSON.stringify({ 
         imageUrl: urlData.publicUrl,
         fileName: fileName,
-        prompt: enhancedPrompt,
-        fileSize: imageBlob.size,
-        optimized: imageBlob.size <= maxSizeBytes
+        prompt: cleanPrompt,
+        fileSize: imageSizeBytes,
+        fileSizeMB: imageSizeMB,
+        model: 'gpt-image-1',
+        format: 'webp',
+        compression: 85
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

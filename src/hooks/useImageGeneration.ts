@@ -39,7 +39,7 @@ export function useImageGeneration() {
         }
       }, 800);
       
-      // Create the new detailed prompt
+      // Create the detailed prompt directly (no double-wrapping)
       const detailedPrompt = `A photorealistic, professionally styled cookbook photo of ${title}. The dish is the clear focal point, beautifully plated and shot in a natural home or studio kitchen setting with soft, diffused lighting. The background is clean and minimal, such as wood, marble, linen or slate — subtle and textured but not distracting.
 
 Adjust styling based on the food type:
@@ -66,14 +66,14 @@ Image composition:
 
 Lighting: natural daylight style or softbox imitation — bright but soft shadows. Colors are natural, slightly warm, never oversaturated.`;
 
-      // Add context from ingredients and description if available
+      // Add context from ingredients and description naturally
       let contextualPrompt = detailedPrompt;
       if (description && description.trim()) {
-        contextualPrompt += `\n\nAdditional context: ${description.trim()}`;
+        contextualPrompt += `\n\nRecipe context: ${description.trim()}`;
       }
       if (ingredients && ingredients.length > 0) {
         const mainIngredients = ingredients.slice(0, 5);
-        contextualPrompt += `\n\nKey ingredients: ${mainIngredients.join(', ')}`;
+        contextualPrompt += `\n\nKey visible ingredients: ${mainIngredients.join(', ')}`;
       }
       
       const { data, error } = await supabase.functions.invoke('generate-recipe-image', {
@@ -93,14 +93,14 @@ Lighting: natural daylight style or softbox imitation — bright but soft shadow
 
       // Clear the progress animation and complete
       clearInterval(progressInterval);
-      setGenerationProgress?.("✨ Professional image generated successfully!");
+      setGenerationProgress?.("✨ High-quality image generated successfully!");
       
       setImagePreview(data.imageUrl);
       setRecipeImage(data.imageUrl);
       
       toast({
         title: "Image Generated!",
-        description: "Professional cookbook-style image has been generated!",
+        description: `Professional cookbook-style image created! (${data.fileSizeMB}MB WebP)`,
       });
 
       // Reset progress after a delay
