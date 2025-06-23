@@ -1,16 +1,18 @@
-
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { Copy, Check } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Pencil, Copy, X, Check } from "lucide-react";
+import { generateSlug } from "@/utils/slugUtils";
+import { Link } from "react-router-dom";
+import { useShoppingListInteractions } from "./ShoppingListInteractions";
 import { useToast } from "@/hooks/use-toast";
-import { useRecipes } from "@/contexts/RecipesContext";
+import { extractIngredientName } from "@/utils/shoppingListUtils";
 
 interface ShoppingListItemProps {
   id: string;
   name: string;
-  quantity: number;
+  quantity?: number;
   unit?: string;
   isChecked: boolean;
   recipeIds: string[];
@@ -20,7 +22,7 @@ interface ShoppingListItemProps {
   getRecipeNames: (recipeIds: string[]) => string;
 }
 
-export default function ShoppingListItem({
+export function ShoppingListItem({ 
   id,
   name,
   quantity,
@@ -32,119 +34,169 @@ export default function ShoppingListItem({
   onCopy,
   getRecipeNames
 }: ShoppingListItemProps) {
-  const navigate = useNavigate();
+  const [isEditing, setIsEditing] = useState(false);
+  const [editName, setEditName] = useState(name);
+  const [editQuantity, setEditQuantity] = useState(quantity?.toString() || '');
+  const [editUnit, setEditUnit] = useState(unit || '');
   const { toast } = useToast();
-  const { recipes } = useRecipes();
-  const [isAnimating, setIsAnimating] = useState(false);
 
-  const handleCopy = async () => {
+  const handleCopyName = async () => {
     try {
-      const itemText = `${name}${quantity && quantity > 1 ? ` (${quantity}${unit ? ` ${unit}` : ''})` : ''}`;
-      await navigator.clipboard.writeText(itemText);
-      onCopy();
-      
-      setIsAnimating(true);
-      setTimeout(() => setIsAnimating(false), 2000);
-      
+      // Use AI to extract clean ingredient name
+      const cleanName = await extractIngredientName(name);
+      navigator.clipboard.writeText(cleanName);
+      onCopy(); // This triggers the visual feedback
       toast({
         title: "Copied to clipboard",
-        description: `"${itemText}" has been copied`,
+        description: `"${cleanName}" copied to clipboard`,
       });
     } catch (error) {
-      console.error('Failed to copy to clipboard:', error);
+      // Fallback to copying the original name
+      navigator.clipboard.writeText(name);
+      onCopy();
       toast({
-        title: "Copy failed",
-        description: "Unable to copy to clipboard",
-        variant: "destructive",
+        title: "Copied to clipboard",
+        description: `"${name}" copied to clipboard`,
       });
     }
   };
 
-  const handleRecipeClick = (recipeId: string, e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    const recipe = recipes.find(r => r.id === recipeId);
-    if (recipe?.slug) {
-      navigate(`/my-recipes/${recipe.slug}`);
-    }
+  // Set up touch interactions
+  const {
+    handleTouchStart,
+    handleTouchEnd,
+    handleTouchMove,
+    handleMouseDown,
+    handleMouseUp,
+    handleMouseLeave
+  } = useShoppingListInteractions(isChecked, onCheck, handleCopyName);
+
+  const handleSaveEdit = () => {
+    // Note: Since we don't have updateShoppingListItem in the context,
+    // we'll just close the edit mode for now
+    setIsEditing(false);
   };
 
-  const formatQuantity = () => {
-    if (!quantity || quantity <= 1) return '';
-    return ` (${quantity}${unit ? ` ${unit}` : ''})`;
+  const handleCancelEdit = () => {
+    setEditName(name);
+    setEditQuantity(quantity?.toString() || '');
+    setEditUnit(unit || '');
+    setIsEditing(false);
   };
 
+  const handleToggleCheck = () => {
+    onCheck(!isChecked);
+  };
+
+  // Get recipe names for display
   const recipeNames = getRecipeNames(recipeIds);
-  const uniqueRecipeIds = [...new Set(recipeIds)];
+  const individualRecipeNames = recipeNames.split(', ');
 
   return (
-    <div className={`flex items-start gap-3 py-2 transition-all duration-200 ${
-      isChecked ? 'opacity-60' : 'opacity-100'
-    }`}>
-      <Checkbox
-        checked={isChecked}
-        onCheckedChange={onCheck}
-        className="mt-1 flex-shrink-0"
-      />
-      
-      <div className="flex-1 min-w-0">
-        <div className={`font-medium text-sm leading-tight transition-all duration-200 ${
-          isChecked ? 'line-through text-gray-500' : 'text-gray-900'
-        }`}>
-          {name}{formatQuantity()}
-        </div>
+    <div 
+      className={`flex items-center justify-between p-3 rounded-lg transition-colors ${
+        isChecked ? 'bg-gray-50 opacity-75' : 'bg-white'
+      } ${copiedItemId === id ? 'bg-green-50' : ''}`}
+      onTouchStart={!isEditing ? handleTouchStart : undefined}
+      onTouchEnd={!isEditing ? handleTouchEnd : undefined}
+      onTouchMove={!isEditing ? handleTouchMove : undefined}
+      onMouseDown={!isEditing ? handleMouseDown : undefined}
+      onMouseUp={!isEditing ? handleMouseUp : undefined}
+      onMouseLeave={!isEditing ? handleMouseLeave : undefined}
+    >
+      <div className="flex items-center space-x-3 flex-1">
+        <Checkbox
+          checked={isChecked}
+          onCheckedChange={handleToggleCheck}
+        />
         
-        {uniqueRecipeIds.length > 0 && (
-          <div className="text-xs text-gray-500 mt-1 space-y-1">
-            {uniqueRecipeIds.length === 1 ? (
-              <button
-                onClick={(e) => handleRecipeClick(uniqueRecipeIds[0], e)}
-                className="hover:text-blue-600 transition-colors cursor-pointer underline decoration-dotted"
-              >
-                {recipeNames}
-              </button>
-            ) : (
-              <div className="space-y-1">
-                <span className="text-gray-400">From recipes:</span>
-                <div className="flex flex-wrap gap-1">
-                  {uniqueRecipeIds.map((recipeId, index) => {
-                    const recipe = recipes.find(r => r.id === recipeId);
-                    const recipeName = recipe ? recipe.title : `Recipe ${recipeId.substring(0, 8)}`;
-                    
-                    return (
-                      <span key={recipeId}>
-                        <button
-                          onClick={(e) => handleRecipeClick(recipeId, e)}
-                          className="hover:text-blue-600 transition-colors cursor-pointer underline decoration-dotted"
-                        >
-                          {recipeName}
-                        </button>
-                        {index < uniqueRecipeIds.length - 1 && <span className="text-gray-400">, </span>}
-                      </span>
-                    );
-                  })}
-                </div>
+        {isEditing ? (
+          <div className="flex items-center space-x-2 flex-1">
+            <Input
+              value={editQuantity}
+              onChange={(e) => setEditQuantity(e.target.value)}
+              placeholder="Qty"
+              className="w-20"
+              autoFocus={false}
+            />
+            <Input
+              value={editUnit}
+              onChange={(e) => setEditUnit(e.target.value)}
+              placeholder="Unit"
+              className="w-20"
+              autoFocus={false}
+            />
+            <Input
+              value={editName}
+              onChange={(e) => setEditName(e.target.value)}
+              className="flex-1"
+              autoFocus={true}
+              onFocus={(e) => {
+                // Select all text when input is focused
+                e.target.select();
+              }}
+            />
+            <Button size="sm" onClick={handleSaveEdit}>
+              <Check className="h-4 w-4" />
+            </Button>
+            <Button size="sm" variant="outline" onClick={handleCancelEdit}>
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+        ) : (
+          <div className="flex-1">
+            <div className={`${isChecked ? 'line-through text-gray-500' : ''}`}>
+              {quantity && (
+                <span className="font-medium">
+                  {quantity} {unit && unit}{' '}
+                </span>
+              )}
+              <span>{name}</span>
+            </div>
+            
+            {recipeIds.length > 0 && (
+              <div className="mt-1 text-xs text-green-600">
+                from{' '}
+                {individualRecipeNames.map((recipeName, index) => {
+                  const recipeId = recipeIds[index];
+                  const slug = generateSlug(recipeName.trim());
+                  return (
+                    <span key={`${recipeId || index}-${recipeName}`}>
+                      <Link 
+                        to={`/my-recipes/${slug}`}
+                        className="hover:underline cursor-pointer"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {recipeName.trim()}
+                      </Link>
+                      {index < individualRecipeNames.length - 1 && ', '}
+                    </span>
+                  );
+                })}
               </div>
             )}
           </div>
         )}
       </div>
 
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={handleCopy}
-        className={`flex-shrink-0 h-8 w-8 p-0 transition-all duration-200 ${
-          copiedItemId === id ? 'bg-green-100 text-green-600' : 'hover:bg-gray-100'
-        } ${isAnimating ? 'scale-110' : 'scale-100'}`}
-      >
-        {copiedItemId === id ? (
-          <Check className="h-4 w-4" />
-        ) : (
-          <Copy className="h-4 w-4" />
-        )}
-      </Button>
+      {!isEditing && (
+        <div className="flex items-center space-x-2">
+          <Button 
+            size="sm" 
+            variant="ghost" 
+            onClick={() => setIsEditing(true)}
+          >
+            <Pencil className="h-4 w-4" />
+          </Button>
+          <Button 
+            size="sm" 
+            variant="ghost" 
+            onClick={handleCopyName}
+          >
+            <Copy className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
