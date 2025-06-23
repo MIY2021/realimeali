@@ -43,24 +43,6 @@ export const EnhancedMealCard = ({
     }
   };
 
-  const CardWrapper = index !== undefined ? Draggable : 'div';
-  const cardProps = index !== undefined ? {
-    draggableId: mealPlan.id,
-    index: index
-  } : {};
-
-  const CardContent = ({ children }: { children: React.ReactNode }) => (
-    <Card className={`group transition-all duration-200 hover:shadow-md border-l-4 ${
-      mealPlan.is_leftover 
-        ? 'border-l-orange-400 bg-orange-50/30' 
-        : 'border-l-blue-400 bg-blue-50/30'
-    }`}>
-      <CardContent className="p-3">
-        {children}
-      </CardContent>
-    </Card>
-  );
-
   if (index !== undefined) {
     return (
       <Draggable draggableId={mealPlan.id} index={index}>
