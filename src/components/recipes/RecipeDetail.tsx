@@ -53,10 +53,7 @@ export const RecipeDetail = ({
 
   return (
     <div className="max-w-4xl mx-auto">
-      <RecipeHeroSection 
-        recipe={recipe} 
-        onEditImage={isOwner ? () => setShowImageEditor(true) : undefined}
-      />
+      <RecipeHeroSection recipe={recipe} />
       
       <RecipeActionButtons
         recipe={recipe}

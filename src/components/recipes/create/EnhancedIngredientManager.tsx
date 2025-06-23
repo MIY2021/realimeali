@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { X, Plus, GripVertical } from "lucide-react";
+import { X, Plus, GripVertical, Edit2 } from "lucide-react";
 import { DragDropContext, Droppable, Draggable, DropResult } from "react-beautiful-dnd";
 
 interface EnhancedIngredientManagerProps {
@@ -139,12 +139,17 @@ export function EnhancedIngredientManager({ ingredients, onIngredientsChange }: 
                           </div>
                         ) : (
                           <>
-                            <span
-                              className="flex-1 text-sm cursor-pointer hover:text-blue-600 transition-colors break-words leading-snug"
-                              onClick={() => startEditing(index)}
-                            >
+                            <span className="flex-1 text-sm break-words leading-snug select-text">
                               {ingredient}
                             </span>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => startEditing(index)}
+                              className="opacity-70 group-hover:opacity-100 transition-opacity hover:bg-blue-50 hover:text-blue-600 h-5 w-5 p-0 flex-shrink-0"
+                            >
+                              <Edit2 className="h-3 w-3" />
+                            </Button>
                             <Button
                               size="sm"
                               variant="ghost"

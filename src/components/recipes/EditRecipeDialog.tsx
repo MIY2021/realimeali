@@ -151,20 +151,14 @@ Lighting: natural daylight style or softbox imitation — bright but soft shadow
           setProgressValue((messageIndex + 1) * (100 / messages.length));
           messageIndex++;
         }
-      }, 700);
+      }, 1200); // Slower animation - changed from 700ms to 1200ms
 
-      const prompt = generateEnhancedPrompt(
-        editedRecipe.title, 
-        editedRecipe.ingredients, 
-        editedRecipe.instructions, 
-        editedRecipe.description
-      );
+      // Use simple prompt without custom styling
+      const simplePrompt = `A high-quality, professional photo of ${editedRecipe.title}`;
       
       const { data, error } = await supabase.functions.invoke('generate-recipe-image', {
         body: { 
-          prompt: prompt,
-          quality: 'standard', // Use standard quality for smaller file sizes
-          size: '1024x1024' // Optimal size for web performance
+          prompt: simplePrompt
         },
       });
 
@@ -180,7 +174,7 @@ Lighting: natural daylight style or softbox imitation — bright but soft shadow
       
       toast({
         title: "Image Generated!",
-        description: "Professional recipe image created with recipe context!",
+        description: "Professional recipe image created!",
       });
 
       setTimeout(() => {
@@ -357,6 +351,15 @@ Lighting: natural daylight style or softbox imitation — bright but soft shadow
     });
   };
 
+  const updateIngredient = (index: number, value: string) => {
+    const newIngredients = [...editedRecipe.ingredients];
+    newIngredients[index] = value;
+    setEditedRecipe({
+      ...editedRecipe,
+      ingredients: newIngredients,
+    });
+  };
+
   const addInstruction = () => {
     if (newInstruction.trim()) {
       setEditedRecipe({
@@ -371,6 +374,15 @@ Lighting: natural daylight style or softbox imitation — bright but soft shadow
     setEditedRecipe({
       ...editedRecipe,
       instructions: editedRecipe.instructions.filter((_, i) => i !== index),
+    });
+  };
+
+  const updateInstruction = (index: number, value: string) => {
+    const newInstructions = [...editedRecipe.instructions];
+    newInstructions[index] = value;
+    setEditedRecipe({
+      ...editedRecipe,
+      instructions: newInstructions,
     });
   };
 
@@ -418,7 +430,7 @@ Lighting: natural daylight style or softbox imitation — bright but soft shadow
 
                 <TabsContent value="ai" className="space-y-3">
                   <p className="text-sm text-muted-foreground">
-                    Generate a professional cookbook-style photo using your recipe's ingredients and cooking method.
+                    Generate a professional photo of your recipe.
                   </p>
                   
                   {isGeneratingAI && (
@@ -625,9 +637,12 @@ Lighting: natural daylight style or softbox imitation — bright but soft shadow
               <div className="space-y-2">
                 {editedRecipe.ingredients.map((ingredient, index) => (
                   <div key={index} className="flex items-center gap-2">
-                    <span className="text-sm flex-1 p-2 bg-gray-50 rounded">
-                      {ingredient}
-                    </span>
+                    <Input
+                      value={ingredient}
+                      onChange={(e) => updateIngredient(index, e.target.value)}
+                      className="flex-1"
+                      placeholder="Enter ingredient"
+                    />
                     <Button
                       type="button"
                       variant="outline"
@@ -658,9 +673,12 @@ Lighting: natural daylight style or softbox imitation — bright but soft shadow
               <div className="space-y-2">
                 {editedRecipe.instructions.map((instruction, index) => (
                   <div key={index} className="flex items-start gap-2">
-                    <span className="text-sm flex-1 p-2 bg-gray-50 rounded min-h-[40px]">
-                      {instruction}
-                    </span>
+                    <Textarea
+                      value={instruction}
+                      onChange={(e) => updateInstruction(index, e.target.value)}
+                      className="flex-1 min-h-[60px]"
+                      placeholder="Enter instruction"
+                    />
                     <Button
                       type="button"
                       variant="outline"
