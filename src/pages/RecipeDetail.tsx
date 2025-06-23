@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -12,7 +13,6 @@ import { AddToMealPlanDialog } from "@/components/recipes/AddToMealPlanDialog";
 import { Recipe } from "@/types";
 import { generateSlug } from "@/utils/slugUtils";
 import { useRealiChefContext } from "@/hooks/useRealiChefContext";
-import { RecipeImageEditor } from "@/components/recipes/RecipeImageEditor";
 
 export default function RecipeDetail() {
   const { slug } = useParams<{ slug: string }>();
@@ -21,6 +21,7 @@ export default function RecipeDetail() {
   const { user } = useAuth();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isAddToMealPlanOpen, setIsAddToMealPlanOpen] = useState(false);
+  const [adjustedServings, setAdjustedServings] = useState<number | undefined>(undefined);
 
   // Scroll to top when component mounts or recipe changes
   useEffect(() => {
@@ -95,8 +96,6 @@ export default function RecipeDetail() {
     }
   };
 
-  const [adjustedServings, setAdjustedServings] = useState<number | undefined>(undefined);
-
   const handleAddToMealPlan = (servings?: number) => {
     setAdjustedServings(servings);
     setIsAddToMealPlanOpen(true);
@@ -150,16 +149,6 @@ export default function RecipeDetail() {
       </div>
     );
   }
-
-  const [adjustedServings, setAdjustedServings] = useState<number | undefined>(undefined);
-
-  const handleAddToMealPlan = (servings?: number) => {
-    setAdjustedServings(servings);
-    setIsAddToMealPlanOpen(true);
-  };
-
-  const canEdit = user && recipe && recipe.created_by === user.id;
-  const [showImageEditor, setShowImageEditor] = useState(false);
 
   return (
     <div className="container max-w-4xl py-1 sm:py-4 px-4 sm:px-6">
