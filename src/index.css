@@ -130,15 +130,9 @@
     }
   }
 
-  /* Fix layout shift by reserving space for potential scrollbar without showing it */
-  html {
-    overflow-x: hidden;
-    width: 100vw;
-  }
-  
+  /* Prevent layout shift without showing scrollbars */
   body {
-    overflow-x: hidden;
-    max-width: 100vw;
+    scrollbar-gutter: stable;
   }
 }
 

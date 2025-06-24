@@ -1,4 +1,3 @@
-
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -61,14 +60,10 @@ export function RecipeUrlTab({
       {/* Helper text */}
       <div className="text-sm text-muted-foreground">
         <div className="hidden sm:block bg-blue-50 p-3 rounded-lg">
-          🔗 Import recipes from cooking websites! I'll try to automatically grab the recipe details and find photos. If it doesn't work, try the "Paste Recipe Text" tab instead.
-          <br /><br />
-          Having trouble? Copy the recipe text and use the "Paste Recipe Text" tab for guaranteed results.
+          🔗 Import recipes from cooking websites! I'll try to automatically grab the recipe details and find photos. If it doesn't work, try the "Paste Recipe Text" tab instead. Having trouble? Copy the recipe text and use the "Paste Recipe Text" tab for guaranteed results.
         </div>
         <div className="sm:hidden">
-          🔗 Import recipes from cooking websites! I'll try to automatically grab the recipe details and find photos. If it doesn't work, try the "Paste Recipe Text" tab instead.
-          <br /><br />
-          Having trouble? Copy the recipe text and use the "Paste Recipe Text" tab for guaranteed results.
+          🔗 Import recipes from cooking websites! I'll try to automatically grab the recipe details and find photos. If it doesn't work, try the "Paste Recipe Text" tab instead. Having trouble? Copy the recipe text and use the "Paste Recipe Text" tab for guaranteed results.
         </div>
       </div>
       
