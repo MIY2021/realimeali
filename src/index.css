@@ -1,4 +1,5 @@
 
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -133,12 +134,10 @@
   /* Prevent layout shift by always reserving scrollbar space */
   html {
     scrollbar-gutter: stable;
-    overflow-x: hidden;
   }
   
   body {
     scrollbar-gutter: stable;
-    overflow-x: hidden;
   }
 }
 
@@ -151,3 +150,4 @@
     @apply bg-background text-foreground;
   }
 }
+
