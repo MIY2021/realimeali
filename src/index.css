@@ -10,8 +10,8 @@
   }
   
   html {
-    /* Prevent layout shift by always showing scrollbar space */
-    overflow-y: scroll;
+    /* Prevent layout shift by reserving scrollbar space without always showing it */
+    scrollbar-gutter: stable;
   }
   
   body {
