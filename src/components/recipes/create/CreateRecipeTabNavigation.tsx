@@ -70,7 +70,7 @@ export function CreateRecipeTabNavigation({
   const getDynamicTabOptions = (): TabOption[] => {
     const tabOptions = [...baseTabOptions];
     
-    // If we're on the manual tab but the recipe origin is different, update the manual tab
+    // Only update the manual tab if we're on it AND the origin is different AND it wasn't manually clicked
     if (activeTab === "manual" && recipeOrigin !== "manual") {
       const originalTab = baseTabOptions.find(tab => tab.value === recipeOrigin);
       if (originalTab) {
@@ -93,48 +93,50 @@ export function CreateRecipeTabNavigation({
   const activeTabOption = tabOptions.find(tab => tab.value === activeTab);
 
   return (
-    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-      {/* Mobile Dropdown */}
-      {isMobile ? (
-        <div className="mb-4">
-          <Select value={activeTab} onValueChange={setActiveTab}>
-            <SelectTrigger className="w-full">
-              <SelectValue>
-                {activeTabOption && (
-                  <div className="flex items-center gap-2">
-                    <span>{activeTabOption.emoji}</span>
-                    {activeTabOption.label}
-                  </div>
-                )}
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent>
+    <div className="w-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        {/* Mobile Dropdown */}
+        {isMobile ? (
+          <div className="mb-4">
+            <Select value={activeTab} onValueChange={setActiveTab}>
+              <SelectTrigger className="w-full">
+                <SelectValue>
+                  {activeTabOption && (
+                    <div className="flex items-center gap-2">
+                      <span>{activeTabOption.emoji}</span>
+                      {activeTabOption.label}
+                    </div>
+                  )}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {tabOptions.map((tab) => (
+                  <SelectItem key={tab.value} value={tab.value}>
+                    <div className="flex items-center gap-2">
+                      <span>{tab.emoji}</span>
+                      {tab.label}
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        ) : (
+          /* Desktop Tabs - Fixed width to prevent layout shift */
+          <div className="mb-4 sm:mb-6">
+            <TabsList className="grid w-full grid-cols-5 mb-3 min-h-[40px]">
               {tabOptions.map((tab) => (
-                <SelectItem key={tab.value} value={tab.value}>
-                  <div className="flex items-center gap-2">
-                    <span>{tab.emoji}</span>
-                    {tab.label}
-                  </div>
-                </SelectItem>
+                <TabsTrigger key={tab.value} value={tab.value} className="p-2 min-w-0 flex-1">
+                  <span className="mr-2">{tab.emoji}</span>
+                  <span className="truncate">{tab.label}</span>
+                </TabsTrigger>
               ))}
-            </SelectContent>
-          </Select>
-        </div>
-      ) : (
-        /* Desktop Tabs */
-        <div className="mb-4 sm:mb-6">
-          <TabsList className="grid w-full grid-cols-5 mb-3">
-            {tabOptions.map((tab) => (
-              <TabsTrigger key={tab.value} value={tab.value} className="p-2">
-                <span className="mr-2">{tab.emoji}</span>
-                {tab.label}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </div>
-      )}
+            </TabsList>
+          </div>
+        )}
 
-      {children}
-    </Tabs>
+        {children}
+      </Tabs>
+    </div>
   );
 }

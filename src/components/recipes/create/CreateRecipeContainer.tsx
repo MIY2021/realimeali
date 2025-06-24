@@ -27,6 +27,7 @@ export function CreateRecipeContainer() {
   const [isSaving, setIsSaving] = useState(false);
   const [recipeOrigin, setRecipeOrigin] = useState<RecipeOrigin>('manual');
   const [originalSourceUrl, setOriginalSourceUrl] = useState<string>('');
+  const [manualTabClicked, setManualTabClicked] = useState(false);
 
   // Keep hooks as objects instead of destructuring
   const recipeFormHook = useRecipeForm();
@@ -286,6 +287,13 @@ export function CreateRecipeContainer() {
   };
 
   const handleTabChange = (tab: string) => {
+    // Track if manual tab was clicked directly
+    if (tab === 'manual') {
+      setManualTabClicked(true);
+    } else {
+      setManualTabClicked(false);
+    }
+
     if (tab === 'manual' && activeTab !== 'manual') {
       if (recipeOrigin === 'manual' && activeTab !== 'manual') {
         setRecipeOrigin(activeTab as RecipeOrigin);
@@ -308,6 +316,9 @@ export function CreateRecipeContainer() {
     setActiveTab(tab);
   };
 
+  // Pass manualTabClicked to determine whether to show dynamic tab name
+  const effectiveRecipeOrigin = (activeTab === 'manual' && manualTabClicked) ? 'manual' : recipeOrigin;
+
   return (
     <div className="space-y-6">
       {/* Title Section */}
@@ -327,7 +338,7 @@ export function CreateRecipeContainer() {
         isMobile={isMobile}
         activeTab={activeTab}
         setActiveTab={handleTabChange}
-        recipeOrigin={recipeOrigin}
+        recipeOrigin={effectiveRecipeOrigin}
         recipeFormHook={recipeFormHook}
         recipeProcessingHook={recipeProcessingHook}
         onProcessText={wrappedProcessText}

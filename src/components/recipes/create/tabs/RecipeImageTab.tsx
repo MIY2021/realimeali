@@ -78,18 +78,18 @@ export function RecipeImageTab({
           disabled={isProcessing}
         />
         
-        {/* Two separate buttons */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {/* Two separate buttons with more padding */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Button
             type="button"
             onClick={handleTakePhoto}
             disabled={isProcessing}
             variant="outline"
-            className="h-20 border-2 border-dashed border-gray-300 hover:border-blue-400 hover:bg-blue-50 transition-colors flex flex-col items-center justify-center gap-2 text-gray-600 hover:text-blue-600"
+            className="h-24 p-6 border-2 border-dashed border-gray-300 hover:border-blue-400 hover:bg-blue-50 transition-colors flex flex-col items-center justify-center gap-3 text-gray-600 hover:text-blue-600"
           >
-            <Camera className="h-6 w-6" />
-            <span className="font-medium">Take Photo</span>
-            <span className="text-xs text-muted-foreground">Use Camera</span>
+            <Camera className="h-7 w-7" />
+            <span className="font-medium text-base">Take Photo</span>
+            <span className="text-sm text-muted-foreground">Use Camera</span>
           </Button>
           
           <Button
@@ -97,11 +97,11 @@ export function RecipeImageTab({
             onClick={handleChooseFromGallery}
             disabled={isProcessing}
             variant="outline"
-            className="h-20 border-2 border-dashed border-gray-300 hover:border-green-400 hover:bg-green-50 transition-colors flex flex-col items-center justify-center gap-2 text-gray-600 hover:text-green-600"
+            className="h-24 p-6 border-2 border-dashed border-gray-300 hover:border-green-400 hover:bg-green-50 transition-colors flex flex-col items-center justify-center gap-3 text-gray-600 hover:text-green-600"
           >
-            <FileText className="h-6 w-6" />
-            <span className="font-medium">Choose Photo</span>
-            <span className="text-xs text-muted-foreground">From Gallery</span>
+            <FileText className="h-7 w-7" />
+            <span className="font-medium text-base">Choose Photo</span>
+            <span className="text-sm text-muted-foreground">From Gallery</span>
           </Button>
         </div>
         

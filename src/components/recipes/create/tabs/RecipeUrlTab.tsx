@@ -73,8 +73,6 @@ export function RecipeUrlTab({
         <Alert>
           <Info className="h-4 w-4" />
           <AlertDescription>
-            <strong>Best results with:</strong> AllRecipes, Food Network, BBC Good Food, Serious Eats, and most recipe blogs. 
-            <br />
             <strong>Having trouble?</strong> Copy the recipe text and use the "Paste Recipe Text" tab for guaranteed results.
           </AlertDescription>
         </Alert>
