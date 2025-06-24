@@ -130,9 +130,15 @@
     }
   }
 
-  /* Prevent layout shift without showing scrollbars */
+  /* Prevent layout shift by always reserving scrollbar space */
+  html {
+    scrollbar-gutter: stable;
+    overflow-x: hidden;
+  }
+  
   body {
     scrollbar-gutter: stable;
+    overflow-x: hidden;
   }
 }
 
