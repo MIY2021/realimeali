@@ -108,6 +108,13 @@ export function ShoppingListItem({
 
   const handleRecipeLinkClick = (e: React.MouseEvent | React.TouchEvent) => {
     e.stopPropagation();
+    e.preventDefault();
+    // For mobile, we need to handle navigation manually
+    const target = e.currentTarget as HTMLElement;
+    const href = target.getAttribute('href');
+    if (href) {
+      window.location.href = href;
+    }
   };
 
   return (
@@ -181,9 +188,14 @@ export function ShoppingListItem({
                     <span key={`${recipe.id}-${recipe.name}`}>
                       <Link 
                         to={`/my-recipes/${slug}`}
-                        className="hover:underline cursor-pointer"
+                        className="hover:underline cursor-pointer touch-manipulation"
                         onClick={handleRecipeLinkClick}
-                        onTouchStart={handleRecipeLinkClick}
+                        onTouchEnd={handleRecipeLinkClick}
+                        style={{ 
+                          touchAction: 'manipulation',
+                          WebkitTouchCallout: 'none',
+                          WebkitUserSelect: 'none'
+                        }}
                       >
                         {recipe.name.trim()}
                       </Link>

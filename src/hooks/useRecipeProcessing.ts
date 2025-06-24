@@ -31,7 +31,7 @@ export function useRecipeProcessing() {
     handleDownloadImages: urlProcessing.handleDownloadImages,
     handleImageSelect: urlProcessing.handleImageSelect,
     
-    // Image processing
+    // Image processing - now properly implemented
     processImage: imageProcessing.processImage,
     
     // AI generation - now using proper progress tracking

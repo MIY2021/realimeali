@@ -25,6 +25,17 @@ export function useTextRecipeProcessing() {
     }
 
     setIsProcessing(true);
+    
+    // Add timeout to prevent hanging
+    const timeoutId = setTimeout(() => {
+      setIsProcessing(false);
+      toast({
+        title: "Processing Timeout",
+        description: "Text processing is taking too long. Please try again with shorter text or check your connection.",
+        variant: "destructive",
+      });
+    }, 60000); // 60 second timeout
+
     try {
       console.log('Processing recipe text:', recipeText.substring(0, 100) + '...');
       
@@ -34,6 +45,8 @@ export function useTextRecipeProcessing() {
           preserveQuantities: true // Add flag to preserve quantities
         }
       });
+
+      clearTimeout(timeoutId); // Clear timeout on success
 
       if (error) {
         console.error('Error calling parse-recipe-ai function:', error);
@@ -71,11 +84,26 @@ export function useTextRecipeProcessing() {
         title: "Recipe Processed! 🎉",
         description: "Your recipe has been organized and categorized automatically with quantities preserved.",
       });
+
+      // Clear the text input on success
+      setRecipeText("");
+      
     } catch (error) {
+      clearTimeout(timeoutId);
       console.error('Error processing recipe text:', error);
+      
+      let errorMessage = "Failed to process recipe text. Please try again.";
+      if (error instanceof Error) {
+        if (error.message.includes('timeout') || error.message.includes('network')) {
+          errorMessage = "Connection timeout. Please check your internet and try again.";
+        } else if (error.message.includes('rate limit')) {
+          errorMessage = "Too many requests. Please wait a moment before trying again.";
+        }
+      }
+      
       toast({
         title: "Processing Failed",
-        description: error.message || "Failed to process recipe text. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
