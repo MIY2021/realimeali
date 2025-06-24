@@ -203,7 +203,11 @@ export function CreateRecipeContainer() {
           });
         }
         
-        navigate("/my-recipes");
+        // Navigate to meal planner and scroll to top
+        navigate("/meal-planner");
+        setTimeout(() => {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }, 100);
       } else {
         throw new Error('Recipe creation returned null');
       }

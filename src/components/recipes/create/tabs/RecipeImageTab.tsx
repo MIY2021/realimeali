@@ -108,11 +108,13 @@ export function RecipeImageTab({
         {uploadedFile && (
           <div className="space-y-3">
             <p className="text-sm text-green-600 font-medium">📷 Photo uploaded successfully!</p>
-            <img 
-              src={URL.createObjectURL(uploadedFile)} 
-              alt="Uploaded recipe" 
-              className="w-full h-48 object-cover rounded-lg border"
-            />
+            <div className="w-full max-w-md mx-auto">
+              <img 
+                src={URL.createObjectURL(uploadedFile)} 
+                alt="Uploaded recipe" 
+                className="w-full h-auto max-h-64 object-contain rounded-lg border bg-gray-50"
+              />
+            </div>
           </div>
         )}
       </div>
@@ -139,7 +141,7 @@ export function RecipeImageTab({
           disabled={!uploadedFile || isProcessing}
           className="bg-blue-600 hover:bg-blue-700"
         >
-          {isProcessing ? "Importing..." : "Import Recipe"}
+          {isProcessing ? "Processing..." : "Import Recipe"}
         </Button>
       </div>
     </div>

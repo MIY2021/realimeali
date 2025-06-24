@@ -54,6 +54,7 @@ export function RecipeUrlTab({
   });
 
   const hasImages = websiteImages && websiteImages.length > 0;
+  const hasSuccessfullyImported = parsedRecipeData && !isProcessing;
 
   return (
     <div className="space-y-4">
@@ -67,8 +68,8 @@ export function RecipeUrlTab({
         </div>
       </div>
 
-      {/* Helpful tips when not processing */}
-      {!isProcessing && !parsedRecipeData && (
+      {/* Helpful tips when not processing and haven't imported yet */}
+      {!isProcessing && !hasSuccessfullyImported && (
         <Alert>
           <Info className="h-4 w-4" />
           <AlertDescription>
