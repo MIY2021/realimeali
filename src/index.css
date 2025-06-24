@@ -129,6 +129,17 @@
       background: hsl(39 42% 91%) !important;
     }
   }
+
+  /* Fix layout shift by reserving space for potential scrollbar without showing it */
+  html {
+    overflow-x: hidden;
+    width: 100vw;
+  }
+  
+  body {
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
 }
 
 @layer base {
