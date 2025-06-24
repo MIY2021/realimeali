@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -22,15 +21,23 @@ export default function RecipeDetail() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isAddToMealPlanOpen, setIsAddToMealPlanOpen] = useState(false);
   const [adjustedServings, setAdjustedServings] = useState<number | undefined>(undefined);
+  const [hasAttemptedLoad, setHasAttemptedLoad] = useState(false);
 
   // Scroll to top when component mounts or recipe changes
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [slug]);
 
+  // Track when we've attempted to load recipes
+  useEffect(() => {
+    if (!isLoading) {
+      setHasAttemptedLoad(true);
+    }
+  }, [isLoading]);
+
   // Find recipe by slug or legacy ID
   const recipe = (() => {
-    if (!slug) return undefined;
+    if (!slug || isLoading) return undefined;
     
     // First try to find by slug (generated from title)
     const recipeBySlug = recipes.find(r => generateSlug(r.title) === slug);
@@ -103,8 +110,8 @@ export default function RecipeDetail() {
 
   const canEdit = user && recipe && recipe.created_by === user.id;
 
-  // Show loading state while recipes are being fetched
-  if (isLoading) {
+  // Show loading state while recipes are being fetched OR if we haven't attempted load yet
+  if (isLoading || !hasAttemptedLoad) {
     return (
       <div className="container max-w-4xl py-1 sm:py-4 px-4 sm:px-6">
         <div className="flex items-center justify-between mb-2 sm:mb-4">
@@ -132,8 +139,8 @@ export default function RecipeDetail() {
     );
   }
 
-  // Only show "Recipe Not Found" after loading is complete and recipe is still not found
-  if (!recipe) {
+  // Only show "Recipe Not Found" after loading is complete AND we've attempted to load AND recipe is still not found
+  if (!recipe && hasAttemptedLoad) {
     return (
       <div className="container max-w-4xl py-2 sm:py-4 px-4 sm:px-6">
         <div className="text-center">
@@ -145,6 +152,31 @@ export default function RecipeDetail() {
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Recipes
           </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // If we're still loading or recipe isn't found yet, show loading
+  if (!recipe) {
+    return (
+      <div className="container max-w-4xl py-1 sm:py-4 px-4 sm:px-6">
+        <div className="flex items-center justify-between mb-2 sm:mb-4">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => navigate("/my-recipes")}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Recipes
+          </Button>
+        </div>
+        
+        <div className="space-y-6">
+          <Skeleton className="h-64 w-full rounded-lg" />
+          <Skeleton className="h-8 w-3/4" />
+          <Skeleton className="h-20 w-full" />
         </div>
       </div>
     );

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -109,10 +110,15 @@ export function ShoppingListItem({
   const handleRecipeLinkClick = (e: React.MouseEvent | React.TouchEvent) => {
     e.stopPropagation();
     e.preventDefault();
-    // For mobile, we need to handle navigation manually
+    
+    // Store scroll position restore flag
+    sessionStorage.setItem('restoreShoppingListScroll', 'true');
+    
+    // Navigate programmatically to ensure proper routing
     const target = e.currentTarget as HTMLElement;
     const href = target.getAttribute('href');
     if (href) {
+      // Use window.location for more reliable navigation
       window.location.href = href;
     }
   };
@@ -194,7 +200,8 @@ export function ShoppingListItem({
                         style={{ 
                           touchAction: 'manipulation',
                           WebkitTouchCallout: 'none',
-                          WebkitUserSelect: 'none'
+                          WebkitUserSelect: 'none',
+                          WebkitTapHighlightColor: 'transparent'
                         }}
                       >
                         {recipe.name.trim()}
