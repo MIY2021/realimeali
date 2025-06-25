@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { useHousehold } from "@/contexts/HouseholdContext";
-import { House } from "lucide-react";
+import { Home } from "lucide-react";
 
 export const HouseholdMembersDropdown = () => {
   const { currentHousehold, householdMembers, isLoadingMembers } = useHousehold();
@@ -25,7 +25,7 @@ export const HouseholdMembersDropdown = () => {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="sm" className="flex items-center space-x-2 p-2">
           <div className="relative">
-            <House className="h-5 w-5 text-navy" />
+            <Home className="h-5 w-5 text-navy" />
             {memberCount > 0 && (
               <Badge 
                 variant="secondary" 
