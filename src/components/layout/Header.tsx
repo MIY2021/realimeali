@@ -1,10 +1,11 @@
 
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { User, UtensilsCrossed, CalendarDays, Book, ListChecks, Users, AlignJustify, Search, User as UserIcon } from "lucide-react";
+import { User, UtensilsCrossed, CalendarDays, Book, ListChecks, AlignJustify, Search, User as UserIcon } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { HouseholdMembersDropdown } from "@/components/household/HouseholdMembersDropdown";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -122,14 +123,6 @@ const Header = () => {
           </nav>
 
           <div className="flex items-center space-x-3">
-            {/* Household Selector */}
-            {user && currentHousehold && (
-              <div className="hidden sm:flex items-center text-navy text-sm font-medium">
-                <Users className="h-4 w-4 mr-1" />
-                <span className="truncate max-w-32">{currentHousehold.name}</span>
-              </div>
-            )}
-
             {/* Mobile Menu */}
             <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
               <SheetTrigger asChild>
@@ -189,6 +182,9 @@ const Header = () => {
                 </div>
               </SheetContent>
             </Sheet>
+
+            {/* Household Members Dropdown */}
+            {user && currentHousehold && <HouseholdMembersDropdown />}
 
             {/* User Menu */}
             {user ? (
