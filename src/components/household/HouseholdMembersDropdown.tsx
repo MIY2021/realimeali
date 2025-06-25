@@ -59,17 +59,17 @@ export const HouseholdMembersDropdown = () => {
               <DropdownMenuItem key={member.id} className="flex items-center space-x-3 p-3">
                 <Avatar className="h-8 w-8">
                   <AvatarImage 
-                    src={member.avatar_url} 
-                    alt={member.full_name || member.email}
+                    src={member.profile?.avatar_url} 
+                    alt={member.profile?.full_name || member.profile?.email}
                     className="object-cover"
                   />
                   <AvatarFallback>
-                    {(member.full_name || member.email)?.[0]?.toUpperCase() || "U"}
+                    {(member.profile?.full_name || member.profile?.email)?.[0]?.toUpperCase() || "U"}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate">
-                    {member.full_name || member.email}
+                    {member.profile?.full_name || member.profile?.email}
                   </p>
                   <p className="text-xs text-muted-foreground capitalize">
                     {member.role}
