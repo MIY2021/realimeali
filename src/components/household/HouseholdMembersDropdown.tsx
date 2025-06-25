@@ -26,7 +26,7 @@ export const HouseholdMembersDropdown = () => {
             <img 
               src="/lovable-uploads/04b7f241-125b-410a-bbf8-d1f72f8c1c0a.png" 
               alt="Household" 
-              className="h-6 w-6 opacity-20"
+              className="h-8 w-8 opacity-95"
             />
             {memberCount > 0 && (
               <span className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center text-xs font-medium text-muted-foreground">
