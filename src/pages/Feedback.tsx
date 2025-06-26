@@ -16,21 +16,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Upload, X, Camera, ArrowLeft, Mail } from "lucide-react";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { Link, useNavigate } from "react-router-dom";
+import { Upload, X, Camera, Mail } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function Feedback() {
   useDocumentTitle("Feedback | RealiMeali");
 
-  // Scroll to top when component mounts
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
   
   const { user } = useAuth();
   const { toast } = useToast();
-  const isMobile = useIsMobile();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
@@ -45,7 +42,6 @@ export default function Feedback() {
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
         toast({
           title: "File Too Large",
@@ -55,7 +51,6 @@ export default function Feedback() {
         return;
       }
       
-      // Validate file type
       if (!file.type.startsWith('image/')) {
         toast({
           title: "Invalid File Type",
@@ -75,8 +70,6 @@ export default function Feedback() {
       const fileExt = file.name.split('.').pop();
       const fileName = `feedback-${Date.now()}.${fileExt}`;
       
-      // For now, we'll create a simple data URL since there's no storage bucket configured
-      // In a production app, you'd upload to Supabase Storage
       return new Promise((resolve) => {
         const reader = new FileReader();
         reader.onload = (e) => resolve(e.target?.result as string);
@@ -97,6 +90,7 @@ export default function Feedback() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('Form submitted with data:', formData);
     
     if (!formData.subject.trim() || !formData.message.trim()) {
       toast({
@@ -112,11 +106,9 @@ export default function Feedback() {
     try {
       let imageUrl = null;
       
-      // Upload image if selected
       if (selectedImage) {
         imageUrl = await uploadImage(selectedImage);
         if (!imageUrl) {
-          // Image upload failed, but we can still submit without it
           toast({
             title: "Image Upload Failed",
             description: "Submitting feedback without image.",
@@ -124,7 +116,8 @@ export default function Feedback() {
         }
       }
 
-      const { error } = await supabase
+      console.log('Attempting to insert feedback into database...');
+      const { data, error } = await supabase
         .from('feedback_suggestions')
         .insert({
           user_id: user?.id || null,
@@ -133,15 +126,23 @@ export default function Feedback() {
           message: formData.message,
           type: formData.type,
           image_url: imageUrl,
-        });
+        })
+        .select();
 
-      if (error) throw error;
+      console.log('Database response:', { data, error });
 
+      if (error) {
+        console.error('Database error:', error);
+        throw error;
+      }
+
+      console.log('Feedback submitted successfully');
       toast({
         title: "Feedback Submitted",
         description: "Thank you for your feedback! We'll review it soon.",
       });
 
+      // Reset form
       setFormData({
         email: user?.email || "",
         subject: "",
@@ -183,7 +184,6 @@ export default function Feedback() {
       </div>
 
       <div className="grid gap-8 lg:grid-cols-3">
-        {/* Feedback Form */}
         <div className="lg:col-span-2">
           <Card>
             <CardHeader>
@@ -199,7 +199,12 @@ export default function Feedback() {
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-2">
                   <Label htmlFor="type">Type</Label>
-                  <Select value={formData.type} onValueChange={(value: any) => setFormData(prev => ({ ...prev, type: value }))}>
+                  <Select 
+                    value={formData.type} 
+                    onValueChange={(value: "suggestion" | "bug" | "feature_request" | "other") => 
+                      setFormData(prev => ({ ...prev, type: value }))
+                    }
+                  >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -301,8 +306,7 @@ export default function Feedback() {
 
                 <Button 
                   type="submit" 
-                  className="w-full" 
-                  style={{ backgroundColor: '#81b29a' }}
+                  className="w-full bg-terracotta hover:bg-terracotta/90" 
                   disabled={isSubmitting || isUploadingImage}
                 >
                   {isSubmitting ? "Submitting..." : isUploadingImage ? "Uploading..." : "Submit Feedback"}
@@ -312,7 +316,6 @@ export default function Feedback() {
           </Card>
         </div>
 
-        {/* Feedback Information */}
         <div className="space-y-6">
           <Card>
             <CardHeader>
