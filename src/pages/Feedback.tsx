@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -69,9 +68,6 @@ export default function Feedback() {
   const uploadImage = async (file: File): Promise<string | null> => {
     setIsUploadingImage(true);
     try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `feedback-${Date.now()}.${fileExt}`;
-      
       return new Promise((resolve) => {
         const reader = new FileReader();
         reader.onload = (e) => resolve(e.target?.result as string);
@@ -119,23 +115,38 @@ export default function Feedback() {
       }
 
       console.log('Attempting to insert feedback into database...');
+      
+      // Prepare the insert data with proper status value
+      const insertData = {
+        user_id: user?.id || null,
+        email: formData.email || null,
+        subject: formData.subject,
+        message: formData.message,
+        type: formData.type,
+        image_url: imageUrl,
+        status: 'pending' // Use 'pending' instead of 'new' to match the constraint
+      };
+      
+      console.log('Insert data:', insertData);
+
       const { data, error } = await supabase
         .from('feedback_suggestions')
-        .insert({
-          user_id: user?.id || null,
-          email: formData.email || null,
-          subject: formData.subject,
-          message: formData.message,
-          type: formData.type,
-          image_url: imageUrl,
-        })
+        .insert(insertData)
         .select();
 
       console.log('Database response:', { data, error });
 
       if (error) {
         console.error('Database error:', error);
-        throw error;
+        
+        // Provide more specific error messages
+        if (error.message.includes('check constraint')) {
+          throw new Error('Invalid feedback data format. Please try again.');
+        } else if (error.message.includes('violates')) {
+          throw new Error('Unable to save feedback due to data validation. Please check your input.');
+        } else {
+          throw error;
+        }
       }
 
       console.log('Feedback submitted successfully');
@@ -159,9 +170,12 @@ export default function Feedback() {
       }, 2000);
     } catch (error) {
       console.error("Error submitting feedback:", error);
+      
+      const errorMessage = error instanceof Error ? error.message : "Failed to submit feedback. Please try again.";
+      
       toast({
-        title: "Error",
-        description: "Failed to submit feedback. Please try again.",
+        title: "Submission Failed",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -318,6 +332,7 @@ export default function Feedback() {
           </Card>
         </div>
 
+        
         <div className="space-y-6">
           <Card>
             <CardHeader>
