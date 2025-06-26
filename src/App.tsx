@@ -18,6 +18,9 @@ import FindRecipesPage from "@/pages/FindRecipesPage";
 import AdminDashboard from "@/pages/AdminDashboard";
 import Feedback from "@/pages/Feedback";
 import Contact from "@/pages/Contact";
+import About from "@/pages/About";
+import PrivacyPolicy from "@/pages/PrivacyPolicy";
+import TermsOfService from "@/pages/TermsOfService";
 import NotFound from "@/pages/NotFound";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { HouseholdProvider } from "@/contexts/HouseholdContext";
@@ -52,6 +55,9 @@ function AppContent() {
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/feedback" element={<Feedback />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/terms-of-service" element={<TermsOfService />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Layout>
