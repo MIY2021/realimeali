@@ -10,25 +10,45 @@ export class RecipeScalingService {
     try {
       const trimmed = ingredient.trim();
       
-      // Extract quantity (look for numbers at the beginning, including fractions)
-      const quantityMatch = trimmed.match(/^(\d+(?:\.\d+)?(?:\/\d+)?|\d+\/\d+)\s*/);
-      let quantity: number | undefined;
+      // Enhanced fraction matching including Unicode fractions
+      const fractionMap: { [key: string]: number } = {
+        '½': 0.5, '¼': 0.25, '¾': 0.75, '⅓': 0.333, '⅔': 0.667,
+        '⅛': 0.125, '⅜': 0.375, '⅝': 0.625, '⅞': 0.875,
+        '1/2': 0.5, '1/4': 0.25, '3/4': 0.75, '1/3': 0.333, '2/3': 0.667,
+        '1/8': 0.125, '3/8': 0.375, '5/8': 0.625, '7/8': 0.875
+      };
       
-      if (quantityMatch) {
-        const quantityStr = quantityMatch[1];
-        if (quantityStr.includes('/')) {
-          // Handle fractions like "1/2" or "1 1/2"
-          const parts = quantityStr.split('/');
-          if (parts.length === 2) {
-            quantity = parseFloat(parts[0]) / parseFloat(parts[1]);
-          }
-        } else {
-          quantity = parseFloat(quantityStr);
+      // Look for fractions first, then regular numbers
+      let quantity: number | undefined;
+      let quantityMatch = null;
+      
+      // Check for Unicode fractions at the start
+      for (const [fraction, value] of Object.entries(fractionMap)) {
+        if (trimmed.startsWith(fraction + ' ')) {
+          quantity = value;
+          quantityMatch = [fraction + ' ', fraction];
+          break;
         }
       }
       
-      // Extract unit (common cooking units)
-      const unitMatch = trimmed.match(/\b(cups?|tbsp|tablespoons?|tsp|teaspoons?|oz|ounces?|lbs?|pounds?|cloves?|pieces?|slices?|g|grams?|kg|kilograms?|ml|milliliters?|l|liters?)\b/i);
+      // If no Unicode fraction found, look for regular patterns
+      if (!quantityMatch) {
+        quantityMatch = trimmed.match(/^(\d+(?:\.\d+)?(?:\s*[./]\s*\d+)?|\d+\/\d+)\s*/);
+        if (quantityMatch) {
+          const quantityStr = quantityMatch[1];
+          if (quantityStr.includes('/')) {
+            const parts = quantityStr.split('/');
+            if (parts.length === 2) {
+              quantity = parseFloat(parts[0]) / parseFloat(parts[1]);
+            }
+          } else {
+            quantity = parseFloat(quantityStr);
+          }
+        }
+      }
+      
+      // Extract unit (enhanced with more cooking units)
+      const unitMatch = trimmed.match(/\b(cups?|tbsp|tablespoons?|tsp|teaspoons?|oz|ounces?|lbs?|pounds?|cloves?|pieces?|slices?|g|grams?|kg|kilograms?|ml|milliliters?|l|liters?|tins?|cans?|packets?|sachets?|bottles?|jars?)\b/i);
       const unit = unitMatch ? unitMatch[1] : undefined;
       
       // Extract ingredient name (everything after quantity and unit)
@@ -55,34 +75,42 @@ export class RecipeScalingService {
   }
 
   private static formatQuantity(quantity: number): string {
-    // Handle common fractions for display
+    // Handle common fractions for display with improved logic
     const commonFractions: { [key: string]: string } = {
-      '0.25': '1/4',
-      '0.33': '1/3',
-      '0.5': '1/2',
-      '0.67': '2/3',
-      '0.75': '3/4',
-      '1.25': '1 1/4',
-      '1.33': '1 1/3',
-      '1.5': '1 1/2',
-      '1.67': '1 2/3',
-      '1.75': '1 3/4',
-      '2.25': '2 1/4',
-      '2.33': '2 1/3',
-      '2.5': '2 1/2',
-      '2.67': '2 2/3',
-      '2.75': '2 3/4'
+      '0.125': '⅛', '0.25': '¼', '0.33': '⅓', '0.333': '⅓',
+      '0.375': '⅜', '0.5': '½', '0.625': '⅝', '0.67': '⅔', '0.667': '⅔',
+      '0.75': '¾', '0.875': '⅞',
+      '1.125': '1⅛', '1.25': '1¼', '1.33': '1⅓', '1.333': '1⅓',
+      '1.375': '1⅜', '1.5': '1½', '1.625': '1⅝', '1.67': '1⅔', '1.667': '1⅔',
+      '1.75': '1¾', '1.875': '1⅞',
+      '2.25': '2¼', '2.33': '2⅓', '2.333': '2⅓', '2.5': '2½',
+      '2.67': '2⅔', '2.667': '2⅔', '2.75': '2¾',
+      '3.25': '3¼', '3.33': '3⅓', '3.333': '3⅓', '3.5': '3½',
+      '3.67': '3⅔', '3.667': '3⅔', '3.75': '3¾'
     };
 
-    const rounded = Math.round(quantity * 100) / 100;
-    const fractionKey = rounded.toString();
+    const rounded = Math.round(quantity * 1000) / 1000; // More precision for better fraction matching
     
-    if (commonFractions[fractionKey]) {
-      return commonFractions[fractionKey];
+    // Check for exact matches first
+    const exactKey = rounded.toString();
+    if (commonFractions[exactKey]) {
+      return commonFractions[exactKey];
+    }
+    
+    // Check for close matches (within 0.01)
+    for (const [key, fraction] of Object.entries(commonFractions)) {
+      if (Math.abs(parseFloat(key) - rounded) < 0.01) {
+        return fraction;
+      }
+    }
+    
+    // For whole numbers, return as integer
+    if (rounded % 1 === 0) {
+      return rounded.toString();
     }
     
     // For other values, show up to 2 decimal places but remove trailing zeros
-    return rounded % 1 === 0 ? rounded.toString() : rounded.toFixed(2).replace(/\.?0+$/, '');
+    return rounded.toFixed(2).replace(/\.?0+$/, '');
   }
 
   static scaleIngredients(ingredients: string[], originalServings: number, newServings: number): string[] {
