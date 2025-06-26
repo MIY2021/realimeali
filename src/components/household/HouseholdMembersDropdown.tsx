@@ -29,7 +29,7 @@ export const HouseholdMembersDropdown = () => {
               className="h-8 w-8 opacity-95"
             />
             {memberCount > 0 && (
-              <span className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center text-xs font-medium text-muted-foreground">
+              <span className="absolute -top-1 -right-1 h-4 w-4 flex items-center justify-center text-xs font-medium text-muted-foreground">
                 {memberCount}
               </span>
             )}

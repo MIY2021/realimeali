@@ -19,11 +19,13 @@ import {
 import { Upload, X, Camera, Mail } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
+type FeedbackType = "suggestion" | "bug" | "feature_request" | "other";
+
 export default function Feedback() {
   useDocumentTitle("Feedback | RealiMeali");
 
   useEffect(() => {
-    window.scrollTo(0, 0);
+    window.scrollTo(0, 0);  
   }, []);
   
   const { user } = useAuth();
@@ -36,7 +38,7 @@ export default function Feedback() {
     email: user?.email || "",
     subject: "",
     message: "",
-    type: "suggestion" as const,
+    type: "suggestion" as FeedbackType,
   });
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -201,7 +203,7 @@ export default function Feedback() {
                   <Label htmlFor="type">Type</Label>
                   <Select 
                     value={formData.type} 
-                    onValueChange={(value: "suggestion" | "bug" | "feature_request" | "other") => 
+                    onValueChange={(value: FeedbackType) => 
                       setFormData(prev => ({ ...prev, type: value }))
                     }
                   >
