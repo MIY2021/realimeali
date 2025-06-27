@@ -1,3 +1,4 @@
+
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useRecipes } from "@/contexts/RecipesContext";
@@ -5,6 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Recipe } from "@/types";
+import { IngredientSectionParser } from "@/utils/ingredientSectionParser";
 
 export function useRecipeSave() {
   const navigate = useNavigate();
@@ -12,17 +14,30 @@ export function useRecipeSave() {
   const { user } = useAuth();
   const { currentHousehold } = useHousehold();
 
+  const cleanIngredientsForSave = (ingredients: string[]): string[] => {
+    // Parse ingredients into sections to identify headers
+    const sections = IngredientSectionParser.parseIngredients(ingredients);
+    
+    // Extract only the actual ingredients, not the headers
+    const cleanIngredients: string[] = [];
+    sections.forEach(section => {
+      cleanIngredients.push(...section.ingredients);
+    });
+    
+    return cleanIngredients.filter(ing => ing && ing.trim().length > 0);
+  };
+
   const handleSave = async (
     newRecipe: Omit<Recipe, 'id' | 'created_at' | 'updated_at' | 'created_by'>, 
     shareWithCommunity: boolean = false,
-    originalSourceUrl?: string // Add parameter to preserve original URL
+    originalSourceUrl?: string
   ) => {
     console.log("🍳 Save recipe called with:", { 
       newRecipe, 
       user: user?.id, 
       household: currentHousehold?.id,
       shareWithCommunity,
-      originalSourceUrl, // Log the original source URL
+      originalSourceUrl,
       recipeData: {
         title: newRecipe.title,
         ingredients: newRecipe.ingredients?.length || 0,
@@ -47,6 +62,13 @@ export function useRecipeSave() {
       return;
     }
 
+    // Clean ingredients to remove section headers before saving
+    const cleanedIngredients = cleanIngredientsForSave(newRecipe.ingredients || []);
+    console.log("🧹 Cleaned ingredients:", { 
+      original: newRecipe.ingredients?.length || 0, 
+      cleaned: cleanedIngredients.length 
+    });
+
     // Basic validation
     if (!newRecipe.title.trim()) {
       console.error("❌ Missing title");
@@ -56,8 +78,8 @@ export function useRecipeSave() {
       return;
     }
 
-    if (!newRecipe.ingredients || newRecipe.ingredients.length === 0) {
-      console.error("❌ Missing ingredients");
+    if (cleanedIngredients.length === 0) {
+      console.error("❌ Missing ingredients after cleaning");
       toast.error("Error", {
         description: "At least one ingredient is required",
       });
@@ -84,8 +106,8 @@ export function useRecipeSave() {
       prep_time: Math.max(0, newRecipe.prep_time || 0),
       cook_time: Math.max(0, newRecipe.cook_time || 0),
       servings: Math.max(1, newRecipe.servings || 1),
-      // Ensure arrays are valid
-      ingredients: newRecipe.ingredients.filter(ing => ing.trim()),
+      // Use cleaned ingredients without section headers
+      ingredients: cleanedIngredients,
       instructions: newRecipe.instructions.filter(inst => inst.trim()),
       diet_lifestyle: newRecipe.diet_lifestyle || [],
       // Remove household_id if present (will be set by createRecipe)
@@ -109,7 +131,7 @@ export function useRecipeSave() {
             const communityRecipeData = {
               title: recipe.title,
               description: recipe.description || `A delicious ${recipe.meal_type || 'recipe'} recipe with ${recipe.ingredients.length} ingredients.`,
-              source_url: originalSourceUrl || `${window.location.origin}/my-recipes/${recipe.id}`, // Use original URL if available
+              source_url: originalSourceUrl || `${window.location.origin}/my-recipes/${recipe.id}`,
               image_url: recipe.image,
               prep_time: recipe.prep_time,
               cook_time: recipe.cook_time,
