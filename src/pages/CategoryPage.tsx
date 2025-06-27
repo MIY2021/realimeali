@@ -29,7 +29,6 @@ export default function CategoryPage() {
     return recipe.meal_type === decodedCategory ||
            recipe.cuisine_region === decodedCategory ||
            recipe.complexity_level === decodedCategory ||
-           recipe.main_ingredient === decodedCategory ||
            (recipe.diet_lifestyle && recipe.diet_lifestyle.includes(decodedCategory as any));
   });
 

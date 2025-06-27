@@ -83,7 +83,6 @@ export function useImageRecipeProcessing() {
         cuisine_region: data.parsedRecipe.cuisineRegion || undefined,
         diet_lifestyle: data.parsedRecipe.dietLifestyle || [],
         complexity_level: data.parsedRecipe.complexityLevel || undefined,
-        main_ingredient: data.parsedRecipe.mainIngredient || undefined,
         top_tip: data.parsedRecipe.topTip || "Enjoy cooking this delicious recipe!",
         image: base64, // Include the processed image
         is_favorite: false,
