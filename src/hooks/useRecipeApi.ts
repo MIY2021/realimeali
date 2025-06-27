@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Recipe, MealType } from "@/types";
 
@@ -36,7 +35,6 @@ export const useRecipeApi = () => {
             ? recipe.meal_type as MealType 
             : undefined,
           cuisine_region: recipe.cuisine_region as any,
-          main_ingredient: recipe.main_ingredient as any,
         };
       });
     } catch (error) {
@@ -70,7 +68,6 @@ export const useRecipeApi = () => {
         cuisine_region: recipeData.cuisine_region,
         diet_lifestyle: recipeData.diet_lifestyle,
         complexity_level: recipeData.complexity_level,
-        main_ingredient: recipeData.main_ingredient,
         top_tip: recipeData.top_tip,
         slug: recipeData.slug,
       };
@@ -116,7 +113,6 @@ export const useRecipeApi = () => {
           cuisine_region: recipe.cuisine_region,
           diet_lifestyle: recipe.diet_lifestyle,
           complexity_level: recipe.complexity_level,
-          main_ingredient: recipe.main_ingredient,
           top_tip: recipe.top_tip,
         })
         .eq('id', id)

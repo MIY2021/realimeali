@@ -726,7 +726,6 @@ export type Database = {
           ingredients: string[]
           instructions: string[]
           is_favorite: boolean | null
-          main_ingredient: Database["public"]["Enums"]["main_ingredient"] | null
           meal_plan_count: number
           meal_type: Database["public"]["Enums"]["meal_type"] | null
           prep_time: number | null
@@ -755,9 +754,6 @@ export type Database = {
           ingredients?: string[]
           instructions?: string[]
           is_favorite?: boolean | null
-          main_ingredient?:
-            | Database["public"]["Enums"]["main_ingredient"]
-            | null
           meal_plan_count?: number
           meal_type?: Database["public"]["Enums"]["meal_type"] | null
           prep_time?: number | null
@@ -786,9 +782,6 @@ export type Database = {
           ingredients?: string[]
           instructions?: string[]
           is_favorite?: boolean | null
-          main_ingredient?:
-            | Database["public"]["Enums"]["main_ingredient"]
-            | null
           meal_plan_count?: number
           meal_type?: Database["public"]["Enums"]["meal_type"] | null
           prep_time?: number | null
@@ -968,23 +961,6 @@ export type Database = {
         | "pregnancy_safe"
       household_role: "owner" | "member"
       invitation_status: "pending" | "accepted" | "declined" | "expired"
-      main_ingredient:
-        | "chicken"
-        | "beef"
-        | "pork"
-        | "lamb"
-        | "fish"
-        | "tofu_tempeh"
-        | "eggs"
-        | "cheese"
-        | "pasta"
-        | "rice"
-        | "lentils_beans"
-        | "vegetables"
-        | "potatoes"
-        | "fruit"
-        | "nuts_seeds"
-        | "chocolate"
       meal_type:
         | "breakfast"
         | "lunch"
@@ -1174,24 +1150,6 @@ export const Constants = {
       ],
       household_role: ["owner", "member"],
       invitation_status: ["pending", "accepted", "declined", "expired"],
-      main_ingredient: [
-        "chicken",
-        "beef",
-        "pork",
-        "lamb",
-        "fish",
-        "tofu_tempeh",
-        "eggs",
-        "cheese",
-        "pasta",
-        "rice",
-        "lentils_beans",
-        "vegetables",
-        "potatoes",
-        "fruit",
-        "nuts_seeds",
-        "chocolate",
-      ],
       meal_type: [
         "breakfast",
         "lunch",

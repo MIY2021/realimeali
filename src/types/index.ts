@@ -19,7 +19,6 @@ export interface Recipe {
   complexity_level?: ComplexityLevel;
   slug?: string;
   top_tip?: string;
-  main_ingredient?: MainIngredient;
   has_cooked?: boolean; // New field to track if household has cooked this recipe
 }
 
@@ -126,5 +125,3 @@ export type DietLifestyle = "vegetarian" | "vegan" | "gluten_free" | "dairy_free
 
 // Updated to match database exactly (changed easy to quick_easy)
 export type ComplexityLevel = "quick_easy" | "standard" | "complex";
-
-export type MainIngredient = "chicken" | "beef" | "pork" | "lamb" | "fish" | "tofu_tempeh" | "eggs" | "cheese" | "pasta" | "rice" | "lentils_beans" | "vegetables" | "potatoes" | "fruit" | "nuts_seeds" | "chocolate";

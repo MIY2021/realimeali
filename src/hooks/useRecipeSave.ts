@@ -48,7 +48,6 @@ export function useRecipeSave() {
           cuisine_region: newRecipe.cuisine_region,
           diet_lifestyle: newRecipe.diet_lifestyle,
           complexity_level: newRecipe.complexity_level,
-          main_ingredient: newRecipe.main_ingredient,
         }
       }
     });

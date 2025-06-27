@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Recipe } from "@/types";
@@ -23,7 +22,6 @@ export function useRecipeForm(isEditing: boolean = false, existingRecipe?: Recip
       cuisine_region: undefined,
       diet_lifestyle: [],
       complexity_level: undefined,
-      main_ingredient: undefined,
       image: undefined,
       is_favorite: false,
       has_cooked: false,

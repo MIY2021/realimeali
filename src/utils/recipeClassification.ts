@@ -1,4 +1,4 @@
-import { MealType, CuisineRegion, DietLifestyle, ComplexityLevel, MainIngredient } from "@/types";
+import { MealType, CuisineRegion, DietLifestyle, ComplexityLevel } from "@/types";
 
 export const MEAL_TYPE_OPTIONS = [
   { value: "breakfast" as MealType, label: "Breakfast", icon: "🌅" },
@@ -51,26 +51,7 @@ export const COMPLEXITY_LEVEL_OPTIONS = [
   { value: "complex" as ComplexityLevel, label: "Complex", icon: "👨‍🍳" },
 ];
 
-export const MAIN_INGREDIENT_OPTIONS = [
-  { value: "chicken" as MainIngredient, label: "Chicken", icon: "🐔" },
-  { value: "beef" as MainIngredient, label: "Beef", icon: "🥩" },
-  { value: "pork" as MainIngredient, label: "Pork", icon: "🐷" },
-  { value: "lamb" as MainIngredient, label: "Lamb", icon: "🐑" },
-  { value: "fish" as MainIngredient, label: "Fish", icon: "🐟" },
-  { value: "tofu_tempeh" as MainIngredient, label: "Tofu/Tempeh", icon: "🥢" },
-  { value: "eggs" as MainIngredient, label: "Eggs", icon: "🥚" },
-  { value: "cheese" as MainIngredient, label: "Cheese", icon: "🧀" },
-  { value: "pasta" as MainIngredient, label: "Pasta", icon: "🍝" },
-  { value: "rice" as MainIngredient, label: "Rice", icon: "🍚" },
-  { value: "lentils_beans" as MainIngredient, label: "Lentils/Beans", icon: "🫘" },
-  { value: "vegetables" as MainIngredient, label: "Vegetables", icon: "🥕" },
-  { value: "potatoes" as MainIngredient, label: "Potatoes", icon: "🥔" },
-  { value: "fruit" as MainIngredient, label: "Fruit", icon: "🍎" },
-  { value: "nuts_seeds" as MainIngredient, label: "Nuts/Seeds", icon: "🥜" },
-  { value: "chocolate" as MainIngredient, label: "Chocolate", icon: "🍫" },
-];
-
-export function getDisplayLabel(value: string, type: 'mealType' | 'cuisineRegion' | 'dietLifestyle' | 'complexityLevel' | 'mainIngredient'): string {
+export function getDisplayLabel(value: string, type: 'mealType' | 'cuisineRegion' | 'dietLifestyle' | 'complexityLevel'): string {
   let options;
   
   switch (type) {
@@ -85,9 +66,6 @@ export function getDisplayLabel(value: string, type: 'mealType' | 'cuisineRegion
       break;
     case 'complexityLevel':
       options = COMPLEXITY_LEVEL_OPTIONS;
-      break;
-    case 'mainIngredient':
-      options = MAIN_INGREDIENT_OPTIONS;
       break;
     default:
       return value;
