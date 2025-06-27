@@ -369,11 +369,16 @@ serve(async (req) => {
 
 CRITICAL: You MUST carefully examine ingredients for meat content. If ANY meat (beef, pork, lamb, chicken, turkey, fish, seafood, etc.) is present, the recipe CANNOT be classified as "vegetarian" or "vegan". Be extremely careful about this classification.
 
+IMPORTANT: When parsing ingredients, preserve section headers by including them as separate entries in the ingredients array. For example:
+- If you see "For the sauce:" followed by ingredients, include "For the sauce:" as its own entry
+- If you see "For the garnish:" followed by ingredients, include "For the garnish:" as its own entry
+- Section headers should end with a colon and be included exactly as they appear
+
 Return a JSON object with this EXACT structure:
 {
   "title": "Recipe name",
   "description": "Brief description (1-2 sentences)",
-  "ingredients": ["ingredient 1", "ingredient 2"],
+  "ingredients": ["For the duck ragú:", "2 duck breasts, trimmed", "1 tbsp olive oil", "For the garnish:", "6 slices pancetta"],
   "instructions": ["step 1", "step 2"],
   "topTip": "One helpful cooking tip",
   "prepTime": 15,
@@ -417,11 +422,16 @@ Return ONLY valid JSON. No explanations.`;
 
 CRITICAL: You MUST carefully examine ingredients for meat content. If ANY meat (beef, pork, lamb, chicken, turkey, fish, seafood, etc.) is present, the recipe CANNOT be classified as "vegetarian" or "vegan". Be extremely careful about this classification.
 
+IMPORTANT: When parsing ingredients, preserve section headers by including them as separate entries in the ingredients array. For example:
+- If you see "For the sauce:" followed by ingredients, include "For the sauce:" as its own entry
+- If you see "For the garnish:" followed by ingredients, include "For the garnish:" as its own entry
+- Section headers should end with a colon and be included exactly as they appear
+
 Return a JSON object with this EXACT structure:
 {
   "title": "Recipe name",
   "description": "Brief description (1-2 sentences)",
-  "ingredients": ["ingredient 1", "ingredient 2"],
+  "ingredients": ["For the duck ragú:", "2 duck breasts, trimmed", "1 tbsp olive oil", "For the garnish:", "6 slices pancetta"],
   "instructions": ["step 1", "step 2"],
   "topTip": "One helpful cooking tip",
   "prepTime": 15,
@@ -468,11 +478,16 @@ Return ONLY valid JSON. No explanations.`;
 
 CRITICAL: You MUST carefully examine ingredients for meat content. If ANY meat (beef, pork, lamb, chicken, turkey, fish, seafood, etc.) is present, the recipe CANNOT be classified as "vegetarian" or "vegan". Be extremely careful about this classification.
 
+IMPORTANT: When parsing ingredients, preserve section headers by including them as separate entries in the ingredients array. For example:
+- If you see "For the sauce:" followed by ingredients, include "For the sauce:" as its own entry
+- If you see "For the garnish:" followed by ingredients, include "For the garnish:" as its own entry
+- Section headers should end with a colon and be included exactly as they appear
+
 Return a JSON object with this EXACT structure:
 {
   "title": "Recipe name",
   "description": "Brief description (1-2 sentences)",
-  "ingredients": ["ingredient 1", "ingredient 2"],
+  "ingredients": ["For the duck ragú:", "2 duck breasts, trimmed", "1 tbsp olive oil", "For the garnish:", "6 slices pancetta"],
   "instructions": ["step 1", "step 2"],
   "topTip": "One helpful cooking tip",
   "prepTime": 15,
@@ -492,7 +507,7 @@ Classification rules:
 - mealType: breakfast, lunch, dinner, snacks, sides, desserts, drinks, sauces_dips, soups_stews, salads, baking_breads
 - cuisineRegion: british, american, italian, french, mexican, indian, chinese, japanese, thai, mediterranean, middle_eastern, african, korean, caribbean, nordic, eastern_european  
 - cookingMethod: one_pot, oven_baked, air_fryer, slow_cooker, pressure_cooker, bbq_grilled, stir_fried, roasted, raw_no_cook
-- dietLifestyle: ONLY include if 100% certain - check ALL ingredients carefully for meat/dairy/gluten: vegetarian, vegan, pescatarian, gluten_free, dairy_free, low_carb_keto, high_protein, paleo, diabetic_friendly, budget_meals, kid_friendly, pregnancy_safe
+- dietLifestyle: ONLY include if if 100% certain - check ALL ingredients carefully for meat/dairy/gluten: vegetarian, vegan, pescatarian, gluten_free, dairy_free, low_carb_keto, high_protein, paleo, diabetic_friendly, budget_meals, kid_friendly, pregnancy_safe
 - complexityLevel: quick_easy, standard, complex
 - mainIngredient: MUST be one of these EXACT values: chicken, beef, pork, lamb, fish, tofu_tempeh, eggs, cheese, pasta, rice, lentils_beans, vegetables, potatoes, fruit, nuts_seeds, chocolate
 
@@ -518,6 +533,8 @@ Return ONLY valid JSON. No explanations.`;
       systemPrompt = `You are a creative recipe generator. Create an original recipe based on the user's request and classify it across 6 dimensions.
 
 CRITICAL: You MUST carefully examine ingredients for meat content. If ANY meat (beef, pork, lamb, chicken, turkey, fish, seafood, etc.) is present, the recipe CANNOT be classified as "vegetarian" or "vegan". Be extremely careful about this classification.
+
+IMPORTANT: When creating ingredients, if the recipe naturally has sections (like sauce, marinade, garnish), include section headers as separate entries in the ingredients array with a colon at the end.
 
 Return a JSON object with this EXACT structure:
 {
