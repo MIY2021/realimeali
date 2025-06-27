@@ -1,4 +1,6 @@
 
+import { IngredientSectionParser } from './ingredientSectionParser';
+
 interface ParsedIngredient {
   quantity?: number;
   unit?: string;
@@ -119,24 +121,34 @@ export class RecipeScalingService {
     }
 
     const scaleFactor = newServings / originalServings;
-
-    return ingredients.map(ingredient => {
-      const parsed = this.parseIngredient(ingredient);
-      
-      if (parsed.quantity) {
-        const scaledQuantity = parsed.quantity * scaleFactor;
-        const formattedQuantity = this.formatQuantity(scaledQuantity);
+    
+    // Parse ingredients into sections
+    const sections = IngredientSectionParser.parseIngredients(ingredients);
+    
+    // Scale each section
+    const scaledSections = sections.map(section => ({
+      ...section,
+      ingredients: section.ingredients.map(ingredient => {
+        const parsed = this.parseIngredient(ingredient);
         
-        let scaledIngredient = formattedQuantity;
-        if (parsed.unit) {
-          scaledIngredient += ` ${parsed.unit}`;
+        if (parsed.quantity) {
+          const scaledQuantity = parsed.quantity * scaleFactor;
+          const formattedQuantity = this.formatQuantity(scaledQuantity);
+          
+          let scaledIngredient = formattedQuantity;
+          if (parsed.unit) {
+            scaledIngredient += ` ${parsed.unit}`;
+          }
+          scaledIngredient += ` ${parsed.name}`;
+          
+          return scaledIngredient;
         }
-        scaledIngredient += ` ${parsed.name}`;
         
-        return scaledIngredient;
-      }
-      
-      return ingredient; // Return unchanged if no quantity found
-    });
+        return ingredient; // Return unchanged if no quantity found
+      })
+    }));
+
+    // Flatten back to string array
+    return IngredientSectionParser.flattenSectionedIngredients(scaledSections);
   }
 }
