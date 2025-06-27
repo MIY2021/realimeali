@@ -44,6 +44,11 @@ export class EquipmentExtractor {
     'stovetop', 'hob', 'burner', 'simmer', 'boil', 'fry', 'sauté' // cooking methods, not equipment
   ];
 
+  // Cutting/chopping keywords that require a cutting board
+  private static cuttingKeywords = [
+    'chop', 'chopped', 'dice', 'diced', 'slice', 'sliced', 'mince', 'minced', 'cut', 'cutting'
+  ];
+
   static extractEquipment(recipe: { ingredients: string[]; instructions: string[] }): string[] {
     const equipment = new Set<string>();
     const allText = [...recipe.ingredients, ...recipe.instructions].join(' ').toLowerCase();
@@ -71,6 +76,16 @@ export class EquipmentExtractor {
       if (hasKeyword) {
         equipment.add(equipmentName);
       }
+    }
+
+    // Automatically add cutting board if any cutting activities are detected
+    const hasCuttingActivity = this.cuttingKeywords.some(keyword => {
+      const regex = new RegExp(`\\b${keyword}\\b`, 'i');
+      return regex.test(allText);
+    });
+
+    if (hasCuttingActivity) {
+      equipment.add('cutting board');
     }
 
     // Convert to array and sort alphabetically

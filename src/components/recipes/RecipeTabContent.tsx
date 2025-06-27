@@ -28,16 +28,16 @@ export const RecipeTabContent = ({ recipe, scaledIngredients, isScaled }: Recipe
           {isScaled && <span className="ml-1 text-xs opacity-75">(scaled)</span>}
         </TabsTrigger>
         <TabsTrigger 
-          value="instructions" 
-          className="text-gray-600 data-[state=active]:bg-sage data-[state=active]:text-white font-medium rounded-md transition-all"
-        >
-          Instructions
-        </TabsTrigger>
-        <TabsTrigger 
           value="equipment" 
           className="text-gray-600 data-[state=active]:bg-sage data-[state=active]:text-white font-medium rounded-md transition-all"
         >
           Equipment
+        </TabsTrigger>
+        <TabsTrigger 
+          value="instructions" 
+          className="text-gray-600 data-[state=active]:bg-sage data-[state=active]:text-white font-medium rounded-md transition-all"
+        >
+          Instructions
         </TabsTrigger>
       </TabsList>
 
@@ -70,20 +70,6 @@ export const RecipeTabContent = ({ recipe, scaledIngredients, isScaled }: Recipe
         </div>
       </TabsContent>
 
-      <TabsContent value="instructions" className="mt-0">
-        <div className="space-y-6">
-          <h2 className="text-xl font-bold text-navy mb-4">Instructions</h2>
-          {recipe.instructions.map((step, index) => (
-            <div key={index} className="flex gap-4 p-4 bg-gray-50 rounded-lg">
-              <div className="flex-shrink-0 w-8 h-8 bg-terracotta text-white rounded-full flex items-center justify-center text-sm font-bold">
-                {index + 1}
-              </div>
-              <p className="text-gray-700 leading-relaxed flex-1">{step}</p>
-            </div>
-          ))}
-        </div>
-      </TabsContent>
-
       <TabsContent value="equipment" className="mt-0">
         <div className="space-y-4">
           <h2 className="text-xl font-bold text-navy mb-4">Equipment</h2>
@@ -101,6 +87,20 @@ export const RecipeTabContent = ({ recipe, scaledIngredients, isScaled }: Recipe
               <p className="text-gray-500">No specific equipment detected for this recipe.</p>
             </div>
           )}
+        </div>
+      </TabsContent>
+
+      <TabsContent value="instructions" className="mt-0">
+        <div className="space-y-6">
+          <h2 className="text-xl font-bold text-navy mb-4">Instructions</h2>
+          {recipe.instructions.map((step, index) => (
+            <div key={index} className="flex gap-4 p-4 bg-gray-50 rounded-lg">
+              <div className="flex-shrink-0 w-8 h-8 bg-terracotta text-white rounded-full flex items-center justify-center text-sm font-bold">
+                {index + 1}
+              </div>
+              <p className="text-gray-700 leading-relaxed flex-1">{step}</p>
+            </div>
+          ))}
         </div>
       </TabsContent>
     </Tabs>
