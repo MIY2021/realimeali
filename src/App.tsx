@@ -22,6 +22,7 @@ import About from "@/pages/About";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import TermsOfService from "@/pages/TermsOfService";
 import NotFound from "@/pages/NotFound";
+import PublicRecipe from "@/pages/PublicRecipe";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { HouseholdProvider } from "@/contexts/HouseholdContext";
 import { RecipesProvider } from "@/contexts/RecipesContext";
