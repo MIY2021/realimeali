@@ -1,4 +1,3 @@
-
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { 
@@ -8,14 +7,19 @@ import {
   Search,
 } from "lucide-react";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
+import { useMetaTags } from "@/hooks/useMetaTags";
+import { MetaTagUtils } from "@/utils/metaTagUtils";
 import { LoginPromptDialog } from "@/components/auth/LoginPromptDialog";
 import { useLoginPrompt } from "@/hooks/useLoginPrompt";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function Index() {
-  useDocumentTitle("RealiMeali | All-in-one meal planning");
-  const { showPrompt, promptTrigger, triggerPromptOnFeatureClick, closePrompt } = useLoginPrompt();
   const { user } = useAuth();
+  const { showPrompt, promptTrigger, triggerPromptOnFeatureClick, closePrompt } = useLoginPrompt();
+  
+  // Generate meta tags for home page
+  const homeMetaTags = MetaTagUtils.generateHomeMetaTags();
+  useMetaTags(homeMetaTags);
 
   const handleFeatureClick = (e: React.MouseEvent, path: string) => {
     if (!user) {
