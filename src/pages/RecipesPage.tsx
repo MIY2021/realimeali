@@ -1,7 +1,8 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Plus, Search, Filter, Grid, List } from "lucide-react";
+import { Plus, Search, Filter } from "lucide-react";
 import { RecipeGrid } from "@/components/recipes/RecipeGrid";
 import { RecipeList } from "@/components/recipes/RecipeList";
 import { RecipeFilters } from "@/components/recipes/RecipeFilters";
@@ -14,14 +15,13 @@ import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { Recipe, MealType, CuisineRegion, DietLifestyle, ComplexityLevel } from "@/types";
 import { useMobileLayout } from "@/hooks/useMobileLayout";
 import { MobileLayoutSelector } from "@/components/recipes/MobileLayoutSelector";
-import { ToggleRecipeFilters } from "@/components/recipes/ToggleRecipeFilters";
 
 export default function RecipesPage() {
   const navigate = useNavigate();
   const { recipes, isLoading } = useRecipes();
   const { user } = useAuth();
   const { currentHousehold } = useHousehold();
-  const { layout, setLayout } = useMobileLayout();
+  const { mobileLayout, handleMobileLayoutChange } = useMobileLayout();
   
   const [searchTerm, setSearchTerm] = useState("");
   const [showFilters, setShowFilters] = useState(false);
@@ -139,31 +139,39 @@ export default function RecipesPage() {
         </div>
         
         <div className="flex items-center gap-2">
-          <ToggleRecipeFilters 
-            showFilters={showFilters}
-            setShowFilters={setShowFilters}
-            hasActiveFilters={hasActiveFilters}
-          />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowFilters(!showFilters)}
+            className={`flex items-center gap-2 ${hasActiveFilters ? 'bg-terracotta text-white' : ''}`}
+          >
+            <Filter className="h-4 w-4" />
+            Filters
+            {hasActiveFilters && (
+              <span className="ml-1 bg-white text-terracotta rounded-full px-2 py-0.5 text-xs font-semibold">
+                Active
+              </span>
+            )}
+          </Button>
           
-          <MobileLayoutSelector layout={layout} setLayout={setLayout} />
+          <MobileLayoutSelector 
+            value={mobileLayout} 
+            onChange={handleMobileLayoutChange} 
+          />
         </div>
       </div>
 
       {/* Filters */}
       {showFilters && (
         <RecipeFilters
-          selectedMealTypes={selectedMealTypes}
-          setSelectedMealTypes={setSelectedMealTypes}
-          selectedCuisines={selectedCuisines}
-          setSelectedCuisines={setSelectedCuisines}
-          selectedDietLifestyle={selectedDietLifestyle}
-          setSelectedDietLifestyle={setSelectedDietLifestyle}
-          selectedComplexity={selectedComplexity}
-          setSelectedComplexity={setSelectedComplexity}
-          showFavorites={showFavorites}
-          setShowFavorites={setShowFavorites}
-          onClearFilters={clearFilters}
-          hasActiveFilters={hasActiveFilters}
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          categoryFilter="all"
+          onCategoryChange={() => {}}
+          sortType="title-asc"
+          onSortChange={() => {}}
+          mobileLayout={mobileLayout}
+          onMobileLayoutChange={handleMobileLayoutChange}
         />
       )}
 
@@ -183,14 +191,16 @@ export default function RecipesPage() {
         </div>
       ) : (
         <>
-          {layout === 'grid' ? (
+          {mobileLayout === '1' ? (
             <RecipeGrid 
               recipes={filteredRecipes} 
+              mobileLayout={mobileLayout}
               onAddToMealPlan={handleAddToMealPlan}
             />
           ) : (
-            <RecipeList 
+            <RecipeGrid 
               recipes={filteredRecipes} 
+              mobileLayout={mobileLayout}
               onAddToMealPlan={handleAddToMealPlan}
             />
           )}
