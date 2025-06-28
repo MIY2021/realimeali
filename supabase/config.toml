@@ -20,9 +20,21 @@ verify_jwt = false
 [[functions.recipe-meta.routes]]
 path = "/share/*"
 
-# Also handle legacy routes
+# Handle all main app routes for crawlers
 [[functions.recipe-meta.routes]]
-path = "/recipe/*/share"
+path = "/my-recipes"
 
 [[functions.recipe-meta.routes]]
-path = "/recipe-meta/*"
+path = "/my-recipes/*"
+
+[[functions.recipe-meta.routes]]
+path = "/meal-planner"
+
+[[functions.recipe-meta.routes]]
+path = "/shopping-list"
+
+[[functions.recipe-meta.routes]]
+path = "/find-recipes"
+
+[[functions.recipe-meta.routes]]
+path = "/"

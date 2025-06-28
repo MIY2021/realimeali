@@ -19,6 +19,7 @@ interface PublicRecipeShare {
   cook_time: number;
   servings: number;
   categories: string[];
+  view_count: number;
 }
 
 Deno.serve(async (req) => {
@@ -38,64 +39,72 @@ Deno.serve(async (req) => {
     
     console.log('Path parts:', pathParts);
     
-    // Check if this is a social media crawler
+    // Enhanced crawler detection
     const userAgent = req.headers.get('user-agent')?.toLowerCase() || '';
     const isCrawler = userAgent.includes('facebookexternalhit') || 
+                     userAgent.includes('facebookcrawler') ||
                      userAgent.includes('twitterbot') || 
                      userAgent.includes('linkedinbot') || 
                      userAgent.includes('slackbot') || 
                      userAgent.includes('whatsapp') ||
                      userAgent.includes('telegram') ||
-                     userAgent.includes('discord');
+                     userAgent.includes('discord') ||
+                     userAgent.includes('skypebot') ||
+                     userAgent.includes('applebot') ||
+                     userAgent.includes('googlebot') ||
+                     userAgent.includes('bingbot') ||
+                     // Generic patterns for social media crawlers
+                     userAgent.includes('crawler') ||
+                     userAgent.includes('bot') && !userAgent.includes('chrome');
 
     console.log('Is crawler?', isCrawler);
     console.log('User agent:', userAgent);
 
     // If not a crawler, redirect to the React app
     if (!isCrawler) {
-      const redirectUrl = `https://realimeali.com${url.pathname}`;
+      const redirectUrl = `https://realimeali.com${url.pathname}${url.search}`;
+      console.log('Redirecting human to:', redirectUrl);
       return Response.redirect(redirectUrl, 302);
     }
 
     // Handle different route patterns for crawlers
-    if (pathParts.includes('share') && pathParts.length >= 2) {
-      // Handle public recipe shares
-      const shareIndex = pathParts.indexOf('share');
-      const recipeSlug = pathParts[shareIndex + 1];
+    if (pathParts.length >= 2 && pathParts[0] === 'share') {
+      // Handle public recipe shares: /share/recipe-slug
+      const recipeSlug = pathParts[1];
       return await handlePublicRecipeShare(recipeSlug);
-    } else if (pathParts.includes('my-recipes') && pathParts.length >= 2) {
-      // Handle my-recipes routes
+    } else if (pathParts.length >= 1 && pathParts[0] === 'my-recipes') {
+      // Handle my-recipes routes: /my-recipes or /my-recipes/slug
       return generateCrawlerHTML({
         title: 'My Recipes | RealiMeali',
         description: 'Browse and manage your personal recipe collection. Create, edit, and organize your favorite dishes for easy meal planning.',
-        image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1200&h=630&fit=crop&crop=center',
+        image: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=1200&h=630&fit=crop&crop=center',
         url: `https://realimeali.com${url.pathname}`,
         type: 'website'
       });
-    } else if (pathParts.includes('meal-planner')) {
+    } else if (pathParts.length >= 1 && pathParts[0] === 'meal-planner') {
       // Handle meal planner routes
       return generateCrawlerHTML({
         title: 'Meal Planner | RealiMeali',
         description: 'Plan your weekly meals with ease. Organize breakfast, lunch, and dinner for the entire week and never wonder what\'s for dinner again.',
-        image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1200&h=630&fit=crop&crop=center',
+        image: 'https://images.unsplash.com/photo-1495521821757-a2efaccd7efe?w=1200&h=630&fit=crop&crop=center',
         url: `https://realimeali.com${url.pathname}`,
         type: 'website'
       });
-    } else if (pathParts.includes('shopping-list')) {
+    } else if (pathParts.length >= 1 && pathParts[0] === 'shopping-list') {
       // Handle shopping list routes
       return generateCrawlerHTML({
         title: 'Shopping List | RealiMeali',
         description: 'Create and manage your shopping lists. Generate lists automatically from your meal plans or create custom lists for efficient grocery shopping.',
-        image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1200&h=630&fit=crop&crop=center',
+        image: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=1200&h=630&fit=crop&crop=center',
         url: `https://realimeali.com${url.pathname}`,
         type: 'website'
       });
-    } else if (pathParts.includes('find-recipes')) {
+    } else if (pathParts.length >= 1 && pathParts[0] === 'find-recipes') {
       // Handle find recipes routes
       return generateCrawlerHTML({
         title: 'Find Recipes | RealiMeali',
         description: 'Discover thousands of recipes from our community. Find new dishes to try, explore different cuisines, and expand your cooking repertoire.',
-        image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1200&h=630&fit=crop&crop=center',
+        image: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=1200&h=630&fit=crop&crop=center',
         url: `https://realimeali.com${url.pathname}`,
         type: 'website'
       });
@@ -104,7 +113,7 @@ Deno.serve(async (req) => {
       return generateCrawlerHTML({
         title: 'RealiMeali | All-in-one meal planning',
         description: 'Your all-in-one meal planning and recipe management system. Plan meals, manage recipes, and generate shopping lists effortlessly.',
-        image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1200&h=630&fit=crop&crop=center',
+        image: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=1200&h=630&fit=crop&crop=center',
         url: 'https://realimeali.com',
         type: 'website'
       });
@@ -163,16 +172,26 @@ async function handlePublicRecipeShare(recipeSlug: string) {
   console.log('Recipe found:', recipe.title);
   console.log('Recipe has image:', !!recipe.image);
 
+  // Increment view count
+  try {
+    await supabase.rpc('increment_share_view_count', { 
+      share_id: recipe.slug || recipe.public_share_id 
+    });
+  } catch (viewError) {
+    console.error('Error incrementing view count:', viewError);
+  }
+
   // Generate crawler HTML with recipe-specific meta tags
   const recipeUrl = `https://realimeali.com/share/${recipe.slug || recipe.public_share_id}`;
   
-  // Handle image URL - convert base64 to placeholder if needed
-  let imageUrl = 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1200&h=630&fit=crop&crop=center';
+  // Handle image URL - ensure it's a valid HTTPS URL
+  let imageUrl = 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=1200&h=630&fit=crop&crop=center';
   
   if (recipe.image) {
     if (recipe.image.startsWith('data:')) {
-      // Base64 image - use placeholder instead as social media can't access base64
+      // Base64 image - use food placeholder instead
       console.log('Recipe has base64 image, using placeholder');
+      imageUrl = 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=1200&h=630&fit=crop&crop=center';
     } else if (recipe.image.startsWith('http')) {
       // Valid URL
       imageUrl = recipe.image;
@@ -225,6 +244,16 @@ function generateCrawlerHTML(meta: {
   console.log('- Image URL:', meta.image);
   console.log('- Recipe URL:', meta.url);
 
+  // Simple HTML escaping without DOM
+  const escapeHtml = (text: string): string => {
+    return text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#x27;');
+  };
+
   const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -243,33 +272,45 @@ function generateCrawlerHTML(meta: {
   <meta property="og:image" content="${meta.image}">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="${escapeHtml(meta.title)}">
   <meta property="og:site_name" content="RealiMeali">
+  <meta property="og:locale" content="en_US">
   
   <!-- Twitter -->
-  <meta property="twitter:card" content="summary_large_image">
-  <meta property="twitter:url" content="${meta.url}">
-  <meta property="twitter:title" content="${escapeHtml(meta.title)}">
-  <meta property="twitter:description" content="${escapeHtml(meta.description)}">
-  <meta property="twitter:image" content="${meta.image}">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:url" content="${meta.url}">
+  <meta name="twitter:title" content="${escapeHtml(meta.title)}">
+  <meta name="twitter:description" content="${escapeHtml(meta.description)}">
+  <meta name="twitter:image" content="${meta.image}">
+  <meta name="twitter:image:alt" content="${escapeHtml(meta.title)}">
+  
+  <!-- WhatsApp specific -->
+  <meta property="og:image:type" content="image/jpeg">
+  <meta property="og:updated_time" content="${new Date().toISOString()}">
   
   <!-- Additional Meta -->
   ${meta.author ? `<meta name="author" content="${escapeHtml(meta.author)}">` : ''}
   ${meta.keywords ? `<meta name="keywords" content="${meta.keywords}">` : ''}
   
-  <!-- Auto-redirect for human users -->
+  <!-- Canonical URL -->
+  <link rel="canonical" href="${meta.url}">
+  
+  <!-- Auto-redirect for human users (with delay to allow crawlers to read) -->
   <script>
-    // Only redirect if not a crawler
-    if (!navigator.userAgent.includes('bot') && !navigator.userAgent.includes('crawler')) {
-      window.location.href = "${meta.url}";
-    }
+    // Only redirect if not a crawler and after a small delay
+    setTimeout(function() {
+      if (!navigator.userAgent.match(/bot|crawler|spider|crawling/i)) {
+        window.location.href = "${meta.url}";
+      }
+    }, 1000);
   </script>
   
   <!-- Fallback meta refresh -->
-  <meta http-equiv="refresh" content="0; url=${meta.url}">
+  <meta http-equiv="refresh" content="3; url=${meta.url}">
 </head>
 <body>
   <div style="text-align: center; padding: 50px; font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-    <img src="${meta.image}" alt="${escapeHtml(meta.title)}" style="width: 100%; max-width: 400px; height: auto; border-radius: 8px; margin-bottom: 20px;">
+    <img src="${meta.image}" alt="${escapeHtml(meta.title)}" style="width: 100%; max-width: 400px; height: auto; border-radius: 8px; margin-bottom: 20px;" onerror="this.style.display='none';">
     <h1 style="color: #333; margin-bottom: 10px;">${escapeHtml(meta.title)}</h1>
     <p style="color: #666; margin-bottom: 20px;">${escapeHtml(meta.description)}</p>
     <p style="color: #999; font-size: 14px;">
@@ -284,7 +325,7 @@ function generateCrawlerHTML(meta: {
     headers: {
       ...corsHeaders,
       'Content-Type': 'text/html; charset=utf-8',
-      'Cache-Control': 'public, max-age=300',
+      'Cache-Control': 'public, max-age=300, s-maxage=300',
     },
   });
 }
@@ -297,7 +338,7 @@ function redirectToApp(slug: string): Response {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Page Not Found | RealiMeali</title>
+  <title>Recipe Not Found | RealiMeali</title>
   <script>
     window.location.href = "${redirectUrl}";
   </script>
@@ -305,8 +346,8 @@ function redirectToApp(slug: string): Response {
 </head>
 <body>
   <div style="text-align: center; padding: 50px; font-family: Arial, sans-serif;">
-    <h1>Page Not Found</h1>
-    <p>Redirecting to page...</p>
+    <h1>Recipe Not Found</h1>
+    <p>Redirecting to RealiMeali...</p>
     <p><a href="${redirectUrl}">Click here if not redirected</a></p>
   </div>
 </body>
@@ -318,10 +359,4 @@ function redirectToApp(slug: string): Response {
       'Content-Type': 'text/html; charset=utf-8',
     },
   });
-}
-
-function escapeHtml(text: string): string {
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
 }
