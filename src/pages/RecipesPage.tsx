@@ -1,211 +1,145 @@
 
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Plus, Search, Filter } from "lucide-react";
-import { RecipeGrid } from "@/components/recipes/RecipeGrid";
+import { Plus, UtensilsCrossed } from "lucide-react";
+import { Link } from "react-router-dom";
 import { RecipeList } from "@/components/recipes/RecipeList";
-import { RecipeFilters } from "@/components/recipes/RecipeFilters";
+import { AddToMealPlanDialog } from "@/components/recipes/AddToMealPlanDialog";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
-import { useMetaTags } from "@/hooks/useMetaTags";
-import { MetaTagUtils } from "@/utils/metaTagUtils";
+import { useRecipesLoader } from "@/hooks/useRecipesLoader";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
-import { Recipe, MealType, CuisineRegion, DietLifestyle, ComplexityLevel } from "@/types";
-import { useMobileLayout } from "@/hooks/useMobileLayout";
-import { MobileLayoutSelector } from "@/components/recipes/MobileLayoutSelector";
+import { useScrollPosition } from "@/hooks/useScrollPosition";
+import { useNavigationState } from "@/hooks/useNavigationState";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { Recipe } from "@/types";
+import { useRealiChefContext } from "@/hooks/useRealiChefContext";
 
 export default function RecipesPage() {
-  const navigate = useNavigate();
-  const { recipes, isLoading } = useRecipes();
+  useDocumentTitle("My Recipes | RealiMeali");
+  
   const { user } = useAuth();
-  const { currentHousehold } = useHousehold();
-  const { mobileLayout, handleMobileLayoutChange } = useMobileLayout();
-  
-  const [searchTerm, setSearchTerm] = useState("");
-  const [showFilters, setShowFilters] = useState(false);
-  const [selectedMealTypes, setSelectedMealTypes] = useState<MealType[]>([]);
-  const [selectedCuisines, setSelectedCuisines] = useState<CuisineRegion[]>([]);
-  const [selectedDietLifestyle, setSelectedDietLifestyle] = useState<DietLifestyle[]>([]);
-  const [selectedComplexity, setSelectedComplexity] = useState<ComplexityLevel[]>([]);
-  const [showFavorites, setShowFavorites] = useState(false);
+  const { currentHousehold, isLoadingHousehold } = useHousehold();
+  const { recipes, isLoading } = useRecipes();
+  const { restoreScrollPosition, setScrollKey, clearScrollPosition } = useScrollPosition();
+  const { navigationState, clearNavigationState } = useNavigationState();
+  const isMobile = useIsMobile();
 
-  // Generate meta tags for My Recipes page
-  const householdRecipes = currentHousehold 
-    ? recipes.filter(recipe => recipe.household_id === currentHousehold.id)
-    : [];
-  
-  const metaTags = MetaTagUtils.generateMyRecipesMetaTags(householdRecipes.length, currentHousehold || undefined);
-  useMetaTags(metaTags);
+  // State for Add to Meal Plan dialog
+  const [selectedRecipeForMealPlan, setSelectedRecipeForMealPlan] = useState<Recipe | null>(null);
+  const [isMealPlanDialogOpen, setIsMealPlanDialogOpen] = useState(false);
 
-  
-  useDocumentTitle(currentHousehold ? `My Recipes - ${currentHousehold.name} | RealiMeali` : "My Recipes | RealiMeali");
+  // Load recipes automatically
+  useRecipesLoader();
 
-  const filteredRecipes = recipes.filter((recipe) => {
-    if (!currentHousehold || recipe.household_id !== currentHousehold.id) {
-      return false;
+  // Set up scroll position tracking for this page with enhanced restoration
+  useEffect(() => {
+    setScrollKey('recipes');
+    
+    // Check if we should restore scroll position
+    if (navigationState.shouldRestoreScroll || 
+        sessionStorage.getItem('restoreRecipesScroll') === 'true') {
+      console.log('Restoring scroll position on recipes page');
+      
+      // Wait for recipes to load before attempting scroll restoration
+      if (!isLoading && recipes.length > 0) {
+        const currentLayout = localStorage.getItem('mobileRecipeLayout') || '1';
+        restoreScrollPosition('recipes', currentLayout);
+        
+        // Clean up session storage
+        sessionStorage.removeItem('restoreRecipesScroll');
+        sessionStorage.removeItem('navigatedFromRecipes');
+        clearNavigationState();
+      }
     }
-
-    const matchesSearch = recipe.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      recipe.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      recipe.ingredients.some(ingredient => 
-        ingredient.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-
-    const matchesMealType = selectedMealTypes.length === 0 || 
-      (recipe.meal_type && selectedMealTypes.includes(recipe.meal_type));
-
-    const matchesCuisine = selectedCuisines.length === 0 || 
-      (recipe.cuisine_region && selectedCuisines.includes(recipe.cuisine_region));
-
-    const matchesDietLifestyle = selectedDietLifestyle.length === 0 || 
-      (recipe.diet_lifestyle && selectedDietLifestyle.some(diet => recipe.diet_lifestyle?.includes(diet)));
-
-    const matchesComplexity = selectedComplexity.length === 0 || 
-      (recipe.complexity_level && selectedComplexity.includes(recipe.complexity_level));
-
-    const matchesFavorites = !showFavorites || recipe.is_favorite;
-
-    return matchesSearch && matchesMealType && matchesCuisine && 
-           matchesDietLifestyle && matchesComplexity && matchesFavorites;
-  });
+  }, [setScrollKey, restoreScrollPosition, navigationState.shouldRestoreScroll, isLoading, recipes.length, clearNavigationState]);
 
   const handleAddToMealPlan = (recipe: Recipe) => {
-    navigate(`/my-recipes/${recipe.slug || recipe.id}`);
+    setSelectedRecipeForMealPlan(recipe);
+    setIsMealPlanDialogOpen(true);
   };
 
-  const clearFilters = () => {
-    setSelectedMealTypes([]);
-    setSelectedCuisines([]);
-    setSelectedDietLifestyle([]);
-    setSelectedComplexity([]);
-    setShowFavorites(false);
-    setSearchTerm("");
+  const getWelcomeText = () => {
+    if (!currentHousehold) {
+      return "Curate your household's favourite meals — a private collection just for you.";
+    }
+    return "Curate your household's favourite meals — a private collection just for you.";
   };
 
-  const hasActiveFilters = selectedMealTypes.length > 0 || 
-                          selectedCuisines.length > 0 || 
-                          selectedDietLifestyle.length > 0 || 
-                          selectedComplexity.length > 0 || 
-                          showFavorites;
+  // Update RealiChef with recipes context
+  useRealiChefContext({
+    totalRecipes: recipes.length,
+    recipeMealTypes: [...new Set(recipes.map(r => r.meal_type).filter(Boolean))],
+    favoriteRecipes: recipes.filter(r => r.is_favorite).length
+  });
 
-  if (!user || !currentHousehold) {
+  // Show loading state while household is being determined
+  if (isLoadingHousehold) {
     return (
-      <div className="container max-w-7xl py-8 px-6">
-        <div className="text-center">
-          <p className="text-muted-foreground">Please log in and select a household to view recipes.</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (isLoading) {
-    return (
-      <div className="container max-w-7xl py-8 px-6">
-        <div className="text-center">
-          <p>Loading recipes...</p>
+      <div className={`container max-w-7xl py-4 px-4 sm:py-8 sm:px-6 ${isMobile ? 'bg-cream min-h-screen' : ''}`}>
+        <div className="py-10 text-center">
+          <p className="text-muted-foreground">Loading your household...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="container max-w-7xl py-8 px-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-navy">My Recipes</h1>
-          <p className="text-muted-foreground">
-            {currentHousehold.name} • {filteredRecipes.length} recipe{filteredRecipes.length !== 1 ? 's' : ''}
-          </p>
-        </div>
-        <Button onClick={() => navigate("/my-recipes/new")}>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Recipe
-        </Button>
-      </div>
-
-      {/* Search and Filter Bar */}
-      <div className="flex flex-col sm:flex-row gap-4 mb-6">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-          <input
-            type="text"
-            placeholder="Search recipes..."
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-terracotta focus:border-transparent"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
-        
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowFilters(!showFilters)}
-            className={`flex items-center gap-2 ${hasActiveFilters ? 'bg-terracotta text-white' : ''}`}
-          >
-            <Filter className="h-4 w-4" />
-            Filters
-            {hasActiveFilters && (
-              <span className="ml-1 bg-white text-terracotta rounded-full px-2 py-0.5 text-xs font-semibold">
-                Active
-              </span>
-            )}
-          </Button>
-          
-          <MobileLayoutSelector 
-            value={mobileLayout} 
-            onChange={handleMobileLayoutChange} 
-          />
-        </div>
-      </div>
-
-      {/* Filters */}
-      {showFilters && (
-        <RecipeFilters
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          categoryFilter="all"
-          onCategoryChange={() => {}}
-          sortType="title-asc"
-          onSortChange={() => {}}
-          mobileLayout={mobileLayout}
-          onMobileLayoutChange={handleMobileLayoutChange}
-        />
-      )}
-
-      {/* Recipes Display */}
-      {filteredRecipes.length === 0 ? (
-        <div className="text-center py-12">
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">No recipes found</h3>
-          <p className="text-gray-600 mb-6">
-            {hasActiveFilters || searchTerm
-              ? "Try adjusting your search or filters to find more recipes."
-              : "You haven't added any recipes yet. Start by creating your first recipe!"}
-          </p>
-          <Button onClick={() => navigate("/my-recipes/new")}>
-            <Plus className="mr-2 h-4 w-4" />
-            Add Your First Recipe
-          </Button>
-        </div>
-      ) : (
-        <>
-          {mobileLayout === '1' ? (
-            <RecipeGrid 
-              recipes={filteredRecipes} 
-              mobileLayout={mobileLayout}
-              onAddToMealPlan={handleAddToMealPlan}
-            />
-          ) : (
-            <RecipeGrid 
-              recipes={filteredRecipes} 
-              mobileLayout={mobileLayout}
-              onAddToMealPlan={handleAddToMealPlan}
-            />
+    <>
+      <div className={`container max-w-7xl py-4 px-4 sm:py-8 sm:px-6 ${isMobile ? 'bg-cream min-h-screen' : ''}`}>
+        <div className="flex flex-col gap-4 mb-6 sm:flex-row sm:justify-between sm:items-center">
+          <div className="space-y-2">
+            <h1 className="text-2xl sm:text-3xl font-bold text-navy flex items-center gap-2">
+              <UtensilsCrossed className="h-6 w-6 sm:h-8 sm:w-8 text-sage" />
+              My Recipes
+            </h1>
+            <p className="text-sm sm:text-base text-muted-foreground">
+              {getWelcomeText()}
+            </p>
+          </div>
+          {user && currentHousehold && (
+            <Button asChild className="w-full sm:w-auto" style={{ backgroundColor: '#81b29a' }}>
+              <Link to="/my-recipes/new">
+                <Plus className="h-4 w-4 mr-2" />
+                Add Recipe
+              </Link>
+            </Button>
           )}
-        </>
-      )}
-    </div>
+        </div>
+
+        {!user ? (
+          <div className="py-10 text-center px-4">
+            <p className="text-muted-foreground mb-4">Please log in to view and manage recipes.</p>
+          </div>
+        ) : !currentHousehold ? (
+          <div className="py-10 text-center px-4">
+            <div className="max-w-md mx-auto">
+              <h2 className="text-xl font-semibold text-navy mb-2">No Household Selected</h2>
+              <p className="text-muted-foreground mb-6">
+                You need to create or join a household to view and manage recipes.
+              </p>
+              <Button asChild style={{ backgroundColor: '#81b29a' }}>
+                <Link to="/settings">
+                  Manage Household
+                </Link>
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <RecipeList 
+            recipes={recipes}
+            isLoading={isLoading}
+            onAddToMealPlan={handleAddToMealPlan}
+          />
+        )}
+      </div>
+
+      <AddToMealPlanDialog
+        recipe={selectedRecipeForMealPlan}
+        open={isMealPlanDialogOpen}
+        onOpenChange={setIsMealPlanDialogOpen}
+      />
+    </>
   );
 }

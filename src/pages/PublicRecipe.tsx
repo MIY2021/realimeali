@@ -1,8 +1,8 @@
+
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { PublicRecipeView } from "@/components/recipes/PublicRecipeView";
-import { useMetaTags } from "@/hooks/useMetaTags";
-import { MetaTagUtils } from "@/utils/metaTagUtils";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { PublicRecipeShare } from "@/types";
 
 export default function PublicRecipe() {
@@ -11,12 +11,7 @@ export default function PublicRecipe() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Generate meta tags based on recipe data
-  const metaTags = recipe 
-    ? MetaTagUtils.generatePublicRecipeMetaTags(recipe)
-    : { title: "Shared Recipe | RealiMeali", description: "Loading shared recipe..." };
-  
-  useMetaTags(metaTags);
+  useDocumentTitle(recipe ? `${recipe.title} | Shared Recipe` : "Shared Recipe | RealiMeali");
 
   useEffect(() => {
     const fetchPublicRecipe = async () => {

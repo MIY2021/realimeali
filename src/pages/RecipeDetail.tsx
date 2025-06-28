@@ -5,8 +5,7 @@ import { ArrowLeft } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { useAuth } from "@/contexts/AuthContext";
-import { useMetaTags } from "@/hooks/useMetaTags";
-import { MetaTagUtils } from "@/utils/metaTagUtils";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { RecipeDetail as RecipeDetailComponent } from "@/components/recipes/RecipeDetail";
 import { EditRecipeDialog } from "@/components/recipes/EditRecipeDialog";
 import { AddToMealPlanDialog } from "@/components/recipes/AddToMealPlanDialog";
@@ -48,22 +47,6 @@ export default function RecipeDetail() {
     return getRecipeById(slug);
   })();
 
-  // Generate and apply meta tags when recipe is loaded
-  useEffect(() => {
-    if (recipe) {
-      const metaTags = MetaTagUtils.generateRecipeMetaTags(recipe);
-      // Apply meta tags through the hook
-      // This will be handled by the useMetaTags hook below
-    }
-  }, [recipe]);
-
-  // Apply meta tags
-  const metaTags = recipe 
-    ? MetaTagUtils.generateRecipeMetaTags(recipe)
-    : { title: "Recipe | RealiMeali", description: "Loading recipe..." };
-  
-  useMetaTags(metaTags);
-
   // Update RealiChef context with recipe information
   useRealiChefContext({
     recipeTitle: recipe?.title,
@@ -71,6 +54,8 @@ export default function RecipeDetail() {
     recipeIngredients: recipe?.ingredients,
     servings: recipe?.servings
   });
+
+  useDocumentTitle(recipe ? `${recipe.title} | RealiMeali` : "Recipe | RealiMeali");
 
   const handleEdit = (recipe: Recipe) => {
     setIsEditDialogOpen(true);
