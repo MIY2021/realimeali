@@ -3,7 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Recipe } from "@/types";
 import { IngredientSectionParser } from "@/utils/ingredientSectionParser";
 import { EquipmentExtractor } from "@/utils/equipmentExtractor";
-import { hash } from "lucide-react";
+import { Hash } from "lucide-react";
 
 interface RecipeTabContentProps {
   recipe: Recipe;
@@ -75,7 +75,7 @@ export const RecipeTabContent = ({ recipe, scaledIngredients, isScaled }: Recipe
               <div key={sectionIndex} className="space-y-3">
                 {section.header && (
                   <div className="flex items-center gap-2 mt-6 mb-3 first:mt-0 border-b border-sage/30 pb-2 bg-sage/10 px-4 py-3 rounded-lg">
-                    <hash className="h-5 w-5 text-sage-600" />
+                    <Hash className="h-5 w-5 text-sage-600" />
                     <h3 className="text-lg font-semibold text-sage-800">
                       {section.header}
                     </h3>
