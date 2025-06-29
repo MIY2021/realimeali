@@ -33,23 +33,38 @@ async function retryWithBackoff<T>(
   throw new Error('Max retries exceeded');
 }
 
-// Enhanced website content extraction with improved image extraction
+// Enhanced website content extraction with better redirect handling
 async function extractWebsiteContent(url: string, extractImages: boolean = false) {
   try {
     console.log('Fetching website content from:', url);
     
+    // Enhanced fetch with better redirect handling and headers
     const response = await fetch(url, {
+      method: 'GET',
       headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; RecipeBot/1.0)',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache',
+        'Sec-Fetch-Dest': 'document',
+        'Sec-Fetch-Mode': 'navigate',
+        'Sec-Fetch-Site': 'none',
+        'Upgrade-Insecure-Requests': '1',
       },
+      redirect: 'follow', // Explicitly allow redirects
+      // Increase timeout for slow websites
+      signal: AbortSignal.timeout(30000),
     });
 
     if (!response.ok) {
+      console.error(`HTTP ${response.status}: ${response.statusText}`);
       throw new Error(`Failed to fetch website: ${response.status} ${response.statusText}`);
     }
 
     const html = await response.text();
+    console.log(`Successfully fetched ${html.length} characters from ${response.url}`);
     
     let extractedImages: string[] = [];
     
@@ -58,6 +73,7 @@ async function extractWebsiteContent(url: string, extractImages: boolean = false
       console.log('Extracting images from website with enhanced patterns...');
       
       const imageUrls = new Set<string>();
+      const finalUrl = response.url; // Use the final URL after redirects
       
       // 1. Extract from JSON-LD structured data (common on recipe sites)
       const jsonLdMatches = html.match(/<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi);
@@ -127,14 +143,14 @@ async function extractWebsiteContent(url: string, extractImages: boolean = false
             continue;
           }
           
-          // Convert relative URLs to absolute
+          // Convert relative URLs to absolute using the final URL
           if (imageUrl.startsWith('//')) {
             imageUrl = 'https:' + imageUrl;
           } else if (imageUrl.startsWith('/')) {
-            const urlObj = new URL(url);
+            const urlObj = new URL(finalUrl);
             imageUrl = `${urlObj.protocol}//${urlObj.host}${imageUrl}`;
           } else if (!imageUrl.startsWith('http')) {
-            const urlObj = new URL(url);
+            const urlObj = new URL(finalUrl);
             imageUrl = `${urlObj.protocol}//${urlObj.host}/${imageUrl}`;
           }
           
@@ -159,7 +175,7 @@ async function extractWebsiteContent(url: string, extractImages: boolean = false
           if (imageUrl.startsWith('//')) {
             imageUrl = 'https:' + imageUrl;
           } else if (imageUrl.startsWith('/')) {
-            const urlObj = new URL(url);
+            const urlObj = new URL(finalUrl);
             imageUrl = `${urlObj.protocol}//${urlObj.host}${imageUrl}`;
           }
           if (imageUrl.match(/\.(jpg|jpeg|png|webp)$/i)) {
@@ -176,7 +192,7 @@ async function extractWebsiteContent(url: string, extractImages: boolean = false
         if (imageUrl.startsWith('//')) {
           imageUrl = 'https:' + imageUrl;
         } else if (imageUrl.startsWith('/')) {
-          const urlObj = new URL(url);
+          const urlObj = new URL(finalUrl);
           imageUrl = `${urlObj.protocol}//${urlObj.host}${imageUrl}`;
         }
         imageUrls.add(imageUrl);
@@ -227,35 +243,56 @@ async function extractWebsiteContent(url: string, extractImages: boolean = false
         .map(item => item.url);
       
       extractedImages = prioritizedImages;
-      console.log(`Extracted ${extractedImages.length} prioritized images:`, extractedImages.map(img => img.substring(0, 100)));
+      console.log(`Extracted ${extractedImages.length} prioritized images`);
     }
     
-    // Extract text content
+    // Extract text content with better cleaning
     let content = html;
     
     // Remove script and style tags
     content = content.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
     content = content.replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '');
     
+    // Remove comments
+    content = content.replace(/<!--[\s\S]*?-->/g, '');
+    
     // Extract text from HTML tags
     content = content.replace(/<[^>]*>/g, ' ');
     content = content.replace(/\s+/g, ' ').trim();
     
-    // Look for recipe-specific content
-    const recipeKeywords = ['ingredients', 'instructions', 'directions', 'recipe', 'cook', 'prep'];
-    const lines = content.split('\n');
-    const relevantLines = lines.filter(line => 
-      recipeKeywords.some(keyword => line.toLowerCase().includes(keyword)) ||
-      line.length > 20
-    );
+    // Look for recipe-specific content with better filtering
+    const recipeKeywords = ['ingredients', 'instructions', 'directions', 'recipe', 'cook', 'prep', 'method', 'steps'];
+    const lines = content.split(/[.\n\r]/).filter(line => line.trim().length > 0);
     
-    const extractedContent = relevantLines.join('\n').substring(0, 8000); // Limit content size
+    // Filter for relevant content
+    const relevantLines = lines.filter(line => {
+      const cleanLine = line.trim().toLowerCase();
+      return cleanLine.length > 20 && (
+        recipeKeywords.some(keyword => cleanLine.includes(keyword)) ||
+        cleanLine.length > 50 // Include longer descriptive lines
+      );
+    });
+    
+    const extractedContent = relevantLines.join('\n').substring(0, 12000); // Increase content limit
     
     console.log('Extracted content length:', extractedContent.length);
+    console.log('Number of relevant lines:', relevantLines.length);
+    
     return { content: extractedContent, images: extractedImages };
+    
   } catch (error) {
     console.error('Error extracting website content:', error);
-    throw new Error(`Could not extract content from website: ${error.message}`);
+    
+    // Provide more specific error messages
+    if (error.name === 'TimeoutError') {
+      throw new Error(`Website timeout: The website took too long to respond. This often happens with slow or overloaded websites.`);
+    } else if (error.message?.includes('redirect')) {
+      throw new Error(`Too many redirects: The website redirected too many times. This might be due to website configuration issues or geo-blocking.`);
+    } else if (error.message?.includes('fetch')) {
+      throw new Error(`Network error: Could not connect to the website. This might be due to network issues or the website blocking automated requests.`);
+    } else {
+      throw new Error(`Could not extract content from website: ${error.message}`);
+    }
   }
 }
 
