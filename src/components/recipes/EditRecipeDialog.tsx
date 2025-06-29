@@ -16,7 +16,7 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Recipe } from "@/types";
 import { useToast } from "@/hooks/use-toast";
-import { Clock, Users, Plus, X, Camera, Search, Loader, Eye, Check, Upload, Trash2, LayoutGrid } from "lucide-react";
+import { Clock, Users, Plus, X, Camera, Search, Loader, Eye, Check, Upload, Trash2, LayoutGrid, ArrowRight, ArrowLeft } from "lucide-react";
 import { UnsplashService } from "@/services/unsplashService";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -85,6 +85,42 @@ export function EditRecipeDialog({
 
   const isHeader = (ingredient: string) => {
     return ingredient.trim().endsWith(':') && !ingredient.match(/\d+.*:/);
+  };
+
+  const convertToGroup = (index: number) => {
+    const ingredient = editedRecipe.ingredients[index];
+    const groupHeader = ingredient.trim().endsWith(':') ? ingredient.trim() : `${ingredient.trim()}:`;
+    
+    const newIngredients = [...editedRecipe.ingredients];
+    newIngredients[index] = groupHeader;
+    
+    setEditedRecipe({
+      ...editedRecipe,
+      ingredients: newIngredients,
+    });
+
+    toast({
+      title: "Converted to Group",
+      description: "Ingredient converted to group header successfully!",
+    });
+  };
+
+  const convertToIngredient = (index: number) => {
+    const groupHeader = editedRecipe.ingredients[index];
+    const ingredient = groupHeader.replace(/(:|\.)$/, '').trim();
+    
+    const newIngredients = [...editedRecipe.ingredients];
+    newIngredients[index] = ingredient;
+    
+    setEditedRecipe({
+      ...editedRecipe,
+      ingredients: newIngredients,
+    });
+
+    toast({
+      title: "Converted to Ingredient",
+      description: "Group header converted to ingredient successfully!",
+    });
   };
 
   const generateEnhancedPrompt = (recipeName: string, ingredients: string[], instructions: string[], description?: string) => {
@@ -665,38 +701,90 @@ Lighting: natural daylight style or softbox imitation — bright but soft shadow
                   
                   return (
                     <div key={index} className={`flex items-center gap-2 ${
-                      ingredientIsHeader ? 'bg-sage/10 p-2 rounded-lg border-l-4 border-sage' : ''
+                      ingredientIsHeader 
+                        ? 'bg-sage-100 p-4 rounded-lg border-l-4 border-sage-500 shadow-sm' 
+                        : 'bg-white p-2 rounded-lg border border-gray-200'
                     }`}>
-                      {ingredientIsHeader && (
-                        <LayoutGrid className="h-4 w-4 text-sage-600 flex-shrink-0" />
+                      {ingredientIsHeader ? (
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          <div className="text-sage-600 font-bold text-lg">▷</div>
+                          <Badge variant="secondary" className="bg-sage-200 text-sage-800 font-medium">
+                            GROUP
+                          </Badge>
+                        </div>
+                      ) : (
+                        <div className="w-2 h-2 bg-gray-300 rounded-full flex-shrink-0 ml-2"></div>
                       )}
+                      
                       <Input
                         value={ingredient}
                         onChange={(e) => updateIngredient(index, e.target.value)}
-                        className="flex-1"
-                        placeholder={ingredientIsHeader ? "Group name (e.g., 'For the sauce')" : "Ingredient (e.g., '2 cups flour')"}
+                        className={`flex-1 ${
+                          ingredientIsHeader 
+                            ? 'border-sage-300 bg-sage-50/50 font-medium text-sage-900' 
+                            : 'border-gray-200'
+                        }`}
+                        placeholder={
+                          ingredientIsHeader 
+                            ? "Group name (e.g., 'For the sauce')" 
+                            : "Ingredient (e.g., '2 cups flour')"
+                        }
                       />
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => removeIngredient(index)}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
+                      
+                      <div className="flex gap-1 flex-shrink-0">
+                        {ingredientIsHeader ? (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => convertToIngredient(index)}
+                            className="text-sage-600 border-sage-300 hover:bg-sage-50"
+                            title="Convert to regular ingredient"
+                          >
+                            <ArrowLeft className="h-4 w-4" />
+                          </Button>
+                        ) : (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => convertToGroup(index)}
+                            className="text-sage-600 border-sage-300 hover:bg-sage-50"
+                            title="Convert to group header"
+                          >
+                            <ArrowRight className="h-4 w-4" />
+                          </Button>
+                        )}
+                        
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => removeIngredient(index)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                   );
                 })}
                 
                 {/* Add Group Input */}
                 {isAddingGroup ? (
-                  <div className="space-y-2 bg-sage/5 p-3 rounded-lg border border-sage/20">
+                  <div className="space-y-2 bg-sage-50 p-4 rounded-lg border-2 border-sage-200 border-dashed">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="text-sage-600 font-bold text-lg">▷</div>
+                      <Badge variant="secondary" className="bg-sage-200 text-sage-800 font-medium">
+                        NEW GROUP
+                      </Badge>
+                    </div>
                     <Input
                       value={newGroup}
                       onChange={(e) => setNewGroup(e.target.value)}
-                      placeholder="Group name (e.g., 'For the sauce')"
+                      placeholder="Group name (e.g., 'For the sauce', 'Marinade ingredients')"
                       onKeyPress={(e) => handleKeyPress(e, addGroup)}
                       autoFocus
+                      className="border-sage-300 bg-white"
                     />
                     <div className="flex gap-2">
                       <Button 
@@ -704,7 +792,7 @@ Lighting: natural daylight style or softbox imitation — bright but soft shadow
                         onClick={addGroup} 
                         disabled={!newGroup.trim()}
                         size="sm"
-                        className="bg-sage hover:bg-sage/90"
+                        className="bg-sage-600 hover:bg-sage-700 text-white"
                       >
                         <LayoutGrid className="h-4 w-4 mr-1" />
                         Add Group
@@ -725,12 +813,14 @@ Lighting: natural daylight style or softbox imitation — bright but soft shadow
                 ) : (
                   <>
                     {/* Regular ingredient input */}
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 p-2 bg-gray-50 rounded-lg border border-gray-200">
+                      <div className="w-2 h-2 bg-gray-300 rounded-full flex-shrink-0 mt-3 ml-2"></div>
                       <Input
                         value={newIngredient}
                         onChange={(e) => setNewIngredient(e.target.value)}
-                        placeholder="Add new ingredient"
+                        placeholder="Add new ingredient (e.g., '2 cups flour', '1 tbsp olive oil')"
                         onKeyPress={(e) => e.key === "Enter" && addIngredient()}
+                        className="flex-1 border-gray-200"
                       />
                       <Button type="button" onClick={addIngredient} size="sm">
                         <Plus className="h-4 w-4" />
@@ -743,7 +833,7 @@ Lighting: natural daylight style or softbox imitation — bright but soft shadow
                       onClick={() => setIsAddingGroup(true)}
                       variant="outline"
                       size="sm"
-                      className="w-full border-sage text-sage hover:bg-sage hover:text-white"
+                      className="w-full border-sage-300 text-sage-700 hover:bg-sage-50 hover:text-sage-800 border-2 border-dashed"
                     >
                       <Plus className="h-4 w-4 mr-1" />
                       Add Ingredient Group
