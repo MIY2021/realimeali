@@ -266,7 +266,7 @@ export function EnhancedIngredientManager({ ingredients, onIngredientsChange }: 
                 size="sm"
                 title="Add ingredient group (e.g., 'For the sauce:')"
               >
-                <LayoutGrid className="h-3 w-3 mr-1" />
+                <Plus className="h-3 w-3 mr-1" />
                 Group
               </Button>
             </div>
