@@ -1,4 +1,3 @@
-
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Recipe } from "@/types";
 import { IngredientSectionParser } from "@/utils/ingredientSectionParser";
@@ -75,7 +74,6 @@ export const RecipeTabContent = ({ recipe, scaledIngredients, isScaled }: Recipe
               <div key={sectionIndex} className="space-y-3">
                 {section.header && (
                   <div className="flex items-center gap-2 mt-6 mb-3 first:mt-0 border-b border-sage/30 pb-2 bg-sage/10 px-4 py-3 rounded-lg">
-                    <LayoutGrid className="h-5 w-5 text-sage-600" />
                     <h3 className="text-lg font-semibold text-sage-800">
                       {section.header}
                     </h3>
@@ -91,9 +89,7 @@ export const RecipeTabContent = ({ recipe, scaledIngredients, isScaled }: Recipe
                     <div key={`${sectionIndex}-${index}`} className={`p-4 rounded-lg transition-all ${
                       isScaled 
                         ? 'bg-blue-50 border border-blue-200 hover:bg-blue-100' 
-                        : section.header 
-                          ? 'bg-sage/5 border-l-4 border-l-sage ml-4 hover:bg-sage/10' 
-                          : 'bg-gray-50 hover:bg-gray-100'
+                        : 'bg-gray-50 hover:bg-gray-100'
                     }`}>
                       <p className="text-gray-700 leading-relaxed">{ingredient}</p>
                     </div>
