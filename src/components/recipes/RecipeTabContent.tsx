@@ -3,6 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Recipe } from "@/types";
 import { IngredientSectionParser } from "@/utils/ingredientSectionParser";
 import { EquipmentExtractor } from "@/utils/equipmentExtractor";
+import { Hash } from "lucide-react";
 
 interface RecipeTabContentProps {
   recipe: Recipe;
@@ -65,16 +66,6 @@ export const RecipeTabContent = ({ recipe, scaledIngredients, isScaled }: Recipe
             )}
           </h2>
           
-          {/* Debug info - remove in production */}
-          <div className="mb-4 p-2 bg-yellow-50 border border-yellow-200 rounded text-xs">
-            <strong>Debug:</strong> Found {ingredientSections.length} sections
-            {ingredientSections.map((section, i) => (
-              <div key={i}>
-                Section {i}: {section.header ? `"${section.header}"` : 'No header'} ({section.ingredients.length} ingredients)
-              </div>
-            ))}
-          </div>
-          
           {ingredientSections.length === 0 ? (
             <div className="p-4 bg-gray-50 rounded-lg">
               <p className="text-gray-500">No ingredients found</p>
@@ -83,9 +74,12 @@ export const RecipeTabContent = ({ recipe, scaledIngredients, isScaled }: Recipe
             ingredientSections.map((section, sectionIndex) => (
               <div key={sectionIndex} className="space-y-3">
                 {section.header && (
-                  <h3 className="text-lg font-semibold text-navy mt-6 mb-3 first:mt-0 border-b border-gray-200 pb-2 bg-blue-50 px-3 py-2 rounded-t-lg">
-                    {section.header}
-                  </h3>
+                  <div className="flex items-center gap-2 mt-6 mb-3 first:mt-0 border-b border-sage/30 pb-2 bg-sage/10 px-4 py-3 rounded-lg">
+                    <Hash className="h-5 w-5 text-sage-600" />
+                    <h3 className="text-lg font-semibold text-sage-800">
+                      {section.header}
+                    </h3>
+                  </div>
                 )}
                 
                 {section.ingredients.length === 0 ? (
@@ -94,12 +88,12 @@ export const RecipeTabContent = ({ recipe, scaledIngredients, isScaled }: Recipe
                   </div>
                 ) : (
                   section.ingredients.map((ingredient, index) => (
-                    <div key={`${sectionIndex}-${index}`} className={`p-4 rounded-lg ${
+                    <div key={`${sectionIndex}-${index}`} className={`p-4 rounded-lg transition-all ${
                       isScaled 
-                        ? 'bg-blue-50 border border-blue-200' 
+                        ? 'bg-blue-50 border border-blue-200 hover:bg-blue-100' 
                         : section.header 
-                          ? 'bg-gray-50 border-l-4 border-l-sage ml-2' 
-                          : 'bg-gray-50'
+                          ? 'bg-sage/5 border-l-4 border-l-sage ml-4 hover:bg-sage/10' 
+                          : 'bg-gray-50 hover:bg-gray-100'
                     }`}>
                       <p className="text-gray-700 leading-relaxed">{ingredient}</p>
                     </div>
@@ -118,7 +112,7 @@ export const RecipeTabContent = ({ recipe, scaledIngredients, isScaled }: Recipe
           {equipment.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {equipment.map((item, index) => (
-                <div key={index} className="p-4 bg-gray-50 rounded-lg">
+                <div key={index} className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                   <p className="text-gray-700 leading-relaxed">{item}</p>
                 </div>
               ))}
@@ -135,7 +129,7 @@ export const RecipeTabContent = ({ recipe, scaledIngredients, isScaled }: Recipe
         <div className="space-y-6">
           <h2 className="text-xl font-bold text-navy mb-4">Instructions</h2>
           {recipe.instructions.map((step, index) => (
-            <div key={index} className="flex gap-4 p-4 bg-gray-50 rounded-lg">
+            <div key={index} className="flex gap-4 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
               <div className="flex-shrink-0 w-8 h-8 bg-terracotta text-white rounded-full flex items-center justify-center text-sm font-bold">
                 {index + 1}
               </div>

@@ -49,29 +49,26 @@ export function CreateRecipeContainer() {
     );
   };
 
-  const cleanIngredientsForSave = (ingredients: string[]): string[] => {
-    // Parse ingredients into sections to identify headers
-    const sections = IngredientSectionParser.parseIngredients(ingredients);
-    
-    // Extract only the actual ingredients, not the headers
-    const cleanIngredients: string[] = [];
-    sections.forEach(section => {
-      cleanIngredients.push(...section.ingredients);
-    });
-    
-    return cleanIngredients.filter(ing => ing && ing.trim().length > 0);
+  const prepareIngredientsForSave = (ingredients: string[]): string[] => {
+    // Preserve ALL ingredients including section headers, but filter out empty ones
+    return ingredients.filter(ingredient => ingredient && ingredient.trim().length > 0);
   };
 
   const validateRecipe = () => {
     const errors: string[] = [];
     
-    // Clean ingredients before validation
-    const cleanedIngredients = cleanIngredientsForSave(recipeFormHook.newRecipe.ingredients || []);
+    // Prepare ingredients for validation (preserve headers but filter empty)
+    const validIngredients = prepareIngredientsForSave(recipeFormHook.newRecipe.ingredients || []);
+    
+    // Count only actual ingredients (not headers) for validation
+    const sections = IngredientSectionParser.parseIngredients(validIngredients);
+    const actualIngredients = sections.reduce((count, section) => count + section.ingredients.length, 0);
     
     console.log('🔍 Validating recipe:', {
       title: recipeFormHook.newRecipe.title,
-      ingredients: cleanedIngredients.length,
-      originalIngredients: recipeFormHook.newRecipe.ingredients?.length || 0,
+      totalItems: validIngredients.length,
+      actualIngredients: actualIngredients,
+      sections: sections.length,
       instructions: recipeFormHook.newRecipe.instructions?.length || 0,
       prep_time: recipeFormHook.newRecipe.prep_time,
       cook_time: recipeFormHook.newRecipe.cook_time,
@@ -83,7 +80,7 @@ export function CreateRecipeContainer() {
       errors.push("Recipe title is required");
     }
     
-    if (cleanedIngredients.length === 0) {
+    if (actualIngredients === 0) {
       errors.push("At least one ingredient is required");
     }
     
@@ -137,8 +134,8 @@ export function CreateRecipeContainer() {
     try {
       console.log('💾 Preparing recipe data for save...');
       
-      // Clean the ingredients to remove section headers
-      const cleanedIngredients = cleanIngredientsForSave(recipeFormHook.newRecipe.ingredients || []);
+      // Preserve ALL ingredients including headers - just filter empty ones
+      const preservedIngredients = prepareIngredientsForSave(recipeFormHook.newRecipe.ingredients || []);
       
       // Clean the recipe data
       const recipeToSave = {
@@ -146,7 +143,7 @@ export function CreateRecipeContainer() {
         title: recipeFormHook.newRecipe.title?.trim() || '',
         description: recipeFormHook.newRecipe.description?.trim() || '',
         top_tip: recipeFormHook.newRecipe.top_tip?.trim() || "Enjoy cooking this delicious recipe!",
-        ingredients: cleanedIngredients, // Use cleaned ingredients
+        ingredients: preservedIngredients, // Keep headers AND ingredients
         instructions: recipeFormHook.newRecipe.instructions?.filter(inst => inst?.trim()) || [],
         diet_lifestyle: recipeFormHook.newRecipe.diet_lifestyle || [],
         prep_time: Math.max(0, recipeFormHook.newRecipe.prep_time || 0),
@@ -158,7 +155,8 @@ export function CreateRecipeContainer() {
       console.log('💾 Final recipe data to save:', {
         ...recipeToSave,
         image: recipeToSave.image ? 'has image data' : 'no image',
-        ingredientsCount: recipeToSave.ingredients.length
+        ingredientsCount: recipeToSave.ingredients.length,
+        hasHeaders: recipeToSave.ingredients.some(ing => ing.endsWith(':'))
       });
 
       const savedRecipe = await createRecipe(recipeToSave, currentHousehold.id);
