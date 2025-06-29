@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { X, Plus, GripVertical, Edit, Hash } from "lucide-react";
+import { X, Plus, GripVertical, Edit, LayoutGrid } from "lucide-react";
 import { DragDropContext, Droppable, Draggable, DropResult } from "react-beautiful-dnd";
 
 interface EnhancedIngredientManagerProps {
@@ -143,7 +143,7 @@ export function EnhancedIngredientManager({ ingredients, onIngredientsChange }: 
                           
                           {/* Group/Header indicator */}
                           {ingredientIsHeader && (
-                            <Hash className="h-3 w-3 text-sage-600 flex-shrink-0" />
+                            <LayoutGrid className="h-3 w-3 text-sage-600 flex-shrink-0" />
                           )}
                           
                           {editingIndex === index ? (
@@ -221,7 +221,7 @@ export function EnhancedIngredientManager({ ingredients, onIngredientsChange }: 
                 className="flex-1 h-7 text-xs bg-sage hover:bg-sage/90"
                 size="sm"
               >
-                <Hash className="h-3 w-3 mr-1" />
+                <LayoutGrid className="h-3 w-3 mr-1" />
                 Add Group
               </Button>
               <Button 
@@ -266,7 +266,7 @@ export function EnhancedIngredientManager({ ingredients, onIngredientsChange }: 
                 size="sm"
                 title="Add ingredient group (e.g., 'For the sauce:')"
               >
-                <Hash className="h-3 w-3" />
+                <LayoutGrid className="h-3 w-3" />
               </Button>
             </div>
           </>
