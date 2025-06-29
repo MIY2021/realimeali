@@ -17,14 +17,17 @@ export const RecipeTabContent = ({ recipe, scaledIngredients, isScaled }: Recipe
     EquipmentExtractor.extractEquipment(recipe)
   );
 
-  console.log("🧩 Parsing ingredients into sections:", {
-    ingredientsCount: ingredientsToShow.length,
-    sectionsFound: ingredientSections.length,
-    sections: ingredientSections.map(s => ({ 
-      header: s.header, 
-      ingredientCount: s.ingredients.length 
-    })),
-    rawIngredients: ingredientsToShow
+  console.log("🧩 DETAILED Ingredient Analysis:", {
+    originalIngredients: ingredientsToShow,
+    parsedSections: ingredientSections,
+    sectionsCount: ingredientSections.length,
+    sectionDetails: ingredientSections.map((section, index) => ({
+      index,
+      hasHeader: !!section.header,
+      header: section.header,
+      ingredientCount: section.ingredients.length,
+      ingredients: section.ingredients
+    }))
   });
 
   return (
@@ -62,21 +65,49 @@ export const RecipeTabContent = ({ recipe, scaledIngredients, isScaled }: Recipe
             )}
           </h2>
           
-          {ingredientSections.map((section, sectionIndex) => (
-            <div key={sectionIndex} className="space-y-3">
-              {section.header && (
-                <h3 className="text-lg font-semibold text-navy mt-6 mb-3 first:mt-0 border-b border-gray-200 pb-2">
-                  {section.header}
-                </h3>
-              )}
-              
-              {section.ingredients.map((ingredient, index) => (
-                <div key={index} className={`p-4 rounded-lg ${isScaled ? 'bg-blue-50 border border-blue-200' : 'bg-gray-50'}`}>
-                  <p className="text-gray-700 leading-relaxed">{ingredient}</p>
-                </div>
-              ))}
+          {/* Debug info - remove in production */}
+          <div className="mb-4 p-2 bg-yellow-50 border border-yellow-200 rounded text-xs">
+            <strong>Debug:</strong> Found {ingredientSections.length} sections
+            {ingredientSections.map((section, i) => (
+              <div key={i}>
+                Section {i}: {section.header ? `"${section.header}"` : 'No header'} ({section.ingredients.length} ingredients)
+              </div>
+            ))}
+          </div>
+          
+          {ingredientSections.length === 0 ? (
+            <div className="p-4 bg-gray-50 rounded-lg">
+              <p className="text-gray-500">No ingredients found</p>
             </div>
-          ))}
+          ) : (
+            ingredientSections.map((section, sectionIndex) => (
+              <div key={sectionIndex} className="space-y-3">
+                {section.header && (
+                  <h3 className="text-lg font-semibold text-navy mt-6 mb-3 first:mt-0 border-b border-gray-200 pb-2 bg-blue-50 px-3 py-2 rounded-t-lg">
+                    {section.header}
+                  </h3>
+                )}
+                
+                {section.ingredients.length === 0 ? (
+                  <div className="p-4 bg-gray-50 rounded-lg">
+                    <p className="text-gray-500 text-sm">No ingredients in this section</p>
+                  </div>
+                ) : (
+                  section.ingredients.map((ingredient, index) => (
+                    <div key={`${sectionIndex}-${index}`} className={`p-4 rounded-lg ${
+                      isScaled 
+                        ? 'bg-blue-50 border border-blue-200' 
+                        : section.header 
+                          ? 'bg-gray-50 border-l-4 border-l-sage ml-2' 
+                          : 'bg-gray-50'
+                    }`}>
+                      <p className="text-gray-700 leading-relaxed">{ingredient}</p>
+                    </div>
+                  ))
+                )}
+              </div>
+            ))
+          )}
         </div>
       </TabsContent>
 
