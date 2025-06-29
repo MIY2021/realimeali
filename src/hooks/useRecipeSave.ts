@@ -1,4 +1,3 @@
-
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useRecipes } from "@/contexts/RecipesContext";
@@ -6,26 +5,12 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Recipe } from "@/types";
-import { IngredientSectionParser } from "@/utils/ingredientSectionParser";
 
 export function useRecipeSave() {
   const navigate = useNavigate();
   const { createRecipe } = useRecipes();
   const { user } = useAuth();
   const { currentHousehold } = useHousehold();
-
-  const cleanIngredientsForSave = (ingredients: string[]): string[] => {
-    // Parse ingredients into sections to identify headers
-    const sections = IngredientSectionParser.parseIngredients(ingredients);
-    
-    // Extract only the actual ingredients, not the headers
-    const cleanIngredients: string[] = [];
-    sections.forEach(section => {
-      cleanIngredients.push(...section.ingredients);
-    });
-    
-    return cleanIngredients.filter(ing => ing && ing.trim().length > 0);
-  };
 
   const handleSave = async (
     newRecipe: Omit<Recipe, 'id' | 'created_at' | 'updated_at' | 'created_by'>, 
@@ -41,6 +26,7 @@ export function useRecipeSave() {
       recipeData: {
         title: newRecipe.title,
         ingredients: newRecipe.ingredients?.length || 0,
+        ingredientsList: newRecipe.ingredients, // Log the actual ingredients to see if headers are present
         instructions: newRecipe.instructions?.length || 0,
         top_tip: newRecipe.top_tip,
         classification: {
@@ -61,11 +47,12 @@ export function useRecipeSave() {
       return;
     }
 
-    // Clean ingredients to remove section headers before saving
-    const cleanedIngredients = cleanIngredientsForSave(newRecipe.ingredients || []);
-    console.log("🧹 Cleaned ingredients:", { 
+    // KEEP ALL INGREDIENTS INCLUDING SECTION HEADERS - DO NOT CLEAN THEM
+    const ingredientsToSave = newRecipe.ingredients || [];
+    console.log("🧹 Preserving ALL ingredients including headers:", { 
       original: newRecipe.ingredients?.length || 0, 
-      cleaned: cleanedIngredients.length 
+      preserved: ingredientsToSave.length,
+      ingredients: ingredientsToSave
     });
 
     // Basic validation
@@ -77,8 +64,8 @@ export function useRecipeSave() {
       return;
     }
 
-    if (cleanedIngredients.length === 0) {
-      console.error("❌ Missing ingredients after cleaning");
+    if (ingredientsToSave.length === 0) {
+      console.error("❌ Missing ingredients");
       toast.error("Error", {
         description: "At least one ingredient is required",
       });
@@ -93,7 +80,7 @@ export function useRecipeSave() {
       return;
     }
 
-    // Clean and prepare recipe data
+    // Clean and prepare recipe data - PRESERVE ALL INGREDIENTS
     const recipeToSave = {
       ...newRecipe,
       title: newRecipe.title.trim(),
@@ -105,15 +92,15 @@ export function useRecipeSave() {
       prep_time: Math.max(0, newRecipe.prep_time || 0),
       cook_time: Math.max(0, newRecipe.cook_time || 0),
       servings: Math.max(1, newRecipe.servings || 1),
-      // Use cleaned ingredients without section headers
-      ingredients: cleanedIngredients,
+      // PRESERVE ALL INGREDIENTS INCLUDING SECTION HEADERS
+      ingredients: ingredientsToSave,
       instructions: newRecipe.instructions.filter(inst => inst.trim()),
       diet_lifestyle: newRecipe.diet_lifestyle || [],
       // Remove household_id if present (will be set by createRecipe)
       household_id: undefined as any
     };
 
-    console.log("✅ Validation passed, creating recipe with cleaned data:", recipeToSave);
+    console.log("✅ Validation passed, creating recipe with ALL ingredients preserved:", recipeToSave);
     console.log("🌍 Share with community flag:", shareWithCommunity);
     
     try {
@@ -169,7 +156,7 @@ export function useRecipeSave() {
             console.error("❌ Community submission failed:", communityError);
             toast.success("Recipe saved!", {
               description: `${recipe.title} has been added to your recipes. Community sharing failed but recipe is saved.`,
-            });
+              });
           }
         } else {
           console.log("🎉 Recipe created successfully, no community sharing requested");

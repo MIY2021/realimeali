@@ -17,6 +17,16 @@ export const RecipeTabContent = ({ recipe, scaledIngredients, isScaled }: Recipe
     EquipmentExtractor.extractEquipment(recipe)
   );
 
+  console.log("🧩 Parsing ingredients into sections:", {
+    ingredientsCount: ingredientsToShow.length,
+    sectionsFound: ingredientSections.length,
+    sections: ingredientSections.map(s => ({ 
+      header: s.header, 
+      ingredientCount: s.ingredients.length 
+    })),
+    rawIngredients: ingredientsToShow
+  });
+
   return (
     <Tabs defaultValue="ingredients" className="w-full">
       <TabsList className="grid w-full grid-cols-3 bg-gray-100 rounded-lg p-1 mb-6">
@@ -55,7 +65,7 @@ export const RecipeTabContent = ({ recipe, scaledIngredients, isScaled }: Recipe
           {ingredientSections.map((section, sectionIndex) => (
             <div key={sectionIndex} className="space-y-3">
               {section.header && (
-                <h3 className="text-lg font-semibold text-navy mt-6 mb-3 first:mt-0">
+                <h3 className="text-lg font-semibold text-navy mt-6 mb-3 first:mt-0 border-b border-gray-200 pb-2">
                   {section.header}
                 </h3>
               )}
