@@ -262,11 +262,12 @@ export function EnhancedIngredientManager({ ingredients, onIngredientsChange }: 
               <Button 
                 onClick={() => setIsAddingGroup(true)}
                 variant="outline"
-                className="h-8 text-xs px-2 border-sage text-sage hover:bg-sage hover:text-white"
+                className="h-8 text-xs px-3 border-sage text-sage hover:bg-sage hover:text-white"
                 size="sm"
                 title="Add ingredient group (e.g., 'For the sauce:')"
               >
-                <LayoutGrid className="h-3 w-3" />
+                <LayoutGrid className="h-3 w-3 mr-1" />
+                Group
               </Button>
             </div>
           </>
