@@ -16,7 +16,7 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Recipe } from "@/types";
 import { useToast } from "@/hooks/use-toast";
-import { Clock, Users, Plus, X, Camera, Search, Loader, Eye, Check, Upload, Trash2 } from "lucide-react";
+import { Clock, Users, Plus, X, Camera, Search, Loader, Eye, Check, Upload, Trash2, LayoutGrid } from "lucide-react";
 import { UnsplashService } from "@/services/unsplashService";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -57,6 +57,8 @@ export function EditRecipeDialog({
   const [newIngredient, setNewIngredient] = useState("");
   const [newInstruction, setNewInstruction] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isAddingGroup, setIsAddingGroup] = useState(false);
+  const [newGroup, setNewGroup] = useState("");
   
   // Image editing state
   const [activeImageTab, setActiveImageTab] = useState("ai");
@@ -80,6 +82,10 @@ export function EditRecipeDialog({
   useEffect(() => {
     setEditedRecipe(recipe);
   }, [recipe]);
+
+  const isHeader = (ingredient: string) => {
+    return ingredient.trim().endsWith(':') && !ingredient.match(/\d+.*:/);
+  };
 
   const generateEnhancedPrompt = (recipeName: string, ingredients: string[], instructions: string[], description?: string) => {
     const basePrompt = `A photorealistic, professionally styled cookbook photo of ${recipeName}. The dish is the clear focal point, beautifully plated and shot in a natural home or studio kitchen setting with soft, diffused lighting. The background is clean and minimal, such as wood, marble, linen or slate — subtle and textured but not distracting.
@@ -344,6 +350,18 @@ Lighting: natural daylight style or softbox imitation — bright but soft shadow
     }
   };
 
+  const addGroup = () => {
+    if (newGroup.trim()) {
+      const groupHeader = newGroup.trim().endsWith(':') ? newGroup.trim() : `${newGroup.trim()}:`;
+      setEditedRecipe({
+        ...editedRecipe,
+        ingredients: [...editedRecipe.ingredients, groupHeader],
+      });
+      setNewGroup("");
+      setIsAddingGroup(false);
+    }
+  };
+
   const removeIngredient = (index: number) => {
     setEditedRecipe({
       ...editedRecipe,
@@ -384,6 +402,13 @@ Lighting: natural daylight style or softbox imitation — bright but soft shadow
       ...editedRecipe,
       instructions: newInstructions,
     });
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent, action: () => void) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      action();
+    }
   };
 
   return (
@@ -635,35 +660,96 @@ Lighting: natural daylight style or softbox imitation — bright but soft shadow
             <div className="grid gap-2">
               <Label>Ingredients</Label>
               <div className="space-y-2">
-                {editedRecipe.ingredients.map((ingredient, index) => (
-                  <div key={index} className="flex items-center gap-2">
+                {editedRecipe.ingredients.map((ingredient, index) => {
+                  const ingredientIsHeader = isHeader(ingredient);
+                  
+                  return (
+                    <div key={index} className={`flex items-center gap-2 ${
+                      ingredientIsHeader ? 'bg-sage/10 p-2 rounded-lg border-l-4 border-sage' : ''
+                    }`}>
+                      {ingredientIsHeader && (
+                        <LayoutGrid className="h-4 w-4 text-sage-600 flex-shrink-0" />
+                      )}
+                      <Input
+                        value={ingredient}
+                        onChange={(e) => updateIngredient(index, e.target.value)}
+                        className="flex-1"
+                        placeholder={ingredientIsHeader ? "Group name (e.g., 'For the sauce')" : "Ingredient (e.g., '2 cups flour')"}
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => removeIngredient(index)}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  );
+                })}
+                
+                {/* Add Group Input */}
+                {isAddingGroup ? (
+                  <div className="space-y-2 bg-sage/5 p-3 rounded-lg border border-sage/20">
                     <Input
-                      value={ingredient}
-                      onChange={(e) => updateIngredient(index, e.target.value)}
-                      className="flex-1"
-                      placeholder="Enter ingredient"
+                      value={newGroup}
+                      onChange={(e) => setNewGroup(e.target.value)}
+                      placeholder="Group name (e.g., 'For the sauce')"
+                      onKeyPress={(e) => handleKeyPress(e, addGroup)}
+                      autoFocus
                     />
-                    <Button
+                    <div className="flex gap-2">
+                      <Button 
+                        type="button" 
+                        onClick={addGroup} 
+                        disabled={!newGroup.trim()}
+                        size="sm"
+                        className="bg-sage hover:bg-sage/90"
+                      >
+                        <LayoutGrid className="h-4 w-4 mr-1" />
+                        Add Group
+                      </Button>
+                      <Button 
+                        type="button"
+                        onClick={() => {
+                          setIsAddingGroup(false);
+                          setNewGroup("");
+                        }}
+                        variant="outline"
+                        size="sm"
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    {/* Regular ingredient input */}
+                    <div className="flex gap-2">
+                      <Input
+                        value={newIngredient}
+                        onChange={(e) => setNewIngredient(e.target.value)}
+                        placeholder="Add new ingredient"
+                        onKeyPress={(e) => e.key === "Enter" && addIngredient()}
+                      />
+                      <Button type="button" onClick={addIngredient} size="sm">
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    
+                    {/* Add Group Button */}
+                    <Button 
                       type="button"
+                      onClick={() => setIsAddingGroup(true)}
                       variant="outline"
                       size="sm"
-                      onClick={() => removeIngredient(index)}
+                      className="w-full border-sage text-sage hover:bg-sage hover:text-white"
                     >
-                      <X className="h-4 w-4" />
+                      <Plus className="h-4 w-4 mr-1" />
+                      Add Ingredient Group
                     </Button>
-                  </div>
-                ))}
-                <div className="flex gap-2">
-                  <Input
-                    value={newIngredient}
-                    onChange={(e) => setNewIngredient(e.target.value)}
-                    placeholder="Add new ingredient"
-                    onKeyPress={(e) => e.key === "Enter" && addIngredient()}
-                  />
-                  <Button type="button" onClick={addIngredient} size="sm">
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </div>
+                  </>
+                )}
               </div>
             </div>
 
