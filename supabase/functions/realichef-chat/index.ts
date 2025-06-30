@@ -21,9 +21,27 @@ interface ChatRequest {
   }>;
 }
 
+// Content safety filter
+const containsInappropriateContent = (message: string): boolean => {
+  const inappropriateKeywords = [
+    'nazi', 'hitler', 'holocaust', 'genocide', 'fascist', 'white supremacy',
+    'hate crime', 'terrorism', 'extremist', 'radical ideology',
+    'ethnic cleansing', 'racial superiority', 'antisemitic', 'antisemitism'
+  ];
+  
+  const normalizedMessage = message.toLowerCase();
+  return inappropriateKeywords.some(keyword => normalizedMessage.includes(keyword));
+};
+
 const getContextualSystemPrompt = (pageContext: any) => {
   const baseName = "RealiChef";
-  const basePersonality = `You are ${baseName}, a friendly and knowledgeable AI cooking assistant for the RealiMeali app. You have a warm, welcoming tone and are always helpful, patient, and informative. Always start responses with a chef emoji (👩‍🍳) and keep responses concise but helpful.`;
+  const basePersonality = `You are ${baseName}, a friendly and knowledgeable AI cooking assistant for the RealiMeali app. You have a warm, welcoming tone and are always helpful, patient, and informative. Always start responses with a chef emoji (👩‍🍳) and keep responses concise but helpful.
+
+IMPORTANT CONTENT GUIDELINES:
+- You ONLY discuss cooking, recipes, food, and kitchen-related topics
+- You do NOT provide information about inappropriate, harmful, or offensive historical topics
+- If asked about anything unrelated to cooking or food, politely redirect to culinary topics
+- You maintain a positive, family-friendly environment focused on cooking and food`;
   
   switch (pageContext.page) {
     case 'my-recipes':
@@ -58,6 +76,17 @@ serve(async (req) => {
 
     if (!openAIApiKey) {
       throw new Error('OpenAI API key not configured');
+    }
+
+    // Check for inappropriate content
+    if (containsInappropriateContent(message)) {
+      console.log('Blocked inappropriate content request:', message);
+      return new Response(JSON.stringify({ 
+        response: "👩‍🍳 I'm here to help with cooking and food questions! Let's keep our conversation focused on delicious recipes and culinary topics. What would you like to cook today?",
+        timestamp: new Date().toISOString()
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     console.log('RealiChef chat request:', { message, pageContext });

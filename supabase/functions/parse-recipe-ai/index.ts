@@ -1,3 +1,4 @@
+
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
@@ -7,6 +8,28 @@ const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// Helper function to clean markdown formatting from text
+function cleanMarkdownFormatting(text: string): string {
+  if (!text) return text;
+  
+  // Remove markdown headers (### ## #)
+  text = text.replace(/^#{1,6}\s*/gm, '');
+  
+  // Remove markdown bold (**text** or __text__)
+  text = text.replace(/(\*\*|__)(.*?)\1/g, '$2');
+  
+  // Remove markdown italic (*text* or _text_)
+  text = text.replace(/(\*|_)(.*?)\1/g, '$2');
+  
+  // Remove markdown code blocks (```text```)
+  text = text.replace(/```[\s\S]*?```/g, '');
+  
+  // Remove inline code (`text`)
+  text = text.replace(/`([^`]+)`/g, '$1');
+  
+  return text.trim();
+}
 
 // Exponential backoff retry logic
 async function retryWithBackoff<T>(
@@ -573,6 +596,8 @@ CRITICAL: You MUST carefully examine ingredients for meat content. If ANY meat (
 
 IMPORTANT: When creating ingredients, if the recipe naturally has sections (like sauce, marinade, garnish), include section headers as separate entries in the ingredients array with a colon at the end.
 
+IMPORTANT: Recipe titles should be clean, descriptive text WITHOUT any markdown formatting (no #, **, etc.). Just plain text titles.
+
 Return a JSON object with this EXACT structure:
 {
   "title": "Recipe name",
@@ -649,7 +674,7 @@ Create realistic recipes with proper ingredient amounts and detailed cooking ste
       
       // Validate and clean the response
       const cleanedRecipe = {
-        title: parsedRecipe.title || 'Untitled Recipe',
+        title: cleanMarkdownFormatting(parsedRecipe.title) || 'Untitled Recipe',
         description: parsedRecipe.description || '',
         ingredients: Array.isArray(parsedRecipe.ingredients) ? parsedRecipe.ingredients : [],
         instructions: Array.isArray(parsedRecipe.instructions) ? parsedRecipe.instructions : [],

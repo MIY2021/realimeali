@@ -184,10 +184,13 @@ export const RealiChef = () => {
             onClick={() => setIsOpen(false)}
           />
           
-          {/* Chat Container - Full screen mobile, positioned desktop */}
+          {/* Chat Container - Full screen mobile with proper bottom spacing, positioned desktop */}
           <div className={cn(
             "fixed z-50",
-            "inset-4 md:bottom-32 md:right-8 md:w-80 md:inset-auto md:h-96"
+            // Mobile: full screen with proper bottom spacing for navigation
+            "inset-x-4 top-4 bottom-20",
+            // Desktop: positioned in corner
+            "md:bottom-32 md:right-8 md:w-80 md:inset-auto md:h-96 md:top-auto md:left-auto"
           )}>
             <div className="bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden h-full flex flex-col">
               {/* Header */}
