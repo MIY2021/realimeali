@@ -187,8 +187,8 @@ export const RealiChef = () => {
           {/* Chat Container - Redesigned mobile layout, positioned desktop */}
           <div className={cn(
             "fixed z-50",
-            // Mobile: positioned with margins, borders, and proper height - not full screen
-            "bottom-20 left-4 right-4 h-[70vh] animate-in slide-in-from-bottom-full duration-300 ease-out",
+            // Mobile: positioned with margins, borders, and taller height
+            "bottom-20 left-4 right-4 h-[80vh] animate-in slide-in-from-bottom-full duration-300 ease-out",
             // Desktop: positioned in corner with fade animation
             "md:bottom-32 md:right-8 md:w-80 md:left-auto md:h-96 md:top-auto md:inset-auto",
             "md:animate-in md:fade-in-0 md:scale-in-95 md:duration-200"
@@ -257,10 +257,30 @@ export const RealiChef = () => {
                 <div ref={messagesEndRef} />
               </div>
 
-              {/* Footer - Redesigned with branding and minimize button */}
+              {/* Footer - Redesigned with input first, then branding */}
               <div className="p-4 border-t bg-white flex-shrink-0">
-                {/* Mobile footer with three sections */}
-                <div className="md:hidden flex items-center justify-between mb-3">
+                {/* Input section */}
+                <div className="flex gap-2 mb-3">
+                  <Input
+                    value={inputMessage}
+                    onChange={(e) => setInputMessage(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    placeholder="Ask RealiChef anything..."
+                    disabled={isLoading}
+                    className="flex-1"
+                  />
+                  <Button
+                    onClick={sendMessage}
+                    disabled={isLoading || !inputMessage.trim()}
+                    size="sm"
+                    className="bg-sage hover:bg-sage/90"
+                  >
+                    ➤
+                  </Button>
+                </div>
+
+                {/* Mobile footer with branding and minimize button - now below input */}
+                <div className="md:hidden flex items-center justify-between">
                   <div className="flex items-center gap-1">
                     <img 
                       src="/lovable-uploads/48f73020-608a-4375-a69f-2e7bc147e319.png" 
@@ -277,26 +297,6 @@ export const RealiChef = () => {
                     className="text-gray-500 hover:bg-gray-100 h-6 w-6 p-0"
                   >
                     <Minus className="h-3 w-3" />
-                  </Button>
-                </div>
-
-                {/* Input section */}
-                <div className="flex gap-2">
-                  <Input
-                    value={inputMessage}
-                    onChange={(e) => setInputMessage(e.target.value)}
-                    onKeyPress={handleKeyPress}
-                    placeholder="Ask RealiChef anything..."
-                    disabled={isLoading}
-                    className="flex-1"
-                  />
-                  <Button
-                    onClick={sendMessage}
-                    disabled={isLoading || !inputMessage.trim()}
-                    size="sm"
-                    className="bg-sage hover:bg-sage/90"
-                  >
-                    ➤
                   </Button>
                 </div>
               </div>
