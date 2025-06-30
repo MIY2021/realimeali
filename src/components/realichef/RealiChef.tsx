@@ -184,18 +184,18 @@ export const RealiChef = () => {
             onClick={() => setIsOpen(false)}
           />
           
-          {/* Chat Container - Full screen mobile with animation, positioned desktop */}
+          {/* Chat Container - Redesigned mobile layout, positioned desktop */}
           <div className={cn(
             "fixed z-50",
-            // Mobile: full screen without borders or padding, with slide-up animation
-            "inset-0 bottom-16 animate-in slide-in-from-bottom-full duration-300 ease-out",
+            // Mobile: positioned with margins, borders, and proper height - not full screen
+            "bottom-20 left-4 right-4 h-[70vh] animate-in slide-in-from-bottom-full duration-300 ease-out",
             // Desktop: positioned in corner with fade animation
-            "md:bottom-32 md:right-8 md:w-80 md:inset-auto md:h-96 md:top-auto md:left-auto",
+            "md:bottom-32 md:right-8 md:w-80 md:left-auto md:h-96 md:top-auto md:inset-auto",
             "md:animate-in md:fade-in-0 md:scale-in-95 md:duration-200"
           )}>
-            <div className="bg-white rounded-none md:rounded-lg shadow-xl border-0 md:border md:border-gray-200 overflow-hidden h-full flex flex-col">
-              {/* Header */}
-              <div className="bg-gradient-to-r from-sage to-terracotta p-4 text-white flex-shrink-0">
+            <div className="bg-white rounded-lg md:rounded-lg shadow-xl border border-gray-200 overflow-hidden h-full flex flex-col">
+              {/* Header - Desktop only */}
+              <div className="hidden md:block bg-gradient-to-r from-sage to-terracotta p-4 text-white flex-shrink-0">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <img 
@@ -257,8 +257,30 @@ export const RealiChef = () => {
                 <div ref={messagesEndRef} />
               </div>
 
-              {/* Input - Fixed at bottom */}
+              {/* Footer - Redesigned with branding and minimize button */}
               <div className="p-4 border-t bg-white flex-shrink-0">
+                {/* Mobile footer with three sections */}
+                <div className="md:hidden flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-1">
+                    <img 
+                      src="/lovable-uploads/48f73020-608a-4375-a69f-2e7bc147e319.png" 
+                      alt="Chef Hat"
+                      className="h-3 w-3"
+                    />
+                    <span className="text-xs text-gray-500">RealiChef | AI Assistant</span>
+                    <Sparkles className="h-3 w-3 text-yellow-400" />
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setIsOpen(false)}
+                    className="text-gray-500 hover:bg-gray-100 h-6 w-6 p-0"
+                  >
+                    <Minus className="h-3 w-3" />
+                  </Button>
+                </div>
+
+                {/* Input section */}
                 <div className="flex gap-2">
                   <Input
                     value={inputMessage}
