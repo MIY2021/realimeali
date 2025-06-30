@@ -188,7 +188,7 @@ export const RealiChef = () => {
           <div className={cn(
             "fixed z-50",
             // Mobile: full screen without borders or padding, with slide-up animation
-            "inset-0 bottom-20 animate-in slide-in-from-bottom-full duration-300 ease-out",
+            "inset-0 bottom-16 animate-in slide-in-from-bottom-full duration-300 ease-out",
             // Desktop: positioned in corner with fade animation
             "md:bottom-32 md:right-8 md:w-80 md:inset-auto md:h-96 md:top-auto md:left-auto",
             "md:animate-in md:fade-in-0 md:scale-in-95 md:duration-200"
