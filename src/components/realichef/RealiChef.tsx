@@ -184,11 +184,11 @@ export const RealiChef = () => {
             onClick={() => setIsOpen(false)}
           />
           
-          {/* Chat Container - Mobile-first with keyboard handling */}
+          {/* Chat Container - Mobile-first with keyboard handling and proper bottom padding */}
           <div className={cn(
             "fixed z-50",
-            // Mobile: positioned with consistent margins/borders and keyboard-aware height
-            "top-4 bottom-4 left-4 right-4 animate-in slide-in-from-bottom-full duration-300 ease-out",
+            // Mobile: positioned with consistent margins/borders and bottom padding to avoid nav menu
+            "top-4 bottom-20 left-4 right-4 animate-in slide-in-from-bottom-full duration-300 ease-out",
             // Desktop: positioned in corner with fade animation
             "md:bottom-32 md:right-8 md:w-80 md:left-auto md:h-96 md:top-auto md:inset-auto",
             "md:animate-in md:fade-in-0 md:scale-in-95 md:duration-200"
