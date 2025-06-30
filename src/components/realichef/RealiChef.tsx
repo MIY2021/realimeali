@@ -180,19 +180,20 @@ export const RealiChef = () => {
         <>
           {/* Backdrop overlay - Only on mobile */}
           <div 
-            className="fixed inset-0 bg-black/30 z-40 md:hidden"
+            className="fixed inset-0 bg-black/30 z-40 md:hidden animate-in fade-in-0 duration-300"
             onClick={() => setIsOpen(false)}
           />
           
-          {/* Chat Container - Full screen mobile with proper bottom spacing, positioned desktop */}
+          {/* Chat Container - Full screen mobile with animation, positioned desktop */}
           <div className={cn(
             "fixed z-50",
-            // Mobile: full screen with proper bottom spacing for navigation
-            "inset-x-4 top-4 bottom-20",
-            // Desktop: positioned in corner
-            "md:bottom-32 md:right-8 md:w-80 md:inset-auto md:h-96 md:top-auto md:left-auto"
+            // Mobile: full screen without borders or padding, with slide-up animation
+            "inset-0 bottom-20 animate-in slide-in-from-bottom-full duration-300 ease-out",
+            // Desktop: positioned in corner with fade animation
+            "md:bottom-32 md:right-8 md:w-80 md:inset-auto md:h-96 md:top-auto md:left-auto",
+            "md:animate-in md:fade-in-0 md:scale-in-95 md:duration-200"
           )}>
-            <div className="bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden h-full flex flex-col">
+            <div className="bg-white rounded-none md:rounded-lg shadow-xl border-0 md:border md:border-gray-200 overflow-hidden h-full flex flex-col">
               {/* Header */}
               <div className="bg-gradient-to-r from-sage to-terracotta p-4 text-white flex-shrink-0">
                 <div className="flex items-center justify-between">
