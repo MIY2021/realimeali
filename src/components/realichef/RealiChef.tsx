@@ -192,6 +192,19 @@ export const RealiChef = () => {
     }
   };
 
+  const getContextualWelcomeMessage = (page: string) => {
+    const welcomes = {
+      'my-recipes': "👩‍🍳 I see you're looking at your recipes! I can help with cooking tips, ingredient swaps, or suggest new recipes to try.",
+      'meal-planner': "👩‍🍳 Ready to plan some meals? I can help you decide what to cook this week!",
+      'shopping-list': "👩‍🍳 Need help with your shopping list? I can assist with ingredient substitutions or shopping tips!",
+      'recipe-detail': "👩‍🍳 Looking at a specific recipe? I can help with cooking techniques or ingredient alternatives.",
+      'find-recipes': "👩‍🍳 Let's find you something delicious! What are you in the mood for?",
+      'home': "👩‍🍳 Hi! I'm RealiChef, your cooking assistant. What can I help you with today?",
+      'default': "👩‍🍳 Hi! I'm RealiChef, your cooking assistant. What can I help you with today?"
+    };
+    return welcomes[page as keyof typeof welcomes] || welcomes.default;
+  };
+
   console.log('🔍 RealiChef RENDER DEBUG: isOpen =', isOpen, 'shouldShowButton =', !isOpen);
 
   return (
@@ -277,49 +290,64 @@ export const RealiChef = () => {
               </div>
 
               {/* Messages */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50 min-h-0">
-                {isLoadingHistory && (
-                  <div className="flex justify-center py-4">
-                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-sage"></div>
-                  </div>
-                )}
-                
-                {messages.map((message, index) => (
-                  <div
-                    key={message.id || index}
-                    className={cn(
-                      "flex",
-                      message.role === 'user' ? 'justify-end' : 'justify-start'
-                    )}
-                  >
-                    <div
-                      className={cn(
-                        "max-w-[85%] rounded-lg px-4 py-3 text-sm leading-relaxed",
-                        message.role === 'user'
-                          ? 'bg-sage text-white'
-                          : 'bg-white text-gray-800 shadow-sm border'
-                      )}
-                    >
+              <div className="flex-1 overflow-y-auto bg-gray-50 min-h-0 flex flex-col">
+                {/* AIStartMessage - Always at top */}
+                <div className="p-4 border-b border-gray-200 bg-gradient-to-r from-sage/5 to-terracotta/5">
+                  <div className="flex justify-start">
+                    <div className="max-w-[85%] rounded-lg px-4 py-3 text-sm leading-relaxed bg-white text-gray-800 shadow-sm border border-sage/20">
                       <div className="whitespace-pre-wrap break-words">
-                        {message.role === 'assistant' ? renderMarkdown(message.content) : message.content}
+                        {renderMarkdown(getContextualWelcomeMessage(pageContext.page))}
                       </div>
                     </div>
                   </div>
-                ))}
-                {isLoading && (
-                  <div className="flex justify-start">
-                    <div className="bg-white rounded-lg px-4 py-3 text-sm shadow-sm border">
-                      <div className="flex items-center gap-1">
-                        <div className="flex space-x-1">
-                          <div className="w-2 h-2 bg-sage rounded-full animate-bounce"></div>
-                          <div className="w-2 h-2 bg-sage rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                          <div className="w-2 h-2 bg-sage rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                </div>
+
+                {/* Chat History - Scrollable */}
+                <div className="flex-1 p-4 space-y-3">
+                  {isLoadingHistory && (
+                    <div className="flex justify-center py-4">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-sage"></div>
+                    </div>
+                  )}
+                  
+                  {messages.map((message, index) => (
+                    <div
+                      key={message.id || index}
+                      className={cn(
+                        "flex",
+                        message.role === 'user' ? 'justify-end' : 'justify-start'
+                      )}
+                    >
+                      <div
+                        className={cn(
+                          "max-w-[85%] rounded-lg px-4 py-3 text-sm leading-relaxed",
+                          message.role === 'user'
+                            ? 'bg-sage text-white'
+                            : 'bg-white text-gray-800 shadow-sm border'
+                        )}
+                      >
+                        <div className="whitespace-pre-wrap break-words">
+                          {message.role === 'assistant' ? renderMarkdown(message.content) : message.content}
                         </div>
                       </div>
                     </div>
-                  </div>
-                )}
-                <div ref={messagesEndRef} />
+                  ))}
+                  
+                  {isLoading && (
+                    <div className="flex justify-start">
+                      <div className="bg-white rounded-lg px-4 py-3 text-sm shadow-sm border">
+                        <div className="flex items-center gap-1">
+                          <div className="flex space-x-1">
+                            <div className="w-2 h-2 bg-sage rounded-full animate-bounce"></div>
+                            <div className="w-2 h-2 bg-sage rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                            <div className="w-2 h-2 bg-sage rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  <div ref={messagesEndRef} />
+                </div>
               </div>
 
               {/* Footer */}
