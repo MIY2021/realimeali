@@ -8,6 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { ClearChatHistoryDialog } from './ClearChatHistoryDialog';
 
 interface ChatMessage {
   id?: string;
@@ -46,6 +47,7 @@ export const RealiChef = () => {
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [hasError, setHasError] = useState(false);
+  const [clearHistoryDialogOpen, setClearHistoryDialogOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
 
@@ -301,18 +303,18 @@ export const RealiChef = () => {
                     <span className="font-semibold">RealiChef | AI Assistant</span>
                     <Sparkles className="h-4 w-4 animate-pulse" />
                   </div>
-                  <div className="flex items-center gap-1">
-                    {messages.length > 0 && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={handleClearHistory}
-                        className="text-white hover:bg-white/20 h-6 w-6 p-0"
-                        title="Clear chat history"
-                      >
-                        <Trash2 className="h-3 w-3" />
-                      </Button>
-                    )}
+                   <div className="flex items-center gap-2">
+                     {messages.length > 0 && (
+                       <Button
+                         variant="ghost"
+                         size="sm"
+                         onClick={() => setClearHistoryDialogOpen(true)}
+                         className="text-white hover:bg-white/20 h-6 w-6 p-0"
+                         title="Clear chat history"
+                       >
+                         <Trash2 className="h-3 w-3" />
+                       </Button>
+                     )}
                     <Button
                       variant="ghost"
                       size="sm"
@@ -406,17 +408,17 @@ export const RealiChef = () => {
                     <Sparkles className="h-3 w-3 text-yellow-400" />
                   </div>
                   <div className="flex items-center gap-1">
-                    {messages.length > 0 && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={handleClearHistory}
-                        className="text-gray-500 hover:bg-gray-100 h-6 w-6 p-0"
-                        title="Clear chat history"
-                      >
-                        <Trash2 className="h-3 w-3" />
-                      </Button>
-                    )}
+                     {messages.length > 0 && (
+                       <Button
+                         variant="ghost"
+                         size="sm"
+                         onClick={() => setClearHistoryDialogOpen(true)}
+                         className="text-gray-500 hover:bg-gray-100 h-6 w-6 p-0"
+                         title="Clear chat history"
+                       >
+                         <Trash2 className="h-3 w-3" />
+                       </Button>
+                     )}
                     <Button
                       variant="ghost"
                       size="sm"
@@ -432,6 +434,12 @@ export const RealiChef = () => {
           </div>
         </>
       )}
+      
+      <ClearChatHistoryDialog
+        open={clearHistoryDialogOpen}
+        onOpenChange={setClearHistoryDialogOpen}
+        onConfirm={handleClearHistory}
+      />
     </>
   );
 };
