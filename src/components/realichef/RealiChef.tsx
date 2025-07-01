@@ -71,25 +71,15 @@ export const RealiChef = () => {
     }
   }, [isLoading]);
 
-  // Handle initial chat opening - scroll to show welcome message at top of viewport
+  // Handle initial chat opening - scroll to bottom to show newest message
   useEffect(() => {
-    if (isOpen && !isLoadingHistory && user && messages.length > 0) {
-      console.log('🔍 Chat opened, positioning welcome message at top of viewport');
+    if (isOpen && !isLoadingHistory && user) {
+      console.log('🔍 Chat opened, scrolling to bottom to show newest message');
       setTimeout(() => {
-        if (messagesEndRef.current) {
-          const container = messagesEndRef.current.parentElement;
-          if (container) {
-            // Find the welcome message (first message in array)
-            const welcomeMessage = container.querySelector('[data-welcome="true"]');
-            if (welcomeMessage) {
-              // Scroll to show welcome message at top of viewport
-              welcomeMessage.scrollIntoView({ behavior: 'instant', block: 'start' });
-            }
-          }
-        }
+        scrollToBottomInstantly();
       }, 100);
     }
-  }, [isOpen, isLoadingHistory, user, messages.length]);
+  }, [isOpen, isLoadingHistory, user]);
 
   // COMPLETELY REBUILT BUTTON CLICK HANDLER
   const handleChatButtonClick = (event: React.MouseEvent) => {
@@ -302,34 +292,28 @@ export const RealiChef = () => {
                     </div>
                   )}
                   
-                  {messages.map((message, index) => {
-                    // Check if this is the first message (welcome message)
-                    const isWelcomeMessage = index === 0 && message.role === 'assistant' && message.content.includes("I'm here to help!");
-                    
-                    return (
+                  {messages.map((message, index) => (
+                    <div
+                      key={message.id || index}
+                      className={cn(
+                        "flex",
+                        message.role === 'user' ? 'justify-end' : 'justify-start'
+                      )}
+                    >
                       <div
-                        key={message.id || index}
-                        data-welcome={isWelcomeMessage ? "true" : undefined}
                         className={cn(
-                          "flex",
-                          message.role === 'user' ? 'justify-end' : 'justify-start'
+                          "max-w-[85%] rounded-lg px-4 py-3 text-sm leading-relaxed",
+                          message.role === 'user'
+                            ? 'bg-sage text-white'
+                            : 'bg-white text-gray-800 shadow-sm border'
                         )}
                       >
-                        <div
-                          className={cn(
-                            "max-w-[85%] rounded-lg px-4 py-3 text-sm leading-relaxed",
-                            message.role === 'user'
-                              ? 'bg-sage text-white'
-                              : 'bg-white text-gray-800 shadow-sm border'
-                          )}
-                        >
-                          <div className="whitespace-pre-wrap break-words">
-                            {message.role === 'assistant' ? renderMarkdown(message.content) : message.content}
-                          </div>
+                        <div className="whitespace-pre-wrap break-words">
+                          {message.role === 'assistant' ? renderMarkdown(message.content) : message.content}
                         </div>
                       </div>
-                    );
-                  })}
+                    </div>
+                  ))}
                   
                   {isLoading && (
                     <div className="flex justify-start">
