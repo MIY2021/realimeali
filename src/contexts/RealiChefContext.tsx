@@ -95,10 +95,10 @@ export const RealiChefProvider = ({ children }: RealiChefProviderProps) => {
     }
   }, [user, hasLoadedHistory]);
 
-  // Add AIStartMessage when chat opens for the first time this session
+  // Add AIStartMessage at the top when chat opens for the first time this session
   useEffect(() => {
     if (isOpen && hasLoadedHistory && user && !hasShownWelcomeThisSession) {
-      console.log('🔍 Adding AIStartMessage for this session');
+      console.log('🔍 Adding AIStartMessage at top for this session');
       const welcomeMessage = getContextualWelcomeMessage(pageContext.page);
       const aiStartMessage: ChatMessage = {
         role: 'assistant',
@@ -107,7 +107,8 @@ export const RealiChefProvider = ({ children }: RealiChefProviderProps) => {
         page_context: pageContext
       };
       
-      addMessage(aiStartMessage);
+      // Place the AIStartMessage at the beginning of the messages array
+      setMessages(prev => [aiStartMessage, ...prev]);
       setHasShownWelcomeThisSession(true);
     }
   }, [isOpen, hasLoadedHistory, user, hasShownWelcomeThisSession, pageContext.page]);
