@@ -52,6 +52,23 @@ export const RealiChefProvider = ({ children }: RealiChefProviderProps) => {
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [hasLoadedHistory, setHasLoadedHistory] = useState(false);
 
+  // DEBUG: Track isOpen state changes
+  useEffect(() => {
+    console.log('🔍 CONTEXT DEBUG: isOpen state changed to:', isOpen);
+  }, [isOpen]);
+
+  // DEBUG: Enhanced setIsOpen wrapper
+  const debugSetIsOpen = (open: boolean) => {
+    console.log('🔍 CONTEXT DEBUG: setIsOpen called with:', open);
+    console.log('🔍 CONTEXT DEBUG: Current isOpen before update:', isOpen);
+    try {
+      setIsOpen(open);
+      console.log('🔍 CONTEXT DEBUG: setIsOpen executed successfully');
+    } catch (error) {
+      console.error('🔍 CONTEXT DEBUG: Error in setIsOpen:', error);
+    }
+  };
+
   // Update page context based on current route
   useEffect(() => {
     const path = location.pathname;
@@ -91,6 +108,7 @@ export const RealiChefProvider = ({ children }: RealiChefProviderProps) => {
   };
 
   const generateContextualWelcome = () => {
+    console.log('🔍 CONTEXT DEBUG: generateContextualWelcome called');
     const welcomeMessage = getContextualWelcomeMessage(pageContext.page);
     const welcomeChatMessage: ChatMessage = {
       role: 'assistant',
@@ -100,6 +118,7 @@ export const RealiChefProvider = ({ children }: RealiChefProviderProps) => {
     };
     
     addMessage(welcomeChatMessage);
+    console.log('🔍 CONTEXT DEBUG: Welcome message added');
   };
 
   const loadChatHistory = async () => {
@@ -194,7 +213,7 @@ export const RealiChefProvider = ({ children }: RealiChefProviderProps) => {
       pageContext,
       updatePageContext,
       isOpen,
-      setIsOpen,
+      setIsOpen: debugSetIsOpen,
       messages,
       addMessage,
       clearChatHistory,

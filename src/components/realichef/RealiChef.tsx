@@ -19,12 +19,10 @@ interface ChatMessage {
 
 // Simple markdown renderer for bold text
 const renderMarkdown = (text: string) => {
-  // Replace **text** with <strong>text</strong>
   const boldRegex = /\*\*(.*?)\*\*/g;
   const parts = text.split(boldRegex);
   
   return parts.map((part, index) => {
-    // Every odd index is the content inside **
     if (index % 2 === 1) {
       return <strong key={index}>{part}</strong>;
     }
@@ -48,10 +46,15 @@ export const RealiChef = () => {
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [hasError, setHasError] = useState(false);
-  const [hasShownWelcome, setHasShownWelcome] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Scroll to bottom function
+  // Debug logging for state changes
+  useEffect(() => {
+    console.log('🔍 RealiChef DEBUG: isOpen changed to:', isOpen);
+    console.log('🔍 RealiChef DEBUG: Component re-rendered with isOpen:', isOpen);
+  }, [isOpen]);
+
+  // Scroll to bottom function - only for specific cases
   const scrollToBottomInstantly = () => {
     if (messagesEndRef.current) {
       const container = messagesEndRef.current.parentElement;
@@ -61,35 +64,50 @@ export const RealiChef = () => {
     }
   };
 
-  // Only scroll when loading indicator appears
+  // Only scroll when loading indicator appears or chat first opens
   useEffect(() => {
     if (isLoading) {
       scrollToBottomInstantly();
     }
   }, [isLoading]);
 
-  // Handle chat opening - scroll once and show welcome message once
+  // Handle initial chat opening
   useEffect(() => {
-    if (isOpen && !isLoadingHistory && user && !hasShownWelcome) {
-      // Scroll to bottom once when chat opens
+    if (isOpen && !isLoadingHistory && user) {
+      console.log('🔍 Chat opened, scrolling to bottom');
       scrollToBottomInstantly();
+    }
+  }, [isOpen, isLoadingHistory, user]);
+
+  // COMPLETELY REBUILT BUTTON CLICK HANDLER
+  const handleChatButtonClick = (event: React.MouseEvent) => {
+    console.log('🔍 DESKTOP BUTTON DEBUG: Click event triggered');
+    console.log('🔍 DESKTOP BUTTON DEBUG: Event details:', {
+      type: event.type,
+      target: event.target,
+      currentTarget: event.currentTarget
+    });
+    console.log('🔍 DESKTOP BUTTON DEBUG: Current isOpen state before click:', isOpen);
+    
+    // Prevent any event bubbling issues
+    event.preventDefault();
+    event.stopPropagation();
+    
+    try {
+      console.log('🔍 DESKTOP BUTTON DEBUG: About to call setIsOpen with:', !isOpen);
+      setIsOpen(!isOpen);
+      console.log('🔍 DESKTOP BUTTON DEBUG: setIsOpen called successfully');
       
-      // Show welcome message once per session
-      generateContextualWelcome();
-      setHasShownWelcome(true);
+      // Generate welcome message only when opening chat
+      if (!isOpen && user) {
+        console.log('🔍 DESKTOP BUTTON DEBUG: Generating welcome message');
+        setTimeout(() => {
+          generateContextualWelcome();
+        }, 100);
+      }
+    } catch (error) {
+      console.error('🔍 DESKTOP BUTTON DEBUG: Error in click handler:', error);
     }
-  }, [isOpen, isLoadingHistory, user, hasShownWelcome, generateContextualWelcome]);
-
-  // Reset welcome flag when chat closes
-  useEffect(() => {
-    if (!isOpen) {
-      setHasShownWelcome(false);
-    }
-  }, [isOpen]);
-
-  // Handle chat button click
-  const handleChatButtonClick = () => {
-    setIsOpen(!isOpen);
   };
 
   const sendMessage = async () => {
@@ -174,19 +192,22 @@ export const RealiChef = () => {
     }
   };
 
+  console.log('🔍 RealiChef RENDER DEBUG: isOpen =', isOpen, 'shouldShowButton =', !isOpen);
+
   return (
     <>
-      {/* Floating Chef Hat Icon - Hide when chat is open */}
+      {/* Floating Chef Hat Icon - COMPLETELY REBUILT */}
       {!isOpen && (
-        <div className="fixed bottom-20 right-4 z-[60] md:bottom-12 md:right-8">
+        <div className="fixed bottom-20 right-4 z-[60] md:bottom-16 md:right-8">
           <Button
             onClick={handleChatButtonClick}
             className={cn(
               "h-14 w-14 rounded-full shadow-lg transition-all duration-300 hover:scale-110",
               "bg-gradient-to-r from-sage/40 to-terracotta/40 hover:from-sage/50 hover:to-terracotta/50",
-              "pointer-events-auto cursor-pointer"
+              "pointer-events-auto cursor-pointer border-2 border-white/20"
             )}
             size="sm"
+            type="button"
           >
             <div className="relative">
               <img 
