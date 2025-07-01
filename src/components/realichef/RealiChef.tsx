@@ -48,6 +48,7 @@ export const RealiChef = () => {
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [hasError, setHasError] = useState(false);
+  const [hasShownWelcomeThisSession, setHasShownWelcomeThisSession] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -64,25 +65,33 @@ export const RealiChef = () => {
     }
   }, [isLoading]);
 
+  // Scroll to bottom when chat opens and history is loaded
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && !isLoadingHistory) {
       setTimeout(() => {
         scrollToBottom();
       }, 100);
     }
-  }, [isOpen]);
+  }, [isOpen, isLoadingHistory]);
 
   // Handle chat button click - generate contextual welcome only when user opens chat
-  const handleChatButtonClick = () => {
+  const handleChatButtonClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    console.log('Chat button clicked, current isOpen:', isOpen);
+    
     const wasOpen = isOpen;
     setIsOpen(!isOpen);
     
-    // Only generate welcome message when opening chat (not closing)
-    if (!wasOpen && user && !isLoadingHistory) {
+    // Only generate welcome message when opening chat (not closing) and if not shown this session
+    if (!wasOpen && user && !isLoadingHistory && !hasShownWelcomeThisSession) {
+      console.log('Generating contextual welcome message');
       // Small delay to ensure the chat UI is rendered
       setTimeout(() => {
         generateContextualWelcome();
-      }, 100);
+        setHasShownWelcomeThisSession(true);
+      }, 200);
     }
   };
 
@@ -147,6 +156,7 @@ export const RealiChef = () => {
   const handleClearHistory = async () => {
     try {
       await clearChatHistory();
+      setHasShownWelcomeThisSession(false); // Reset welcome flag when clearing history
       toast({
         title: "Chat history cleared",
         description: "Your chat history has been cleared successfully.",
