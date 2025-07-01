@@ -95,10 +95,10 @@ export const RealiChefProvider = ({ children }: RealiChefProviderProps) => {
     }
   }, [user, hasLoadedHistory]);
 
-  // Add AIStartMessage at the top when chat opens for the first time this session
+  // Add AIStartMessage at the top when chat opens (fresh every time)
   useEffect(() => {
-    if (isOpen && hasLoadedHistory && user && !hasShownWelcomeThisSession) {
-      console.log('🔍 Adding AIStartMessage at top for this session');
+    if (isOpen && hasLoadedHistory && user) {
+      console.log('🔍 Adding fresh AIStartMessage at top');
       const welcomeMessage = getContextualWelcomeMessage(pageContext.page);
       const aiStartMessage: ChatMessage = {
         role: 'assistant',
@@ -107,11 +107,16 @@ export const RealiChefProvider = ({ children }: RealiChefProviderProps) => {
         page_context: pageContext
       };
       
-      // Place the AIStartMessage at the beginning of the messages array
-      setMessages(prev => [aiStartMessage, ...prev]);
-      setHasShownWelcomeThisSession(true);
+      // Always place the AIStartMessage at the beginning, never save to DB
+      setMessages(prev => {
+        // Remove any existing welcome messages first
+        const filteredMessages = prev.filter(msg => 
+          !(msg.role === 'assistant' && msg.content.includes('👩‍🍳'))
+        );
+        return [aiStartMessage, ...filteredMessages];
+      });
     }
-  }, [isOpen, hasLoadedHistory, user, hasShownWelcomeThisSession, pageContext.page]);
+  }, [isOpen, hasLoadedHistory, user, pageContext.page]);
 
   const getContextualWelcomeMessage = (page: string) => {
     const welcomes = {
