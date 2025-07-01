@@ -51,6 +51,7 @@ export const RealiChefProvider = ({ children }: RealiChefProviderProps) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [hasLoadedHistory, setHasLoadedHistory] = useState(false);
+  const [hasShownWelcomeThisSession, setHasShownWelcomeThisSession] = useState(false);
 
   // DEBUG: Track isOpen state changes
   useEffect(() => {
@@ -93,6 +94,23 @@ export const RealiChefProvider = ({ children }: RealiChefProviderProps) => {
       loadChatHistory();
     }
   }, [user, hasLoadedHistory]);
+
+  // Add AIStartMessage when chat opens for the first time this session
+  useEffect(() => {
+    if (isOpen && hasLoadedHistory && user && !hasShownWelcomeThisSession) {
+      console.log('🔍 Adding AIStartMessage for this session');
+      const welcomeMessage = getContextualWelcomeMessage(pageContext.page);
+      const aiStartMessage: ChatMessage = {
+        role: 'assistant',
+        content: welcomeMessage,
+        timestamp: new Date(),
+        page_context: pageContext
+      };
+      
+      addMessage(aiStartMessage);
+      setHasShownWelcomeThisSession(true);
+    }
+  }, [isOpen, hasLoadedHistory, user, hasShownWelcomeThisSession, pageContext.page]);
 
   const getContextualWelcomeMessage = (page: string) => {
     const welcomes = {
@@ -198,6 +216,7 @@ export const RealiChefProvider = ({ children }: RealiChefProviderProps) => {
       if (error) throw error;
       
       setMessages([]);
+      setHasShownWelcomeThisSession(false); // Reset welcome flag when clearing history
     } catch (error) {
       console.error('Error clearing chat history:', error);
       throw error;
