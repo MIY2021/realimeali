@@ -91,9 +91,6 @@ export const RealiChefProvider = ({ children }: RealiChefProviderProps) => {
   };
 
   const generateContextualWelcome = () => {
-    console.log('generateContextualWelcome called, messages length:', messages.length);
-    console.log('Current page context:', pageContext.page);
-    
     const welcomeMessage = getContextualWelcomeMessage(pageContext.page);
     const welcomeChatMessage: ChatMessage = {
       role: 'assistant',
@@ -102,7 +99,6 @@ export const RealiChefProvider = ({ children }: RealiChefProviderProps) => {
       page_context: pageContext
     };
     
-    console.log('Adding welcome message:', welcomeMessage);
     addMessage(welcomeChatMessage);
   };
 
@@ -164,7 +160,6 @@ export const RealiChefProvider = ({ children }: RealiChefProviderProps) => {
       timestamp: message.timestamp || new Date()
     };
     
-    console.log('Adding message to state:', messageWithTimestamp.content);
     setMessages(prev => [...prev, messageWithTimestamp]);
     
     if (user) {

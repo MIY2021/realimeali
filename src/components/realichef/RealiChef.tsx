@@ -48,9 +48,10 @@ export const RealiChef = () => {
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [hasError, setHasError] = useState(false);
+  const [hasShownWelcome, setHasShownWelcome] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Instant scroll to bottom - no animation
+  // Scroll to bottom function
   const scrollToBottomInstantly = () => {
     if (messagesEndRef.current) {
       const container = messagesEndRef.current.parentElement;
@@ -60,40 +61,34 @@ export const RealiChef = () => {
     }
   };
 
-  // Scroll on new messages
-  useEffect(() => {
-    if (messages.length > 0) {
-      scrollToBottomInstantly();
-    }
-  }, [messages]);
-
-  // Scroll when loading indicator appears
+  // Only scroll when loading indicator appears
   useEffect(() => {
     if (isLoading) {
       scrollToBottomInstantly();
     }
   }, [isLoading]);
 
-  // Handle chat opening - immediate scroll and welcome message
+  // Handle chat opening - scroll once and show welcome message once
   useEffect(() => {
-    if (isOpen && !isLoadingHistory && user) {
-      console.log('Chat opened, history loaded. Messages count:', messages.length);
-      
-      // Immediate scroll to bottom
+    if (isOpen && !isLoadingHistory && user && !hasShownWelcome) {
+      // Scroll to bottom once when chat opens
       scrollToBottomInstantly();
       
-      // Always show welcome message when chat is opened (simplified logic)
-      console.log('Generating welcome message...');
+      // Show welcome message once per session
       generateContextualWelcome();
+      setHasShownWelcome(true);
     }
-  }, [isOpen, isLoadingHistory, user, generateContextualWelcome]);
+  }, [isOpen, isLoadingHistory, user, hasShownWelcome, generateContextualWelcome]);
 
-  // Handle chat button click - simplified
-  const handleChatButtonClick = (e: React.MouseEvent) => {
-    console.log('Chat button clicked, current isOpen:', isOpen);
-    console.log('Button click event:', e.type);
-    
-    // Toggle chat state
+  // Reset welcome flag when chat closes
+  useEffect(() => {
+    if (!isOpen) {
+      setHasShownWelcome(false);
+    }
+  }, [isOpen]);
+
+  // Handle chat button click
+  const handleChatButtonClick = () => {
     setIsOpen(!isOpen);
   };
 
@@ -112,7 +107,7 @@ export const RealiChef = () => {
     setIsLoading(true);
     setHasError(false);
 
-    // Immediate scroll for new message
+    // Scroll for new user message
     setTimeout(() => {
       scrollToBottomInstantly();
     }, 50);
@@ -181,30 +176,31 @@ export const RealiChef = () => {
 
   return (
     <>
-      {/* Floating Chef Hat Icon - Moved lower on desktop */}
-      <div className="fixed bottom-20 right-4 z-[60] md:bottom-16 md:right-8">
-        <Button
-          onClick={handleChatButtonClick}
-          className={cn(
-            "h-14 w-14 rounded-full shadow-lg transition-all duration-300 hover:scale-110",
-            "bg-gradient-to-r from-sage/40 to-terracotta/40 hover:from-sage/50 hover:to-terracotta/50",
-            "pointer-events-auto cursor-pointer",
-            isOpen && "scale-95"
-          )}
-          size="sm"
-        >
-          <div className="relative">
-            <img 
-              src="/lovable-uploads/48f73020-608a-4375-a69f-2e7bc147e319.png" 
-              alt="Chef Hat"
-              className="h-6 w-6 text-white"
-            />
-            <Sparkles 
-              className="absolute -top-1 -right-1 h-3 w-3 text-yellow-300 animate-pulse" 
-            />
-          </div>
-        </Button>
-      </div>
+      {/* Floating Chef Hat Icon - Hide when chat is open */}
+      {!isOpen && (
+        <div className="fixed bottom-20 right-4 z-[60] md:bottom-12 md:right-8">
+          <Button
+            onClick={handleChatButtonClick}
+            className={cn(
+              "h-14 w-14 rounded-full shadow-lg transition-all duration-300 hover:scale-110",
+              "bg-gradient-to-r from-sage/40 to-terracotta/40 hover:from-sage/50 hover:to-terracotta/50",
+              "pointer-events-auto cursor-pointer"
+            )}
+            size="sm"
+          >
+            <div className="relative">
+              <img 
+                src="/lovable-uploads/48f73020-608a-4375-a69f-2e7bc147e319.png" 
+                alt="Chef Hat"
+                className="h-6 w-6 text-white"
+              />
+              <Sparkles 
+                className="absolute -top-1 -right-1 h-3 w-3 text-yellow-300 animate-pulse" 
+              />
+            </div>
+          </Button>
+        </div>
+      )}
 
       {/* Chat Interface */}
       {isOpen && (
@@ -219,7 +215,7 @@ export const RealiChef = () => {
           <div className={cn(
             "fixed z-50",
             "top-4 bottom-20 left-4 right-4 animate-in slide-in-from-bottom-full duration-300 ease-out",
-            "md:bottom-28 md:right-8 md:w-80 md:left-auto md:h-96 md:top-auto md:inset-auto",
+            "md:bottom-24 md:right-8 md:w-80 md:left-auto md:h-96 md:top-auto md:inset-auto",
             "md:animate-in md:fade-in-0 md:scale-in-95 md:duration-200"
           )}>
             <div className="bg-white rounded-lg md:rounded-lg shadow-xl border border-gray-200 overflow-hidden h-full flex flex-col">
