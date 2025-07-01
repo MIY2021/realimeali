@@ -106,8 +106,8 @@ export const RealiChefProvider = ({ children }: RealiChefProviderProps) => {
         page_context: pageContext
       };
       
-      // Add as first message and save to database
-      setMessages(prev => [welcomeMessage, ...prev]);
+      // Add message to end in chronological order and save to database
+      setMessages(prev => [...prev, welcomeMessage]);
       if (user) {
         saveChatMessage(welcomeMessage);
       }

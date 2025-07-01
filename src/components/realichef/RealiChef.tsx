@@ -47,6 +47,7 @@ export const RealiChef = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [hasError, setHasError] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
 
   // Debug logging for state changes
   useEffect(() => {
@@ -64,6 +65,30 @@ export const RealiChef = () => {
     }
   };
 
+  // Scroll to position welcome message at top of viewport
+  const scrollToShowWelcomeAtTop = () => {
+    if (messagesContainerRef.current && messages.length > 0) {
+      const container = messagesContainerRef.current;
+      const lastMessage = messages[messages.length - 1];
+      
+      // Check if the last message is a welcome message
+      if (lastMessage.role === 'assistant' && lastMessage.content.includes("Hi! I'm RealiChef")) {
+        // Find the welcome message element
+        const messageElements = container.querySelectorAll('[data-message-index]');
+        const welcomeElement = messageElements[messageElements.length - 1];
+        
+        if (welcomeElement) {
+          // Scroll to position the welcome message at the top of the viewport
+          const elementRect = (welcomeElement as HTMLElement).getBoundingClientRect();
+          const containerRect = container.getBoundingClientRect();
+          const scrollOffset = elementRect.top - containerRect.top + container.scrollTop;
+          
+          container.scrollTop = scrollOffset;
+        }
+      }
+    }
+  };
+
   // Only scroll when loading indicator appears or chat first opens
   useEffect(() => {
     if (isLoading) {
@@ -71,15 +96,21 @@ export const RealiChef = () => {
     }
   }, [isLoading]);
 
-  // Handle initial chat opening - scroll to bottom to show newest message
+  // Handle initial chat opening and welcome message positioning
   useEffect(() => {
-    if (isOpen && !isLoadingHistory && user) {
-      console.log('🔍 Chat opened, scrolling to bottom to show newest message');
+    if (isOpen && !isLoadingHistory && user && messages.length > 0) {
+      console.log('🔍 Chat opened, checking for welcome message positioning');
       setTimeout(() => {
-        scrollToBottomInstantly();
+        const lastMessage = messages[messages.length - 1];
+        if (lastMessage.role === 'assistant' && lastMessage.content.includes("Hi! I'm RealiChef")) {
+          console.log('🔍 Welcome message detected, scrolling to show at top of viewport');
+          scrollToShowWelcomeAtTop();
+        } else {
+          scrollToBottomInstantly();
+        }
       }, 100);
     }
-  }, [isOpen, isLoadingHistory, user]);
+  }, [isOpen, isLoadingHistory, user, messages]);
 
   // COMPLETELY REBUILT BUTTON CLICK HANDLER
   const handleChatButtonClick = (event: React.MouseEvent) => {
@@ -285,7 +316,7 @@ export const RealiChef = () => {
               </div>
 
               {/* Messages */}
-              <div className="flex-1 overflow-y-auto bg-gray-50 min-h-0 p-4 space-y-3">
+              <div ref={messagesContainerRef} className="flex-1 overflow-y-auto bg-gray-50 min-h-0 p-4 space-y-3">
                   {isLoadingHistory && (
                     <div className="flex justify-center py-4">
                       <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-sage"></div>
@@ -295,6 +326,7 @@ export const RealiChef = () => {
                   {messages.map((message, index) => (
                     <div
                       key={message.id || index}
+                      data-message-index={index}
                       className={cn(
                         "flex",
                         message.role === 'user' ? 'justify-end' : 'justify-start'
