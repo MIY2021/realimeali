@@ -71,17 +71,12 @@ export const RealiChef = () => {
     }
   }, [isLoading]);
 
-  // Handle initial chat opening - scroll to top to show AIStartMessage
+  // Handle initial chat opening - scroll to bottom to show newest message
   useEffect(() => {
     if (isOpen && !isLoadingHistory && user) {
-      console.log('🔍 Chat opened, scrolling to top to show AIStartMessage');
+      console.log('🔍 Chat opened, scrolling to bottom to show newest message');
       setTimeout(() => {
-        if (messagesEndRef.current) {
-          const container = messagesEndRef.current.parentElement;
-          if (container) {
-            container.scrollTop = 0; // Scroll to top
-          }
-        }
+        scrollToBottomInstantly();
       }, 100);
     }
   }, [isOpen, isLoadingHistory, user]);

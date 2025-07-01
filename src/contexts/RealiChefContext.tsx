@@ -107,13 +107,8 @@ export const RealiChefProvider = ({ children }: RealiChefProviderProps) => {
         page_context: pageContext
       };
       
-      // Insert at the beginning to appear at top
-      setMessages(prev => [aiStartMessage, ...prev]);
+      addMessage(aiStartMessage);
       setHasShownWelcomeThisSession(true);
-      
-      if (user) {
-        saveChatMessage(aiStartMessage);
-      }
     }
   }, [isOpen, hasLoadedHistory, user, hasShownWelcomeThisSession, pageContext.page]);
 
