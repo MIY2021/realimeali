@@ -73,21 +73,18 @@ export const RealiChef = () => {
       
       // Check if the last message is a welcome message
       if (lastMessage.role === 'assistant' && lastMessage.content.includes("Hi! I'm RealiChef")) {
-        // Wait for DOM to be ready, then scroll to position welcome message at top
+        // Use a simple viewport-based approach
         setTimeout(() => {
-          const messageElements = container.querySelectorAll('[data-message-index]');
-          const welcomeElement = messageElements[messageElements.length - 1] as HTMLElement;
+          const containerHeight = container.clientHeight;
+          const scrollHeight = container.scrollHeight;
           
-          if (welcomeElement) {
-            // Calculate the scroll position to put the welcome message at the top
-            const containerPaddingTop = 16; // Account for container padding
-            const welcomeElementOffsetTop = welcomeElement.offsetTop;
-            const targetScrollTop = welcomeElementOffsetTop - containerPaddingTop;
-            
-            container.scrollTop = Math.max(0, targetScrollTop);
-            console.log('🔍 Positioned welcome message at top of viewport, scrollTop:', targetScrollTop);
-          }
-        }, 200);
+          // Position the welcome message at the top of the visible viewport
+          // This leaves all previous history above, accessible by scrolling up
+          const targetScrollTop = scrollHeight - containerHeight;
+          
+          container.scrollTop = Math.max(0, targetScrollTop);
+          console.log('🔍 Positioned welcome message at top of viewport. ContainerHeight:', containerHeight, 'ScrollHeight:', scrollHeight, 'TargetScrollTop:', targetScrollTop);
+        }, 100);
       }
     }
   };
