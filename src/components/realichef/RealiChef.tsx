@@ -35,7 +35,16 @@ const renderMarkdown = (text: string) => {
 export const RealiChef = () => {
   const { user } = useAuth();
   const { toast } = useToast();
-  const { pageContext, isOpen, setIsOpen, messages, addMessage, clearChatHistory, isLoadingHistory } = useRealiChef();
+  const { 
+    pageContext, 
+    isOpen, 
+    setIsOpen, 
+    messages, 
+    addMessage, 
+    clearChatHistory, 
+    isLoadingHistory,
+    generateContextualWelcome
+  } = useRealiChef();
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [hasError, setHasError] = useState(false);
@@ -49,47 +58,32 @@ export const RealiChef = () => {
     scrollToBottom();
   }, [messages]);
 
-  // Scroll to bottom when loading state changes (to show typing indicator)
   useEffect(() => {
     if (isLoading) {
       scrollToBottom();
     }
   }, [isLoading]);
 
-  // Scroll to bottom when chat is opened
   useEffect(() => {
     if (isOpen) {
-      // Small delay to ensure the chat UI is rendered before scrolling
       setTimeout(() => {
         scrollToBottom();
       }, 100);
     }
   }, [isOpen]);
 
-  // Add welcome message for new users when chat is first opened
-  useEffect(() => {
-    if (isOpen && user && !isLoadingHistory && messages.length === 0) {
-      const welcomeMessage = getWelcomeMessage(pageContext.page);
-      const welcomeChatMessage: ChatMessage = {
-        role: 'assistant',
-        content: welcomeMessage,
-        timestamp: new Date(),
-        page_context: pageContext
-      };
-      addMessage(welcomeChatMessage);
+  // Handle chat button click - generate contextual welcome only when user opens chat
+  const handleChatButtonClick = () => {
+    const wasOpen = isOpen;
+    setIsOpen(!isOpen);
+    
+    // Only generate welcome message when opening chat (not closing)
+    if (!wasOpen && user && !isLoadingHistory) {
+      // Small delay to ensure the chat UI is rendered
+      setTimeout(() => {
+        generateContextualWelcome();
+      }, 100);
     }
-  }, [isOpen, user, isLoadingHistory, messages.length, pageContext.page, addMessage]);
-
-  const getWelcomeMessage = (page: string) => {
-    const welcomes = {
-      'my-recipes': "👩‍🍳 Hey there! Looking for inspiration with your recipes? I can help with cooking tips, ingredient swaps, or suggest new recipes to try!",
-      'meal-planner': "👩‍🍳 Need help filling in this week's meals? I've got tons of ideas—just let me know what you're craving or what you want to plan around!",
-      'shopping-list': "👩‍🍳 Shopping list assistance at your service! Need help with ingredient substitutions, budget tips, or identifying items? I'm here to help!",
-      'recipe-detail': "👩‍🍳 Looking at this recipe? I can help with ingredient swaps, cooking techniques, or suggest what to serve alongside it!",
-      'find-recipes': "👩‍🍳 Ready to discover something delicious? I can help you find the perfect recipe based on your preferences or ingredients!",
-      'default': "👩‍🍳 Hi! I'm RealiChef, your friendly cooking assistant. What can I help you cook up today?"
-    };
-    return welcomes[page as keyof typeof welcomes] || welcomes.default;
   };
 
   const sendMessage = async () => {
@@ -107,13 +101,11 @@ export const RealiChef = () => {
     setIsLoading(true);
     setHasError(false);
 
-    // Scroll to bottom immediately after adding user message to show typing indicator
     setTimeout(() => {
       scrollToBottom();
     }, 100);
 
     try {
-      // Get conversation history for context (last 10 messages)
       const conversationHistory = messages.slice(-10).map(msg => ({
         role: msg.role,
         content: msg.content
@@ -177,10 +169,10 @@ export const RealiChef = () => {
 
   return (
     <>
-      {/* Floating Chef Hat Icon - Adjusted position for desktop */}
+      {/* Floating Chef Hat Icon */}
       <div className="fixed bottom-20 right-4 z-50 md:bottom-20 md:right-8">
         <Button
-          onClick={() => setIsOpen(!isOpen)}
+          onClick={handleChatButtonClick}
           className={cn(
             "h-14 w-14 rounded-full shadow-lg transition-all duration-300 hover:scale-110",
             "bg-gradient-to-r from-sage/40 to-terracotta/40 hover:from-sage/50 hover:to-terracotta/50",
@@ -210,12 +202,10 @@ export const RealiChef = () => {
             onClick={() => setIsOpen(false)}
           />
           
-          {/* Chat Container - Mobile-first with keyboard handling and proper bottom padding */}
+          {/* Chat Container */}
           <div className={cn(
             "fixed z-50",
-            // Mobile: positioned with consistent margins/borders and bottom padding to avoid nav menu
             "top-4 bottom-20 left-4 right-4 animate-in slide-in-from-bottom-full duration-300 ease-out",
-            // Desktop: positioned in corner with fade animation
             "md:bottom-32 md:right-8 md:w-80 md:left-auto md:h-96 md:top-auto md:inset-auto",
             "md:animate-in md:fade-in-0 md:scale-in-95 md:duration-200"
           )}>
@@ -256,7 +246,7 @@ export const RealiChef = () => {
                 </div>
               </div>
 
-              {/* Messages - Flexible height */}
+              {/* Messages */}
               <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50 min-h-0">
                 {isLoadingHistory && (
                   <div className="flex justify-center py-4">
@@ -302,9 +292,8 @@ export const RealiChef = () => {
                 <div ref={messagesEndRef} />
               </div>
 
-              {/* Footer - Redesigned with input first, then branding */}
+              {/* Footer */}
               <div className="p-4 border-t bg-white flex-shrink-0">
-                {/* Input section */}
                 <div className="flex gap-2 mb-3">
                   <Input
                     value={inputMessage}
@@ -324,7 +313,7 @@ export const RealiChef = () => {
                   </Button>
                 </div>
 
-                {/* Mobile footer with branding and minimize button - now below input */}
+                {/* Mobile footer */}
                 <div className="md:hidden flex items-center justify-between">
                   <div className="flex items-center gap-1">
                     <img 

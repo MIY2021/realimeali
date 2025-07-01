@@ -26,6 +26,7 @@ interface RealiChefContextType {
   addMessage: (message: ChatMessage) => void;
   clearChatHistory: () => Promise<void>;
   isLoadingHistory: boolean;
+  generateContextualWelcome: () => void;
 }
 
 const RealiChefContext = createContext<RealiChefContextType | undefined>(undefined);
@@ -51,7 +52,7 @@ export const RealiChefProvider = ({ children }: RealiChefProviderProps) => {
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [hasLoadedHistory, setHasLoadedHistory] = useState(false);
 
-  // Update page context based on current route
+  // Update page context based on current route - BUT DON'T AUTO-GENERATE MESSAGES
   useEffect(() => {
     const path = location.pathname;
     let page = 'home';
@@ -66,20 +67,8 @@ export const RealiChefProvider = ({ children }: RealiChefProviderProps) => {
       page = 'find-recipes';
     }
 
-    const previousPage = pageContext.page;
     setPageContext(prev => ({ ...prev, page }));
-
-    // Add context change message if user has existing conversation and page changed significantly
-    if (user && hasLoadedHistory && messages.length > 0 && previousPage !== page && previousPage !== 'home') {
-      const contextChangeMessage: ChatMessage = {
-        role: 'assistant',
-        content: getPageChangeMessage(page),
-        timestamp: new Date(),
-        page_context: { page, previous_page: previousPage }
-      };
-      addMessage(contextChangeMessage);
-    }
-  }, [location.pathname, user, hasLoadedHistory, messages.length, pageContext.page]);
+  }, [location.pathname]);
 
   // Load chat history when user is authenticated
   useEffect(() => {
@@ -88,16 +77,34 @@ export const RealiChefProvider = ({ children }: RealiChefProviderProps) => {
     }
   }, [user, hasLoadedHistory]);
 
-  const getPageChangeMessage = (page: string) => {
-    const messages = {
-      'my-recipes': "👩‍🍳 I see you're now looking at your recipes! I can help with cooking tips, ingredient swaps, or recipe inspiration.",
-      'meal-planner': "👩‍🍳 Now helping with meal planning! Let me know what you'd like to plan for this week.",
-      'shopping-list': "👩‍🍳 I'm here to help with your shopping list! Need help with ingredients or substitutions?",
+  const getContextualWelcomeMessage = (page: string) => {
+    const welcomes = {
+      'my-recipes': "👩‍🍳 I see you're looking at your recipes! I can help with cooking tips, ingredient swaps, or suggest new recipes to try.",
+      'meal-planner': "👩‍🍳 Ready to plan some meals? I can help you decide what to cook this week!",
+      'shopping-list': "👩‍🍳 Need help with your shopping list? I can assist with ingredient substitutions or shopping tips!",
       'recipe-detail': "👩‍🍳 Looking at a specific recipe? I can help with cooking techniques or ingredient alternatives.",
-      'find-recipes': "👩‍🍳 Ready to discover new recipes? I can help you find something perfect!",
-      'default': "👩‍🍳 I'm here to help with whatever you're cooking up!"
+      'find-recipes': "👩‍🍳 Let's find you something delicious! What are you in the mood for?",
+      'home': "👩‍🍳 Hi! I'm RealiChef, your cooking assistant. What can I help you with today?",
+      'default': "👩‍🍳 Hi! I'm RealiChef, your cooking assistant. What can I help you with today?"
     };
-    return messages[page as keyof typeof messages] || messages.default;
+    return welcomes[page as keyof typeof welcomes] || welcomes.default;
+  };
+
+  const generateContextualWelcome = () => {
+    // Only generate welcome message if there are no messages OR if the last message is old
+    const shouldGenerateWelcome = messages.length === 0 || 
+      (messages.length > 0 && messages[messages.length - 1].timestamp < new Date(Date.now() - 24 * 60 * 60 * 1000));
+
+    if (shouldGenerateWelcome) {
+      const welcomeMessage = getContextualWelcomeMessage(pageContext.page);
+      const welcomeChatMessage: ChatMessage = {
+        role: 'assistant',
+        content: welcomeMessage,
+        timestamp: new Date(),
+        page_context: pageContext
+      };
+      addMessage(welcomeChatMessage);
+    }
   };
 
   const loadChatHistory = async () => {
@@ -110,7 +117,7 @@ export const RealiChefProvider = ({ children }: RealiChefProviderProps) => {
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: true })
-        .limit(100); // Load last 100 messages
+        .limit(100);
 
       if (error) throw error;
 
@@ -126,7 +133,7 @@ export const RealiChefProvider = ({ children }: RealiChefProviderProps) => {
       setHasLoadedHistory(true);
     } catch (error) {
       console.error('Error loading chat history:', error);
-      setHasLoadedHistory(true); // Still mark as loaded to prevent infinite loops
+      setHasLoadedHistory(true);
     } finally {
       setIsLoadingHistory(false);
     }
@@ -159,7 +166,6 @@ export const RealiChefProvider = ({ children }: RealiChefProviderProps) => {
     
     setMessages(prev => [...prev, messageWithTimestamp]);
     
-    // Save to database if user is authenticated
     if (user) {
       saveChatMessage(messageWithTimestamp);
     }
@@ -196,7 +202,8 @@ export const RealiChefProvider = ({ children }: RealiChefProviderProps) => {
       messages,
       addMessage,
       clearChatHistory,
-      isLoadingHistory
+      isLoadingHistory,
+      generateContextualWelcome
     }}>
       {children}
     </RealiChefContext.Provider>
