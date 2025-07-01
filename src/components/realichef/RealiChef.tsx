@@ -73,18 +73,21 @@ export const RealiChef = () => {
       
       // Check if the last message is a welcome message
       if (lastMessage.role === 'assistant' && lastMessage.content.includes("Hi! I'm RealiChef")) {
-        // Find the welcome message element
-        const messageElements = container.querySelectorAll('[data-message-index]');
-        const welcomeElement = messageElements[messageElements.length - 1];
-        
-        if (welcomeElement) {
-          // Scroll to position the welcome message at the top of the viewport
-          const elementRect = (welcomeElement as HTMLElement).getBoundingClientRect();
-          const containerRect = container.getBoundingClientRect();
-          const scrollOffset = elementRect.top - containerRect.top + container.scrollTop;
+        // Wait for DOM to be ready, then scroll to position welcome message at top
+        setTimeout(() => {
+          const messageElements = container.querySelectorAll('[data-message-index]');
+          const welcomeElement = messageElements[messageElements.length - 1] as HTMLElement;
           
-          container.scrollTop = scrollOffset;
-        }
+          if (welcomeElement) {
+            // Calculate the scroll position to put the welcome message at the top
+            const containerPaddingTop = 16; // Account for container padding
+            const welcomeElementOffsetTop = welcomeElement.offsetTop;
+            const targetScrollTop = welcomeElementOffsetTop - containerPaddingTop;
+            
+            container.scrollTop = Math.max(0, targetScrollTop);
+            console.log('🔍 Positioned welcome message at top of viewport, scrollTop:', targetScrollTop);
+          }
+        }, 200);
       }
     }
   };
@@ -100,17 +103,27 @@ export const RealiChef = () => {
   useEffect(() => {
     if (isOpen && !isLoadingHistory && user && messages.length > 0) {
       console.log('🔍 Chat opened, checking for welcome message positioning');
-      setTimeout(() => {
-        const lastMessage = messages[messages.length - 1];
-        if (lastMessage.role === 'assistant' && lastMessage.content.includes("Hi! I'm RealiChef")) {
-          console.log('🔍 Welcome message detected, scrolling to show at top of viewport');
-          scrollToShowWelcomeAtTop();
-        } else {
+      const lastMessage = messages[messages.length - 1];
+      if (lastMessage.role === 'assistant' && lastMessage.content.includes("Hi! I'm RealiChef")) {
+        console.log('🔍 Welcome message detected, scrolling to show at top of viewport');
+        scrollToShowWelcomeAtTop();
+      } else {
+        setTimeout(() => {
           scrollToBottomInstantly();
-        }
-      }, 100);
+        }, 100);
+      }
     }
   }, [isOpen, isLoadingHistory, user, messages]);
+
+  // Watch for new welcome messages being added
+  useEffect(() => {
+    if (messages.length > 0) {
+      const lastMessage = messages[messages.length - 1];
+      if (lastMessage.role === 'assistant' && lastMessage.content.includes("Hi! I'm RealiChef") && isOpen) {
+        scrollToShowWelcomeAtTop();
+      }
+    }
+  }, [messages, isOpen]);
 
   // COMPLETELY REBUILT BUTTON CLICK HANDLER
   const handleChatButtonClick = (event: React.MouseEvent) => {
