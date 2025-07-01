@@ -53,7 +53,6 @@ export const RealiChef = () => {
   // Instant scroll to bottom - no animation
   const scrollToBottomInstantly = () => {
     if (messagesEndRef.current) {
-      // Use scrollTop for immediate positioning
       const container = messagesEndRef.current.parentElement;
       if (container) {
         container.scrollTop = container.scrollHeight;
@@ -77,24 +76,17 @@ export const RealiChef = () => {
 
   // Handle chat opening - immediate scroll and welcome message
   useEffect(() => {
-    if (isOpen && !isLoadingHistory) {
+    if (isOpen && !isLoadingHistory && user) {
       console.log('Chat opened, history loaded. Messages count:', messages.length);
       
       // Immediate scroll to bottom
       scrollToBottomInstantly();
       
-      // Generate welcome message if needed
-      if (user) {
-        const shouldShowWelcome = messages.length === 0 || 
-          (messages.length > 0 && messages[messages.length - 1].timestamp < new Date(Date.now() - 24 * 60 * 60 * 1000));
-        
-        console.log('Should show welcome:', shouldShowWelcome);
-        if (shouldShowWelcome) {
-          generateContextualWelcome();
-        }
-      }
+      // Always show welcome message when chat is opened (simplified logic)
+      console.log('Generating welcome message...');
+      generateContextualWelcome();
     }
-  }, [isOpen, isLoadingHistory, user, messages.length, generateContextualWelcome]);
+  }, [isOpen, isLoadingHistory, user, generateContextualWelcome]);
 
   // Handle chat button click - simplified
   const handleChatButtonClick = (e: React.MouseEvent) => {
@@ -189,8 +181,8 @@ export const RealiChef = () => {
 
   return (
     <>
-      {/* Floating Chef Hat Icon - Increased z-index and improved positioning */}
-      <div className="fixed bottom-20 right-4 z-[60] md:bottom-20 md:right-8">
+      {/* Floating Chef Hat Icon - Moved lower on desktop */}
+      <div className="fixed bottom-20 right-4 z-[60] md:bottom-16 md:right-8">
         <Button
           onClick={handleChatButtonClick}
           className={cn(
@@ -227,7 +219,7 @@ export const RealiChef = () => {
           <div className={cn(
             "fixed z-50",
             "top-4 bottom-20 left-4 right-4 animate-in slide-in-from-bottom-full duration-300 ease-out",
-            "md:bottom-32 md:right-8 md:w-80 md:left-auto md:h-96 md:top-auto md:inset-auto",
+            "md:bottom-28 md:right-8 md:w-80 md:left-auto md:h-96 md:top-auto md:inset-auto",
             "md:animate-in md:fade-in-0 md:scale-in-95 md:duration-200"
           )}>
             <div className="bg-white rounded-lg md:rounded-lg shadow-xl border border-gray-200 overflow-hidden h-full flex flex-col">
