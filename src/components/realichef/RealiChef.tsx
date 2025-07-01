@@ -1,16 +1,20 @@
 
 import { useState, useEffect, useRef } from 'react';
-import { Minus, Sparkles } from 'lucide-react';
+import { Minus, Sparkles, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useRealiChef } from '@/contexts/RealiChefContext';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 
 interface ChatMessage {
+  id?: string;
   role: 'user' | 'assistant';
   content: string;
   timestamp: Date;
+  page_context?: any;
 }
 
 // Simple markdown renderer for bold text
@@ -29,8 +33,9 @@ const renderMarkdown = (text: string) => {
 };
 
 export const RealiChef = () => {
-  const { pageContext, isOpen, setIsOpen } = useRealiChef();
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const { pageContext, isOpen, setIsOpen, messages, addMessage, clearChatHistory, isLoadingHistory } = useRealiChef();
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [hasError, setHasError] = useState(false);
@@ -61,17 +66,19 @@ export const RealiChef = () => {
     }
   }, [isOpen]);
 
-  // Update welcome message when page context changes, even if chat is already open
+  // Add welcome message for new users when chat is first opened
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && user && !isLoadingHistory && messages.length === 0) {
       const welcomeMessage = getWelcomeMessage(pageContext.page);
-      setMessages([{
+      const welcomeChatMessage: ChatMessage = {
         role: 'assistant',
         content: welcomeMessage,
-        timestamp: new Date()
-      }]);
+        timestamp: new Date(),
+        page_context: pageContext
+      };
+      addMessage(welcomeChatMessage);
     }
-  }, [isOpen, pageContext.page]);
+  }, [isOpen, user, isLoadingHistory, messages.length, pageContext.page, addMessage]);
 
   const getWelcomeMessage = (page: string) => {
     const welcomes = {
@@ -91,10 +98,11 @@ export const RealiChef = () => {
     const userMessage: ChatMessage = {
       role: 'user',
       content: inputMessage,
-      timestamp: new Date()
+      timestamp: new Date(),
+      page_context: pageContext
     };
 
-    setMessages(prev => [...prev, userMessage]);
+    addMessage(userMessage);
     setInputMessage('');
     setIsLoading(true);
     setHasError(false);
@@ -105,8 +113,8 @@ export const RealiChef = () => {
     }, 100);
 
     try {
-      // Get conversation history for context
-      const conversationHistory = messages.map(msg => ({
+      // Get conversation history for context (last 10 messages)
+      const conversationHistory = messages.slice(-10).map(msg => ({
         role: msg.role,
         content: msg.content
       }));
@@ -124,21 +132,39 @@ export const RealiChef = () => {
       const assistantMessage: ChatMessage = {
         role: 'assistant',
         content: data.response || "👩‍🍳 Sorry, I had trouble with that. Could you try asking again?",
-        timestamp: new Date()
+        timestamp: new Date(),
+        page_context: pageContext
       };
 
-      setMessages(prev => [...prev, assistantMessage]);
+      addMessage(assistantMessage);
     } catch (error) {
       console.error('Error sending message to RealiChef:', error);
       setHasError(true);
       const errorMessage: ChatMessage = {
         role: 'assistant',
         content: "👩‍🍳 Oops! I had trouble processing that. Please try again in a moment!",
-        timestamp: new Date()
+        timestamp: new Date(),
+        page_context: pageContext
       };
-      setMessages(prev => [...prev, errorMessage]);
+      addMessage(errorMessage);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleClearHistory = async () => {
+    try {
+      await clearChatHistory();
+      toast({
+        title: "Chat history cleared",
+        description: "Your chat history has been cleared successfully.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to clear chat history. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -206,22 +232,41 @@ export const RealiChef = () => {
                     <span className="font-semibold">RealiChef | AI Assistant</span>
                     <Sparkles className="h-4 w-4 animate-pulse" />
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setIsOpen(false)}
-                    className="text-white hover:bg-white/20 h-6 w-6 p-0"
-                  >
-                    <Minus className="h-4 w-4" />
-                  </Button>
+                  <div className="flex items-center gap-1">
+                    {messages.length > 0 && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleClearHistory}
+                        className="text-white hover:bg-white/20 h-6 w-6 p-0"
+                        title="Clear chat history"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    )}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setIsOpen(false)}
+                      className="text-white hover:bg-white/20 h-6 w-6 p-0"
+                    >
+                      <Minus className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               </div>
 
               {/* Messages - Flexible height */}
               <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50 min-h-0">
+                {isLoadingHistory && (
+                  <div className="flex justify-center py-4">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-sage"></div>
+                  </div>
+                )}
+                
                 {messages.map((message, index) => (
                   <div
-                    key={index}
+                    key={message.id || index}
                     className={cn(
                       "flex",
                       message.role === 'user' ? 'justify-end' : 'justify-start'
@@ -290,14 +335,27 @@ export const RealiChef = () => {
                     <span className="text-xs text-gray-500">RealiChef | AI Assistant</span>
                     <Sparkles className="h-3 w-3 text-yellow-400" />
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setIsOpen(false)}
-                    className="text-gray-500 hover:bg-gray-100 h-6 w-6 p-0"
-                  >
-                    <Minus className="h-3 w-3" />
-                  </Button>
+                  <div className="flex items-center gap-1">
+                    {messages.length > 0 && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleClearHistory}
+                        className="text-gray-500 hover:bg-gray-100 h-6 w-6 p-0"
+                        title="Clear chat history"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    )}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setIsOpen(false)}
+                      className="text-gray-500 hover:bg-gray-100 h-6 w-6 p-0"
+                    >
+                      <Minus className="h-3 w-3" />
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>
