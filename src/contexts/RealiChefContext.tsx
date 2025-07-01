@@ -52,7 +52,7 @@ export const RealiChefProvider = ({ children }: RealiChefProviderProps) => {
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [hasLoadedHistory, setHasLoadedHistory] = useState(false);
 
-  // Update page context based on current route - BUT DON'T AUTO-GENERATE MESSAGES
+  // Update page context based on current route
   useEffect(() => {
     const path = location.pathname;
     let page = 'home';
@@ -91,20 +91,19 @@ export const RealiChefProvider = ({ children }: RealiChefProviderProps) => {
   };
 
   const generateContextualWelcome = () => {
-    // Only generate welcome message if there are no messages OR if the last message is old
-    const shouldGenerateWelcome = messages.length === 0 || 
-      (messages.length > 0 && messages[messages.length - 1].timestamp < new Date(Date.now() - 24 * 60 * 60 * 1000));
-
-    if (shouldGenerateWelcome) {
-      const welcomeMessage = getContextualWelcomeMessage(pageContext.page);
-      const welcomeChatMessage: ChatMessage = {
-        role: 'assistant',
-        content: welcomeMessage,
-        timestamp: new Date(),
-        page_context: pageContext
-      };
-      addMessage(welcomeChatMessage);
-    }
+    console.log('generateContextualWelcome called, messages length:', messages.length);
+    console.log('Current page context:', pageContext.page);
+    
+    const welcomeMessage = getContextualWelcomeMessage(pageContext.page);
+    const welcomeChatMessage: ChatMessage = {
+      role: 'assistant',
+      content: welcomeMessage,
+      timestamp: new Date(),
+      page_context: pageContext
+    };
+    
+    console.log('Adding welcome message:', welcomeMessage);
+    addMessage(welcomeChatMessage);
   };
 
   const loadChatHistory = async () => {
@@ -129,6 +128,7 @@ export const RealiChefProvider = ({ children }: RealiChefProviderProps) => {
         page_context: msg.page_context
       }));
 
+      console.log('Loaded chat history:', chatMessages.length, 'messages');
       setMessages(chatMessages);
       setHasLoadedHistory(true);
     } catch (error) {
@@ -164,6 +164,7 @@ export const RealiChefProvider = ({ children }: RealiChefProviderProps) => {
       timestamp: message.timestamp || new Date()
     };
     
+    console.log('Adding message to state:', messageWithTimestamp.content);
     setMessages(prev => [...prev, messageWithTimestamp]);
     
     if (user) {

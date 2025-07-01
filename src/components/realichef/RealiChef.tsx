@@ -48,51 +48,61 @@ export const RealiChef = () => {
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [hasError, setHasError] = useState(false);
-  const [hasShownWelcomeThisSession, setHasShownWelcomeThisSession] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  // Instant scroll to bottom - no animation
+  const scrollToBottomInstantly = () => {
+    if (messagesEndRef.current) {
+      // Use scrollTop for immediate positioning
+      const container = messagesEndRef.current.parentElement;
+      if (container) {
+        container.scrollTop = container.scrollHeight;
+      }
+    }
   };
 
+  // Scroll on new messages
   useEffect(() => {
-    scrollToBottom();
+    if (messages.length > 0) {
+      scrollToBottomInstantly();
+    }
   }, [messages]);
 
+  // Scroll when loading indicator appears
   useEffect(() => {
     if (isLoading) {
-      scrollToBottom();
+      scrollToBottomInstantly();
     }
   }, [isLoading]);
 
-  // Scroll to bottom when chat opens and history is loaded
+  // Handle chat opening - immediate scroll and welcome message
   useEffect(() => {
     if (isOpen && !isLoadingHistory) {
-      setTimeout(() => {
-        scrollToBottom();
-      }, 100);
+      console.log('Chat opened, history loaded. Messages count:', messages.length);
+      
+      // Immediate scroll to bottom
+      scrollToBottomInstantly();
+      
+      // Generate welcome message if needed
+      if (user) {
+        const shouldShowWelcome = messages.length === 0 || 
+          (messages.length > 0 && messages[messages.length - 1].timestamp < new Date(Date.now() - 24 * 60 * 60 * 1000));
+        
+        console.log('Should show welcome:', shouldShowWelcome);
+        if (shouldShowWelcome) {
+          generateContextualWelcome();
+        }
+      }
     }
-  }, [isOpen, isLoadingHistory]);
+  }, [isOpen, isLoadingHistory, user, messages.length, generateContextualWelcome]);
 
-  // Handle chat button click - generate contextual welcome only when user opens chat
+  // Handle chat button click - simplified
   const handleChatButtonClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
     console.log('Chat button clicked, current isOpen:', isOpen);
+    console.log('Button click event:', e.type);
     
-    const wasOpen = isOpen;
+    // Toggle chat state
     setIsOpen(!isOpen);
-    
-    // Only generate welcome message when opening chat (not closing) and if not shown this session
-    if (!wasOpen && user && !isLoadingHistory && !hasShownWelcomeThisSession) {
-      console.log('Generating contextual welcome message');
-      // Small delay to ensure the chat UI is rendered
-      setTimeout(() => {
-        generateContextualWelcome();
-        setHasShownWelcomeThisSession(true);
-      }, 200);
-    }
   };
 
   const sendMessage = async () => {
@@ -110,9 +120,10 @@ export const RealiChef = () => {
     setIsLoading(true);
     setHasError(false);
 
+    // Immediate scroll for new message
     setTimeout(() => {
-      scrollToBottom();
-    }, 100);
+      scrollToBottomInstantly();
+    }, 50);
 
     try {
       const conversationHistory = messages.slice(-10).map(msg => ({
@@ -156,7 +167,6 @@ export const RealiChef = () => {
   const handleClearHistory = async () => {
     try {
       await clearChatHistory();
-      setHasShownWelcomeThisSession(false); // Reset welcome flag when clearing history
       toast({
         title: "Chat history cleared",
         description: "Your chat history has been cleared successfully.",
@@ -179,13 +189,14 @@ export const RealiChef = () => {
 
   return (
     <>
-      {/* Floating Chef Hat Icon */}
-      <div className="fixed bottom-20 right-4 z-50 md:bottom-20 md:right-8">
+      {/* Floating Chef Hat Icon - Increased z-index and improved positioning */}
+      <div className="fixed bottom-20 right-4 z-[60] md:bottom-20 md:right-8">
         <Button
           onClick={handleChatButtonClick}
           className={cn(
             "h-14 w-14 rounded-full shadow-lg transition-all duration-300 hover:scale-110",
             "bg-gradient-to-r from-sage/40 to-terracotta/40 hover:from-sage/50 hover:to-terracotta/50",
+            "pointer-events-auto cursor-pointer",
             isOpen && "scale-95"
           )}
           size="sm"
