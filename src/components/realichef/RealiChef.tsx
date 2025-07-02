@@ -92,12 +92,20 @@ export const RealiChef = () => {
         const hasWelcomeMessage = lastMessage.role === 'assistant' && isWelcomeMessage(lastMessage.content);
         const hasHistoryAbove = messages.length > 1 && hasWelcomeMessage;
         
-        // Show indicator when welcome message is positioned at top and there's history above
+        // Show indicator when welcome message is visible at top and there's history above
         const welcomeMessageElement = container.querySelector(`[data-message-index="${messages.length - 1}"]`);
-        const isWelcomeAtTop = welcomeMessageElement && 
-          (welcomeMessageElement as HTMLElement).offsetTop - scrollTop <= 50; // Within 50px of top
         
-        setShowHistoryIndicator(hasHistoryAbove && isWelcomeAtTop);
+        if (welcomeMessageElement && hasHistoryAbove) {
+          const elementRect = welcomeMessageElement.getBoundingClientRect();
+          const containerRect = container.getBoundingClientRect();
+          const elementTopRelativeToContainer = elementRect.top - containerRect.top;
+          
+          // Show indicator when welcome message is near the top (within 40px)
+          const isWelcomeNearTop = elementTopRelativeToContainer <= 40 && elementTopRelativeToContainer >= -10;
+          setShowHistoryIndicator(isWelcomeNearTop);
+        } else {
+          setShowHistoryIndicator(false);
+        }
       }
     }
   };
@@ -134,12 +142,17 @@ export const RealiChef = () => {
           const welcomeMessageElement = container.querySelector(`[data-message-index="${messages.length - 1}"]`);
           
           if (welcomeMessageElement) {
-            // Calculate scroll position to put welcome message at top
-            const elementOffsetTop = (welcomeMessageElement as HTMLElement).offsetTop;
-            const scrollPosition = elementOffsetTop - 20; // 20px padding from top
+            // Get the welcome message's position relative to the container
+            const elementRect = welcomeMessageElement.getBoundingClientRect();
+            const containerRect = container.getBoundingClientRect();
+            
+            // Calculate how much to scroll to put welcome message at top of container
+            const currentScrollTop = container.scrollTop;
+            const elementTopRelativeToContainer = elementRect.top - containerRect.top;
+            const targetScrollTop = currentScrollTop + elementTopRelativeToContainer - 20; // 20px from top
             
             container.scrollTo({
-              top: Math.max(0, scrollPosition),
+              top: Math.max(0, targetScrollTop),
               behavior: 'smooth'
             });
             
