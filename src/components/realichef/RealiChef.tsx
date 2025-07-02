@@ -132,7 +132,7 @@ export const RealiChef = () => {
     }
   };
 
-  // Position welcome message at absolute top with big space below (fresh chat canvas)
+  // Position welcome message in blue zone (bottom 30%) with empty space above
   const scrollToShowWelcomeMessage = () => {
     if (messagesContainerRef.current && messages.length > 0) {
       const container = messagesContainerRef.current;
@@ -141,31 +141,33 @@ export const RealiChef = () => {
       // Check if the last message is a welcome message
       if (lastMessage.role === 'assistant' && isWelcomeMessage(lastMessage.content)) {
         setTimeout(() => {
-          // If there are previous messages, we need to scroll to position the welcome message at the very top
+          const containerHeight = container.clientHeight;
+          
           if (messages.length > 1) {
             // Find the welcome message element
             const welcomeMessageElement = container.querySelector(`[data-message-index="${messages.length - 1}"]`);
             
             if (welcomeMessageElement) {
-              // Calculate the scroll position needed to put welcome message at container top
               const welcomeMessageOffsetTop = (welcomeMessageElement as HTMLElement).offsetTop;
               
-              // Scroll to position welcome message at the very top (with small padding)
+              // Position welcome message in blue zone (70% down from top, leaving 70% empty space above)
+              const targetScrollTop = welcomeMessageOffsetTop - (containerHeight * 0.7);
+              
               container.scrollTo({
-                top: welcomeMessageOffsetTop - 16, // 16px padding from absolute top
+                top: Math.max(0, targetScrollTop),
                 behavior: 'smooth'
               });
               
-              console.log('🔍 Positioned welcome message at absolute top with previous messages hidden above');
+              console.log('🔍 Positioned welcome message in blue zone with empty space above');
             }
           } else {
-            // Only welcome message exists, ensure we're at top
+            // Only welcome message exists, position it in blue zone
             container.scrollTo({
               top: 0,
               behavior: 'smooth'
             });
             
-            console.log('🔍 Single welcome message positioned at top');
+            console.log('🔍 Single welcome message positioned in blue zone');
           }
           
           // Update scroll position and indicator visibility after scroll
