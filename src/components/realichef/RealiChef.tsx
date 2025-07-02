@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { ClearChatHistoryDialog } from './ClearChatHistoryDialog';
+import { ChatHistoryIndicator } from './ChatHistoryIndicator';
 
 interface ChatMessage {
   id?: string;
@@ -31,6 +32,22 @@ const renderMarkdown = (text: string) => {
   });
 };
 
+// Helper function to detect if a message is a welcome message
+const isWelcomeMessage = (content: string): boolean => {
+  const welcomePatterns = [
+    "Hi! I'm RealiChef",
+    "I'm RealiChef, your cooking assistant",
+    "I see you're looking at your recipes!",
+    "Ready to plan some meals?",
+    "Need help with your shopping list?",
+    "Looking at a specific recipe?",
+    "Let's find you something delicious!",
+    "What can I help you with today?"
+  ];
+  
+  return welcomePatterns.some(pattern => content.includes(pattern));
+};
+
 export const RealiChef = () => {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -48,6 +65,8 @@ export const RealiChef = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [hasError, setHasError] = useState(false);
   const [clearHistoryDialogOpen, setClearHistoryDialogOpen] = useState(false);
+  const [showHistoryIndicator, setShowHistoryIndicator] = useState(false);
+  const [scrollPosition, setScrollPosition] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
 
@@ -56,6 +75,37 @@ export const RealiChef = () => {
     console.log('🔍 RealiChef DEBUG: isOpen changed to:', isOpen);
     console.log('🔍 RealiChef DEBUG: Component re-rendered with isOpen:', isOpen);
   }, [isOpen]);
+
+  // Scroll position tracking
+  const handleScroll = () => {
+    if (messagesContainerRef.current) {
+      const container = messagesContainerRef.current;
+      const scrollTop = container.scrollTop;
+      const scrollHeight = container.scrollHeight;
+      const clientHeight = container.clientHeight;
+      
+      setScrollPosition(scrollTop);
+      
+      // Check if we should show the history indicator
+      if (messages.length > 0) {
+        const lastMessage = messages[messages.length - 1];
+        const hasWelcomeMessage = lastMessage.role === 'assistant' && isWelcomeMessage(lastMessage.content);
+        const hasHistoryAbove = messages.length > 1 && hasWelcomeMessage;
+        const isNearWelcome = scrollTop > scrollHeight - clientHeight - 100; // Within 100px of bottom
+        
+        setShowHistoryIndicator(hasHistoryAbove && isNearWelcome);
+      }
+    }
+  };
+
+  // Attach scroll listener
+  useEffect(() => {
+    const container = messagesContainerRef.current;
+    if (container) {
+      container.addEventListener('scroll', handleScroll);
+      return () => container.removeEventListener('scroll', handleScroll);
+    }
+  }, [messages]);
 
   // Scroll to bottom function - only for specific cases
   const scrollToBottomInstantly = () => {
@@ -67,25 +117,32 @@ export const RealiChef = () => {
     }
   };
 
-  // Scroll to position welcome message at top of viewport
-  const scrollToShowWelcomeAtTop = () => {
+  // Enhanced scroll positioning for welcome messages
+  const scrollToShowWelcomeMessage = () => {
     if (messagesContainerRef.current && messages.length > 0) {
       const container = messagesContainerRef.current;
       const lastMessage = messages[messages.length - 1];
       
       // Check if the last message is a welcome message
-      if (lastMessage.role === 'assistant' && lastMessage.content.includes("Hi! I'm RealiChef")) {
-        // Use a simple viewport-based approach
+      if (lastMessage.role === 'assistant' && isWelcomeMessage(lastMessage.content)) {
         setTimeout(() => {
           const containerHeight = container.clientHeight;
           const scrollHeight = container.scrollHeight;
           
-          // Position the welcome message at the top of the visible viewport
-          // This leaves all previous history above, accessible by scrolling up
-          const targetScrollTop = scrollHeight - containerHeight;
+          // Position welcome message with some padding from top for "fresh chat" feel
+          const welcomeMessageHeight = 80; // Approximate height of welcome message
+          const paddingFromTop = 20; // Small padding from top
+          const targetScrollTop = scrollHeight - containerHeight + paddingFromTop;
           
-          container.scrollTop = Math.max(0, targetScrollTop);
-          console.log('🔍 Positioned welcome message at top of viewport. ContainerHeight:', containerHeight, 'ScrollHeight:', scrollHeight, 'TargetScrollTop:', targetScrollTop);
+          container.scrollTo({
+            top: Math.max(0, targetScrollTop),
+            behavior: 'smooth'
+          });
+          
+          console.log('🔍 Positioned welcome message for fresh chat experience');
+          
+          // Update scroll position and indicator visibility after scroll
+          setTimeout(() => handleScroll(), 300);
         }, 100);
       }
     }
@@ -103,9 +160,9 @@ export const RealiChef = () => {
     if (isOpen && !isLoadingHistory && user && messages.length > 0) {
       console.log('🔍 Chat opened, checking for welcome message positioning');
       const lastMessage = messages[messages.length - 1];
-      if (lastMessage.role === 'assistant' && lastMessage.content.includes("Hi! I'm RealiChef")) {
-        console.log('🔍 Welcome message detected, scrolling to show at top of viewport');
-        scrollToShowWelcomeAtTop();
+      if (lastMessage.role === 'assistant' && isWelcomeMessage(lastMessage.content)) {
+        console.log('🔍 Welcome message detected, positioning for fresh chat experience');
+        scrollToShowWelcomeMessage();
       } else {
         setTimeout(() => {
           scrollToBottomInstantly();
@@ -118,8 +175,8 @@ export const RealiChef = () => {
   useEffect(() => {
     if (messages.length > 0) {
       const lastMessage = messages[messages.length - 1];
-      if (lastMessage.role === 'assistant' && lastMessage.content.includes("Hi! I'm RealiChef") && isOpen) {
-        scrollToShowWelcomeAtTop();
+      if (lastMessage.role === 'assistant' && isWelcomeMessage(lastMessage.content) && isOpen) {
+        scrollToShowWelcomeMessage();
       }
     }
   }, [messages, isOpen]);
@@ -230,19 +287,6 @@ export const RealiChef = () => {
     }
   };
 
-  const getContextualWelcomeMessage = (page: string) => {
-    const welcomes = {
-      'my-recipes': "👩‍🍳 I see you're looking at your recipes! I can help with cooking tips, ingredient swaps, or suggest new recipes to try.",
-      'meal-planner': "👩‍🍳 Ready to plan some meals? I can help you decide what to cook this week!",
-      'shopping-list': "👩‍🍳 Need help with your shopping list? I can assist with ingredient substitutions or shopping tips!",
-      'recipe-detail': "👩‍🍳 Looking at a specific recipe? I can help with cooking techniques or ingredient alternatives.",
-      'find-recipes': "👩‍🍳 Let's find you something delicious! What are you in the mood for?",
-      'home': "👩‍🍳 Hi! I'm RealiChef, your cooking assistant. What can I help you with today?",
-      'default': "👩‍🍳 Hi! I'm RealiChef, your cooking assistant. What can I help you with today?"
-    };
-    return welcomes[page as keyof typeof welcomes] || welcomes.default;
-  };
-
   console.log('🔍 RealiChef RENDER DEBUG: isOpen =', isOpen, 'shouldShowButton =', !isOpen);
 
   return (
@@ -327,8 +371,15 @@ export const RealiChef = () => {
                 </div>
               </div>
 
-              {/* Messages */}
-              <div ref={messagesContainerRef} className="flex-1 overflow-y-auto bg-gray-50 min-h-0 p-4 space-y-3">
+              {/* Messages with History Indicator */}
+              <div className="relative flex-1 min-h-0">
+                <ChatHistoryIndicator isVisible={showHistoryIndicator} />
+                
+                <div 
+                  ref={messagesContainerRef} 
+                  className="h-full overflow-y-auto bg-gray-50 p-4 space-y-3"
+                  onScroll={handleScroll}
+                >
                   {isLoadingHistory && (
                     <div className="flex justify-center py-4">
                       <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-sage"></div>
@@ -372,8 +423,9 @@ export const RealiChef = () => {
                       </div>
                     </div>
                   )}
-                   <div ref={messagesEndRef} />
+                  <div ref={messagesEndRef} />
                 </div>
+              </div>
 
               {/* Footer */}
               <div className="p-4 border-t bg-white flex-shrink-0">
