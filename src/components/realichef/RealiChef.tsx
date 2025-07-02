@@ -91,9 +91,13 @@ export const RealiChef = () => {
         const lastMessage = messages[messages.length - 1];
         const hasWelcomeMessage = lastMessage.role === 'assistant' && isWelcomeMessage(lastMessage.content);
         const hasHistoryAbove = messages.length > 1 && hasWelcomeMessage;
-        const isNearWelcome = scrollTop > scrollHeight - clientHeight - 100; // Within 100px of bottom
         
-        setShowHistoryIndicator(hasHistoryAbove && isNearWelcome);
+        // Show indicator when welcome message is positioned at top and there's history above
+        const welcomeMessageElement = container.querySelector(`[data-message-index="${messages.length - 1}"]`);
+        const isWelcomeAtTop = welcomeMessageElement && 
+          (welcomeMessageElement as HTMLElement).offsetTop - scrollTop <= 50; // Within 50px of top
+        
+        setShowHistoryIndicator(hasHistoryAbove && isWelcomeAtTop);
       }
     }
   };
@@ -126,13 +130,21 @@ export const RealiChef = () => {
       // Check if the last message is a welcome message
       if (lastMessage.role === 'assistant' && isWelcomeMessage(lastMessage.content)) {
         setTimeout(() => {
-          // Scroll to bottom to show only the welcome message with space below
-          container.scrollTo({
-            top: container.scrollHeight,
-            behavior: 'smooth'
-          });
+          // Find the welcome message element
+          const welcomeMessageElement = container.querySelector(`[data-message-index="${messages.length - 1}"]`);
           
-          console.log('🔍 Positioned welcome message at top with canvas below');
+          if (welcomeMessageElement) {
+            // Calculate scroll position to put welcome message at top
+            const elementOffsetTop = (welcomeMessageElement as HTMLElement).offsetTop;
+            const scrollPosition = elementOffsetTop - 20; // 20px padding from top
+            
+            container.scrollTo({
+              top: Math.max(0, scrollPosition),
+              behavior: 'smooth'
+            });
+            
+            console.log('🔍 Positioned welcome message at top with canvas below');
+          }
           
           // Update scroll position and indicator visibility after scroll
           setTimeout(() => handleScroll(), 300);
