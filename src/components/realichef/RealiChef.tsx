@@ -421,7 +421,9 @@ export const RealiChef = () => {
                       data-message-index={index}
                       className={cn(
                         "flex",
-                        message.role === 'user' ? 'justify-end' : 'justify-start'
+                        message.role === 'user' ? 'justify-end' : 'justify-start',
+                        // Add massive bottom margin to welcome messages to force blank space
+                        message.role === 'assistant' && isWelcomeMessage(message.content) && "mb-[60vh]"
                       )}
                     >
                       <div
