@@ -65,7 +65,7 @@ export function LoginPromptDialog({ isOpen, onClose, trigger = "timer" }: LoginP
           {/* Benefits List */}
           <div className="space-y-2 sm:space-y-3 sm:text-center">
             {benefits.map((benefit, index) => (
-              <div key={index} className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm sm:justify-center">
+              <div key={index} className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm justify-center">
                 {benefit.icon}
                 <span className="text-gray-700 leading-tight">{benefit.text}</span>
               </div>
