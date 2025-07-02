@@ -67,6 +67,7 @@ export const RealiChef = () => {
   const [clearHistoryDialogOpen, setClearHistoryDialogOpen] = useState(false);
   const [showHistoryIndicator, setShowHistoryIndicator] = useState(false);
   const [scrollPosition, setScrollPosition] = useState(0);
+  const [historyHidden, setHistoryHidden] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
 
@@ -200,11 +201,16 @@ export const RealiChef = () => {
     }
   }, [isOpen, isLoadingHistory, user, messages]);
 
-  // Watch for new welcome messages being added
+  // Watch for new welcome messages being added and hide history
   useEffect(() => {
     if (messages.length > 0) {
       const lastMessage = messages[messages.length - 1];
       if (lastMessage.role === 'assistant' && isWelcomeMessage(lastMessage.content) && isOpen) {
+        // Hide history when welcome message is generated
+        if (messages.length > 1) {
+          setHistoryHidden(true);
+          setShowHistoryIndicator(true);
+        }
         scrollToShowWelcomeMessage();
       }
     }
@@ -402,7 +408,10 @@ export const RealiChef = () => {
 
               {/* Messages with History Indicator */}
               <div className="relative flex-1 min-h-0">
-                <ChatHistoryIndicator isVisible={showHistoryIndicator} />
+                <ChatHistoryIndicator 
+                  isVisible={historyHidden && showHistoryIndicator}
+                  onClick={() => setHistoryHidden(false)}
+                />
                 
                 <div 
                   ref={messagesContainerRef} 
@@ -415,31 +424,36 @@ export const RealiChef = () => {
                     </div>
                   )}
                   
-                  {messages.map((message, index) => (
-                    <div
-                      key={message.id || index}
-                      data-message-index={index}
-                      className={cn(
-                        "flex",
-                        message.role === 'user' ? 'justify-end' : 'justify-start',
-                        // Add massive bottom margin to welcome messages to force blank space
-                        message.role === 'assistant' && isWelcomeMessage(message.content) && "mb-[60vh]"
-                      )}
-                    >
+                  {messages.map((message, index) => {
+                    // Hide previous messages when history is hidden and this is not the welcome message
+                    if (historyHidden && index < messages.length - 1) {
+                      return null;
+                    }
+                    
+                    return (
                       <div
+                        key={message.id || index}
+                        data-message-index={index}
                         className={cn(
-                          "max-w-[85%] rounded-lg px-4 py-3 text-sm leading-relaxed",
-                          message.role === 'user'
-                            ? 'bg-sage text-white'
-                            : 'bg-white text-gray-800 shadow-sm border'
+                          "flex",
+                          message.role === 'user' ? 'justify-end' : 'justify-start'
                         )}
                       >
-                        <div className="whitespace-pre-wrap break-words">
-                          {message.role === 'assistant' ? renderMarkdown(message.content) : message.content}
+                        <div
+                          className={cn(
+                            "max-w-[85%] rounded-lg px-4 py-3 text-sm leading-relaxed",
+                            message.role === 'user'
+                              ? 'bg-sage text-white'
+                              : 'bg-white text-gray-800 shadow-sm border'
+                          )}
+                        >
+                          <div className="whitespace-pre-wrap break-words">
+                            {message.role === 'assistant' ? renderMarkdown(message.content) : message.content}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                   
                   {isLoading && (
                     <div className="flex justify-start">
