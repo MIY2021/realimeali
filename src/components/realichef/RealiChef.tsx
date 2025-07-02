@@ -87,25 +87,30 @@ export const RealiChef = () => {
       setScrollPosition(scrollTop);
       
       // Check if we should show the history indicator
-      if (messages.length > 0) {
+      if (messages.length > 1) {
         const lastMessage = messages[messages.length - 1];
         const hasWelcomeMessage = lastMessage.role === 'assistant' && isWelcomeMessage(lastMessage.content);
-        const hasHistoryAbove = messages.length > 1 && hasWelcomeMessage;
         
-        // Show indicator when welcome message is visible at top and there's history above
-        const welcomeMessageElement = container.querySelector(`[data-message-index="${messages.length - 1}"]`);
-        
-        if (welcomeMessageElement && hasHistoryAbove) {
-          const elementRect = welcomeMessageElement.getBoundingClientRect();
-          const containerRect = container.getBoundingClientRect();
-          const elementTopRelativeToContainer = elementRect.top - containerRect.top;
+        if (hasWelcomeMessage) {
+          // Check if we're in the "welcome message at top" state
+          // This means previous messages are hidden above
+          const allMessageElements = container.querySelectorAll('[data-message-index]');
+          const firstMessageElement = allMessageElements[0] as HTMLElement;
+          const welcomeMessageElement = allMessageElements[allMessageElements.length - 1] as HTMLElement;
           
-          // Show indicator when welcome message is near the top (within 40px)
-          const isWelcomeNearTop = elementTopRelativeToContainer <= 40 && elementTopRelativeToContainer >= -10;
-          setShowHistoryIndicator(isWelcomeNearTop);
+          if (firstMessageElement && welcomeMessageElement) {
+            const firstMessageRect = firstMessageElement.getBoundingClientRect();
+            const containerRect = container.getBoundingClientRect();
+            const isFirstMessageHidden = firstMessageRect.bottom < containerRect.top;
+            
+            // Show indicator when first message is hidden (meaning we're in welcome-at-top mode)
+            setShowHistoryIndicator(isFirstMessageHidden);
+          }
         } else {
           setShowHistoryIndicator(false);
         }
+      } else {
+        setShowHistoryIndicator(false);
       }
     }
   };
@@ -138,25 +143,39 @@ export const RealiChef = () => {
       // Check if the last message is a welcome message
       if (lastMessage.role === 'assistant' && isWelcomeMessage(lastMessage.content)) {
         setTimeout(() => {
-          // Find the welcome message element
-          const welcomeMessageElement = container.querySelector(`[data-message-index="${messages.length - 1}"]`);
+          // Calculate scroll position to hide all previous messages except the welcome message
+          const containerHeight = container.clientHeight;
+          const totalScrollHeight = container.scrollHeight;
           
-          if (welcomeMessageElement) {
-            // Get the welcome message's position relative to the container
-            const elementRect = welcomeMessageElement.getBoundingClientRect();
-            const containerRect = container.getBoundingClientRect();
+          // If there are previous messages, we want to scroll to hide them
+          if (messages.length > 1) {
+            // Find all message elements except the last one (welcome message)
+            const allMessageElements = container.querySelectorAll('[data-message-index]');
+            let previousMessagesHeight = 0;
             
-            // Calculate how much to scroll to put welcome message at top of container
-            const currentScrollTop = container.scrollTop;
-            const elementTopRelativeToContainer = elementRect.top - containerRect.top;
-            const targetScrollTop = currentScrollTop + elementTopRelativeToContainer - 20; // 20px from top
+            // Calculate total height of all messages except the welcome message
+            for (let i = 0; i < allMessageElements.length - 1; i++) {
+              const messageElement = allMessageElements[i] as HTMLElement;
+              previousMessagesHeight += messageElement.offsetHeight + 12; // 12px is space-y-3
+            }
+            
+            // Scroll to hide previous messages, showing only welcome message at top
+            const targetScrollTop = previousMessagesHeight - 20; // 20px padding from top
             
             container.scrollTo({
               top: Math.max(0, targetScrollTop),
               behavior: 'smooth'
             });
             
-            console.log('🔍 Positioned welcome message at top with canvas below');
+            console.log('🔍 Hid previous messages, showing welcome at top with canvas below');
+          } else {
+            // Only welcome message exists, scroll to top
+            container.scrollTo({
+              top: 0,
+              behavior: 'smooth'
+            });
+            
+            console.log('🔍 Positioned single welcome message at top');
           }
           
           // Update scroll position and indicator visibility after scroll
