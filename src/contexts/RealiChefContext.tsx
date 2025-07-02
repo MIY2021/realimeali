@@ -43,6 +43,22 @@ interface RealiChefProviderProps {
   children: ReactNode;
 }
 
+// Helper function to detect if a message is a welcome message
+const isWelcomeMessage = (content: string): boolean => {
+  const welcomePatterns = [
+    "Hi! I'm RealiChef",
+    "I'm RealiChef, your cooking assistant",
+    "I see you're looking at your recipes!",
+    "Ready to plan some meals?",
+    "Need help with your shopping list?",
+    "Looking at a specific recipe?",
+    "Let's find you something delicious!",
+    "What can I help you with today?"
+  ];
+  
+  return welcomePatterns.some(pattern => content.includes(pattern));
+};
+
 export const RealiChefProvider = ({ children }: RealiChefProviderProps) => {
   const location = useLocation();
   const { user } = useAuth();
@@ -51,7 +67,6 @@ export const RealiChefProvider = ({ children }: RealiChefProviderProps) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [hasLoadedHistory, setHasLoadedHistory] = useState(false);
-  const [hasShownWelcomeThisSession, setHasShownWelcomeThisSession] = useState(false);
 
   // DEBUG: Track isOpen state changes
   useEffect(() => {
@@ -95,25 +110,61 @@ export const RealiChefProvider = ({ children }: RealiChefProviderProps) => {
     }
   }, [user, hasLoadedHistory]);
 
-  // Add simple welcome message at start of each session
+  // Check if we need to add a welcome message after history is loaded
   useEffect(() => {
-    if (isOpen && hasLoadedHistory && user && !hasShownWelcomeThisSession) {
-      console.log('🔍 Adding welcome message for new session');
-      const welcomeMessage: ChatMessage = {
-        role: 'assistant',
-        content: "👩‍🍳 Hi! I'm RealiChef, your cooking assistant. I'm here to help!",
-        timestamp: new Date(),
-        page_context: pageContext
-      };
-      
-      // Add message to end in chronological order and save to database
-      setMessages(prev => [...prev, welcomeMessage]);
-      if (user) {
-        saveChatMessage(welcomeMessage);
+    if (isOpen && hasLoadedHistory && user) {
+      const shouldAddWelcome = shouldAddWelcomeMessage();
+      if (shouldAddWelcome) {
+        console.log('🔍 Adding welcome message - conditions met');
+        const welcomeMessage: ChatMessage = {
+          role: 'assistant',
+          content: "👩‍🍳 Hi! I'm RealiChef, your cooking assistant. I'm here to help!",
+          timestamp: new Date(),
+          page_context: pageContext
+        };
+        
+        // Add message to end in chronological order and save to database
+        setMessages(prev => [...prev, welcomeMessage]);
+        if (user) {
+          saveChatMessage(welcomeMessage);
+        }
+      } else {
+        console.log('🔍 Skipping welcome message - not needed');
       }
-      setHasShownWelcomeThisSession(true);
     }
-  }, [isOpen, hasLoadedHistory, user, hasShownWelcomeThisSession]);
+  }, [isOpen, hasLoadedHistory, user, pageContext]);
+
+  // Function to determine if we should add a welcome message
+  const shouldAddWelcomeMessage = (): boolean => {
+    // If no messages at all, add welcome
+    if (messages.length === 0) {
+      console.log('🔍 Welcome needed: No messages in history');
+      return true;
+    }
+
+    // Get the last message
+    const lastMessage = messages[messages.length - 1];
+    
+    // If last message is from user, we can add welcome
+    if (lastMessage.role === 'user') {
+      console.log('🔍 Welcome needed: Last message was from user');
+      return true;
+    }
+
+    // If last message is from assistant but NOT a welcome message, we can add welcome
+    if (lastMessage.role === 'assistant' && !isWelcomeMessage(lastMessage.content)) {
+      console.log('🔍 Welcome needed: Last assistant message was not a welcome');
+      return true;
+    }
+
+    // If last message is already a welcome message from assistant, don't add another
+    if (lastMessage.role === 'assistant' && isWelcomeMessage(lastMessage.content)) {
+      console.log('🔍 Welcome NOT needed: Last message was already a welcome');
+      return false;
+    }
+
+    return false;
+  };
 
   const getContextualWelcomeMessage = (page: string) => {
     const welcomes = {
@@ -130,6 +181,13 @@ export const RealiChefProvider = ({ children }: RealiChefProviderProps) => {
 
   const generateContextualWelcome = () => {
     console.log('🔍 CONTEXT DEBUG: generateContextualWelcome called');
+    
+    // Before adding contextual welcome, check if we should add it
+    if (!shouldAddWelcomeMessage()) {
+      console.log('🔍 CONTEXT DEBUG: Skipping contextual welcome - not needed');
+      return;
+    }
+    
     const welcomeMessage = getContextualWelcomeMessage(pageContext.page);
     const welcomeChatMessage: ChatMessage = {
       role: 'assistant',
@@ -139,7 +197,7 @@ export const RealiChefProvider = ({ children }: RealiChefProviderProps) => {
     };
     
     addMessage(welcomeChatMessage);
-    console.log('🔍 CONTEXT DEBUG: Welcome message added');
+    console.log('🔍 CONTEXT DEBUG: Contextual welcome message added');
   };
 
   const loadChatHistory = async () => {
@@ -164,7 +222,7 @@ export const RealiChefProvider = ({ children }: RealiChefProviderProps) => {
         page_context: msg.page_context
       }));
 
-      console.log('Loaded chat history:', chatMessages.length, 'messages');
+      console.log('🔍 Loaded chat history:', chatMessages.length, 'messages');
       setMessages(chatMessages);
       setHasLoadedHistory(true);
     } catch (error) {
@@ -219,7 +277,6 @@ export const RealiChefProvider = ({ children }: RealiChefProviderProps) => {
       if (error) throw error;
       
       setMessages([]);
-      setHasShownWelcomeThisSession(false); // Reset welcome flag when clearing history
     } catch (error) {
       console.error('Error clearing chat history:', error);
       throw error;
