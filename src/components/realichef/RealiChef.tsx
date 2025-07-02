@@ -132,7 +132,7 @@ export const RealiChef = () => {
     }
   };
 
-  // Position welcome message in blue zone (bottom 30%) with empty space above
+  // Position welcome message in the upper-middle area as shown in screenshot
   const scrollToShowWelcomeMessage = () => {
     if (messagesContainerRef.current && messages.length > 0) {
       const container = messagesContainerRef.current;
@@ -150,24 +150,24 @@ export const RealiChef = () => {
             if (welcomeMessageElement) {
               const welcomeMessageOffsetTop = (welcomeMessageElement as HTMLElement).offsetTop;
               
-              // Position welcome message in blue zone (70% down from top, leaving 70% empty space above)
-              const targetScrollTop = welcomeMessageOffsetTop - (containerHeight * 0.7);
+              // Position welcome message at 20% down from top (as shown in screenshot)
+              const targetScrollTop = welcomeMessageOffsetTop - (containerHeight * 0.2);
               
               container.scrollTo({
                 top: Math.max(0, targetScrollTop),
                 behavior: 'smooth'
               });
               
-              console.log('🔍 Positioned welcome message in blue zone with empty space above');
+              console.log('🔍 Positioned welcome message in upper-middle area as per screenshot');
             }
           } else {
-            // Only welcome message exists, position it in blue zone
+            // Only welcome message exists, position it naturally in upper area
             container.scrollTo({
               top: 0,
               behavior: 'smooth'
             });
             
-            console.log('🔍 Single welcome message positioned in blue zone');
+            console.log('🔍 Single welcome message positioned in upper area');
           }
           
           // Update scroll position and indicator visibility after scroll
