@@ -117,7 +117,7 @@ export const RealiChef = () => {
     }
   };
 
-  // Enhanced scroll positioning for welcome messages
+  // Position welcome message at top with big space below (fresh chat canvas)
   const scrollToShowWelcomeMessage = () => {
     if (messagesContainerRef.current && messages.length > 0) {
       const container = messagesContainerRef.current;
@@ -126,20 +126,13 @@ export const RealiChef = () => {
       // Check if the last message is a welcome message
       if (lastMessage.role === 'assistant' && isWelcomeMessage(lastMessage.content)) {
         setTimeout(() => {
-          const containerHeight = container.clientHeight;
-          const scrollHeight = container.scrollHeight;
-          
-          // Position welcome message with some padding from top for "fresh chat" feel
-          const welcomeMessageHeight = 80; // Approximate height of welcome message
-          const paddingFromTop = 20; // Small padding from top
-          const targetScrollTop = scrollHeight - containerHeight + paddingFromTop;
-          
+          // Scroll to bottom to show only the welcome message with space below
           container.scrollTo({
-            top: Math.max(0, targetScrollTop),
+            top: container.scrollHeight,
             behavior: 'smooth'
           });
           
-          console.log('🔍 Positioned welcome message for fresh chat experience');
+          console.log('🔍 Positioned welcome message at top with canvas below');
           
           // Update scroll position and indicator visibility after scroll
           setTimeout(() => handleScroll(), 300);
