@@ -30,7 +30,7 @@ export default function Index() {
 
   return (
     <div className="flex flex-col min-h-[85vh]">
-      <section className="py-8 md:py-12 lg:py-16 bg-background -mt-16 pt-24 md:pt-28 lg:pt-32">
+      <section className="py-8 md:py-12 lg:py-16 bg-cream -mt-16 pt-24 md:pt-28 lg:pt-32">
         <div className="container px-4 md:px-6">
           <div className="flex flex-col items-center space-y-2 text-center">
             <div>
@@ -45,10 +45,10 @@ export default function Index() {
         </div>
       </section>
 
-      <section className="py-4 md:py-6 bg-muted flex-grow">
+      <section className="py-4 md:py-6 bg-gray-50 flex-grow">
         <div className="container px-4 md:px-6">
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 md:gap-10">
-            <div className="group relative overflow-hidden rounded-lg border bg-card p-6 shadow-md transition-all hover:shadow-lg md:min-h-[300px]">
+            <div className="group relative overflow-hidden rounded-lg border bg-white p-6 shadow-md transition-all hover:shadow-lg md:min-h-[300px]">
               <div className="flex flex-col items-center text-center space-y-4">
                 <div className="rounded-full bg-terracotta/10 p-4">
                   <UtensilsCrossed className="h-10 w-10 text-terracotta" />
@@ -72,7 +72,7 @@ export default function Index() {
               </div>
             </div>
 
-            <div className="group relative overflow-hidden rounded-lg border bg-card p-6 shadow-md transition-all hover:shadow-lg md:min-h-[300px]">
+            <div className="group relative overflow-hidden rounded-lg border bg-white p-6 shadow-md transition-all hover:shadow-lg md:min-h-[300px]">
               <div className="flex flex-col items-center text-center space-y-4">
                 <div className="rounded-full bg-sage/10 p-4">
                   <Search className="h-10 w-10 text-sage" />
@@ -96,7 +96,7 @@ export default function Index() {
               </div>
             </div>
 
-            <div className="group relative overflow-hidden rounded-lg border bg-card p-6 shadow-md transition-all hover:shadow-lg md:min-h-[300px]">
+            <div className="group relative overflow-hidden rounded-lg border bg-white p-6 shadow-md transition-all hover:shadow-lg md:min-h-[300px]">
               <div className="flex flex-col items-center text-center space-y-4">
                 <div className="rounded-full bg-sage/10 p-4">
                   <CalendarDays className="h-10 w-10 text-sage" />
@@ -120,7 +120,7 @@ export default function Index() {
               </div>
             </div>
 
-            <div className="group relative overflow-hidden rounded-lg border bg-card p-6 shadow-md transition-all hover:shadow-lg md:min-h-[300px]">
+            <div className="group relative overflow-hidden rounded-lg border bg-white p-6 shadow-md transition-all hover:shadow-lg md:min-h-[300px]">
               <div className="flex flex-col items-center text-center space-y-4">
                 <div className="rounded-full bg-navy/10 p-4">
                   <ListChecks className="h-10 w-10 text-navy" />
