@@ -20,12 +20,12 @@ export default {
     },
     extend: {
       colors: {
-        // RealiMeali Brand Colors
-        navy: "#3D405B",
+        // RealiMeali Brand Colors - Modernized
+        navy: "#374151",
         terracotta: "#E07A5F", 
-        sage: "#81B29A",
-        butter: "#F2CC8F",
-        cream: "#F4F1DE",
+        sage: "#6B7280",
+        butter: "#E5E7EB",
+        cream: "#FFFFFF",
         
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
