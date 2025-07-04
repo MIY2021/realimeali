@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -49,6 +50,7 @@ export function AddToMealPlanDialog({ recipe, open, onOpenChange, adjustedServin
         original_servings: recipe.servings,
         planned_servings: plannedServings,
         is_completed: false,
+        is_freetyped: false,
       }, selectedWeek);
 
       const servingsText = adjustedServings && adjustedServings !== recipe.servings 

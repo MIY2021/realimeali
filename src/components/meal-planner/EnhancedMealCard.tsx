@@ -1,3 +1,4 @@
+
 import { MealPlan, Recipe } from "@/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,11 +13,11 @@ import {
 import {
   Clock,
   Users,
-  MoreVertical,
+  MoreHorizontal,
   Trash2,
   Plus,
   GripVertical,
-  CheckCircle2,
+  CheckCircle,
   Circle,
   UtensilsCrossed,
   FileText,
@@ -151,7 +152,7 @@ export const EnhancedMealCard = ({
               title={mealPlan.is_completed ? "Mark as incomplete" : "Mark as complete"}
             >
               {mealPlan.is_completed ? (
-                <CheckCircle2 className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'} text-green-600`} />
+                <CheckCircle className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'} text-green-600`} />
               ) : (
                 <Circle className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'} text-gray-400`} />
               )}
@@ -164,7 +165,7 @@ export const EnhancedMealCard = ({
                   size="sm"
                   className={`${isMobile ? 'h-7 w-7 p-0' : 'h-8 w-8 p-0'} opacity-50 group-hover:opacity-100 transition-opacity`}
                 >
-                  <MoreVertical className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
+                  <MoreHorizontal className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-40">

@@ -4,7 +4,7 @@ import { MealPlan, Recipe, MealType } from "@/types";
 export interface HouseholdMealPlan {
   id: string;
   household_id: string;
-  recipe_id: string;
+  recipe_id: string | null;
   meal_type: string;
   week_number: number;
   slot_index: number;
@@ -18,7 +18,9 @@ export interface HouseholdMealPlan {
   leftover_servings?: number;
   original_servings?: number;
   planned_servings: number;
-  is_completed: boolean; // Add completion status
+  is_completed: boolean;
+  meal_name?: string;
+  is_freetyped: boolean;
 }
 
 export interface MealPlanContextType {
@@ -31,7 +33,7 @@ export interface MealPlanContextType {
   clearWeek: (weekNumber: 1 | 2) => Promise<void>;
   reorderMealPlans: (mealType: MealType, weekNumber: 1 | 2, sourceIndex: number, destinationIndex: number) => Promise<void>;
   updateMealPlanServings: (mealPlanId: string, plannedServings: number) => Promise<void>;
-  updateMealPlanCompletion: (mealPlanId: string, isCompleted: boolean) => Promise<void>; // Add completion function
+  updateMealPlanCompletion: (mealPlanId: string, isCompleted: boolean) => Promise<void>;
   isLoading: boolean;
   fetchMealPlans?: () => Promise<void>;
 }

@@ -1,14 +1,14 @@
+
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { useMealPlan } from "@/contexts/MealPlanContext";
 import { useRecipes } from "@/contexts/RecipesContext";
+import { useMealPlanModals } from "@/hooks/useMealPlanModals";
+import { useMealPlannerOperations } from "@/hooks/useMealPlannerOperations";
 import { MealPlannerContent } from "./MealPlannerContent";
 import { MealPlannerModalsContainer } from "./MealPlannerModalsContainer";
-import { useMealPlannerState } from "@/hooks/useMealPlannerState";
-import { useMealPlannerOperations } from "@/hooks/useMealPlannerOperations";
 import { MealType, Recipe } from "@/types";
-import { SimpleMealSelectionDialog } from "./SimpleMealSelectionDialog";
 import { useToast } from "@/hooks/use-toast";
 
 export default function MealPlannerContainer() {
@@ -19,24 +19,67 @@ export default function MealPlannerContainer() {
   const { toast } = useToast();
   
   const {
-    selectedWeek,
-    setSelectedWeek,
-    selectedMealType,
-    setSelectedMealType,
-    showAddMealDialog,
-    setShowAddMealDialog,
-  } = useMealPlannerState();
+    currentWeek,
+    setCurrentWeek,
+    isLoading,
+    setIsLoading,
+    quantitiesDialog,
+    setQuantitiesDialog,
+    simpleMealDialog,
+    setSimpleMealDialog,
+    leftoverDialog,
+    setLeftoverDialog,
+    warningDialog,
+    setWarningDialog,
+    clearAllDialog,
+    setClearAllDialog,
+    servingsDialog,
+    setServingsDialog,
+    pendingMealType,
+    setPendingMealType,
+    pendingLeftoverData,
+    setPendingLeftoverData,
+    currentMealPlans,
+  } = useMealPlanModals();
 
   const {
+    handleAddMeal,
     handleAddRecipeToMeal,
+    handleRemoveMeal,
+    handleCreateLeftover,
+    handleRandomize,
+    handleShare,
+    handleClearAll,
+    handleReorderMeals,
+    onSimpleMealSelect,
+    onLunchLeftoverConfirm,
+    onRandomizeWithQuantities,
+    onWarningConfirm,
+    onClearAllConfirm,
+    onServingsConfirm,
   } = useMealPlannerOperations({
-    selectedWeek,
-    selectedMealType,
-    setShowAddMealDialog,
+    user,
+    currentHousehold,
+    recipes,
+    currentWeek,
+    addMealPlan,
+    removeMealPlan: async () => {}, // Will be handled by the operations hook
+    clearWeek: async () => {}, // Will be handled by the operations hook
+    reorderMealPlans: async () => {}, // Will be handled by the operations hook
+    generateRandomMealPlan: async () => 0, // Will be handled by the operations hook
+    setAddMealModal: setSimpleMealDialog,
+    setIsLoading,
+    toast,
+    setQuantitiesDialog,
+    setServingsDialog,
+    setPendingMealType,
+    setClearAllDialog,
+    refreshMealPlans: async () => {},
+    currentMealPlans,
   });
 
-  const handleAddFreetypeMeal = async (mealName: string) => {
-    if (!user || !currentHousehold || !selectedMealType) {
+  const handleAddFreetypeMeal = async (mealName: string, mealType: MealType) => {
+    if (!user || !currentHousehold) {
       toast({
         title: "Error",
         description: "Missing required information to add meal",
@@ -48,20 +91,20 @@ export default function MealPlannerContainer() {
     try {
       const newMealPlan = {
         date: new Date().toISOString().split('T')[0],
-        meal_type: selectedMealType,
+        meal_type: mealType,
         slot_index: 0,
         is_leftover: false,
         original_servings: 1,
         planned_servings: 1,
         household_id: currentHousehold.id,
-        week_number: selectedWeek,
+        week_number: currentWeek,
         created_by: user.id,
         is_completed: false,
         meal_name: mealName,
         is_freetyped: true,
       };
 
-      await addMealPlan(newMealPlan, selectedWeek, currentHousehold.id, user.id);
+      await addMealPlan(newMealPlan, currentWeek);
       
       toast({
         title: "Custom meal added",
@@ -77,37 +120,48 @@ export default function MealPlannerContainer() {
     }
   };
 
-  const handleSelectRecipe = async (recipe: Recipe) => {
-    await handleAddRecipeToMeal(recipe);
-  };
-
   return (
     <>
       <MealPlannerContent
-        selectedWeek={selectedWeek}
-        setSelectedWeek={setSelectedWeek}
-        selectedMealType={selectedMealType}
-        setSelectedMealType={setSelectedMealType}
-        showAddMealDialog={showAddMealDialog}
-        setShowAddMealDialog={setShowAddMealDialog}
-      />
-      
-      <SimpleMealSelectionDialog
-        isOpen={showAddMealDialog}
-        onClose={() => setShowAddMealDialog(false)}
+        currentWeek={currentWeek}
+        setCurrentWeek={setCurrentWeek}
+        isLoading={isLoading}
+        currentMealPlans={currentMealPlans}
         recipes={recipes}
-        onSelectRecipe={handleSelectRecipe}
-        onAddFreetypeMeal={handleAddFreetypeMeal}
-        mealType={selectedMealType || 'dinner'}
+        onRandomize={handleRandomize}
+        onShare={handleShare}
+        onClearAll={handleClearAll}
+        onAddMeal={handleAddMeal}
+        onRemoveMeal={handleRemoveMeal}
+        onCreateLeftover={handleCreateLeftover}
+        onReorderMeals={handleReorderMeals}
       />
 
       <MealPlannerModalsContainer
-        selectedWeek={selectedWeek}
-        setSelectedWeek={setSelectedWeek}
-        selectedMealType={selectedMealType}
-        setSelectedMealType={setSelectedMealType}
-        showAddMealDialog={showAddMealDialog}
-        setShowAddMealDialog={setShowAddMealDialog}
+        quantitiesDialog={quantitiesDialog}
+        setQuantitiesDialog={setQuantitiesDialog}
+        simpleMealDialog={simpleMealDialog}
+        setSimpleMealDialog={setSimpleMealDialog}
+        leftoverDialog={leftoverDialog}
+        setLeftoverDialog={setLeftoverDialog}
+        warningDialog={warningDialog}
+        setWarningDialog={setWarningDialog}
+        clearAllDialog={clearAllDialog}
+        setClearAllDialog={setClearAllDialog}
+        servingsDialog={servingsDialog}
+        setServingsDialog={setServingsDialog}
+        pendingMealType={pendingMealType}
+        setPendingMealType={setPendingMealType}
+        pendingLeftoverData={pendingLeftoverData}
+        recipes={recipes}
+        currentWeek={currentWeek}
+        onRandomizeWithQuantities={onRandomizeWithQuantities}
+        onSimpleMealSelect={onSimpleMealSelect}
+        onLunchLeftoverConfirm={onLunchLeftoverConfirm}
+        onCreateLeftover={handleCreateLeftover}
+        onWarningConfirm={onWarningConfirm}
+        onClearAllConfirm={onClearAllConfirm}
+        onServingsConfirm={onServingsConfirm}
       />
     </>
   );

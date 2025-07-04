@@ -16,16 +16,18 @@ import { Clock, Users, Plus } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface SimpleMealSelectionDialogProps {
-  isOpen: boolean;
+  isOpen?: boolean;
+  open?: boolean;
   onClose: () => void;
   recipes: Recipe[];
   onSelectRecipe: (recipe: Recipe) => void;
-  onAddFreetypeMeal: (mealName: string) => void;
+  onAddFreetypeMeal?: (mealName: string, mealType: MealType) => void;
   mealType: MealType;
 }
 
 export const SimpleMealSelectionDialog = ({
   isOpen,
+  open,
   onClose,
   recipes,
   onSelectRecipe,
@@ -36,17 +38,19 @@ export const SimpleMealSelectionDialog = ({
   const [freetypeMealName, setFreetypeMealName] = useState("");
   const [isAddingFreetype, setIsAddingFreetype] = useState(false);
 
+  const isDialogOpen = isOpen || open || false;
+
   const filteredRecipes = recipes.filter(recipe =>
     recipe.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     recipe.description?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleAddFreetypeMeal = async () => {
-    if (!freetypeMealName.trim()) return;
+    if (!freetypeMealName.trim() || !onAddFreetypeMeal) return;
     
     setIsAddingFreetype(true);
     try {
-      await onAddFreetypeMeal(freetypeMealName.trim());
+      await onAddFreetypeMeal(freetypeMealName.trim(), mealType);
       setFreetypeMealName("");
       onClose();
     } catch (error) {
@@ -63,7 +67,7 @@ export const SimpleMealSelectionDialog = ({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
+    <Dialog open={isDialogOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add Meal to {mealType}</DialogTitle>
@@ -161,7 +165,7 @@ export const SimpleMealSelectionDialog = ({
                 <div className="flex gap-2">
                   <Button
                     onClick={handleAddFreetypeMeal}
-                    disabled={!freetypeMealName.trim() || isAddingFreetype}
+                    disabled={!freetypeMealName.trim() || isAddingFreetype || !onAddFreetypeMeal}
                     className="flex items-center gap-2"
                   >
                     <Plus className="h-4 w-4" />
