@@ -12,6 +12,7 @@ interface MealListSectionProps {
   allMealPlans?: MealPlan[]; // Add this prop
   getRecipeById: (id: string) => Recipe | undefined;
   onAddMeal: (mealType: MealType) => void;
+  onAddCustomMeal?: (mealType: MealType) => void;
   onRemoveMeal: (planId: string) => void;
   onCreateLeftover?: (mealPlan: MealPlan, recipe: Recipe) => void;
   onReorderMeals?: (mealType: MealType, sourceIndex: number, destinationIndex: number) => void;
@@ -26,6 +27,7 @@ export default function MealListSection({
   allMealPlans = [], // Default value
   getRecipeById,
   onAddMeal,
+  onAddCustomMeal,
   onRemoveMeal,
   onCreateLeftover,
   onReorderMeals,
@@ -96,15 +98,26 @@ export default function MealListSection({
           )}
         </div>
         {!collapsed && (
-          <Button
-            size={isMobile ? "sm" : "sm"}
-            variant="outline"
-            onClick={() => onAddMeal(mealType)}
-            className={`text-terracotta border-terracotta hover:bg-terracotta/10 transition-all duration-200 hover:scale-105 ${isMobile ? 'h-8 px-2 text-xs' : ''}`}
-          >
-            <Plus className={`${isMobile ? 'h-3 w-3 mr-0.5' : 'h-4 w-4 mr-1'}`} />
-            Add
-          </Button>
+          <div className={`flex gap-2 ${isMobile ? 'gap-1' : 'gap-2'}`}>
+            <Button
+              size={isMobile ? "sm" : "sm"}
+              variant="outline"
+              onClick={() => onAddMeal(mealType)}
+              className={`text-terracotta border-terracotta hover:bg-terracotta/10 transition-all duration-200 hover:scale-105 ${isMobile ? 'h-8 px-2 text-xs' : ''}`}
+            >
+              <Plus className={`${isMobile ? 'h-3 w-3 mr-0.5' : 'h-4 w-4 mr-1'}`} />
+              Recipe
+            </Button>
+            <Button
+              size={isMobile ? "sm" : "sm"}
+              variant="outline"
+              onClick={() => onAddCustomMeal?.(mealType)}
+              className={`text-terracotta border-terracotta hover:bg-terracotta/10 transition-all duration-200 hover:scale-105 ${isMobile ? 'h-8 px-2 text-xs' : ''}`}
+            >
+              <Plus className={`${isMobile ? 'h-3 w-3 mr-0.5' : 'h-4 w-4 mr-1'}`} />
+              Custom
+            </Button>
+          </div>
         )}
       </div>
 

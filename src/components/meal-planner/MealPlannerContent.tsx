@@ -15,6 +15,7 @@ interface MealPlannerContentProps {
   onShare: () => void;
   onClearAll: () => void;
   onAddMeal: (mealType: MealType) => void;
+  onAddCustomMeal: (mealType: MealType) => void;
   onRemoveMeal: (planId: string) => void;
   onCreateLeftover: (mealPlan: MealPlan, recipe: Recipe) => void;
   onReorderMeals: (mealType: MealType, sourceIndex: number, destinationIndex: number) => Promise<void>;
@@ -30,6 +31,7 @@ export const MealPlannerContent = ({
   onShare,
   onClearAll,
   onAddMeal,
+  onAddCustomMeal,
   onRemoveMeal,
   onCreateLeftover,
   onReorderMeals,
@@ -70,6 +72,7 @@ export const MealPlannerContent = ({
             mealPlans={getMealPlansForType(mealType)}
             getRecipeById={getRecipeById}
             onAddMeal={onAddMeal}
+            onAddCustomMeal={onAddCustomMeal}
             onRemoveMeal={onRemoveMeal}
             onCreateLeftover={onCreateLeftover}
             onReorderMeals={onReorderMeals}
