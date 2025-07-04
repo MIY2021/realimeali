@@ -1,235 +1,197 @@
-
-import { useState } from "react";
-import { Trash2, Plus, Minus, GripVertical, UtensilsCrossed, Check } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { MealPlan, Recipe } from "@/types";
 import { Card, CardContent } from "@/components/ui/card";
-import { MealPlan, Recipe, MealType } from "@/types";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Clock,
+  Users,
+  MoreVertical,
+  Trash2,
+  Plus,
+  GripVertical,
+  CheckCircle2,
+  Circle,
+  UtensilsCrossed,
+  FileText,
+} from "lucide-react";
 import { DraggableProvidedDragHandleProps } from "react-beautiful-dnd";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { useState, useEffect } from "react";
 import { useMealPlan } from "@/contexts/MealPlanContext";
-import { Link } from "react-router-dom";
-import { generateSlug } from "@/utils/slugUtils";
 
 interface EnhancedMealCardProps {
   mealPlan: MealPlan;
   recipe?: Recipe;
-  parentRecipe?: Recipe;
   onRemove: (planId: string) => void;
-  onCreateLeftover: (mealPlan: MealPlan, recipe: Recipe) => void;
+  onCreateLeftover?: (mealPlan: MealPlan, recipe: Recipe) => void;
+  parentRecipe?: Recipe;
   dragHandleProps?: DraggableProvidedDragHandleProps | null;
   animationDelay?: number;
   allMealPlans?: MealPlan[];
 }
 
-export function EnhancedMealCard({
+export const EnhancedMealCard = ({
   mealPlan,
   recipe,
-  parentRecipe,
   onRemove,
   onCreateLeftover,
+  parentRecipe,
   dragHandleProps,
   animationDelay = 0,
   allMealPlans = [],
-}: EnhancedMealCardProps) {
-  const [servings, setServings] = useState(mealPlan.planned_servings || recipe?.servings || 1);
-  const { updateMealPlanCompletion, updateMealPlanServings } = useMealPlan();
+}: EnhancedMealCardProps) => {
+  const isMobile = useIsMobile();
+  const [isVisible, setIsVisible] = useState(false);
+  const { updateMealPlanCompletion } = useMealPlan();
 
-  if (!recipe) {
-    return (
-      <Card className="bg-gray-50 border-dashed">
-        <CardContent className="p-3">
-          <p className="text-sm text-muted-foreground">Recipe not found</p>
-        </CardContent>
-      </Card>
-    );
-  }
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsVisible(true);
+    }, animationDelay);
+    
+    return () => clearTimeout(timer);
+  }, [animationDelay]);
 
-  const handleCreateLeftover = () => {
-    onCreateLeftover(mealPlan, recipe);
-  };
-
-  const handleCompletionChange = async () => {
+  const handleToggleCompletion = async () => {
     try {
       await updateMealPlanCompletion(mealPlan.id, !mealPlan.is_completed);
     } catch (error) {
-      console.error('Error updating meal completion:', error);
+      console.error('Error toggling meal completion:', error);
     }
   };
 
-  const handleServingsDecrease = async () => {
-    const newServings = Math.max(1, servings - 1);
-    setServings(newServings);
-    try {
-      await updateMealPlanServings(mealPlan.id, newServings);
-    } catch (error) {
-      console.error('Error updating servings:', error);
-      setServings(servings); // Revert on error
-    }
-  };
+  // Determine display title and details
+  const displayTitle = mealPlan.is_freetyped 
+    ? mealPlan.meal_name || "Custom Meal"
+    : (mealPlan.is_leftover && parentRecipe 
+        ? `${parentRecipe.title} (Leftover)` 
+        : recipe?.title || "Unknown Recipe");
 
-  const handleServingsIncrease = async () => {
-    const newServings = servings + 1;
-    setServings(newServings);
-    try {
-      await updateMealPlanServings(mealPlan.id, newServings);
-    } catch (error) {
-      console.error('Error updating servings:', error);
-      setServings(servings); // Revert on error
-    }
-  };
-
-  const isLeftover = mealPlan.is_leftover;
-  const isLunchLeftover = isLeftover && mealPlan.meal_type === 'lunch';
-  
-  // Check if this dinner meal already has leftovers created
-  const existingLeftover = allMealPlans.find(plan => 
-    plan.parent_meal_plan_id === mealPlan.id && 
-    plan.is_leftover && 
-    plan.meal_type === 'lunch'
+  const displayIcon = mealPlan.is_freetyped ? (
+    <FileText className={`${isMobile ? 'h-4 w-4' : 'h-5 w-5'} text-sage`} />
+  ) : (
+    <UtensilsCrossed className={`${isMobile ? 'h-4 w-4' : 'h-5 w-5'} text-terracotta`} />
   );
-  const leftoverServings = existingLeftover?.planned_servings || existingLeftover?.leftover_servings;
 
-  // Calculate actual servings to display for dinner meals
-  const displayServings = mealPlan.meal_type === 'dinner' && existingLeftover && leftoverServings
-    ? (mealPlan.planned_servings || recipe.servings) - leftoverServings
-    : (mealPlan.planned_servings || recipe.servings);
-
-  // Enhanced debugging for leftover button
-  console.log('EnhancedMealCard - Leftover button debug:', {
-    mealPlanId: mealPlan.id,
-    mealType: mealPlan.meal_type,
-    recipeTitle: recipe.title,
-    hasExistingLeftover: !!existingLeftover,
-    existingLeftoverId: existingLeftover?.id,
-    leftoverServings,
-    allMealPlansCount: allMealPlans.length,
-    shouldShowGreen: !!(existingLeftover && mealPlan.meal_type === 'dinner' && !isLeftover)
-  });
-
-  // Generate recipe URL
-  const recipeSlug = generateSlug(recipe.title);
-  const recipeUrl = `/my-recipes/${recipeSlug}`;
+  const canCreateLeftover = !mealPlan.is_leftover && !mealPlan.is_freetyped && recipe && onCreateLeftover;
 
   return (
-    <Card className={`bg-white border border-gray-200 hover:shadow-md transition-all overflow-hidden ${
-      mealPlan.is_completed ? 'opacity-40 saturate-50' : ''
-    }`}>
-      <CardContent className="p-0">
-        <div className="flex h-24">
-          {/* Recipe Image - Slightly smaller with padding */}
-          <div className="w-20 h-20 flex-shrink-0 m-2">
-            <Link to={recipeUrl}>
-              <img 
-                src={recipe.image || "/placeholder.svg"} 
-                alt={recipe.title}
-                className={`w-full h-full object-cover rounded cursor-pointer hover:opacity-80 transition-opacity ${
-                  mealPlan.is_completed ? 'grayscale' : ''
-                }`}
-              />
-            </Link>
+    <Card className={`group hover:shadow-md transition-all duration-300 ease-out transform-gpu ${
+      isVisible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
+    } ${mealPlan.is_completed ? 'opacity-75 bg-green-50 border-green-200' : ''}`}
+    style={{ 
+      transitionDelay: `${animationDelay}ms`,
+      willChange: 'transform, opacity'
+    }}>
+      <CardContent className={`${isMobile ? 'p-3' : 'p-4'}`}>
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-start gap-3 flex-1 min-w-0">
+            <div {...dragHandleProps} className="touch-none mt-1 opacity-50 group-hover:opacity-100 transition-opacity">
+              <GripVertical className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'} text-gray-400 cursor-grab active:cursor-grabbing`} />
+            </div>
+
+            <div className="flex items-start gap-3 flex-1 min-w-0">
+              {displayIcon}
+              
+              <div className="flex-1 min-w-0 space-y-2">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <h3 className={`font-semibold ${isMobile ? 'text-sm' : 'text-base'} text-navy truncate`}>
+                      {displayTitle}
+                    </h3>
+                    {mealPlan.is_freetyped && (
+                      <Badge variant="secondary" className="text-xs bg-sage/10 text-sage border-sage/20 shrink-0">
+                        Custom
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+
+                {!mealPlan.is_freetyped && recipe && (
+                  <div className="flex flex-wrap items-center gap-3 text-muted-foreground">
+                    <div className="flex items-center gap-1">
+                      <Clock className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
+                      <span className={`${isMobile ? 'text-xs' : 'text-sm'}`}>
+                        {(recipe.prep_time || 0) + (recipe.cook_time || 0)} min
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Users className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
+                      <span className={`${isMobile ? 'text-xs' : 'text-sm'}`}>
+                        {mealPlan.planned_servings || recipe.servings} servings
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {mealPlan.is_freetyped && (
+                  <div className="text-muted-foreground">
+                    <span className={`${isMobile ? 'text-xs' : 'text-sm'}`}>
+                      Custom meal entry
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
 
-          {/* Content Area - Reduced left padding to minimize white space */}
-          <div className="flex-1 pl-2 pr-4 py-4 flex flex-col justify-between min-w-0">
-            {/* Header */}
-            <div className="flex items-start justify-between mb-2">
-              <div className="flex-1 min-w-0">
-                <Link to={recipeUrl}>
-                  <h4 className={`font-medium text-sm leading-tight truncate cursor-pointer hover:text-blue-600 transition-colors ${
-                    mealPlan.is_completed ? 'text-gray-400 line-through' : 'text-gray-900'
-                  }`}>
-                    {recipe.title}
-                  </h4>
-                </Link>
-                {isLunchLeftover && parentRecipe && (
-                  <p className="text-xs text-gray-500 mt-1">
-                    Leftover
-                  </p>
-                )}
-              </div>
-              <div className="flex items-center gap-2 flex-shrink-0">
-                {/* Drag Handle - Moved to right side */}
-                <div {...dragHandleProps} className="touch-none cursor-grab active:cursor-grabbing">
-                  <GripVertical className="h-4 w-4 text-gray-400 hover:text-gray-600" />
-                </div>
-              </div>
-            </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleToggleCompletion}
+              className={`${isMobile ? 'h-7 w-7 p-0' : 'h-8 w-8 p-0'} hover:bg-green-100`}
+              title={mealPlan.is_completed ? "Mark as incomplete" : "Mark as complete"}
+            >
+              {mealPlan.is_completed ? (
+                <CheckCircle2 className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'} text-green-600`} />
+              ) : (
+                <Circle className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'} text-gray-400`} />
+              )}
+            </Button>
 
-            {/* Bottom Controls */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-gray-600">Servings:</span>
-                <div className="flex items-center gap-1">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="h-6 w-6 p-0 rounded-full"
-                    onClick={handleServingsDecrease}
-                  >
-                    <Minus className="h-3 w-3" />
-                  </Button>
-                  <span className="text-sm font-medium w-6 text-center">{displayServings}</span>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="h-6 w-6 p-0 rounded-full"
-                    onClick={handleServingsIncrease}
-                  >
-                    <Plus className="h-3 w-3" />
-                  </Button>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2">
-                {/* Completion Tick Icon */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
-                  className={`h-7 w-7 p-0 ${
-                    mealPlan.is_completed 
-                      ? 'bg-green-50 text-green-600 border-green-200 hover:bg-green-100' 
-                      : 'bg-gray-50 text-gray-400 border-gray-200 hover:bg-gray-100'
-                  }`}
-                  onClick={handleCompletionChange}
-                  title={mealPlan.is_completed ? 'Mark as incomplete' : 'Mark as complete'}
+                  className={`${isMobile ? 'h-7 w-7 p-0' : 'h-8 w-8 p-0'} opacity-50 group-hover:opacity-100 transition-opacity`}
                 >
-                  <Check className="h-3 w-3" />
+                  <MoreVertical className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
                 </Button>
-                
-                {/* Lunch Button - Fixed color logic */}
-                {!isLeftover && mealPlan.meal_type === 'dinner' && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className={`h-7 w-7 p-0 transition-all ${
-                      existingLeftover 
-                        ? 'bg-green-500 text-white border-green-500 hover:bg-green-600 shadow-sm' 
-                        : 'bg-orange-50 text-orange-600 border-orange-200 hover:bg-orange-100'
-                    }`}
-                    onClick={handleCreateLeftover}
-                    disabled={!!existingLeftover}
-                    title={existingLeftover 
-                      ? `${leftoverServings} servings saved for lunch` 
-                      : 'Save leftovers for lunch'
-                    }
-                  >
-                    <UtensilsCrossed className="h-3 w-3" />
-                  </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-40">
+                {canCreateLeftover && (
+                  <>
+                    <DropdownMenuItem 
+                      onClick={() => onCreateLeftover(mealPlan, recipe)}
+                      className="text-sage"
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Create Leftover
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                  </>
                 )}
-                
-                {/* Trash Button */}
-                <Button
-                  variant="outline" 
-                  size="sm"
-                  className="h-7 w-7 p-0 text-red-500 hover:text-red-600 hover:bg-red-50"
+                <DropdownMenuItem 
                   onClick={() => onRemove(mealPlan.id)}
+                  className="text-destructive focus:text-destructive"
                 >
-                  <Trash2 className="h-3 w-3" />
-                </Button>
-              </div>
-            </div>
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Remove
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </CardContent>
     </Card>
   );
-}
+};

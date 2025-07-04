@@ -1,186 +1,181 @@
 
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Recipe, MealType } from "@/types";
-import { ChevronDown } from "lucide-react";
-import { RecipeImage } from "@/components/ui/recipe-image";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Clock, Users, Plus } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface SimpleMealSelectionDialogProps {
-  open: boolean;
+  isOpen: boolean;
   onClose: () => void;
-  mealType: MealType;
   recipes: Recipe[];
-  onSelectRecipe: (recipeId: string) => void;
+  onSelectRecipe: (recipe: Recipe) => void;
+  onAddFreetypeMeal: (mealName: string) => void;
+  mealType: MealType;
 }
 
-const MEAL_TYPE_LABELS: Record<MealType, string> = {
-  breakfast: "Breakfast",
-  lunch: "Lunch",
-  dinner: "Dinner", 
-  snacks: "Snacks",
-  sides: "Sides",
-  desserts: "Desserts",
-  drinks: "Drinks"
-};
-
-const INITIAL_DISPLAY_COUNT = 12;
-
-export function SimpleMealSelectionDialog({
-  open,
+export const SimpleMealSelectionDialog = ({
+  isOpen,
   onClose,
-  mealType,
   recipes,
   onSelectRecipe,
-}: SimpleMealSelectionDialogProps) {
+  onAddFreetypeMeal,
+  mealType,
+}: SimpleMealSelectionDialogProps) => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState<string>("all");
-  const [displayCount, setDisplayCount] = useState(INITIAL_DISPLAY_COUNT);
+  const [freetypeMealName, setFreetypeMealName] = useState("");
+  const [isAddingFreetype, setIsAddingFreetype] = useState(false);
 
-  // Get available meal types from recipes
-  const availableMealTypes = [...new Set(
-    recipes.filter(r => r.meal_type).map(r => r.meal_type!)
-  )];
+  const filteredRecipes = recipes.filter(recipe =>
+    recipe.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    recipe.description?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
-  // Filter recipes by category, meal type, and search term
-  const filteredRecipes = recipes.filter((recipe) => {
-    const matchesSearch = recipe.title.toLowerCase().includes(searchTerm.toLowerCase());
+  const handleAddFreetypeMeal = async () => {
+    if (!freetypeMealName.trim()) return;
     
-    // Category filter logic
-    let matchesCategory = true;
-    if (categoryFilter !== "all") {
-      matchesCategory = recipe.meal_type === categoryFilter;
+    setIsAddingFreetype(true);
+    try {
+      await onAddFreetypeMeal(freetypeMealName.trim());
+      setFreetypeMealName("");
+      onClose();
+    } catch (error) {
+      console.error("Error adding freetyped meal:", error);
+    } finally {
+      setIsAddingFreetype(false);
     }
-    
-    // For the specific meal type we're adding to, show relevant recipes
-    let matchesMealType = true;
-    if (categoryFilter === "all") {
-      matchesMealType = recipe.meal_type === mealType || 
-                       (!recipe.meal_type && mealType === "dinner");
-    }
-    
-    return matchesSearch && matchesCategory && matchesMealType;
-  });
-
-  const displayedRecipes = filteredRecipes.slice(0, displayCount);
-  const hasMore = displayCount < filteredRecipes.length;
-
-  const handleSelectRecipe = (recipeId: string) => {
-    onSelectRecipe(recipeId);
-    onClose();
-    setSearchTerm("");
-    setCategoryFilter("all");
-    setDisplayCount(INITIAL_DISPLAY_COUNT);
   };
 
   const handleClose = () => {
     setSearchTerm("");
-    setCategoryFilter("all");
-    setDisplayCount(INITIAL_DISPLAY_COUNT);
+    setFreetypeMealName("");
     onClose();
   };
 
-  const handleLoadMore = () => {
-    setDisplayCount(prev => prev + INITIAL_DISPLAY_COUNT);
-  };
-
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md">
+    <Dialog open={isOpen} onOpenChange={handleClose}>
+      <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Add {MEAL_TYPE_LABELS[mealType]}</DialogTitle>
+          <DialogTitle>Add Meal to {mealType}</DialogTitle>
+          <DialogDescription>
+            Choose a recipe from your collection or add a custom meal.
+          </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
-          {/* Category Filter Dropdown */}
-          <div className="relative">
-            <select
-              value={categoryFilter}
-              onChange={e => setCategoryFilter(e.target.value)}
-              className="w-full border rounded-lg p-3 pr-10 appearance-none bg-white text-sm z-50"
-              style={{ zIndex: 50 }}
-            >
-              <option value="all">All Categories</option>
-              {availableMealTypes.map((type) => (
-                <option key={type} value={type}>
-                  {MEAL_TYPE_LABELS[type as MealType]}
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 pointer-events-none text-gray-400" />
-          </div>
-
-          {/* Search Input */}
-          <Input
-            placeholder="Search recipes..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-
-          <ScrollArea className="h-[300px]">
-            {displayedRecipes.length === 0 ? (
-              <div className="text-center py-8">
-                <p className="text-sm text-muted-foreground">
-                  No recipes found for {MEAL_TYPE_LABELS[mealType]}
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {displayedRecipes.map((recipe) => (
-                  <div
-                    key={recipe.id}
-                    className="p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
-                    onClick={() => handleSelectRecipe(recipe.id)}
-                  >
-                    <div className="flex gap-3">
-                      <div className="w-16 h-16 rounded-md overflow-hidden bg-muted flex-shrink-0">
-                        <RecipeImage recipe={recipe} className="w-full h-full" iconSize="h-5 w-5" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-medium text-sm leading-tight">{recipe.title}</h4>
-                        <p className="text-xs text-gray-600 line-clamp-2 mt-1">
-                          {recipe.description}
-                        </p>
-                        <div className="text-xs text-gray-500 mt-2 flex items-center gap-2">
-                          <span>{recipe.servings} servings</span>
-                          <span>•</span>
-                          <span>{recipe.prep_time + recipe.cook_time} min</span>
-                          {recipe.meal_type && (
-                            <>
-                              <span>•</span>
-                              <span className="text-blue-600">{MEAL_TYPE_LABELS[recipe.meal_type as MealType]}</span>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-                
-                {hasMore && (
-                  <div className="text-center pt-4">
-                    <Button 
-                      variant="outline" 
-                      onClick={handleLoadMore}
-                      className="w-full"
+        <Tabs defaultValue="recipes" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="recipes">From Recipes</TabsTrigger>
+            <TabsTrigger value="custom">Custom Meal</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="recipes" className="space-y-4">
+            <div className="space-y-4">
+              <Input
+                placeholder="Search recipes..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full"
+              />
+              
+              <div className="grid gap-3 max-h-96 overflow-y-auto">
+                {filteredRecipes.length > 0 ? (
+                  filteredRecipes.map((recipe) => (
+                    <Card
+                      key={recipe.id}
+                      className="cursor-pointer hover:shadow-md transition-shadow"
+                      onClick={() => {
+                        onSelectRecipe(recipe);
+                        handleClose();
+                      }}
                     >
-                      Load More Recipes ({filteredRecipes.length - displayCount} remaining)
-                    </Button>
+                      <CardContent className="p-4">
+                        <div className="flex justify-between items-start gap-4">
+                          <div className="flex-1">
+                            <h3 className="font-semibold text-lg mb-2">{recipe.title}</h3>
+                            {recipe.description && (
+                              <p className="text-muted-foreground text-sm mb-3 line-clamp-2">
+                                {recipe.description}
+                              </p>
+                            )}
+                            <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                              <div className="flex items-center gap-1">
+                                <Clock className="h-4 w-4" />
+                                <span>{(recipe.prep_time || 0) + (recipe.cook_time || 0)} min</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Users className="h-4 w-4" />
+                                <span>{recipe.servings} servings</span>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex flex-col gap-2">
+                            {recipe.meal_type && (
+                              <Badge variant="secondary" className="text-xs">
+                                {recipe.meal_type}
+                              </Badge>
+                            )}
+                            {recipe.complexity_level && (
+                              <Badge variant="outline" className="text-xs">
+                                {recipe.complexity_level.replace('_', ' ')}
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    {searchTerm ? "No recipes found matching your search." : "No recipes available."}
                   </div>
                 )}
               </div>
-            )}
-          </ScrollArea>
-
-          <div className="flex justify-end">
-            <Button variant="outline" onClick={handleClose}>
-              Cancel
-            </Button>
-          </div>
-        </div>
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="custom" className="space-y-4">
+            <div className="space-y-4">
+              <div className="text-sm text-muted-foreground">
+                Add a custom meal like "Tesco Ready Meal", "Pizza Delivery", or "Leftover Pasta".
+              </div>
+              
+              <div className="space-y-3">
+                <Input
+                  placeholder="Enter meal name..."
+                  value={freetypeMealName}
+                  onChange={(e) => setFreetypeMealName(e.target.value)}
+                  maxLength={100}
+                  className="w-full"
+                />
+                
+                <div className="flex gap-2">
+                  <Button
+                    onClick={handleAddFreetypeMeal}
+                    disabled={!freetypeMealName.trim() || isAddingFreetype}
+                    className="flex items-center gap-2"
+                  >
+                    <Plus className="h-4 w-4" />
+                    {isAddingFreetype ? "Adding..." : "Add Custom Meal"}
+                  </Button>
+                  <Button variant="outline" onClick={handleClose}>
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </TabsContent>
+        </Tabs>
       </DialogContent>
     </Dialog>
   );
-}
+};
