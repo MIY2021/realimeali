@@ -152,6 +152,44 @@ export default function MealPlannerContainer() {
     setSimpleMealDialog(false);
   }, [pendingMealType, handleAddRecipeToMeal, setPendingMealType, setSimpleMealDialog]);
 
+  const handleAddFreetypeMeal = useCallback(async (mealName: string) => {
+    console.log("🍽️ handleAddFreetypeMeal:", { mealName, pendingMealType });
+    if (!pendingMealType || !user || !currentHousehold) return;
+
+    try {
+      const mealPlanData = {
+        date: new Date().toISOString().split('T')[0],
+        meal_type: pendingMealType,
+        created_by: user.id,
+        slot_index: 0,
+        is_leftover: false,
+        household_id: currentHousehold.id,
+        week_number: currentWeek,
+        original_servings: 1, // Default for freetyped meals
+        planned_servings: 1,
+        is_completed: false,
+        is_freetyped: true,
+        meal_name: mealName,
+      };
+
+      await addMealPlan(mealPlanData, currentWeek);
+      setPendingMealType(null);
+      setSimpleMealDialog(false);
+      
+      toast({
+        title: "Custom Meal Added",
+        description: `${mealName} has been added to ${pendingMealType}`,
+      });
+    } catch (err) {
+      console.error("Error adding freetype meal:", err);
+      toast({
+        title: "Error",
+        description: "Failed to add custom meal",
+        variant: "destructive",
+      });
+    }
+  }, [pendingMealType, user, currentHousehold, currentWeek, addMealPlan, setPendingMealType, setSimpleMealDialog, toast]);
+
   const handleLunchLeftoverConfirm = useCallback((servings: number) => {
     console.log("🥪 handleLunchLeftoverConfirm - servings:", servings);
     // For lunch additions, we'll show the recipe selection dialog with the servings info
@@ -256,6 +294,7 @@ export default function MealPlannerContainer() {
         currentWeek={currentWeek}
         onRandomizeWithQuantities={handleRandomizeWithQuantities}
         onSimpleMealSelect={handleSimpleMealSelect}
+        onAddFreetypeMeal={handleAddFreetypeMeal}
         onLunchLeftoverConfirm={handleLunchLeftoverConfirm}
         onCreateLeftover={handleCreateLeftoverWithServings}
         onWarningConfirm={handleWarningConfirm}

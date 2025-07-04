@@ -27,6 +27,7 @@ interface MealPlannerModalsContainerProps {
   currentWeek: 1 | 2;
   onRandomizeWithQuantities: (quantities: any) => void;
   onSimpleMealSelect: (recipeId: string) => void;
+  onAddFreetypeMeal: (mealName: string) => void;
   onLunchLeftoverConfirm: (servings: number) => void;
   onCreateLeftover: (mealPlan: any, recipe: any, leftoverServings: number) => void;
   onWarningConfirm: () => void;
@@ -54,6 +55,7 @@ export const MealPlannerModalsContainer = ({
   currentWeek,
   onRandomizeWithQuantities,
   onSimpleMealSelect,
+  onAddFreetypeMeal,
   onLunchLeftoverConfirm,
   onCreateLeftover,
   onWarningConfirm,
@@ -89,6 +91,7 @@ export const MealPlannerModalsContainer = ({
         mealType={pendingMealType || "dinner"}
         recipes={recipes}
         onSelectRecipe={onSimpleMealSelect}
+        onAddFreetypeMeal={onAddFreetypeMeal}
       />
 
       <LeftoverServingsDialog

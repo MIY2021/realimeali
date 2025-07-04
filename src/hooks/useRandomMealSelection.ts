@@ -68,6 +68,7 @@ export function useRandomMealSelection() {
           original_servings: recipe.servings || 4,
           planned_servings: recipe.servings || 4, // Add planned_servings field
           is_completed: false, // Add the required is_completed field
+          is_freetyped: false, // Not a freetyped meal
         };
 
         await mealPlanService.addMealPlan(

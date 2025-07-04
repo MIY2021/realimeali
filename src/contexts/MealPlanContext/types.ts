@@ -4,7 +4,7 @@ import { MealPlan, Recipe, MealType } from "@/types";
 export interface HouseholdMealPlan {
   id: string;
   household_id: string;
-  recipe_id: string;
+  recipe_id?: string; // Optional for freetyped meals
   meal_type: string;
   week_number: number;
   slot_index: number;
@@ -19,6 +19,8 @@ export interface HouseholdMealPlan {
   original_servings?: number;
   planned_servings: number;
   is_completed: boolean; // Add completion status
+  is_freetyped: boolean; // Indicates if this is a custom meal name
+  meal_name?: string; // Custom meal name for freetyped meals
 }
 
 export interface MealPlanContextType {

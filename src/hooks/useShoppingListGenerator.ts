@@ -53,6 +53,18 @@ export const useShoppingListGenerator = () => {
           return;
         }
         
+        // Handle freetyped meals
+        if (mealPlan.is_freetyped && mealPlan.meal_name) {
+          console.log('Processing freetyped meal:', mealPlan.meal_name);
+          ingredientInputs.push({
+            name: `Everything for ${mealPlan.meal_name}`,
+            recipeId: mealPlan.id, // Use meal plan id for freetyped meals
+            recipeTitle: mealPlan.meal_name,
+            servingMultiplier: 1 // No multiplier needed for freetyped meals
+          });
+          return;
+        }
+        
         const recipe = recipes.find(r => r.id === mealPlan.recipe_id);
         if (!recipe) {
           console.log('Recipe not found for meal plan:', mealPlan.recipe_id);

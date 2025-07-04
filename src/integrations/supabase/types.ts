@@ -264,14 +264,16 @@ export type Database = {
           household_id: string
           id: string
           is_completed: boolean
+          is_freetyped: boolean
           is_leftover: boolean
           leftover_servings: number | null
+          meal_name: string | null
           meal_type: string
           notes: string | null
           original_servings: number | null
           parent_meal_plan_id: string | null
           planned_servings: number | null
-          recipe_id: string
+          recipe_id: string | null
           slot_index: number
           updated_at: string
           week_number: number
@@ -283,14 +285,16 @@ export type Database = {
           household_id: string
           id?: string
           is_completed?: boolean
+          is_freetyped?: boolean
           is_leftover?: boolean
           leftover_servings?: number | null
+          meal_name?: string | null
           meal_type: string
           notes?: string | null
           original_servings?: number | null
           parent_meal_plan_id?: string | null
           planned_servings?: number | null
-          recipe_id: string
+          recipe_id?: string | null
           slot_index?: number
           updated_at?: string
           week_number: number
@@ -302,14 +306,16 @@ export type Database = {
           household_id?: string
           id?: string
           is_completed?: boolean
+          is_freetyped?: boolean
           is_leftover?: boolean
           leftover_servings?: number | null
+          meal_name?: string | null
           meal_type?: string
           notes?: string | null
           original_servings?: number | null
           parent_meal_plan_id?: string | null
           planned_servings?: number | null
-          recipe_id?: string
+          recipe_id?: string | null
           slot_index?: number
           updated_at?: string
           week_number?: number

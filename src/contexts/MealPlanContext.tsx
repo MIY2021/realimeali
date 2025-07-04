@@ -165,6 +165,7 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
         household_id: currentHousehold.id,
         week_number: weekNumber,
         is_completed: false, // Add the required is_completed field
+        is_freetyped: false, // Not a freetyped meal
       }, weekNumber, silentMode);
 
       if (leftoverServings && leftoverServings > 0) {
@@ -186,6 +187,7 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
             household_id: currentHousehold.id,
             week_number: weekNumber,
             is_completed: false, // Add the required is_completed field
+            is_freetyped: false, // Not a freetyped meal
           }, weekNumber, silentMode);
 
           if (!silentMode) {
