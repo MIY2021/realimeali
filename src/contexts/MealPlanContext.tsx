@@ -160,12 +160,11 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
       await addMealPlan({
         ...mealPlanData,
         original_servings: recipe.servings,
-        planned_servings: mealPlanData.planned_servings || recipe.servings,
+        planned_servings: mealPlanData.planned_servings || recipe.servings, // Ensure planned_servings is set
         is_leftover: false,
         household_id: currentHousehold.id,
         week_number: weekNumber,
-        is_completed: false,
-        is_freetyped: false,
+        is_completed: false, // Add the required is_completed field
       }, weekNumber, silentMode);
 
       if (leftoverServings && leftoverServings > 0) {
@@ -183,11 +182,10 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
             is_leftover: true,
             leftover_servings: leftoverServings,
             original_servings: recipe.servings,
-            planned_servings: leftoverServings,
+            planned_servings: leftoverServings, // Add planned_servings for leftover
             household_id: currentHousehold.id,
             week_number: weekNumber,
-            is_completed: false,
-            is_freetyped: false,
+            is_completed: false, // Add the required is_completed field
           }, weekNumber, silentMode);
 
           if (!silentMode) {
@@ -258,7 +256,7 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
     clearWeek,
     reorderMealPlans,
     updateMealPlanServings,
-    updateMealPlanCompletion,
+    updateMealPlanCompletion, // Add completion function
     isLoading,
     fetchMealPlans
   };

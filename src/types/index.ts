@@ -26,7 +26,7 @@ export interface MealPlan {
   id: string;
   date: string;
   meal_type: string;
-  recipe_id?: string; // Made optional for freetyped meals
+  recipe_id: string;
   slot_index: number;
   is_leftover: boolean;
   leftover_servings?: number;
@@ -42,8 +42,6 @@ export interface MealPlan {
   parent_meal_plan_id?: string;
   created_by: string;
   is_completed: boolean; // Add completion status
-  meal_name?: string; // For freetyped meals
-  is_freetyped: boolean; // To distinguish freetyped meals
 }
 
 export interface Household {

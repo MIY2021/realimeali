@@ -32,7 +32,7 @@ export const mealPlanService = {
   ): Promise<MealPlan> {
     const insertData = {
       household_id: householdId,
-      recipe_id: mealPlanData.recipe_id || null,
+      recipe_id: mealPlanData.recipe_id,
       meal_type: mealPlanData.meal_type,
       week_number: weekNumber,
       slot_index: mealPlanData.slot_index || 0,
@@ -44,8 +44,6 @@ export const mealPlanService = {
       original_servings: mealPlanData.original_servings || null,
       planned_servings: mealPlanData.planned_servings,
       is_completed: false, // New meals start as not completed
-      meal_name: mealPlanData.meal_name || null,
-      is_freetyped: mealPlanData.is_freetyped || false,
     };
 
     if (!silentMode) {
@@ -206,9 +204,7 @@ export const mealPlanService = {
       planned_servings: dbPlan.planned_servings,
       household_id: dbPlan.household_id,
       week_number: dbPlan.week_number as 1 | 2,
-      is_completed: dbPlan.is_completed,
-      meal_name: dbPlan.meal_name,
-      is_freetyped: dbPlan.is_freetyped,
+      is_completed: dbPlan.is_completed, // Include completion status
     };
   }
 };

@@ -1,100 +1,99 @@
-import { useState, useCallback } from "react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useState } from "react";
+import { Recipe, MealType } from "@/types";
+import { mealPlanService } from "@/services/mealPlanService";
 import { useHousehold } from "@/contexts/HouseholdContext";
-import { useRecipes } from "@/contexts/RecipesContext";
-import { useToast } from "@/hooks/use-toast";
-import { MealType } from "@/types";
+import { supabase } from "@/integrations/supabase/client";
 
-interface UseRandomMealSelectionProps {
-  weekNumber: 1 | 2;
-}
-
-export const useRandomMealSelection = ({ weekNumber }: UseRandomMealSelectionProps) => {
-  const { user } = useAuth();
-  const { currentHousehold } = useHousehold();
-  const { recipes } = useRecipes();
-  const { toast } = useToast();
+export function useRandomMealSelection() {
   const [isGenerating, setIsGenerating] = useState(false);
+  const { currentHousehold } = useHousehold();
 
-  const generateRandomDate = useCallback(() => {
-    const today = new Date();
-    const futureDate = new Date(today);
-    futureDate.setDate(today.getDate() + Math.floor(Math.random() * 7)); // Random day within the next 7 days
-    return futureDate.toISOString().split('T')[0]; // Format as 'YYYY-MM-DD'
-  }, []);
-
-  const getRandomRecipe = useCallback((mealType: MealType) => {
-    const availableRecipes = recipes.filter(recipe => recipe.meal_type === mealType);
-    if (availableRecipes.length === 0) return null;
-    const randomIndex = Math.floor(Math.random() * availableRecipes.length);
-    return availableRecipes[randomIndex];
-  }, [recipes]);
-
-  const addRandomMeal = useCallback(async (mealType: MealType) => {
-    if (!user || !currentHousehold) {
-      toast({
-        title: "Error",
-        description: "Please log in and select a household",
-        variant: "destructive",
-      });
-      return null;
+  const generateRandomMeals = async (
+    weekNumber: 1 | 2,
+    mealType: MealType | "all",
+    numMeals: number,
+    onProgress?: (progress: number) => void
+  ) => {
+    if (!currentHousehold) {
+      throw new Error("No household selected");
     }
 
-    if (recipes.length === 0) {
-      toast({
-        title: "No recipes",
-        description: "No recipes found. Please add some recipes first.",
-        variant: "destructive",
-      });
-      return null;
-    }
-
-    const selectedRecipe = getRandomRecipe(mealType);
-    if (!selectedRecipe) {
-      toast({
-        title: "No recipes for meal type",
-        description: `No recipes found for ${mealType}. Please add some recipes first.`,
-        variant: "destructive",
-      });
-      return null;
-    }
-
+    setIsGenerating(true);
     try {
-      setIsGenerating(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("User not authenticated");
 
-      const mealPlan = {
-        recipe_id: selectedRecipe.id,
-        meal_type: mealType,
-        date: generateRandomDate(),
-        created_by: user.id,
-        slot_index: 0,
-        is_leftover: false,
-        household_id: currentHousehold.id,
-        week_number: weekNumber,
-        original_servings: selectedRecipe.servings,
-        planned_servings: selectedRecipe.servings,
-        is_completed: false,
-        is_freetyped: false,
-      };
+      // Fetch all recipes for the household
+      const { data: recipes, error } = await supabase
+        .from('recipes')
+        .select('*')
+        .eq('household_id', currentHousehold.id);
 
-      toast({
-        title: "Meal added",
-        description: `${selectedRecipe.title} has been added to ${mealType}`,
+      if (error) throw error;
+
+      // Filter recipes by meal type if specified
+      let filteredRecipes = recipes || [];
+      if (mealType !== 'all') {
+        filteredRecipes = filteredRecipes.filter(recipe => recipe.meal_type === mealType);
+      }
+
+      if (filteredRecipes.length === 0) {
+        throw new Error(`No ${mealType === 'all' ? '' : mealType + ' '}recipes found`);
+      }
+
+      // Randomly select recipes
+      const selectedRecipes = [];
+      const recipesToChooseFrom = [...filteredRecipes];
+      
+      for (let i = 0; i < Math.min(numMeals, recipesToChooseFrom.length); i++) {
+        const randomIndex = Math.floor(Math.random() * recipesToChooseFrom.length);
+        selectedRecipes.push(recipesToChooseFrom.splice(randomIndex, 1)[0]);
+        
+        if (onProgress) {
+          onProgress((i + 1) / numMeals * 50); // First 50% for selection
+        }
+      }
+
+      // Add selected recipes to meal plan
+      const addPromises = selectedRecipes.map(async (recipe, index) => {
+        const mealPlanData = {
+          recipe_id: recipe.id,
+          meal_type: mealType === 'all' ? 'dinner' : mealType,
+          date: new Date().toISOString().split('T')[0], // Today's date as default
+          created_by: user.id,
+          slot_index: index,
+          is_leftover: false,
+          household_id: currentHousehold.id,
+          week_number: weekNumber,
+          original_servings: recipe.servings || 4,
+          planned_servings: recipe.servings || 4, // Add planned_servings field
+          is_completed: false, // Add the required is_completed field
+        };
+
+        await mealPlanService.addMealPlan(
+          mealPlanData,
+          weekNumber,
+          currentHousehold.id,
+          user.id,
+          true // Silent mode
+        );
+
+        if (onProgress) {
+          const progressValue = 50 + ((index + 1) / selectedRecipes.length * 50);
+          onProgress(progressValue);
+        }
       });
 
-      return mealPlan;
-    } catch (error) {
-      console.error("Error adding meal plan:", error);
-      toast({
-        title: "Error",
-        description: "Failed to add meal plan. Please try again.",
-        variant: "destructive",
-      });
-      return null;
+      await Promise.all(addPromises);
+      
+      return selectedRecipes.length;
     } finally {
       setIsGenerating(false);
     }
-  }, [user, currentHousehold, recipes, getRandomRecipe, generateRandomDate, weekNumber, toast]);
+  };
 
-  return { addRandomMeal, isGenerating };
-};
+  return {
+    generateRandomMeals,
+    isGenerating,
+  };
+}

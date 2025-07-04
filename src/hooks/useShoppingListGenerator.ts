@@ -21,8 +21,8 @@ export const useShoppingListGenerator = () => {
     console.log('Household:', !!currentHousehold);
     console.log('Recipes count:', recipes.length);
 
-    if (!user || !currentHousehold) {
-      console.log('Missing user or household for generation');
+    if (!recipes.length || !user || !currentHousehold) {
+      console.log('Missing requirements for generation');
       return [];
     }
 
@@ -39,31 +39,17 @@ export const useShoppingListGenerator = () => {
       console.log('Clearing existing items for week', weekNumber);
       await ShoppingListService.clearAll(currentHousehold.id, weekNumber);
 
-      // Step 2: Process both recipe-based and freetyped meals
+      // Step 2: Collect ingredients from meal plans with serving calculations
       const ingredientInputs: Array<{
         name: string;
         recipeId: string;
         recipeTitle: string;
-        servingMultiplier: number;
-      }> = [];
-
-      const freetypedMeals: Array<{
-        name: string;
-        mealPlanId: string;
+        servingMultiplier: number; // New field for serving calculation
       }> = [];
 
       mealPlans.forEach(mealPlan => {
         if (mealPlan.is_leftover) {
           console.log('Skipping leftover meal plan:', mealPlan.id);
-          return;
-        }
-
-        if (mealPlan.is_freetyped) {
-          console.log('Processing freetyped meal:', mealPlan.meal_name);
-          freetypedMeals.push({
-            name: mealPlan.meal_name || 'Custom Meal',
-            mealPlanId: mealPlan.id,
-          });
           return;
         }
         
@@ -95,73 +81,60 @@ export const useShoppingListGenerator = () => {
       });
 
       console.log('Total valid ingredients collected:', ingredientInputs.length);
-      console.log('Total freetyped meals:', freetypedMeals.length);
 
-      const savedItems: ShoppingListItem[] = [];
-
-      // Step 3: Handle recipe-based ingredients
-      if (ingredientInputs.length > 0) {
-        console.log('Starting fast local consolidation with serving calculations...');
-        const startTime = performance.now();
-        
-        const consolidationInputs = ingredientInputs.map(item => ({
-          name: item.name,
-          recipeId: item.recipeId,
-          recipeTitle: item.recipeTitle,
-          servingMultiplier: item.servingMultiplier
-        }));
-        
-        const consolidatedIngredients = IngredientConsolidationService.consolidateIngredientsWithServings(consolidationInputs);
-        
-        const endTime = performance.now();
-        console.log(`Consolidation completed in ${Math.round(endTime - startTime)}ms`);
-        console.log('Consolidated ingredients:', consolidatedIngredients.length);
-
-        // Filter out invalid consolidated items
-        const validConsolidatedIngredients = consolidatedIngredients.filter(item => {
-          const isValid = item.name && 
-                         item.name.trim().length > 0 && 
-                         item.name !== 'undefined' && 
-                         item.name !== 'null' &&
-                         item.consolidatedQuantity > 0;
-          
-          if (!isValid) {
-            console.log('Filtering out invalid item:', item);
-          }
-          
-          return isValid;
-        });
-
-        console.log('Valid consolidated items after filtering:', validConsolidatedIngredients.length);
-
-        // Save consolidated ingredients
-        for (const item of validConsolidatedIngredients) {
-          try {
-            const savedItem = await ShoppingListService.addConsolidatedItem(
-              item.name,
-              item.consolidatedQuantity || 1,
-              item.consolidatedUnit || '',
-              item.sourceIngredients || [item.name],
-              item.recipeIds || [],
-              currentHousehold.id,
-              user.id,
-              weekNumber
-            );
-            
-            if (savedItem) {
-              savedItems.push(savedItem);
-            }
-          } catch (itemError) {
-            console.error('Error saving consolidated item:', item, itemError);
-          }
-        }
+      if (ingredientInputs.length === 0) {
+        console.log('No valid ingredients found to consolidate');
+        return [];
       }
 
-      // Step 4: Handle freetyped meals
-      for (const freetypedMeal of freetypedMeals) {
+      // Step 3: Use fast local consolidation with serving multipliers
+      console.log('Starting fast local consolidation with serving calculations...');
+      const startTime = performance.now();
+      
+      // Convert to the format expected by the consolidation service
+      const consolidationInputs = ingredientInputs.map(item => ({
+        name: item.name,
+        recipeId: item.recipeId,
+        recipeTitle: item.recipeTitle,
+        servingMultiplier: item.servingMultiplier
+      }));
+      
+      const consolidatedIngredients = IngredientConsolidationService.consolidateIngredientsWithServings(consolidationInputs);
+      
+      const endTime = performance.now();
+      console.log(`Consolidation completed in ${Math.round(endTime - startTime)}ms`);
+      console.log('Consolidated ingredients:', consolidatedIngredients.length);
+
+      // Step 4: Filter out invalid consolidated items
+      const validConsolidatedIngredients = consolidatedIngredients.filter(item => {
+        const isValid = item.name && 
+                       item.name.trim().length > 0 && 
+                       item.name !== 'undefined' && 
+                       item.name !== 'null' &&
+                       item.consolidatedQuantity > 0;
+        
+        if (!isValid) {
+          console.log('Filtering out invalid item:', item);
+        }
+        
+        return isValid;
+      });
+
+      console.log('Valid items after filtering:', validConsolidatedIngredients.length);
+
+      // Step 5: Batch save all valid items to database
+      const savedItems: ShoppingListItem[] = [];
+      
+      console.log('Batch saving', validConsolidatedIngredients.length, 'items...');
+      
+      for (const item of validConsolidatedIngredients) {
         try {
-          const savedItem = await ShoppingListService.addCustomItem(
-            `Everything for ${freetypedMeal.name}`,
+          const savedItem = await ShoppingListService.addConsolidatedItem(
+            item.name,
+            item.consolidatedQuantity || 1,
+            item.consolidatedUnit || '',
+            item.sourceIngredients || [item.name],
+            item.recipeIds || [],
             currentHousehold.id,
             user.id,
             weekNumber
@@ -171,15 +144,15 @@ export const useShoppingListGenerator = () => {
             savedItems.push(savedItem);
           }
         } catch (itemError) {
-          console.error('Error saving freetyped meal item:', freetypedMeal, itemError);
+          console.error('Error saving individual item:', item, itemError);
         }
       }
 
-      console.log('Successfully saved', savedItems.length, 'items total for week', weekNumber);
+      console.log('Successfully saved', savedItems.length, 'consolidated items for week', weekNumber);
       return savedItems;
       
     } catch (error) {
-      console.error('Error in shopping list generation process:', error);
+      console.error('Error in consolidation process:', error);
       return [];
     }
   }, [recipes, getMealPlansForWeek, user, currentHousehold]);
