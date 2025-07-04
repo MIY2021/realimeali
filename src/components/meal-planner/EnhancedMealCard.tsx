@@ -17,7 +17,7 @@ import {
   Trash2,
   Plus,
   GripVertical,
-  CheckCircle,
+  Check,
   Circle,
   UtensilsCrossed,
   FileText,
@@ -152,7 +152,7 @@ export const EnhancedMealCard = ({
               title={mealPlan.is_completed ? "Mark as incomplete" : "Mark as complete"}
             >
               {mealPlan.is_completed ? (
-                <CheckCircle className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'} text-green-600`} />
+                <Check className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'} text-green-600`} />
               ) : (
                 <Circle className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'} text-gray-400`} />
               )}
