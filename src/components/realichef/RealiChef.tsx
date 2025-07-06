@@ -328,7 +328,7 @@ export const RealiChef = () => {
     <>
       {/* Floating Chef Hat Icon - COMPLETELY REBUILT */}
       {!isOpen && (
-        <div className="fixed bottom-20 right-4 z-[60] md:bottom-16 md:right-8">
+        <div className="fixed bottom-20 right-4 z-40 md:bottom-16 md:right-8">
           <Button
             onClick={handleChatButtonClick}
             className={cn(
