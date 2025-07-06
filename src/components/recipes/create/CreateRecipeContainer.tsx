@@ -224,8 +224,8 @@ export function CreateRecipeContainer() {
           });
         }
         
-        // Navigate to meal planner and scroll to top
-        navigate("/meal-planner");
+        // Navigate to recipes page and scroll to top
+        navigate("/my-recipes");
         setTimeout(() => {
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }, 100);
