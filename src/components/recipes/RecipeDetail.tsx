@@ -7,6 +7,8 @@ import { RecipeMetaInfo } from "./RecipeMetaInfo";
 import { RecipeTabContent } from "./RecipeTabContent";
 import { RecipeFooter } from "./RecipeFooter";
 import { RecipeImageEditor } from "./RecipeImageEditor";
+import { RecipeNotesSection } from "./RecipeNotesSection";
+import { Lightbulb } from "lucide-react";
 import { RecipeScalingService } from "@/utils/recipeScaling";
 
 interface RecipeDetailProps {
@@ -73,6 +75,28 @@ export const RecipeDetail = ({
       {recipe.description && (
         <p className="text-gray-600 text-lg mb-6 px-2">{recipe.description}</p>
       )}
+
+      {/* Top Tip */}
+      {recipe.top_tip && recipe.top_tip !== "Enjoy cooking this delicious recipe!" && (
+        <div className="mb-6 px-2">
+          <div className="bg-sage/10 border border-sage/20 rounded-lg p-4">
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0 mt-0.5">
+                <Lightbulb className="h-5 w-5 text-sage" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-sage-800 mb-2">Chef's Tip</h3>
+                <p className="text-gray-700 leading-relaxed">{recipe.top_tip}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Recipe Notes */}
+      <div className="mb-6 px-2">
+        <RecipeNotesSection recipeId={recipe.id} />
+      </div>
 
       <RecipeTabContent 
         recipe={recipe} 

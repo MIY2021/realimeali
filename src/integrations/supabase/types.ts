@@ -744,6 +744,51 @@ export type Database = {
         }
         Relationships: []
       }
+      recipe_notes: {
+        Row: {
+          content: string
+          created_at: string
+          created_by: string
+          household_id: string
+          id: string
+          recipe_id: string
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          created_by: string
+          household_id: string
+          id?: string
+          recipe_id: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          created_by?: string
+          household_id?: string
+          id?: string
+          recipe_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recipe_notes_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recipe_notes_recipe_id_fkey"
+            columns: ["recipe_id"]
+            isOneToOne: false
+            referencedRelation: "recipes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       recipes: {
         Row: {
           complexity_level:
@@ -759,6 +804,7 @@ export type Database = {
           household_id: string
           id: string
           image: string | null
+          import_method: string | null
           ingredients: string[]
           instructions: string[]
           is_favorite: boolean | null
@@ -766,6 +812,7 @@ export type Database = {
           meal_type: Database["public"]["Enums"]["meal_type"] | null
           prep_time: number | null
           servings: number | null
+          source_url: string | null
           title: string
           top_tip: string | null
           updated_at: string | null
@@ -787,6 +834,7 @@ export type Database = {
           household_id: string
           id?: string
           image?: string | null
+          import_method?: string | null
           ingredients?: string[]
           instructions?: string[]
           is_favorite?: boolean | null
@@ -794,6 +842,7 @@ export type Database = {
           meal_type?: Database["public"]["Enums"]["meal_type"] | null
           prep_time?: number | null
           servings?: number | null
+          source_url?: string | null
           title: string
           top_tip?: string | null
           updated_at?: string | null
@@ -815,6 +864,7 @@ export type Database = {
           household_id?: string
           id?: string
           image?: string | null
+          import_method?: string | null
           ingredients?: string[]
           instructions?: string[]
           is_favorite?: boolean | null
@@ -822,6 +872,7 @@ export type Database = {
           meal_type?: Database["public"]["Enums"]["meal_type"] | null
           prep_time?: number | null
           servings?: number | null
+          source_url?: string | null
           title?: string
           top_tip?: string | null
           updated_at?: string | null

@@ -116,6 +116,18 @@ export function RecipeManualTab({
               />
             </div>
 
+            <div>
+              <Label htmlFor="top-tip" className="text-sm font-medium">Chef's Top Tip</Label>
+              <Textarea
+                id="top-tip"
+                value={newRecipe.top_tip || ""}
+                onChange={(e) => setNewRecipe({ ...newRecipe, top_tip: e.target.value })}
+                placeholder="Share your best tip for making this recipe (optional)"
+                className="mt-1 min-h-16 resize-none"
+                rows={2}
+              />
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
                 <Label htmlFor="prep-time" className="text-sm font-medium">Prep Time (min)</Label>

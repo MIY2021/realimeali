@@ -632,6 +632,21 @@ Lighting: natural daylight style or softbox imitation — bright but soft shadow
               />
             </div>
 
+            {/* Top Tip */}
+            <div className="grid gap-2">
+              <Label htmlFor="top-tip">Chef's Top Tip</Label>
+              <Textarea
+                id="top-tip"
+                value={editedRecipe.top_tip || ""}
+                onChange={(e) =>
+                  setEditedRecipe({ ...editedRecipe, top_tip: e.target.value })
+                }
+                placeholder="Share your best tip for making this recipe (optional)"
+                className="min-h-[60px]"
+                rows={2}
+              />
+            </div>
+
             {/* Recipe Details */}
             <div className="grid grid-cols-3 gap-4">
               <div className="grid gap-2">

@@ -20,6 +20,18 @@ export interface Recipe {
   slug?: string;
   top_tip?: string;
   has_cooked?: boolean; // New field to track if household has cooked this recipe
+  source_url?: string; // URL the recipe was imported from
+  import_method?: string; // How the recipe was created
+}
+
+export interface RecipeNote {
+  id: string;
+  recipe_id: string;
+  household_id: string;
+  content: string;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface MealPlan {
