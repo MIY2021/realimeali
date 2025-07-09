@@ -278,7 +278,13 @@ export function CreateRecipeContainer() {
     recipeFormHook.setShareWithCommunity(false);
     const result = await recipeProcessingHook.processImage(file);
     if (result) {
-      recipeFormHook.setNewRecipe(prev => ({ ...prev, ...result }));
+      // Set source_url and import_method for image imports
+      const processedRecipe = {
+        ...result,
+        source_url: null, // No source URL for image imports
+        import_method: 'image' as const
+      };
+      recipeFormHook.setNewRecipe(prev => ({ ...prev, ...processedRecipe }));
       setActiveTab("manual");
     }
   };

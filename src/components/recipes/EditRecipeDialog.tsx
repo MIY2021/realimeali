@@ -19,6 +19,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Clock, Users, Plus, X, Camera, Search, Loader, Eye, Check, Upload, Trash2, LayoutGrid, ArrowRight, ArrowLeft } from "lucide-react";
 import { UnsplashService } from "@/services/unsplashService";
 import { supabase } from "@/integrations/supabase/client";
+import { RecipeClassificationSelector } from "./create/RecipeClassificationSelector";
 
 interface UnsplashPhoto {
   id: string;
@@ -706,6 +707,12 @@ Lighting: natural daylight style or softbox imitation — bright but soft shadow
                 />
               </div>
             </div>
+
+            {/* Recipe Classification */}
+            <RecipeClassificationSelector 
+              recipe={editedRecipe}
+              onRecipeChange={(updatedRecipe) => setEditedRecipe(updatedRecipe as Recipe)}
+            />
 
             {/* Ingredients */}
             <div className="grid gap-2">

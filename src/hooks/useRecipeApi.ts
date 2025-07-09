@@ -69,7 +69,8 @@ export const useRecipeApi = () => {
         diet_lifestyle: recipeData.diet_lifestyle,
         complexity_level: recipeData.complexity_level,
         top_tip: recipeData.top_tip,
-        slug: recipeData.slug,
+        source_url: recipeData.source_url,
+        import_method: recipeData.import_method || 'manual',
       };
 
       const { data, error } = await supabase
@@ -114,6 +115,8 @@ export const useRecipeApi = () => {
           diet_lifestyle: recipe.diet_lifestyle,
           complexity_level: recipe.complexity_level,
           top_tip: recipe.top_tip,
+          source_url: recipe.source_url,
+          import_method: recipe.import_method,
         })
         .eq('id', id)
         .select()
