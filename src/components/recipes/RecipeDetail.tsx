@@ -8,6 +8,7 @@ import { RecipeTabContent } from "./RecipeTabContent";
 import { RecipeFooter } from "./RecipeFooter";
 import { RecipeImageEditor } from "./RecipeImageEditor";
 import { RecipeNotesSection } from "./RecipeNotesSection";
+import { RecipeClassificationSummary } from "./RecipeClassificationSummary";
 import { Lightbulb } from "lucide-react";
 import { RecipeScalingService } from "@/utils/recipeScaling";
 
@@ -75,6 +76,9 @@ export const RecipeDetail = ({
       {recipe.description && (
         <p className="text-gray-600 text-lg mb-6 px-2">{recipe.description}</p>
       )}
+
+      {/* Recipe Classification */}
+      <RecipeClassificationSummary recipe={recipe} />
 
       {/* Top Tip */}
       {recipe.top_tip && recipe.top_tip !== "Enjoy cooking this delicious recipe!" && (
