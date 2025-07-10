@@ -1,10 +1,12 @@
+import { useState } from "react";
 import { MealType, MealPlan, Recipe } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Plus, GripVertical } from "lucide-react";
 import { EnhancedMealCard } from "@/components/meal-planner/EnhancedMealCard";
+import { AddMealOptionsDialog } from "@/components/meal-planner/AddMealOptionsDialog";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { DragDropContext, Droppable, Draggable, DropResult, DraggableProvidedDragHandleProps } from "react-beautiful-dnd";
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 
 interface MealListSectionProps {
   mealType: MealType;
@@ -37,6 +39,7 @@ export default function MealListSection({
 }: MealListSectionProps) {
   const isMobile = useIsMobile();
   const [isVisible, setIsVisible] = useState(false);
+  const [addMealDialog, setAddMealDialog] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -65,6 +68,20 @@ export default function MealListSection({
     if (isMobile && navigator.vibrate) {
       navigator.vibrate(50);
     }
+  };
+
+  const handleAddMeal = () => {
+    setAddMealDialog(true);
+  };
+
+  const handleSelectRecipe = () => {
+    setAddMealDialog(false);
+    onAddMeal(mealType);
+  };
+
+  const handleSelectCustom = () => {
+    setAddMealDialog(false);
+    onAddCustomMeal?.(mealType);
   };
 
   return (
@@ -98,26 +115,15 @@ export default function MealListSection({
           )}
         </div>
         {!collapsed && (
-          <div className={`flex gap-2 ${isMobile ? 'gap-1' : 'gap-2'}`}>
-            <Button
-              size={isMobile ? "sm" : "sm"}
-              variant="outline"
-              onClick={() => onAddMeal(mealType)}
-              className={`text-terracotta border-terracotta hover:bg-terracotta/10 transition-all duration-200 hover:scale-105 ${isMobile ? 'h-8 px-2 text-xs' : ''}`}
-            >
-              <Plus className={`${isMobile ? 'h-3 w-3 mr-0.5' : 'h-4 w-4 mr-1'}`} />
-              Recipe
-            </Button>
-            <Button
-              size={isMobile ? "sm" : "sm"}
-              variant="outline"
-              onClick={() => onAddCustomMeal?.(mealType)}
-              className={`text-terracotta border-terracotta hover:bg-terracotta/10 transition-all duration-200 hover:scale-105 ${isMobile ? 'h-8 px-2 text-xs' : ''}`}
-            >
-              <Plus className={`${isMobile ? 'h-3 w-3 mr-0.5' : 'h-4 w-4 mr-1'}`} />
-              Custom
-            </Button>
-          </div>
+          <Button
+            size={isMobile ? "sm" : "sm"}
+            variant="outline"
+            onClick={handleAddMeal}
+            className={`text-terracotta border-terracotta hover:bg-terracotta/10 transition-all duration-200 hover:scale-105 ${isMobile ? 'h-8 px-3 text-xs' : ''}`}
+          >
+            <Plus className={`${isMobile ? 'h-3 w-3 mr-1' : 'h-4 w-4 mr-1'}`} />
+            Add
+          </Button>
         )}
       </div>
 
@@ -191,6 +197,14 @@ export default function MealListSection({
           )}
         </div>
       )}
+
+      <AddMealOptionsDialog
+        open={addMealDialog}
+        onOpenChange={setAddMealDialog}
+        mealType={mealType}
+        onSelectRecipe={handleSelectRecipe}
+        onSelectCustom={handleSelectCustom}
+      />
     </div>
   );
 }
