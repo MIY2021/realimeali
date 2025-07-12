@@ -147,37 +147,41 @@ export const RecipeNotesSection = ({ recipeId }: RecipeNotesSectionProps) => {
   return (
     <Card className="border-sage/20">
       <CardHeader 
-        className="pb-3 cursor-pointer hover:bg-gray-50/50 transition-colors"
+        className="pb-2 cursor-pointer hover:bg-gray-50/50 transition-colors"
         onClick={() => !isEditing && setIsExpanded(!isExpanded)}
       >
         <CardTitle className="text-lg flex items-center justify-between">
           <div className="flex items-center gap-2">
             <FileText className="h-5 w-5 text-sage" />
-            <span>Household Notes</span>
+            <span>Recipe Notes</span>
             {note && !isExpanded && (
               <Badge variant="secondary" className="text-xs">
                 Has notes
               </Badge>
             )}
           </div>
-          {!isEditing && (
+          {(
             <Button
               variant="ghost"
               size="sm"
               onClick={(e) => {
                 e.stopPropagation();
-                startEditing();
+                if (isEditing) {
+                  cancelEditing();
+                } else {
+                  startEditing();
+                }
               }}
               className="text-sage hover:text-sage-600"
             >
-              {note ? <Edit className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+              {isEditing ? <X className="h-4 w-4" /> : (note ? <Edit className="h-4 w-4" /> : <Plus className="h-4 w-4" />)}
             </Button>
           )}
         </CardTitle>
       </CardHeader>
 
       {(isExpanded || isEditing) && (
-        <CardContent className="pt-0">
+        <CardContent className="pt-0 px-4 pb-3">
           {isEditing ? (
             <div className="space-y-3">
               <Textarea

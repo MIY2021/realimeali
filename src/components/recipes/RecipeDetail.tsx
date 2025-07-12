@@ -82,13 +82,13 @@ export const RecipeDetail = ({
 
       {/* Top Tip */}
       {recipe.top_tip && recipe.top_tip !== "Enjoy cooking this delicious recipe!" && (
-        <div className="mb-6 px-2">
+        <div className="mb-6">
           <div className="bg-sage/10 border border-sage/20 rounded-lg p-4">
             <div className="flex items-start gap-3">
               <div className="flex-shrink-0 mt-0.5">
                 <Lightbulb className="h-5 w-5 text-sage" />
               </div>
-              <div>
+              <div className="flex-1">
                 <h3 className="font-semibold text-sage-800 mb-2">Chef's Tip</h3>
                 <p className="text-gray-700 leading-relaxed">{recipe.top_tip}</p>
               </div>
@@ -98,7 +98,7 @@ export const RecipeDetail = ({
       )}
 
       {/* Recipe Notes */}
-      <div className="mb-6 px-2">
+      <div className="mb-6">
         <RecipeNotesSection recipeId={recipe.id} />
       </div>
 
