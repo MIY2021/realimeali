@@ -151,10 +151,10 @@ export const RecipeNotesSection = ({ recipeId }: RecipeNotesSectionProps) => {
         className="pb-2 cursor-pointer hover:bg-gray-50/50 transition-colors"
         onClick={() => !isEditing && setIsExpanded(!isExpanded)}
       >
-        <CardTitle className="text-lg flex items-center justify-between">
+        <CardTitle className="text-lg flex items-center justify-between h-auto">
           <div className="flex items-center gap-2">
             <FileText className="h-5 w-5 text-sage" />
-            <span>Recipe Notes</span>
+            <span className="leading-none">Recipe Notes</span>
             {note && !isExpanded && (
               <Badge variant="secondary" className="text-xs">
                 Has notes
