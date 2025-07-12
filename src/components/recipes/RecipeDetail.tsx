@@ -89,8 +89,10 @@ export const RecipeDetail = ({
                 <Lightbulb className="h-5 w-5 text-sage" />
               </div>
               <div className="flex-1">
-                <h3 className="font-semibold text-sage-800 mb-2">Chef's Tip</h3>
-                <p className="text-gray-700 leading-relaxed">{recipe.top_tip}</p>
+                <h3 className="font-semibold text-sage-800 mb-2">Top Tip</h3>
+                <p className="text-gray-700 leading-relaxed sm:ml-0 -ml-8">
+                  {recipe.top_tip}
+                </p>
               </div>
             </div>
           </div>

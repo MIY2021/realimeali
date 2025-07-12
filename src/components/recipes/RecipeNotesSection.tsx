@@ -133,6 +133,7 @@ export const RecipeNotesSection = ({ recipeId }: RecipeNotesSectionProps) => {
 
   const cancelEditing = () => {
     setIsEditing(false);
+    setIsExpanded(false);
     setContent(note?.content || "");
   };
 
