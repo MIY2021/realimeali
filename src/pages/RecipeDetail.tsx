@@ -7,7 +7,7 @@ import { useRecipes } from "@/contexts/RecipesContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { RecipeDetail as RecipeDetailComponent } from "@/components/recipes/RecipeDetail";
-import { EditRecipeDialog } from "@/components/recipes/EditRecipeDialog";
+
 import { AddToMealPlanDialog } from "@/components/recipes/AddToMealPlanDialog";
 import { Recipe } from "@/types";
 import { generateSlug } from "@/utils/slugUtils";
@@ -18,7 +18,7 @@ export default function RecipeDetail() {
   const navigate = useNavigate();
   const { recipes, getRecipeById, updateRecipe, deleteRecipe, isLoading } = useRecipes();
   const { user } = useAuth();
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  
   const [isAddToMealPlanOpen, setIsAddToMealPlanOpen] = useState(false);
   const [adjustedServings, setAdjustedServings] = useState<number | undefined>(undefined);
   const [hasAttemptedLoad, setHasAttemptedLoad] = useState(false);
@@ -58,7 +58,8 @@ export default function RecipeDetail() {
   useDocumentTitle(recipe ? `${recipe.title} | RealiMeali` : "Recipe | RealiMeali");
 
   const handleEdit = (recipe: Recipe) => {
-    setIsEditDialogOpen(true);
+    const slug = generateSlug(recipe.title);
+    navigate(`/my-recipes/${slug}/edit`);
   };
 
   const handleDelete = async () => {
@@ -73,24 +74,6 @@ export default function RecipeDetail() {
     }
   };
 
-  const handleRecipeUpdate = async (updatedRecipe: Recipe) => {
-    if (!recipe) return;
-    
-    try {
-      const updated = await updateRecipe(recipe.id, updatedRecipe);
-      if (updated) {
-        setIsEditDialogOpen(false);
-        // Force a refresh by navigating to the new slug if title changed
-        const newSlug = generateSlug(updatedRecipe.title);
-        const currentSlug = generateSlug(recipe.title);
-        if (newSlug !== currentSlug) {
-          navigate(`/my-recipes/${newSlug}`, { replace: true });
-        }
-      }
-    } catch (error) {
-      console.error('Error updating recipe:', error);
-    }
-  };
 
   const handleImageUpdate = async (imageUrl: string) => {
     if (!recipe) return;
@@ -210,15 +193,6 @@ export default function RecipeDetail() {
           />
 
           {/* Dialogs */}
-          {isEditDialogOpen && recipe && (
-            <EditRecipeDialog
-              recipe={recipe}
-              open={isEditDialogOpen}
-              onOpenChange={setIsEditDialogOpen}
-              onRecipeUpdate={handleRecipeUpdate}
-            />
-          )}
-
           {isAddToMealPlanOpen && recipe && (
             <AddToMealPlanDialog
               recipe={recipe}

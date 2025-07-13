@@ -19,6 +19,7 @@ interface CreateRecipeTabsWrapperProps {
   onGenerateImage: () => void;
   onSave: () => void;
   onCancel: () => void;
+  isEditMode?: boolean;
 }
 
 export function CreateRecipeTabsWrapper({
@@ -35,6 +36,7 @@ export function CreateRecipeTabsWrapper({
   onGenerateImage,
   onSave,
   onCancel,
+  isEditMode = false,
 }: CreateRecipeTabsWrapperProps) {
   
   const status = useRecipeCompletionStatus({ newRecipe: recipeFormHook.newRecipe });
@@ -47,6 +49,7 @@ export function CreateRecipeTabsWrapper({
           activeTab={activeTab}
           setActiveTab={setActiveTab}
           recipeOrigin={recipeOrigin}
+          isEditMode={isEditMode}
         >
           <RecipeTabsContent
             isMobile={isMobile}
@@ -72,6 +75,7 @@ export function CreateRecipeTabsWrapper({
           onSave={onSave}
           onCancel={onCancel}
           recipeOrigin={recipeOrigin}
+          isEditMode={isEditMode}
         />
       )}
     </div>

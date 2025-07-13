@@ -9,16 +9,21 @@ import { useRecipeCreationHandlers, type RecipeOrigin } from "./hooks/useRecipeC
 
 export type { RecipeOrigin };
 
-export function CreateRecipeContainer() {
+interface CreateRecipeContainerProps {
+  editingRecipe?: any;
+  isEditMode?: boolean;
+}
+
+export function CreateRecipeContainer({ editingRecipe, isEditMode = false }: CreateRecipeContainerProps) {
   const isMobile = useIsMobile();
 
-  const [activeTab, setActiveTab] = useState("url");
+  const [activeTab, setActiveTab] = useState(isEditMode ? "manual" : "url");
   const [recipeOrigin, setRecipeOrigin] = useState<RecipeOrigin>('manual');
   const [originalSourceUrl, setOriginalSourceUrl] = useState<string>('');
-  const [manualTabClicked, setManualTabClicked] = useState(false);
+  const [manualTabClicked, setManualTabClicked] = useState(isEditMode);
 
   // Keep hooks as objects instead of destructuring
-  const recipeFormHook = useRecipeForm();
+  const recipeFormHook = useRecipeForm(isEditMode, editingRecipe);
   const recipeProcessingHook = useRecipeProcessing();
 
   const { handleGenerateImage } = useImageGeneration();
@@ -31,6 +36,8 @@ export function CreateRecipeContainer() {
     setActiveTab,
     recipeOrigin,
     originalSourceUrl,
+    isEditMode,
+    editingRecipe,
   });
 
   const onGenerateImage = () => {
@@ -86,10 +93,13 @@ export function CreateRecipeContainer() {
         <div className="space-y-2">
           <h1 className="text-2xl sm:text-3xl font-bold text-navy flex items-center gap-2">
             <Plus className="h-6 w-6 sm:h-8 sm:w-8 text-sage" />
-            Add New Recipe
+            {isEditMode ? "Edit Recipe" : "Add New Recipe"}
           </h1>
           <p className="text-sm sm:text-base text-muted-foreground">
-            Turn your culinary imagination into reality! Whether you're recreating a family favorite or experimenting with new flavors, every great meal starts with the perfect recipe.
+            {isEditMode 
+              ? "Update your recipe with any changes. All your existing data is preserved and ready for editing."
+              : "Turn your culinary imagination into reality! Whether you're recreating a family favorite or experimenting with new flavors, every great meal starts with the perfect recipe."
+            }
           </p>
         </div>
       </div>
@@ -108,6 +118,7 @@ export function CreateRecipeContainer() {
         onGenerateImage={onGenerateImage}
         onSave={handlers.handleSaveRecipe}
         onCancel={handlers.handleCancel}
+        isEditMode={isEditMode}
       />
     </div>
   );

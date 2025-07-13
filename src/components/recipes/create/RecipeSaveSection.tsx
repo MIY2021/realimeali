@@ -13,6 +13,7 @@ interface RecipeSaveSectionProps {
   onSave: () => void;
   onCancel: () => void;
   recipeOrigin: RecipeOrigin;
+  isEditMode?: boolean;
 }
 
 export function RecipeSaveSection({
@@ -24,11 +25,12 @@ export function RecipeSaveSection({
   onSave,
   onCancel,
   recipeOrigin,
+  isEditMode = false,
 }: RecipeSaveSectionProps) {
   if (!wasGenerated) return null;
   
-  // Only show the community sharing option for recipes imported from URL
-  const showCommunityOption = recipeOrigin === 'url';
+  // Only show the community sharing option for recipes imported from URL and not in edit mode
+  const showCommunityOption = recipeOrigin === 'url' && !isEditMode;
 
   return (
     <div className="flex flex-col gap-4 p-4 bg-white rounded-lg border">
@@ -65,7 +67,7 @@ export function RecipeSaveSection({
           className="flex-1 sm:flex-initial bg-green-600 hover:bg-green-700 text-white h-11"
         >
           <Save className="h-4 w-4 mr-2" />
-          Save Recipe
+          {isEditMode ? "Update Recipe" : "Save Recipe"}
         </Button>
         
         <Button

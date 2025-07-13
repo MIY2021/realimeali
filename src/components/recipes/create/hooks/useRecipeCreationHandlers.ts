@@ -17,6 +17,8 @@ interface UseRecipeCreationHandlersProps {
   setActiveTab: (tab: string) => void;
   recipeOrigin: RecipeOrigin;
   originalSourceUrl: string;
+  isEditMode?: boolean;
+  editingRecipe?: any;
 }
 
 export const useRecipeCreationHandlers = ({
@@ -27,11 +29,13 @@ export const useRecipeCreationHandlers = ({
   setActiveTab,
   recipeOrigin,
   originalSourceUrl,
+  isEditMode = false,
+  editingRecipe,
 }: UseRecipeCreationHandlersProps) => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { currentHousehold } = useHousehold();
-  const { createRecipe } = useRecipes();
+  const { createRecipe, updateRecipe } = useRecipes();
   const { toast } = useToast();
   const [isSaving, setIsSaving] = useState(false);
 
@@ -101,7 +105,7 @@ export const useRecipeCreationHandlers = ({
   };
 
   const handleSaveRecipe = async () => {
-    console.log('💾 Starting save recipe process...');
+    console.log('💾 Starting save recipe process...', { isEditMode });
     
     if (!user || !currentHousehold) {
       console.error('❌ Missing authentication:', { user: !!user, household: !!currentHousehold });
@@ -130,13 +134,18 @@ export const useRecipeCreationHandlers = ({
         household_id: currentHousehold.id,
       };
 
-      const savedRecipe = await createRecipe(recipeToSave, currentHousehold.id);
+      let savedRecipe;
+      if (isEditMode && editingRecipe) {
+        savedRecipe = await updateRecipe(editingRecipe.id, recipeToSave);
+      } else {
+        savedRecipe = await createRecipe(recipeToSave, currentHousehold.id);
+      }
       
       if (savedRecipe) {
         console.log('✅ Recipe saved successfully:', savedRecipe.id);
         
-        // Handle community sharing if enabled and is from URL import
-        const effectiveShareWithCommunity = recipeOrigin === 'url' ? recipeFormHook.shareWithCommunity : false;
+        // Handle community sharing if enabled and is from URL import (only for new recipes)
+        const effectiveShareWithCommunity = !isEditMode && recipeOrigin === 'url' ? recipeFormHook.shareWithCommunity : false;
         
         if (effectiveShareWithCommunity) {
           try {
@@ -175,13 +184,21 @@ export const useRecipeCreationHandlers = ({
             });
           }
         } else {
+          const action = isEditMode ? "updated" : "added to your recipe collection";
+          const emoji = isEditMode ? "✏️" : "🎉";
           toast({
-            title: "Recipe Saved Successfully! 🎉",
-            description: `${savedRecipe.title} has been added to your recipe collection.`,
+            title: `Recipe ${isEditMode ? "Updated" : "Saved"} Successfully! ${emoji}`,
+            description: `${savedRecipe.title} has been ${action}.`,
           });
         }
         
-        navigate("/my-recipes");
+        if (isEditMode) {
+          // Navigate back to recipe detail with potentially new slug
+          const newSlug = savedRecipe.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+          navigate(`/my-recipes/${newSlug}`);
+        } else {
+          navigate("/my-recipes");
+        }
         setTimeout(() => {
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }, 100);
@@ -213,7 +230,13 @@ export const useRecipeCreationHandlers = ({
   };
 
   const handleCancel = () => {
-    navigate("/my-recipes");
+    if (isEditMode && editingRecipe) {
+      // Navigate back to the recipe detail page
+      const slug = editingRecipe.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+      navigate(`/my-recipes/${slug}`);
+    } else {
+      navigate("/my-recipes");
+    }
   };
 
   return {

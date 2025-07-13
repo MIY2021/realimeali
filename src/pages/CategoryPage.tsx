@@ -4,7 +4,6 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { RecipeCard } from "@/components/recipes/RecipeCard";
-import { EditRecipeDialog } from "@/components/recipes/EditRecipeDialog";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
@@ -17,8 +16,6 @@ export default function CategoryPage() {
   const { recipes } = useRecipes();
   const { user } = useAuth();
   const { currentHousehold } = useHousehold();
-  const [editingRecipe, setEditingRecipe] = useState<Recipe | null>(null);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   const decodedCategory = category ? decodeURIComponent(category) : "";
   
@@ -35,13 +32,6 @@ export default function CategoryPage() {
   const handleAddToMealPlan = (recipe: Recipe) => {
     // Navigate to recipe detail page where they can add to meal plan
     navigate(`/my-recipes/${recipe.id}`);
-  };
-
-  const handleRecipeUpdate = (updatedRecipe: Recipe) => {
-    // This function is called when a recipe is updated
-    // The RecipesContext will handle the actual update
-    setEditingRecipe(null);
-    setIsEditDialogOpen(false);
   };
 
   if (!user || !currentHousehold) {
@@ -112,14 +102,6 @@ export default function CategoryPage() {
         ))}
       </div>
 
-      {editingRecipe && (
-        <EditRecipeDialog
-          recipe={editingRecipe}
-          open={isEditDialogOpen}
-          onOpenChange={setIsEditDialogOpen}
-          onRecipeUpdate={handleRecipeUpdate}
-        />
-      )}
     </div>
   );
 }

@@ -18,6 +18,7 @@ interface CreateRecipeTabNavigationProps {
   setActiveTab: (tab: string) => void;
   recipeOrigin: RecipeOrigin;
   children: React.ReactNode;
+  isEditMode?: boolean;
 }
 
 const baseTabOptions: TabOption[] = [
@@ -63,12 +64,19 @@ export function CreateRecipeTabNavigation({
   activeTab,
   setActiveTab,
   recipeOrigin,
-  children
+  children,
+  isEditMode = false
 }: CreateRecipeTabNavigationProps) {
   
-  // Generate dynamic tab options based on recipe origin
+  // Generate dynamic tab options based on recipe origin and edit mode
   const getDynamicTabOptions = (): TabOption[] => {
-    const tabOptions = [...baseTabOptions];
+    let tabOptions = [...baseTabOptions];
+    
+    // In edit mode, hide certain tabs and focus on manual editing
+    if (isEditMode) {
+      tabOptions = tabOptions.filter(tab => ['manual'].includes(tab.value));
+      return tabOptions;
+    }
     
     // Only update the manual tab if we're on it AND the origin is different AND it wasn't manually clicked
     if (activeTab === "manual" && recipeOrigin !== "manual") {
@@ -124,7 +132,7 @@ export function CreateRecipeTabNavigation({
         ) : (
           /* Desktop Tabs - Fixed width to prevent layout shift */
           <div className="mb-4 sm:mb-6">
-            <TabsList className="grid w-full grid-cols-5 mb-3 min-h-[40px]">
+            <TabsList className={`grid w-full ${isEditMode ? 'grid-cols-1' : 'grid-cols-5'} mb-3 min-h-[40px]`}>
               {tabOptions.map((tab) => (
                 <TabsTrigger key={tab.value} value={tab.value} className="p-2 min-w-0 flex-1">
                   <span className="mr-2">{tab.emoji}</span>

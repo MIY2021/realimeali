@@ -6,7 +6,7 @@ export function useRecipeForm(isEditing: boolean = false, existingRecipe?: Recip
   const { toast } = useToast();
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [generationProgress, setGenerationProgress] = useState('');
-  const [shareWithCommunity, setShareWithCommunity] = useState(true);
+  const [shareWithCommunity, setShareWithCommunity] = useState(!isEditing); // Don't share community by default when editing
   const [newRecipe, setNewRecipe] = useState<Recipe>(
     existingRecipe || {
       id: '',
