@@ -1,5 +1,5 @@
 
-import { EnhancedAddRecipeToMealModal } from "./EnhancedAddRecipeToMealModal";
+import { MealPlannerRecipeSelection } from "./MealPlannerRecipeSelection";
 import { Recipe, MealType } from "@/types";
 
 interface AddMealPlanDialogProps {
@@ -24,7 +24,7 @@ export function AddMealPlanDialog({
   };
 
   return (
-    <EnhancedAddRecipeToMealModal
+    <MealPlannerRecipeSelection
       open={isOpen}
       onClose={onClose}
       mealType={selectedMealType}

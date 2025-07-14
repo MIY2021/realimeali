@@ -7,7 +7,7 @@ interface RecipeGridProps {
   recipes: Recipe[];
   mobileLayout: string;
   onAddToMealPlan?: (recipe: Recipe) => void;
-  onRecipeClick?: (recipeId: string) => void;
+  onRecipeClick?: (recipe: Recipe) => void;
 }
 
 export function RecipeGrid({ recipes, mobileLayout, onAddToMealPlan, onRecipeClick }: RecipeGridProps) {
@@ -32,7 +32,7 @@ export function RecipeGrid({ recipes, mobileLayout, onAddToMealPlan, onRecipeCli
           key={recipe.id} 
           recipe={recipe} 
           onAddToMealPlan={onAddToMealPlan}
-          onRecipeClick={onRecipeClick ? () => onRecipeClick(recipe.id) : undefined}
+          onRecipeClick={onRecipeClick ? () => onRecipeClick(recipe) : undefined}
           showActions={true}
           mobileLayout={mobileLayout}
         />

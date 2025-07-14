@@ -1,6 +1,6 @@
 
 import { MealPlanQuantitiesDialog } from "@/components/meal-planner/MealPlanQuantitiesDialog";
-import { SimpleMealSelectionDialog } from "@/components/meal-planner/SimpleMealSelectionDialog";
+import { MealPlannerRecipeSelection } from "@/components/meal-planner/MealPlannerRecipeSelection";
 import { LeftoverServingsDialog } from "@/components/meal-planner/LeftoverServingsDialog";
 import { MealPlanWarningDialog } from "@/components/meal-planner/MealPlanWarningDialog";
 import { ClearAllMealsDialog } from "@/components/meal-planner/ClearAllMealsDialog";
@@ -82,7 +82,7 @@ export const MealPlannerModalsContainer = ({
         availableRecipes={recipes.length}
       />
 
-      <SimpleMealSelectionDialog
+      <MealPlannerRecipeSelection
         open={simpleMealDialog}
         onClose={() => {
           setSimpleMealDialog(false);

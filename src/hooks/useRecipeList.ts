@@ -5,15 +5,16 @@ import { SimpleRecipeFilters } from "@/components/recipes/filters/SimpleRecipeFi
 
 interface UseRecipeListProps {
   recipes: Recipe[];
+  initialFilters?: SimpleRecipeFilters;
 }
 
-export function useRecipeList({ recipes }: UseRecipeListProps) {
+export function useRecipeList({ recipes, initialFilters }: UseRecipeListProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState<"title" | "prepTime" | "cookTime" | "dateAdded">("dateAdded");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [visibleCount, setVisibleCount] = useState(12);
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [filters, setFilters] = useState<SimpleRecipeFilters>({
+  const [filters, setFilters] = useState<SimpleRecipeFilters>(initialFilters || {
     searchTerm: "",
     mealTypes: [],
     cuisineRegions: [],
