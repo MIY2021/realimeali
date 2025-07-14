@@ -32,6 +32,7 @@ interface RecipeSelectionViewProps {
   prefilterMealType?: MealType;
   showAddToMealPlan?: boolean;
   onAddToMealPlan?: (recipe: Recipe) => void;
+  defaultMobileLayout?: string;
 }
 
 export function RecipeSelectionView({ 
@@ -40,7 +41,8 @@ export function RecipeSelectionView({
   onSelectRecipe,
   prefilterMealType,
   showAddToMealPlan = true,
-  onAddToMealPlan
+  onAddToMealPlan,
+  defaultMobileLayout
 }: RecipeSelectionViewProps) {
   const {
     searchTerm,
@@ -72,6 +74,9 @@ export function RecipeSelectionView({
 
   const { mobileLayout, handleMobileLayoutChange } = useMobileLayout();
   const isMobile = useIsMobile();
+  
+  // Use default layout if provided, otherwise use the stored layout
+  const currentMobileLayout = defaultMobileLayout || mobileLayout;
 
   const handleRecipeClick = useCallback((recipe: Recipe) => {
     if (onSelectRecipe) {
@@ -127,7 +132,7 @@ export function RecipeSelectionView({
       {isMobile ? (
         <div className="space-y-3">
           {/* Row 1: Search | Sort | Layout */}
-          <div className="grid grid-cols-[1fr_1fr_auto] gap-2">
+          <div className={`grid gap-2 ${defaultMobileLayout ? 'grid-cols-[1fr_1fr]' : 'grid-cols-[1fr_1fr_auto]'}`}>
             <Input
               placeholder="Search recipes..."
               value={searchTerm}
@@ -155,16 +160,18 @@ export function RecipeSelectionView({
               </SelectContent>
             </Select>
 
-            <div className="w-[60px]">
-              <MobileLayoutSelector
-                value={mobileLayout}
-                onChange={handleMobileLayoutChange}
-              />
-            </div>
+            {!defaultMobileLayout && (
+              <div className="w-[60px]">
+                <MobileLayoutSelector
+                  value={mobileLayout}
+                  onChange={handleMobileLayoutChange}
+                />
+              </div>
+            )}
           </div>
 
           {/* Row 2: All filters on equal width - wider cuisine dropdown */}
-          <div className="grid grid-cols-[1fr_1.2fr_1fr_1fr] gap-2">
+          <div className={`grid gap-2 ${defaultMobileLayout ? 'grid-cols-[1fr_1.2fr_1fr_1fr]' : 'grid-cols-[1fr_1.2fr_1fr_1fr]'}`}>
             <DropdownFilterSection
               title="🕒 Meal"
               options={MEAL_TYPE_OPTIONS}
@@ -281,7 +288,7 @@ export function RecipeSelectionView({
         <>
           <RecipeGrid
             recipes={visibleRecipes}
-            mobileLayout={mobileLayout}
+            mobileLayout={currentMobileLayout}
             onRecipeClick={handleRecipeClick}
             onAddToMealPlan={showAddToMealPlan ? onAddToMealPlan : undefined}
           />

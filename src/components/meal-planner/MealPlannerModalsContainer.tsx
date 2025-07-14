@@ -91,7 +91,6 @@ export const MealPlannerModalsContainer = ({
         mealType={pendingMealType || "dinner"}
         recipes={recipes}
         onSelectRecipe={onSimpleMealSelect}
-        onAddFreetypeMeal={onAddFreetypeMeal}
       />
 
       <LeftoverServingsDialog
