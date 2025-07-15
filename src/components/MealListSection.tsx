@@ -3,7 +3,7 @@ import { MealType, MealPlan, Recipe } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Plus, GripVertical } from "lucide-react";
 import { EnhancedMealCard } from "@/components/meal-planner/EnhancedMealCard";
-import { AddMealOptionsDialog } from "@/components/meal-planner/AddMealOptionsDialog";
+
 import { useIsMobile } from "@/hooks/use-mobile";
 import { DragDropContext, Droppable, Draggable, DropResult, DraggableProvidedDragHandleProps } from "react-beautiful-dnd";
 import { useEffect } from "react";
@@ -39,7 +39,7 @@ export default function MealListSection({
 }: MealListSectionProps) {
   const isMobile = useIsMobile();
   const [isVisible, setIsVisible] = useState(false);
-  const [addMealDialog, setAddMealDialog] = useState(false);
+  
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -71,16 +71,12 @@ export default function MealListSection({
   };
 
   const handleAddMeal = () => {
-    setAddMealDialog(true);
-  };
-
-  const handleSelectRecipe = () => {
-    setAddMealDialog(false);
+    console.log("🍽️ Direct add meal for:", mealType);
     onAddMeal(mealType);
   };
 
-  const handleSelectCustom = () => {
-    setAddMealDialog(false);
+  const handleAddCustomMeal = () => {
+    console.log("🍽️ Direct add custom meal for:", mealType);
     onAddCustomMeal?.(mealType);
   };
 
@@ -198,13 +194,6 @@ export default function MealListSection({
         </div>
       )}
 
-      <AddMealOptionsDialog
-        open={addMealDialog}
-        onOpenChange={setAddMealDialog}
-        mealType={mealType}
-        onSelectRecipe={handleSelectRecipe}
-        onSelectCustom={handleSelectCustom}
-      />
     </div>
   );
 }

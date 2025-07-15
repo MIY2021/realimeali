@@ -2,11 +2,12 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Slider } from "@/components/ui/slider";
 import { MealType } from "@/types";
 
 interface FreetypeMealDialogProps {
   mealType: MealType;
-  onAddFreetypeMeal: (mealName: string) => void;
+  onAddFreetypeMeal: (mealName: string, servings: number) => void;
   onCancel: () => void;
 }
 
@@ -26,11 +27,12 @@ export function FreetypeMealDialog({
   onCancel,
 }: FreetypeMealDialogProps) {
   const [mealName, setMealName] = useState("");
+  const [servings, setServings] = useState([2]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (mealName.trim()) {
-      onAddFreetypeMeal(mealName.trim());
+      onAddFreetypeMeal(mealName.trim(), servings[0]);
     }
   };
 
@@ -55,6 +57,22 @@ export function FreetypeMealDialog({
             placeholder="Enter meal name..."
             autoFocus
           />
+        </div>
+        
+        <div className="space-y-4">
+          <Label>Servings: {servings[0]}</Label>
+          <Slider
+            value={servings}
+            onValueChange={setServings}
+            max={10}
+            min={1}
+            step={1}
+            className="w-full"
+          />
+          <div className="flex justify-between text-sm text-muted-foreground">
+            <span>1</span>
+            <span>10</span>
+          </div>
         </div>
         
         <div className="flex justify-end space-x-2">

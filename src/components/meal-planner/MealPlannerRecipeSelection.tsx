@@ -14,7 +14,7 @@ interface MealPlannerRecipeSelectionProps {
   mealType: MealType;
   recipes: Recipe[];
   onSelectRecipe: (recipeId: string) => void;
-  onAddFreetypeMeal: (mealName: string) => void;
+  onAddFreetypeMeal: (mealName: string, servings: number) => void;
 }
 
 const MEAL_TYPE_LABELS: Record<MealType, string> = {
@@ -45,8 +45,8 @@ export function MealPlannerRecipeSelection({
     onClose();
   };
 
-  const handleFreetypeMeal = (mealName: string) => {
-    onAddFreetypeMeal(mealName);
+  const handleFreetypeMeal = (mealName: string, servings: number) => {
+    onAddFreetypeMeal(mealName, servings);
     setShowFreetypeDialog(false);
     onClose();
   };

@@ -155,8 +155,8 @@ export default function MealPlannerContainer() {
     setSimpleMealDialog(false);
   }, [pendingMealType, handleAddRecipeToMeal, setPendingMealType, setSimpleMealDialog]);
 
-  const handleAddFreetypeMeal = useCallback(async (mealName: string) => {
-    console.log("🍽️ handleAddFreetypeMeal:", { mealName, pendingMealType });
+  const handleAddFreetypeMeal = useCallback(async (mealName: string, servings: number = 1) => {
+    console.log("🍽️ handleAddFreetypeMeal:", { mealName, servings, pendingMealType });
     if (!pendingMealType || !user || !currentHousehold) return;
 
     try {
@@ -168,8 +168,8 @@ export default function MealPlannerContainer() {
         is_leftover: false,
         household_id: currentHousehold.id,
         week_number: currentWeek,
-        original_servings: 1, // Default for freetyped meals
-        planned_servings: 1,
+        original_servings: servings,
+        planned_servings: servings,
         is_completed: false,
         is_freetyped: true,
         meal_name: mealName,
