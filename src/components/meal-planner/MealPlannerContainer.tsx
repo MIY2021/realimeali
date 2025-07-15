@@ -132,16 +132,8 @@ export default function MealPlannerContainer() {
   const handleAddMeal = useCallback((mealType: MealType) => {
     console.log("🍽️ handleAddMeal called with mealType:", mealType);
     setPendingMealType(mealType);
-    
-    // Special handling for lunch - show leftover servings dialog
-    if (mealType === 'lunch') {
-      console.log("🥪 Opening leftover dialog for lunch");
-      setLeftoverDialog(true);
-    } else {
-      console.log("🍽️ Opening simple meal dialog for:", mealType);
-      setSimpleMealDialog(true);
-    }
-  }, [setPendingMealType, setLeftoverDialog, setSimpleMealDialog]);
+    setSimpleMealDialog(true);
+  }, [setPendingMealType, setSimpleMealDialog]);
 
   const handleAddCustomMeal = useCallback((mealType: MealType) => {
     console.log("🍽️ handleAddCustomMeal called with mealType:", mealType);
