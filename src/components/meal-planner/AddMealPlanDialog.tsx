@@ -23,6 +23,11 @@ export function AddMealPlanDialog({
     onAddMealPlan(recipeId, "");
   };
 
+  const handleAddFreetypeMeal = (mealName: string) => {
+    console.log("Add freetype meal:", mealName);
+    // This is handled by the parent component
+  };
+
   return (
     <MealPlannerRecipeSelection
       open={isOpen}
@@ -30,6 +35,7 @@ export function AddMealPlanDialog({
       mealType={selectedMealType}
       recipes={recipes}
       onSelectRecipe={handleSelectRecipe}
+      onAddFreetypeMeal={handleAddFreetypeMeal}
     />
   );
 }
