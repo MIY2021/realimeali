@@ -9,6 +9,7 @@ import { Link } from "react-router-dom";
 import { useShoppingListInteractions } from "./ShoppingListInteractions";
 import { useToast } from "@/hooks/use-toast";
 import { extractIngredientName } from "@/utils/shoppingListUtils";
+import { categorizeShoppingItem } from "@/utils/shoppingListCategorizer";
 
 interface ShoppingListItemProps {
   id: string;
@@ -89,6 +90,10 @@ export function ShoppingListItem({
     onCheck(!isChecked);
   };
 
+  // Get category icon for the item
+  const category = categorizeShoppingItem(name);
+  const CategoryIcon = category.icon;
+
   // Get recipe names for display - need to get individual recipe names with their IDs
   const getRecipeNamesWithIds = (recipeIds: string[]) => {
     // Get unique recipe IDs
@@ -125,7 +130,7 @@ export function ShoppingListItem({
 
   return (
     <div 
-      className={`flex items-center justify-between p-3 rounded-lg transition-colors ${
+      className={`flex items-center p-3 rounded-lg transition-colors ${
         isChecked ? 'bg-gray-50 opacity-75' : 'bg-white'
       } ${copiedItemId === id ? 'bg-green-50' : ''}`}
       onTouchStart={!isEditing ? handleTouchStart : undefined}
@@ -135,14 +140,15 @@ export function ShoppingListItem({
       onMouseUp={!isEditing ? handleMouseUp : undefined}
       onMouseLeave={!isEditing ? handleMouseLeave : undefined}
     >
-      <div className="flex items-center space-x-3 flex-1">
-        <Checkbox
-          checked={isChecked}
-          onCheckedChange={handleToggleCheck}
-        />
-        
+      {/* Category Icon on the left */}
+      <div className="flex items-center mr-3">
+        <CategoryIcon className="h-5 w-5 text-muted-foreground" />
+      </div>
+
+      {/* Main content in the middle */}
+      <div className="flex-1 min-w-0">
         {isEditing ? (
-          <div className="flex items-center space-x-2 flex-1">
+          <div className="flex items-center space-x-2">
             <Input
               value={editQuantity}
               onChange={(e) => setEditQuantity(e.target.value)}
@@ -175,7 +181,7 @@ export function ShoppingListItem({
             </Button>
           </div>
         ) : (
-          <div className="flex-1">
+          <div>
             <div className={`${isChecked ? 'line-through text-gray-500' : ''}`}>
               {quantity && (
                 <span className="font-medium">
@@ -216,24 +222,31 @@ export function ShoppingListItem({
         )}
       </div>
 
-      {!isEditing && (
-        <div className="flex items-center space-x-2">
-          <Button 
-            size="sm" 
-            variant="ghost" 
-            onClick={() => setIsEditing(true)}
-          >
-            <Pencil className="h-4 w-4" />
-          </Button>
-          <Button 
-            size="sm" 
-            variant="ghost" 
-            onClick={handleCopyName}
-          >
-            <Copy className="h-4 w-4" />
-          </Button>
-        </div>
-      )}
+      {/* Actions and checkbox on the right */}
+      <div className="flex items-center space-x-2 ml-3">
+        {!isEditing && (
+          <>
+            <Button 
+              size="sm" 
+              variant="ghost" 
+              onClick={() => setIsEditing(true)}
+            >
+              <Pencil className="h-4 w-4" />
+            </Button>
+            <Button 
+              size="sm" 
+              variant="ghost" 
+              onClick={handleCopyName}
+            >
+              <Copy className="h-4 w-4" />
+            </Button>
+          </>
+        )}
+        <Checkbox
+          checked={isChecked}
+          onCheckedChange={handleToggleCheck}
+        />
+      </div>
     </div>
   );
 }
