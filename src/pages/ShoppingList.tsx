@@ -242,7 +242,7 @@ export default function ShoppingList() {
 
           {/* Mobile control row */}
           {isMobile && user && currentHousehold && (
-            <div className="flex items-center justify-between gap-2 mb-4 p-3 bg-card border rounded-lg">
+            <div className="flex items-center justify-between gap-2 mb-4">
               <Button
                 size="sm"
                 variant="outline"
