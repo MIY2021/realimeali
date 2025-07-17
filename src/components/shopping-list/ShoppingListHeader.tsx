@@ -54,8 +54,7 @@ export default function ShoppingListHeader({
     <div className={`mb-6 ${isMobile ? 'space-y-4' : ''}`}>
       <div className="flex items-center justify-between">
         <div>
-          <h1 className={`font-bold text-navy flex items-center gap-2 ${isMobile ? 'text-2xl' : 'text-2xl sm:text-3xl'}`}>
-            <ShoppingBag className={`text-sage ${isMobile ? 'h-6 w-6' : 'h-6 w-6 sm:h-8 sm:w-8'}`} />
+          <h1 className={`font-bold text-navy ${isMobile ? 'text-2xl' : 'text-2xl sm:text-3xl'}`}>
             Shopping List
           </h1>
           <p className="text-sm sm:text-base text-muted-foreground">

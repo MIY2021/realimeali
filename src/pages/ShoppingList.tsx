@@ -242,31 +242,33 @@ export default function ShoppingList() {
 
           {/* Mobile control row */}
           {isMobile && user && currentHousehold && (
-            <div className="flex items-center justify-between gap-2 mb-4">
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => {
-                  const itemName = prompt("Enter item name:");
-                  if (itemName?.trim()) {
-                    addCustomItem(itemName.trim());
-                  }
-                }}
-                className="flex items-center gap-1 h-8 text-xs"
-              >
-                <Plus className="h-3 w-3" />
-                Add Item
-              </Button>
-              
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={handleShare}
-                className="flex items-center gap-1 h-8 text-xs"
-              >
-                <Share className="h-3 w-3" />
-                Share
-              </Button>
+            <div className="flex items-center justify-between gap-4 mb-4">
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    const itemName = prompt("Enter item name:");
+                    if (itemName?.trim()) {
+                      addCustomItem(itemName.trim());
+                    }
+                  }}
+                  className="flex items-center gap-1 h-8 text-xs"
+                >
+                  <Plus className="h-3 w-3" />
+                  Add Item
+                </Button>
+                
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleShare}
+                  className="flex items-center gap-1 h-8 text-xs"
+                >
+                  <Share className="h-3 w-3" />
+                  Share
+                </Button>
+              </div>
               
               <div className="flex items-center gap-2">
                 <label htmlFor="show-unchecked" className="text-xs font-medium whitespace-nowrap">
