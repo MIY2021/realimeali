@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -9,8 +9,6 @@ import { Link } from "react-router-dom";
 import { useShoppingListInteractions } from "./ShoppingListInteractions";
 import { useToast } from "@/hooks/use-toast";
 import { extractIngredientName } from "@/utils/shoppingListUtils";
-import { categorizeShoppingItem, getCategoryIcon } from "@/utils/shoppingListCategorizer";
-import { categorizeShoppingItemWithAI } from "@/services/shoppingItemCategorization";
 
 interface ShoppingListItemProps {
   id: string;
@@ -41,8 +39,6 @@ export function ShoppingListItem({
   const [editName, setEditName] = useState(name);
   const [editQuantity, setEditQuantity] = useState(quantity?.toString() || '');
   const [editUnit, setEditUnit] = useState(unit || '');
-  const [categoryIcon, setCategoryIcon] = useState(getCategoryIcon('misc'));
-  const [isLoadingCategory, setIsLoadingCategory] = useState(true);
   const { toast } = useToast();
 
   const handleCopyName = async () => {
@@ -93,38 +89,6 @@ export function ShoppingListItem({
     onCheck(!isChecked);
   };
 
-  // AI-powered categorization with fallback
-  useEffect(() => {
-    let isMounted = true;
-    
-    const categorizeItem = async () => {
-      try {
-        setIsLoadingCategory(true);
-        const aiCategory = await categorizeShoppingItemWithAI(name);
-        if (isMounted) {
-          setCategoryIcon(getCategoryIcon(aiCategory));
-        }
-      } catch (error) {
-        // Fallback to static categorization
-        if (isMounted) {
-          const fallbackCategory = categorizeShoppingItem(name);
-          setCategoryIcon(fallbackCategory.icon);
-        }
-      } finally {
-        if (isMounted) {
-          setIsLoadingCategory(false);
-        }
-      }
-    };
-
-    categorizeItem();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [name]);
-
-  const CategoryIcon = categoryIcon;
 
   // Get recipe names for display - need to get individual recipe names with their IDs
   const getRecipeNamesWithIds = (recipeIds: string[]) => {
@@ -172,9 +136,9 @@ export function ShoppingListItem({
       onMouseUp={!isEditing ? handleMouseUp : undefined}
       onMouseLeave={!isEditing ? handleMouseLeave : undefined}
     >
-      {/* Category Icon on the left */}
+      {/* Triangle icon on the left */}
       <div className="flex items-center mr-3">
-        <CategoryIcon className="h-5 w-5 text-muted-foreground" />
+        <span className="h-5 w-5 flex items-center justify-center text-muted-foreground text-sm">▷</span>
       </div>
 
       {/* Main content in the middle */}
