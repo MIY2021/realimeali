@@ -16,7 +16,10 @@ import { useMealPlan } from "@/contexts/MealPlanContext";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useScrollPosition } from "@/hooks/useScrollPosition";
 import { useToast } from "@/hooks/use-toast";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { Plus, Share } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export default function ShoppingList() {
@@ -28,9 +31,11 @@ export default function ShoppingList() {
   const { getMealPlansForWeek } = useMealPlan();
   const { toast } = useToast();
   const { setScrollKey, restoreScrollPosition, saveScrollPosition } = useScrollPosition();
+  const isMobile = useIsMobile();
   const [weekNumber, setWeekNumber] = useState<1 | 2>(1);
   const [copiedItemId, setCopiedItemId] = useState<string | null>(null);
   const [hasInitiallyLoaded, setHasInitiallyLoaded] = useState(false);
+  const [showOnlyUnchecked, setShowOnlyUnchecked] = useState(false);
   const initialLoadRef = useRef(false);
   
   const {
@@ -49,6 +54,19 @@ export default function ShoppingList() {
     setLastGenerated,
     handleGenerate
   } = useShoppingListGeneration(weekNumber, clearAll, refreshList);
+
+  // Load toggle state from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem('realiMeali_showOnlyUnchecked');
+    if (saved) {
+      setShowOnlyUnchecked(JSON.parse(saved));
+    }
+  }, []);
+
+  // Save toggle state to localStorage when it changes
+  useEffect(() => {
+    localStorage.setItem('realiMeali_showOnlyUnchecked', JSON.stringify(showOnlyUnchecked));
+  }, [showOnlyUnchecked]);
 
   // Track when we've initially loaded to prevent unnecessary skeleton flashing
   useEffect(() => {
@@ -112,6 +130,11 @@ export default function ShoppingList() {
 
   const mealPlans = getMealPlansForWeek(weekNumber);
   const hasMealPlans = mealPlans.length > 0;
+
+  // Filter shopping list based on toggle
+  const filteredShoppingList = showOnlyUnchecked 
+    ? shoppingList.filter(item => !item.isChecked)
+    : shoppingList;
 
   // Calculate item counts
   const totalItems = shoppingList.length;
@@ -217,6 +240,47 @@ export default function ShoppingList() {
             generationProgress={generationProgress}
           />
 
+          {/* Mobile control row */}
+          {isMobile && user && currentHousehold && (
+            <div className="flex items-center justify-between gap-2 mb-4 p-3 bg-card border rounded-lg">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  const itemName = prompt("Enter item name:");
+                  if (itemName?.trim()) {
+                    addCustomItem(itemName.trim());
+                  }
+                }}
+                className="flex items-center gap-1 h-8 text-xs"
+              >
+                <Plus className="h-3 w-3" />
+                Add Item
+              </Button>
+              
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleShare}
+                className="flex items-center gap-1 h-8 text-xs"
+              >
+                <Share className="h-3 w-3" />
+                Share
+              </Button>
+              
+              <div className="flex items-center gap-2">
+                <label htmlFor="show-unchecked" className="text-xs font-medium whitespace-nowrap">
+                  Show Only Unchecked
+                </label>
+                <Switch
+                  id="show-unchecked"
+                  checked={showOnlyUnchecked}
+                  onCheckedChange={setShowOnlyUnchecked}
+                />
+              </div>
+            </div>
+          )}
+
           {/* Only show skeleton if we're loading AND we haven't loaded before AND we don't have data */}
           {isLoading && !hasInitiallyLoaded && shoppingList.length === 0 ? (
             <ShoppingListSkeleton />
@@ -236,7 +300,7 @@ export default function ShoppingList() {
                     completedItems={completedItems}
                   />
                   <ShoppingListItems
-                    shoppingList={shoppingList}
+                    shoppingList={filteredShoppingList}
                     copiedItemId={copiedItemId}
                     onToggleItem={toggleItemChecked}
                     onCopyItem={handleCopyItem}
