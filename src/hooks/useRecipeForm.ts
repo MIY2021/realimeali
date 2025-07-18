@@ -19,6 +19,7 @@ export function useRecipeForm(isEditing: boolean = false, existingRecipe?: Recip
       servings: 4,
       top_tip: "",
       meal_type: undefined,
+      meal_types: [],
       cuisine_region: undefined,
       diet_lifestyle: [],
       complexity_level: undefined,

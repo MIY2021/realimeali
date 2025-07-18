@@ -72,8 +72,21 @@ export function SimpleCategorySelector({ recipe, onRecipeChange }: SimpleCategor
               <CategoryButton
                 key={option.value}
                 option={option}
-                isSelected={recipe.meal_type === option.value}
-                onClick={() => updateRecipeField('meal_type', option.value)}
+                isSelected={(recipe.meal_types || []).includes(option.value)}
+                onClick={() => {
+                  const currentTypes = recipe.meal_types || [];
+                  const isSelected = currentTypes.includes(option.value);
+                  
+                  if (isSelected) {
+                    // Remove if already selected
+                    const newTypes = currentTypes.filter(type => type !== option.value);
+                    updateRecipeField('meal_types', newTypes);
+                  } else {
+                    // Add if not selected
+                    const newTypes = [...currentTypes, option.value];
+                    updateRecipeField('meal_types', newTypes);
+                  }
+                }}
               />
             ))}
           </div>

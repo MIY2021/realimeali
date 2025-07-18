@@ -274,6 +274,7 @@ export type Database = {
           leftover_servings: number | null
           meal_name: string | null
           meal_type: string
+          meal_types: string[]
           notes: string | null
           original_servings: number | null
           parent_meal_plan_id: string | null
@@ -295,6 +296,7 @@ export type Database = {
           leftover_servings?: number | null
           meal_name?: string | null
           meal_type: string
+          meal_types?: string[]
           notes?: string | null
           original_servings?: number | null
           parent_meal_plan_id?: string | null
@@ -316,6 +318,7 @@ export type Database = {
           leftover_servings?: number | null
           meal_name?: string | null
           meal_type?: string
+          meal_types?: string[]
           notes?: string | null
           original_servings?: number | null
           parent_meal_plan_id?: string | null
@@ -659,6 +662,7 @@ export type Database = {
           ingredients: string[]
           instructions: string[]
           is_active: boolean
+          meal_types: string[]
           original_household_id: string
           original_recipe_id: string
           prep_time: number | null
@@ -682,6 +686,7 @@ export type Database = {
           ingredients?: string[]
           instructions?: string[]
           is_active?: boolean
+          meal_types?: string[]
           original_household_id: string
           original_recipe_id: string
           prep_time?: number | null
@@ -705,6 +710,7 @@ export type Database = {
           ingredients?: string[]
           instructions?: string[]
           is_active?: boolean
+          meal_types?: string[]
           original_household_id?: string
           original_recipe_id?: string
           prep_time?: number | null
@@ -815,6 +821,7 @@ export type Database = {
           is_favorite: boolean | null
           meal_plan_count: number
           meal_type: Database["public"]["Enums"]["meal_type"] | null
+          meal_types: string[]
           prep_time: number | null
           servings: number | null
           source_url: string | null
@@ -845,6 +852,7 @@ export type Database = {
           is_favorite?: boolean | null
           meal_plan_count?: number
           meal_type?: Database["public"]["Enums"]["meal_type"] | null
+          meal_types?: string[]
           prep_time?: number | null
           servings?: number | null
           source_url?: string | null
@@ -875,6 +883,7 @@ export type Database = {
           is_favorite?: boolean | null
           meal_plan_count?: number
           meal_type?: Database["public"]["Enums"]["meal_type"] | null
+          meal_types?: string[]
           prep_time?: number | null
           servings?: number | null
           source_url?: string | null

@@ -34,7 +34,7 @@ export function AddMealWithLeftoversDialog({
     const searchRegex = new RegExp(searchTerm, "i");
     if (!searchRegex.test(recipe.title) && !searchRegex.test(recipe.description)) return false;
 
-    if (selectedMealType && recipe.meal_type !== selectedMealType) return false;
+    if (selectedMealType && !((recipe.meal_types && recipe.meal_types.includes(selectedMealType as any)) || recipe.meal_type === selectedMealType)) return false;
     if (selectedCuisineRegion && recipe.cuisine_region !== selectedCuisineRegion) return false;
 
     return true;

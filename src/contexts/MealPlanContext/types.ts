@@ -5,7 +5,8 @@ export interface HouseholdMealPlan {
   id: string;
   household_id: string;
   recipe_id?: string; // Optional for freetyped meals
-  meal_type: string;
+  meal_type: string; // Legacy field - use meal_types instead
+  meal_types?: MealType[]; // New field for multiple meal types
   week_number: number;
   slot_index: number;
   notes?: string;

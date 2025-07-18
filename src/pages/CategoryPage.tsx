@@ -23,7 +23,8 @@ export default function CategoryPage() {
 
   const filteredRecipes = recipes.filter(recipe => {
     // Check if the category matches any of the recipe's categories
-    return recipe.meal_type === decodedCategory ||
+    return (recipe.meal_types && recipe.meal_types.includes(decodedCategory as any)) ||
+           recipe.meal_type === decodedCategory ||
            recipe.cuisine_region === decodedCategory ||
            recipe.complexity_level === decodedCategory ||
            (recipe.diet_lifestyle && recipe.diet_lifestyle.includes(decodedCategory as any));

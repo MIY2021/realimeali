@@ -34,7 +34,9 @@ export function useRandomMealSelection() {
       // Filter recipes by meal type if specified
       let filteredRecipes = recipes || [];
       if (mealType !== 'all') {
-        filteredRecipes = filteredRecipes.filter(recipe => recipe.meal_type === mealType);
+        filteredRecipes = filteredRecipes.filter(recipe => 
+          (recipe.meal_types && recipe.meal_types.includes(mealType)) || recipe.meal_type === mealType
+        );
       }
 
       if (filteredRecipes.length === 0) {

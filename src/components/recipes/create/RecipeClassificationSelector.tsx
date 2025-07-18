@@ -43,24 +43,45 @@ export function RecipeClassificationSelector({ recipe, onRecipeChange }: RecipeC
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="text-sm font-medium mb-2 block">Meal Type</label>
-            <Select 
-              value={recipe.meal_type || ""} 
-              onValueChange={(value) => updateRecipeField('meal_type', value)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select meal type" />
-              </SelectTrigger>
-              <SelectContent>
-                {MEAL_TYPE_OPTIONS.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    <span className="flex items-center gap-2">
-                      <span>{option.icon}</span>
-                      <span>{option.label}</span>
-                    </span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+              {MEAL_TYPE_OPTIONS.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => {
+                    const currentTypes = recipe.meal_types || [];
+                    const isSelected = currentTypes.includes(option.value);
+                    
+                    if (isSelected) {
+                      // Remove if already selected
+                      const newTypes = currentTypes.filter(type => type !== option.value);
+                      updateRecipeField('meal_types', newTypes);
+                    } else {
+                      // Add if not selected
+                      const newTypes = [...currentTypes, option.value];
+                      updateRecipeField('meal_types', newTypes);
+                    }
+                  }}
+                  className={`p-3 rounded-lg border-2 transition-all text-left relative ${
+                    (recipe.meal_types || []).includes(option.value)
+                      ? 'border-sage bg-sage/10 text-sage-dark'
+                      : 'border-gray-200 hover:border-gray-300 bg-white/50 hover:bg-white/70'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">{option.icon}</span>
+                    <span className="text-sm">{option.label}</span>
+                  </div>
+                  {(recipe.meal_types || []).includes(option.value) && (
+                    <div className="absolute top-1 right-1">
+                      <div className="h-5 w-5 bg-sage text-white rounded-full flex items-center justify-center text-xs font-bold">
+                        ✓
+                      </div>
+                    </div>
+                  )}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div>

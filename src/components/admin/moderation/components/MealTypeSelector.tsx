@@ -4,11 +4,26 @@ import { CategoryButton } from "./CategoryButton";
 import { MEAL_TYPE_OPTIONS } from "@/utils/recipeClassification";
 
 interface MealTypeSelectorProps {
-  value: string;
-  onChange: (value: string) => void;
+  value: string | string[]; // Support both single value and array
+  onChange: (value: string | string[]) => void;
 }
 
 export function MealTypeSelector({ value, onChange }: MealTypeSelectorProps) {
+  // Normalize value to array for easier handling
+  const selectedValues = Array.isArray(value) ? value : (value ? [value] : []);
+  
+  const handleOptionClick = (optionValue: string) => {
+    if (selectedValues.includes(optionValue)) {
+      // Remove if already selected
+      const newValues = selectedValues.filter(v => v !== optionValue);
+      onChange(newValues);
+    } else {
+      // Add if not selected
+      const newValues = [...selectedValues, optionValue];
+      onChange(newValues);
+    }
+  };
+
   return (
     <div>
       <Label className="text-sm font-medium mb-3 block">Meal Type</Label>
@@ -17,8 +32,8 @@ export function MealTypeSelector({ value, onChange }: MealTypeSelectorProps) {
           <CategoryButton
             key={option.value}
             option={option}
-            isSelected={value === option.value}
-            onClick={() => onChange(option.value)}
+            isSelected={selectedValues.includes(option.value)}
+            onClick={() => handleOptionClick(option.value)}
           />
         ))}
       </div>

@@ -59,7 +59,7 @@ export function AddRecipeToMealModal({
         return false;
       }
 
-      if (selectedMealType && recipe.meal_type !== selectedMealType) return false;
+      if (selectedMealType && !((recipe.meal_types && recipe.meal_types.includes(selectedMealType)) || recipe.meal_type === selectedMealType)) return false;
       if (selectedCuisineRegion && recipe.cuisine_region !== selectedCuisineRegion) return false;
 
       return true;

@@ -51,9 +51,11 @@ export function useRecipeList({ recipes, initialFilters }: UseRecipeListProps) {
 
     // Filter by meal types
     if (filters.mealTypes.length > 0) {
-      filtered = filtered.filter(recipe => 
-        recipe.meal_type && filters.mealTypes.includes(recipe.meal_type)
-      );
+      filtered = filtered.filter(recipe => {
+        // Check both new meal_types array and legacy meal_type field
+        const recipeMealTypes = recipe.meal_types || (recipe.meal_type ? [recipe.meal_type] : []);
+        return recipeMealTypes.some(type => filters.mealTypes.includes(type));
+      });
     }
 
     // Filter by cuisine regions

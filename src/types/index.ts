@@ -13,7 +13,8 @@ export interface Recipe {
   updated_at: string;
   created_by: string;
   household_id: string;
-  meal_type?: MealType;
+  meal_type?: MealType; // Legacy field - use meal_types instead
+  meal_types?: MealType[]; // New field for multiple meal types
   cuisine_region?: CuisineRegion;
   diet_lifestyle?: DietLifestyle[];
   complexity_level?: ComplexityLevel;
@@ -37,7 +38,8 @@ export interface RecipeNote {
 export interface MealPlan {
   id: string;
   date: string;
-  meal_type: string;
+  meal_type: string; // Legacy field - use meal_types instead
+  meal_types?: MealType[]; // New field for multiple meal types
   recipe_id?: string; // Optional for freetyped meals
   slot_index: number;
   is_leftover: boolean;

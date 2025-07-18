@@ -34,6 +34,14 @@ export const useRecipeApi = () => {
           meal_type: VALID_MEAL_TYPES.includes(recipe.meal_type as MealType) 
             ? recipe.meal_type as MealType 
             : undefined,
+          // Handle meal_types array - convert from database string array to MealType array
+          meal_types: Array.isArray(recipeWithCookingStatus.meal_types) 
+            ? recipeWithCookingStatus.meal_types.filter((type: string) => 
+                VALID_MEAL_TYPES.includes(type as MealType)
+              ) as MealType[]
+            : (recipe.meal_type && VALID_MEAL_TYPES.includes(recipe.meal_type as MealType) 
+                ? [recipe.meal_type as MealType] 
+                : []),
           cuisine_region: recipe.cuisine_region as any,
         };
       });
@@ -65,6 +73,10 @@ export const useRecipeApi = () => {
         image: recipeData.image,
         is_favorite: recipeData.is_favorite,
         meal_type: recipeData.meal_type,
+        // Handle meal_types array - use new field if available, fallback to single meal_type
+        meal_types: recipeData.meal_types && recipeData.meal_types.length > 0 
+          ? recipeData.meal_types 
+          : (recipeData.meal_type ? [recipeData.meal_type] : []),
         cuisine_region: recipeData.cuisine_region,
         diet_lifestyle: recipeData.diet_lifestyle,
         complexity_level: recipeData.complexity_level,
@@ -88,6 +100,14 @@ export const useRecipeApi = () => {
         meal_type: VALID_MEAL_TYPES.includes(data.meal_type as MealType) 
           ? data.meal_type as MealType 
           : undefined,
+        // Handle meal_types from response
+        meal_types: Array.isArray((data as any).meal_types) 
+          ? (data as any).meal_types.filter((type: string) => 
+              VALID_MEAL_TYPES.includes(type as MealType)
+            ) as MealType[]
+          : (data.meal_type && VALID_MEAL_TYPES.includes(data.meal_type as MealType) 
+              ? [data.meal_type as MealType] 
+              : []),
       } as Recipe;
     } catch (error) {
       console.error('Error creating recipe:', error);
@@ -111,6 +131,10 @@ export const useRecipeApi = () => {
           is_favorite: recipe.is_favorite,
           has_cooked: recipe.has_cooked, // Include the cooking status
           meal_type: recipe.meal_type,
+          // Handle meal_types array
+          meal_types: recipe.meal_types && recipe.meal_types.length > 0 
+            ? recipe.meal_types 
+            : (recipe.meal_type ? [recipe.meal_type] : []),
           cuisine_region: recipe.cuisine_region,
           diet_lifestyle: recipe.diet_lifestyle,
           complexity_level: recipe.complexity_level,
@@ -134,6 +158,14 @@ export const useRecipeApi = () => {
         meal_type: VALID_MEAL_TYPES.includes(data.meal_type as MealType) 
           ? data.meal_type as MealType 
           : undefined,
+        // Handle meal_types from response
+        meal_types: Array.isArray(responseData.meal_types) 
+          ? responseData.meal_types.filter((type: string) => 
+              VALID_MEAL_TYPES.includes(type as MealType)
+            ) as MealType[]
+          : (data.meal_type && VALID_MEAL_TYPES.includes(data.meal_type as MealType) 
+              ? [data.meal_type as MealType] 
+              : []),
       } as Recipe;
     } catch (error) {
       console.error('Error updating recipe:', error);

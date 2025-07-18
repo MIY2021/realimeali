@@ -28,7 +28,7 @@ export function ModerationRecipeEditor({
 }: ModerationRecipeEditorProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [category, setCategory] = useState("");
+  const [category, setCategory] = useState<string | string[]>("");
   const [cuisine, setCuisine] = useState("");
   const [difficultyLevel, setDifficultyLevel] = useState("");
   const [selectedDietLifestyle, setSelectedDietLifestyle] = useState<string[]>([]);
@@ -70,7 +70,7 @@ export function ModerationRecipeEditor({
     const updates: Partial<CommunityRecipe> = {
       title: title.trim(),
       description: description.trim(),
-      category: category || null,
+      category: Array.isArray(category) ? category.join(',') : (category || null),
       cuisine: cuisine || null,
       difficulty_level: difficultyLevel || null,
     };

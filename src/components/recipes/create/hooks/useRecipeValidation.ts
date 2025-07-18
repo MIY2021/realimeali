@@ -51,6 +51,11 @@ export const useRecipeValidation = () => {
     if (!newRecipe.servings || newRecipe.servings <= 0) {
       errors.push("Servings must be greater than 0");
     }
+    
+    // Validate meal types - require at least one
+    if (!newRecipe.meal_types || newRecipe.meal_types.length === 0) {
+      errors.push("At least one meal type must be selected");
+    }
 
     console.log('🔍 Validation errors:', errors);
     return errors;
