@@ -64,7 +64,7 @@ export const PublicRecipeView = ({ recipe }: PublicRecipeViewProps) => {
             </div>
             <div className="flex items-center gap-1">
               <User className="h-4 w-4 text-gray-500" />
-              <span className="text-sm text-gray-600">{recipe.meal_type}</span>
+              <span className="text-sm text-gray-600">{recipe.meal_type || 'Not specified'}</span>
             </div>
           </div>
 

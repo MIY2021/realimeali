@@ -1,6 +1,7 @@
 import { Recipe } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { getDisplayLabel } from "@/utils/recipeClassification";
+import { getMealTypesArray } from "@/utils/mealTypeUtils";
 
 interface RecipeClassificationSummaryProps {
   recipe: Recipe;
@@ -9,13 +10,14 @@ interface RecipeClassificationSummaryProps {
 export const RecipeClassificationSummary = ({ recipe }: RecipeClassificationSummaryProps) => {
   const classifications = [];
 
-  // Add meal type
-  if (recipe.meal_type) {
+  // Add meal types (supporting multiple)
+  const mealTypes = getMealTypesArray(recipe);
+  mealTypes.forEach(mealType => {
     classifications.push({
-      label: getDisplayLabel(recipe.meal_type, 'mealType'),
+      label: getDisplayLabel(mealType, 'mealType'),
       variant: 'default' as const
     });
-  }
+  });
 
   // Add cuisine region
   if (recipe.cuisine_region) {
