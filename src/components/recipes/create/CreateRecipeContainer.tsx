@@ -1,10 +1,12 @@
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Sparkles, Plus } from "lucide-react";
 import { useRecipeForm } from "@/hooks/useRecipeForm";
 import { useRecipeProcessing } from "@/hooks/useRecipeProcessing";
 import { useImageGeneration } from "@/hooks/useImageGeneration";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useRealiChef } from "@/contexts/RealiChefContext";
 import { CreateRecipeTabsWrapper } from "./CreateRecipeTabsWrapper";
-import { Plus } from "lucide-react";
 import { useRecipeCreationHandlers, type RecipeOrigin } from "./hooks/useRecipeCreationHandlers";
 
 export type { RecipeOrigin };
@@ -27,6 +29,8 @@ export function CreateRecipeContainer({ editingRecipe, isEditMode = false }: Cre
   const recipeProcessingHook = useRecipeProcessing();
 
   const { handleGenerateImage } = useImageGeneration();
+
+  const { setIsOpen, updatePageContext } = useRealiChef();
 
   const handlers = useRecipeCreationHandlers({
     recipeFormHook,
@@ -51,6 +55,32 @@ export function CreateRecipeContainer({ editingRecipe, isEditMode = false }: Cre
       recipeFormHook.newRecipe.ingredients,
       recipeFormHook.newRecipe.instructions
     );
+  };
+
+  const handleAskAIChef = () => {
+    // Prepare current recipe data for AI context
+    const recipeContext = {
+      title: recipeFormHook.newRecipe.title || '',
+      ingredients: recipeFormHook.newRecipe.ingredients || [],
+      instructions: recipeFormHook.newRecipe.instructions || [],
+      servings: recipeFormHook.newRecipe.servings || 1,
+      prep_time: recipeFormHook.newRecipe.prep_time || 0,
+      cook_time: recipeFormHook.newRecipe.cook_time || 0,
+      meal_types: recipeFormHook.newRecipe.meal_types || [],
+      cuisine_region: recipeFormHook.newRecipe.cuisine_region || '',
+      complexity_level: recipeFormHook.newRecipe.complexity_level || '',
+      diet_lifestyle: recipeFormHook.newRecipe.diet_lifestyle || []
+    };
+
+    // Update the page context with recipe data so AI can reference it
+    updatePageContext({
+      mode: 'recipe-edit',
+      recipe: recipeContext,
+      isEditMode
+    });
+
+    // Open the AI chat
+    setIsOpen(true);
   };
 
   const handleTabChange = (tab: string) => {
@@ -89,8 +119,8 @@ export function CreateRecipeContainer({ editingRecipe, isEditMode = false }: Cre
   return (
     <div className="space-y-6">
       {/* Title Section */}
-      <div className="flex flex-col gap-4 mb-6 sm:flex-row sm:justify-between sm:items-center">
-        <div className="space-y-2">
+      <div className="flex flex-col gap-4 mb-6 sm:flex-row sm:justify-between sm:items-start">
+        <div className="space-y-2 flex-1">
           <h1 className="text-2xl sm:text-3xl font-bold text-navy flex items-center gap-2">
             <Plus className="h-6 w-6 sm:h-8 sm:w-8 text-sage" />
             {isEditMode ? "Edit Recipe" : "Add New Recipe"}
@@ -102,6 +132,20 @@ export function CreateRecipeContainer({ editingRecipe, isEditMode = false }: Cre
             }
           </p>
         </div>
+        
+        {/* Ask AI Chef Button - Only show in edit mode */}
+        {isEditMode && (
+          <div className="flex-shrink-0">
+            <Button
+              variant="outline"
+              onClick={handleAskAIChef}
+              className="flex items-center gap-2 text-sm"
+            >
+              <Sparkles className="h-4 w-4" />
+              Ask AI Chef
+            </Button>
+          </div>
+        )}
       </div>
       
       <CreateRecipeTabsWrapper
