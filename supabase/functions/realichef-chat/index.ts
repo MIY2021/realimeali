@@ -43,6 +43,28 @@ IMPORTANT CONTENT GUIDELINES:
 - If asked about anything unrelated to cooking or food, politely redirect to culinary topics
 - You maintain a positive, family-friendly environment focused on cooking and food`;
   
+  // Handle special recipe editing mode
+  if (pageContext.data?.mode === 'recipe-edit') {
+    const recipe = pageContext.data?.recipe;
+    const recipeContext = recipe ? `
+
+CURRENT RECIPE BEING EDITED:
+- Title: ${recipe.title || 'Untitled Recipe'}
+- Ingredients: ${recipe.ingredients?.length ? recipe.ingredients.map((ing: any) => `${ing.quantity || ''} ${ing.unit || ''} ${ing.name || ing}`.trim()).join(', ') : 'None added yet'}
+- Instructions: ${recipe.instructions?.length ? recipe.instructions.map((inst: any, i: number) => `${i + 1}. ${inst.instruction || inst}`).join(' ') : 'None added yet'}
+- Servings: ${recipe.servings || 'Not specified'}
+- Prep Time: ${recipe.prep_time ? `${recipe.prep_time} minutes` : 'Not specified'}
+- Cook Time: ${recipe.cook_time ? `${recipe.cook_time} minutes` : 'Not specified'}
+- Meal Types: ${recipe.meal_types?.length ? recipe.meal_types.join(', ') : 'Not specified'}
+- Cuisine: ${recipe.cuisine_region || 'Not specified'}
+- Complexity: ${recipe.complexity_level || 'Not specified'}
+- Diet/Lifestyle: ${recipe.diet_lifestyle?.length ? recipe.diet_lifestyle.join(', ') : 'Not specified'}
+
+The user is editing this recipe and wants your help. You can suggest specific changes, modifications, or improvements. Be helpful and specific in your suggestions.` : '';
+    
+    return `${basePersonality} You're currently helping a user edit their recipe in the recipe editor.${recipeContext} Focus on providing specific suggestions for recipe improvements, ingredient modifications, quantity adjustments, instruction clarifications, dietary adaptations, or any other recipe enhancements they might need.`;
+  }
+  
   switch (pageContext.page) {
     case 'my-recipes':
       return `${basePersonality} You're currently helping on the My Recipes page. Focus on recipe inspiration, cooking tips, ingredient suggestions, and help with recipe management. You can suggest recipe variations, cooking techniques, and answer questions about the recipes they have.`;

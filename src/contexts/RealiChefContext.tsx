@@ -166,7 +166,19 @@ export const RealiChefProvider = ({ children }: RealiChefProviderProps) => {
     return false;
   };
 
-  const getContextualWelcomeMessage = (page: string) => {
+  const getContextualWelcomeMessage = (page: string, contextData?: any) => {
+    // Handle special recipe editing mode
+    if (contextData?.mode === 'recipe-edit') {
+      const recipe = contextData?.recipe;
+      const hasContent = recipe?.title || recipe?.ingredients?.length > 0 || recipe?.instructions?.length > 0;
+      
+      if (hasContent) {
+        return "👩‍🍳 I can see you're editing a recipe! How would you like me to help? I can suggest:\n• Ingredient quantity adjustments\n• Recipe simplification or enhancement\n• Dietary modifications (gluten-free, vegan, etc.)\n• Cooking technique improvements\n• Flavor enhancements\n\nWhat changes would you like to make?";
+      } else {
+        return "👩‍🍳 I'm here to help you create an amazing recipe! What would you like me to help you with? I can assist with ingredient suggestions, cooking methods, or recipe structure.";
+      }
+    }
+    
     const welcomes = {
       'my-recipes': "👩‍🍳 I see you're looking at your recipes! I can help with cooking tips, ingredient swaps, or suggest new recipes to try.",
       'meal-planner': "👩‍🍳 Ready to plan some meals? I can help you decide what to cook this week!",
@@ -188,7 +200,7 @@ export const RealiChefProvider = ({ children }: RealiChefProviderProps) => {
       return;
     }
     
-    const welcomeMessage = getContextualWelcomeMessage(pageContext.page);
+    const welcomeMessage = getContextualWelcomeMessage(pageContext.page, pageContext.data);
     const welcomeChatMessage: ChatMessage = {
       role: 'assistant',
       content: welcomeMessage,
