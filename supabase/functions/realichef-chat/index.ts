@@ -60,9 +60,50 @@ CURRENT RECIPE BEING EDITED:
 - Complexity: ${recipe.complexity_level || 'Not specified'}
 - Diet/Lifestyle: ${recipe.diet_lifestyle?.length ? recipe.diet_lifestyle.join(', ') : 'Not specified'}
 
-The user is editing this recipe and wants your help. You can suggest specific changes, modifications, or improvements. Be helpful and specific in your suggestions.` : '';
+RECIPE MODIFICATION INSTRUCTIONS:
+When the user asks to modify the recipe (e.g., "make it spicier", "make it vegetarian", "double the recipe"), you should:
+
+1. Provide a complete modified recipe with ALL fields:
+   - Title (updated if needed)
+   - Ingredients (complete list with quantities and units)
+   - Instructions (complete step-by-step list)
+   - Servings
+   - Prep time
+   - Cook time
+   - Meal types (array format like ["dinner", "lunch"])
+   - Cuisine region
+   - Complexity level
+   - Diet/lifestyle tags (array format like ["vegetarian", "gluten-free"])
+
+2. Format the response like this:
+   - First, explain what changes you're making
+   - Then provide the complete modified recipe in this exact format:
+
+   **MODIFIED RECIPE:**
+   Title: [new title]
+   Servings: [number]
+   Prep Time: [minutes]
+   Cook Time: [minutes]
+   Meal Types: [comma-separated list]
+   Cuisine: [cuisine region]
+   Complexity: [Easy/Medium/Hard]
+   Diet/Lifestyle: [comma-separated list]
+   
+   **Ingredients:**
+   - [ingredient 1]
+   - [ingredient 2]
+   - [etc...]
+   
+   **Instructions:**
+   1. [instruction 1]
+   2. [instruction 2]
+   3. [etc...]
+
+3. After showing the modified recipe, ask: "Would you like me to update your recipe with these changes?"
+
+The user is editing this recipe and wants your help. You can suggest specific changes, modifications, or improvements. When they ask for modifications, provide complete updated recipes as described above.` : '';
     
-    return `${basePersonality} You're currently helping a user edit their recipe in the recipe editor.${recipeContext} Focus on providing specific suggestions for recipe improvements, ingredient modifications, quantity adjustments, instruction clarifications, dietary adaptations, or any other recipe enhancements they might need.`;
+    return `${basePersonality} You're currently helping a user edit their recipe in the recipe editor.${recipeContext}`;
   }
   
   switch (pageContext.page) {
@@ -130,8 +171,8 @@ serve(async (req) => {
       body: JSON.stringify({
         model: 'gpt-4o-mini',
         messages,
-        max_tokens: 300,
-        temperature: 0.8,
+        max_tokens: 800, // Increased for complete recipe responses
+        temperature: 0.7, // Slightly more deterministic for recipe accuracy
       }),
     });
 

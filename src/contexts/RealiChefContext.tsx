@@ -27,6 +27,7 @@ interface RealiChefContextType {
   clearChatHistory: () => Promise<void>;
   isLoadingHistory: boolean;
   generateContextualWelcome: () => void;
+  applyRecipeUpdate?: (recipe: any) => void;
 }
 
 const RealiChefContext = createContext<RealiChefContextType | undefined>(undefined);
@@ -299,6 +300,12 @@ export const RealiChefProvider = ({ children }: RealiChefProviderProps) => {
     setPageContext(prev => ({ ...prev, data }));
   };
 
+  const applyRecipeUpdate = (recipe: any) => {
+    if (pageContext.data?.onRecipeUpdate) {
+      pageContext.data.onRecipeUpdate(recipe);
+    }
+  };
+
   return (
     <RealiChefContext.Provider value={{
       pageContext,
@@ -309,7 +316,8 @@ export const RealiChefProvider = ({ children }: RealiChefProviderProps) => {
       addMessage,
       clearChatHistory,
       isLoadingHistory,
-      generateContextualWelcome
+      generateContextualWelcome,
+      applyRecipeUpdate
     }}>
       {children}
     </RealiChefContext.Provider>

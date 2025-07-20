@@ -48,6 +48,58 @@ const isWelcomeMessage = (content: string): boolean => {
   return welcomePatterns.some(pattern => content.includes(pattern));
 };
 
+// Helper function to parse recipe updates from AI responses
+const parseRecipeUpdate = (content: string): any | null => {
+  if (!content.includes('MODIFIED RECIPE:') || !content.includes('Would you like me to update your recipe with these changes?')) {
+    return null;
+  }
+
+  try {
+    const recipeMatch = content.match(/\*\*MODIFIED RECIPE:\*\*(.*?)\*\*Ingredients:\*\*(.*?)\*\*Instructions:\*\*(.*?)(?=Would you like|$)/s);
+    if (!recipeMatch) return null;
+
+    const [, headerSection, ingredientsSection, instructionsSection] = recipeMatch;
+    
+    // Parse header fields
+    const title = headerSection.match(/Title:\s*(.*)/)?.[1]?.trim();
+    const servings = parseInt(headerSection.match(/Servings:\s*(\d+)/)?.[1] || '1');
+    const prep_time = parseInt(headerSection.match(/Prep Time:\s*(\d+)/)?.[1] || '0');
+    const cook_time = parseInt(headerSection.match(/Cook Time:\s*(\d+)/)?.[1] || '0');
+    const meal_types = headerSection.match(/Meal Types:\s*(.*)/)?.[1]?.split(',').map(s => s.trim().toLowerCase()) || [];
+    const cuisine_region = headerSection.match(/Cuisine:\s*(.*)/)?.[1]?.trim();
+    const complexity_level = headerSection.match(/Complexity:\s*(.*)/)?.[1]?.trim();
+    const diet_lifestyle = headerSection.match(/Diet\/Lifestyle:\s*(.*)/)?.[1]?.split(',').map(s => s.trim().toLowerCase()).filter(s => s) || [];
+
+    // Parse ingredients
+    const ingredients = ingredientsSection
+      .split('\n')
+      .map(line => line.replace(/^-\s*/, '').trim())
+      .filter(line => line.length > 0);
+
+    // Parse instructions
+    const instructions = instructionsSection
+      .split(/\d+\.\s/)
+      .map(inst => inst.trim())
+      .filter(inst => inst.length > 0);
+
+    return {
+      title,
+      ingredients,
+      instructions,
+      servings,
+      prep_time,
+      cook_time,
+      meal_types,
+      cuisine_region,
+      complexity_level,
+      diet_lifestyle
+    };
+  } catch (error) {
+    console.error('Error parsing recipe update:', error);
+    return null;
+  }
+};
+
 export const RealiChef = () => {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -59,7 +111,8 @@ export const RealiChef = () => {
     addMessage, 
     clearChatHistory, 
     isLoadingHistory,
-    generateContextualWelcome
+    generateContextualWelcome,
+    applyRecipeUpdate
   } = useRealiChef();
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -431,6 +484,9 @@ export const RealiChef = () => {
                       return null;
                     }
                     
+                    // Check if this message contains a recipe update
+                    const recipeUpdate = message.role === 'assistant' ? parseRecipeUpdate(message.content) : null;
+                    
                     return (
                       <div
                         key={message.id || index}
@@ -451,6 +507,26 @@ export const RealiChef = () => {
                           <div className="whitespace-pre-wrap break-words">
                             {message.role === 'assistant' ? renderMarkdown(message.content) : message.content}
                           </div>
+                          
+                          {/* Show Apply Changes button for recipe updates */}
+                          {recipeUpdate && applyRecipeUpdate && (
+                            <div className="mt-3 pt-3 border-t border-gray-200">
+                              <Button
+                                onClick={() => {
+                                  applyRecipeUpdate(recipeUpdate);
+                                  toast({
+                                    title: "Recipe Updated",
+                                    description: "Your recipe has been updated with the AI suggestions!",
+                                  });
+                                  setIsOpen(false); // Close chat after applying
+                                }}
+                                size="sm"
+                                className="bg-green-600 hover:bg-green-700 text-white"
+                              >
+                                ✓ Apply Changes
+                              </Button>
+                            </div>
+                          )}
                         </div>
                       </div>
                     );

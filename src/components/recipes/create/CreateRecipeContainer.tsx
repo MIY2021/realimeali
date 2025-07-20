@@ -57,6 +57,23 @@ export function CreateRecipeContainer({ editingRecipe, isEditMode = false }: Cre
     );
   };
 
+  const handleRecipeUpdate = (updatedRecipe: any) => {
+    // Update the recipe form with AI-suggested changes
+    recipeFormHook.setNewRecipe(prev => ({
+      ...prev,
+      ...(updatedRecipe.title && { title: updatedRecipe.title }),
+      ...(updatedRecipe.ingredients && { ingredients: updatedRecipe.ingredients }),
+      ...(updatedRecipe.instructions && { instructions: updatedRecipe.instructions }),
+      ...(updatedRecipe.servings && { servings: updatedRecipe.servings }),
+      ...(updatedRecipe.prep_time && { prep_time: updatedRecipe.prep_time }),
+      ...(updatedRecipe.cook_time && { cook_time: updatedRecipe.cook_time }),
+      ...(updatedRecipe.meal_types && { meal_types: updatedRecipe.meal_types }),
+      ...(updatedRecipe.cuisine_region && { cuisine_region: updatedRecipe.cuisine_region }),
+      ...(updatedRecipe.complexity_level && { complexity_level: updatedRecipe.complexity_level }),
+      ...(updatedRecipe.diet_lifestyle && { diet_lifestyle: updatedRecipe.diet_lifestyle })
+    }));
+  };
+
   const handleAskAIChef = () => {
     // Prepare current recipe data for AI context
     const recipeContext = {
@@ -76,7 +93,8 @@ export function CreateRecipeContainer({ editingRecipe, isEditMode = false }: Cre
     updatePageContext({
       mode: 'recipe-edit',
       recipe: recipeContext,
-      isEditMode
+      isEditMode,
+      onRecipeUpdate: handleRecipeUpdate
     });
 
     // Open the AI chat first
