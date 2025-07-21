@@ -10,6 +10,7 @@ interface ChatMessage {
   content: string;
   timestamp: Date;
   page_context?: any;
+  isTemporary?: boolean;
 }
 
 interface PageContext {
@@ -24,6 +25,9 @@ interface RealiChefContextType {
   setIsOpen: (open: boolean) => void;
   messages: ChatMessage[];
   addMessage: (message: ChatMessage) => void;
+  addTemporaryMessage: (message: ChatMessage) => void;
+  replaceTemporaryWelcome: (message: ChatMessage) => void;
+  convertTemporaryToPermanent: () => void;
   clearChatHistory: () => Promise<void>;
   isLoadingHistory: boolean;
   generateContextualWelcome: (contextData?: any) => void;
@@ -208,8 +212,9 @@ export const RealiChefProvider = ({ children }: RealiChefProviderProps) => {
       page_context: { ...pageContext, data: dataToUse }
     };
     
-    addMessage(welcomeChatMessage);
-    console.log('🔍 CONTEXT DEBUG: Contextual welcome message added');
+    // Use replace method to ensure only one temporary welcome message exists
+    replaceTemporaryWelcome(welcomeChatMessage);
+    console.log('🔍 CONTEXT DEBUG: Contextual welcome message added as temporary');
   };
 
   const loadChatHistory = async () => {
@@ -272,9 +277,53 @@ export const RealiChefProvider = ({ children }: RealiChefProviderProps) => {
     
     setMessages(prev => [...prev, messageWithTimestamp]);
     
-    if (user) {
+    // Only save to database if it's not temporary
+    if (user && !message.isTemporary) {
       saveChatMessage(messageWithTimestamp);
     }
+  };
+
+  const addTemporaryMessage = (message: ChatMessage) => {
+    const messageWithTimestamp = {
+      ...message,
+      timestamp: message.timestamp || new Date(),
+      isTemporary: true
+    };
+    
+    setMessages(prev => [...prev, messageWithTimestamp]);
+  };
+
+  const replaceTemporaryWelcome = (message: ChatMessage) => {
+    const messageWithTimestamp = {
+      ...message,
+      timestamp: message.timestamp || new Date(),
+      isTemporary: true
+    };
+    
+    setMessages(prev => {
+      // Remove any existing temporary welcome messages
+      const withoutTempWelcomes = prev.filter(msg => 
+        !(msg.isTemporary && isWelcomeMessage(msg.content))
+      );
+      return [...withoutTempWelcomes, messageWithTimestamp];
+    });
+  };
+
+  const convertTemporaryToPermanent = () => {
+    if (!user) return;
+    
+    setMessages(prev => {
+      const updated = prev.map(msg => {
+        if (msg.isTemporary) {
+          const permanentMessage = { ...msg, isTemporary: false };
+          // Save the now-permanent message to database
+          saveChatMessage(permanentMessage);
+          return permanentMessage;
+        }
+        return msg;
+      });
+      return updated;
+    });
   };
 
   const clearChatHistory = async () => {
@@ -313,6 +362,9 @@ export const RealiChefProvider = ({ children }: RealiChefProviderProps) => {
       setIsOpen: debugSetIsOpen,
       messages,
       addMessage,
+      addTemporaryMessage,
+      replaceTemporaryWelcome,
+      convertTemporaryToPermanent,
       clearChatHistory,
       isLoadingHistory,
       generateContextualWelcome,

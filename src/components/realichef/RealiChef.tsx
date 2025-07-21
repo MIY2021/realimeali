@@ -111,6 +111,7 @@ export const RealiChef = () => {
     setIsOpen, 
     messages, 
     addMessage, 
+    convertTemporaryToPermanent,
     clearChatHistory, 
     isLoadingHistory,
     generateContextualWelcome,
@@ -297,6 +298,9 @@ export const RealiChef = () => {
 
   const sendMessage = async () => {
     if (!inputMessage.trim() || isLoading) return;
+
+    // Convert any temporary messages to permanent before adding user message
+    convertTemporaryToPermanent();
 
     const userMessage: ChatMessage = {
       role: 'user',
