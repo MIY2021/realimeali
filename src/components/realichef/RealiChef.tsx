@@ -288,7 +288,20 @@ export const RealiChef = () => {
     
     try {
       console.log('🔍 DESKTOP BUTTON DEBUG: About to call setIsOpen with:', !isOpen);
-      setIsOpen(!isOpen);
+      
+      // If opening the chat, generate contextual welcome message
+      if (!isOpen) {
+        setIsOpen(true);
+        
+        // Generate contextual welcome message after a brief delay to ensure chat is open
+        setTimeout(() => {
+          generateContextualWelcome();
+          console.log('🔍 DESKTOP BUTTON DEBUG: Generated contextual welcome message');
+        }, 100);
+      } else {
+        setIsOpen(false);
+      }
+      
       console.log('🔍 DESKTOP BUTTON DEBUG: setIsOpen called successfully');
       
     } catch (error) {

@@ -345,7 +345,16 @@ export const RealiChefProvider = ({ children }: RealiChefProviderProps) => {
   };
 
   const updatePageContext = (data: any) => {
+    const previousContext = pageContext.data;
     setPageContext(prev => ({ ...prev, data }));
+    
+    // If chat is open and context has meaningfully changed, generate new welcome message
+    if (isOpen && previousContext !== data) {
+      console.log('🔍 CONTEXT DEBUG: Page context changed while chat is open, generating new welcome');
+      setTimeout(() => {
+        generateContextualWelcome(data);
+      }, 100);
+    }
   };
 
   const applyRecipeUpdate = (recipe: any) => {
