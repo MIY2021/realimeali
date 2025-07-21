@@ -26,7 +26,7 @@ interface RealiChefContextType {
   addMessage: (message: ChatMessage) => void;
   clearChatHistory: () => Promise<void>;
   isLoadingHistory: boolean;
-  generateContextualWelcome: () => void;
+  generateContextualWelcome: (contextData?: any) => void;
   applyRecipeUpdate?: (recipe: any) => void;
 }
 
@@ -54,7 +54,9 @@ const isWelcomeMessage = (content: string): boolean => {
     "Need help with your shopping list?",
     "Looking at a specific recipe?",
     "Let's find you something delicious!",
-    "What can I help you with today?"
+    "What can I help you with today?",
+    "I can see you're editing a recipe!",
+    "I'm here to help you create an amazing recipe!"
   ];
   
   return welcomePatterns.some(pattern => content.includes(pattern));
@@ -192,15 +194,18 @@ export const RealiChefProvider = ({ children }: RealiChefProviderProps) => {
     return welcomes[page as keyof typeof welcomes] || welcomes.default;
   };
 
-  const generateContextualWelcome = () => {
-    console.log('🔍 CONTEXT DEBUG: generateContextualWelcome called');
+  const generateContextualWelcome = (contextData?: any) => {
+    console.log('🔍 CONTEXT DEBUG: generateContextualWelcome called with contextData:', contextData);
     
-    const welcomeMessage = getContextualWelcomeMessage(pageContext.page, pageContext.data);
+    // Use provided context data or fall back to current pageContext.data
+    const dataToUse = contextData || pageContext.data;
+    const welcomeMessage = getContextualWelcomeMessage(pageContext.page, dataToUse);
+    
     const welcomeChatMessage: ChatMessage = {
       role: 'assistant',
       content: welcomeMessage,
       timestamp: new Date(),
-      page_context: pageContext
+      page_context: { ...pageContext, data: dataToUse }
     };
     
     addMessage(welcomeChatMessage);

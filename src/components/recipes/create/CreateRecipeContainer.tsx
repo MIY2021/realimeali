@@ -89,20 +89,22 @@ export function CreateRecipeContainer({ editingRecipe, isEditMode = false }: Cre
       diet_lifestyle: recipeFormHook.newRecipe.diet_lifestyle || []
     };
 
-    // Update the page context with recipe data so AI can reference it
-    updatePageContext({
+    const contextData = {
       mode: 'recipe-edit',
       recipe: recipeContext,
       isEditMode,
       onRecipeUpdate: handleRecipeUpdate
-    });
+    };
+
+    // Update the page context with recipe data so AI can reference it
+    updatePageContext(contextData);
 
     // Open the AI chat first
     setIsOpen(true);
     
-    // Generate contextual welcome message after a brief delay to ensure the chat is open
+    // Generate contextual welcome message with the context data directly
     setTimeout(() => {
-      generateContextualWelcome();
+      generateContextualWelcome(contextData);
     }, 100);
   };
 

@@ -42,7 +42,9 @@ const isWelcomeMessage = (content: string): boolean => {
     "Need help with your shopping list?",
     "Looking at a specific recipe?",
     "Let's find you something delicious!",
-    "What can I help you with today?"
+    "What can I help you with today?",
+    "I can see you're editing a recipe!",
+    "I'm here to help you create an amazing recipe!"
   ];
   
   return welcomePatterns.some(pattern => content.includes(pattern));
