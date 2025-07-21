@@ -195,12 +195,6 @@ export const RealiChefProvider = ({ children }: RealiChefProviderProps) => {
   const generateContextualWelcome = () => {
     console.log('🔍 CONTEXT DEBUG: generateContextualWelcome called');
     
-    // Before adding contextual welcome, check if we should add it
-    if (!shouldAddWelcomeMessage()) {
-      console.log('🔍 CONTEXT DEBUG: Skipping contextual welcome - not needed');
-      return;
-    }
-    
     const welcomeMessage = getContextualWelcomeMessage(pageContext.page, pageContext.data);
     const welcomeChatMessage: ChatMessage = {
       role: 'assistant',
