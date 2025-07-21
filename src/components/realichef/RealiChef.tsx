@@ -135,38 +135,15 @@ export const RealiChef = () => {
 
   // Scroll position tracking
   const handleScroll = () => {
-    if (messagesContainerRef.current) {
+    if (messagesContainerRef.current && messages.length > 1) {
       const container = messagesContainerRef.current;
       const scrollTop = container.scrollTop;
-      const scrollHeight = container.scrollHeight;
-      const clientHeight = container.clientHeight;
       
-      setScrollPosition(scrollTop);
-      
-      // Check if we should show the history indicator - simplified logic
-      if (messages.length > 1) {
-        const lastMessage = messages[messages.length - 1];
-        const hasWelcomeMessage = lastMessage.role === 'assistant' && isWelcomeMessage(lastMessage.content);
-        
-        if (hasWelcomeMessage) {
-          // Show indicator when we have previous messages and welcome is at top
-          const welcomeMessageElement = container.querySelector(`[data-message-index="${messages.length - 1}"]`);
-          
-          if (welcomeMessageElement) {
-            const welcomeRect = welcomeMessageElement.getBoundingClientRect();
-            const containerRect = container.getBoundingClientRect();
-            const welcomeTopPosition = welcomeRect.top - containerRect.top;
-            
-            // Show indicator when welcome message is positioned near the top (meaning history is hidden above)
-            const isWelcomeAtTop = welcomeTopPosition >= 0 && welcomeTopPosition <= 30;
-            setShowHistoryIndicator(isWelcomeAtTop);
-          }
-        } else {
-          setShowHistoryIndicator(false);
-        }
-      } else {
-        setShowHistoryIndicator(false);
-      }
+      // Show indicator when user is not at top and there are previous messages
+      // Show when scroll position is greater than 50px from top
+      setShowHistoryIndicator(scrollTop > 50);
+    } else {
+      setShowHistoryIndicator(false);
     }
   };
 
@@ -257,16 +234,12 @@ export const RealiChef = () => {
     }
   }, [isOpen, isLoadingHistory, user, messages]);
 
-  // Watch for new welcome messages being added and hide history
+  // Watch for new welcome messages being added and position them appropriately
   useEffect(() => {
     if (messages.length > 0) {
       const lastMessage = messages[messages.length - 1];
       if (lastMessage.role === 'assistant' && isWelcomeMessage(lastMessage.content) && isOpen) {
-        // Hide history when welcome message is generated
-        if (messages.length > 1) {
-          setHistoryHidden(true);
-          setShowHistoryIndicator(true);
-        }
+        // Position welcome message when it's generated
         scrollToShowWelcomeMessage();
       }
     }
@@ -482,8 +455,7 @@ export const RealiChef = () => {
               {/* Messages with History Indicator */}
               <div className="relative flex-1 min-h-0">
                 <ChatHistoryIndicator 
-                  isVisible={historyHidden && showHistoryIndicator}
-                  onClick={() => setHistoryHidden(false)}
+                  isVisible={showHistoryIndicator}
                 />
                 
                 <div 
@@ -498,11 +470,6 @@ export const RealiChef = () => {
                   )}
                   
                   {messages.map((message, index) => {
-                    // Hide previous messages when history is hidden and this is not the welcome message
-                    if (historyHidden && index < messages.length - 1) {
-                      return null;
-                    }
-                    
                     // Check if this message contains a recipe update
                     const recipeUpdate = message.role === 'assistant' ? parseRecipeUpdate(message.content) : null;
                     
