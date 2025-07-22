@@ -49,6 +49,7 @@ function AppContent() {
           <Route path="/settings" element={<Settings />} />
           <Route path="/my-recipes" element={<RecipesPage />} />
           <Route path="/my-recipes/new" element={<CreateRecipePage />} />
+          <Route path="/create-recipe" element={<CreateRecipePage />} />
           <Route path="/my-recipes/:slug/edit" element={<EditRecipePage />} />
           <Route path="/my-recipes/:slug" element={<RecipeDetail />} />
           <Route path="/find-recipes" element={<FindRecipesPage />} />

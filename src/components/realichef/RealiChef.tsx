@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useRef } from 'react';
-import { Minus, Sparkles, Trash2 } from 'lucide-react';
+import { Minus, Sparkles, Trash2, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useRealiChef } from '@/contexts/RealiChefContext';
@@ -8,6 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 import { ClearChatHistoryDialog } from './ClearChatHistoryDialog';
 import { ChatHistoryIndicator } from './ChatHistoryIndicator';
 
@@ -19,10 +20,15 @@ interface ChatMessage {
   page_context?: any;
 }
 
-// Simple markdown renderer for bold text
+// Enhanced markdown renderer for bold text and headers
 const renderMarkdown = (text: string) => {
+  // First handle headers (### Header Text)
+  const headerRegex = /^### (.+)$/gm;
+  let processedText = text.replace(headerRegex, '**$1:**');
+  
+  // Then handle bold text
   const boldRegex = /\*\*(.*?)\*\*/g;
-  const parts = text.split(boldRegex);
+  const parts = processedText.split(boldRegex);
   
   return parts.map((part, index) => {
     if (index % 2 === 1) {
@@ -102,9 +108,65 @@ const parseRecipeUpdate = (content: string): any | null => {
   }
 };
 
+// Helper function to parse complete recipes from AI responses
+const parseFullRecipe = (content: string): any | null => {
+  // Look for recipe patterns in AI responses
+  const hasRecipePattern = 
+    (content.includes('### Ingredients:') || content.includes('**Ingredients:**')) && 
+    (content.includes('### Instructions:') || content.includes('**Instructions:**'));
+  
+  if (!hasRecipePattern) return null;
+
+  try {
+    // Try to extract title (look for recipe name at the beginning)
+    const titleMatch = content.match(/^.*?(?:is a|recipe|classic|delicious)\s+(.+?)(?:\.|!|\n|Here's)/i) ||
+                      content.match(/^.*?(?:Beans on toast|[A-Z][a-z\s]+(?:recipe|dish))[\s:]/i);
+    let title = titleMatch ? titleMatch[0].replace(/is a|recipe|classic|delicious|Here's|[.:!]/gi, '').trim() : 'AI Generated Recipe';
+    
+    // Clean up title
+    title = title.replace(/^.*?(?:🍳|👩‍🍳)\s*/, '').trim();
+    
+    // Extract ingredients section
+    const ingredientsMatch = content.match(/(?:### Ingredients:|Ingredients:)\s*((?:(?!### |Instructions:|$).)*)/is);
+    const ingredients = ingredientsMatch ? 
+      ingredientsMatch[1]
+        .split('\n')
+        .map(line => line.replace(/^-\s*/, '').trim())
+        .filter(line => line.length > 0 && !line.includes('#')) : [];
+
+    // Extract instructions section
+    const instructionsMatch = content.match(/(?:### Instructions:|Instructions:)\s*((?:(?!### |$).)*)/is);
+    const instructions = instructionsMatch ?
+      instructionsMatch[1]
+        .split(/\n+/)
+        .map(line => line.replace(/^\d+\.\s*/, '').trim())
+        .filter(line => line.length > 0 && !line.includes('#')) : [];
+
+    // Only return if we found meaningful content
+    if (ingredients.length > 0 && instructions.length > 0) {
+      return {
+        title,
+        ingredients,
+        instructions,
+        servings: 4, // Default
+        prep_time: 15, // Default
+        cook_time: 20, // Default
+        description: `A delicious recipe shared by AI Chef`,
+        import_method: 'ai' as const
+      };
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('Error parsing full recipe:', error);
+    return null;
+  }
+};
+
 export const RealiChef = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const { 
     pageContext, 
     isOpen, 
@@ -418,6 +480,8 @@ export const RealiChef = () => {
                   {messages.map((message, index) => {
                     // Check if this message contains a recipe update
                     const recipeUpdate = message.role === 'assistant' ? parseRecipeUpdate(message.content) : null;
+                    // Check if this message contains a full recipe
+                    const fullRecipe = message.role === 'assistant' ? parseFullRecipe(message.content) : null;
                     
                     return (
                       <div
@@ -456,6 +520,34 @@ export const RealiChef = () => {
                                 className="bg-green-600 hover:bg-green-700 text-white"
                               >
                                 ✓ Apply Changes
+                              </Button>
+                            </div>
+                          )}
+                          
+                          {/* Show Add Recipe button for complete recipes */}
+                          {fullRecipe && !recipeUpdate && (
+                            <div className="mt-3 pt-3 border-t border-gray-200">
+                              <Button
+                                onClick={() => {
+                                  // Navigate to create recipe page with pre-populated data
+                                  const searchParams = new URLSearchParams({
+                                    title: fullRecipe.title || '',
+                                    ingredients: JSON.stringify(fullRecipe.ingredients || []),
+                                    instructions: JSON.stringify(fullRecipe.instructions || []),
+                                    servings: (fullRecipe.servings || 4).toString(),
+                                    prep_time: (fullRecipe.prep_time || 15).toString(),
+                                    cook_time: (fullRecipe.cook_time || 20).toString(),
+                                    description: fullRecipe.description || '',
+                                    import_method: 'ai'
+                                  });
+                                  navigate(`/create-recipe?${searchParams.toString()}`);
+                                  setIsOpen(false); // Close chat after navigating
+                                }}
+                                size="sm"
+                                className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-1"
+                              >
+                                <Plus className="h-3 w-3" />
+                                Add Recipe
                               </Button>
                             </div>
                           )}
