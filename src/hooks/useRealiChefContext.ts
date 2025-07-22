@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import { useRealiChef } from '@/contexts/RealiChefContext';
 
 export const useRealiChefContext = (contextData?: any) => {
-  const { updatePageContext, generateContextualWelcome, setIsOpen } = useRealiChef();
+  const { updatePageContext } = useRealiChef();
 
   useEffect(() => {
     if (contextData) {
@@ -11,5 +11,5 @@ export const useRealiChefContext = (contextData?: any) => {
     }
   }, [contextData, updatePageContext]);
 
-  return { updatePageContext, generateContextualWelcome, setIsOpen };
+  return { updatePageContext };
 };

@@ -111,39 +111,94 @@ export const RealiChef = () => {
     setIsOpen, 
     messages, 
     addMessage, 
-    convertTemporaryToPermanent,
     clearChatHistory, 
     isLoadingHistory,
-    generateContextualWelcome,
     applyRecipeUpdate
   } = useRealiChef();
+  
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [hasError, setHasError] = useState(false);
   const [clearHistoryDialogOpen, setClearHistoryDialogOpen] = useState(false);
   const [showHistoryIndicator, setShowHistoryIndicator] = useState(false);
-  const [scrollPosition, setScrollPosition] = useState(0);
-  const [historyHidden, setHistoryHidden] = useState(false);
+  const [hasUnsavedWelcome, setHasUnsavedWelcome] = useState(false);
+  const [isFirstOpen, setIsFirstOpen] = useState(true);
+  
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
 
-  // Debug logging for state changes
-  useEffect(() => {
-    console.log('🔍 RealiChef DEBUG: isOpen changed to:', isOpen);
-    console.log('🔍 RealiChef DEBUG: Component re-rendered with isOpen:', isOpen);
-  }, [isOpen]);
+  // Generate contextual welcome message
+  const getContextualWelcomeMessage = (page: string, contextData?: any) => {
+    // Handle special recipe editing mode
+    if (contextData?.mode === 'recipe-edit') {
+      const recipe = contextData?.recipe;
+      const hasContent = recipe?.title || recipe?.ingredients?.length > 0 || recipe?.instructions?.length > 0;
+      
+      if (hasContent) {
+        return "👩‍🍳 I can see you're editing a recipe! How would you like me to help? I can suggest:\n• Ingredient quantity adjustments\n• Recipe simplification or enhancement\n• Dietary modifications (gluten-free, vegan, etc.)\n• Cooking technique improvements\n• Flavor enhancements\n\nWhat changes would you like to make?";
+      } else {
+        return "👩‍🍳 I'm here to help you create an amazing recipe! What would you like me to help you with? I can assist with ingredient suggestions, cooking methods, or recipe structure.";
+      }
+    }
+    
+    const welcomes = {
+      'my-recipes': "👩‍🍳 I see you're looking at your recipes! I can help with cooking tips, ingredient swaps, or suggest new recipes to try.",
+      'meal-planner': "👩‍🍳 Ready to plan some meals? I can help you decide what to cook this week!",
+      'shopping-list': "👩‍🍳 Need help with your shopping list? I can assist with ingredient substitutions or shopping tips!",
+      'recipe-detail': "👩‍🍳 Looking at a specific recipe? I can help with cooking techniques or ingredient alternatives.",
+      'find-recipes': "👩‍🍳 Let's find you something delicious! What are you in the mood for?",
+      'home': "👩‍🍳 Hi! I'm RealiChef, your cooking assistant. What can I help you with today?",
+      'default': "👩‍🍳 Hi! I'm RealiChef, your cooking assistant. What can I help you with today?"
+    };
+    return welcomes[page as keyof typeof welcomes] || welcomes.default;
+  };
 
-  // Scroll position tracking
+  // Generate welcome message when chat opens
+  const generateWelcomeMessage = () => {
+    if (!user || !isFirstOpen) return;
+
+    const shouldAddWelcome = 
+      messages.length === 0 || 
+      (messages.length > 0 && messages[messages.length - 1].role === 'user');
+
+    if (shouldAddWelcome) {
+      // Remove any existing unsaved welcome message
+      if (hasUnsavedWelcome) {
+        const filteredMessages = messages.filter(msg => 
+          !(msg.role === 'assistant' && isWelcomeMessage(msg.content) && !msg.id)
+        );
+        // Update messages without the unsaved welcome
+        // We'll add the new one below
+      }
+
+      const welcomeContent = getContextualWelcomeMessage(pageContext.page, pageContext.data);
+      const welcomeMessage: ChatMessage = {
+        role: 'assistant',
+        content: welcomeContent,
+        timestamp: new Date(),
+        page_context: pageContext
+      };
+
+      addMessage(welcomeMessage);
+      setHasUnsavedWelcome(true);
+      console.log('🔍 Generated welcome message');
+    }
+  };
+
+  // Handle scroll for history indicator
   const handleScroll = () => {
     if (messagesContainerRef.current && messages.length > 1) {
       const container = messagesContainerRef.current;
       const scrollTop = container.scrollTop;
-      
-      // Show indicator when user is not at top and there are previous messages
-      // Show when scroll position is greater than 50px from top
       setShowHistoryIndicator(scrollTop > 50);
     } else {
       setShowHistoryIndicator(false);
+    }
+  };
+
+  // Scroll to bottom
+  const scrollToBottom = () => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   };
 
@@ -156,137 +211,36 @@ export const RealiChef = () => {
     }
   }, [messages]);
 
-  // Scroll to bottom function - only for specific cases
-  const scrollToBottomInstantly = () => {
-    if (messagesEndRef.current) {
-      const container = messagesEndRef.current.parentElement;
-      if (container) {
-        container.scrollTop = container.scrollHeight;
-      }
-    }
-  };
-
-  // Position welcome message in the upper-middle area as shown in screenshot
-  const scrollToShowWelcomeMessage = () => {
-    if (messagesContainerRef.current && messages.length > 0) {
-      const container = messagesContainerRef.current;
-      const lastMessage = messages[messages.length - 1];
-      
-      // Check if the last message is a welcome message
-      if (lastMessage.role === 'assistant' && isWelcomeMessage(lastMessage.content)) {
-        setTimeout(() => {
-          const containerHeight = container.clientHeight;
-          
-          if (messages.length > 1) {
-            // Find the welcome message element
-            const welcomeMessageElement = container.querySelector(`[data-message-index="${messages.length - 1}"]`);
-            
-            if (welcomeMessageElement) {
-              const welcomeMessageOffsetTop = (welcomeMessageElement as HTMLElement).offsetTop;
-              
-              // Position welcome message at 20% down from top (as shown in screenshot)
-              const targetScrollTop = welcomeMessageOffsetTop - (containerHeight * 0.2);
-              
-              container.scrollTo({
-                top: Math.max(0, targetScrollTop),
-                behavior: 'smooth'
-              });
-              
-              console.log('🔍 Positioned welcome message in upper-middle area as per screenshot');
-            }
-          } else {
-            // Only welcome message exists, position it naturally in upper area
-            container.scrollTo({
-              top: 0,
-              behavior: 'smooth'
-            });
-            
-            console.log('🔍 Single welcome message positioned in upper area');
-          }
-          
-          // Update scroll position and indicator visibility after scroll
-          setTimeout(() => handleScroll(), 300);
-        }, 100);
-      }
-    }
-  };
-
-  // Only scroll when loading indicator appears or chat first opens
+  // Handle chat opening
   useEffect(() => {
-    if (isLoading) {
-      scrollToBottomInstantly();
+    if (isOpen && !isLoadingHistory && user) {
+      if (isFirstOpen) {
+        generateWelcomeMessage();
+        setIsFirstOpen(false);
+      }
+      // Scroll to bottom after messages load
+      setTimeout(scrollToBottom, 100);
     }
-  }, [isLoading]);
+  }, [isOpen, isLoadingHistory, user, isFirstOpen]);
 
-  // Handle initial chat opening and welcome message positioning
+  // Scroll to bottom for new messages
   useEffect(() => {
-    if (isOpen && !isLoadingHistory && user && messages.length > 0) {
-      console.log('🔍 Chat opened, checking for welcome message positioning');
-      const lastMessage = messages[messages.length - 1];
-      if (lastMessage.role === 'assistant' && isWelcomeMessage(lastMessage.content)) {
-        console.log('🔍 Welcome message detected, positioning for fresh chat experience');
-        scrollToShowWelcomeMessage();
-      } else {
-        setTimeout(() => {
-          scrollToBottomInstantly();
-        }, 100);
-      }
+    if (isLoading || messages.length > 0) {
+      setTimeout(scrollToBottom, 100);
     }
-  }, [isOpen, isLoadingHistory, user, messages]);
+  }, [messages.length, isLoading]);
 
-  // Watch for new welcome messages being added and position them appropriately
-  useEffect(() => {
-    if (messages.length > 0) {
-      const lastMessage = messages[messages.length - 1];
-      if (lastMessage.role === 'assistant' && isWelcomeMessage(lastMessage.content) && isOpen) {
-        // Position welcome message when it's generated
-        scrollToShowWelcomeMessage();
-      }
-    }
-  }, [messages, isOpen]);
-
-  // COMPLETELY REBUILT BUTTON CLICK HANDLER
-  const handleChatButtonClick = (event: React.MouseEvent) => {
-    console.log('🔍 DESKTOP BUTTON DEBUG: Click event triggered');
-    console.log('🔍 DESKTOP BUTTON DEBUG: Event details:', {
-      type: event.type,
-      target: event.target,
-      currentTarget: event.currentTarget
-    });
-    console.log('🔍 DESKTOP BUTTON DEBUG: Current isOpen state before click:', isOpen);
-    
-    // Prevent any event bubbling issues
-    event.preventDefault();
-    event.stopPropagation();
-    
-    try {
-      console.log('🔍 DESKTOP BUTTON DEBUG: About to call setIsOpen with:', !isOpen);
-      
-      // If opening the chat, generate contextual welcome message
-      if (!isOpen) {
-        setIsOpen(true);
-        
-        // Generate contextual welcome message after a brief delay to ensure chat is open
-        setTimeout(() => {
-          generateContextualWelcome();
-          console.log('🔍 DESKTOP BUTTON DEBUG: Generated contextual welcome message');
-        }, 100);
-      } else {
-        setIsOpen(false);
-      }
-      
-      console.log('🔍 DESKTOP BUTTON DEBUG: setIsOpen called successfully');
-      
-    } catch (error) {
-      console.error('🔍 DESKTOP BUTTON DEBUG: Error in click handler:', error);
-    }
+  const handleChatButtonClick = () => {
+    setIsOpen(true);
   };
 
   const sendMessage = async () => {
     if (!inputMessage.trim() || isLoading) return;
 
-    // Convert any temporary messages to permanent before adding user message
-    convertTemporaryToPermanent();
+    // Save any unsaved welcome message when user sends first message
+    if (hasUnsavedWelcome) {
+      setHasUnsavedWelcome(false);
+    }
 
     const userMessage: ChatMessage = {
       role: 'user',
@@ -298,12 +252,6 @@ export const RealiChef = () => {
     addMessage(userMessage);
     setInputMessage('');
     setIsLoading(true);
-    setHasError(false);
-
-    // Scroll for new user message
-    setTimeout(() => {
-      scrollToBottomInstantly();
-    }, 50);
 
     try {
       const conversationHistory = messages.slice(-10).map(msg => ({
@@ -331,7 +279,6 @@ export const RealiChef = () => {
       addMessage(assistantMessage);
     } catch (error) {
       console.error('Error sending message to RealiChef:', error);
-      setHasError(true);
       const errorMessage: ChatMessage = {
         role: 'assistant',
         content: "👩‍🍳 Oops! I had trouble processing that. Please try again in a moment!",
@@ -347,6 +294,8 @@ export const RealiChef = () => {
   const handleClearHistory = async () => {
     try {
       await clearChatHistory();
+      setHasUnsavedWelcome(false);
+      setIsFirstOpen(true);
       toast({
         title: "Chat history cleared",
         description: "Your chat history has been cleared successfully.",
@@ -367,11 +316,9 @@ export const RealiChef = () => {
     }
   };
 
-  console.log('🔍 RealiChef RENDER DEBUG: isOpen =', isOpen, 'shouldShowButton =', !isOpen);
-
   return (
     <>
-      {/* Floating Chef Hat Icon - FIXED FOR DESKTOP */}
+      {/* Floating Chef Hat Icon */}
       {!isOpen && (
         <div className="fixed bottom-20 right-4 z-[60] md:bottom-16 md:right-8">
           <button
@@ -461,7 +408,6 @@ export const RealiChef = () => {
                 <div 
                   ref={messagesContainerRef} 
                   className="h-full overflow-y-auto bg-gray-50 p-4 space-y-3"
-                  onScroll={handleScroll}
                 >
                   {isLoadingHistory && (
                     <div className="flex justify-center py-4">

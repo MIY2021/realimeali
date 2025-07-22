@@ -10,7 +10,6 @@ interface ChatMessage {
   content: string;
   timestamp: Date;
   page_context?: any;
-  isTemporary?: boolean;
 }
 
 interface PageContext {
@@ -25,12 +24,8 @@ interface RealiChefContextType {
   setIsOpen: (open: boolean) => void;
   messages: ChatMessage[];
   addMessage: (message: ChatMessage) => void;
-  addTemporaryMessage: (message: ChatMessage) => void;
-  replaceTemporaryWelcome: (message: ChatMessage) => void;
-  convertTemporaryToPermanent: () => void;
   clearChatHistory: () => Promise<void>;
   isLoadingHistory: boolean;
-  generateContextualWelcome: (contextData?: any) => void;
   applyRecipeUpdate?: (recipe: any) => void;
 }
 
@@ -48,24 +43,6 @@ interface RealiChefProviderProps {
   children: ReactNode;
 }
 
-// Helper function to detect if a message is a welcome message
-const isWelcomeMessage = (content: string): boolean => {
-  const welcomePatterns = [
-    "Hi! I'm RealiChef",
-    "I'm RealiChef, your cooking assistant",
-    "I see you're looking at your recipes!",
-    "Ready to plan some meals?",
-    "Need help with your shopping list?",
-    "Looking at a specific recipe?",
-    "Let's find you something delicious!",
-    "What can I help you with today?",
-    "I can see you're editing a recipe!",
-    "I'm here to help you create an amazing recipe!"
-  ];
-  
-  return welcomePatterns.some(pattern => content.includes(pattern));
-};
-
 export const RealiChefProvider = ({ children }: RealiChefProviderProps) => {
   const location = useLocation();
   const { user } = useAuth();
@@ -73,24 +50,6 @@ export const RealiChefProvider = ({ children }: RealiChefProviderProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
-  const [hasLoadedHistory, setHasLoadedHistory] = useState(false);
-
-  // DEBUG: Track isOpen state changes
-  useEffect(() => {
-    console.log('🔍 CONTEXT DEBUG: isOpen state changed to:', isOpen);
-  }, [isOpen]);
-
-  // DEBUG: Enhanced setIsOpen wrapper
-  const debugSetIsOpen = (open: boolean) => {
-    console.log('🔍 CONTEXT DEBUG: setIsOpen called with:', open);
-    console.log('🔍 CONTEXT DEBUG: Current isOpen before update:', isOpen);
-    try {
-      setIsOpen(open);
-      console.log('🔍 CONTEXT DEBUG: setIsOpen executed successfully');
-    } catch (error) {
-      console.error('🔍 CONTEXT DEBUG: Error in setIsOpen:', error);
-    }
-  };
 
   // Update page context based on current route
   useEffect(() => {
@@ -112,110 +71,10 @@ export const RealiChefProvider = ({ children }: RealiChefProviderProps) => {
 
   // Load chat history when user is authenticated
   useEffect(() => {
-    if (user && !hasLoadedHistory) {
+    if (user && messages.length === 0) {
       loadChatHistory();
     }
-  }, [user, hasLoadedHistory]);
-
-  // Check if we need to add a welcome message after history is loaded
-  useEffect(() => {
-    if (isOpen && hasLoadedHistory && user) {
-      const shouldAddWelcome = shouldAddWelcomeMessage();
-      if (shouldAddWelcome) {
-        console.log('🔍 Adding welcome message - conditions met');
-        const welcomeMessage: ChatMessage = {
-          role: 'assistant',
-          content: "👩‍🍳 Hi! I'm RealiChef, your cooking assistant. I'm here to help!",
-          timestamp: new Date(),
-          page_context: pageContext
-        };
-        
-        // Add message to end in chronological order and save to database
-        setMessages(prev => [...prev, welcomeMessage]);
-        if (user) {
-          saveChatMessage(welcomeMessage);
-        }
-      } else {
-        console.log('🔍 Skipping welcome message - not needed');
-      }
-    }
-  }, [isOpen, hasLoadedHistory, user, pageContext]);
-
-  // Function to determine if we should add a welcome message
-  const shouldAddWelcomeMessage = (): boolean => {
-    // If no messages at all, add welcome
-    if (messages.length === 0) {
-      console.log('🔍 Welcome needed: No messages in history');
-      return true;
-    }
-
-    // Get the last message
-    const lastMessage = messages[messages.length - 1];
-    
-    // If last message is from user, we can add welcome
-    if (lastMessage.role === 'user') {
-      console.log('🔍 Welcome needed: Last message was from user');
-      return true;
-    }
-
-    // If last message is from assistant but NOT a welcome message, we can add welcome
-    if (lastMessage.role === 'assistant' && !isWelcomeMessage(lastMessage.content)) {
-      console.log('🔍 Welcome needed: Last assistant message was not a welcome');
-      return true;
-    }
-
-    // If last message is already a welcome message from assistant, don't add another
-    if (lastMessage.role === 'assistant' && isWelcomeMessage(lastMessage.content)) {
-      console.log('🔍 Welcome NOT needed: Last message was already a welcome');
-      return false;
-    }
-
-    return false;
-  };
-
-  const getContextualWelcomeMessage = (page: string, contextData?: any) => {
-    // Handle special recipe editing mode
-    if (contextData?.mode === 'recipe-edit') {
-      const recipe = contextData?.recipe;
-      const hasContent = recipe?.title || recipe?.ingredients?.length > 0 || recipe?.instructions?.length > 0;
-      
-      if (hasContent) {
-        return "👩‍🍳 I can see you're editing a recipe! How would you like me to help? I can suggest:\n• Ingredient quantity adjustments\n• Recipe simplification or enhancement\n• Dietary modifications (gluten-free, vegan, etc.)\n• Cooking technique improvements\n• Flavor enhancements\n\nWhat changes would you like to make?";
-      } else {
-        return "👩‍🍳 I'm here to help you create an amazing recipe! What would you like me to help you with? I can assist with ingredient suggestions, cooking methods, or recipe structure.";
-      }
-    }
-    
-    const welcomes = {
-      'my-recipes': "👩‍🍳 I see you're looking at your recipes! I can help with cooking tips, ingredient swaps, or suggest new recipes to try.",
-      'meal-planner': "👩‍🍳 Ready to plan some meals? I can help you decide what to cook this week!",
-      'shopping-list': "👩‍🍳 Need help with your shopping list? I can assist with ingredient substitutions or shopping tips!",
-      'recipe-detail': "👩‍🍳 Looking at a specific recipe? I can help with cooking techniques or ingredient alternatives.",
-      'find-recipes': "👩‍🍳 Let's find you something delicious! What are you in the mood for?",
-      'home': "👩‍🍳 Hi! I'm RealiChef, your cooking assistant. What can I help you with today?",
-      'default': "👩‍🍳 Hi! I'm RealiChef, your cooking assistant. What can I help you with today?"
-    };
-    return welcomes[page as keyof typeof welcomes] || welcomes.default;
-  };
-
-  const generateContextualWelcome = (contextData?: any) => {
-    console.log('🔍 CONTEXT DEBUG: generateContextualWelcome called with contextData:', contextData);
-    
-    // Use provided context data or fall back to current pageContext.data
-    const dataToUse = contextData || pageContext.data;
-    const welcomeMessage = getContextualWelcomeMessage(pageContext.page, dataToUse);
-    
-    const welcomeChatMessage: ChatMessage = {
-      role: 'assistant',
-      content: welcomeMessage,
-      timestamp: new Date(),
-      page_context: { ...pageContext, data: dataToUse }
-    };
-    
-    // Use replace method to ensure only one temporary welcome message exists
-    replaceTemporaryWelcome(welcomeChatMessage);
-    console.log('🔍 CONTEXT DEBUG: Contextual welcome message added as temporary');
-  };
+  }, [user]);
 
   const loadChatHistory = async () => {
     if (!user) return;
@@ -241,10 +100,8 @@ export const RealiChefProvider = ({ children }: RealiChefProviderProps) => {
 
       console.log('🔍 Loaded chat history:', chatMessages.length, 'messages');
       setMessages(chatMessages);
-      setHasLoadedHistory(true);
     } catch (error) {
       console.error('Error loading chat history:', error);
-      setHasLoadedHistory(true);
     } finally {
       setIsLoadingHistory(false);
     }
@@ -277,53 +134,10 @@ export const RealiChefProvider = ({ children }: RealiChefProviderProps) => {
     
     setMessages(prev => [...prev, messageWithTimestamp]);
     
-    // Only save to database if it's not temporary
-    if (user && !message.isTemporary) {
+    // Save to database if user is authenticated
+    if (user) {
       saveChatMessage(messageWithTimestamp);
     }
-  };
-
-  const addTemporaryMessage = (message: ChatMessage) => {
-    const messageWithTimestamp = {
-      ...message,
-      timestamp: message.timestamp || new Date(),
-      isTemporary: true
-    };
-    
-    setMessages(prev => [...prev, messageWithTimestamp]);
-  };
-
-  const replaceTemporaryWelcome = (message: ChatMessage) => {
-    const messageWithTimestamp = {
-      ...message,
-      timestamp: message.timestamp || new Date(),
-      isTemporary: true
-    };
-    
-    setMessages(prev => {
-      // Remove any existing temporary welcome messages
-      const withoutTempWelcomes = prev.filter(msg => 
-        !(msg.isTemporary && isWelcomeMessage(msg.content))
-      );
-      return [...withoutTempWelcomes, messageWithTimestamp];
-    });
-  };
-
-  const convertTemporaryToPermanent = () => {
-    if (!user) return;
-    
-    setMessages(prev => {
-      const updated = prev.map(msg => {
-        if (msg.isTemporary) {
-          const permanentMessage = { ...msg, isTemporary: false };
-          // Save the now-permanent message to database
-          saveChatMessage(permanentMessage);
-          return permanentMessage;
-        }
-        return msg;
-      });
-      return updated;
-    });
   };
 
   const clearChatHistory = async () => {
@@ -345,16 +159,7 @@ export const RealiChefProvider = ({ children }: RealiChefProviderProps) => {
   };
 
   const updatePageContext = (data: any) => {
-    const previousContext = pageContext.data;
     setPageContext(prev => ({ ...prev, data }));
-    
-    // If chat is open and context has meaningfully changed, generate new welcome message
-    if (isOpen && previousContext !== data) {
-      console.log('🔍 CONTEXT DEBUG: Page context changed while chat is open, generating new welcome');
-      setTimeout(() => {
-        generateContextualWelcome(data);
-      }, 100);
-    }
   };
 
   const applyRecipeUpdate = (recipe: any) => {
@@ -368,15 +173,11 @@ export const RealiChefProvider = ({ children }: RealiChefProviderProps) => {
       pageContext,
       updatePageContext,
       isOpen,
-      setIsOpen: debugSetIsOpen,
+      setIsOpen,
       messages,
       addMessage,
-      addTemporaryMessage,
-      replaceTemporaryWelcome,
-      convertTemporaryToPermanent,
       clearChatHistory,
       isLoadingHistory,
-      generateContextualWelcome,
       applyRecipeUpdate
     }}>
       {children}
