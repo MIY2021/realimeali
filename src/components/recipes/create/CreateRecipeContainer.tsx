@@ -30,7 +30,7 @@ export function CreateRecipeContainer({ editingRecipe, isEditMode = false }: Cre
 
   const { handleGenerateImage } = useImageGeneration();
 
-  const { setIsOpen, updatePageContext, generateContextualWelcome } = useRealiChef();
+  const { setIsOpen, updatePageContext } = useRealiChef();
 
   const handlers = useRecipeCreationHandlers({
     recipeFormHook,
@@ -99,13 +99,8 @@ export function CreateRecipeContainer({ editingRecipe, isEditMode = false }: Cre
     // Update the page context with recipe data so AI can reference it
     updatePageContext(contextData);
 
-    // Open the AI chat first
+    // Open the AI chat (welcome message will be generated automatically)
     setIsOpen(true);
-    
-    // Generate contextual welcome message with the context data directly
-    setTimeout(() => {
-      generateContextualWelcome(contextData);
-    }, 100);
   };
 
   const handleTabChange = (tab: string) => {
