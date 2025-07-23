@@ -20,6 +20,7 @@ interface CreateRecipeTabsWrapperProps {
   onSave: () => void;
   onCancel: () => void;
   isEditMode?: boolean;
+  isFromAI?: boolean;
 }
 
 export function CreateRecipeTabsWrapper({
@@ -37,6 +38,7 @@ export function CreateRecipeTabsWrapper({
   onSave,
   onCancel,
   isEditMode = false,
+  isFromAI = false,
 }: CreateRecipeTabsWrapperProps) {
   
   const status = useRecipeCompletionStatus({ newRecipe: recipeFormHook.newRecipe });
@@ -50,6 +52,7 @@ export function CreateRecipeTabsWrapper({
           setActiveTab={setActiveTab}
           recipeOrigin={recipeOrigin}
           isEditMode={isEditMode}
+          isFromAI={isFromAI}
         >
           <RecipeTabsContent
             isMobile={isMobile}

@@ -19,6 +19,7 @@ interface CreateRecipeTabNavigationProps {
   recipeOrigin: RecipeOrigin;
   children: React.ReactNode;
   isEditMode?: boolean;
+  isFromAI?: boolean;
 }
 
 const baseTabOptions: TabOption[] = [
@@ -65,7 +66,8 @@ export function CreateRecipeTabNavigation({
   setActiveTab,
   recipeOrigin,
   children,
-  isEditMode = false
+  isEditMode = false,
+  isFromAI = false
 }: CreateRecipeTabNavigationProps) {
   
   // Generate dynamic tab options based on recipe origin and edit mode
@@ -86,9 +88,9 @@ export function CreateRecipeTabNavigation({
         if (manualTabIndex !== -1) {
           tabOptions[manualTabIndex] = {
             ...tabOptions[manualTabIndex],
-            label: `Manual Entry (${originalTab.label})`,
+            label: isFromAI ? `Manual Entry [AI Generated]` : `Manual Entry (${originalTab.label})`,
             emoji: "✍️",
-            description: `Edit your ${originalTab.label.toLowerCase()} recipe manually`
+            description: isFromAI ? `Edit your AI generated recipe manually` : `Edit your ${originalTab.label.toLowerCase()} recipe manually`
           };
         }
       }

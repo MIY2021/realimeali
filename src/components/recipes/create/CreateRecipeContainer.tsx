@@ -14,12 +14,15 @@ export type { RecipeOrigin };
 interface CreateRecipeContainerProps {
   editingRecipe?: any;
   isEditMode?: boolean;
+  defaultTab?: string;
 }
 
-export function CreateRecipeContainer({ editingRecipe, isEditMode = false }: CreateRecipeContainerProps) {
+export function CreateRecipeContainer({ editingRecipe, isEditMode = false, defaultTab }: CreateRecipeContainerProps) {
   const isMobile = useIsMobile();
 
-  const [activeTab, setActiveTab] = useState(isEditMode ? "manual" : "url");
+  const [activeTab, setActiveTab] = useState(
+    defaultTab || (isEditMode ? "manual" : "url")
+  );
   const [recipeOrigin, setRecipeOrigin] = useState<RecipeOrigin>('manual');
   const [originalSourceUrl, setOriginalSourceUrl] = useState<string>('');
   const [manualTabClicked, setManualTabClicked] = useState(isEditMode);
@@ -135,6 +138,9 @@ export function CreateRecipeContainer({ editingRecipe, isEditMode = false }: Cre
 
   // Pass manualTabClicked to determine whether to show dynamic tab name
   const effectiveRecipeOrigin = (activeTab === 'manual' && manualTabClicked) ? 'manual' : recipeOrigin;
+  
+  // Check if this recipe is from AI
+  const isFromAI = editingRecipe?.import_method === 'ai';
 
   return (
     <div className="space-y-6">
@@ -183,6 +189,7 @@ export function CreateRecipeContainer({ editingRecipe, isEditMode = false }: Cre
         onSave={handlers.handleSaveRecipe}
         onCancel={handlers.handleCancel}
         isEditMode={isEditMode}
+        isFromAI={isFromAI}
       />
     </div>
   );

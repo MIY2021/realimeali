@@ -22,9 +22,12 @@ interface ChatMessage {
 
 // Enhanced markdown renderer for bold text and headers
 const renderMarkdown = (text: string) => {
-  // First handle headers (### Header Text)
+  // First handle headers (### Header Text) - remove double colons
   const headerRegex = /^### (.+)$/gm;
   let processedText = text.replace(headerRegex, '**$1:**');
+  
+  // Fix double colons in specific sections (Ingredients::, Instructions::)
+  processedText = processedText.replace(/\*\*(Ingredients|Instructions)::\*\*/g, '**$1:**');
   
   // Then handle bold text
   const boldRegex = /\*\*(.*?)\*\*/g;
@@ -148,10 +151,15 @@ const parseFullRecipe = (content: string): any | null => {
         title,
         ingredients,
         instructions,
-        servings: 4, // Default
-        prep_time: 15, // Default
-        cook_time: 20, // Default
+        servings: 4,
+        prep_time: 15,
+        cook_time: 20,
         description: `A delicious recipe shared by AI Chef`,
+        meal_types: [],
+        cuisine_region: '',
+        complexity_level: 'beginner',
+        diet_lifestyle: [],
+        equipment: [],
         import_method: 'ai' as const
       };
     }
@@ -528,26 +536,32 @@ export const RealiChef = () => {
                           {fullRecipe && !recipeUpdate && (
                             <div className="mt-3 pt-3 border-t border-gray-200">
                               <Button
-                                onClick={() => {
-                                  // Navigate to create recipe page with pre-populated data
-                                  const searchParams = new URLSearchParams({
-                                    title: fullRecipe.title || '',
-                                    ingredients: JSON.stringify(fullRecipe.ingredients || []),
-                                    instructions: JSON.stringify(fullRecipe.instructions || []),
-                                    servings: (fullRecipe.servings || 4).toString(),
-                                    prep_time: (fullRecipe.prep_time || 15).toString(),
-                                    cook_time: (fullRecipe.cook_time || 20).toString(),
-                                    description: fullRecipe.description || '',
-                                    import_method: 'ai'
-                                  });
-                                  navigate(`/create-recipe?${searchParams.toString()}`);
-                                  setIsOpen(false); // Close chat after navigating
-                                }}
+                                 onClick={() => {
+                                   // Navigate to create recipe page with pre-populated data
+                                   const searchParams = new URLSearchParams({
+                                     title: fullRecipe.title || '',
+                                     ingredients: JSON.stringify(fullRecipe.ingredients || []),
+                                     instructions: JSON.stringify(fullRecipe.instructions || []),
+                                     servings: (fullRecipe.servings || 4).toString(),
+                                     prep_time: (fullRecipe.prep_time || 15).toString(),
+                                     cook_time: (fullRecipe.cook_time || 20).toString(),
+                                     description: fullRecipe.description || '',
+                                     meal_types: JSON.stringify(fullRecipe.meal_types || []),
+                                     cuisine_region: fullRecipe.cuisine_region || '',
+                                     complexity_level: fullRecipe.complexity_level || 'beginner',
+                                     diet_lifestyle: JSON.stringify(fullRecipe.diet_lifestyle || []),
+                                     equipment: JSON.stringify(fullRecipe.equipment || []),
+                                     import_method: 'ai',
+                                     tab: 'manual'
+                                   });
+                                   navigate(`/create-recipe?${searchParams.toString()}`);
+                                   setIsOpen(false); // Close chat after navigating
+                                 }}
                                 size="sm"
                                 className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-1"
                               >
-                                <Plus className="h-3 w-3" />
-                                Add Recipe
+                                 <Plus className="h-3 w-3" />
+                                 Save to My Recipes
                               </Button>
                             </div>
                           )}

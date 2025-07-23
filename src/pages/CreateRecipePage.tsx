@@ -17,8 +17,16 @@ export default function CreateRecipePage() {
     prep_time: parseInt(searchParams.get('prep_time') || '15'),
     cook_time: parseInt(searchParams.get('cook_time') || '20'),
     description: searchParams.get('description') || '',
+    meal_types: searchParams.get('meal_types') ? JSON.parse(searchParams.get('meal_types')!) : [],
+    cuisine_region: searchParams.get('cuisine_region') || '',
+    complexity_level: searchParams.get('complexity_level') || 'beginner',
+    diet_lifestyle: searchParams.get('diet_lifestyle') ? JSON.parse(searchParams.get('diet_lifestyle')!) : [],
+    equipment: searchParams.get('equipment') ? JSON.parse(searchParams.get('equipment')!) : [],
     import_method: searchParams.get('import_method') || 'manual'
   };
+
+  // Get the target tab from URL params
+  const targetTab = searchParams.get('tab') || 'url';
 
   // Check if we have AI recipe data
   const hasAiData = aiRecipeData.title && aiRecipeData.ingredients.length > 0;
@@ -28,6 +36,7 @@ export default function CreateRecipePage() {
       <CreateRecipeContainer 
         editingRecipe={hasAiData ? aiRecipeData : undefined}
         isEditMode={false}
+        defaultTab={hasAiData ? targetTab : undefined}
       />
     </div>
   );
