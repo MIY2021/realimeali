@@ -121,107 +121,188 @@ const parseFullRecipe = (content: string): any | null => {
   if (!hasRecipePattern) return null;
 
   try {
-    // Try to extract title with better patterns
+    // Better title extraction for recipe book style names
     let title = 'AI Generated Recipe';
     
-    // Look for explicit recipe names in various patterns
+    // Look for recipe names in various patterns - prioritize simple, clear names
     const titlePatterns = [
-      /(?:recipe for|how to make|perfect|classic|traditional|easy)\s+([^.!?\n]+)/i,
-      /^.*?(?:🍳|👩‍🍳)\s*(.+?)(?:recipe|dinner|dish|meal)/i,
-      /(?:here's|try this|make)\s+([^.!?\n]+?)(?:recipe|dish)/i,
-      /(?:sunday|roast|grilled|baked|pan-seared)\s+([^.!?\n]+?)(?:\.|!|\n)/i
+      // Look for "Sunday Roast Chicken", "Classic Beef Stew", etc.
+      /(?:classic|perfect|traditional|easy|homemade|sunday|roast)\s+([^.!?\n]{10,40}?)(?:\s+(?:recipe|dish|dinner)|\.|!|\n)/i,
+      // Look for direct food names "Chicken Tikka Masala", "Beef Bourguignon"
+      /(?:^|\n)\s*([A-Z][a-z]+(?:\s+[A-Z][a-z]+){1,3})(?:\s*-|\s+is|\s+recipe|\.|!|\n)/,
+      // Look for "Here's a Classic Beef Stew" patterns
+      /here's\s+(?:a\s+)?(?:classic\s+|perfect\s+|easy\s+)?([^.!?\n]{10,40})(?:\s+recipe|\.|!)/i,
+      // Look for cooking method + ingredient patterns
+      /(?:roasted?|grilled?|baked?|pan[- ]?seared?|braised?)\s+([^.!?\n]{8,35})(?:\s+(?:recipe|dish)|\.|!|\n)/i
     ];
     
     for (const pattern of titlePatterns) {
       const match = content.match(pattern);
       if (match && match[1]) {
         title = match[1].trim();
-        // Clean up common words
-        title = title.replace(/\b(recipe|dish|meal|dinner|lunch)\b/gi, '').trim();
-        break;
+        // Clean up common words that shouldn't be in title
+        title = title.replace(/\b(recipe|dish|meal|dinner|lunch|with|that|this)\b/gi, '').trim();
+        // Remove extra spaces
+        title = title.replace(/\s+/g, ' ');
+        if (title.length > 5 && title.length < 50) {
+          break;
+        }
       }
     }
     
-    // Fallback: if no good title found, extract first meaningful phrase
+    // If still generic, try to extract from ingredients (e.g., "Chicken" from chicken recipe)
     if (title === 'AI Generated Recipe') {
-      const firstLine = content.split('\n')[0];
-      const cleanLine = firstLine.replace(/^.*?(?:🍳|👩‍🍳)\s*/, '').trim();
-      if (cleanLine.length > 5 && cleanLine.length < 50) {
-        title = cleanLine.replace(/[.!?]$/, '');
+      const ingredientsSection = content.match(/(?:### Ingredients:|Ingredients:)\s*((?:(?!### |Instructions:|$).)*)/is);
+      if (ingredientsSection) {
+        const mainIngredient = ingredientsSection[1].match(/(?:whole\s+|boneless\s+)?([a-z]+(?:\s+[a-z]+)?)\s*(?:breast|thigh|fillet|steak|chop)/i);
+        if (mainIngredient) {
+          title = `Roasted ${mainIngredient[1].charAt(0).toUpperCase() + mainIngredient[1].slice(1)}`;
+        }
       }
     }
     
-    // Ensure proper capitalization
-    title = title.replace(/\b\w/g, l => l.toUpperCase());
+    // Ensure proper capitalization for recipe book style
+    title = title.replace(/\b\w+/g, word => {
+      // Common small words that should stay lowercase in titles (except at start)
+      const smallWords = ['a', 'an', 'and', 'as', 'at', 'but', 'by', 'for', 'if', 'in', 'of', 'on', 'or', 'the', 'to', 'up', 'via', 'with'];
+      const isFirstWord = title.split(' ')[0].toLowerCase() === word.toLowerCase();
+      
+      if (isFirstWord || !smallWords.includes(word.toLowerCase())) {
+        return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+      }
+      return word.toLowerCase();
+    });
     
     // Extract ingredients section
-    const ingredientsMatch = content.match(/(?:### Ingredients:|Ingredients:)\s*((?:(?!### |Instructions:|$).)*)/is);
+    const ingredientsMatch = content.match(/(?:### Ingredients:|Ingredients:)\s*((?:(?!### |Instructions:|Tips:|$).)*)/is);
     const ingredients = ingredientsMatch ? 
       ingredientsMatch[1]
         .split('\n')
         .map(line => line.replace(/^-\s*/, '').trim())
         .filter(line => line.length > 0 && !line.includes('#')) : [];
 
-    // Extract instructions section
-    const instructionsMatch = content.match(/(?:### Instructions:|Instructions:)\s*((?:(?!### |$).)*)/is);
+    // Extract instructions section with better formatting
+    const instructionsMatch = content.match(/(?:### Instructions:|Instructions:)\s*((?:(?!### |Tips:|$).)*)/is);
     const instructions = instructionsMatch ?
       instructionsMatch[1]
         .split(/\n+/)
-        .map(line => line.replace(/^\d+\.\s*/, '').trim())
-        .filter(line => line.length > 0 && !line.includes('#')) : [];
+        .map(line => {
+          // Remove numbered prefixes (1., 2., etc.)
+          let cleaned = line.replace(/^\d+\.\s*/, '').trim();
+          // Remove any remaining leading dashes or bullets
+          cleaned = cleaned.replace(/^[-•*]\s*/, '').trim();
+          return cleaned;
+        })
+        .filter(line => line.length > 0 && !line.includes('#') && !line.match(/^-+$/)) : [];
+
+    // Extract tips section
+    const tipsMatch = content.match(/(?:### Tips:|Tips:)\s*((?:(?!### |$).)*)/is);
+    let tipsText = '';
+    if (tipsMatch) {
+      tipsText = tipsMatch[1]
+        .split('\n')
+        .map(line => line.replace(/^-\s*/, '').trim())
+        .filter(line => line.length > 0 && !line.includes('#'))
+        .join(' ');
+    }
 
     // Only return if we found meaningful content
     if (ingredients.length > 0 && instructions.length > 0) {
-      // Determine meal types based on content
+      // Determine meal types based on content and title
       const mealTypes = [];
       const lowerContent = content.toLowerCase();
-      if (lowerContent.includes('breakfast') || lowerContent.includes('morning')) mealTypes.push('breakfast');
-      if (lowerContent.includes('lunch') || lowerContent.includes('brunch')) mealTypes.push('lunch');
-      if (lowerContent.includes('dinner') || lowerContent.includes('supper') || lowerContent.includes('evening')) mealTypes.push('dinner');
-      if (lowerContent.includes('snack') || lowerContent.includes('appetizer')) mealTypes.push('snack');
+      const lowerTitle = title.toLowerCase();
+      
+      if (lowerContent.includes('breakfast') || lowerContent.includes('morning') || lowerTitle.includes('breakfast')) {
+        mealTypes.push('breakfast');
+      }
+      if (lowerContent.includes('lunch') || lowerContent.includes('brunch') || lowerTitle.includes('lunch')) {
+        mealTypes.push('lunch');
+      }
+      if (lowerContent.includes('dinner') || lowerContent.includes('supper') || lowerContent.includes('evening') || 
+          lowerTitle.includes('roast') || lowerTitle.includes('dinner')) {
+        mealTypes.push('dinner');
+      }
+      if (lowerContent.includes('snack') || lowerContent.includes('appetizer') || lowerTitle.includes('snack')) {
+        mealTypes.push('snack');
+      }
       
       // Default to dinner if no meal type detected
       if (mealTypes.length === 0) mealTypes.push('dinner');
       
-      // Determine cuisine based on ingredients/content
-      let cuisine = '';
-      if (lowerContent.includes('pasta') || lowerContent.includes('italian') || lowerContent.includes('parmesan')) cuisine = 'Italian';
-      else if (lowerContent.includes('curry') || lowerContent.includes('indian') || lowerContent.includes('garam masala')) cuisine = 'Indian';
-      else if (lowerContent.includes('chinese') || lowerContent.includes('soy sauce') || lowerContent.includes('ginger')) cuisine = 'Chinese';
-      else if (lowerContent.includes('mexican') || lowerContent.includes('cumin') || lowerContent.includes('chili')) cuisine = 'Mexican';
-      else if (lowerContent.includes('french') || lowerContent.includes('herbs de provence')) cuisine = 'French';
-      else if (lowerContent.includes('roast') || lowerContent.includes('british') || lowerContent.includes('yorkshire')) cuisine = 'British';
-      else if (lowerContent.includes('mediterranean') || lowerContent.includes('olive oil') || lowerContent.includes('herbs')) cuisine = 'Mediterranean';
-      else cuisine = 'International';
+      // Determine cuisine based on ingredients/content with better mapping
+      let cuisine = 'British'; // Default for roast dishes
+      if (lowerContent.includes('pasta') || lowerContent.includes('italian') || lowerContent.includes('parmesan') || 
+          lowerContent.includes('basil') || lowerContent.includes('mozzarella')) {
+        cuisine = 'Italian';
+      } else if (lowerContent.includes('curry') || lowerContent.includes('indian') || lowerContent.includes('garam masala') || 
+                 lowerContent.includes('turmeric') || lowerContent.includes('tikka')) {
+        cuisine = 'Indian';
+      } else if (lowerContent.includes('chinese') || lowerContent.includes('soy sauce') || lowerContent.includes('ginger') || 
+                 lowerContent.includes('stir fry')) {
+        cuisine = 'Chinese';
+      } else if (lowerContent.includes('mexican') || lowerContent.includes('cumin') || lowerContent.includes('chili') || 
+                 lowerContent.includes('cilantro') || lowerContent.includes('lime')) {
+        cuisine = 'Mexican';
+      } else if (lowerContent.includes('french') || lowerContent.includes('herbs de provence') || lowerContent.includes('bourguignon')) {
+        cuisine = 'French';
+      } else if (lowerContent.includes('roast') || lowerContent.includes('yorkshire') || lowerContent.includes('sunday') || 
+                 lowerTitle.includes('roast') || lowerTitle.includes('sunday')) {
+        cuisine = 'British';
+      } else if (lowerContent.includes('mediterranean') || lowerContent.includes('olive oil') || lowerContent.includes('herbs') || 
+                 lowerContent.includes('greek') || lowerContent.includes('olives')) {
+        cuisine = 'Mediterranean';
+      } else if (lowerContent.includes('thai') || lowerContent.includes('coconut milk') || lowerContent.includes('fish sauce')) {
+        cuisine = 'Thai';
+      } else {
+        cuisine = 'International';
+      }
       
-      // Determine complexity based on instruction count and cooking methods
+      // Determine complexity based on instruction count, cooking methods, and time
       let complexity = 'beginner';
-      if (instructions.length > 8 || lowerContent.includes('advanced') || lowerContent.includes('complex')) {
+      const complexMethods = ['braise', 'confit', 'sous vide', 'tempering', 'clarify', 'flambé'];
+      const hasComplexMethod = complexMethods.some(method => lowerContent.includes(method));
+      
+      if (instructions.length > 10 || hasComplexMethod || lowerContent.includes('advanced') || lowerContent.includes('complex') || 
+          lowerContent.includes('chef') || lowerContent.includes('professional')) {
         complexity = 'advanced';
-      } else if (instructions.length > 5 || lowerContent.includes('intermediate') || lowerContent.includes('medium')) {
+      } else if (instructions.length > 6 || lowerContent.includes('intermediate') || lowerContent.includes('medium') || 
+                 lowerContent.includes('marinade') || lowerContent.includes('reduce') || lowerContent.includes('sear')) {
         complexity = 'intermediate';
       }
       
-      // Determine diet/lifestyle
+      // Determine diet/lifestyle based on ingredients
       const dietLifestyle = [];
-      if (lowerContent.includes('vegetarian') || (!lowerContent.includes('meat') && !lowerContent.includes('chicken') && !lowerContent.includes('beef'))) {
+      const hasAnimalProducts = lowerContent.includes('meat') || lowerContent.includes('chicken') || 
+                              lowerContent.includes('beef') || lowerContent.includes('pork') || 
+                              lowerContent.includes('fish') || lowerContent.includes('seafood');
+      
+      if (!hasAnimalProducts) {
         dietLifestyle.push('vegetarian');
       }
-      if (lowerContent.includes('vegan')) dietLifestyle.push('vegan');
-      if (lowerContent.includes('gluten-free') || lowerContent.includes('gluten free')) dietLifestyle.push('gluten-free');
-      if (lowerContent.includes('dairy-free') || lowerContent.includes('dairy free')) dietLifestyle.push('dairy-free');
+      if (lowerContent.includes('vegan') || (!hasAnimalProducts && !lowerContent.includes('cheese') && 
+          !lowerContent.includes('butter') && !lowerContent.includes('cream') && !lowerContent.includes('egg'))) {
+        dietLifestyle.push('vegan');
+      }
+      if (lowerContent.includes('gluten-free') || lowerContent.includes('gluten free')) {
+        dietLifestyle.push('gluten-free');
+      }
+      if (lowerContent.includes('dairy-free') || lowerContent.includes('dairy free')) {
+        dietLifestyle.push('dairy-free');
+      }
       
-      // Generate better description
-      const description = `A delicious ${cuisine.toLowerCase()} ${title.toLowerCase()} that's perfect for ${mealTypes.join(' or ')}. This ${complexity} recipe brings together wonderful flavors and is sure to become a favorite!`;
+      // Generate better description that includes tips if available
+      const baseDescription = `A delicious ${cuisine.toLowerCase()} recipe for ${title.toLowerCase()}. This ${complexity} dish is perfect for ${mealTypes.join(' or ')} and brings together wonderful flavors that are sure to impress.`;
+      const finalDescription = tipsText ? `${baseDescription}\n\nTop Tip: ${tipsText}` : baseDescription;
       
       return {
         title,
         ingredients,
         instructions,
         servings: 4,
-        prep_time: 15,
-        cook_time: 30,
-        description,
+        prep_time: 20,
+        cook_time: 45,
+        description: finalDescription,
         meal_types: mealTypes,
         cuisine_region: cuisine,
         complexity_level: complexity,
