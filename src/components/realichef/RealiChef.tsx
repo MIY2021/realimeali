@@ -26,8 +26,8 @@ const renderMarkdown = (text: string) => {
   const headerRegex = /^### (.+)$/gm;
   let processedText = text.replace(headerRegex, '**$1:**');
   
-  // Fix double colons in specific sections (Ingredients::, Instructions::)
-  processedText = processedText.replace(/\*\*(Ingredients|Instructions)::\*\*/g, '**$1:**');
+  // Fix double colons in specific sections (Ingredients::, Instructions::, Tips::, etc.)
+  processedText = processedText.replace(/\*\*(Ingredients|Instructions|Tips|Gravy|Sides)::\*\*/g, '**$1:**');
   
   // Then handle bold text
   const boldRegex = /\*\*(.*?)\*\*/g;
@@ -121,13 +121,38 @@ const parseFullRecipe = (content: string): any | null => {
   if (!hasRecipePattern) return null;
 
   try {
-    // Try to extract title (look for recipe name at the beginning)
-    const titleMatch = content.match(/^.*?(?:is a|recipe|classic|delicious)\s+(.+?)(?:\.|!|\n|Here's)/i) ||
-                      content.match(/^.*?(?:Beans on toast|[A-Z][a-z\s]+(?:recipe|dish))[\s:]/i);
-    let title = titleMatch ? titleMatch[0].replace(/is a|recipe|classic|delicious|Here's|[.:!]/gi, '').trim() : 'AI Generated Recipe';
+    // Try to extract title with better patterns
+    let title = 'AI Generated Recipe';
     
-    // Clean up title
-    title = title.replace(/^.*?(?:🍳|👩‍🍳)\s*/, '').trim();
+    // Look for explicit recipe names in various patterns
+    const titlePatterns = [
+      /(?:recipe for|how to make|perfect|classic|traditional|easy)\s+([^.!?\n]+)/i,
+      /^.*?(?:🍳|👩‍🍳)\s*(.+?)(?:recipe|dinner|dish|meal)/i,
+      /(?:here's|try this|make)\s+([^.!?\n]+?)(?:recipe|dish)/i,
+      /(?:sunday|roast|grilled|baked|pan-seared)\s+([^.!?\n]+?)(?:\.|!|\n)/i
+    ];
+    
+    for (const pattern of titlePatterns) {
+      const match = content.match(pattern);
+      if (match && match[1]) {
+        title = match[1].trim();
+        // Clean up common words
+        title = title.replace(/\b(recipe|dish|meal|dinner|lunch)\b/gi, '').trim();
+        break;
+      }
+    }
+    
+    // Fallback: if no good title found, extract first meaningful phrase
+    if (title === 'AI Generated Recipe') {
+      const firstLine = content.split('\n')[0];
+      const cleanLine = firstLine.replace(/^.*?(?:🍳|👩‍🍳)\s*/, '').trim();
+      if (cleanLine.length > 5 && cleanLine.length < 50) {
+        title = cleanLine.replace(/[.!?]$/, '');
+      }
+    }
+    
+    // Ensure proper capitalization
+    title = title.replace(/\b\w/g, l => l.toUpperCase());
     
     // Extract ingredients section
     const ingredientsMatch = content.match(/(?:### Ingredients:|Ingredients:)\s*((?:(?!### |Instructions:|$).)*)/is);
@@ -147,18 +172,60 @@ const parseFullRecipe = (content: string): any | null => {
 
     // Only return if we found meaningful content
     if (ingredients.length > 0 && instructions.length > 0) {
+      // Determine meal types based on content
+      const mealTypes = [];
+      const lowerContent = content.toLowerCase();
+      if (lowerContent.includes('breakfast') || lowerContent.includes('morning')) mealTypes.push('breakfast');
+      if (lowerContent.includes('lunch') || lowerContent.includes('brunch')) mealTypes.push('lunch');
+      if (lowerContent.includes('dinner') || lowerContent.includes('supper') || lowerContent.includes('evening')) mealTypes.push('dinner');
+      if (lowerContent.includes('snack') || lowerContent.includes('appetizer')) mealTypes.push('snack');
+      
+      // Default to dinner if no meal type detected
+      if (mealTypes.length === 0) mealTypes.push('dinner');
+      
+      // Determine cuisine based on ingredients/content
+      let cuisine = '';
+      if (lowerContent.includes('pasta') || lowerContent.includes('italian') || lowerContent.includes('parmesan')) cuisine = 'Italian';
+      else if (lowerContent.includes('curry') || lowerContent.includes('indian') || lowerContent.includes('garam masala')) cuisine = 'Indian';
+      else if (lowerContent.includes('chinese') || lowerContent.includes('soy sauce') || lowerContent.includes('ginger')) cuisine = 'Chinese';
+      else if (lowerContent.includes('mexican') || lowerContent.includes('cumin') || lowerContent.includes('chili')) cuisine = 'Mexican';
+      else if (lowerContent.includes('french') || lowerContent.includes('herbs de provence')) cuisine = 'French';
+      else if (lowerContent.includes('roast') || lowerContent.includes('british') || lowerContent.includes('yorkshire')) cuisine = 'British';
+      else if (lowerContent.includes('mediterranean') || lowerContent.includes('olive oil') || lowerContent.includes('herbs')) cuisine = 'Mediterranean';
+      else cuisine = 'International';
+      
+      // Determine complexity based on instruction count and cooking methods
+      let complexity = 'beginner';
+      if (instructions.length > 8 || lowerContent.includes('advanced') || lowerContent.includes('complex')) {
+        complexity = 'advanced';
+      } else if (instructions.length > 5 || lowerContent.includes('intermediate') || lowerContent.includes('medium')) {
+        complexity = 'intermediate';
+      }
+      
+      // Determine diet/lifestyle
+      const dietLifestyle = [];
+      if (lowerContent.includes('vegetarian') || (!lowerContent.includes('meat') && !lowerContent.includes('chicken') && !lowerContent.includes('beef'))) {
+        dietLifestyle.push('vegetarian');
+      }
+      if (lowerContent.includes('vegan')) dietLifestyle.push('vegan');
+      if (lowerContent.includes('gluten-free') || lowerContent.includes('gluten free')) dietLifestyle.push('gluten-free');
+      if (lowerContent.includes('dairy-free') || lowerContent.includes('dairy free')) dietLifestyle.push('dairy-free');
+      
+      // Generate better description
+      const description = `A delicious ${cuisine.toLowerCase()} ${title.toLowerCase()} that's perfect for ${mealTypes.join(' or ')}. This ${complexity} recipe brings together wonderful flavors and is sure to become a favorite!`;
+      
       return {
         title,
         ingredients,
         instructions,
         servings: 4,
         prep_time: 15,
-        cook_time: 20,
-        description: `A delicious recipe shared by AI Chef`,
-        meal_types: [],
-        cuisine_region: '',
-        complexity_level: 'beginner',
-        diet_lifestyle: [],
+        cook_time: 30,
+        description,
+        meal_types: mealTypes,
+        cuisine_region: cuisine,
+        complexity_level: complexity,
+        diet_lifestyle: dietLifestyle,
         equipment: [],
         import_method: 'ai' as const
       };
