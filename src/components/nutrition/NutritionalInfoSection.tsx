@@ -58,11 +58,12 @@ export const NutritionalInfoSection = ({ recipe }: NutritionalInfoSectionProps) 
     }
   };
 
+  // Fetch nutrition data on mount to enable ingredient breakdown when expanded
   useEffect(() => {
-    if (isExpanded && !nutritionData) {
+    if (!nutritionData) {
       fetchNutritionData();
     }
-  }, [isExpanded, recipe.id]);
+  }, [recipe.id]);
 
   const portions = recipe.fruit_veg_portions || 0;
   const hasNutritionInfo = portions > 0;
