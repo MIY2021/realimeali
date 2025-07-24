@@ -21,16 +21,29 @@ interface ChatRequest {
   }>;
 }
 
-// Content safety filter
+// Enhanced content safety filter
 const containsInappropriateContent = (message: string): boolean => {
   const inappropriateKeywords = [
     'nazi', 'hitler', 'holocaust', 'genocide', 'fascist', 'white supremacy',
     'hate crime', 'terrorism', 'extremist', 'radical ideology',
-    'ethnic cleansing', 'racial superiority', 'antisemitic', 'antisemitism'
+    'ethnic cleansing', 'racial superiority', 'antisemitic', 'antisemitism',
+    'hack', 'exploit', 'bypass', 'admin', 'root', 'password', 'token', 
+    'authentication', 'authorize', 'privilege', 'escalation', 'injection'
+  ];
+  
+  // Check for suspicious patterns
+  const suspiciousPatterns = [
+    /<script[^>]*>/i,
+    /javascript:/i,
+    /on\w+\s*=/i,
+    /data:text\/html/i,
+    /vbscript:/i,
+    /expression\(/i
   ];
   
   const normalizedMessage = message.toLowerCase();
-  return inappropriateKeywords.some(keyword => normalizedMessage.includes(keyword));
+  return inappropriateKeywords.some(keyword => normalizedMessage.includes(keyword)) ||
+         suspiciousPatterns.some(pattern => pattern.test(message));
 };
 
 const getContextualSystemPrompt = (pageContext: any) => {
@@ -135,7 +148,29 @@ serve(async (req) => {
   }
 
   try {
-    const { message, pageContext, conversationHistory = [] }: ChatRequest = await req.json();
+    const requestBody = await req.json();
+    
+    // Enhanced input validation
+    if (!requestBody || typeof requestBody !== 'object') {
+      throw new Error('Invalid request body');
+    }
+    
+    const { message, pageContext, conversationHistory = [] }: ChatRequest = requestBody;
+    
+    // Validate required fields
+    if (!message || typeof message !== 'string') {
+      throw new Error('Message is required and must be a string');
+    }
+    
+    // Validate message length
+    if (message.length > 5000) {
+      throw new Error('Message too long (max 5000 characters)');
+    }
+    
+    // Validate conversation history length
+    if (conversationHistory && conversationHistory.length > 50) {
+      throw new Error('Conversation history too long (max 50 messages)');
+    }
 
     if (!openAIApiKey) {
       throw new Error('OpenAI API key not configured');

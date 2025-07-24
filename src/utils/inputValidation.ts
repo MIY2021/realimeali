@@ -20,12 +20,21 @@ export const recipeTextSchema = z.string()
   .min(10, 'Recipe text must be at least 10 characters')
   .max(50000, 'Recipe text too long')
   .refine((text) => {
-    // Check for suspicious patterns
+    // Enhanced security checks for suspicious patterns
     const suspiciousPatterns = [
       /<script[^>]*>.*?<\/script>/gi,
       /javascript:/gi,
       /on\w+\s*=/gi,
-      /data:text\/html/gi
+      /data:text\/html/gi,
+      /vbscript:/gi,
+      /expression\(/gi,
+      /<iframe[^>]*>/gi,
+      /<object[^>]*>/gi,
+      /<embed[^>]*>/gi,
+      /<form[^>]*>/gi,
+      /document\.cookie/gi,
+      /localStorage/gi,
+      /sessionStorage/gi
     ];
     return !suspiciousPatterns.some(pattern => pattern.test(text));
   }, 'Text contains suspicious content');

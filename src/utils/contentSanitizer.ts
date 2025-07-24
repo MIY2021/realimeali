@@ -7,12 +7,20 @@ export const sanitizeHtml = (html: string): string => {
   // Remove dangerous attributes
   sanitized = sanitized.replace(/\son\w+\s*=\s*[^>]*/gi, '');
   sanitized = sanitized.replace(/\sjavascript:\s*[^>]*/gi, '');
+  sanitized = sanitized.replace(/\svbscript:\s*[^>]*/gi, '');
+  sanitized = sanitized.replace(/\sexpression\s*\(/gi, '');
   
   // Remove style tags
   sanitized = sanitized.replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '');
   
-  // Remove iframe, object, embed tags
-  sanitized = sanitized.replace(/<(iframe|object|embed)[^>]*>.*?<\/\1>/gi, '');
+  // Remove dangerous tags
+  sanitized = sanitized.replace(/<(iframe|object|embed|form|meta|link)[^>]*>.*?<\/\1>/gi, '');
+  sanitized = sanitized.replace(/<(iframe|object|embed|form|meta|link)[^>]*>/gi, '');
+  
+  // Remove references to sensitive browser APIs
+  sanitized = sanitized.replace(/document\.cookie/gi, '');
+  sanitized = sanitized.replace(/localStorage/gi, '');
+  sanitized = sanitized.replace(/sessionStorage/gi, '');
   
   return sanitized.trim();
 };
@@ -21,7 +29,12 @@ export const sanitizeText = (text: string): string => {
   // Remove potential XSS patterns from plain text
   let sanitized = text.replace(/<script[^>]*>.*?<\/script>/gi, '');
   sanitized = sanitized.replace(/javascript:/gi, '');
+  sanitized = sanitized.replace(/vbscript:/gi, '');
   sanitized = sanitized.replace(/on\w+\s*=/gi, '');
+  sanitized = sanitized.replace(/expression\(/gi, '');
+  sanitized = sanitized.replace(/document\.cookie/gi, '');
+  sanitized = sanitized.replace(/localStorage/gi, '');
+  sanitized = sanitized.replace(/sessionStorage/gi, '');
   
   // Normalize whitespace
   sanitized = sanitized.replace(/\s+/g, ' ').trim();

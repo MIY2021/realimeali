@@ -14,8 +14,8 @@ export function useSecureAuth() {
   const [securityMetrics, setSecurityMetrics] = useState<SecurityMetrics | null>(null);
   const [sessionTimeout, setSessionTimeout] = useState<NodeJS.Timeout | null>(null);
 
-  // Session timeout (24 hours)
-  const SESSION_TIMEOUT = 24 * 60 * 60 * 1000;
+  // Session timeout (8 hours for better security)
+  const SESSION_TIMEOUT = 8 * 60 * 60 * 1000;
   
   // Suspicious activity detection
   const MAX_LOGIN_ATTEMPTS = 5;
