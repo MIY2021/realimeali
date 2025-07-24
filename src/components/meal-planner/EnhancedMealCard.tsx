@@ -8,6 +8,7 @@ import { DraggableProvidedDragHandleProps } from "react-beautiful-dnd";
 import { useMealPlan } from "@/contexts/MealPlanContext";
 import { Link } from "react-router-dom";
 import { generateSlug } from "@/utils/slugUtils";
+import { FruitVegIndicator } from "@/components/nutrition/FruitVegIndicator";
 
 interface EnhancedMealCardProps {
   mealPlan: MealPlan;
@@ -274,27 +275,38 @@ export function EnhancedMealCard({
 
             {/* Bottom Controls */}
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-gray-600">Servings:</span>
-                <div className="flex items-center gap-1">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="h-6 w-6 p-0 rounded-full"
-                    onClick={handleServingsDecrease}
-                  >
-                    <Minus className="h-3 w-3" />
-                  </Button>
-                  <span className="text-sm font-medium w-6 text-center">{displayServings}</span>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="h-6 w-6 p-0 rounded-full"
-                    onClick={handleServingsIncrease}
-                  >
-                    <Plus className="h-3 w-3" />
-                  </Button>
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-gray-600">Servings:</span>
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-6 w-6 p-0 rounded-full"
+                      onClick={handleServingsDecrease}
+                    >
+                      <Minus className="h-3 w-3" />
+                    </Button>
+                    <span className="text-sm font-medium w-6 text-center">{displayServings}</span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-6 w-6 p-0 rounded-full"
+                      onClick={handleServingsIncrease}
+                    >
+                      <Plus className="h-3 w-3" />
+                    </Button>
+                  </div>
                 </div>
+                
+                {/* Nutrition Indicator */}
+                {recipe.fruit_veg_portions && recipe.fruit_veg_portions > 0 && (
+                  <FruitVegIndicator 
+                    portions={recipe.fruit_veg_portions} 
+                    size="small"
+                    showLabel={false}
+                  />
+                )}
               </div>
 
               <div className="flex items-center gap-2">

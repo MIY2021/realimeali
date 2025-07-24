@@ -23,6 +23,7 @@ export interface Recipe {
   has_cooked?: boolean; // New field to track if household has cooked this recipe
   source_url?: string; // URL the recipe was imported from
   import_method?: string; // How the recipe was created
+  fruit_veg_portions?: number; // Estimated 5-a-day portions per serving
 }
 
 export interface RecipeNote {
