@@ -98,11 +98,6 @@ export const NutritionalInfoSection = ({ recipe }: NutritionalInfoSectionProps) 
                 )}
               </div>
             </div>
-            {!isExpanded && hasNutritionInfo && (
-              <p className="text-gray-700 text-sm ml-8">
-                Estimated fruit & vegetable portions per serving
-              </p>
-            )}
           </div>
         </div>
 
@@ -110,16 +105,14 @@ export const NutritionalInfoSection = ({ recipe }: NutritionalInfoSectionProps) 
           <div className="mt-4 space-y-4">
             {hasNutritionInfo ? (
               <div className="space-y-4">
-                {/* Main indicator */}
-                <div className="flex items-center gap-3">
-                  <FruitVegIndicator 
-                    portions={portions} 
-                    size="medium"
-                    showLabel={true}
-                  />
-                  <div className="text-sm text-muted-foreground">
-                    Estimated per serving
-                  </div>
+                {/* Header */}
+                <div>
+                  <p className="text-gray-700 text-sm font-medium">
+                    Estimated fruit & vegetable portions per serving
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Total: {portions} out of 5 recommended daily portions
+                  </p>
                 </div>
 
                 {/* Breakdown */}

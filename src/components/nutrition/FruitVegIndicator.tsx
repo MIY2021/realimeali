@@ -17,6 +17,7 @@ export const FruitVegIndicator: React.FC<FruitVegIndicatorProps> = ({
   const maxPortions = 5;
   const filledCircles = Math.floor(portions);
   const partialCircle = portions - filledCircles;
+  const hasPartialCircle = partialCircle > 0;
   
   const sizeConfig = {
     tiny: { 
@@ -63,20 +64,30 @@ export const FruitVegIndicator: React.FC<FruitVegIndicatorProps> = ({
       <div className={cn("flex items-center", config.gap)}>
         {Array.from({ length: maxPortions }, (_, index) => {
           const isFilled = index < filledCircles;
-          const isPartial = index === filledCircles && partialCircle > 0;
+          const isPartial = index === filledCircles && hasPartialCircle;
           
           return (
             <div
               key={index}
               className={cn(
-                "rounded-full transition-all duration-300",
+                "rounded-full border-2 transition-all duration-300 relative overflow-hidden",
                 config.circle
               )}
               style={{
-                backgroundColor: isFilled || isPartial ? activeColor : inactiveColor,
-                opacity: isPartial ? 0.5 + (partialCircle * 0.5) : 1
+                borderColor: isFilled || isPartial ? activeColor : inactiveColor,
+                backgroundColor: isFilled ? activeColor : 'transparent',
               }}
-            />
+            >
+              {isPartial && (
+                <div
+                  className="absolute top-0 left-0 h-full transition-all duration-300"
+                  style={{
+                    width: `${partialCircle * 100}%`,
+                    backgroundColor: activeColor,
+                  }}
+                />
+              )}
+            </div>
           );
         })}
       </div>
