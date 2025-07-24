@@ -5,6 +5,7 @@ import { Trash2 } from "lucide-react";
 import { RecipeImage } from "@/components/ui/recipe-image";
 import { FruitVegIndicator } from "@/components/nutrition/FruitVegIndicator";
 
+
 interface MealCardProps {
   recipe: Recipe;
   onRemove: () => void;

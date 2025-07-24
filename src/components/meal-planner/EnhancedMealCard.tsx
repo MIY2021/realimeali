@@ -259,6 +259,17 @@ export function EnhancedMealCard({
                     {recipe.title}
                   </h4>
                 </Link>
+                
+                {/* Nutrition indicator for recipes */}
+                {recipe && recipe.fruit_veg_portions && recipe.fruit_veg_portions > 0 && (
+                  <div className="mt-1">
+                    <FruitVegIndicator 
+                      portions={recipe.fruit_veg_portions} 
+                      size="tiny"
+                      showLabel={false}
+                    />
+                  </div>
+                )}
                 {isLunchLeftover && parentRecipe && (
                   <p className="text-xs text-gray-500 mt-1">
                     Leftover
@@ -298,15 +309,6 @@ export function EnhancedMealCard({
                     </Button>
                   </div>
                 </div>
-                
-                {/* Nutrition Indicator */}
-                {recipe.fruit_veg_portions && recipe.fruit_veg_portions > 0 && (
-                  <FruitVegIndicator 
-                    portions={recipe.fruit_veg_portions} 
-                    size="small"
-                    showLabel={false}
-                  />
-                )}
               </div>
 
               <div className="flex items-center gap-2">

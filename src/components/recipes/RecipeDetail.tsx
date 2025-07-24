@@ -9,8 +9,7 @@ import { RecipeFooter } from "./RecipeFooter";
 import { RecipeImageEditor } from "./RecipeImageEditor";
 import { RecipeNotesSection } from "./RecipeNotesSection";
 import { RecipeClassificationSummary } from "./RecipeClassificationSummary";
-import { FruitVegIndicator } from "@/components/nutrition/FruitVegIndicator";
-import { useFruitVegEstimation } from "@/hooks/useFruitVegEstimation";
+import { NutritionalInfoSection } from "@/components/nutrition/NutritionalInfoSection";
 import { Lightbulb } from "lucide-react";
 import { RecipeScalingService } from "@/utils/recipeScaling";
 
@@ -34,9 +33,6 @@ export const RecipeDetail = ({
   const [currentServings, setCurrentServings] = useState(recipe.servings);
   const [scaledIngredients, setScaledIngredients] = useState<string[]>(recipe.ingredients);
   const [showImageEditor, setShowImageEditor] = useState(false);
-  const [fruitVegPortions, setFruitVegPortions] = useState<number | null>(recipe.fruit_veg_portions || null);
-  
-  const { estimatePortions, isLoading: isEstimating } = useFruitVegEstimation();
 
   const handleServingsChange = (newServings: number) => {
     setCurrentServings(newServings);
@@ -59,16 +55,6 @@ export const RecipeDetail = ({
 
   const isScaled = currentServings !== recipe.servings;
 
-  // Estimate fruit/veg portions if not already available
-  useEffect(() => {
-    if (fruitVegPortions === null && recipe.ingredients?.length > 0) {
-      estimatePortions(recipe).then(portions => {
-        if (portions !== null) {
-          setFruitVegPortions(portions);
-        }
-      });
-    }
-  }, [recipe, estimatePortions, fruitVegPortions]);
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -88,19 +74,6 @@ export const RecipeDetail = ({
         currentServings={currentServings}
       />
 
-      {/* Nutrition Indicator */}
-      {fruitVegPortions !== null && fruitVegPortions > 0 && (
-        <div className="mb-6 px-2">
-          <FruitVegIndicator 
-            portions={fruitVegPortions} 
-            size="medium"
-            showLabel={true}
-          />
-          <p className="text-xs text-muted-foreground mt-1">
-            Estimated fruit & vegetable portions per serving
-          </p>
-        </div>
-      )}
 
       {/* Description */}
       {recipe.description && (
@@ -128,6 +101,11 @@ export const RecipeDetail = ({
           </div>
         </div>
       )}
+
+      {/* Nutritional Information */}
+      <div className="mb-6">
+        <NutritionalInfoSection recipe={recipe} />
+      </div>
 
       {/* Recipe Notes */}
       <div className="mb-6">
