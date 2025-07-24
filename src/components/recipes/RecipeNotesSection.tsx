@@ -146,93 +146,95 @@ export const RecipeNotesSection = ({ recipeId }: RecipeNotesSectionProps) => {
   };
 
   return (
-    <Card className="border-sage/20">
-      <CardHeader 
-        className="pb-2 cursor-pointer hover:bg-gray-50/50 transition-colors"
-        onClick={() => !isEditing && setIsExpanded(!isExpanded)}
-      >
-        <CardTitle className="text-lg flex items-center justify-between h-auto">
-          <div className="flex items-center gap-2">
+    <div className="mb-6">
+      <div className="bg-white border border-sage/20 rounded-lg p-4">
+        <div 
+          className="flex items-start gap-3 cursor-pointer hover:bg-gray-50/50 transition-colors rounded-lg p-2 -m-2"
+          onClick={() => !isEditing && setIsExpanded(!isExpanded)}
+        >
+          <div className="flex-shrink-0 mt-0.5">
             <FileText className="h-5 w-5 text-sage" />
-            <span className="leading-none">Recipe Notes</span>
-            {note && !isExpanded && (
-              <Badge variant="secondary" className="text-xs">
-                Has notes
-              </Badge>
+          </div>
+          <div className="flex-1">
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold text-sage-800 mb-1">Recipe Notes</h3>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (isEditing) {
+                    cancelEditing();
+                  } else {
+                    startEditing();
+                  }
+                }}
+                className="text-sage hover:text-sage-600 h-auto p-1"
+              >
+                {isEditing ? <X className="h-4 w-4" /> : (note ? <Edit className="h-4 w-4" /> : <Plus className="h-4 w-4" />)}
+              </Button>
+            </div>
+            {!isExpanded && !isEditing && note && (
+              <p className="text-gray-700 text-sm ml-8">
+                Household notes available
+              </p>
             )}
           </div>
-          {(
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                if (isEditing) {
-                  cancelEditing();
-                } else {
-                  startEditing();
-                }
-              }}
-              className="text-sage hover:text-sage-600"
-            >
-              {isEditing ? <X className="h-4 w-4" /> : (note ? <Edit className="h-4 w-4" /> : <Plus className="h-4 w-4" />)}
-            </Button>
-          )}
-        </CardTitle>
-      </CardHeader>
+        </div>
 
-      {(isExpanded || isEditing) && (
-        <CardContent className="pt-0 px-4 pb-3">
-          {isEditing ? (
-            <div className="space-y-3">
-              <Textarea
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                placeholder="Add notes about this recipe for your household..."
-                className="min-h-24 resize-none"
-                rows={4}
-              />
-              <div className="flex gap-2">
-                <Button
-                  onClick={saveNote}
-                  disabled={isLoading || !content.trim()}
-                  size="sm"
-                  className="bg-sage hover:bg-sage-600"
-                >
-                  <Save className="h-4 w-4 mr-1" />
-                  Save
-                </Button>
-                <Button
-                  onClick={cancelEditing}
-                  variant="outline"
-                  size="sm"
-                >
-                  <X className="h-4 w-4 mr-1" />
-                  Cancel
-                </Button>
+        {(isExpanded || isEditing) && (
+          <div className="mt-4 space-y-3">
+            {isEditing ? (
+              <div className="space-y-3">
+                <Textarea
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  placeholder="Add notes about this recipe for your household..."
+                  className="min-h-24 resize-none"
+                  rows={4}
+                />
+                <div className="flex gap-2">
+                  <Button
+                    onClick={saveNote}
+                    disabled={isLoading || !content.trim()}
+                    size="sm"
+                    className="bg-sage hover:bg-sage-600"
+                  >
+                    <Save className="h-4 w-4 mr-1" />
+                    Save
+                  </Button>
+                  <Button
+                    onClick={cancelEditing}
+                    variant="outline"
+                    size="sm"
+                  >
+                    <X className="h-4 w-4 mr-1" />
+                    Cancel
+                  </Button>
+                </div>
               </div>
-            </div>
-          ) : note ? (
-            <div className="space-y-3">
-              <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
-                {note.content}
+            ) : note ? (
+              <div className="space-y-3">
+                <div className="text-sm text-gray-700 leading-relaxed bg-sage/5 border border-sage/10 p-3 rounded-lg whitespace-pre-wrap">
+                  {note.content}
+                </div>
+                <div className="flex items-center justify-between text-xs text-gray-500">
+                  <span>
+                    By {(note as any)?.profiles?.full_name || (note as any)?.profiles?.email || 'Unknown'}
+                  </span>
+                  <span>
+                    {note.updated_at !== note.created_at ? 'Updated' : 'Created'} {formatDate(note.updated_at)}
+                  </span>
+                </div>
+              </div>
+            ) : (
+              <p className="text-gray-500 text-sm">
+                No notes yet. Click the + button to add notes about this recipe for your household.
               </p>
-              <div className="flex items-center justify-between text-xs text-gray-500">
-                <span>
-                  By {(note as any)?.profiles?.full_name || (note as any)?.profiles?.email || 'Unknown'}
-                </span>
-                <span>
-                  {note.updated_at !== note.created_at ? 'Updated' : 'Created'} {formatDate(note.updated_at)}
-                </span>
-              </div>
-            </div>
-          ) : (
-            <p className="text-gray-500 text-sm">
-              No notes yet. Click the + button to add notes about this recipe for your household.
-            </p>
-          )}
-        </CardContent>
-      )}
-    </Card>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
   );
 };
