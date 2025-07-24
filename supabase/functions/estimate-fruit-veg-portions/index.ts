@@ -61,14 +61,23 @@ Important guidelines:
 Ingredients:
 ${ingredientsList}
 
-Please provide:
-1. A breakdown of which ingredients count toward 5-a-day
-2. Estimated weight of fruit/veg per serving in grams
-3. Final estimate rounded to nearest 0.5 portion (e.g., 1.5, 2.0, 3.5)
+Please provide a detailed analysis with:
+1. A list of which specific ingredients count toward 5-a-day and their estimated portions per serving
+2. A brief summary explanation
+3. Estimated total weight of fruit/veg per serving in grams
+4. Final estimate rounded to nearest 0.5 portion (e.g., 1.5, 2.0, 3.5)
 
 Respond in JSON format:
 {
-  "breakdown": "explanation of calculation",
+  "ingredientBreakdown": [
+    {
+      "ingredient": "ingredient name",
+      "estimatedGrams": number,
+      "portions": number,
+      "reasoning": "why this counts as X portions"
+    }
+  ],
+  "summary": "brief explanation of total calculation",
   "totalGrams": number,
   "portions": number
 }`;
@@ -119,7 +128,8 @@ Respond in JSON format:
 
     return new Response(JSON.stringify({ 
       portions,
-      breakdown: result.breakdown,
+      breakdown: result.summary || result.breakdown,
+      ingredientBreakdown: result.ingredientBreakdown || [],
       totalGrams: result.totalGrams,
       cached: false 
     }), {

@@ -13,6 +13,12 @@ interface NutritionalInfoSectionProps {
 interface EstimationResult {
   portions: number;
   breakdown?: string;
+  ingredientBreakdown?: Array<{
+    ingredient: string;
+    estimatedGrams: number;
+    portions: number;
+    reasoning: string;
+  }>;
   totalGrams?: number;
   cached: boolean;
 }
@@ -76,11 +82,14 @@ export const NutritionalInfoSection = ({ recipe }: NutritionalInfoSectionProps) 
               <h3 className="font-semibold text-sage-800 mb-1">Nutritional Information</h3>
               <div className="flex items-center gap-2">
                 {hasNutritionInfo && (
-                  <FruitVegIndicator 
-                    portions={portions} 
-                    size="small"
-                    showLabel={false}
-                  />
+                  <div className="flex items-center gap-2">
+                    <FruitVegIndicator 
+                      portions={portions} 
+                      size="small"
+                      showLabel={false}
+                    />
+                    <span className="text-sm font-medium text-sage-700">{portions}/{5}</span>
+                  </div>
                 )}
                 {isExpanded ? (
                   <ChevronDown className="h-4 w-4 text-muted-foreground" />
@@ -114,9 +123,32 @@ export const NutritionalInfoSection = ({ recipe }: NutritionalInfoSectionProps) 
                 </div>
 
                 {/* Breakdown */}
+                {nutritionData?.ingredientBreakdown && nutritionData.ingredientBreakdown.length > 0 && (
+                  <div className="space-y-3">
+                    <h4 className="font-medium text-sm text-sage-800">Fruit & vegetable breakdown per serving:</h4>
+                    <div className="space-y-2">
+                      {nutritionData.ingredientBreakdown.map((item, index) => (
+                        <div key={index} className="bg-sage/5 border border-sage/10 p-3 rounded-lg">
+                          <div className="flex justify-between items-start gap-2">
+                            <div className="flex-1">
+                              <p className="font-medium text-sm text-sage-800">{item.ingredient}</p>
+                              <p className="text-xs text-gray-600 mt-1">{item.reasoning}</p>
+                            </div>
+                            <div className="text-right flex-shrink-0">
+                              <p className="text-sm font-medium text-sage-700">{item.portions} portions</p>
+                              <p className="text-xs text-gray-500">{item.estimatedGrams}g</p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Summary */}
                 {nutritionData?.breakdown && (
                   <div className="space-y-2">
-                    <h4 className="font-medium text-sm text-sage-800">How this was calculated:</h4>
+                    <h4 className="font-medium text-sm text-sage-800">Summary:</h4>
                     <div className="text-sm text-gray-700 leading-relaxed bg-sage/5 border border-sage/10 p-3 rounded-lg">
                       {nutritionData.breakdown}
                     </div>

@@ -82,7 +82,7 @@ export const FruitVegIndicator: React.FC<FruitVegIndicatorProps> = ({
       </div>
       
       {showLabel && (
-        <span className={cn("font-medium ml-2", config.text)} style={{ color: activeColor }}>
+        <span className={cn("font-medium", config.text)} style={{ color: activeColor }}>
           {portions}/{maxPortions}
         </span>
       )}
