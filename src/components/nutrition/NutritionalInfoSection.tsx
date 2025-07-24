@@ -5,6 +5,7 @@ import { Heart, ChevronDown, ChevronRight } from "lucide-react";
 import { Recipe } from "@/types";
 import { FruitVegIndicator } from "./FruitVegIndicator";
 import { useFruitVegEstimation } from "@/hooks/useFruitVegEstimation";
+import { supabase } from "@/integrations/supabase/client";
 
 interface NutritionalInfoSectionProps {
   recipe: Recipe;
@@ -35,18 +36,14 @@ export const NutritionalInfoSection = ({ recipe }: NutritionalInfoSectionProps) 
     
     setIsLoading(true);
     try {
-      // Get detailed estimation data
-      const { data, error } = await fetch('/functions/v1/estimate-fruit-veg-portions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      // Get detailed estimation data using Supabase client
+      const { data, error } = await supabase.functions.invoke('estimate-fruit-veg-portions', {
+        body: {
           recipeId: recipe.id,
           ingredients: recipe.ingredients,
           servings: recipe.servings || 1
-        })
-      }).then(res => res.json());
+        }
+      });
 
       if (!error && data) {
         setNutritionData(data);
@@ -80,7 +77,12 @@ export const NutritionalInfoSection = ({ recipe }: NutritionalInfoSectionProps) 
           </div>
           <div className="flex-1">
             <div className="flex items-center justify-between">
-              <h3 className="font-semibold text-sage-800 mb-1">Nutritional Information</h3>
+              <div>
+                <h3 className="font-semibold text-sage-800 mb-1">Nutritional Information</h3>
+                {hasNutritionInfo && !isExpanded && (
+                  <p className="text-xs text-gray-600">Estimated fruit & vegetable portions per serving</p>
+                )}
+              </div>
               <div className="flex items-center gap-2">
                 {hasNutritionInfo && (
                   <div className="flex items-center gap-2">
@@ -108,10 +110,7 @@ export const NutritionalInfoSection = ({ recipe }: NutritionalInfoSectionProps) 
               <div className="space-y-4">
                 {/* Header */}
                 <div>
-                  <p className="text-gray-700 text-sm font-medium">
-                    Estimated fruit & vegetable portions per serving
-                  </p>
-                  <p className="text-sm text-muted-foreground mt-1">
+                  <p className="text-sm text-muted-foreground">
                     Total: {portions} out of 5 recommended daily portions
                   </p>
                 </div>
