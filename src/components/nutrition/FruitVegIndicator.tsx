@@ -84,6 +84,8 @@ export const FruitVegIndicator: React.FC<FruitVegIndicatorProps> = ({
                   style={{
                     width: `${partialCircle * 100}%`,
                     backgroundColor: activeColor,
+                    borderRight: size === 'tiny' || size === 'small' ? `1px solid ${activeColor}` : 'none',
+                    boxShadow: size === 'tiny' || size === 'small' ? `inset -1px 0 0 ${activeColor}` : 'none',
                   }}
                 />
               )}
