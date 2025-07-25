@@ -97,12 +97,16 @@ export const NutritionalInfoSection = ({ recipe }: NutritionalInfoSectionProps) 
                   )}
                 </div>
               </div>
-              {hasNutritionInfo && !isExpanded && (
-                <p className="text-xs text-gray-600">Estimated fruit & vegetable portions per serving</p>
-              )}
             </div>
           </div>
         </div>
+        
+        {hasNutritionInfo && !isExpanded && (
+          <div className="flex items-start gap-3 mt-2">
+            <div className="flex-shrink-0 w-5"></div>
+            <p className="text-xs text-gray-600">Estimated fruit & vegetable portions per serving</p>
+          </div>
+        )}
 
         {isExpanded && (
           <div className="mt-4 space-y-4">
