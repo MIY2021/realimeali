@@ -44,15 +44,10 @@ export const FruitVegIndicator: React.FC<FruitVegIndicatorProps> = ({
 
   const config = sizeConfig[size];
   
-  // Color based on how close to 5-a-day goal
+  // Always use green for active circles
   const getColor = (isFilled: boolean, isPartial: boolean = false) => {
     if (!isFilled && !isPartial) return 'hsl(var(--muted))';
-    
-    const percentage = (portions / maxPortions) * 100;
-    if (percentage >= 100) return 'hsl(var(--primary))'; // Full goal achieved
-    if (percentage >= 60) return 'hsl(142, 76%, 36%)'; // Good progress (green)
-    if (percentage >= 40) return 'hsl(45, 93%, 47%)'; // Moderate (orange)
-    return 'hsl(220, 13%, 69%)'; // Low (muted)
+    return 'hsl(142, 76%, 36%)'; // Always green
   };
 
   const activeColor = getColor(true);
