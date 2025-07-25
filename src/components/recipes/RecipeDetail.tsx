@@ -10,7 +10,9 @@ import { RecipeImageEditor } from "./RecipeImageEditor";
 import { RecipeNotesSection } from "./RecipeNotesSection";
 import { RecipeClassificationSummary } from "./RecipeClassificationSummary";
 import { NutritionalInfoSection } from "@/components/nutrition/NutritionalInfoSection";
-import { Lightbulb } from "lucide-react";
+import { Lightbulb, Users, RotateCcw } from "lucide-react";
+import { ServingsSelector } from "@/components/meal-planner/ServingsSelector";
+import { Button } from "@/components/ui/button";
 import { RecipeScalingService } from "@/utils/recipeScaling";
 
 interface RecipeDetailProps {
@@ -34,14 +36,38 @@ export const RecipeDetail = ({
   const [scaledIngredients, setScaledIngredients] = useState<string[]>(recipe.ingredients);
   const [showImageEditor, setShowImageEditor] = useState(false);
 
+  // Load saved servings from localStorage on mount
+  useEffect(() => {
+    const savedServings = localStorage.getItem(`recipe-servings-${recipe.id}`);
+    if (savedServings) {
+      const servings = parseInt(savedServings, 10);
+      if (servings > 0) {
+        setCurrentServings(servings);
+        const scaled = RecipeScalingService.scaleIngredients(
+          recipe.ingredients, 
+          recipe.servings, 
+          servings
+        );
+        setScaledIngredients(scaled);
+      }
+    }
+  }, [recipe.id, recipe.ingredients, recipe.servings]);
+
   const handleServingsChange = (newServings: number) => {
     setCurrentServings(newServings);
+    localStorage.setItem(`recipe-servings-${recipe.id}`, newServings.toString());
     const scaled = RecipeScalingService.scaleIngredients(
       recipe.ingredients, 
       recipe.servings, 
       newServings
     );
     setScaledIngredients(scaled);
+  };
+
+  const handleServingsReset = () => {
+    setCurrentServings(recipe.servings);
+    localStorage.removeItem(`recipe-servings-${recipe.id}`);
+    setScaledIngredients(recipe.ingredients);
   };
 
   const handleAddToMealPlan = () => {
@@ -67,13 +93,6 @@ export const RecipeDetail = ({
         isOwner={isOwner}
         onAddToMealPlan={handleAddToMealPlan}
       />
-
-      <RecipeMetaInfo 
-        recipe={recipe} 
-        onServingsChange={handleServingsChange}
-        currentServings={currentServings}
-      />
-
 
       {/* Description */}
       {recipe.description && (
@@ -112,7 +131,32 @@ export const RecipeDetail = ({
         <RecipeNotesSection recipeId={recipe.id} />
       </div>
 
-      <RecipeTabContent 
+      {/* Servings Controller */}
+      <div className="mb-4 px-2">
+        <div className="flex items-center gap-2">
+          <Users className="h-5 w-5 text-terracotta" />
+          <span className="text-navy font-medium">Servings:</span>
+          <ServingsSelector
+            currentServings={currentServings}
+            onServingsChange={handleServingsChange}
+            minServings={1}
+            maxServings={20}
+          />
+          {isScaled && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleServingsReset}
+              className="h-6 px-2 text-xs text-gray-500 hover:text-gray-700 flex-shrink-0"
+              title="Reset to original servings"
+            >
+              <RotateCcw className="h-3 w-3" />
+            </Button>
+          )}
+        </div>
+      </div>
+
+      <RecipeTabContent
         recipe={recipe} 
         scaledIngredients={scaledIngredients}
         isScaled={isScaled}
