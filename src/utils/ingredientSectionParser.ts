@@ -48,10 +48,12 @@ export class IngredientSectionParser {
   ];
 
   static parseIngredients(ingredients: string[]): IngredientSection[] {
-    console.log("🔍 IngredientSectionParser.parseIngredients called with:", ingredients);
+    // Reduce excessive logging for production use
+    if (process.env.NODE_ENV === 'development') {
+      console.log("🔍 IngredientSectionParser.parseIngredients called with:", ingredients.length, "ingredients");
+    }
     
     if (!ingredients || ingredients.length === 0) {
-      console.log("🔍 No ingredients provided, returning empty section");
       return [{ ingredients: [] }];
     }
 
@@ -62,49 +64,36 @@ export class IngredientSectionParser {
       const ingredient = ingredients[i];
       const trimmed = ingredient.trim();
       
-      console.log(`🔍 Processing ingredient ${i}: "${trimmed}"`);
-      
-      if (!trimmed) {
-        console.log(`🔍 Skipping empty ingredient at index ${i}`);
-        continue;
-      }
+      if (!trimmed) continue;
       
       // Check if this ingredient is actually a section header
       const isHeader = this.isLikelyHeader(trimmed);
-      console.log(`🔍 Is "${trimmed}" a header? ${isHeader}`);
       
       if (isHeader) {
         // Save current section if it has ingredients
         if (currentSection.ingredients.length > 0) {
-          console.log(`🔍 Saving previous section with ${currentSection.ingredients.length} ingredients`);
           sections.push(currentSection);
         }
         
         // Start new section
         const cleanHeader = trimmed.replace(/(:|\.)$/, ''); // Remove trailing colon or period
-        console.log(`🔍 Starting new section: "${cleanHeader}"`);
         currentSection = {
           header: cleanHeader,
           ingredients: []
         };
       } else {
         // Add to current section
-        console.log(`🔍 Adding "${ingredient}" to current section`);
         currentSection.ingredients.push(ingredient);
       }
     }
 
     // Add the final section
     if (currentSection.ingredients.length > 0 || currentSection.header) {
-      console.log(`🔍 Adding final section with ${currentSection.ingredients.length} ingredients`);
       sections.push(currentSection);
     }
 
-    console.log(`🔍 Final result: ${sections.length} sections`, sections);
-
     // If no sections were found, return all ingredients as one section
     if (sections.length === 0) {
-      console.log("🔍 No sections found, returning all ingredients as single section");
       return [{ ingredients }];
     }
 
@@ -114,25 +103,19 @@ export class IngredientSectionParser {
   private static isLikelyHeader(text: string): boolean {
     const lowerText = text.toLowerCase().trim();
     
-    // More flexible pattern matching
-    const matchesPattern = this.sectionPatterns.some(pattern => {
-      const matches = pattern.test(text);
-      if (matches) {
-        console.log(`🔍 "${text}" matches pattern: ${pattern}`);
-      }
-      return matches;
-    });
+    // PRIORITY: If it clearly looks like an ingredient with quantity, it's NOT a header
+    if (this.looksLikeIngredient(text)) {
+      console.log(`🔍 "${text}" clearly looks like an ingredient, not a header`);
+      return false;
+    }
     
-    if (matchesPattern) return true;
-
-    // Enhanced colon detection
+    // Enhanced colon detection - but only for non-ingredients
     if (text.endsWith(':')) {
-      console.log(`🔍 "${text}" ends with colon, checking if it's an ingredient...`);
+      console.log(`🔍 "${text}" ends with colon, checking if it's valid header...`);
       
-      // More precise ingredient detection
+      // If it has clear measurements, it's definitely an ingredient
       const hasNumberAndUnit = /\d+\s*(cup|cups|tbsp|tsp|tablespoon|tablespoons|teaspoon|teaspoons|oz|ounce|ounces|lb|pound|pounds|kg|kilogram|kilograms|g|gram|grams|ml|milliliter|milliliters|l|liter|liters|inch|inches|clove|cloves|piece|pieces|slice|slices|can|cans|jar|jars|bottle|bottles|packet|packets)/i.test(text);
       
-      // If it has clear measurements, it's probably an ingredient
       if (hasNumberAndUnit) {
         console.log(`🔍 "${text}" has measurements, treating as ingredient`);
         return false;
@@ -145,21 +128,26 @@ export class IngredientSectionParser {
       }
     }
 
-    // Enhanced header keywords detection
-    const headerKeywords = [
-      'for the', 'for making', 'sauce', 'marinade', 'dressing', 'topping', 
-      'garnish', 'filling', 'base', 'mixture', 'preparation', 'assembly',
-      'ingredients', 'components', 'paste', 'seasoning', 'spice mix', 'gravy',
-      'vegetables', 'meat', 'spices', 'herbs', 'optional', 'to serve'
+    // Exact pattern matching for specific header patterns (but exclude ingredients)
+    const exactPatterns = [
+      /^(for the .+):?$/i,
+      /^(marinade):?$/i,
+      /^(dressing):?$/i,
+      /^(topping):?$/i,
+      /^(filling):?$/i,
+      /^(base):?$/i,
+      /^(assembly):?$/i,
+      /^(to serve):?$/i,
+      /^(optional):?$/i,
+      /^(gravy):?$/i,
+      /^(preparation|prep):?$/i,
+      /^(method):?$/i,
+      /^(.+ ingredients?):?$/i,
     ];
     
-    const containsHeaderKeyword = headerKeywords.some(keyword => 
-      lowerText.includes(keyword)
-    );
-    
-    // More lenient header detection for keyword-based headers
-    if (containsHeaderKeyword && text.length < 100 && !this.looksLikeIngredient(text)) {
-      console.log(`🔍 "${text}" contains header keyword and doesn't look like ingredient`);
+    const matchesExactPattern = exactPatterns.some(pattern => pattern.test(text));
+    if (matchesExactPattern) {
+      console.log(`🔍 "${text}" matches exact header pattern`);
       return true;
     }
 
@@ -168,13 +156,23 @@ export class IngredientSectionParser {
   }
 
   private static looksLikeIngredient(text: string): boolean {
-    // Enhanced ingredient detection
+    // Enhanced ingredient detection with stronger patterns
     const hasNumber = /\d/.test(text);
     const hasUnit = /\b(cup|cups|tbsp|tsp|tablespoon|tablespoons|teaspoon|teaspoons|oz|ounce|ounces|lb|pound|pounds|kg|kilogram|kilograms|g|gram|grams|ml|milliliter|milliliters|l|liter|liters|inch|inches|clove|cloves|piece|pieces|slice|slices|can|cans|jar|jars|bottle|bottles|packet|packets|pinch|dash|handful)\b/i.test(text);
-    const hasCommonIngredients = /\b(oil|salt|pepper|garlic|onion|flour|sugar|butter|water|milk|egg|chicken|beef|pork|cheese|tomato|lemon|lime|olive|vinegar|herbs|spices)\b/i.test(text);
-    const hasQuantifier = /\b(large|small|medium|fresh|dried|chopped|diced|minced|crushed|grated|sliced)\b/i.test(text);
+    const hasCommonIngredients = /\b(oil|salt|pepper|garlic|onion|flour|sugar|butter|water|milk|egg|chicken|beef|pork|cheese|tomato|lemon|lime|olive|vinegar|herbs|spices|paste|sauce|cilantro|parsley|basil|curry|soy|coconut|broccoli|zucchini|bell pepper|ginger)\b/i.test(text);
+    const hasQuantifier = /\b(large|small|medium|fresh|dried|chopped|diced|minced|crushed|grated|sliced|red|green|yellow|white|black|for garnish)\b/i.test(text);
     
-    return (hasNumber && hasUnit) || hasCommonIngredients || (hasNumber && hasQuantifier);
+    // Strong indicators: number + unit combination
+    const hasStrongPattern = hasNumber && hasUnit;
+    
+    // Medium indicators: common ingredients or descriptive terms
+    const hasMediumPattern = hasCommonIngredients || (hasNumber && hasQuantifier);
+    
+    // Additional patterns that strongly suggest ingredients
+    const hasIngredientStructure = /^\d+\s+\w+.*,\s*(chopped|diced|minced|sliced|grated|crushed)$/i.test(text);
+    const hasCanPackagePattern = /\d+\s*(can|jar|bottle|packet)\s*\([^)]+\)/i.test(text);
+    
+    return hasStrongPattern || hasMediumPattern || hasIngredientStructure || hasCanPackagePattern;
   }
 
   static flattenSectionedIngredients(sections: IngredientSection[]): string[] {

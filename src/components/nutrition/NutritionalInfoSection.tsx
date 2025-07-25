@@ -37,7 +37,7 @@ export const NutritionalInfoSection = ({ recipe }: NutritionalInfoSectionProps) 
   const { estimatePortions } = useFruitVegEstimation();
 
   const fetchNutritionData = async () => {
-    if (nutritionData || !recipe.ingredients?.length) return;
+    if (nutritionData || !recipe.ingredients?.length || isLoading) return;
     
     setIsLoading(true);
     try {
@@ -62,10 +62,10 @@ export const NutritionalInfoSection = ({ recipe }: NutritionalInfoSectionProps) 
 
   // Fetch nutrition data on mount to enable ingredient breakdown when expanded
   useEffect(() => {
-    if (!nutritionData) {
+    if (!nutritionData && !isLoading) {
       fetchNutritionData();
     }
-  }, [recipe.id]);
+  }, [recipe.id, nutritionData, isLoading]);
 
   const portions = recipe.fruit_veg_portions || 0;
   const hasNutritionInfo = portions > 0;
