@@ -10,7 +10,7 @@ import { RecipeImageEditor } from "./RecipeImageEditor";
 import { RecipeNotesSection } from "./RecipeNotesSection";
 import { RecipeClassificationSummary } from "./RecipeClassificationSummary";
 import { NutritionalInfoSection } from "@/components/nutrition/NutritionalInfoSection";
-import { Lightbulb, Users, RotateCcw } from "lucide-react";
+import { Lightbulb, Users, RotateCcw, Clock } from "lucide-react";
 import { ServingsSelector } from "@/components/meal-planner/ServingsSelector";
 import { Button } from "@/components/ui/button";
 import { RecipeScalingService } from "@/utils/recipeScaling";
@@ -93,6 +93,14 @@ export const RecipeDetail = ({
         isOwner={isOwner}
         onAddToMealPlan={handleAddToMealPlan}
       />
+
+      {/* Cooking Time */}
+      <div className="mb-6 px-2">
+        <div className="flex items-center gap-2">
+          <Clock className="h-5 w-5 text-terracotta" />
+          <span className="text-navy font-medium">{recipe.prep_time + recipe.cook_time} min total</span>
+        </div>
+      </div>
 
       {/* Description */}
       {recipe.description && (
