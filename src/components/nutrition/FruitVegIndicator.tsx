@@ -70,12 +70,13 @@ export const FruitVegIndicator: React.FC<FruitVegIndicatorProps> = ({
             <div
               key={index}
               className={cn(
-                "rounded-full border-2 transition-all duration-300 relative overflow-hidden",
-                config.circle
+                "rounded-full transition-all duration-300 relative overflow-hidden",
+                config.circle,
+                (size === 'tiny' || size === 'small') ? '' : 'border-2'
               )}
               style={{
-                borderColor: isFilled || isPartial ? activeColor : inactiveColor,
-                backgroundColor: isFilled ? activeColor : 'transparent',
+                borderColor: (size === 'tiny' || size === 'small') ? 'transparent' : (isFilled || isPartial ? activeColor : inactiveColor),
+                backgroundColor: isFilled ? activeColor : (size === 'tiny' || size === 'small' ? inactiveColor : 'transparent'),
               }}
             >
               {isPartial && (
@@ -84,8 +85,6 @@ export const FruitVegIndicator: React.FC<FruitVegIndicatorProps> = ({
                   style={{
                     width: `${partialCircle * 100}%`,
                     backgroundColor: activeColor,
-                    borderRight: size === 'tiny' || size === 'small' ? `1px solid ${activeColor}` : 'none',
-                    boxShadow: size === 'tiny' || size === 'small' ? `inset -1px 0 0 ${activeColor}` : 'none',
                   }}
                 />
               )}
