@@ -104,15 +104,15 @@ Provide detailed analysis with precise reasoning based on NHS guidelines above:
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-4.1-2025-04-14',
         messages: [
           { 
             role: 'system', 
-            content: 'You are a nutrition expert specializing in NHS 5 A Day guidelines. Provide accurate estimates of fruit and vegetable portions in recipes.' 
+            content: 'You are a nutrition expert specializing in NHS 5 A Day guidelines. Provide accurate estimates of fruit and vegetable portions in recipes. Always return valid JSON.' 
           },
           { role: 'user', content: prompt }
         ],
-        temperature: 0.3,
+        temperature: 0.2,
         response_format: { type: 'json_object' }
       }),
     });
