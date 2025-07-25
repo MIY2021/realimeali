@@ -46,40 +46,55 @@ serve(async (req) => {
       });
     }
 
-    // Prepare prompt for OpenAI
+    // Prepare prompt for OpenAI with detailed NHS guidelines
     const ingredientsList = ingredients.join('\n');
     const prompt = `Analyze the following recipe ingredients and estimate how many NHS "5 A Day" fruit and vegetable portions this recipe provides per serving.
 
-Important guidelines:
-- 1 portion = 80g of fruit or vegetables
-- Count fresh, frozen, canned, dried fruit and vegetables
-- Do NOT count potatoes, yams, cassava, or other starchy vegetables
-- Do NOT count herbs and spices (unless substantial quantities)
-- Consider the quantities mentioned in the ingredients
-- This recipe serves ${servings} people, so calculate per serving
+NHS 5 A Day Guidelines (1 portion = 80g):
 
-Ingredients:
+FRUIT PORTIONS:
+- Small fresh fruit: 2+ pieces (2 plums, 2 satsumas, 2 kiwi, 3 apricots, 6 lychees, 7 strawberries, 14 cherries)
+- Medium fresh fruit: 1 piece (1 apple, banana, pear, orange, nectarine)  
+- Large fresh fruit: 1/2 grapefruit, 1 slice papaya, 1 slice melon (5cm), 1 large slice pineapple, 2 slices mango (5cm)
+- Dried fruit: 30g (1 heaped tbsp raisins/sultanas, 1 tbsp mixed fruit, 2 figs, 3 prunes)
+- Tinned/frozen fruit: same as fresh quantities
+
+VEGETABLE PORTIONS:
+- Green vegetables: 2 broccoli spears, 2 heaped tbsp cooked spinach, 4 heaped tbsp kale/spring greens/green beans
+- Cooked vegetables: 3 heaped tbsp (carrots, peas, sweetcorn), 8 cauliflower florets
+- Salad vegetables: 3 celery sticks, 5cm cucumber, 1 medium tomato, 7 cherry tomatoes
+- Pulses/beans: 3 heaped tbsp (max 1 portion total regardless of amount)
+- Onions: 1 medium onion = ~1 portion, garlic doesn't count unless substantial
+
+EXCLUSIONS:
+- Potatoes, yams, cassava, plantain (starchy foods)
+- Herbs and spices (unless substantial quantities like fresh herb salads)
+- Fruit juice/smoothies (limited to 1 portion max total)
+
+Ingredients for ${servings} servings:
 ${ingredientsList}
 
-Please provide a detailed analysis with:
-1. A list of which specific ingredients count toward 5-a-day and their estimated portions per serving
-2. A brief summary explanation
-3. Estimated total weight of fruit/veg per serving in grams
-4. Final estimate rounded to nearest 0.5 portion (e.g., 1.5, 2.0, 3.5)
+Provide detailed analysis with precise reasoning based on NHS guidelines above:
 
-Respond in JSON format:
 {
   "ingredientBreakdown": [
     {
-      "ingredient": "ingredient name",
+      "ingredient": "specific ingredient name from list",
       "estimatedGrams": number,
       "portions": number,
-      "reasoning": "why this counts as X portions"
+      "reasoning": "detailed explanation referencing NHS guidelines (e.g. '1 medium onion = 80g = 1 portion per NHS guidelines')"
     }
   ],
-  "summary": "brief explanation of total calculation",
+  "summary": "concise explanation of calculation method and total",
   "totalGrams": number,
-  "portions": number
+  "portions": number,
+  "recommendations": [
+    {
+      "suggestion": "specific food to add",
+      "portionIncrease": number,
+      "reasoning": "why this complements the meal"
+    }
+  ]
 }`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -130,6 +145,7 @@ Respond in JSON format:
       portions,
       breakdown: result.summary || result.breakdown,
       ingredientBreakdown: result.ingredientBreakdown || [],
+      recommendations: result.recommendations || [],
       totalGrams: result.totalGrams,
       cached: false 
     }), {

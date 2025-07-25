@@ -20,6 +20,11 @@ interface EstimationResult {
     portions: number;
     reasoning: string;
   }>;
+  recommendations?: Array<{
+    suggestion: string;
+    portionIncrease: number;
+    reasoning: string;
+  }>;
   totalGrams?: number;
   cached: boolean;
 }
@@ -142,18 +147,42 @@ export const NutritionalInfoSection = ({ recipe }: NutritionalInfoSectionProps) 
                 {/* Summary */}
                 {nutritionData?.breakdown && (
                   <div className="space-y-2">
-                    <h4 className="font-medium text-sm text-sage-800">Summary:</h4>
+                    <h4 className="font-medium text-sm text-sage-800">Calculation Summary:</h4>
                     <div className="text-sm text-gray-700 leading-relaxed bg-sage/5 border border-sage/10 p-3 rounded-lg">
                       {nutritionData.breakdown}
                     </div>
                   </div>
                 )}
 
-                {/* Disclaimer */}
+                {/* Recommendations */}
+                {nutritionData?.recommendations && nutritionData.recommendations.length > 0 && (
+                  <div className="space-y-3">
+                    <h4 className="font-medium text-sm text-sage-800">🌟 Boost Your Score:</h4>
+                    <div className="space-y-2">
+                      {nutritionData.recommendations.map((rec, index) => (
+                        <div key={index} className="bg-green-50 border border-green-200 p-3 rounded-lg">
+                          <div className="flex justify-between items-start gap-2">
+                            <div className="flex-1">
+                              <p className="font-medium text-sm text-green-800">{rec.suggestion}</p>
+                              <p className="text-xs text-green-700 mt-1">{rec.reasoning}</p>
+                            </div>
+                            <div className="text-right flex-shrink-0">
+                              <p className="text-sm font-medium text-green-700">+{rec.portionIncrease}</p>
+                              <p className="text-xs text-green-600">portions</p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* NHS Guidelines */}
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                   <p className="text-xs text-blue-800">
-                    <strong>AI Estimation:</strong> This nutritional information is estimated by AI based on the recipe ingredients and NHS 5 A Day guidelines (80g portions). 
-                    Actual portions may vary depending on specific ingredients and preparation methods.
+                    <strong>Based on NHS 5 A Day Guidelines:</strong> 1 portion = 80g of fruit or vegetables. 
+                    This analysis follows official NHS guidelines for what counts towards your daily 5 portions. 
+                    Estimates may vary based on specific ingredients and preparation methods.
                   </p>
                 </div>
               </div>
