@@ -76,30 +76,30 @@ export const NutritionalInfoSection = ({ recipe }: NutritionalInfoSectionProps) 
             <Heart className="h-5 w-5 text-sage" />
           </div>
           <div className="flex-1">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="font-semibold text-sage-800 mb-1">Nutritional Information</h3>
-                {hasNutritionInfo && !isExpanded && (
-                  <p className="text-xs text-gray-600">Estimated fruit & vegetable portions per serving</p>
-                )}
+            <div className="space-y-1">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold text-sage-800">Nutritional Information</h3>
+                <div className="flex items-center gap-2">
+                  {hasNutritionInfo && (
+                    <div className="flex items-center gap-2">
+                      <FruitVegIndicator 
+                        portions={portions} 
+                        size="small"
+                        showLabel={false}
+                      />
+                      <span className="text-sm font-medium text-sage-700">{portions}/{5}</span>
+                    </div>
+                  )}
+                  {isExpanded ? (
+                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                  ) : (
+                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                  )}
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                {hasNutritionInfo && (
-                  <div className="flex items-center gap-2">
-                    <FruitVegIndicator 
-                      portions={portions} 
-                      size="small"
-                      showLabel={false}
-                    />
-                    <span className="text-sm font-medium text-sage-700">{portions}/{5}</span>
-                  </div>
-                )}
-                {isExpanded ? (
-                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                ) : (
-                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                )}
-              </div>
+              {hasNutritionInfo && !isExpanded && (
+                <p className="text-xs text-gray-600">Estimated fruit & vegetable portions per serving</p>
+              )}
             </div>
           </div>
         </div>
