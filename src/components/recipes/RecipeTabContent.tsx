@@ -38,7 +38,6 @@ export const RecipeTabContent = ({ recipe, scaledIngredients, isScaled }: Recipe
           className="text-gray-600 data-[state=active]:bg-sage data-[state=active]:text-white font-medium rounded-md transition-all"
         >
           Ingredients
-          {isScaled && <span className="ml-1 text-xs opacity-75">(scaled)</span>}
         </TabsTrigger>
         <TabsTrigger 
           value="equipment" 
@@ -58,11 +57,6 @@ export const RecipeTabContent = ({ recipe, scaledIngredients, isScaled }: Recipe
         <div className="space-y-4">
           <h2 className="text-xl font-bold text-navy mb-4">
             Ingredients
-            {isScaled && (
-              <span className="ml-2 text-sm font-normal text-gray-500">
-                (adjusted quantities)
-              </span>
-            )}
           </h2>
           
           {ingredientSections.length === 0 ? (
