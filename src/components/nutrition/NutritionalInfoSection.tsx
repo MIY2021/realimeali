@@ -63,7 +63,10 @@ export const NutritionalInfoSection = ({ recipe }: NutritionalInfoSectionProps) 
       });
 
       if (!error && data) {
+        console.log('Nutrition data received:', data);
         setNutritionData(data);
+      } else if (error) {
+        console.error('Error from AI function:', error);
       }
     } catch (error) {
       console.error('Error fetching nutrition data:', error);
