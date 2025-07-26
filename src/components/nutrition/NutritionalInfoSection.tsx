@@ -121,56 +121,68 @@ export const NutritionalInfoSection = ({ recipe }: NutritionalInfoSectionProps) 
                   </p>
                 </div>
 
-                {/* Breakdown */}
+                {/* Fun Breakdown */}
                 {nutritionData?.ingredientBreakdown && nutritionData.ingredientBreakdown.length > 0 && (
                   <div className="space-y-3">
-                    <h4 className="font-medium text-sm text-sage-800">Fruit & vegetable breakdown per serving:</h4>
+                    <h4 className="font-medium text-sm text-sage-800">🥦 Fruit & Veg Per Serving:</h4>
                     
-                    {/* Table Headers */}
-                    <div className="flex justify-between items-center text-xs font-medium text-sage-700 border-b border-sage/20 pb-2">
-                      <span>Ingredient</span>
-                      <span>Portions per serving</span>
-                    </div>
-                    
-                    {/* Only show ingredients with portions > 0 */}
                     <div className="space-y-2">
                       {nutritionData.ingredientBreakdown
-                        .filter(item => item.portions > 0)
-                        .map((item, index) => (
-                        <div key={index} className="bg-sage/5 border border-sage/10 p-3 rounded-lg">
-                          <div className="flex justify-between items-start gap-2">
-                            <div className="flex-1">
-                              <p className="font-medium text-sm text-sage-800">{item.ingredient}</p>
-                              <p className="text-xs text-gray-600 mt-1">{item.reasoning}</p>
-                            </div>
-                            <div className="text-right flex-shrink-0">
-                              <p className="text-sm font-medium text-sage-700">{item.portions}</p>
-                              <p className="text-xs text-gray-500">{item.estimatedGrams}g</p>
-                            </div>
-                          </div>
+                        .map((item, index) => {
+                          // Calculate per-serving portions
+                          const perServingPortions = item.portions / (recipe.servings || 1);
+                          const perServingGrams = Math.round(item.estimatedGrams / (recipe.servings || 1));
+                          
+                          // Apply 1/0.5/0 logic
+                          let displayPortions;
+                          if (perServingPortions >= 1) {
+                            displayPortions = 1;
+                          } else if (perServingPortions >= 0.5) {
+                            displayPortions = 0.5;
+                          } else {
+                            displayPortions = 0;
+                          }
+                          
+                          return { ...item, displayPortions, perServingGrams, index };
+                        })
+                        .filter(item => item.displayPortions > 0)
+                        .map((item) => (
+                        <div key={item.index} className="text-sm">
+                          <span className="font-medium text-sage-800">{item.ingredient}</span>
+                          <span className="text-sage-600"> – {item.displayPortions} portion{item.displayPortions !== 1 ? 's' : ''} ({item.perServingGrams}g)</span>
                         </div>
                       ))}
+                      
+                      {/* Show non-counting ingredients */}
+                      {nutritionData.ingredientBreakdown.some(item => {
+                        const perServingPortions = item.portions / (recipe.servings || 1);
+                        return perServingPortions < 0.5;
+                      }) && (
+                        <div className="pt-2 border-t border-sage/20">
+                          <p className="text-sm text-gray-600">
+                            🧂 Other ingredients ({nutritionData.ingredientBreakdown
+                              .filter(item => {
+                                const perServingPortions = item.portions / (recipe.servings || 1);
+                                return perServingPortions < 0.5;
+                              })
+                              .map(item => item.ingredient.toLowerCase())
+                              .join(', ')}, etc.) do not count towards your 5 A Day.
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
 
-                {/* Recommendations */}
+                {/* Simple Recommendations */}
                 {nutritionData?.recommendations && nutritionData.recommendations.length > 0 && (
                   <div className="space-y-3">
                     <h4 className="font-medium text-sm text-sage-800">🌟 Boost Your Score:</h4>
                     <div className="space-y-2">
                       {nutritionData.recommendations.map((rec, index) => (
-                        <div key={index} className="bg-green-50 border border-green-200 p-3 rounded-lg">
-                          <div className="flex justify-between items-start gap-2">
-                            <div className="flex-1">
-                              <p className="font-medium text-sm text-green-800">{rec.suggestion}</p>
-                              <p className="text-xs text-green-700 mt-1">{rec.reasoning}</p>
-                            </div>
-                            <div className="text-right flex-shrink-0">
-                              <p className="text-sm font-medium text-green-700">+{rec.portionIncrease}</p>
-                              <p className="text-xs text-green-600">portions</p>
-                            </div>
-                          </div>
+                        <div key={index} className="text-sm">
+                          <span className="font-medium text-green-800">{rec.suggestion}</span>
+                          <span className="text-green-600"> – +{rec.portionIncrease} portion{rec.portionIncrease !== 1 ? 's' : ''}</span>
                         </div>
                       ))}
                     </div>
