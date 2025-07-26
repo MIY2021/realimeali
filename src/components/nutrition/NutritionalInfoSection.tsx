@@ -125,8 +125,18 @@ export const NutritionalInfoSection = ({ recipe }: NutritionalInfoSectionProps) 
                 {nutritionData?.ingredientBreakdown && nutritionData.ingredientBreakdown.length > 0 && (
                   <div className="space-y-3">
                     <h4 className="font-medium text-sm text-sage-800">Fruit & vegetable breakdown per serving:</h4>
+                    
+                    {/* Table Headers */}
+                    <div className="flex justify-between items-center text-xs font-medium text-sage-700 border-b border-sage/20 pb-2">
+                      <span>Ingredient</span>
+                      <span>Portions per serving</span>
+                    </div>
+                    
+                    {/* Only show ingredients with portions > 0 */}
                     <div className="space-y-2">
-                      {nutritionData.ingredientBreakdown.map((item, index) => (
+                      {nutritionData.ingredientBreakdown
+                        .filter(item => item.portions > 0)
+                        .map((item, index) => (
                         <div key={index} className="bg-sage/5 border border-sage/10 p-3 rounded-lg">
                           <div className="flex justify-between items-start gap-2">
                             <div className="flex-1">
@@ -134,22 +144,12 @@ export const NutritionalInfoSection = ({ recipe }: NutritionalInfoSectionProps) 
                               <p className="text-xs text-gray-600 mt-1">{item.reasoning}</p>
                             </div>
                             <div className="text-right flex-shrink-0">
-                              <p className="text-sm font-medium text-sage-700">{item.portions} portions</p>
+                              <p className="text-sm font-medium text-sage-700">{item.portions}</p>
                               <p className="text-xs text-gray-500">{item.estimatedGrams}g</p>
                             </div>
                           </div>
                         </div>
                       ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Summary */}
-                {nutritionData?.breakdown && (
-                  <div className="space-y-2">
-                    <h4 className="font-medium text-sm text-sage-800">Calculation Summary:</h4>
-                    <div className="text-sm text-gray-700 leading-relaxed bg-sage/5 border border-sage/10 p-3 rounded-lg">
-                      {nutritionData.breakdown}
                     </div>
                   </div>
                 )}
