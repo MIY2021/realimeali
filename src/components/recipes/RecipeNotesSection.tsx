@@ -36,27 +36,34 @@ export const RecipeNotesSection = ({ recipeId }: RecipeNotesSectionProps) => {
     if (!currentHousehold?.id) return;
 
     try {
-      const { data, error } = await supabase
+      // First get the note data
+      const { data: noteData, error: noteError } = await supabase
         .from('recipe_notes')
-        .select(`
-          *,
-          profiles!recipe_notes_created_by_fkey (
-            full_name,
-            email
-          )
-        `)
+        .select('*')
         .eq('recipe_id', recipeId)
         .eq('household_id', currentHousehold.id)
         .maybeSingle();
 
-      if (error && error.code !== 'PGRST116') {
-        console.error('Error fetching recipe note:', error);
+      if (noteError && noteError.code !== 'PGRST116') {
+        console.error('Error fetching recipe note:', noteError);
         return;
       }
 
-      if (data) {
-        setNote(data as any);
-        setContent(data.content);
+      if (noteData) {
+        // Get the profile data separately
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('full_name, email')
+          .eq('id', noteData.created_by)
+          .single();
+
+        const noteWithProfile = {
+          ...noteData,
+          profile: profileData
+        };
+
+        setNote(noteWithProfile as any);
+        setContent(noteData.content);
         setIsExpanded(true);
       }
     } catch (error) {
@@ -91,13 +98,7 @@ export const RecipeNotesSection = ({ recipeId }: RecipeNotesSectionProps) => {
             content: content.trim(),
             created_by: user.id
           })
-          .select(`
-            *,
-            profiles!recipe_notes_created_by_fkey (
-              full_name,
-              email
-            )
-          `)
+          .select('*')
           .single();
 
         if (error) throw error;
@@ -220,7 +221,7 @@ export const RecipeNotesSection = ({ recipeId }: RecipeNotesSectionProps) => {
                 </div>
                 <div className="flex items-center justify-between text-xs text-gray-500">
                   <span>
-                    By {(note as any)?.profiles?.full_name || (note as any)?.profiles?.email || 'Unknown'}
+                    By {note.profile?.full_name || note.profile?.email || 'Unknown'}
                   </span>
                   <span>
                     {note.updated_at !== note.created_at ? 'Updated' : 'Created'} {formatDate(note.updated_at)}

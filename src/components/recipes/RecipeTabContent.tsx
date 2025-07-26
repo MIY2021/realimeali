@@ -1,4 +1,5 @@
 
+import React, { useMemo } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Recipe } from "@/types";
 import { IngredientSectionParser } from "@/utils/ingredientSectionParser";
@@ -10,25 +11,27 @@ interface RecipeTabContentProps {
   isScaled?: boolean;
 }
 
-export const RecipeTabContent = ({ recipe, scaledIngredients, isScaled }: RecipeTabContentProps) => {
+export const RecipeTabContent = React.memo(({ recipe, scaledIngredients, isScaled }: RecipeTabContentProps) => {
   const ingredientsToShow = scaledIngredients || recipe.ingredients;
-  const ingredientSections = IngredientSectionParser.parseIngredients(ingredientsToShow);
-  const equipment = EquipmentExtractor.formatEquipmentList(
-    EquipmentExtractor.extractEquipment(recipe)
-  );
+  
+  // Memoize expensive computations to prevent infinite loops
+  const ingredientSections = useMemo(() => {
+    return IngredientSectionParser.parseIngredients(ingredientsToShow);
+  }, [JSON.stringify(ingredientsToShow)]); // Use JSON.stringify for deep comparison
+  
+  const equipment = useMemo(() => {
+    return EquipmentExtractor.formatEquipmentList(
+      EquipmentExtractor.extractEquipment(recipe)
+    );
+  }, [recipe.instructions, recipe.ingredients, recipe.title, recipe.description]);
 
-  console.log("🧩 DETAILED Ingredient Analysis:", {
-    originalIngredients: ingredientsToShow,
-    parsedSections: ingredientSections,
-    sectionsCount: ingredientSections.length,
-    sectionDetails: ingredientSections.map((section, index) => ({
-      index,
-      hasHeader: !!section.header,
-      header: section.header,
-      ingredientCount: section.ingredients.length,
-      ingredients: section.ingredients
-    }))
-  });
+  // Only log in development and limit frequency
+  if (process.env.NODE_ENV === 'development') {
+    console.log("🧩 Ingredient Analysis:", {
+      sectionsCount: ingredientSections.length,
+      hasIngredients: ingredientsToShow.length > 0
+    });
+  }
 
   return (
     <Tabs defaultValue="ingredients" className="w-full">
@@ -131,4 +134,4 @@ export const RecipeTabContent = ({ recipe, scaledIngredients, isScaled }: Recipe
       </TabsContent>
     </Tabs>
   );
-};
+});
