@@ -52,26 +52,32 @@ serve(async (req) => {
       });
     }
 
-    // Prepare conservative NHS-compliant prompt
+    // Prepare per-serving focused prompt
     const ingredientsList = ingredients.join('\n');
-    const prompt = `Analyze these recipe ingredients for NHS 5 A Day portions. Be CONSERVATIVE with estimates.
+    const prompt = `CRITICAL: Calculate NHS 5 A Day portions PER SERVING, not for the full recipe.
 
-NHS 5 A Day Rules:
-- 1 portion = 80g of fruit/vegetables
-- ≥80g per serving = 1 portion, 40-79g = 0.5 portions, <40g = 0 portions
+Recipe serves ${servings} people. You MUST divide all weights by ${servings} first.
+
+NHS Rules:
+- 1 portion = 80g per serving
+- ≥80g per serving = 1 portion, 40-79g per serving = 0.5 portions, <40g per serving = 0 portions
 - Maximum 1 portion per ingredient type per serving
-- Exclude: potatoes, yams, cassava, plantain, herbs, spices, garlic
-- Be very conservative with processed foods (marinara sauce, canned tomatoes)
+- Exclude: potatoes, herbs, spices, garlic, pasta, cheese, oils
+- Be conservative with processed foods (marinara sauce = mostly water/paste, very little actual vegetable content)
 
-Reference portions (be conservative):
-- Medium tomato: 100g | Bell pepper: 120g | Zucchini: 150g | Mushrooms (1 cup): 70g
-- Spinach (2 cups fresh): 60g | Onion (medium): 100g 
-- Marinara sauce: mostly tomato paste/water - estimate conservatively (1 cup ≈ 30-40g actual tomato)
+CALCULATION PROCESS:
+1. Estimate total recipe weight for each vegetable
+2. DIVIDE BY ${servings} to get per-serving weight  
+3. Apply NHS portion rules to per-serving weight
 
-Recipe serves ${servings} people:
+Conservative estimates for this ${servings}-serving recipe:
 ${ingredientsList}
 
-Return JSON with conservative estimates:
+Example calculation:
+- If recipe has 2 cups spinach (60g total) ÷ ${servings} servings = ${Math.round(60/servings)}g per serving = 0 portions (under 40g threshold)
+- If recipe has 1 large zucchini (150g total) ÷ ${servings} servings = ${Math.round(150/servings)}g per serving = ${Math.round(150/servings) >= 80 ? '1' : Math.round(150/servings) >= 40 ? '0.5' : '0'} portions
+
+Return JSON showing PER-SERVING analysis:
 
 {
   "perServingAnalysis": [
@@ -80,7 +86,7 @@ Return JSON with conservative estimates:
       "totalGrams": number,
       "perServingGrams": number,
       "cappedPortions": number,
-      "reasoning": "brief calculation explanation"
+      "reasoning": "total weight ÷ ${servings} servings = Xg per serving = Y portions"
     }
   ],
   "contributingIngredients": [
@@ -95,17 +101,27 @@ Return JSON with conservative estimates:
       "ingredient": "name", 
       "actualPortions": number,
       "grams": number,
-      "reason": "why excluded"
+      "reason": "why excluded or too small per serving"
     }
   ],
-  "summary": "brief conservative summary",
+  "summary": "conservative per-serving summary",
   "totalPortionsPerServing": number,
   "totalGramsPerServing": number,
   "recommendations": [
     {
-      "suggestion": "specific addition",
-      "portionIncrease": number,
-      "reasoning": "why this helps"
+      "suggestion": "Add fresh tomatoes (150g total)",
+      "portionIncrease": 1.0,
+      "reasoning": "150g ÷ ${servings} = ${Math.round(150/servings)}g per serving = additional portion"
+    },
+    {
+      "suggestion": "Include more leafy greens like baby spinach",
+      "portionIncrease": 0.5,
+      "reasoning": "Boost vegetable content per serving"
+    },
+    {
+      "suggestion": "Add diced carrots or sweet potato",
+      "portionIncrease": 1.0,
+      "reasoning": "Root vegetables add substantial portions when divided by servings"
     }
   ]
 }`;
@@ -121,7 +137,7 @@ Return JSON with conservative estimates:
         messages: [
           { 
             role: 'system', 
-            content: 'You are a conservative nutrition expert following NHS 5 A Day guidelines. Be conservative with estimates, especially for processed foods. 80g = 1 portion, max 1 portion per ingredient type per serving. Return valid JSON.' 
+            content: `You are a conservative nutrition expert following NHS 5 A Day guidelines. CRITICAL: Always calculate PER SERVING by dividing total recipe amounts by ${servings} servings first. 80g per serving = 1 portion, max 1 portion per ingredient type per serving. Return valid JSON with per-serving calculations only.` 
           },
           { role: 'user', content: prompt }
         ],
