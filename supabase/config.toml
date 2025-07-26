@@ -16,6 +16,9 @@ verify_jwt = false
 [functions.unsplash-search]
 verify_jwt = false
 
+[functions.estimate-fruit-veg-portions]
+verify_jwt = false
+
 # Handle all share routes at the function level
 [[functions.recipe-meta.routes]]
 path = "/share/*"
