@@ -117,31 +117,55 @@ export const useRecipeApi = () => {
 
   const updateRecipe = async (id: string, recipe: Recipe): Promise<Recipe | null> => {
     try {
+      // First, get the current recipe to compare ingredients
+      const { data: currentRecipe, error: fetchError } = await supabase
+        .from('recipes')
+        .select('ingredients')
+        .eq('id', id)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      // Compare ingredients arrays to determine if we need to clear fruit/veg data
+      const ingredientsChanged = JSON.stringify(currentRecipe.ingredients) !== JSON.stringify(recipe.ingredients);
+      
+      // Prepare update object
+      const updateData: any = {
+        title: recipe.title,
+        description: recipe.description,
+        ingredients: recipe.ingredients,
+        instructions: recipe.instructions,
+        prep_time: recipe.prep_time,
+        cook_time: recipe.cook_time,
+        servings: recipe.servings,
+        image: recipe.image,
+        is_favorite: recipe.is_favorite,
+        has_cooked: recipe.has_cooked, // Include the cooking status
+        meal_type: recipe.meal_type,
+        // Handle meal_types array
+        meal_types: recipe.meal_types && recipe.meal_types.length > 0 
+          ? recipe.meal_types 
+          : (recipe.meal_type ? [recipe.meal_type] : []),
+        cuisine_region: recipe.cuisine_region,
+        diet_lifestyle: recipe.diet_lifestyle,
+        complexity_level: recipe.complexity_level,
+        top_tip: recipe.top_tip,
+        source_url: recipe.source_url,
+        import_method: recipe.import_method,
+      };
+
+      // Clear fruit/veg data if ingredients have changed
+      if (ingredientsChanged) {
+        updateData.fruit_veg_portions = null;
+        updateData.fruit_veg_breakdown = null;
+        updateData.fruit_veg_ingredient_breakdown = null;
+        updateData.fruit_veg_recommendations = null;
+        updateData.fruit_veg_total_grams = null;
+      }
+
       const { data, error } = await supabase
         .from('recipes')
-        .update({
-          title: recipe.title,
-          description: recipe.description,
-          ingredients: recipe.ingredients,
-          instructions: recipe.instructions,
-          prep_time: recipe.prep_time,
-          cook_time: recipe.cook_time,
-          servings: recipe.servings,
-          image: recipe.image,
-          is_favorite: recipe.is_favorite,
-          has_cooked: recipe.has_cooked, // Include the cooking status
-          meal_type: recipe.meal_type,
-          // Handle meal_types array
-          meal_types: recipe.meal_types && recipe.meal_types.length > 0 
-            ? recipe.meal_types 
-            : (recipe.meal_type ? [recipe.meal_type] : []),
-          cuisine_region: recipe.cuisine_region,
-          diet_lifestyle: recipe.diet_lifestyle,
-          complexity_level: recipe.complexity_level,
-          top_tip: recipe.top_tip,
-          source_url: recipe.source_url,
-          import_method: recipe.import_method,
-        })
+        .update(updateData)
         .eq('id', id)
         .select()
         .single();
