@@ -52,47 +52,35 @@ serve(async (req) => {
       });
     }
 
-    // Prepare enhanced prompt with comprehensive weight references and NHS guidelines
+    // Prepare conservative NHS-compliant prompt
     const ingredientsList = ingredients.join('\n');
-    const prompt = `Analyze the following recipe ingredients using comprehensive weight references and NHS "5 A Day" guidelines. Follow this EXACT process:
+    const prompt = `Analyze these recipe ingredients for NHS 5 A Day portions. Be CONSERVATIVE with estimates.
 
-STEP 1: ANALYZE TOTAL RECIPE WEIGHTS
-First estimate total weight for each fruit/vegetable ingredient using these reference weights:
+NHS 5 A Day Rules:
+- 1 portion = 80g of fruit/vegetables
+- ≥80g per serving = 1 portion, 40-79g = 0.5 portions, <40g = 0 portions
+- Maximum 1 portion per ingredient type per serving
+- Exclude: potatoes, yams, cassava, plantain, herbs, spices, garlic
+- Be very conservative with processed foods (marinara sauce, canned tomatoes)
 
-🍎 FRUITS (avg weight per whole fruit):
-Apple: 150–200g | Apricot: 35–50g | Avocado: 150–200g | Banana: 120–150g | Blackberry: 5–10g | Blueberry: 0.5–1g | Cantaloupe: 800–1000g | Cherry: 5–10g | Cranberry: 5–10g | Fig: 35–50g | Grape: 5–10g | Kiwi: 100–150g | Lemon/Lime: 80–100g | Mango: 200–300g | Nectarine/Peach/Pear: 150–200g | Papaya: 500–800g | Pineapple: 1000–1500g | Plum: 59–72g | Raspberry: 3–6g | Strawberry: 10–20g
+Reference portions (be conservative):
+- Medium tomato: 100g | Bell pepper: 120g | Zucchini: 150g | Mushrooms (1 cup): 70g
+- Spinach (2 cups fresh): 60g | Onion (medium): 100g 
+- Marinara sauce: mostly tomato paste/water - estimate conservatively (1 cup ≈ 30-40g actual tomato)
 
-🥕 VEGETABLES (avg weight per unit):
-Beetroot: 150–200g | Broccoli head: 150–200g | Brussels sprout: 10–30g | Cabbage head: 500–800g | Carrot (medium): 60–80g | Cauliflower head: 500–1000g | Celery stalk: 20g (whole bunch ~450g) | Courgette/Zucchini: 100–200g | Cucumber: 150–250g | Aubergine/Eggplant: 200–400g | Mushroom (button): 15–30g | Onion (medium): 100–150g | Bell pepper: 120–180g | Sweet potato: 150–300g | Tomato (medium): 100–150g
-
-COOKING MEASUREMENTS:
-- 2 cups fresh spinach ≈ 60g | 1 cup chopped onions ≈ 80g | 2 cups marinara sauce ≈ 480g | 1 cup canned tomatoes ≈ 240g
-
-STEP 2: DIVIDE BY SERVINGS (${servings} servings)
-Calculate per-serving weight for each ingredient by dividing total weight by ${servings}.
-
-STEP 3: APPLY NHS GUIDELINES PER SERVING
-NHS 5 A Day Guidelines (1 portion = 80g):
-- CRITICAL RULE: Maximum 1 portion can be counted per ingredient type per serving, regardless of actual weight
-- Use 1/0.5/0 logic: ≥80g = 1 portion, 40-79g = 0.5 portions, <40g = 0 portions
-- Exclusions: potatoes, herbs/spices (unless substantial), garlic
-
-STEP 4: BUILD FINAL SCORE
-Sum all contributing portions per serving (maximum 1.0 per ingredient type).
-
-Recipe for ${servings} servings:
+Recipe serves ${servings} people:
 ${ingredientsList}
 
-Return this exact JSON structure with per-serving analysis:
+Return JSON with conservative estimates:
 
 {
   "perServingAnalysis": [
     {
-      "ingredient": "ingredient name from list",
+      "ingredient": "ingredient name",
       "totalGrams": number,
       "perServingGrams": number,
       "cappedPortions": number,
-      "reasoning": "detailed calculation (e.g., '480g marinara sauce ÷ 4 servings = 120g per serving = 1.0 portion (capped at NHS maximum)')"
+      "reasoning": "brief calculation explanation"
     }
   ],
   "contributingIngredients": [
@@ -107,10 +95,10 @@ Return this exact JSON structure with per-serving analysis:
       "ingredient": "name", 
       "actualPortions": number,
       "grams": number,
-      "reason": "why it doesn't count toward total"
+      "reason": "why excluded"
     }
   ],
-  "summary": "concise explanation emphasizing per-serving analysis and NHS capping",
+  "summary": "brief conservative summary",
   "totalPortionsPerServing": number,
   "totalGramsPerServing": number,
   "recommendations": [
@@ -129,11 +117,11 @@ Return this exact JSON structure with per-serving analysis:
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4.1-2025-04-14',
+        model: 'gpt-4o-mini',
         messages: [
           { 
             role: 'system', 
-            content: 'You are a nutrition expert specializing in NHS 5 A Day guidelines. Follow the exact 4-step process: analyze total weights using reference data, divide by servings, apply NHS capping rules (max 1 portion per ingredient), calculate final score. Always return valid JSON with per-serving analysis.' 
+            content: 'You are a conservative nutrition expert following NHS 5 A Day guidelines. Be conservative with estimates, especially for processed foods. 80g = 1 portion, max 1 portion per ingredient type per serving. Return valid JSON.' 
           },
           { role: 'user', content: prompt }
         ],
@@ -171,6 +159,11 @@ Return this exact JSON structure with per-serving analysis:
     }
 
     console.log(`Estimated ${portions} fruit/veg portions per serving for recipe ${recipeId}`);
+    console.log('AI Analysis Result:', {
+      totalPortionsPerServing: result.totalPortionsPerServing,
+      perServingAnalysis: result.perServingAnalysis,
+      summary: result.summary
+    });
 
     return new Response(JSON.stringify({ 
       portions,
