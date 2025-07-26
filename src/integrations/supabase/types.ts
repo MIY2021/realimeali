@@ -811,7 +811,11 @@ export type Database = {
           cuisine_region: Database["public"]["Enums"]["cuisine_region"] | null
           description: string | null
           diet_lifestyle: Database["public"]["Enums"]["diet_lifestyle"][] | null
+          fruit_veg_breakdown: string | null
+          fruit_veg_ingredient_breakdown: Json | null
           fruit_veg_portions: number | null
+          fruit_veg_recommendations: Json | null
+          fruit_veg_total_grams: number | null
           has_cooked: boolean
           household_id: string
           id: string
@@ -843,7 +847,11 @@ export type Database = {
           diet_lifestyle?:
             | Database["public"]["Enums"]["diet_lifestyle"][]
             | null
+          fruit_veg_breakdown?: string | null
+          fruit_veg_ingredient_breakdown?: Json | null
           fruit_veg_portions?: number | null
+          fruit_veg_recommendations?: Json | null
+          fruit_veg_total_grams?: number | null
           has_cooked?: boolean
           household_id: string
           id?: string
@@ -875,7 +883,11 @@ export type Database = {
           diet_lifestyle?:
             | Database["public"]["Enums"]["diet_lifestyle"][]
             | null
+          fruit_veg_breakdown?: string | null
+          fruit_veg_ingredient_breakdown?: Json | null
           fruit_veg_portions?: number | null
+          fruit_veg_recommendations?: Json | null
+          fruit_veg_total_grams?: number | null
           has_cooked?: boolean
           household_id?: string
           id?: string

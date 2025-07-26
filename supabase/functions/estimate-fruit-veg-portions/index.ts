@@ -33,13 +33,17 @@ serve(async (req) => {
     // Check if we already have an estimation for this recipe
     const { data: existingRecipe } = await supabase
       .from('recipes')
-      .select('fruit_veg_portions')
+      .select('fruit_veg_portions, fruit_veg_breakdown, fruit_veg_ingredient_breakdown, fruit_veg_recommendations, fruit_veg_total_grams')
       .eq('id', recipeId)
       .single();
 
     if (existingRecipe?.fruit_veg_portions !== null) {
       return new Response(JSON.stringify({ 
         portions: existingRecipe.fruit_veg_portions,
+        breakdown: existingRecipe.fruit_veg_breakdown,
+        ingredientBreakdown: existingRecipe.fruit_veg_ingredient_breakdown || [],
+        recommendations: existingRecipe.fruit_veg_recommendations || [],
+        totalGrams: existingRecipe.fruit_veg_total_grams,
         cached: true 
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -129,10 +133,16 @@ Provide detailed analysis with precise reasoning based on NHS guidelines above:
     portions = Math.max(0, Math.min(5, portions)); // Clamp between 0 and 5
     portions = Math.round(portions * 2) / 2; // Round to nearest 0.5
 
-    // Update the recipe with the estimated portions
+    // Update the recipe with the complete analysis data
     const { error: updateError } = await supabase
       .from('recipes')
-      .update({ fruit_veg_portions: portions })
+      .update({ 
+        fruit_veg_portions: portions,
+        fruit_veg_breakdown: result.summary || result.breakdown,
+        fruit_veg_ingredient_breakdown: result.ingredientBreakdown || [],
+        fruit_veg_recommendations: result.recommendations || [],
+        fruit_veg_total_grams: result.totalGrams
+      })
       .eq('id', recipeId);
 
     if (updateError) {
