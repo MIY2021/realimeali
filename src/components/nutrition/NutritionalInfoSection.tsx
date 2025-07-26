@@ -14,11 +14,23 @@ interface NutritionalInfoSectionProps {
 interface EstimationResult {
   portions: number;
   breakdown?: string;
-  ingredientBreakdown?: Array<{
+  perServingAnalysis?: Array<{
     ingredient: string;
-    estimatedGrams: number;
-    portions: number;
+    totalGrams: number;
+    perServingGrams: number;
+    cappedPortions: number;
     reasoning: string;
+  }>;
+  contributingIngredients?: Array<{
+    ingredient: string;
+    portions: number;
+    grams: number;
+  }>;
+  referencedIngredients?: Array<{
+    ingredient: string;
+    actualPortions: number;
+    grams: number;
+    reason: string;
   }>;
   recommendations?: Array<{
     suggestion: string;
@@ -121,52 +133,57 @@ export const NutritionalInfoSection = ({ recipe }: NutritionalInfoSectionProps) 
                   </p>
                 </div>
 
-                {/* Fun Breakdown */}
-                {nutritionData?.ingredientBreakdown && nutritionData.ingredientBreakdown.length > 0 && (
+                {/* Enhanced Breakdown */}
+                {nutritionData?.contributingIngredients && nutritionData.contributingIngredients.length > 0 && (
                   <div className="space-y-3">
                     <h4 className="font-medium text-sm text-sage-800">🥦 Fruit & Veg Per Serving:</h4>
                     
                     <div className="space-y-2">
-                      {nutritionData.ingredientBreakdown
-                        .map((item, index) => {
-                          // Calculate per-serving portions
-                          const perServingPortions = item.portions / (recipe.servings || 1);
-                          const perServingGrams = Math.round(item.estimatedGrams / (recipe.servings || 1));
-                          
-                          // Apply 1/0.5/0 logic
-                          let displayPortions;
-                          if (perServingPortions >= 1) {
-                            displayPortions = 1;
-                          } else if (perServingPortions >= 0.5) {
-                            displayPortions = 0.5;
-                          } else {
-                            displayPortions = 0;
-                          }
-                          
-                          return { ...item, displayPortions, perServingGrams, index };
-                        })
-                        .filter(item => item.displayPortions > 0)
-                        .map((item) => (
-                        <div key={item.index} className="text-sm">
+                      {nutritionData.contributingIngredients.map((item, index) => (
+                        <div key={index} className="text-sm">
                           <span className="font-medium text-sage-800">{item.ingredient}</span>
-                          <span className="text-sage-600"> – {item.displayPortions} portion{item.displayPortions !== 1 ? 's' : ''} ({item.perServingGrams}g)</span>
+                          <span className="text-sage-600"> – {item.portions} portion{item.portions !== 1 ? 's' : ''} ({item.grams}g)</span>
+                        </div>
+                      ))}
+                      
+                      {/* Show referenced (non-counting) ingredients */}
+                      {nutritionData.referencedIngredients && nutritionData.referencedIngredients.length > 0 && (
+                        <div className="pt-2 border-t border-sage/20">
+                          <p className="text-sm text-gray-600">
+                            🧂 Other ingredients ({nutritionData.referencedIngredients
+                              .map(item => item.ingredient.toLowerCase())
+                              .join(', ')}) provide small amounts but don't count towards your 5 A Day.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Fallback to old format if new format not available */}
+                {(!nutritionData?.contributingIngredients || nutritionData.contributingIngredients.length === 0) && 
+                 nutritionData?.perServingAnalysis && nutritionData.perServingAnalysis.length > 0 && (
+                  <div className="space-y-3">
+                    <h4 className="font-medium text-sm text-sage-800">🥦 Fruit & Veg Per Serving:</h4>
+                    
+                    <div className="space-y-2">
+                      {nutritionData.perServingAnalysis
+                        .filter(item => item.cappedPortions > 0)
+                        .map((item, index) => (
+                        <div key={index} className="text-sm">
+                          <span className="font-medium text-sage-800">{item.ingredient}</span>
+                          <span className="text-sage-600"> – {item.cappedPortions} portion{item.cappedPortions !== 1 ? 's' : ''} ({item.perServingGrams}g)</span>
                         </div>
                       ))}
                       
                       {/* Show non-counting ingredients */}
-                      {nutritionData.ingredientBreakdown.some(item => {
-                        const perServingPortions = item.portions / (recipe.servings || 1);
-                        return perServingPortions < 0.5;
-                      }) && (
+                      {nutritionData.perServingAnalysis.some(item => item.cappedPortions === 0) && (
                         <div className="pt-2 border-t border-sage/20">
                           <p className="text-sm text-gray-600">
-                            🧂 Other ingredients ({nutritionData.ingredientBreakdown
-                              .filter(item => {
-                                const perServingPortions = item.portions / (recipe.servings || 1);
-                                return perServingPortions < 0.5;
-                              })
+                            🧂 Other ingredients ({nutritionData.perServingAnalysis
+                              .filter(item => item.cappedPortions === 0)
                               .map(item => item.ingredient.toLowerCase())
-                              .join(', ')}, etc.) do not count towards your 5 A Day.
+                              .join(', ')}) provide small amounts but don't count towards your 5 A Day.
                           </p>
                         </div>
                       )}

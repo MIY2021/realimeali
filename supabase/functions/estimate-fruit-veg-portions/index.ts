@@ -41,7 +41,9 @@ serve(async (req) => {
       return new Response(JSON.stringify({ 
         portions: existingRecipe.fruit_veg_portions,
         breakdown: existingRecipe.fruit_veg_breakdown,
-        ingredientBreakdown: existingRecipe.fruit_veg_ingredient_breakdown || [],
+        perServingAnalysis: existingRecipe.fruit_veg_ingredient_breakdown || [],
+        contributingIngredients: [], // Legacy data - will be generated fresh on next call
+        referencedIngredients: [], // Legacy data - will be generated fresh on next call  
         recommendations: existingRecipe.fruit_veg_recommendations || [],
         totalGrams: existingRecipe.fruit_veg_total_grams,
         cached: true 
@@ -50,53 +52,72 @@ serve(async (req) => {
       });
     }
 
-    // Prepare prompt for OpenAI with detailed NHS guidelines
+    // Prepare enhanced prompt with comprehensive weight references and NHS guidelines
     const ingredientsList = ingredients.join('\n');
-    const prompt = `Analyze the following recipe ingredients and estimate how many NHS "5 A Day" fruit and vegetable portions this recipe provides per serving.
+    const prompt = `Analyze the following recipe ingredients using comprehensive weight references and NHS "5 A Day" guidelines. Follow this EXACT process:
 
+STEP 1: ANALYZE TOTAL RECIPE WEIGHTS
+First estimate total weight for each fruit/vegetable ingredient using these reference weights:
+
+🍎 FRUITS (avg weight per whole fruit):
+Apple: 150–200g | Apricot: 35–50g | Avocado: 150–200g | Banana: 120–150g | Blackberry: 5–10g | Blueberry: 0.5–1g | Cantaloupe: 800–1000g | Cherry: 5–10g | Cranberry: 5–10g | Fig: 35–50g | Grape: 5–10g | Kiwi: 100–150g | Lemon/Lime: 80–100g | Mango: 200–300g | Nectarine/Peach/Pear: 150–200g | Papaya: 500–800g | Pineapple: 1000–1500g | Plum: 59–72g | Raspberry: 3–6g | Strawberry: 10–20g
+
+🥕 VEGETABLES (avg weight per unit):
+Beetroot: 150–200g | Broccoli head: 150–200g | Brussels sprout: 10–30g | Cabbage head: 500–800g | Carrot (medium): 60–80g | Cauliflower head: 500–1000g | Celery stalk: 20g (whole bunch ~450g) | Courgette/Zucchini: 100–200g | Cucumber: 150–250g | Aubergine/Eggplant: 200–400g | Mushroom (button): 15–30g | Onion (medium): 100–150g | Bell pepper: 120–180g | Sweet potato: 150–300g | Tomato (medium): 100–150g
+
+COOKING MEASUREMENTS:
+- 2 cups fresh spinach ≈ 60g | 1 cup chopped onions ≈ 80g | 2 cups marinara sauce ≈ 480g | 1 cup canned tomatoes ≈ 240g
+
+STEP 2: DIVIDE BY SERVINGS (${servings} servings)
+Calculate per-serving weight for each ingredient by dividing total weight by ${servings}.
+
+STEP 3: APPLY NHS GUIDELINES PER SERVING
 NHS 5 A Day Guidelines (1 portion = 80g):
+- CRITICAL RULE: Maximum 1 portion can be counted per ingredient type per serving, regardless of actual weight
+- Use 1/0.5/0 logic: ≥80g = 1 portion, 40-79g = 0.5 portions, <40g = 0 portions
+- Exclusions: potatoes, herbs/spices (unless substantial), garlic
 
-FRUIT PORTIONS:
-- Small fresh fruit: 2+ pieces (2 plums, 2 satsumas, 2 kiwi, 3 apricots, 6 lychees, 7 strawberries, 14 cherries)
-- Medium fresh fruit: 1 piece (1 apple, banana, pear, orange, nectarine)  
-- Large fresh fruit: 1/2 grapefruit, 1 slice papaya, 1 slice melon (5cm), 1 large slice pineapple, 2 slices mango (5cm)
-- Dried fruit: 30g (1 heaped tbsp raisins/sultanas, 1 tbsp mixed fruit, 2 figs, 3 prunes)
-- Tinned/frozen fruit: same as fresh quantities
+STEP 4: BUILD FINAL SCORE
+Sum all contributing portions per serving (maximum 1.0 per ingredient type).
 
-VEGETABLE PORTIONS:
-- Green vegetables: 2 broccoli spears, 2 heaped tbsp cooked spinach, 4 heaped tbsp kale/spring greens/green beans
-- Cooked vegetables: 3 heaped tbsp (carrots, peas, sweetcorn), 8 cauliflower florets
-- Salad vegetables: 3 celery sticks, 5cm cucumber, 1 medium tomato, 7 cherry tomatoes
-- Pulses/beans: 3 heaped tbsp (max 1 portion total regardless of amount)
-- Onions: 1 medium onion = ~1 portion, garlic doesn't count unless substantial
-
-EXCLUSIONS:
-- Potatoes, yams, cassava, plantain (starchy foods)
-- Herbs and spices (unless substantial quantities like fresh herb salads)
-- Fruit juice/smoothies (limited to 1 portion max total)
-
-Ingredients for ${servings} servings:
+Recipe for ${servings} servings:
 ${ingredientsList}
 
-Provide detailed analysis with precise reasoning based on NHS guidelines above:
+Return this exact JSON structure with per-serving analysis:
 
 {
-  "ingredientBreakdown": [
+  "perServingAnalysis": [
     {
-      "ingredient": "specific ingredient name from list",
-      "estimatedGrams": number,
-      "portions": number,
-      "reasoning": "detailed explanation referencing NHS guidelines (e.g. '1 medium onion = 80g = 1 portion per NHS guidelines')"
+      "ingredient": "ingredient name from list",
+      "totalGrams": number,
+      "perServingGrams": number,
+      "cappedPortions": number,
+      "reasoning": "detailed calculation (e.g., '480g marinara sauce ÷ 4 servings = 120g per serving = 1.0 portion (capped at NHS maximum)')"
     }
   ],
-  "summary": "concise explanation of calculation method and total",
-  "totalGrams": number,
-  "portions": number,
+  "contributingIngredients": [
+    {
+      "ingredient": "name",
+      "portions": number,
+      "grams": number
+    }
+  ],
+  "referencedIngredients": [
+    {
+      "ingredient": "name", 
+      "actualPortions": number,
+      "grams": number,
+      "reason": "why it doesn't count toward total"
+    }
+  ],
+  "summary": "concise explanation emphasizing per-serving analysis and NHS capping",
+  "totalPortionsPerServing": number,
+  "totalGramsPerServing": number,
   "recommendations": [
     {
-      "suggestion": "specific food to add",
+      "suggestion": "specific addition",
       "portionIncrease": number,
-      "reasoning": "why this complements the meal"
+      "reasoning": "why this helps"
     }
   ]
 }`;
@@ -112,11 +133,11 @@ Provide detailed analysis with precise reasoning based on NHS guidelines above:
         messages: [
           { 
             role: 'system', 
-            content: 'You are a nutrition expert specializing in NHS 5 A Day guidelines. Provide accurate estimates of fruit and vegetable portions in recipes. Always return valid JSON.' 
+            content: 'You are a nutrition expert specializing in NHS 5 A Day guidelines. Follow the exact 4-step process: analyze total weights using reference data, divide by servings, apply NHS capping rules (max 1 portion per ingredient), calculate final score. Always return valid JSON with per-serving analysis.' 
           },
           { role: 'user', content: prompt }
         ],
-        temperature: 0.2,
+        temperature: 0.1,
         response_format: { type: 'json_object' }
       }),
     });
@@ -128,20 +149,20 @@ Provide detailed analysis with precise reasoning based on NHS guidelines above:
     const data = await response.json();
     const result = JSON.parse(data.choices[0].message.content);
     
-    // Validate and sanitize the result
-    let portions = parseFloat(result.portions) || 0;
+    // Validate and sanitize the per-serving result
+    let portions = parseFloat(result.totalPortionsPerServing) || 0;
     portions = Math.max(0, Math.min(5, portions)); // Clamp between 0 and 5
     portions = Math.round(portions * 2) / 2; // Round to nearest 0.5
 
-    // Update the recipe with the complete analysis data
+    // Update the recipe with the enhanced analysis data
     const { error: updateError } = await supabase
       .from('recipes')
       .update({ 
         fruit_veg_portions: portions,
-        fruit_veg_breakdown: result.summary || result.breakdown,
-        fruit_veg_ingredient_breakdown: result.ingredientBreakdown || [],
+        fruit_veg_breakdown: result.summary,
+        fruit_veg_ingredient_breakdown: result.perServingAnalysis || [],
         fruit_veg_recommendations: result.recommendations || [],
-        fruit_veg_total_grams: result.totalGrams
+        fruit_veg_total_grams: result.totalGramsPerServing
       })
       .eq('id', recipeId);
 
@@ -149,14 +170,16 @@ Provide detailed analysis with precise reasoning based on NHS guidelines above:
       console.error('Error updating recipe:', updateError);
     }
 
-    console.log(`Estimated ${portions} fruit/veg portions for recipe ${recipeId}`);
+    console.log(`Estimated ${portions} fruit/veg portions per serving for recipe ${recipeId}`);
 
     return new Response(JSON.stringify({ 
       portions,
-      breakdown: result.summary || result.breakdown,
-      ingredientBreakdown: result.ingredientBreakdown || [],
+      breakdown: result.summary,
+      perServingAnalysis: result.perServingAnalysis || [],
+      contributingIngredients: result.contributingIngredients || [],
+      referencedIngredients: result.referencedIngredients || [],
       recommendations: result.recommendations || [],
-      totalGrams: result.totalGrams,
+      totalGrams: result.totalGramsPerServing,
       cached: false 
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

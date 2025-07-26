@@ -24,6 +24,10 @@ export interface Recipe {
   source_url?: string; // URL the recipe was imported from
   import_method?: string; // How the recipe was created
   fruit_veg_portions?: number; // Estimated 5-a-day portions per serving
+  fruit_veg_breakdown?: string; // Summary of fruit/veg analysis
+  fruit_veg_ingredient_breakdown?: any; // Detailed per-ingredient analysis (JSON)
+  fruit_veg_recommendations?: any; // Suggestions to boost score (JSON)
+  fruit_veg_total_grams?: number; // Total grams of fruit/veg per serving
 }
 
 export interface RecipeNote {
