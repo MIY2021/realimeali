@@ -61,7 +61,21 @@ export const NutritionalInfoSection = ({ recipe }: NutritionalInfoSectionProps) 
     if (!forceRefresh && (nutritionData && hasBreakdown) || !recipe.ingredients?.length || isLoading) return;
     
     setIsLoading(true);
+    
+    // Set a timeout to prevent indefinite loading
+    const timeoutId = setTimeout(() => {
+      console.log('Nutrition analysis timeout for recipe:', recipe.title);
+      setIsLoading(false);
+      setNutritionData({ 
+        portions: recipe.fruit_veg_portions || 0, 
+        cached: false,
+        breakdown: "Analysis timeout - please try refreshing"
+      });
+    }, 30000); // 30 second timeout
+
     try {
+      console.log('Fetching nutrition data for:', recipe.title, 'with ingredients:', recipe.ingredients.length);
+      
       // Get detailed estimation data using Supabase client
       const { data, error } = await supabase.functions.invoke('estimate-fruit-veg-portions', {
         body: {
@@ -71,25 +85,28 @@ export const NutritionalInfoSection = ({ recipe }: NutritionalInfoSectionProps) 
         }
       });
 
+      clearTimeout(timeoutId);
+
       if (!error && data) {
-        console.log('Nutrition data received:', data);
+        console.log('Nutrition data received successfully for:', recipe.title, data);
         setNutritionData(data);
       } else if (error) {
-        console.error('Error from AI function:', error);
+        console.error('Error from AI function for recipe', recipe.title, ':', error);
         // Set a fallback state to indicate error
         setNutritionData({ 
           portions: recipe.fruit_veg_portions || 0, 
           cached: false,
-          breakdown: "Unable to generate detailed breakdown"
+          breakdown: `Analysis failed: ${error.message || 'Unknown error'}`
         });
       }
     } catch (error) {
-      console.error('Error fetching nutrition data:', error);
+      clearTimeout(timeoutId);
+      console.error('Error fetching nutrition data for recipe', recipe.title, ':', error);
       // Set a fallback state to indicate error
       setNutritionData({ 
         portions: recipe.fruit_veg_portions || 0, 
         cached: false,
-        breakdown: "Unable to generate detailed breakdown"
+        breakdown: `Network error: ${error instanceof Error ? error.message : 'Connection failed'}`
       });
     } finally {
       setIsLoading(false);
