@@ -24,6 +24,13 @@ interface CreateRecipeTabNavigationProps {
 
 const baseTabOptions: TabOption[] = [
   { 
+    value: "whatcanImake", 
+    label: "What Can I Make?", 
+    emoji: "🍽️",
+    icon: Sparkles,
+    description: "Tell us your ingredients and get personalized recipe suggestions"
+  },
+  { 
     value: "url", 
     label: "From Website", 
     emoji: "🌐",
@@ -134,7 +141,7 @@ export function CreateRecipeTabNavigation({
         ) : (
           /* Desktop Tabs - Fixed width to prevent layout shift */
           <div className="mb-4 sm:mb-6">
-            <TabsList className={`grid w-full ${isEditMode ? 'grid-cols-1' : 'grid-cols-5'} mb-3 min-h-[40px]`}>
+            <TabsList className={`grid w-full ${isEditMode ? 'grid-cols-1' : 'grid-cols-6'} mb-3 min-h-[40px]`}>
               {tabOptions.map((tab) => (
                 <TabsTrigger key={tab.value} value={tab.value} className="p-2 min-w-0 flex-1">
                   <span className="mr-2">{tab.emoji}</span>

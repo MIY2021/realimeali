@@ -106,6 +106,30 @@ export function CreateRecipeContainer({ editingRecipe, isEditMode = false, defau
     setIsOpen(true);
   };
 
+  const handleSelectWhatCanIMakeRecipe = (selectedRecipe: any) => {
+    console.log('Selected recipe from What Can I Make:', selectedRecipe);
+    
+    // Populate the form with the selected recipe
+    recipeFormHook.setNewRecipe({
+      ...recipeFormHook.newRecipe,
+      title: selectedRecipe.title || '',
+      description: selectedRecipe.description || '',
+      ingredients: selectedRecipe.ingredients || [],
+      instructions: selectedRecipe.instructions || [],
+      prep_time: selectedRecipe.prep_time || 15,
+      cook_time: selectedRecipe.cook_time || 30,
+      servings: selectedRecipe.servings || 4,
+      meal_type: selectedRecipe.meal_type || '',
+      cuisine_region: selectedRecipe.cuisine_region || '',
+      complexity_level: selectedRecipe.complexity_level || 'beginner',
+      diet_lifestyle: selectedRecipe.diet_lifestyle || [],
+    });
+
+    // Switch to manual entry tab for editing
+    setActiveTab('manual');
+    setRecipeOrigin('whatcanImake');
+  };
+
   const handleTabChange = (tab: string) => {
     // Track if manual tab was clicked directly
     if (tab === 'manual') {
@@ -190,6 +214,7 @@ export function CreateRecipeContainer({ editingRecipe, isEditMode = false, defau
         onCancel={handlers.handleCancel}
         isEditMode={isEditMode}
         isFromAI={isFromAI}
+        onSelectWhatCanIMakeRecipe={handleSelectWhatCanIMakeRecipe}
       />
     </div>
   );

@@ -21,6 +21,7 @@ interface CreateRecipeTabsWrapperProps {
   onCancel: () => void;
   isEditMode?: boolean;
   isFromAI?: boolean;
+  onSelectWhatCanIMakeRecipe?: (recipe: any) => void;
 }
 
 export function CreateRecipeTabsWrapper({
@@ -39,6 +40,7 @@ export function CreateRecipeTabsWrapper({
   onCancel,
   isEditMode = false,
   isFromAI = false,
+  onSelectWhatCanIMakeRecipe,
 }: CreateRecipeTabsWrapperProps) {
   
   const status = useRecipeCompletionStatus({ newRecipe: recipeFormHook.newRecipe });
@@ -63,6 +65,7 @@ export function CreateRecipeTabsWrapper({
             onProcessImage={onProcessImage}
             onGenerateRecipe={onGenerateRecipe}
             onGenerateImage={onGenerateImage}
+            onSelectWhatCanIMakeRecipe={onSelectWhatCanIMakeRecipe}
           />
         </CreateRecipeTabNavigation>
       </div>
