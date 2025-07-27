@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Heart, ChevronDown, ChevronRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Heart, ChevronDown, ChevronRight, RotateCcw } from "lucide-react";
 import { Recipe } from "@/types";
 import { FruitVegIndicator } from "./FruitVegIndicator";
 import { useFruitVegEstimation } from "@/hooks/useFruitVegEstimation";
@@ -48,8 +49,16 @@ export const NutritionalInfoSection = ({ recipe }: NutritionalInfoSectionProps) 
   
   const { estimatePortions } = useFruitVegEstimation();
 
-  const fetchNutritionData = async () => {
-    if (nutritionData || !recipe.ingredients?.length || isLoading) return;
+  const fetchNutritionData = async (forceRefresh = false) => {
+    // Check if we need to fetch data
+    const hasScore = recipe.fruit_veg_portions && recipe.fruit_veg_portions > 0;
+    const hasBreakdown = nutritionData && (
+      nutritionData.contributingIngredients?.length || 
+      nutritionData.perServingAnalysis?.length
+    );
+    
+    // Only fetch if: no data at all, or has score but missing breakdown, or force refresh
+    if (!forceRefresh && (nutritionData && hasBreakdown) || !recipe.ingredients?.length || isLoading) return;
     
     setIsLoading(true);
     try {
@@ -67,20 +76,38 @@ export const NutritionalInfoSection = ({ recipe }: NutritionalInfoSectionProps) 
         setNutritionData(data);
       } else if (error) {
         console.error('Error from AI function:', error);
+        // Set a fallback state to indicate error
+        setNutritionData({ 
+          portions: recipe.fruit_veg_portions || 0, 
+          cached: false,
+          breakdown: "Unable to generate detailed breakdown"
+        });
       }
     } catch (error) {
       console.error('Error fetching nutrition data:', error);
+      // Set a fallback state to indicate error
+      setNutritionData({ 
+        portions: recipe.fruit_veg_portions || 0, 
+        cached: false,
+        breakdown: "Unable to generate detailed breakdown"
+      });
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Fetch nutrition data on mount to enable ingredient breakdown when expanded
+  // Fetch nutrition data on mount or when we have a score but missing breakdown
   useEffect(() => {
-    if (!nutritionData && !isLoading) {
+    const hasScore = recipe.fruit_veg_portions && recipe.fruit_veg_portions > 0;
+    const hasBreakdown = nutritionData && (
+      nutritionData.contributingIngredients?.length || 
+      nutritionData.perServingAnalysis?.length
+    );
+    
+    if (!isLoading && (!nutritionData || (hasScore && !hasBreakdown))) {
       fetchNutritionData();
     }
-  }, [recipe.id, nutritionData, isLoading]);
+  }, [recipe.id, recipe.fruit_veg_portions, nutritionData, isLoading]);
 
   const portions = recipe.fruit_veg_portions || 0;
   const hasNutritionInfo = portions > 0;
@@ -130,14 +157,32 @@ export const NutritionalInfoSection = ({ recipe }: NutritionalInfoSectionProps) 
             {hasNutritionInfo ? (
               <div className="space-y-4">
                 {/* Header */}
-                <div>
+                <div className="flex items-center justify-between">
                   <p className="text-sm text-muted-foreground">
                     Total: {portions} out of 5 recommended daily portions
                   </p>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => fetchNutritionData(true)}
+                    disabled={isLoading}
+                    className="h-7 px-2 text-xs"
+                  >
+                    <RotateCcw className={`h-3 w-3 mr-1 ${isLoading ? 'animate-spin' : ''}`} />
+                    Refresh Analysis
+                  </Button>
                 </div>
 
+                {/* Loading state for breakdown */}
+                {isLoading && (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <RotateCcw className="h-4 w-4 animate-spin" />
+                    Analyzing ingredient breakdown...
+                  </div>
+                )}
+
                 {/* Enhanced Breakdown */}
-                {nutritionData?.contributingIngredients && nutritionData.contributingIngredients.length > 0 && (
+                {!isLoading && nutritionData?.contributingIngredients && nutritionData.contributingIngredients.length > 0 && (
                   <div className="space-y-3">
                     <h4 className="font-medium text-sm text-sage-800">🥦 Fruit & Veg Per Serving:</h4>
                     
@@ -163,8 +208,19 @@ export const NutritionalInfoSection = ({ recipe }: NutritionalInfoSectionProps) 
                   </div>
                 )}
 
+                {/* Fallback message when we have score but no breakdown */}
+                {!isLoading && hasNutritionInfo && !nutritionData?.contributingIngredients?.length && 
+                 !nutritionData?.perServingAnalysis?.length && (
+                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+                    <p className="text-sm text-amber-800">
+                      <strong>Nutrition score available but detailed breakdown is missing.</strong><br/>
+                      This can happen with older recipes. Try clicking "Refresh Analysis" to generate a detailed breakdown.
+                    </p>
+                  </div>
+                )}
+
                 {/* Fallback to old format if new format not available */}
-                {(!nutritionData?.contributingIngredients || nutritionData.contributingIngredients.length === 0) && 
+                {!isLoading && (!nutritionData?.contributingIngredients || nutritionData.contributingIngredients.length === 0) && 
                  nutritionData?.perServingAnalysis && nutritionData.perServingAnalysis.length > 0 && (
                   <div className="space-y-3">
                     <h4 className="font-medium text-sm text-sage-800">🥦 Fruit & Veg Per Serving:</h4>
@@ -195,7 +251,7 @@ export const NutritionalInfoSection = ({ recipe }: NutritionalInfoSectionProps) 
                 )}
 
                 {/* Simple Recommendations */}
-                {nutritionData?.recommendations && nutritionData.recommendations.length > 0 && (
+                {!isLoading && nutritionData?.recommendations && nutritionData.recommendations.length > 0 && (
                   <div className="space-y-3">
                     <h4 className="font-medium text-sm text-sage-800">🌟 Boost Your Score:</h4>
                     <div className="space-y-2">
