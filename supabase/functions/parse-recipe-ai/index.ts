@@ -590,7 +590,30 @@ Return ONLY valid JSON. No explanations.`;
       // AI recipe generation
       console.log('Generating recipe with AI for:', body.generateRequest);
       
-      systemPrompt = `You are a creative recipe generator. Create an original recipe based on the user's request and classify it across 6 dimensions.
+      // Check if this is a quick ideas only request
+      if (body.quickIdeasOnly) {
+        systemPrompt = `You are a creative recipe idea generator. Generate exactly 3 distinct recipe ideas based on the user's request.
+
+Return ONLY a JSON array in this EXACT format:
+[
+  {"title": "Recipe Name 1", "description": "Brief appealing description"},
+  {"title": "Recipe Name 2", "description": "Brief appealing description"},
+  {"title": "Recipe Name 3", "description": "Brief appealing description"}
+]
+
+Requirements:
+- Titles should be creative, appetizing, and cookbook-quality
+- Descriptions should be 1 sentence, max 20 words, and make people want to cook it
+- Make the 3 ideas distinct in cooking style, cuisine, or approach
+- Focus on making titles irresistible and engaging
+
+Return ONLY the JSON array, no other text.`;
+
+        userPrompt = body.generateRequest;
+        
+      } else {
+        // Full recipe generation
+        systemPrompt = `You are a creative recipe generator. Create an original recipe based on the user's request and classify it across 6 dimensions.
 
 CRITICAL: You MUST carefully examine ingredients for meat content. If ANY meat (beef, pork, lamb, chicken, turkey, fish, seafood, etc.) is present, the recipe CANNOT be classified as "vegetarian" or "vegan". Be extremely careful about this classification.
 
@@ -639,21 +662,22 @@ If you detect ANY meat ingredients (ground beef, mince, chicken, etc.), do NOT i
 
 Create realistic recipes with proper ingredient amounts and detailed cooking steps. Return ONLY valid JSON.`;
 
-      let generationPrompt = body.generateRequest;
-      
-      // Add style preferences to the prompt
-      if (body.stylePreferences && body.stylePreferences.length > 0) {
-        const styleDescriptions = {
-          'quick-easy': 'Make this recipe quick and easy with minimal prep time and simple techniques',
-          'cheap-cheerful': 'Focus on budget-friendly ingredients and cost-effective cooking methods',
-          'michelin-star': 'Create an elevated, restaurant-quality dish with sophisticated techniques and presentation'
-        };
+        let generationPrompt = body.generateRequest;
         
-        const styles = body.stylePreferences.map(style => styleDescriptions[style] || style).join(', ');
-        generationPrompt += `\n\nStyle preferences: ${styles}`;
+        // Add style preferences to the prompt
+        if (body.stylePreferences && body.stylePreferences.length > 0) {
+          const styleDescriptions = {
+            'quick-easy': 'Make this recipe quick and easy with minimal prep time and simple techniques',
+            'cheap-cheerful': 'Focus on budget-friendly ingredients and cost-effective cooking methods',
+            'michelin-star': 'Create an elevated, restaurant-quality dish with sophisticated techniques and presentation'
+          };
+          
+          const styles = body.stylePreferences.map(style => styleDescriptions[style] || style).join(', ');
+          generationPrompt += `\n\nStyle preferences: ${styles}`;
+        }
+        
+        userPrompt = `Generate a recipe for: ${generationPrompt}`;
       }
-      
-      userPrompt = `Generate a recipe for: ${generationPrompt}`;
       
     } else {
       throw new Error('Missing required parameters. Provide websiteUrl, recipeText, image with mimeType, or generateRequest.');
@@ -669,6 +693,20 @@ Create realistic recipes with proper ingredient amounts and detailed cooking ste
       // Clean the JSON response before parsing
       const cleanedContent = cleanJsonResponse(content_text);
       console.log('Cleaned content:', cleanedContent);
+      
+      // Handle quick ideas response (array format)
+      if (body.quickIdeasOnly) {
+        const quickIdeas = JSON.parse(cleanedContent);
+        
+        if (Array.isArray(quickIdeas)) {
+          console.log('Quick ideas generated successfully:', quickIdeas.length);
+          return new Response(JSON.stringify({ quickIdeas }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        } else {
+          throw new Error('Expected array format for quick ideas');
+        }
+      }
       
       const parsedRecipe = JSON.parse(cleanedContent);
       
