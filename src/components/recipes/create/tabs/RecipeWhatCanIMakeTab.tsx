@@ -57,13 +57,15 @@ export function RecipeWhatCanIMakeTab({ onSelectRecipe }: RecipeWhatCanIMakeTabP
     setQuickIdeas([]);
 
     try {
-      const prompt = `Generate 3 quick recipe ideas for ${mealType.toLowerCase()} with ${difficulty.toLowerCase()} difficulty using these ingredients: ${ingredients}. For each recipe, provide only:
-1. A creative, appealing title
-2. A one-sentence description (max 20 words)
+      const prompt = `Generate 3 exciting recipe ideas for ${mealType.toLowerCase()} with ${difficulty.toLowerCase()} difficulty using these ingredients: ${ingredients}. 
+
+Create recipe book-worthy titles that sound delicious and enticing. For each recipe, provide only:
+1. An exciting, mouth-watering title (like you'd see in a premium cookbook)
+2. A one-sentence description (max 20 words) that makes people want to cook it
 
 Format as JSON: [{"title": "Recipe Name", "description": "Short description"}, ...]
 
-Make them distinct in cooking style, cuisine, or approach.`;
+Make them distinct in cooking style, cuisine, or approach. Focus on making the titles irresistible and cookbook-quality.`;
 
       const { data, error } = await supabase.functions.invoke('parse-recipe-ai', {
         body: {
@@ -233,13 +235,6 @@ Generate a full recipe with ingredients list, step-by-step instructions, cooking
                 onClick={() => !isGeneratingFullRecipe && handleSelectIdea(index)}
               >
                 <CardHeader className="pb-3">
-                  <div className="aspect-video bg-gradient-to-br from-sage/20 to-terracotta/20 rounded-md mb-3 overflow-hidden relative flex items-center justify-center">
-                    {selectedIdeaIndex === index && isGeneratingFullRecipe ? (
-                      <Loader className="h-8 w-8 animate-spin text-sage" />
-                    ) : (
-                      <UtensilsCrossed className="h-8 w-8 text-sage" />
-                    )}
-                  </div>
                   <CardTitle className="text-lg">{idea.title}</CardTitle>
                   <CardDescription className="text-sm line-clamp-2">
                     {idea.description}

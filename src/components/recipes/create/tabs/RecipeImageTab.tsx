@@ -3,7 +3,7 @@ import { useState, useRef } from "react";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Camera, FileText } from "lucide-react";
+import { Camera, FileText, Upload, Sparkles } from "lucide-react";
 
 interface RecipeImageTabProps {
   isProcessing: boolean;
@@ -44,15 +44,16 @@ export function RecipeImageTab({
   };
 
   return (
-    <div className="space-y-4">
-      {/* Helper text */}
-      <div className="text-sm text-muted-foreground">
-        <div className="hidden sm:block bg-blue-50 p-3 rounded-lg">
-          📷 Upload a photo of a recipe from a cookbook, magazine, or handwritten note and I'll read all the details and organize them automatically!
+    <div className="space-y-6 p-4 sm:p-6">
+      <div className="text-center space-y-2">
+        <div className="flex justify-center items-center gap-2 mb-2">
+          <Upload className="h-8 w-8 text-sage" />
+          <Sparkles className="h-6 w-6 text-yellow-500" />
         </div>
-        <div className="sm:hidden">
-          📷 Upload a photo of a recipe from a cookbook, magazine, or handwritten note and I'll read all the details and organize them automatically!
-        </div>
+        <h2 className="text-2xl font-bold text-navy">From Photo</h2>
+        <p className="text-muted-foreground">
+          Take a photo of a recipe card or cookbook page to extract the recipe
+        </p>
       </div>
       
       <div className="space-y-4">

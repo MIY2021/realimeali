@@ -3,7 +3,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Star } from "lucide-react";
 
 interface RecipeGenerateTabProps {
   aiPrompt: string;
@@ -41,15 +41,16 @@ export function RecipeGenerateTab({
   };
 
   return (
-    <div className="space-y-4">
-      {/* Helper text - left aligned, reduced padding */}
-      <div className="text-sm text-muted-foreground">
-        <div className="hidden sm:block bg-blue-50 p-3 rounded-lg">
-          I'll create a custom recipe based on your needs! Be as specific as you want about ingredients, dietary needs, cooking time, etc.
+    <div className="space-y-6 p-4 sm:p-6">
+      <div className="text-center space-y-2">
+        <div className="flex justify-center items-center gap-2 mb-2">
+          <Star className="h-8 w-8 text-sage" />
+          <Sparkles className="h-6 w-6 text-yellow-500" />
         </div>
-        <div className="sm:hidden">
-          I'll create a custom recipe based on your needs! Be as specific as you want about ingredients, dietary needs, cooking time, etc.
-        </div>
+        <h2 className="text-2xl font-bold text-navy">Generate with AI</h2>
+        <p className="text-muted-foreground">
+          Describe what you want to cook and let AI create a complete recipe
+        </p>
       </div>
       
       <div className="space-y-3">

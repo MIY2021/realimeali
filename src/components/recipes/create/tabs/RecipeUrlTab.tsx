@@ -5,7 +5,7 @@ import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CommunityRecipeSubmissionDialog } from "@/components/recipes/CommunityRecipeSubmissionDialog";
 import { EnhancedImageSelection } from "@/components/recipes/dialog/EnhancedImageSelection";
-import { AlertCircle, Check } from "lucide-react";
+import { AlertCircle, Check, Globe, Sparkles } from "lucide-react";
 
 interface RecipeUrlTabProps {
   recipeUrl: string;
@@ -56,15 +56,16 @@ export function RecipeUrlTab({
   const hasSuccessfullyImported = parsedRecipeData && !isProcessing;
 
   return (
-    <div className="space-y-4">
-      {/* Helper text */}
-      <div className="text-sm text-muted-foreground">
-        <div className="hidden sm:block bg-blue-50 p-3 rounded-lg">
-          🔗 Import recipes from cooking websites! I'll try to automatically grab the recipe details and find photos. If it doesn't work, try the "Paste Recipe Text" tab instead. Having trouble? Copy the recipe text and use the "Paste Recipe Text" tab for guaranteed results.
+    <div className="space-y-6 p-4 sm:p-6">
+      <div className="text-center space-y-2">
+        <div className="flex justify-center items-center gap-2 mb-2">
+          <Globe className="h-8 w-8 text-sage" />
+          <Sparkles className="h-6 w-6 text-yellow-500" />
         </div>
-        <div className="sm:hidden">
-          🔗 Import recipes from cooking websites! I'll try to automatically grab the recipe details and find photos. If it doesn't work, try the "Paste Recipe Text" tab instead. Having trouble? Copy the recipe text and use the "Paste Recipe Text" tab for guaranteed results.
-        </div>
+        <h2 className="text-2xl font-bold text-navy">From Website</h2>
+        <p className="text-muted-foreground">
+          Import recipes directly from cooking websites with one click
+        </p>
       </div>
       
       <div className="space-y-3">

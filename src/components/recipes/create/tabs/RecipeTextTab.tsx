@@ -1,6 +1,7 @@
 
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Pencil, Sparkles } from "lucide-react";
 
 interface RecipeTextTabProps {
   recipeText: string;
@@ -16,15 +17,16 @@ export function RecipeTextTab({
   onProcess 
 }: RecipeTextTabProps) {
   return (
-    <div className="space-y-4">
-      {/* Helper text - left aligned, reduced padding */}
-      <div className="text-sm text-muted-foreground">
-        <div className="hidden sm:block bg-blue-50 p-3 rounded-lg">
-          ✨ I'll automatically organize the title, ingredients, cooking steps, and suggest helpful categories!
+    <div className="space-y-6 p-4 sm:p-6">
+      <div className="text-center space-y-2">
+        <div className="flex justify-center items-center gap-2 mb-2">
+          <Pencil className="h-8 w-8 text-sage" />
+          <Sparkles className="h-6 w-6 text-yellow-500" />
         </div>
-        <div className="sm:hidden">
-          ✨ I'll automatically organize the title, ingredients, cooking steps, and suggest helpful categories!
-        </div>
+        <h2 className="text-2xl font-bold text-navy">Recipe Text</h2>
+        <p className="text-muted-foreground">
+          Paste a recipe from anywhere and our AI will format it perfectly
+        </p>
       </div>
       
       <div className="space-y-3">
