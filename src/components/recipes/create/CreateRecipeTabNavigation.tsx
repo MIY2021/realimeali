@@ -1,7 +1,7 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Globe, Upload, Sparkles, Pencil, Camera } from "lucide-react";
+import { Globe, Upload, Sparkles, Pencil, Camera, Star } from "lucide-react";
 import { RecipeOrigin } from "./CreateRecipeContainer";
 
 interface TabOption {
@@ -24,13 +24,6 @@ interface CreateRecipeTabNavigationProps {
 
 const baseTabOptions: TabOption[] = [
   { 
-    value: "whatcanImake", 
-    label: "What Can I Make?", 
-    emoji: "🍽️",
-    icon: Sparkles,
-    description: "Tell us your ingredients and get personalized recipe suggestions"
-  },
-  { 
     value: "url", 
     label: "From Website", 
     emoji: "🌐",
@@ -46,9 +39,9 @@ const baseTabOptions: TabOption[] = [
   },
   { 
     value: "generate", 
-    label: "AI Generate", 
-    emoji: "🤖",
-    icon: Sparkles,
+    label: "Generate with AI", 
+    emoji: "✨",
+    icon: Star,
     description: "Describe what you want to cook and let AI create a complete recipe"
   },
   { 
@@ -57,6 +50,13 @@ const baseTabOptions: TabOption[] = [
     emoji: "📝",
     icon: Pencil,
     description: "Paste a recipe from anywhere and our AI will format it perfectly"
+  },
+  { 
+    value: "whatcanImake", 
+    label: "What Can I Make?", 
+    emoji: "🍽️",
+    icon: Sparkles,
+    description: "Tell us your ingredients and get personalized recipe suggestions"
   },
   { 
     value: "manual", 

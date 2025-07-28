@@ -10,8 +10,14 @@ import { Loader, UtensilsCrossed, Sparkles, Clock, Star } from "lucide-react";
 import { useAiRecipeGeneration } from "@/hooks/useAiRecipeGeneration";
 import { useImageGeneration } from "@/hooks/useImageGeneration";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
-interface RecipeIdea {
+interface QuickRecipeIdea {
+  title: string;
+  description: string;
+}
+
+interface FullRecipeIdea {
   title: string;
   description: string;
   ingredients: string[];
@@ -27,64 +33,106 @@ interface RecipeIdea {
 }
 
 interface RecipeWhatCanIMakeTabProps {
-  onSelectRecipe: (recipe: RecipeIdea) => void;
+  onSelectRecipe: (recipe: FullRecipeIdea) => void;
 }
 
 export function RecipeWhatCanIMakeTab({ onSelectRecipe }: RecipeWhatCanIMakeTabProps) {
   const [ingredients, setIngredients] = useState("");
   const [mealType, setMealType] = useState("");
   const [difficulty, setDifficulty] = useState("");
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [recipeIdeas, setRecipeIdeas] = useState<RecipeIdea[]>([]);
-  const [loadingImages, setLoadingImages] = useState<Record<number, boolean>>({});
+  const [isGeneratingIdeas, setIsGeneratingIdeas] = useState(false);
+  const [isGeneratingFullRecipe, setIsGeneratingFullRecipe] = useState(false);
+  const [quickIdeas, setQuickIdeas] = useState<QuickRecipeIdea[]>([]);
+  const [selectedIdeaIndex, setSelectedIdeaIndex] = useState<number | null>(null);
 
   const { generateRecipe } = useAiRecipeGeneration();
-  const { handleGenerateImage } = useImageGeneration();
 
-  const generateRecipeIdeas = async () => {
+  const generateQuickIdeas = async () => {
     if (!ingredients.trim() || !mealType || !difficulty) {
       toast.error("Please fill in all fields");
       return;
     }
 
-    setIsGenerating(true);
-    setRecipeIdeas([]);
+    setIsGeneratingIdeas(true);
+    setQuickIdeas([]);
 
     try {
-      const prompt = `Generate 3 distinct ${mealType.toLowerCase()} recipes with ${difficulty.toLowerCase()} difficulty using these available ingredients: ${ingredients}. Each recipe should be different in style, cooking method, or cuisine. Make them creative but practical.`;
+      const prompt = `Generate 3 quick recipe ideas for ${mealType.toLowerCase()} with ${difficulty.toLowerCase()} difficulty using these ingredients: ${ingredients}. For each recipe, provide only:
+1. A creative, appealing title
+2. A one-sentence description (max 20 words)
 
-      // Generate 3 recipe ideas
-      const ideas: RecipeIdea[] = [];
-      for (let i = 0; i < 3; i++) {
-        const result = await generateRecipe({
-          prompt: prompt + ` Recipe ${i + 1}: Make this unique from the others.`,
-          stylePreferences: [difficulty, mealType]
-        });
+Format as JSON: [{"title": "Recipe Name", "description": "Short description"}, ...]
 
-        if (result) {
-          ideas.push({
-            ...result,
-            meal_type: mealType,
-            complexity_level: difficulty.toLowerCase(),
-          });
+Make them distinct in cooking style, cuisine, or approach.`;
+
+      const { data, error } = await supabase.functions.invoke('parse-recipe-ai', {
+        body: {
+          generateRequest: prompt,
+          quickIdeasOnly: true
         }
+      });
+
+      if (error) throw error;
+
+      if (data?.quickIdeas) {
+        setQuickIdeas(data.quickIdeas);
+      } else {
+        // Fallback: generate quick ideas manually
+        const fallbackIdeas = [
+          { title: `${difficulty} ${mealType} with ${ingredients.split(',')[0]}`, description: `A delicious ${mealType.toLowerCase()} using your available ingredients.` },
+          { title: `Quick ${ingredients.split(',')[0]} ${mealType}`, description: `Simple and tasty ${mealType.toLowerCase()} ready in minutes.` },
+          { title: `Creative ${mealType} Bowl`, description: `Mix and match your ingredients for a satisfying meal.` }
+        ];
+        setQuickIdeas(fallbackIdeas);
       }
 
-      setRecipeIdeas(ideas);
-
-      // For now, use placeholder images - image generation can be added later
-      setRecipeIdeas(ideas);
     } catch (error) {
-      console.error('Error generating recipe ideas:', error);
+      console.error('Error generating quick ideas:', error);
       toast.error("Failed to generate recipe ideas. Please try again.");
     } finally {
-      setIsGenerating(false);
+      setIsGeneratingIdeas(false);
     }
   };
 
-  const handleSelectRecipe = (idea: RecipeIdea) => {
-    toast.success(`Selected "${idea.title}" - taking you to the editor!`);
-    onSelectRecipe(idea);
+  const handleSelectIdea = async (ideaIndex: number) => {
+    const selectedIdea = quickIdeas[ideaIndex];
+    setSelectedIdeaIndex(ideaIndex);
+    setIsGeneratingFullRecipe(true);
+
+    try {
+      const fullPrompt = `Create a complete recipe for "${selectedIdea.title}". 
+Description: ${selectedIdea.description}
+Available ingredients: ${ingredients}
+Meal type: ${mealType}
+Difficulty: ${difficulty}
+
+Generate a full recipe with ingredients list, step-by-step instructions, cooking times, and servings.`;
+
+      const result = await generateRecipe({
+        prompt: fullPrompt,
+        stylePreferences: [difficulty, mealType]
+      });
+
+      if (result) {
+        const fullRecipe: FullRecipeIdea = {
+          ...result,
+          meal_type: mealType,
+          complexity_level: difficulty.toLowerCase(),
+        };
+        
+        toast.success(`Generated full recipe for "${selectedIdea.title}"!`);
+        onSelectRecipe(fullRecipe);
+      } else {
+        throw new Error('Failed to generate full recipe');
+      }
+
+    } catch (error) {
+      console.error('Error generating full recipe:', error);
+      toast.error("Failed to generate full recipe. Please try again.");
+    } finally {
+      setIsGeneratingFullRecipe(false);
+      setSelectedIdeaIndex(null);
+    }
   };
 
   return (
@@ -100,7 +148,7 @@ export function RecipeWhatCanIMakeTab({ onSelectRecipe }: RecipeWhatCanIMakeTabP
         </p>
       </div>
 
-      {recipeIdeas.length === 0 && (
+      {quickIdeas.length === 0 && (
         <div className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="ingredients">What ingredients do you have?</Label>
@@ -148,12 +196,12 @@ export function RecipeWhatCanIMakeTab({ onSelectRecipe }: RecipeWhatCanIMakeTabP
           </div>
 
           <Button 
-            onClick={generateRecipeIdeas} 
-            disabled={isGenerating || !ingredients.trim() || !mealType || !difficulty}
+            onClick={generateQuickIdeas} 
+            disabled={isGeneratingIdeas || !ingredients.trim() || !mealType || !difficulty}
             className="w-full"
             size="lg"
           >
-            {isGenerating ? (
+            {isGeneratingIdeas ? (
               <>
                 <Loader className="h-4 w-4 mr-2 animate-spin" />
                 Generating recipe ideas...
@@ -168,36 +216,28 @@ export function RecipeWhatCanIMakeTab({ onSelectRecipe }: RecipeWhatCanIMakeTabP
         </div>
       )}
 
-      {recipeIdeas.length > 0 && (
+      {quickIdeas.length > 0 && (
         <div className="space-y-4">
           <div className="text-center">
             <h3 className="text-lg font-semibold text-navy mb-2">Pick a recipe idea to continue...</h3>
-            <p className="text-sm text-muted-foreground">Click on any recipe to edit and save it to your collection</p>
+            <p className="text-sm text-muted-foreground">Click on any recipe to generate the full recipe</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {recipeIdeas.map((idea, index) => (
+            {quickIdeas.map((idea, index) => (
               <Card 
                 key={index} 
-                className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02]"
-                onClick={() => handleSelectRecipe(idea)}
+                className={`cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02] ${
+                  selectedIdeaIndex === index ? 'ring-2 ring-sage' : ''
+                }`}
+                onClick={() => !isGeneratingFullRecipe && handleSelectIdea(index)}
               >
                 <CardHeader className="pb-3">
-                  <div className="aspect-video bg-gray-100 rounded-md mb-3 overflow-hidden relative">
-                    {loadingImages[index] ? (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <Loader className="h-6 w-6 animate-spin text-sage" />
-                      </div>
-                    ) : idea.image ? (
-                      <img 
-                        src={idea.image} 
-                        alt={idea.title}
-                        className="w-full h-full object-cover"
-                      />
+                  <div className="aspect-video bg-gradient-to-br from-sage/20 to-terracotta/20 rounded-md mb-3 overflow-hidden relative flex items-center justify-center">
+                    {selectedIdeaIndex === index && isGeneratingFullRecipe ? (
+                      <Loader className="h-8 w-8 animate-spin text-sage" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-sage/20 to-terracotta/20">
-                        <UtensilsCrossed className="h-8 w-8 text-sage" />
-                      </div>
+                      <UtensilsCrossed className="h-8 w-8 text-sage" />
                     )}
                   </div>
                   <CardTitle className="text-lg">{idea.title}</CardTitle>
@@ -206,21 +246,23 @@ export function RecipeWhatCanIMakeTab({ onSelectRecipe }: RecipeWhatCanIMakeTabP
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="pt-0">
-                  <div className="flex flex-wrap gap-1 mb-3">
-                    <Badge variant="secondary" className="text-xs">
-                      <Clock className="h-3 w-3 mr-1" />
-                      {idea.prep_time + idea.cook_time}min
-                    </Badge>
-                    <Badge variant="outline" className="text-xs">
-                      {idea.complexity_level}
-                    </Badge>
-                    <Badge variant="outline" className="text-xs">
-                      {idea.servings} servings
-                    </Badge>
-                  </div>
-                  <Button variant="outline" className="w-full" size="sm">
-                    <Star className="h-3 w-3 mr-1" />
-                    Choose This Recipe
+                  <Button 
+                    variant="outline" 
+                    className="w-full" 
+                    size="sm"
+                    disabled={isGeneratingFullRecipe}
+                  >
+                    {selectedIdeaIndex === index && isGeneratingFullRecipe ? (
+                      <>
+                        <Loader className="h-3 w-3 mr-1 animate-spin" />
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <Star className="h-3 w-3 mr-1" />
+                        Choose This Recipe
+                      </>
+                    )}
                   </Button>
                 </CardContent>
               </Card>
@@ -231,11 +273,12 @@ export function RecipeWhatCanIMakeTab({ onSelectRecipe }: RecipeWhatCanIMakeTabP
             <Button 
               variant="ghost" 
               onClick={() => {
-                setRecipeIdeas([]);
+                setQuickIdeas([]);
                 setIngredients("");
                 setMealType("");
                 setDifficulty("");
               }}
+              disabled={isGeneratingFullRecipe}
             >
               ← Try Different Ingredients
             </Button>
