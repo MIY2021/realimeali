@@ -51,7 +51,7 @@ export function CreateRecipeContainer({ editingRecipe, isEditMode = false, defau
     handleGenerateImage(
       recipeFormHook.newRecipe.title,
       recipeFormHook.setImagePreview,
-      (url: string) => recipeFormHook.setNewRecipe({ ...recipeFormHook.newRecipe, image: url }),
+      recipeFormHook.setImageFromUrl, // Use the dedicated image URL setter to preserve state
       recipeFormHook.setIsGeneratingImage,
       recipeFormHook.setGenerationProgress,
       recipeFormHook.newRecipe.description,

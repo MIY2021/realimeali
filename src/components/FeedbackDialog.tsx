@@ -144,6 +144,7 @@ export function FeedbackDialog({ open, onClose }: FeedbackDialogProps) {
         description: "Thank you for your feedback! We'll review it soon.",
       });
 
+      // Reset form but keep dialog open to show success
       setFormData({
         email: user?.email || "",
         subject: "",
@@ -151,7 +152,11 @@ export function FeedbackDialog({ open, onClose }: FeedbackDialogProps) {
         type: "suggestion",
       });
       setSelectedImage(null);
-      onClose();
+      
+      // Close dialog after showing success message
+      setTimeout(() => {
+        onClose();
+      }, 2000);
     } catch (error) {
       console.error("Error submitting feedback:", error);
       toast({

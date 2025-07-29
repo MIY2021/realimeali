@@ -164,10 +164,7 @@ export default function Feedback() {
       });
       setSelectedImage(null);
       
-      // Navigate back after successful submission
-      setTimeout(() => {
-        navigate(-1);
-      }, 2000);
+      // Stay on page after successful submission
     } catch (error) {
       console.error("Error submitting feedback:", error);
       
