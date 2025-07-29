@@ -1,13 +1,15 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Plus } from "lucide-react";
+import { Sparkles, Plus, Trash2 } from "lucide-react";
 import { useRecipeForm } from "@/hooks/useRecipeForm";
 import { useRecipeProcessing } from "@/hooks/useRecipeProcessing";
 import { useImageGeneration } from "@/hooks/useImageGeneration";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useRealiChef } from "@/contexts/RealiChefContext";
+import { useDraftRecipes } from "@/hooks/useDraftRecipes";
 import { CreateRecipeTabsWrapper } from "./CreateRecipeTabsWrapper";
 import { useRecipeCreationHandlers, type RecipeOrigin } from "./hooks/useRecipeCreationHandlers";
+import { useToast } from "@/hooks/use-toast";
 
 export type { RecipeOrigin };
 
@@ -19,6 +21,8 @@ interface CreateRecipeContainerProps {
 
 export function CreateRecipeContainer({ editingRecipe, isEditMode = false, defaultTab }: CreateRecipeContainerProps) {
   const isMobile = useIsMobile();
+  const { toast } = useToast();
+  const { hasDraft, hasUnsavedChanges, saveDraft, loadDraft, clearDraft, markSaved, checkForUnsavedChanges } = useDraftRecipes();
 
   const [activeTab, setActiveTab] = useState(
     defaultTab || (isEditMode ? "manual" : "url")
@@ -35,6 +39,66 @@ export function CreateRecipeContainer({ editingRecipe, isEditMode = false, defau
 
   const { setIsOpen, updatePageContext } = useRealiChef();
 
+  // Load draft on mount (only for new recipes, not editing)
+  useEffect(() => {
+    if (!isEditMode && !editingRecipe && hasDraft) {
+      const draft = loadDraft();
+      if (draft) {
+        // Convert draft to full Recipe object by adding missing fields
+        const fullRecipe = {
+          ...draft,
+          id: '',
+          created_at: '',
+          updated_at: '',
+          created_by: '',
+        };
+        recipeFormHook.setNewRecipe(fullRecipe);
+        toast({
+          title: "Draft Loaded",
+          description: "Your previous recipe draft has been loaded.",
+        });
+      }
+    }
+  }, [isEditMode, editingRecipe, hasDraft, loadDraft, recipeFormHook, toast]);
+
+  // Clear draft when starting a new recipe (only when not editing and no existing recipe data)
+  useEffect(() => {
+    if (!isEditMode && !editingRecipe && !recipeFormHook.newRecipe.title && !recipeFormHook.newRecipe.description) {
+      clearDraft();
+    }
+  }, []);
+
+  // Auto-save draft for manual entry tab only
+  useEffect(() => {
+    if (!isEditMode && activeTab === "manual") {
+      const timeoutId = setTimeout(() => {
+        saveDraft(recipeFormHook.newRecipe);
+      }, 2000); // Auto-save after 2 seconds of no changes
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [recipeFormHook.newRecipe, activeTab, isEditMode, saveDraft]);
+
+  // Check for unsaved changes
+  useEffect(() => {
+    if (!isEditMode && activeTab === "manual") {
+      checkForUnsavedChanges(recipeFormHook.newRecipe);
+    }
+  }, [recipeFormHook.newRecipe, activeTab, isEditMode, checkForUnsavedChanges]);
+
+  // Add beforeunload event listener for unsaved changes warning
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges && !isEditMode) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [hasUnsavedChanges, isEditMode]);
+
   const handlers = useRecipeCreationHandlers({
     recipeFormHook,
     recipeProcessingHook,
@@ -46,6 +110,12 @@ export function CreateRecipeContainer({ editingRecipe, isEditMode = false, defau
     isEditMode,
     editingRecipe,
   });
+
+  // Wrap the save handler to include draft clearing
+  const wrappedSaveHandler = async () => {
+    await handlers.handleSaveRecipe();
+    markSaved(); // Clear draft after successful save
+  };
 
   const onGenerateImage = () => {
     handleGenerateImage(
@@ -160,6 +230,38 @@ export function CreateRecipeContainer({ editingRecipe, isEditMode = false, defau
     setActiveTab(tab);
   };
 
+  const handleClearDraft = () => {
+    clearDraft();
+    // Reset form to empty state
+    recipeFormHook.setNewRecipe({
+      id: '',
+      title: "",
+      description: "",
+      ingredients: [],
+      instructions: [],
+      prep_time: 15,
+      cook_time: 30,
+      servings: 4,
+      top_tip: "",
+      meal_type: undefined,
+      meal_types: [],
+      cuisine_region: undefined,
+      diet_lifestyle: [],
+      complexity_level: undefined,
+      image: undefined,
+      is_favorite: false,
+      has_cooked: false,
+      household_id: '',
+      created_at: '',
+      updated_at: '',
+      created_by: '',
+    });
+    toast({
+      title: "Draft Cleared",
+      description: "Your recipe draft has been cleared.",
+    });
+  };
+
   // Pass manualTabClicked to determine whether to show dynamic tab name
   const effectiveRecipeOrigin = (activeTab === 'manual' && manualTabClicked) ? 'manual' : recipeOrigin;
   
@@ -183,9 +285,21 @@ export function CreateRecipeContainer({ editingRecipe, isEditMode = false, defau
           </p>
         </div>
         
-        {/* Ask AI Chef Button - Only show in edit mode */}
-        {isEditMode && (
-          <div className="flex-shrink-0">
+        {/* Action Buttons */}
+        <div className="flex-shrink-0 flex gap-2">
+          {hasDraft && !isEditMode && (
+            <Button 
+              onClick={handleClearDraft}
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-2 text-sm"
+            >
+              <Trash2 className="h-4 w-4" />
+              Clear Draft
+            </Button>
+          )}
+          
+          {isEditMode && (
             <Button
               variant="outline"
               onClick={handleAskAIChef}
@@ -194,8 +308,8 @@ export function CreateRecipeContainer({ editingRecipe, isEditMode = false, defau
               <Sparkles className="h-4 w-4" />
               Ask AI Chef
             </Button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
       
       <CreateRecipeTabsWrapper
@@ -210,7 +324,7 @@ export function CreateRecipeContainer({ editingRecipe, isEditMode = false, defau
         onProcessImage={handlers.wrappedProcessImage}
         onGenerateRecipe={handlers.wrappedGenerateRecipe}
         onGenerateImage={onGenerateImage}
-        onSave={handlers.handleSaveRecipe}
+        onSave={wrappedSaveHandler}
         onCancel={handlers.handleCancel}
         isEditMode={isEditMode}
         isFromAI={isFromAI}
