@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Sparkles, Plus, Trash2 } from "lucide-react";
 import { useRecipeForm } from "@/hooks/useRecipeForm";
@@ -34,6 +34,7 @@ export function CreateRecipeContainer({ editingRecipe, isEditMode = false, defau
   // Keep hooks as objects instead of destructuring
   const recipeFormHook = useRecipeForm(isEditMode, editingRecipe);
   const recipeProcessingHook = useRecipeProcessing();
+  const recipeRef = useRef(recipeFormHook.newRecipe);
 
   const { handleGenerateImage } = useImageGeneration();
 
@@ -68,23 +69,28 @@ export function CreateRecipeContainer({ editingRecipe, isEditMode = false, defau
     }
   }, []);
 
+  // Update ref when recipe changes
+  useEffect(() => {
+    recipeRef.current = recipeFormHook.newRecipe;
+  }, [recipeFormHook.newRecipe]);
+
   // Auto-save draft for manual entry tab only with debouncing
   useEffect(() => {
     if (!isEditMode && activeTab === "manual") {
       const timeoutId = setTimeout(() => {
-        saveDraft(recipeFormHook.newRecipe);
+        saveDraft(recipeRef.current);
       }, 3000); // Auto-save after 3 seconds of no changes
 
       return () => clearTimeout(timeoutId);
     }
-  }, [recipeFormHook.newRecipe, activeTab, isEditMode, saveDraft]);
+  }, [activeTab, isEditMode, saveDraft]);
 
   // Check for unsaved changes
   useEffect(() => {
     if (!isEditMode && activeTab === "manual") {
-      checkForUnsavedChanges(recipeFormHook.newRecipe);
+      checkForUnsavedChanges(recipeRef.current);
     }
-  }, [recipeFormHook.newRecipe, activeTab, isEditMode, checkForUnsavedChanges]);
+  }, [activeTab, isEditMode, checkForUnsavedChanges]);
 
   // Add beforeunload event listener for unsaved changes warning
   useEffect(() => {
@@ -286,7 +292,7 @@ export function CreateRecipeContainer({ editingRecipe, isEditMode = false, defau
         </div>
         
         {/* Action Buttons */}
-        <div className="flex-shrink-0 flex flex-col items-end gap-2">
+        <div className="flex-shrink-0 flex flex-col items-start gap-2">
           {hasDraft && !isEditMode && draftInfo && (
             <div className="flex items-center gap-3 text-sm text-muted-foreground">
               <span>Draft saved at {draftInfo.formattedTime}</span>
