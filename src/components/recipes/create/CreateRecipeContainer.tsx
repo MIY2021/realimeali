@@ -74,23 +74,37 @@ export function CreateRecipeContainer({ editingRecipe, isEditMode = false, defau
     recipeRef.current = recipeFormHook.newRecipe;
   }, [recipeFormHook.newRecipe]);
 
-  // Auto-save draft for manual entry tab only with debouncing
+  // Auto-save draft for manual entry tab only - using interval instead of effect dependencies
   useEffect(() => {
     if (!isEditMode && activeTab === "manual") {
-      const timeoutId = setTimeout(() => {
-        saveDraft(recipeRef.current);
-      }, 3000); // Auto-save after 3 seconds of no changes
+      const intervalId = setInterval(() => {
+        const currentRecipe = recipeRef.current;
+        const hasContent = currentRecipe.title.trim() || 
+                          currentRecipe.description.trim() || 
+                          currentRecipe.ingredients.length > 0 || 
+                          currentRecipe.instructions.length > 0 ||
+                          currentRecipe.image;
+        
+        if (hasContent) {
+          saveDraft(currentRecipe);
+        }
+      }, 5000); // Auto-save every 5 seconds
 
-      return () => clearTimeout(timeoutId);
+      return () => clearInterval(intervalId);
     }
-  }, [activeTab, isEditMode, saveDraft]);
+  }, [activeTab, isEditMode]); // Removed saveDraft from dependencies
 
-  // Check for unsaved changes
+  // Check for unsaved changes - simplified
   useEffect(() => {
     if (!isEditMode && activeTab === "manual") {
+      const hasContent = Boolean(recipeRef.current.title.trim() || 
+                                recipeRef.current.description.trim() || 
+                                recipeRef.current.ingredients.length > 0 || 
+                                recipeRef.current.instructions.length > 0 ||
+                                recipeRef.current.image);
       checkForUnsavedChanges(recipeRef.current);
     }
-  }, [activeTab, isEditMode, checkForUnsavedChanges]);
+  }, [activeTab, isEditMode]); // Removed checkForUnsavedChanges from dependencies
 
   // Add beforeunload event listener for unsaved changes warning
   useEffect(() => {
