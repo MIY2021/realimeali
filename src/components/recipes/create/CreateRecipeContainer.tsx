@@ -22,7 +22,7 @@ interface CreateRecipeContainerProps {
 export function CreateRecipeContainer({ editingRecipe, isEditMode = false, defaultTab }: CreateRecipeContainerProps) {
   const isMobile = useIsMobile();
   const { toast } = useToast();
-  const { hasDraft, hasUnsavedChanges, saveDraft, loadDraft, clearDraft, markSaved, checkForUnsavedChanges } = useDraftRecipes();
+  const { hasDraft, hasUnsavedChanges, saveDraft, loadDraft, clearDraft, markSaved, checkForUnsavedChanges, draftInfo } = useDraftRecipes();
 
   const [activeTab, setActiveTab] = useState(
     defaultTab || (isEditMode ? "manual" : "url")
@@ -68,12 +68,12 @@ export function CreateRecipeContainer({ editingRecipe, isEditMode = false, defau
     }
   }, []);
 
-  // Auto-save draft for manual entry tab only
+  // Auto-save draft for manual entry tab only with debouncing
   useEffect(() => {
     if (!isEditMode && activeTab === "manual") {
       const timeoutId = setTimeout(() => {
         saveDraft(recipeFormHook.newRecipe);
-      }, 2000); // Auto-save after 2 seconds of no changes
+      }, 3000); // Auto-save after 3 seconds of no changes
 
       return () => clearTimeout(timeoutId);
     }
@@ -286,17 +286,17 @@ export function CreateRecipeContainer({ editingRecipe, isEditMode = false, defau
         </div>
         
         {/* Action Buttons */}
-        <div className="flex-shrink-0 flex gap-2">
-          {hasDraft && !isEditMode && (
-            <Button 
-              onClick={handleClearDraft}
-              variant="outline"
-              size="sm"
-              className="flex items-center gap-2 text-sm"
-            >
-              <Trash2 className="h-4 w-4" />
-              Clear Draft
-            </Button>
+        <div className="flex-shrink-0 flex flex-col items-end gap-2">
+          {hasDraft && !isEditMode && draftInfo && (
+            <div className="flex items-center gap-3 text-sm text-muted-foreground">
+              <span>Draft saved at {draftInfo.formattedTime}</span>
+              <button 
+                onClick={handleClearDraft}
+                className="text-muted-foreground hover:text-foreground underline"
+              >
+                Clear draft
+              </button>
+            </div>
           )}
           
           {isEditMode && (

@@ -8,14 +8,36 @@ interface DraftRecipe {
   timestamp: number;
 }
 
+export interface DraftInfo {
+  timestamp: number;
+  formattedTime: string;
+}
+
 export function useDraftRecipes() {
   const [hasDraft, setHasDraft] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [draftInfo, setDraftInfo] = useState<DraftInfo | null>(null);
 
   // Check for existing draft on mount
   useEffect(() => {
     const draft = localStorage.getItem(DRAFT_STORAGE_KEY);
-    setHasDraft(!!draft);
+    if (draft) {
+      try {
+        const parsed: DraftRecipe = JSON.parse(draft);
+        const formattedTime = new Date(parsed.timestamp).toLocaleTimeString([], { 
+          hour: '2-digit', 
+          minute: '2-digit' 
+        });
+        setDraftInfo({ timestamp: parsed.timestamp, formattedTime });
+        setHasDraft(true);
+      } catch {
+        setHasDraft(false);
+        setDraftInfo(null);
+      }
+    } else {
+      setHasDraft(false);
+      setDraftInfo(null);
+    }
   }, []);
 
   // Save draft to localStorage
@@ -28,11 +50,18 @@ export function useDraftRecipes() {
                       recipe.image;
 
     if (hasContent) {
+      const timestamp = Date.now();
+      const formattedTime = new Date(timestamp).toLocaleTimeString([], { 
+        hour: '2-digit', 
+        minute: '2-digit' 
+      });
+      
       const draft: DraftRecipe = {
         recipe,
-        timestamp: Date.now()
+        timestamp
       };
       localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(draft));
+      setDraftInfo({ timestamp, formattedTime });
       setHasDraft(true);
       setHasUnsavedChanges(true);
     }
@@ -58,6 +87,7 @@ export function useDraftRecipes() {
     localStorage.removeItem(DRAFT_STORAGE_KEY);
     setHasDraft(false);
     setHasUnsavedChanges(false);
+    setDraftInfo(null);
   }, []);
 
   // Mark changes as saved (when recipe is successfully saved)
@@ -85,6 +115,7 @@ export function useDraftRecipes() {
     loadDraft,
     clearDraft,
     markSaved,
-    checkForUnsavedChanges
+    checkForUnsavedChanges,
+    draftInfo
   };
 }
