@@ -42,7 +42,8 @@ export function CreateRecipeContainer({ editingRecipe, isEditMode = false, defau
 
   // Load draft on mount (only for new recipes, not editing)
   useEffect(() => {
-    if (!isEditMode && !editingRecipe && hasDraft) {
+    if (!isEditMode && !editingRecipe) {
+      // Always check for draft, regardless of hasDraft state
       const draft = loadDraft();
       if (draft) {
         // Convert draft to full Recipe object by adding missing fields
@@ -60,7 +61,7 @@ export function CreateRecipeContainer({ editingRecipe, isEditMode = false, defau
         });
       }
     }
-  }, [isEditMode, editingRecipe, hasDraft, loadDraft, recipeFormHook, toast]);
+  }, [isEditMode, editingRecipe, loadDraft, recipeFormHook, toast]);
 
   // Clear draft when starting a new recipe (only when not editing and no existing recipe data)
   useEffect(() => {
@@ -74,7 +75,7 @@ export function CreateRecipeContainer({ editingRecipe, isEditMode = false, defau
     recipeRef.current = recipeFormHook.newRecipe;
   }, [recipeFormHook.newRecipe]);
 
-  // Gmail-style auto-save: event-based, invisible, no re-renders
+  // Reliable auto-save: frequent intervals + event-based saving
   useEffect(() => {
     if (!isEditMode && activeTab === "manual") {
       // Auto-save on blur events (when user stops typing)
@@ -89,16 +90,21 @@ export function CreateRecipeContainer({ editingRecipe, isEditMode = false, defau
       window.addEventListener('blur', handleWindowBlur);
       document.addEventListener('visibilitychange', handleVisibilityChange);
 
-      // Fallback interval for safety (every 10 seconds)
+      // More frequent auto-save interval (every 2 seconds)
       const intervalId = setInterval(() => {
         autoSave(recipeRef.current);
-      }, 10000);
+      }, 2000);
+
+      // Also save immediately when the effect runs
+      autoSave(recipeRef.current);
 
       return () => {
         document.removeEventListener('focusout', handleBlur);
         window.removeEventListener('blur', handleWindowBlur);
         document.removeEventListener('visibilitychange', handleVisibilityChange);
         clearInterval(intervalId);
+        // Save one final time when cleaning up
+        autoSave(recipeRef.current);
       };
     }
   }, [activeTab, isEditMode, autoSave]);
