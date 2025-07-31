@@ -6,7 +6,7 @@ import { useRecipeProcessing } from "@/hooks/useRecipeProcessing";
 import { useImageGeneration } from "@/hooks/useImageGeneration";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useRealiChef } from "@/contexts/RealiChefContext";
-import { useDraftRecipes } from "@/hooks/useDraftRecipes";
+
 import { CreateRecipeTabsWrapper } from "./CreateRecipeTabsWrapper";
 import { useRecipeCreationHandlers, type RecipeOrigin } from "./hooks/useRecipeCreationHandlers";
 import { useToast } from "@/hooks/use-toast";
@@ -22,7 +22,7 @@ interface CreateRecipeContainerProps {
 export function CreateRecipeContainer({ editingRecipe, isEditMode = false, defaultTab }: CreateRecipeContainerProps) {
   const isMobile = useIsMobile();
   const { toast } = useToast();
-  const { hasDraft, autoSave, loadDraft, clearDraft, markSaved, draftInfo } = useDraftRecipes();
+  
 
   const [activeTab, setActiveTab] = useState(
     defaultTab || (isEditMode ? "manual" : "url")
@@ -40,74 +40,6 @@ export function CreateRecipeContainer({ editingRecipe, isEditMode = false, defau
 
   const { setIsOpen, updatePageContext } = useRealiChef();
 
-  // Load draft on mount (only for new recipes, not editing)
-  useEffect(() => {
-    if (!isEditMode && !editingRecipe) {
-      // Always check for draft, regardless of hasDraft state
-      const draft = loadDraft();
-      if (draft) {
-        // Convert draft to full Recipe object by adding missing fields
-        const fullRecipe = {
-          ...draft,
-          id: '',
-          created_at: '',
-          updated_at: '',
-          created_by: '',
-        };
-        recipeFormHook.setNewRecipe(fullRecipe);
-        toast({
-          title: "Draft Loaded",
-          description: "Your previous recipe draft has been loaded.",
-        });
-      }
-    }
-  }, [isEditMode, editingRecipe, loadDraft, recipeFormHook, toast]);
-
-  // Clear draft when starting a new recipe (only when not editing and no existing recipe data)
-  useEffect(() => {
-    if (!isEditMode && !editingRecipe && !recipeFormHook.newRecipe.title && !recipeFormHook.newRecipe.description) {
-      clearDraft();
-    }
-  }, []);
-
-  // Update ref when recipe changes
-  useEffect(() => {
-    recipeRef.current = recipeFormHook.newRecipe;
-  }, [recipeFormHook.newRecipe]);
-
-  // Reliable auto-save: frequent intervals + event-based saving
-  useEffect(() => {
-    if (!isEditMode && activeTab === "manual") {
-      // Auto-save on blur events (when user stops typing)
-      const handleBlur = () => autoSave(recipeRef.current);
-      const handleWindowBlur = () => autoSave(recipeRef.current);
-      const handleVisibilityChange = () => {
-        if (document.hidden) autoSave(recipeRef.current);
-      };
-
-      // Add event listeners
-      document.addEventListener('focusout', handleBlur);
-      window.addEventListener('blur', handleWindowBlur);
-      document.addEventListener('visibilitychange', handleVisibilityChange);
-
-      // More frequent auto-save interval (every 2 seconds)
-      const intervalId = setInterval(() => {
-        autoSave(recipeRef.current);
-      }, 2000);
-
-      // Also save immediately when the effect runs
-      autoSave(recipeRef.current);
-
-      return () => {
-        document.removeEventListener('focusout', handleBlur);
-        window.removeEventListener('blur', handleWindowBlur);
-        document.removeEventListener('visibilitychange', handleVisibilityChange);
-        clearInterval(intervalId);
-        // Save one final time when cleaning up
-        autoSave(recipeRef.current);
-      };
-    }
-  }, [activeTab, isEditMode, autoSave]);
 
   const handlers = useRecipeCreationHandlers({
     recipeFormHook,
@@ -121,10 +53,9 @@ export function CreateRecipeContainer({ editingRecipe, isEditMode = false, defau
     editingRecipe,
   });
 
-  // Wrap the save handler to include draft clearing
+  // Simple save handler without draft clearing
   const wrappedSaveHandler = async () => {
     await handlers.handleSaveRecipe();
-    markSaved(); // Clear draft after successful save
   };
 
   const onGenerateImage = () => {
@@ -240,37 +171,6 @@ export function CreateRecipeContainer({ editingRecipe, isEditMode = false, defau
     setActiveTab(tab);
   };
 
-  const handleClearDraft = () => {
-    clearDraft();
-    // Reset form to empty state
-    recipeFormHook.setNewRecipe({
-      id: '',
-      title: "",
-      description: "",
-      ingredients: [],
-      instructions: [],
-      prep_time: 15,
-      cook_time: 30,
-      servings: 4,
-      top_tip: "",
-      meal_type: undefined,
-      meal_types: [],
-      cuisine_region: undefined,
-      diet_lifestyle: [],
-      complexity_level: undefined,
-      image: undefined,
-      is_favorite: false,
-      has_cooked: false,
-      household_id: '',
-      created_at: '',
-      updated_at: '',
-      created_by: '',
-    });
-    toast({
-      title: "Draft Cleared",
-      description: "Your recipe draft has been cleared.",
-    });
-  };
 
   // Pass manualTabClicked to determine whether to show dynamic tab name
   const effectiveRecipeOrigin = (activeTab === 'manual' && manualTabClicked) ? 'manual' : recipeOrigin;
@@ -297,18 +197,6 @@ export function CreateRecipeContainer({ editingRecipe, isEditMode = false, defau
         
         {/* Action Buttons */}
         <div className="flex-shrink-0 flex flex-col items-start gap-2">
-          {hasDraft && !isEditMode && draftInfo && (
-            <div className="flex items-center gap-3 text-sm text-muted-foreground">
-              <span>Draft saved at {draftInfo.formattedTime}</span>
-              <button 
-                onClick={handleClearDraft}
-                className="text-muted-foreground hover:text-foreground underline"
-              >
-                Clear draft
-              </button>
-            </div>
-          )}
-          
           {isEditMode && (
             <Button
               variant="outline"
