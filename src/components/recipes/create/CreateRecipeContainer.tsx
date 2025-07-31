@@ -22,7 +22,7 @@ interface CreateRecipeContainerProps {
 export function CreateRecipeContainer({ editingRecipe, isEditMode = false, defaultTab }: CreateRecipeContainerProps) {
   const isMobile = useIsMobile();
   const { toast } = useToast();
-  const { hasDraft, hasUnsavedChanges, saveDraft, saveDraftSilently, loadDraft, clearDraft, markSaved, checkForUnsavedChanges, draftInfo } = useDraftRecipes();
+  const { hasDraft, hasUnsavedChanges, saveDraft, loadDraft, clearDraft, markSaved, checkForUnsavedChanges, draftInfo } = useDraftRecipes();
 
   const [activeTab, setActiveTab] = useState(
     defaultTab || (isEditMode ? "manual" : "url")
@@ -74,17 +74,16 @@ export function CreateRecipeContainer({ editingRecipe, isEditMode = false, defau
     recipeRef.current = recipeFormHook.newRecipe;
   }, [recipeFormHook.newRecipe]);
 
-  // Auto-save draft for manual entry tab only - silent save to prevent re-renders
+  // Auto-save draft for manual entry tab only - use debounced approach
   useEffect(() => {
     if (!isEditMode && activeTab === "manual") {
-      const intervalId = setInterval(() => {
-        const currentRecipe = recipeRef.current;
-        saveDraftSilently(currentRecipe);
-      }, 5000); // Auto-save every 5 seconds silently
+      const timeoutId = setTimeout(() => {
+        saveDraft(recipeRef.current);
+      }, 2000); // Debounced auto-save after 2 seconds of no changes
 
-      return () => clearInterval(intervalId);
+      return () => clearTimeout(timeoutId);
     }
-  }, [activeTab, isEditMode, saveDraftSilently]);
+  }, [activeTab, isEditMode, recipeFormHook.newRecipe, saveDraft]);
 
   // Check for unsaved changes - simplified
   useEffect(() => {
