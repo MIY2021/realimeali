@@ -22,7 +22,7 @@ interface CreateRecipeContainerProps {
 export function CreateRecipeContainer({ editingRecipe, isEditMode = false, defaultTab }: CreateRecipeContainerProps) {
   const isMobile = useIsMobile();
   const { toast } = useToast();
-  const { hasDraft, hasUnsavedChanges, saveDraft, loadDraft, clearDraft, markSaved, checkForUnsavedChanges, draftInfo } = useDraftRecipes();
+  const { hasDraft, hasUnsavedChanges, saveDraft, saveDraftSilently, loadDraft, clearDraft, markSaved, checkForUnsavedChanges, draftInfo } = useDraftRecipes();
 
   const [activeTab, setActiveTab] = useState(
     defaultTab || (isEditMode ? "manual" : "url")
@@ -74,25 +74,17 @@ export function CreateRecipeContainer({ editingRecipe, isEditMode = false, defau
     recipeRef.current = recipeFormHook.newRecipe;
   }, [recipeFormHook.newRecipe]);
 
-  // Auto-save draft for manual entry tab only - using interval instead of effect dependencies
+  // Auto-save draft for manual entry tab only - silent save to prevent re-renders
   useEffect(() => {
     if (!isEditMode && activeTab === "manual") {
       const intervalId = setInterval(() => {
         const currentRecipe = recipeRef.current;
-        const hasContent = currentRecipe.title.trim() || 
-                          currentRecipe.description.trim() || 
-                          currentRecipe.ingredients.length > 0 || 
-                          currentRecipe.instructions.length > 0 ||
-                          currentRecipe.image;
-        
-        if (hasContent) {
-          saveDraft(currentRecipe);
-        }
-      }, 5000); // Auto-save every 5 seconds
+        saveDraftSilently(currentRecipe);
+      }, 5000); // Auto-save every 5 seconds silently
 
       return () => clearInterval(intervalId);
     }
-  }, [activeTab, isEditMode]); // Removed saveDraft from dependencies
+  }, [activeTab, isEditMode, saveDraftSilently]);
 
   // Check for unsaved changes - simplified
   useEffect(() => {

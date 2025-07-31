@@ -40,7 +40,26 @@ export function useDraftRecipes() {
     }
   }, []);
 
-  // Save draft to localStorage
+  // Save draft to localStorage silently (no state updates)
+  const saveDraftSilently = useCallback((recipe: Omit<Recipe, 'id' | 'created_at' | 'updated_at' | 'created_by'>) => {
+    // Only save if recipe has meaningful content
+    const hasContent = recipe.title.trim() || 
+                      recipe.description.trim() || 
+                      recipe.ingredients.length > 0 || 
+                      recipe.instructions.length > 0 ||
+                      recipe.image;
+
+    if (hasContent) {
+      const timestamp = Date.now();
+      const draft: DraftRecipe = {
+        recipe,
+        timestamp
+      };
+      localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(draft));
+    }
+  }, []);
+
+  // Save draft to localStorage with UI updates
   const saveDraft = useCallback((recipe: Omit<Recipe, 'id' | 'created_at' | 'updated_at' | 'created_by'>) => {
     // Only save if recipe has meaningful content
     const hasContent = recipe.title.trim() || 
@@ -112,6 +131,7 @@ export function useDraftRecipes() {
     hasDraft,
     hasUnsavedChanges,
     saveDraft,
+    saveDraftSilently,
     loadDraft,
     clearDraft,
     markSaved,
