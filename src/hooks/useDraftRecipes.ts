@@ -13,12 +13,26 @@ export interface DraftInfo {
   formattedTime: string;
 }
 
+// Gmail-style auto-save: pure localStorage function with ZERO React dependencies
+const autoSaveToLocalStorage = (recipe: Omit<Recipe, 'id' | 'created_at' | 'updated_at' | 'created_by'>) => {
+  const hasContent = recipe.title.trim() || 
+                    recipe.description.trim() || 
+                    recipe.ingredients.length > 0 || 
+                    recipe.instructions.length > 0 ||
+                    recipe.image;
+
+  if (hasContent) {
+    const timestamp = Date.now();
+    const draft: DraftRecipe = { recipe, timestamp };
+    localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(draft));
+  }
+};
+
 export function useDraftRecipes() {
   const [hasDraft, setHasDraft] = useState(false);
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [draftInfo, setDraftInfo] = useState<DraftInfo | null>(null);
 
-  // Check for existing draft on mount
+  // Check for existing draft on mount only
   useEffect(() => {
     const draft = localStorage.getItem(DRAFT_STORAGE_KEY);
     if (draft) {
@@ -34,56 +48,12 @@ export function useDraftRecipes() {
         setHasDraft(false);
         setDraftInfo(null);
       }
-    } else {
-      setHasDraft(false);
-      setDraftInfo(null);
     }
   }, []);
 
-  // Save draft to localStorage silently (no state updates to prevent re-renders)
-  const saveDraftSilently = useCallback((recipe: Omit<Recipe, 'id' | 'created_at' | 'updated_at' | 'created_by'>) => {
-    // Only save if recipe has meaningful content
-    const hasContent = recipe.title.trim() || 
-                      recipe.description.trim() || 
-                      recipe.ingredients.length > 0 || 
-                      recipe.instructions.length > 0 ||
-                      recipe.image;
-
-    if (hasContent) {
-      const timestamp = Date.now();
-      const draft: DraftRecipe = {
-        recipe,
-        timestamp
-      };
-      localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(draft));
-    }
-  }, []);
-
-  // Save draft to localStorage with UI updates
-  const saveDraft = useCallback((recipe: Omit<Recipe, 'id' | 'created_at' | 'updated_at' | 'created_by'>) => {
-    // Only save if recipe has meaningful content
-    const hasContent = recipe.title.trim() || 
-                      recipe.description.trim() || 
-                      recipe.ingredients.length > 0 || 
-                      recipe.instructions.length > 0 ||
-                      recipe.image;
-
-    if (hasContent) {
-      const timestamp = Date.now();
-      const formattedTime = new Date(timestamp).toLocaleTimeString([], { 
-        hour: '2-digit', 
-        minute: '2-digit' 
-      });
-      
-      const draft: DraftRecipe = {
-        recipe,
-        timestamp
-      };
-      localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(draft));
-      setDraftInfo({ timestamp, formattedTime });
-      setHasDraft(true);
-      setHasUnsavedChanges(true);
-    }
+  // Pure auto-save function - NO state updates, NO re-renders
+  const autoSave = useCallback((recipe: Omit<Recipe, 'id' | 'created_at' | 'updated_at' | 'created_by'>) => {
+    autoSaveToLocalStorage(recipe);
   }, []);
 
   // Load draft from localStorage
@@ -105,37 +75,20 @@ export function useDraftRecipes() {
   const clearDraft = useCallback(() => {
     localStorage.removeItem(DRAFT_STORAGE_KEY);
     setHasDraft(false);
-    setHasUnsavedChanges(false);
     setDraftInfo(null);
   }, []);
 
   // Mark changes as saved (when recipe is successfully saved)
   const markSaved = useCallback(() => {
-    setHasUnsavedChanges(false);
     clearDraft();
   }, [clearDraft]);
 
-  // Check if current recipe differs from saved state
-  const checkForUnsavedChanges = useCallback((currentRecipe: Omit<Recipe, 'id' | 'created_at' | 'updated_at' | 'created_by'>) => {
-    const hasContent = Boolean(currentRecipe.title.trim() || 
-                              currentRecipe.description.trim() || 
-                              currentRecipe.ingredients.length > 0 || 
-                              currentRecipe.instructions.length > 0 ||
-                              currentRecipe.image);
-    
-    setHasUnsavedChanges(hasContent);
-    return hasContent;
-  }, []);
-
   return {
     hasDraft,
-    hasUnsavedChanges,
-    saveDraft,
-    saveDraftSilently,
+    autoSave, // Gmail-style invisible auto-save
     loadDraft,
     clearDraft,
     markSaved,
-    checkForUnsavedChanges,
     draftInfo
   };
 }

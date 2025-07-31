@@ -22,7 +22,7 @@ interface CreateRecipeContainerProps {
 export function CreateRecipeContainer({ editingRecipe, isEditMode = false, defaultTab }: CreateRecipeContainerProps) {
   const isMobile = useIsMobile();
   const { toast } = useToast();
-  const { hasDraft, hasUnsavedChanges, saveDraft, saveDraftSilently, loadDraft, clearDraft, markSaved, checkForUnsavedChanges, draftInfo } = useDraftRecipes();
+  const { hasDraft, autoSave, loadDraft, clearDraft, markSaved, draftInfo } = useDraftRecipes();
 
   const [activeTab, setActiveTab] = useState(
     defaultTab || (isEditMode ? "manual" : "url")
@@ -74,41 +74,34 @@ export function CreateRecipeContainer({ editingRecipe, isEditMode = false, defau
     recipeRef.current = recipeFormHook.newRecipe;
   }, [recipeFormHook.newRecipe]);
 
-  // Auto-save draft for manual entry tab only - use interval with regular saveDraft
+  // Gmail-style auto-save: event-based, invisible, no re-renders
   useEffect(() => {
     if (!isEditMode && activeTab === "manual") {
+      // Auto-save on blur events (when user stops typing)
+      const handleBlur = () => autoSave(recipeRef.current);
+      const handleWindowBlur = () => autoSave(recipeRef.current);
+      const handleVisibilityChange = () => {
+        if (document.hidden) autoSave(recipeRef.current);
+      };
+
+      // Add event listeners
+      document.addEventListener('focusout', handleBlur);
+      window.addEventListener('blur', handleWindowBlur);
+      document.addEventListener('visibilitychange', handleVisibilityChange);
+
+      // Fallback interval for safety (every 10 seconds)
       const intervalId = setInterval(() => {
-        saveDraft(recipeRef.current);
-      }, 3000); // Auto-save every 3 seconds
+        autoSave(recipeRef.current);
+      }, 10000);
 
-      return () => clearInterval(intervalId);
+      return () => {
+        document.removeEventListener('focusout', handleBlur);
+        window.removeEventListener('blur', handleWindowBlur);
+        document.removeEventListener('visibilitychange', handleVisibilityChange);
+        clearInterval(intervalId);
+      };
     }
-  }, [activeTab, isEditMode, saveDraft]); // NO recipeFormHook.newRecipe dependency!
-
-  // Check for unsaved changes - simplified
-  useEffect(() => {
-    if (!isEditMode && activeTab === "manual") {
-      const hasContent = Boolean(recipeRef.current.title.trim() || 
-                                recipeRef.current.description.trim() || 
-                                recipeRef.current.ingredients.length > 0 || 
-                                recipeRef.current.instructions.length > 0 ||
-                                recipeRef.current.image);
-      checkForUnsavedChanges(recipeRef.current);
-    }
-  }, [activeTab, isEditMode]); // Removed checkForUnsavedChanges from dependencies
-
-  // Add beforeunload event listener for unsaved changes warning
-  useEffect(() => {
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (hasUnsavedChanges && !isEditMode) {
-        e.preventDefault();
-        e.returnValue = '';
-      }
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [hasUnsavedChanges, isEditMode]);
+  }, [activeTab, isEditMode, autoSave]);
 
   const handlers = useRecipeCreationHandlers({
     recipeFormHook,
