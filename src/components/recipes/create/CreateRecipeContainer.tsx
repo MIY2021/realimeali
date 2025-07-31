@@ -74,16 +74,16 @@ export function CreateRecipeContainer({ editingRecipe, isEditMode = false, defau
     recipeRef.current = recipeFormHook.newRecipe;
   }, [recipeFormHook.newRecipe]);
 
-  // Auto-save draft for manual entry tab only - silent interval to prevent re-renders
+  // Auto-save draft for manual entry tab only - use interval with regular saveDraft
   useEffect(() => {
     if (!isEditMode && activeTab === "manual") {
       const intervalId = setInterval(() => {
-        saveDraftSilently(recipeRef.current);
-      }, 3000); // Auto-save every 3 seconds silently
+        saveDraft(recipeRef.current);
+      }, 3000); // Auto-save every 3 seconds
 
       return () => clearInterval(intervalId);
     }
-  }, [activeTab, isEditMode, saveDraftSilently]);
+  }, [activeTab, isEditMode, saveDraft]); // NO recipeFormHook.newRecipe dependency!
 
   // Check for unsaved changes - simplified
   useEffect(() => {
