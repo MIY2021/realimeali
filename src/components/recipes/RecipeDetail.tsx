@@ -9,6 +9,7 @@ import { RecipeFooter } from "./RecipeFooter";
 import { RecipeImageEditor } from "./RecipeImageEditor";
 import { RecipeNotesSection } from "./RecipeNotesSection";
 import { RecipeClassificationSummary } from "./RecipeClassificationSummary";
+import { RecipeSourceInfo } from "./RecipeSourceInfo";
 import { NutritionalInfoSection } from "@/components/nutrition/NutritionalInfoSection";
 import { Lightbulb, Users, RotateCcw, Clock } from "lucide-react";
 import { ServingsSelector } from "@/components/meal-planner/ServingsSelector";
@@ -115,6 +116,12 @@ export const RecipeDetail = ({
 
       {/* Recipe Classification */}
       <RecipeClassificationSummary recipe={recipe} />
+
+      {/* Recipe Source Information */}
+      <RecipeSourceInfo 
+        sourceUrl={recipe.source_url} 
+        importMethod={recipe.import_method} 
+      />
 
       {/* Top Tip */}
       {recipe.top_tip && recipe.top_tip !== "Enjoy cooking this delicious recipe!" && (
