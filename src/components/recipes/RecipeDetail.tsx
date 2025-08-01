@@ -117,12 +117,6 @@ export const RecipeDetail = ({
       {/* Recipe Classification */}
       <RecipeClassificationSummary recipe={recipe} />
 
-      {/* Recipe Source Information */}
-      <RecipeSourceInfo 
-        sourceUrl={recipe.source_url} 
-        importMethod={recipe.import_method} 
-      />
-
       {/* Top Tip */}
       {recipe.top_tip && recipe.top_tip !== "Enjoy cooking this delicious recipe!" && (
         <div className="mb-6">
@@ -184,6 +178,14 @@ export const RecipeDetail = ({
       />
 
       <RecipeFooter recipe={recipe} />
+
+      {/* Recipe Source Information */}
+      <RecipeSourceInfo 
+        sourceUrl={recipe.source_url} 
+        importMethod={recipe.import_method}
+        createdBy={recipe.created_by}
+        createdAt={recipe.created_at}
+      />
 
       {/* Image Editor Dialog */}
       {showImageEditor && isOwner && (

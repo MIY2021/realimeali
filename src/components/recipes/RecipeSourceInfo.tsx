@@ -1,31 +1,32 @@
-import { Link, Globe, Camera, Sparkles, FileText, User, UtensilsCrossed } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Link, Globe, Camera, Sparkles, FileText, User, UtensilsCrossed, Calendar } from "lucide-react";
+import { format } from "date-fns";
 
 interface RecipeSourceInfoProps {
   sourceUrl?: string;
   importMethod?: string;
+  createdBy?: string;
+  createdAt?: string;
 }
 
-export const RecipeSourceInfo = ({ sourceUrl, importMethod }: RecipeSourceInfoProps) => {
-  // Don't render if no source info
-  if (!sourceUrl && !importMethod) return null;
+export const RecipeSourceInfo = ({ sourceUrl, importMethod, createdBy, createdAt }: RecipeSourceInfoProps) => {
+  // Don't render if no relevant info
+  if (!sourceUrl && !importMethod && !createdAt) return null;
 
   const getImportMethodInfo = (method?: string) => {
     switch (method) {
       case 'url':
-        return { icon: Globe, label: 'Imported from URL', color: 'bg-blue-100 text-blue-800' };
+        return { icon: Globe, label: 'Imported from URL', color: 'text-blue-600' };
       case 'image':
-        return { icon: Camera, label: 'Created from Image', color: 'bg-purple-100 text-purple-800' };
+        return { icon: Camera, label: 'Created from Image', color: 'text-purple-600' };
       case 'ai':
-        return { icon: Sparkles, label: 'AI Generated', color: 'bg-gradient-to-r from-orange-100 to-pink-100 text-orange-800' };
+        return { icon: Sparkles, label: 'AI Generated', color: 'text-orange-600' };
       case 'text':
-        return { icon: FileText, label: 'Imported from Text', color: 'bg-green-100 text-green-800' };
+        return { icon: FileText, label: 'Imported from Text', color: 'text-green-600' };
       case 'whatcanImake':
-        return { icon: UtensilsCrossed, label: 'What Can I Make', color: 'bg-yellow-100 text-yellow-800' };
+        return { icon: UtensilsCrossed, label: 'What Can I Make', color: 'text-yellow-600' };
       case 'manual':
       default:
-        return { icon: User, label: 'Manual Entry', color: 'bg-gray-100 text-gray-800' };
+        return { icon: User, label: 'Manual Entry', color: 'text-gray-600' };
     }
   };
 
@@ -33,43 +34,42 @@ export const RecipeSourceInfo = ({ sourceUrl, importMethod }: RecipeSourceInfoPr
   const Icon = importInfo.icon;
 
   return (
-    <Card className="mb-6">
-      <CardContent className="p-4">
-        <div className="flex items-start gap-3">
-          <Icon className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-2">
-              <h3 className="font-medium text-sm text-foreground">Recipe Source</h3>
-              {importMethod && (
-                <Badge variant="secondary" className={`text-xs ${importInfo.color}`}>
-                  {importInfo.label}
-                </Badge>
-              )}
+    <div className="mt-8 pt-6 border-t border-border">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-sm text-muted-foreground">
+        {/* Left side - Creation info */}
+        <div className="flex items-center gap-4">
+          {createdAt && (
+            <div className="flex items-center gap-2">
+              <Calendar className="h-4 w-4" />
+              <span>Created {format(new Date(createdAt), 'MMMM d, yyyy')}</span>
             </div>
-            
-            {sourceUrl && (
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">From:</span>
-                <a
-                  href={sourceUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-primary hover:text-primary/80 underline decoration-1 underline-offset-2 flex items-center gap-1 break-all"
-                >
-                  <span className="truncate max-w-[300px]">{sourceUrl}</span>
-                  <Link className="h-3 w-3 flex-shrink-0" />
-                </a>
-              </div>
-            )}
-            
-            {!sourceUrl && importMethod && importMethod !== 'manual' && (
-              <span className="text-sm text-muted-foreground">
-                This recipe was {importInfo.label.toLowerCase()}
-              </span>
-            )}
-          </div>
+          )}
         </div>
-      </CardContent>
-    </Card>
+
+        {/* Right side - Import method and source */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+          {importMethod && (
+            <div className="flex items-center gap-2">
+              <Icon className={`h-4 w-4 ${importInfo.color}`} />
+              <span>{importInfo.label}</span>
+            </div>
+          )}
+          
+          {sourceUrl && (
+            <a
+              href={sourceUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:text-primary/80 underline decoration-1 underline-offset-2 flex items-center gap-1 break-all"
+            >
+              <span className="truncate max-w-[200px] sm:max-w-[300px]">
+                {sourceUrl.replace(/^https?:\/\//, '').replace(/^www\./, '')}
+              </span>
+              <Link className="h-3 w-3 flex-shrink-0" />
+            </a>
+          )}
+        </div>
+      </div>
+    </div>
   );
 };
