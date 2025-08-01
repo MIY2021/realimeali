@@ -19,26 +19,33 @@ interface Profile {
 export const RecipeSourceInfo = ({ sourceUrl, importMethod, createdBy, createdAt, updatedAt }: RecipeSourceInfoProps) => {
   const [creatorProfile, setCreatorProfile] = useState<Profile | null>(null);
 
+  const [updatorProfile, setUpdatorProfile] = useState<Profile | null>(null);
+
   useEffect(() => {
-    const fetchCreatorProfile = async () => {
+    const fetchProfiles = async () => {
       if (!createdBy) return;
       
       try {
-        const { data } = await supabase
+        // Fetch creator profile
+        const { data: creatorData } = await supabase
           .from('profiles')
           .select('full_name, email')
           .eq('id', createdBy)
           .single();
         
-        if (data) {
-          setCreatorProfile(data);
+        if (creatorData) {
+          setCreatorProfile(creatorData);
         }
+
+        // For updated_at, we'd need to track who made the last update
+        // For now, we'll assume it's the same user since we don't track update authors
+        setUpdatorProfile(creatorData);
       } catch (error) {
-        console.error('Error fetching creator profile:', error);
+        console.error('Error fetching profiles:', error);
       }
     };
 
-    fetchCreatorProfile();
+    fetchProfiles();
   }, [createdBy]);
 
   // Don't render if no relevant info
@@ -65,9 +72,10 @@ export const RecipeSourceInfo = ({ sourceUrl, importMethod, createdBy, createdAt
   const importInfo = getImportMethodInfo(importMethod);
   const Icon = importInfo.icon;
   const creatorName = creatorProfile?.full_name || creatorProfile?.email || 'Unknown User';
+  const updatorName = updatorProfile?.full_name || updatorProfile?.email || 'Unknown User';
 
   return (
-    <div className="mt-8 pt-6 border-t border-border">
+    <div className="px-2 mt-8 pt-6 border-t border-border">
       <div className="flex flex-col gap-3 text-sm text-muted-foreground">
         {/* Creation info */}
         {createdAt && (
@@ -81,7 +89,7 @@ export const RecipeSourceInfo = ({ sourceUrl, importMethod, createdBy, createdAt
         {updatedAt && updatedAt !== createdAt && (
           <div className="flex items-center gap-2">
             <Calendar className="h-4 w-4" />
-            <span>Last updated {format(new Date(updatedAt), 'MMMM d, yyyy')}</span>
+            <span>Last updated {format(new Date(updatedAt), 'MMMM d, yyyy')} by {updatorName}</span>
           </div>
         )}
 

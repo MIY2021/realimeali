@@ -177,7 +177,7 @@ export const RecipeDetail = ({
         isScaled={isScaled}
       />
 
-      <RecipeFooter recipe={recipe} />
+      
 
       {/* Recipe Source Information */}
       <RecipeSourceInfo 
