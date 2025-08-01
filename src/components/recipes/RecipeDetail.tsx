@@ -185,6 +185,7 @@ export const RecipeDetail = ({
         importMethod={recipe.import_method}
         createdBy={recipe.created_by}
         createdAt={recipe.created_at}
+        updatedAt={recipe.updated_at}
       />
 
       {/* Image Editor Dialog */}

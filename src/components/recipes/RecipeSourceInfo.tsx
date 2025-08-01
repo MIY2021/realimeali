@@ -1,16 +1,48 @@
 import { Link, Globe, Camera, Sparkles, FileText, User, UtensilsCrossed, Calendar } from "lucide-react";
 import { format } from "date-fns";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface RecipeSourceInfoProps {
   sourceUrl?: string;
   importMethod?: string;
   createdBy?: string;
   createdAt?: string;
+  updatedAt?: string;
 }
 
-export const RecipeSourceInfo = ({ sourceUrl, importMethod, createdBy, createdAt }: RecipeSourceInfoProps) => {
+interface Profile {
+  full_name?: string;
+  email?: string;
+}
+
+export const RecipeSourceInfo = ({ sourceUrl, importMethod, createdBy, createdAt, updatedAt }: RecipeSourceInfoProps) => {
+  const [creatorProfile, setCreatorProfile] = useState<Profile | null>(null);
+
+  useEffect(() => {
+    const fetchCreatorProfile = async () => {
+      if (!createdBy) return;
+      
+      try {
+        const { data } = await supabase
+          .from('profiles')
+          .select('full_name, email')
+          .eq('id', createdBy)
+          .single();
+        
+        if (data) {
+          setCreatorProfile(data);
+        }
+      } catch (error) {
+        console.error('Error fetching creator profile:', error);
+      }
+    };
+
+    fetchCreatorProfile();
+  }, [createdBy]);
+
   // Don't render if no relevant info
-  if (!sourceUrl && !importMethod && !createdAt) return null;
+  if (!createdAt && !importMethod && !sourceUrl) return null;
 
   const getImportMethodInfo = (method?: string) => {
     switch (method) {
@@ -32,43 +64,50 @@ export const RecipeSourceInfo = ({ sourceUrl, importMethod, createdBy, createdAt
 
   const importInfo = getImportMethodInfo(importMethod);
   const Icon = importInfo.icon;
+  const creatorName = creatorProfile?.full_name || creatorProfile?.email || 'Unknown User';
 
   return (
     <div className="mt-8 pt-6 border-t border-border">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-sm text-muted-foreground">
-        {/* Left side - Creation info */}
-        <div className="flex items-center gap-4">
-          {createdAt && (
-            <div className="flex items-center gap-2">
-              <Calendar className="h-4 w-4" />
-              <span>Created {format(new Date(createdAt), 'MMMM d, yyyy')}</span>
-            </div>
-          )}
-        </div>
+      <div className="flex flex-col gap-3 text-sm text-muted-foreground">
+        {/* Creation info */}
+        {createdAt && (
+          <div className="flex items-center gap-2">
+            <Calendar className="h-4 w-4" />
+            <span>Created {format(new Date(createdAt), 'MMMM d, yyyy')} by {creatorName}</span>
+          </div>
+        )}
 
-        {/* Right side - Import method and source */}
-        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-          {importMethod && (
-            <div className="flex items-center gap-2">
-              <Icon className={`h-4 w-4 ${importInfo.color}`} />
-              <span>{importInfo.label}</span>
-            </div>
-          )}
-          
-          {sourceUrl && (
-            <a
-              href={sourceUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-primary hover:text-primary/80 underline decoration-1 underline-offset-2 flex items-center gap-1 break-all"
-            >
-              <span className="truncate max-w-[200px] sm:max-w-[300px]">
-                {sourceUrl.replace(/^https?:\/\//, '').replace(/^www\./, '')}
-              </span>
-              <Link className="h-3 w-3 flex-shrink-0" />
-            </a>
-          )}
-        </div>
+        {/* Last updated info */}
+        {updatedAt && updatedAt !== createdAt && (
+          <div className="flex items-center gap-2">
+            <Calendar className="h-4 w-4" />
+            <span>Last updated {format(new Date(updatedAt), 'MMMM d, yyyy')}</span>
+          </div>
+        )}
+
+        {/* Import method and source */}
+        {importMethod && (
+          <div className="flex items-center gap-2">
+            <Icon className={`h-4 w-4 ${importInfo.color}`} />
+            <span>{importInfo.label}</span>
+            {sourceUrl && (
+              <>
+                <span>•</span>
+                <a
+                  href={sourceUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary hover:text-primary/80 underline decoration-1 underline-offset-2 flex items-center gap-1"
+                >
+                  <span className="truncate max-w-[200px] sm:max-w-[300px]">
+                    {sourceUrl.replace(/^https?:\/\//, '').replace(/^www\./, '')}
+                  </span>
+                  <Link className="h-3 w-3 flex-shrink-0" />
+                </a>
+              </>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
