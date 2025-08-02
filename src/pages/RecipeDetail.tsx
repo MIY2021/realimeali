@@ -5,6 +5,7 @@ import { ArrowLeft } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { useHousehold } from "@/contexts/HouseholdContext";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { RecipeDetail as RecipeDetailComponent } from "@/components/recipes/RecipeDetail";
 
@@ -18,6 +19,7 @@ export default function RecipeDetail() {
   const navigate = useNavigate();
   const { recipes, getRecipeById, updateRecipe, deleteRecipe, isLoading } = useRecipes();
   const { user } = useAuth();
+  const { householdMembers, currentHousehold } = useHousehold();
   
   const [isAddToMealPlanOpen, setIsAddToMealPlanOpen] = useState(false);
   const [adjustedServings, setAdjustedServings] = useState<number | undefined>(undefined);
@@ -91,7 +93,11 @@ export default function RecipeDetail() {
     setIsAddToMealPlanOpen(true);
   };
 
-  const canEdit = user && recipe && recipe.created_by === user.id;
+  // User can edit if they are the recipe owner OR a member of the recipe's household
+  const canEdit = user && recipe && (
+    recipe.created_by === user.id || // Original owner can edit
+    (recipe.household_id && householdMembers.some(member => member.user_id === user.id)) // Household members can edit
+  );
 
   // Show loading state while recipes are being fetched OR if we haven't attempted load yet
   if (isLoading || !hasAttemptedLoad) {
