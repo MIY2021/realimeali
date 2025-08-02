@@ -33,7 +33,7 @@ export function RecipeImage({ recipe, alt, className, iconSize = "h-8 w-8" }: Re
   if (!placeholderError) {
     return (
       <img
-        src="/lovable-uploads/48805e49-e8eb-4205-a741-e7fb6446e6d1.png"
+        src="/lovable-uploads/ee0bb47d-e780-4d0c-bbcb-9406228849f4.png"
         alt={imageAlt}
         className={cn("object-cover bg-muted", className)}
         onError={() => setPlaceholderError(true)}
