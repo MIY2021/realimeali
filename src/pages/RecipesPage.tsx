@@ -77,7 +77,7 @@ export default function RecipesPage() {
   // Show loading state while household is being determined
   if (isLoadingHousehold) {
     return (
-      <div className={`container max-w-7xl py-4 px-4 sm:py-8 sm:px-6 ${isMobile ? 'bg-cream min-h-screen' : ''}`}>
+      <div className={`container max-w-7xl py-4 px-4 sm:py-8 sm:px-6 ${isMobile ? 'bg-white min-h-screen' : ''}`}>
         <div className="py-10 text-center">
           <p className="text-muted-foreground">Loading your household...</p>
         </div>
@@ -87,7 +87,7 @@ export default function RecipesPage() {
 
   return (
     <>
-      <div className={`container max-w-7xl py-4 px-4 sm:py-8 sm:px-6 ${isMobile ? 'bg-cream min-h-screen' : ''}`}>
+      <div className={`container max-w-7xl py-4 px-4 sm:py-8 sm:px-6 ${isMobile ? 'bg-white min-h-screen' : ''}`}>
         <div className="flex flex-col gap-4 mb-6 sm:flex-row sm:justify-between sm:items-center">
           <div className="space-y-2">
             <h1 className="text-2xl sm:text-3xl font-bold text-navy flex items-center gap-2">

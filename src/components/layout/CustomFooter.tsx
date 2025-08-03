@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 
 const CustomFooter = () => {
   return (
-    <footer className="w-full bg-cream border-t py-6">
+    <footer className="w-full bg-white border-t py-6">
       <div className="container">
         <div className="flex flex-col space-y-6">
           {/* Copyright */}

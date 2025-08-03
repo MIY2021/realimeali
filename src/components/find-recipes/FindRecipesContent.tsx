@@ -161,7 +161,7 @@ export const FindRecipesContent = () => {
   }
 
   return (
-    <div className={`space-y-4 sm:space-y-6 ${isMobile ? 'bg-cream min-h-screen' : ''}`}>
+    <div className={`space-y-4 sm:space-y-6 ${isMobile ? 'bg-white min-h-screen' : ''}`}>
       {/* Mobile Grid Layout */}
       {isMobile ? (
         <div className="space-y-3">
