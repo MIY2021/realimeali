@@ -93,7 +93,7 @@ const BottomNavigation = () => {
         }
       `}</style>
       
-      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-navy/95 backdrop-blur-sm border-t border-navy/20 md:hidden">
+      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-sage/10 backdrop-blur-md border-t border-sage/20 md:hidden">
         <div className="flex items-center justify-around h-16 px-2">
           {navigationItems.map((item) => {
             const active = isActive(item.activePattern);
@@ -107,8 +107,8 @@ const BottomNavigation = () => {
                 className={cn(
                   "flex flex-col items-center justify-center min-w-0 flex-1 py-2 px-1 transition-all duration-300 relative",
                   active 
-                    ? "text-butter" 
-                    : "text-white/70 hover:text-white"
+                    ? "text-sage" 
+                    : "text-gray-600 hover:text-sage"
                 )}
                 style={{
                   animation: isMealPlan && flashMealPlan ? 'glow-pulse 2s ease-in-out' : 'none',
@@ -124,13 +124,13 @@ const BottomNavigation = () => {
                 <item.icon 
                   className={cn(
                     "h-5 w-5 mb-1 transition-all duration-300",
-                    active ? "text-butter" : "text-white/70",
+                    active ? "text-sage" : "text-gray-600",
                     isMealPlan && flashMealPlan && "text-terracotta"
                   )} 
                 />
                 <span className={cn(
                   "text-xs font-medium truncate transition-all duration-300",
-                  active ? "text-butter" : "text-white/70",
+                  active ? "text-sage" : "text-gray-600",
                   isMealPlan && flashMealPlan && "text-terracotta font-semibold"
                 )}>
                   {item.label}
