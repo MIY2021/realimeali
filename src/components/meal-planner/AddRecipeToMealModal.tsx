@@ -86,7 +86,7 @@ export function AddRecipeToMealModal({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[90%] sm:max-h-[90%]">
+      <DialogContent className="sm:max-w-[90%] sm:max-h-[90%] bg-white">
         <DialogHeader>
           <DialogTitle>Add Recipe to {mealSlot.mealType}</DialogTitle>
           <DialogDescription>
