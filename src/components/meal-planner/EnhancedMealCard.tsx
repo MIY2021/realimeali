@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Trash2, Plus, Minus, GripVertical, UtensilsCrossed, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { RecipeImage } from "@/components/ui/recipe-image";
 import { MealPlan, Recipe, MealType } from "@/types";
 import { DraggableProvidedDragHandleProps } from "react-beautiful-dnd";
 import { useMealPlan } from "@/contexts/MealPlanContext";
@@ -237,12 +238,12 @@ export function EnhancedMealCard({
           {/* Recipe Image - Slightly smaller with padding */}
           <div className="w-20 h-20 flex-shrink-0 m-2">
             <Link to={recipeUrl}>
-              <img 
-                src={recipe.image || "/placeholder.svg"} 
-                alt={recipe.title}
-                className={`w-full h-full object-cover rounded cursor-pointer hover:opacity-80 transition-opacity ${
+              <RecipeImage 
+                recipe={recipe}
+                className={`w-full h-full rounded cursor-pointer hover:opacity-80 transition-opacity ${
                   mealPlan.is_completed ? 'grayscale' : ''
                 }`}
+                iconSize="h-8 w-8"
               />
             </Link>
           </div>
