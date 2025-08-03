@@ -93,7 +93,7 @@ const BottomNavigation = () => {
         }
       `}</style>
       
-      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-sage/10 backdrop-blur-md border-t border-sage/20 md:hidden">
+      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-sage border-t border-sage/20 md:hidden">
         <div className="flex items-center justify-around h-16 px-2">
           {navigationItems.map((item) => {
             const active = isActive(item.activePattern);
