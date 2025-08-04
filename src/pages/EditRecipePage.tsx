@@ -5,6 +5,7 @@ import { ArrowLeft } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { useHousehold } from "@/contexts/HouseholdContext";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { CreateRecipeContainer } from "@/components/recipes/create/CreateRecipeContainer";
 import { Recipe } from "@/types";
@@ -15,6 +16,7 @@ export default function EditRecipePage() {
   const navigate = useNavigate();
   const { recipes, getRecipeById, isLoading } = useRecipes();
   const { user } = useAuth();
+  const { householdMembers } = useHousehold();
   const [hasAttemptedLoad, setHasAttemptedLoad] = useState(false);
 
   // Scroll to top when component mounts
@@ -43,7 +45,10 @@ export default function EditRecipePage() {
 
   useDocumentTitle(recipe ? `Edit ${recipe.title} | RealiMeali` : "Edit Recipe | RealiMeali");
 
-  const canEdit = user && recipe && recipe.created_by === user.id;
+  // Check if user is a member of the recipe's household (which allows editing)
+  const canEdit = user && recipe && householdMembers.some(member => 
+    member.user_id === user.id && member.household_id === recipe.household_id
+  );
 
   // Show loading state while recipes are being fetched OR if we haven't attempted load yet
   if (isLoading || !hasAttemptedLoad) {
