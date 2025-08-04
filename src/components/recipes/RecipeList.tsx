@@ -1,7 +1,6 @@
 
 import { useEffect } from "react";
-import { useScrollPosition } from "@/hooks/useScrollPosition";
-import { useNavigationState } from "@/hooks/useNavigationState";
+import { useScrollRestoration } from "@/hooks/useScrollRestoration";
 import { RecipeSelectionView } from "./RecipeSelectionView";
 import { Recipe } from "@/types";
 
@@ -12,41 +11,43 @@ interface RecipeListProps {
 }
 
 export function RecipeList({ recipes, isLoading, onAddToMealPlan }: RecipeListProps) {
-  const { saveScrollPosition } = useScrollPosition();
-  const { navigationState, setNavigationState } = useNavigationState();
+  const { savePosition, restorePosition } = useScrollRestoration({
+    key: 'recipes',
+    waitForContent: true,
+    contentSelector: '[data-scroll-content]'
+  });
 
   useEffect(() => {
-    // Restore scroll position if the flag is set
-    if (sessionStorage.getItem('restoreRecipesScroll') === 'true') {
-      window.scrollTo({
-        top: parseInt(sessionStorage.getItem('scrollPosition') || '0', 10),
-        behavior: 'instant'
+    // Check if we should restore scroll position (coming back from recipe detail)
+    const shouldRestore = sessionStorage.getItem('restoreRecipesScroll') === 'true';
+    
+    if (shouldRestore && !isLoading) {
+      restorePosition().then(success => {
+        if (success) {
+          sessionStorage.removeItem('restoreRecipesScroll');
+        }
       });
-      sessionStorage.removeItem('restoreRecipesScroll'); // Clear the flag
     }
-  }, []);
+  }, [isLoading, restorePosition]);
 
   const handleRecipeClick = (recipe: Recipe) => {
     console.log('Recipe clicked, saving scroll position');
     
-    // Save current scroll position with layout context
-    const currentLayout = localStorage.getItem('mobileRecipeLayout') || '1';
-    saveScrollPosition('recipes', currentLayout);
+    // Save current position before navigation
+    savePosition();
     
-    // Set navigation state to indicate we should restore scroll when returning
-    setNavigationState(prev => ({ ...prev, shouldRestoreScroll: true }));
-    
-    // Set session storage flag as backup
+    // Mark that we should restore when returning
     sessionStorage.setItem('restoreRecipesScroll', 'true');
-    sessionStorage.setItem('navigatedFromRecipes', 'true');
   };
 
   return (
-    <RecipeSelectionView
-      recipes={recipes}
-      isLoading={isLoading}
-      onSelectRecipe={handleRecipeClick}
-      onAddToMealPlan={onAddToMealPlan}
-    />
+    <div data-scroll-content>
+      <RecipeSelectionView
+        recipes={recipes}
+        isLoading={isLoading}
+        onSelectRecipe={handleRecipeClick}
+        onAddToMealPlan={onAddToMealPlan}
+      />
+    </div>
   );
 }

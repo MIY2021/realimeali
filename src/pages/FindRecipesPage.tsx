@@ -9,7 +9,7 @@ export default function FindRecipesPage() {
   const isMobile = useIsMobile();
 
   return (
-    <div className={`container max-w-7xl py-4 px-4 sm:py-8 sm:px-6 ${isMobile ? 'bg-white min-h-screen' : ''}`}>
+    <div className={`container max-w-7xl py-4 px-4 sm:py-8 sm:px-6 ${isMobile ? 'bg-white min-h-screen' : ''}`} data-scroll-content>
       <FindRecipesHeader />
       <FindRecipesContent />
     </div>

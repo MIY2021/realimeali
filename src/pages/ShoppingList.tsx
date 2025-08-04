@@ -14,7 +14,7 @@ import { useHousehold } from "@/contexts/HouseholdContext";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { useMealPlan } from "@/contexts/MealPlanContext";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
-import { useScrollPosition } from "@/hooks/useScrollPosition";
+import { usePageTransition } from "@/hooks/usePageTransition";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
@@ -30,7 +30,6 @@ export default function ShoppingList() {
   const { recipes, isLoading: recipesLoading } = useRecipes();
   const { getMealPlansForWeek } = useMealPlan();
   const { toast } = useToast();
-  const { setScrollKey, restoreScrollPosition, saveScrollPosition } = useScrollPosition();
   const isMobile = useIsMobile();
   const [weekNumber, setWeekNumber] = useState<1 | 2>(1);
   const [copiedItemId, setCopiedItemId] = useState<string | null>(null);
@@ -46,6 +45,11 @@ export default function ShoppingList() {
     clearAll,
     refreshList,
   } = useShoppingList(weekNumber);
+
+  const { shouldShowSkeleton } = usePageTransition(isLoading || recipesLoading, {
+    enableSkeleton: true,
+    skeletonDuration: 500
+  });
 
   const {
     isGenerating,
@@ -76,41 +80,6 @@ export default function ShoppingList() {
     }
   }, [shoppingList.length, isLoading]);
 
-  // Set up scroll position management
-  useEffect(() => {
-    const scrollKey = `shopping-list-week-${weekNumber}`;
-    setScrollKey(scrollKey);
-    
-    // Check if we should restore scroll position
-    const shouldRestore = sessionStorage.getItem('restoreShoppingListScroll') === 'true';
-    if (shouldRestore) {
-      console.log('Restoring shopping list scroll position');
-      sessionStorage.removeItem('restoreShoppingListScroll');
-      
-      // Only restore if we have data to avoid flashing
-      if (hasInitiallyLoaded || shoppingList.length > 0) {
-        setTimeout(() => {
-          restoreScrollPosition(scrollKey);
-        }, 50); // Reduced delay for faster restoration
-      }
-    }
-  }, [weekNumber, setScrollKey, restoreScrollPosition, hasInitiallyLoaded, shoppingList.length]);
-
-  // Save scroll position before unmounting and when navigating
-  useEffect(() => {
-    const handleBeforeUnload = () => {
-      const scrollKey = `shopping-list-week-${weekNumber}`;
-      saveScrollPosition(scrollKey);
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-      const scrollKey = `shopping-list-week-${weekNumber}`;
-      saveScrollPosition(scrollKey);
-    };
-  }, [weekNumber, saveScrollPosition]);
 
   // Check for existing shopping list creation time on load
   useEffect(() => {
@@ -185,8 +154,8 @@ export default function ShoppingList() {
 
   // Show loading state while recipes are loading, but only on initial load
   if (recipesLoading && !hasInitiallyLoaded) {
-    return (
-      <div className="container max-w-4xl py-4 px-4 sm:py-8 sm:px-6">
+  return (
+    <div className="container max-w-4xl py-4 px-4 sm:py-8 sm:px-6" data-scroll-content>
         <ShoppingListHeader 
           onShare={handleShare} 
           weekNumber={weekNumber}
@@ -200,8 +169,8 @@ export default function ShoppingList() {
   }
 
   return (
-    <div className="container max-w-4xl py-4 px-4 sm:py-8 sm:px-6">
-      <ShoppingListHeader 
+    <div className="container max-w-4xl py-4 px-4 sm:py-8 sm:px-6" data-scroll-content>
+      <ShoppingListHeader
         onShare={handleShare} 
         weekNumber={weekNumber}
         onAddItem={addCustomItem}
