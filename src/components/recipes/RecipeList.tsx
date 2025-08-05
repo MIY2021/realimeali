@@ -1,6 +1,5 @@
 
-import { useEffect } from "react";
-import { useScrollRestoration } from "@/hooks/useScrollRestoration";
+import { useSimpleScrollMemory } from "@/hooks/useSimpleScrollMemory";
 import { RecipeSelectionView } from "./RecipeSelectionView";
 import { Recipe } from "@/types";
 
@@ -11,33 +10,11 @@ interface RecipeListProps {
 }
 
 export function RecipeList({ recipes, isLoading, onAddToMealPlan }: RecipeListProps) {
-  const { savePosition, restorePosition } = useScrollRestoration({
-    key: 'recipes',
-    waitForContent: true,
-    contentSelector: '[data-scroll-content]'
-  });
-
-  useEffect(() => {
-    // Check if we should restore scroll position (coming back from recipe detail)
-    const shouldRestore = sessionStorage.getItem('restoreRecipesScroll') === 'true';
-    
-    if (shouldRestore && !isLoading) {
-      restorePosition().then(success => {
-        if (success) {
-          sessionStorage.removeItem('restoreRecipesScroll');
-        }
-      });
-    }
-  }, [isLoading, restorePosition]);
+  // Use simple scroll memory hook
+  useSimpleScrollMemory();
 
   const handleRecipeClick = (recipe: Recipe) => {
-    console.log('Recipe clicked, saving scroll position');
-    
-    // Save current position before navigation
-    savePosition();
-    
-    // Mark that we should restore when returning
-    sessionStorage.setItem('restoreRecipesScroll', 'true');
+    // No need to save scroll here - RecipeCard handles it
   };
 
   return (

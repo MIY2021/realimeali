@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Heart, Eye, Plus, User, Clock } from "lucide-react";
@@ -25,6 +25,7 @@ export function RecipeCard({ recipe, onAddToMealPlan, onRecipeClick, showActions
   const [isTogglingCooked, setIsTogglingCooked] = useState(false);
   const isMobile = useIsMobile();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleToggleFavorite = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -75,20 +76,20 @@ export function RecipeCard({ recipe, onAddToMealPlan, onRecipeClick, showActions
     }
   };
 
-  const handleRecipeClick = async (e: React.MouseEvent) => {
+  const handleRecipeClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     
-    // Call scroll saving callback if provided
+    // Save current scroll position and navigate with state
+    sessionStorage.setItem(`scroll_${location.pathname}`, window.scrollY.toString());
+    
     if (onRecipeClick) {
       onRecipeClick(recipe);
     }
     
-    // Small delay to ensure scroll position is saved
-    await new Promise(resolve => setTimeout(resolve, 10));
-    
-    // Navigate programmatically
-    navigate(getRecipeUrl());
+    navigate(getRecipeUrl(), { 
+      state: { restoreScroll: true } 
+    });
   };
 
   const getRecipeUrl = () => {

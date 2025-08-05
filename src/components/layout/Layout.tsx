@@ -3,15 +3,15 @@ import { ReactNode } from "react";
 import Header from "./Header";
 import CustomFooter from "./CustomFooter";
 import BottomNavigation from "./BottomNavigation";
-import { useSmartNavigation } from "@/hooks/useSmartNavigation";
+import { useSimpleScrollMemory } from "@/hooks/useSimpleScrollMemory";
 
 interface LayoutProps {
   children: ReactNode;
 }
 
 const Layout = ({ children }: LayoutProps) => {
-  // Initialize smart navigation (replaces aggressive ScrollToTop)
-  useSmartNavigation();
+  // Initialize simple scroll memory
+  useSimpleScrollMemory();
 
   return (
     <div className="flex min-h-screen flex-col bg-white overflow-x-hidden">
