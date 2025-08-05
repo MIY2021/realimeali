@@ -41,41 +41,72 @@ export const useScrollRestoration = (
 
       let timeoutId: NodeJS.Timeout;
       let observer: IntersectionObserver | null = null;
+      let mutationObserver: MutationObserver | null = null;
 
       const cleanup = () => {
         if (timeoutId) clearTimeout(timeoutId);
         if (observer) observer.disconnect();
+        if (mutationObserver) mutationObserver.disconnect();
       };
 
       // Check if content exists immediately
-      const contentElement = document.querySelector(contentSelector) || document.body;
-      if (contentElement && contentElement.children.length > 0) {
-        resolve(true);
+      const contentElement = document.querySelector(contentSelector);
+      const hasContent = contentElement && (
+        contentElement.children.length > 0 || 
+        contentElement.getAttribute('data-testid') === 'recipe-list' ||
+        contentElement.querySelector('[data-testid="recipe-list"]')
+      );
+      
+      if (hasContent) {
+        // Additional delay for mobile to ensure layout stability
+        const delay = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ? 100 : 50;
+        setTimeout(() => resolve(true), delay);
         return;
       }
 
-      // Wait for content using IntersectionObserver
+      // Use MutationObserver to detect content changes
+      const targetElement = document.querySelector(contentSelector) || document.body;
+      
+      mutationObserver = new MutationObserver((mutations) => {
+        const hasNewContent = mutations.some(mutation => 
+          mutation.addedNodes.length > 0 || 
+          (mutation.target as Element).querySelector?.('[data-testid="recipe-list"]')
+        );
+        
+        if (hasNewContent) {
+          cleanup();
+          // Extra delay for mobile content stability
+          const delay = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ? 150 : 75;
+          setTimeout(() => resolve(true), delay);
+        }
+      });
+
+      mutationObserver.observe(targetElement, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ['data-testid']
+      });
+
+      // Fallback with IntersectionObserver
       observer = new IntersectionObserver(
         (entries) => {
           const hasVisibleContent = entries.some(entry => entry.isIntersecting);
           if (hasVisibleContent) {
             cleanup();
-            // Small additional delay to ensure layout is stable
-            setTimeout(() => resolve(true), 50);
+            setTimeout(() => resolve(true), 100);
           }
         },
         { threshold: 0.1 }
       );
 
-      // Observe content area
-      const targetElement = document.querySelector(contentSelector) || document.body;
       observer.observe(targetElement);
 
-      // Fallback timeout
+      // Fallback timeout - increased for mobile
       timeoutId = setTimeout(() => {
         cleanup();
         resolve(false);
-      }, 2000);
+      }, 3000);
     });
   }, [contentSelector, waitForContent]);
 
@@ -117,16 +148,29 @@ export const useScrollRestoration = (
         if (!contentReady && restoreAttemptRef.current < retryAttempts) {
           restoreAttemptRef.current++;
           console.log(`Content not ready, retry attempt ${restoreAttemptRef.current}`);
-          await new Promise(resolve => setTimeout(resolve, retryDelay));
+          await new Promise(resolve => setTimeout(resolve, retryDelay * Math.pow(2, restoreAttemptRef.current)));
           return attemptRestore();
         }
 
-        // Restore scroll position
-        window.scrollTo({
-          top: position.y || 0,
-          left: position.x || 0,
-          behavior: 'instant'
-        });
+        // Restore scroll position with mobile-optimized timing
+        const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        
+        if (isMobile) {
+          // Use requestAnimationFrame for smoother mobile scrolling
+          requestAnimationFrame(() => {
+            window.scrollTo({
+              top: position.y || 0,
+              left: position.x || 0,
+              behavior: 'instant'
+            });
+          });
+        } else {
+          window.scrollTo({
+            top: position.y || 0,
+            left: position.x || 0,
+            behavior: 'instant'
+          });
+        }
 
         console.log('Restored scroll position:', position, 'for key:', scrollKey);
         return true;

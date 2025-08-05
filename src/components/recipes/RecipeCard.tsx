@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Heart, Eye, Plus, User, Clock } from "lucide-react";
@@ -14,7 +14,7 @@ import { toast } from "sonner";
 interface RecipeCardProps {
   recipe: Recipe;
   onAddToMealPlan?: (recipe: Recipe) => void;
-  onRecipeClick?: (recipeId: string) => void;
+  onRecipeClick?: (recipe: Recipe) => void;
   showActions?: boolean;
   mobileLayout?: string;
 }
@@ -24,6 +24,7 @@ export function RecipeCard({ recipe, onAddToMealPlan, onRecipeClick, showActions
   const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
   const [isTogglingCooked, setIsTogglingCooked] = useState(false);
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
 
   const handleToggleFavorite = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -74,10 +75,20 @@ export function RecipeCard({ recipe, onAddToMealPlan, onRecipeClick, showActions
     }
   };
 
-  const handleRecipeClick = () => {
+  const handleRecipeClick = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // Call scroll saving callback if provided
     if (onRecipeClick) {
-      onRecipeClick(recipe.id);
+      onRecipeClick(recipe);
     }
+    
+    // Small delay to ensure scroll position is saved
+    await new Promise(resolve => setTimeout(resolve, 10));
+    
+    // Navigate programmatically
+    navigate(getRecipeUrl());
   };
 
   const getRecipeUrl = () => {
@@ -96,13 +107,13 @@ export function RecipeCard({ recipe, onAddToMealPlan, onRecipeClick, showActions
   return (
     <Card className="bg-card rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 flex flex-col h-full">
       <div className="relative overflow-hidden rounded-t-lg">
-        <Link to={getRecipeUrl()} onClick={handleRecipeClick}>
+        <div onClick={handleRecipeClick} className="cursor-pointer">
           <RecipeImage 
             recipe={recipe} 
             className={`w-full aspect-[4/3] object-cover transition-transform duration-300 ${!isMobile ? 'hover:scale-110' : ''}`} 
             iconSize="h-5 w-5" 
           />
-        </Link>
+        </div>
         <Button
           variant="ghost"
           size="icon"
@@ -115,11 +126,11 @@ export function RecipeCard({ recipe, onAddToMealPlan, onRecipeClick, showActions
       </div>
       
       <CardContent className="p-4 flex-1 flex flex-col">
-        <Link to={getRecipeUrl()} onClick={handleRecipeClick}>
+        <div onClick={handleRecipeClick} className="cursor-pointer">
           <h3 className={`font-semibold text-gray-900 mb-2 hover:text-primary transition-colors ${isCompactLayout ? 'text-sm' : 'text-lg'}`}>
             {recipe.title}
           </h3>
-        </Link>
+        </div>
         <p 
           className="text-sm text-gray-600 mb-3 flex-1"
           style={{
@@ -167,16 +178,14 @@ export function RecipeCard({ recipe, onAddToMealPlan, onRecipeClick, showActions
         {/* Action buttons row */}
         <div className={`mt-auto ${shouldStackButtons ? 'flex flex-col gap-2' : 'flex gap-2'}`}>
           <Button
-            asChild
             variant="outline"
             size="sm"
             className={`text-xs px-2 ${shouldStackButtons ? 'w-full' : 'flex-1'}`}
+            onClick={handleRecipeClick}
           >
-            <Link to={getRecipeUrl()} onClick={handleRecipeClick}>
-              <Eye className="h-3 w-3 mr-1" />
-              <span className="hidden xl:inline">View Recipe</span>
-              <span className="xl:hidden">View</span>
-            </Link>
+            <Eye className="h-3 w-3 mr-1" />
+            <span className="hidden xl:inline">View Recipe</span>
+            <span className="xl:hidden">View</span>
           </Button>
           
           {showActions && onAddToMealPlan && (
