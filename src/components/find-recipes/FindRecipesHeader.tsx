@@ -10,8 +10,7 @@ export const FindRecipesHeader = () => {
           <span>Find Recipes</span>
         </h1>
         <p className="text-sm sm:text-base text-muted-foreground">
-          Discover amazing recipes shared by RealiMeali users as community inspiration. 
-          <strong> Important:</strong> All recipes are sourced from external websites - please visit the original source to support the recipe creators.
+          Discover amazing recipes shared by RealiMeali users as community inspiration.
         </p>
       </div>
     </div>
