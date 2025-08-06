@@ -112,33 +112,28 @@ export const FindRecipesFilters = ({
         </Button>
       </div>
 
-      {/* Filters row - matching the exact width of the search/button row above */}
-      <div className="flex gap-2 w-full">
-        <div className="flex-1 flex flex-wrap gap-2 sm:gap-3">
-          <DropdownFilterSection
-            title="🕒 Meal Type"
-            options={categoryOptions}
-            selectedValues={selectedCategories}
-            onToggle={(value) => toggleArrayFilter(selectedCategories, value, setSelectedCategories)}
-          />
+      {/* Filters row - full width grid layout */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 w-full">
+        <DropdownFilterSection
+          title="🕒 Meal Type"
+          options={categoryOptions}
+          selectedValues={selectedCategories}
+          onToggle={(value) => toggleArrayFilter(selectedCategories, value, setSelectedCategories)}
+        />
 
-          <DropdownFilterSection
-            title="🌍 Cuisine"
-            options={AREA_OPTIONS}
-            selectedValues={selectedAreas}
-            onToggle={(value) => toggleArrayFilter(selectedAreas, value, setSelectedAreas)}
-          />
+        <DropdownFilterSection
+          title="🌍 Cuisine"
+          options={AREA_OPTIONS}
+          selectedValues={selectedAreas}
+          onToggle={(value) => toggleArrayFilter(selectedAreas, value, setSelectedAreas)}
+        />
 
-          <DropdownFilterSection
-            title="🥘 Main Ingredient"
-            options={ingredientOptions}
-            selectedValues={selectedIngredients}
-            onToggle={(value) => toggleArrayFilter(selectedIngredients, value, setSelectedIngredients)}
-          />
-        </div>
-        
-        {/* Invisible button placeholder to match the search button width */}
-        <div className="w-[44px]"></div>
+        <DropdownFilterSection
+          title="🥘 Main Ingredient"
+          options={ingredientOptions}
+          selectedValues={selectedIngredients}
+          onToggle={(value) => toggleArrayFilter(selectedIngredients, value, setSelectedIngredients)}
+        />
       </div>
 
       {hasActiveFilters && (
