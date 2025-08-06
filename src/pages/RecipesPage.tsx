@@ -22,10 +22,7 @@ export default function RecipesPage() {
   const { user } = useAuth();
   const { currentHousehold, isLoadingHousehold } = useHousehold();
   const { recipes, isLoading } = useRecipes();
-  const { shouldShowSkeleton } = usePageTransition(isLoading || isLoadingHousehold, {
-    enableSkeleton: true,
-    skeletonDuration: 500
-  });
+  // Remove skeleton loading for header - show content immediately
   const isMobile = useIsMobile();
 
   // State for Add to Meal Plan dialog
@@ -54,29 +51,7 @@ export default function RecipesPage() {
     favoriteRecipes: recipes.filter(r => r.is_favorite).length
   });
 
-  // Show skeleton during initial loading for smooth transitions
-  if (shouldShowSkeleton) {
-    return (
-      <div className={`container max-w-7xl py-4 px-4 sm:py-8 sm:px-6 ${isMobile ? 'bg-white min-h-screen' : ''}`}>
-        <div className="flex flex-col gap-4 mb-6 sm:flex-row sm:justify-between sm:items-center">
-          <div className="space-y-2">
-            <Skeleton className="h-8 w-48" />
-            <Skeleton className="h-4 w-80" />
-          </div>
-          <Skeleton className="h-10 w-32" />
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="space-y-4">
-              <Skeleton className="h-48 w-full rounded-lg" />
-              <Skeleton className="h-6 w-3/4" />
-              <Skeleton className="h-4 w-1/2" />
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
+  // Header shows immediately, only recipe list shows loading
 
   return (
     <>
