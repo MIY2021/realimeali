@@ -51,17 +51,15 @@ export default function ShoppingListHeader({
   };
 
   return (
-    <div className={`mb-6 ${isMobile ? 'space-y-4' : ''}`}>
-      <div>
-        <div>
-          <h1 className={`font-bold text-navy flex items-center gap-2 ${isMobile ? 'text-2xl' : 'text-2xl sm:text-3xl'}`}>
-            <ShoppingBag className={`text-sage ${isMobile ? 'h-6 w-6' : 'h-6 w-6 sm:h-8 sm:w-8'}`} />
-            Shopping List
-          </h1>
-          <p className="text-sm sm:text-base text-muted-foreground">
-            {getWelcomeText()}
-          </p>
-        </div>
+    <div className="flex flex-col gap-4 mb-6 sm:flex-row sm:justify-between sm:items-start">
+      <div className="space-y-2">
+        <h1 className="text-2xl sm:text-3xl font-bold text-navy flex items-center gap-2">
+          <ShoppingBag className="h-6 w-6 sm:h-8 sm:w-8 text-sage" />
+          Shopping List
+        </h1>
+        <p className="text-sm sm:text-base text-muted-foreground">
+          {getWelcomeText()}
+        </p>
       </div>
     </div>
   );
