@@ -152,13 +152,8 @@ export const FindRecipesContent = () => {
     );
   }
 
-  if (isLoading) {
-    return (
-      <div className="py-10 text-center">
-        <p className="text-muted-foreground">Loading community recipes...</p>
-      </div>
-    );
-  }
+  // Show loading skeleton for just the recipe grid area
+  const showLoadingSkeleton = isLoading;
 
   return (
     <div className={`space-y-4 sm:space-y-6 ${isMobile ? 'bg-white min-h-screen' : ''}`}>
@@ -329,7 +324,17 @@ export const FindRecipesContent = () => {
         </div>
       )}
       
-      {filteredAndSortedRecipes.length === 0 ? (
+      {showLoadingSkeleton ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="space-y-4">
+              <div className="h-48 w-full rounded-lg bg-muted animate-pulse" />
+              <div className="h-6 w-3/4 bg-muted animate-pulse rounded" />
+              <div className="h-4 w-1/2 bg-muted animate-pulse rounded" />
+            </div>
+          ))}
+        </div>
+      ) : filteredAndSortedRecipes.length === 0 ? (
         <div className="text-center py-8 px-4">
           <p className="text-muted-foreground">No community recipes found. Try adjusting your search or filters.</p>
         </div>
