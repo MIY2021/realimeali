@@ -117,48 +117,8 @@ serve(async (req) => {
     const data = await response.json();
     console.log(`Found ${data.hits?.length || 0} recipes from API`);
 
-    // Client-side filtering to ensure results match meal type
-    let filteredHits = data.hits || [];
-    
-    if (filters.mealType && filteredHits.length > 0) {
-      filteredHits = filteredHits.filter((hit: any) => {
-        const recipe = hit.recipe;
-        const recipeMealTypes = recipe.mealType || [];
-        const recipeDishTypes = recipe.dishType || [];
-        
-        // Check if the recipe's meal type or dish type matches our filter
-        const mealTypeMatches = recipeMealTypes.some((type: string) => 
-          type.toLowerCase().includes(filters.mealType!.toLowerCase())
-        );
-        
-        // Additional filtering based on dish type for better accuracy
-        if (filters.mealType === 'dinner') {
-          const isDinnerDish = recipeDishTypes.some((type: string) => 
-            ['main course', 'main dish', 'dinner'].some(dinnerType => 
-              type.toLowerCase().includes(dinnerType)
-            )
-          );
-          const isNotDessert = !recipeDishTypes.some((type: string) => 
-            ['dessert', 'desserts'].some(dessertType => 
-              type.toLowerCase().includes(dessertType)
-            )
-          );
-          return mealTypeMatches || (isDinnerDish && isNotDessert);
-        }
-        
-        if (filters.mealType === 'breakfast') {
-          const isBreakfastDish = recipeDishTypes.some((type: string) => 
-            type.toLowerCase().includes('breakfast')
-          );
-          return mealTypeMatches || isBreakfastDish;
-        }
-        
-        return mealTypeMatches;
-      });
-      
-      // Limit to 10 results after filtering
-      filteredHits = filteredHits.slice(0, 10);
-    }
+    // Use all results from Edamam since they're already properly filtered
+    const filteredHits = data.hits || [];
     
     console.log(`Filtered to ${filteredHits.length} relevant recipes`);
     
