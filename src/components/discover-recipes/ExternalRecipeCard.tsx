@@ -30,7 +30,7 @@ export function ExternalRecipeCard({ recipe }: ExternalRecipeCardProps) {
   ].slice(0, 3);
 
   return (
-    <Card className="group hover:shadow-lg transition-all duration-200 overflow-hidden">
+    <Card className="group hover:shadow-lg transition-all duration-200 overflow-hidden h-full flex flex-col">
       <div className="relative">
         <img
           src={recipe.image}
@@ -47,9 +47,9 @@ export function ExternalRecipeCard({ recipe }: ExternalRecipeCardProps) {
         </div>
       </div>
       
-      <CardContent className="p-4 space-y-3">
+      <CardContent className="p-4 flex-1 flex flex-col justify-between">
         <div className="space-y-2">
-          <h3 className="font-semibold text-navy line-clamp-2 leading-tight">
+          <h3 className="font-semibold text-navy line-clamp-2 leading-tight min-h-[2.5rem]">
             {recipe.label}
           </h3>
           
@@ -71,23 +71,23 @@ export function ExternalRecipeCard({ recipe }: ExternalRecipeCardProps) {
           <p className="text-xs text-muted-foreground">
             Source: {recipe.source}
           </p>
-        </div>
 
-        {/* Dietary labels */}
-        {relevantLabels.length > 0 && (
-          <div className="flex flex-wrap gap-1">
-            {relevantLabels.map((label, index) => (
-              <Badge key={index} variant="outline" className="text-xs">
-                {label}
-              </Badge>
-            ))}
-          </div>
-        )}
+          {/* Dietary labels */}
+          {relevantLabels.length > 0 && (
+            <div className="flex flex-wrap gap-1 min-h-[1.5rem]">
+              {relevantLabels.map((label, index) => (
+                <Badge key={index} variant="outline" className="text-xs">
+                  {label}
+                </Badge>
+              ))}
+            </div>
+          )}
+        </div>
 
         {/* Visit recipe button */}
         <Button 
           size="sm" 
-          className="w-full"
+          className="w-full mt-3"
           onClick={handleVisitSite}
         >
           <Link className="h-4 w-4 mr-2" />

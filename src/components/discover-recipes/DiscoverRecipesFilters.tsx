@@ -15,29 +15,27 @@ const MEAL_TYPES = [
   { value: "breakfast", label: "Breakfast", icon: "🌅" },
   { value: "lunch", label: "Lunch", icon: "☀️" },
   { value: "dinner", label: "Dinner", icon: "🌙" },
-  { value: "snack", label: "Snack", icon: "🍿" },
-  { value: "teatime", label: "Tea Time", icon: "🫖" },
+  { value: "snack", label: "Snacks", icon: "🍿" },
+  { value: "teatime", label: "Sides", icon: "🥗" },
 ];
 
 const CUISINE_TYPES = [
-  { value: "american", label: "American" },
-  { value: "asian", label: "Asian" },
-  { value: "british", label: "British" },
-  { value: "caribbean", label: "Caribbean" },
-  { value: "central europe", label: "Central European" },
-  { value: "chinese", label: "Chinese" },
-  { value: "eastern europe", label: "Eastern European" },
-  { value: "french", label: "French" },
-  { value: "indian", label: "Indian" },
-  { value: "italian", label: "Italian" },
-  { value: "japanese", label: "Japanese" },
-  { value: "kosher", label: "Kosher" },
-  { value: "mediterranean", label: "Mediterranean" },
-  { value: "mexican", label: "Mexican" },
-  { value: "middle eastern", label: "Middle Eastern" },
-  { value: "nordic", label: "Nordic" },
-  { value: "south american", label: "South American" },
-  { value: "south east asian", label: "Southeast Asian" },
+  { value: "british", label: "British", icon: "🫖" },
+  { value: "american", label: "American", icon: "🍔" },
+  { value: "italian", label: "Italian", icon: "🍝" },
+  { value: "french", label: "French", icon: "🥖" },
+  { value: "mexican", label: "Mexican", icon: "🌮" },
+  { value: "indian", label: "Indian", icon: "🍛" },
+  { value: "chinese", label: "Chinese", icon: "🥡" },
+  { value: "japanese", label: "Japanese", icon: "🍣" },
+  { value: "asian", label: "Thai", icon: "🍜" },
+  { value: "mediterranean", label: "Mediterranean", icon: "🫒" },
+  { value: "middle eastern", label: "Middle Eastern", icon: "🥙" },
+  { value: "caribbean", label: "Caribbean", icon: "🏝️" },
+  { value: "korean", label: "Korean", icon: "🍲" },
+  { value: "nordic", label: "Nordic", icon: "❄️" },
+  { value: "eastern europe", label: "Eastern European", icon: "🏰" },
+  { value: "kosher", label: "Greek", icon: "🧄" },
 ];
 
 const DIET_OPTIONS = [
@@ -168,9 +166,10 @@ export function DiscoverRecipesFilters({ onSearch, onReset }: DiscoverRecipesFil
                   variant={selectedCuisine === cuisine.value ? "default" : "outline"}
                   size="sm"
                   onClick={() => setSelectedCuisine(selectedCuisine === cuisine.value ? "" : cuisine.value)}
-                  className="text-xs"
+                  className="h-auto p-3 flex flex-col items-center gap-1"
                 >
-                  {cuisine.label}
+                  <span className="text-lg">{cuisine.icon}</span>
+                  <span className="text-xs">{cuisine.label}</span>
                 </Button>
               ))}
             </div>
