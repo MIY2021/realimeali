@@ -61,7 +61,6 @@ const Header = () => {
 
   const navigationItems = [
     { to: "/my-recipes", icon: Book, label: "My Recipes" },
-    { to: "/find-recipes", icon: Search, label: "Find Recipes" },
     { to: "/discover-recipes", icon: Search, label: "Discover Recipes" },
     { to: "/meal-planner", icon: CalendarDays, label: "Meal Planner" },
     { to: "/shopping-list", icon: ListChecks, label: "Shopping List" },
