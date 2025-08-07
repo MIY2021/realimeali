@@ -15,7 +15,7 @@ export function DiscoverRecipesContent() {
     if (communityOnly) {
       fetchCommunityRecipes({ limit: 50 }); // Fetch more recipes for better discovery
     }
-  }, [communityOnly, fetchCommunityRecipes]);
+  }, [communityOnly]); // Removed fetchCommunityRecipes to prevent infinite re-renders
 
   const handleCommunityToggle = (enabled: boolean) => {
     setCommunityOnly(enabled);
