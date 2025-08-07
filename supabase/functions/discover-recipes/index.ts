@@ -35,13 +35,24 @@ serve(async (req) => {
     params.append('app_id', EDAMAM_APP_ID);
     params.append('app_key', EDAMAM_APP_KEY);
     params.append('from', '0');
-    params.append('to', '10'); // Limit to 10 results
+    params.append('to', '20'); // Get more results to filter client-side
 
-    // Add keyword search
+    // Add keyword search - make it more specific based on meal type
     if (filters.keyword) {
       params.append('q', filters.keyword);
     } else {
-      params.append('q', 'recipe'); // Default search term
+      // Use meal type specific default keywords for better results
+      const mealTypeKeywords = {
+        'breakfast': 'breakfast morning',
+        'lunch': 'lunch meal',
+        'dinner': 'dinner main course',
+        'snack': 'snack',
+        'teatime': 'side dish'
+      };
+      const keyword = filters.mealType && mealTypeKeywords[filters.mealType as keyof typeof mealTypeKeywords] 
+        ? mealTypeKeywords[filters.mealType as keyof typeof mealTypeKeywords]
+        : 'recipe';
+      params.append('q', keyword);
     }
 
     // Add meal type filter
@@ -102,9 +113,59 @@ serve(async (req) => {
     }
 
     const data = await response.json();
-    console.log(`Found ${data.hits?.length || 0} recipes`);
+    console.log(`Found ${data.hits?.length || 0} recipes from API`);
 
-    return new Response(JSON.stringify(data), {
+    // Client-side filtering to ensure results match meal type
+    let filteredHits = data.hits || [];
+    
+    if (filters.mealType && filteredHits.length > 0) {
+      filteredHits = filteredHits.filter((hit: any) => {
+        const recipe = hit.recipe;
+        const recipeMealTypes = recipe.mealType || [];
+        const recipeDishTypes = recipe.dishType || [];
+        
+        // Check if the recipe's meal type or dish type matches our filter
+        const mealTypeMatches = recipeMealTypes.some((type: string) => 
+          type.toLowerCase().includes(filters.mealType!.toLowerCase())
+        );
+        
+        // Additional filtering based on dish type for better accuracy
+        if (filters.mealType === 'dinner') {
+          const isDinnerDish = recipeDishTypes.some((type: string) => 
+            ['main course', 'main dish', 'dinner'].some(dinnerType => 
+              type.toLowerCase().includes(dinnerType)
+            )
+          );
+          const isNotDessert = !recipeDishTypes.some((type: string) => 
+            ['dessert', 'desserts'].some(dessertType => 
+              type.toLowerCase().includes(dessertType)
+            )
+          );
+          return mealTypeMatches || (isDinnerDish && isNotDessert);
+        }
+        
+        if (filters.mealType === 'breakfast') {
+          const isBreakfastDish = recipeDishTypes.some((type: string) => 
+            type.toLowerCase().includes('breakfast')
+          );
+          return mealTypeMatches || isBreakfastDish;
+        }
+        
+        return mealTypeMatches;
+      });
+      
+      // Limit to 10 results after filtering
+      filteredHits = filteredHits.slice(0, 10);
+    }
+    
+    console.log(`Filtered to ${filteredHits.length} relevant recipes`);
+    
+    const filteredData = {
+      ...data,
+      hits: filteredHits
+    };
+
+    return new Response(JSON.stringify(filteredData), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
