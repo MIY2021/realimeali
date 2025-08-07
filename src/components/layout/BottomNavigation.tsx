@@ -16,10 +16,10 @@ const BottomNavigation = () => {
       activePattern: /^\/my-recipes/
     },
     { 
-      to: "/find-recipes", 
+      to: "/discover-recipes", 
       icon: Search, 
-      label: "Find Recipes",
-      activePattern: /^\/find-recipes/
+      label: "Discover",
+      activePattern: /^\/discover-recipes/
     },
     { 
       to: "/meal-planner", 
