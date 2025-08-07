@@ -1,8 +1,9 @@
 import { DiscoverRecipeFilters } from "@/types/edamam";
-import { useEdamamApi } from "@/hooks/useEdamamApi";
+import { useEdamamApiPagination } from "@/hooks/useEdamamApiPagination";
 import { ExternalRecipeCard } from "./ExternalRecipeCard";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AlertCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { AlertCircle, Loader } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface DiscoverRecipesResultsProps {
@@ -10,7 +11,7 @@ interface DiscoverRecipesResultsProps {
 }
 
 export function DiscoverRecipesResults({ filters }: DiscoverRecipesResultsProps) {
-  const { data: recipes, isLoading, error } = useEdamamApi(filters);
+  const { recipes, isLoading, isLoadingMore, hasMore, error, totalFetched, loadMore } = useEdamamApiPagination(filters);
 
   if (isLoading) {
     return (
@@ -74,6 +75,39 @@ export function DiscoverRecipesResults({ filters }: DiscoverRecipesResultsProps)
           />
         ))}
       </div>
+      
+      {/* Load More Section */}
+      {hasMore && recipes.length > 0 && (
+        <div className="flex flex-col items-center space-y-4 pt-8">
+          <Button 
+            onClick={loadMore}
+            disabled={isLoadingMore}
+            variant="outline"
+            size="lg"
+            className="min-w-[140px]"
+          >
+            {isLoadingMore ? (
+              <>
+                <Loader className="w-4 h-4 mr-2 animate-spin" />
+                Loading...
+              </>
+            ) : (
+              'Load More Recipes'
+            )}
+          </Button>
+          <p className="text-sm text-muted-foreground">
+            Showing {recipes.length} recipes{totalFetched > recipes.length ? ` (${totalFetched} total found)` : ''}
+          </p>
+        </div>
+      )}
+      
+      {!hasMore && recipes.length > 0 && (
+        <div className="text-center pt-8">
+          <p className="text-muted-foreground">
+            That's all the recipes we found! Try adjusting your filters for more results.
+          </p>
+        </div>
+      )}
     </div>
   );
 }

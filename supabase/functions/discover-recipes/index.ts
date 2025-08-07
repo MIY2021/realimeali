@@ -14,6 +14,8 @@ interface DiscoverRecipeFilters {
   diet?: string[];
   time?: string;
   keyword?: string;
+  from?: number;
+  to?: number;
 }
 
 serve(async (req) => {
@@ -34,8 +36,8 @@ serve(async (req) => {
     params.append('type', 'public');
     params.append('app_id', EDAMAM_APP_ID);
     params.append('app_key', EDAMAM_APP_KEY);
-    params.append('from', '0');
-    params.append('to', '20'); // Get more results to filter client-side
+    params.append('from', (filters.from || 0).toString());
+    params.append('to', (filters.to || 20).toString());
 
     // Add keyword search - make it more specific based on meal type
     if (filters.keyword) {
@@ -160,12 +162,15 @@ serve(async (req) => {
     
     console.log(`Filtered to ${filteredHits.length} relevant recipes`);
     
-    const filteredData = {
+    const response_data = {
       ...data,
-      hits: filteredHits
+      hits: filteredHits,
+      hasMore: data.more && filteredHits.length > 0,
+      nextFrom: (filters.from || 0) + (filters.to || 20),
+      totalFetched: (filters.from || 0) + filteredHits.length
     };
 
-    return new Response(JSON.stringify(filteredData), {
+    return new Response(JSON.stringify(response_data), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 

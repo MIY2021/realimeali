@@ -61,6 +61,14 @@ export interface DiscoverRecipeFilters {
   diet?: string[];
   time?: string;
   keyword?: string;
+  from?: number;
+  to?: number;
+}
+
+export interface PaginatedEdamamResponse extends EdamamApiResponse {
+  hasMore: boolean;
+  nextFrom: number;
+  totalFetched: number;
 }
 
 export interface CachedRecipeResult {
