@@ -200,7 +200,7 @@ export function CommunityRecipeSelectionView({
             <div className="flex items-center gap-2 text-sm">
               <div className="flex items-center gap-1">
                 <Users className={`h-4 w-4 ${communityOnly ? 'text-terracotta' : 'text-gray-500'}`} />
-                <span>Include RealiMeali Community-Shared Recipes</span>
+                <span>include community-shared recipes</span>
                 <Switch
                   checked={communityOnly}
                   onCheckedChange={onCommunityToggle}
@@ -210,7 +210,7 @@ export function CommunityRecipeSelectionView({
             <div className="flex items-center gap-2">
               <Button size="sm" onClick={handleDiscoverClick}>
                 <Search className="h-4 w-4 mr-2" />
-                Discover Recipes
+                Search
               </Button>
               {hasActiveFilters && (
                 <button
@@ -263,7 +263,7 @@ export function CommunityRecipeSelectionView({
             <div className="flex items-center gap-3 text-sm">
               <div className="flex items-center gap-2">
                 <Users className={`${communityOnly ? 'text-terracotta' : 'text-gray-500'} h-4 w-4`} />
-                <span>Include RealiMeali Community-Shared Recipes</span>
+                <span>include community-shared recipes</span>
                 <Switch
                   checked={communityOnly}
                   onCheckedChange={onCommunityToggle}
@@ -271,7 +271,7 @@ export function CommunityRecipeSelectionView({
               </div>
               <Button onClick={handleDiscoverClick} className="whitespace-nowrap">
                 <Search className="h-4 w-4 mr-2" />
-                Discover Recipes
+                Search
               </Button>
             </div>
           </div>
