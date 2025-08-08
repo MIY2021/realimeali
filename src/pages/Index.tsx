@@ -83,12 +83,12 @@ export default function Index() {
                 </p>
                 {user ? (
                   <Button className="mt-auto" asChild>
-                    <Link to="/find-recipes">Discover Recipes</Link>
+                    <Link to="/discover-recipes">Discover Recipes</Link>
                   </Button>
                 ) : (
                   <Button 
                     className="mt-auto"
-                    onClick={(e) => handleFeatureClick(e, "/find-recipes")}
+                    onClick={(e) => handleFeatureClick(e, "/discover-recipes")}
                   >
                     Discover Recipes
                   </Button>

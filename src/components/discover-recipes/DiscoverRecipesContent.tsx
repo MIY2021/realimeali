@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { DiscoverRecipesResults } from "./DiscoverRecipesResults";
+import { DiscoverRecipesFilters } from "./DiscoverRecipesFilters";
 import { CommunityRecipeSelectionView } from "@/components/community/CommunityRecipeSelectionView";
 import { useCommunityRecipes } from "@/hooks/useCommunityRecipes";
 import { DiscoverRecipeFilters } from "@/types/edamam";
@@ -35,7 +36,15 @@ export function DiscoverRecipesContent() {
           onCommunityToggle={handleCommunityToggle}
         />
       ) : (
-        <DiscoverRecipesResults filters={filters} />
+        <>
+          <DiscoverRecipesFilters
+            onSearch={(f) => setFilters(f)}
+            onReset={() => setFilters({})}
+            communityOnly={communityOnly}
+            onCommunityToggle={handleCommunityToggle}
+          />
+          <DiscoverRecipesResults filters={filters} />
+        </>
       )}
     </div>
   );

@@ -124,10 +124,10 @@ export function DiscoverRecipesFilters({ onSearch, onReset, communityOnly, onCom
           <div className="flex items-center justify-between p-4 bg-sage/10 rounded-lg">
             <div className="space-y-1">
               <label className="text-sm font-medium text-navy">
-                RealiMeali Community Only
+                Include RealiMeali Community-Shared Recipes
               </label>
               <p className="text-xs text-muted-foreground">
-                Show only recipes from our community members
+                Include recipes shared by our community members
               </p>
             </div>
             <Switch
