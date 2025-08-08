@@ -1,14 +1,15 @@
 import { useState, useEffect } from "react";
-import { DiscoverRecipesResults } from "./DiscoverRecipesResults";
 import { CommunityRecipeSelectionView } from "@/components/community/CommunityRecipeSelectionView";
 import { useCommunityRecipes } from "@/hooks/useCommunityRecipes";
 import { DiscoverRecipeFilters } from "@/types/edamam";
+import { useEdamamApi } from "@/hooks/useEdamamApi";
 
 export function DiscoverRecipesContent() {
   const [apiFilters, setApiFilters] = useState<DiscoverRecipeFilters | null>(null);
   const [communityOnly, setCommunityOnly] = useState(true); // Default to ON
   
-  const { recipes: communityRecipes, isLoading: communityLoading, fetchCommunityRecipes } = useCommunityRecipes();
+const { recipes: communityRecipes, isLoading: communityLoading, fetchCommunityRecipes } = useCommunityRecipes();
+const { data: externalHits = [], isLoading: externalLoading } = useEdamamApi(apiFilters || {} as DiscoverRecipeFilters);
 
   // Fetch community recipes by default when component mounts or when toggled on
   useEffect(() => {
@@ -33,11 +34,10 @@ export function DiscoverRecipesContent() {
         communityOnly={communityOnly}
         onCommunityToggle={handleCommunityToggle}
         onSearch={(f) => setApiFilters(f)}
+        externalHits={apiFilters ? externalHits : []}
+        externalLoading={externalLoading}
       />
 
-      {apiFilters && (
-        <DiscoverRecipesResults filters={apiFilters} />
-      )}
     </div>
   );
 }

@@ -5,7 +5,7 @@ import { Switch } from "@/components/ui/switch";
 import { useCommunityRecipeList } from "@/hooks/useCommunityRecipeList";
 import { useMobileLayout } from "@/hooks/useMobileLayout";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { CommunityRecipeGrid } from "./CommunityRecipeGrid";
+
 import { SimpleRecipeFiltersComponent } from "@/components/recipes/filters/SimpleRecipeFilters";
 import { MobileLayoutSelector } from "@/components/recipes/MobileLayoutSelector";
 import { DropdownFilterSection } from "@/components/recipes/filters/DropdownFilterSection";
@@ -24,7 +24,9 @@ import {
   COMPLEXITY_LEVEL_OPTIONS,
 } from "@/utils/recipeClassification";
 import { CommunityRecipe } from "@/hooks/useCommunityRecipes";
-import { DiscoverRecipeFilters } from "@/types/edamam";
+import { DiscoverRecipeFilters, EdamamHit } from "@/types/edamam";
+import { ExternalRecipeCard } from "@/components/discover-recipes/ExternalRecipeCard";
+import { CommunityRecipeCard } from "./CommunityRecipeCard";
 
 interface CommunityRecipeSelectionViewProps {
   recipes: CommunityRecipe[];
@@ -33,6 +35,8 @@ interface CommunityRecipeSelectionViewProps {
   onCommunityToggle: (enabled: boolean) => void;
   defaultMobileLayout?: string;
   onSearch: (filters: DiscoverRecipeFilters) => void;
+  externalHits?: EdamamHit[];
+  externalLoading?: boolean;
 }
 
 export function CommunityRecipeSelectionView({ 
@@ -41,7 +45,9 @@ export function CommunityRecipeSelectionView({
   communityOnly,
   onCommunityToggle,
   defaultMobileLayout,
-  onSearch
+  onSearch,
+  externalHits,
+  externalLoading
 }: CommunityRecipeSelectionViewProps) {
   const {
     searchTerm,
@@ -63,10 +69,16 @@ export function CommunityRecipeSelectionView({
   const { mobileLayout, handleMobileLayoutChange } = useMobileLayout();
   const isMobile = useIsMobile();
   
-  // Use default layout if provided, otherwise use the stored layout
-  const currentMobileLayout = defaultMobileLayout || mobileLayout;
+// Use default layout if provided, otherwise use the stored layout
+const currentMobileLayout = defaultMobileLayout || mobileLayout;
 
-  const toggleArrayFilter = (key: keyof typeof filters, value: string) => {
+const getGridCols = () => {
+  return currentMobileLayout === "2"
+    ? "grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
+    : "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4";
+};
+
+const toggleArrayFilter = (key: keyof typeof filters, value: string) => {
     const currentArray = filters[key] as string[];
     const updatedArray = currentArray.includes(value)
       ? currentArray.filter(item => item !== value)
@@ -86,17 +98,18 @@ export function CommunityRecipeSelectionView({
                            filters.dietLifestyle.length + 
                            filters.complexityLevels.length;
 
-  const clearAllFilters = () => {
-    handleFiltersChange({
-      searchTerm: filters.searchTerm,
-      mealTypes: [],
-      cuisineRegions: [],
-      dietLifestyle: [],
-      complexityLevels: [],
-      showFavoritesOnly: false,
-      showNotCookedOnly: false,
-    });
-  };
+const clearAllFilters = () => {
+  setSearchTerm("");
+  handleFiltersChange({
+    searchTerm: "",
+    mealTypes: [],
+    cuisineRegions: [],
+    dietLifestyle: [],
+    complexityLevels: [],
+    showFavoritesOnly: false,
+    showNotCookedOnly: false,
+  });
+};
 
   const buildExternalFilters = useCallback((): DiscoverRecipeFilters => {
     const keyword = (searchTerm || filters.searchTerm || "").trim();
@@ -108,9 +121,14 @@ export function CommunityRecipeSelectionView({
     };
   }, [searchTerm, filters]);
 
-  const handleDiscoverClick = useCallback(() => {
-    onSearch(buildExternalFilters());
-  }, [onSearch, buildExternalFilters]);
+const handleDiscoverClick = useCallback(() => {
+  onSearch(buildExternalFilters());
+}, [onSearch, buildExternalFilters]);
+
+const apiResults = externalHits && externalHits.length ? externalHits : [];
+const showCommunity = communityOnly;
+const communityList = showCommunity ? visibleRecipes : [];
+const hasAnyResults = communityList.length > 0 || apiResults.length > 0;
 
   if (isLoading) {
     return (
@@ -196,32 +214,32 @@ export function CommunityRecipeSelectionView({
           </div>
 
           {/* Row 3: Community toggle and clear filters */}
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-2 text-sm">
-              <div className="flex items-center gap-1">
-                <Users className={`h-4 w-4 ${communityOnly ? 'text-terracotta' : 'text-gray-500'}`} />
-                <span>include community-shared recipes</span>
-                <Switch
-                  checked={communityOnly}
-                  onCheckedChange={onCommunityToggle}
-                />
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button size="sm" onClick={handleDiscoverClick}>
-                <Search className="h-4 w-4 mr-2" />
-                Search
-              </Button>
-              {hasActiveFilters && (
-                <button
-                  onClick={clearAllFilters}
-                  className="text-sm text-muted-foreground hover:text-foreground underline"
-                >
-                  Clear filters ({activeFilterCount})
-                </button>
-              )}
-            </div>
-          </div>
+<div className="flex justify-between items-center">
+  <div className="flex items-center gap-3 text-sm">
+    <div className="flex items-center gap-1">
+      <Users className={`h-4 w-4 ${communityOnly ? 'text-terracotta' : 'text-gray-500'}`} />
+      <span>Include community-shared recipes</span>
+    </div>
+    <Switch
+      checked={communityOnly}
+      onCheckedChange={onCommunityToggle}
+    />
+  </div>
+  <div className="flex items-center gap-2">
+    <Button size="sm" onClick={handleDiscoverClick}>
+      <Search className="h-4 w-4 mr-2" />
+      Search
+    </Button>
+    {hasActiveFilters && (
+      <button
+        onClick={clearAllFilters}
+        className="text-sm text-muted-foreground hover:text-foreground underline"
+      >
+        Clear filters ({activeFilterCount})
+      </button>
+    )}
+  </div>
+</div>
         </div>
       ) : (
         /* Desktop Layout */
@@ -259,21 +277,23 @@ export function CommunityRecipeSelectionView({
               </Select>
             </div>
 
-            {/* Community Toggle for Desktop */}
-            <div className="flex items-center gap-3 text-sm">
-              <div className="flex items-center gap-2">
-                <Users className={`${communityOnly ? 'text-terracotta' : 'text-gray-500'} h-4 w-4`} />
-                <span>include community-shared recipes</span>
-                <Switch
-                  checked={communityOnly}
-                  onCheckedChange={onCommunityToggle}
-                />
-              </div>
-              <Button onClick={handleDiscoverClick} className="whitespace-nowrap">
-                <Search className="h-4 w-4 mr-2" />
-                Search
-              </Button>
-            </div>
+{/* Community Toggle for Desktop */}
+<div className="flex items-center gap-6 text-sm">
+  <div className="flex items-center gap-3">
+    <div className="flex items-center gap-2">
+      <Users className={`${communityOnly ? 'text-terracotta' : 'text-gray-500'} h-4 w-4`} />
+      <span>Include community-shared recipes</span>
+    </div>
+    <Switch
+      checked={communityOnly}
+      onCheckedChange={onCommunityToggle}
+    />
+  </div>
+  <Button onClick={handleDiscoverClick} className="whitespace-nowrap">
+    <Search className="h-4 w-4 mr-2" />
+    Search
+  </Button>
+</div>
           </div>
 
           {/* Filters directly under search bar */}
@@ -287,33 +307,42 @@ export function CommunityRecipeSelectionView({
         </div>
       )}
       
-      {communityOnly && (
-        filteredAndSortedRecipes.length === 0 ? (
-          <div className="text-center py-8 px-4">
-            <p className="text-muted-foreground">
-              No community recipes found. Try adjusting your search or filters.
-            </p>
-          </div>
-        ) : (
-          <>
-            <CommunityRecipeGrid
-              recipes={visibleRecipes}
-              mobileLayout={currentMobileLayout}
-            />
-            
-            <div className="flex flex-col items-center gap-4 mt-6 px-4">
-              {hasMoreRecipes && (
-                <Button onClick={handleLoadMore} variant="outline" className="w-full sm:w-auto">
-                  Load More Recipes
-                </Button>
-              )}
-              <p className="text-sm text-muted-foreground text-center">
-                Showing {visibleRecipes.length} of {filteredAndSortedRecipes.length} recipes
-              </p>
-            </div>
-          </>
-        )
-      )}
+{hasAnyResults ? (
+  <>
+    <div className={`grid ${getGridCols()} gap-4 sm:gap-6`}>
+      {communityList.map((recipe) => (
+        <CommunityRecipeCard
+          key={`c-${recipe.id}`}
+          recipe={recipe}
+          mobileLayout={currentMobileLayout}
+        />
+      ))}
+      {apiResults.map((hit, index) => (
+        <ExternalRecipeCard
+          key={`e-${hit.recipe.uri}-${index}`}
+          recipe={hit.recipe}
+        />
+      ))}
+    </div>
+
+    {communityOnly && apiResults.length === 0 && hasMoreRecipes && (
+      <div className="flex flex-col items-center gap-4 mt-6 px-4">
+        <Button onClick={handleLoadMore} variant="outline" className="w-full sm:w-auto">
+          Load More Recipes
+        </Button>
+        <p className="text-sm text-muted-foreground text-center">
+          Showing {visibleRecipes.length} of {filteredAndSortedRecipes.length} recipes
+        </p>
+      </div>
+    )}
+  </>
+) : (
+  <div className="text-center py-8 px-4">
+    <p className="text-muted-foreground">
+      No recipes found. Try adjusting your search or filters.
+    </p>
+  </div>
+)}
     </div>
   );
 }
