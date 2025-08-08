@@ -9,7 +9,7 @@ import { CommunityRecipeGrid } from "./CommunityRecipeGrid";
 import { SimpleRecipeFiltersComponent } from "@/components/recipes/filters/SimpleRecipeFilters";
 import { MobileLayoutSelector } from "@/components/recipes/MobileLayoutSelector";
 import { DropdownFilterSection } from "@/components/recipes/filters/DropdownFilterSection";
-import { Users } from "lucide-react";
+import { Search, Users } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -24,6 +24,7 @@ import {
   COMPLEXITY_LEVEL_OPTIONS,
 } from "@/utils/recipeClassification";
 import { CommunityRecipe } from "@/hooks/useCommunityRecipes";
+import { DiscoverRecipeFilters } from "@/types/edamam";
 
 interface CommunityRecipeSelectionViewProps {
   recipes: CommunityRecipe[];
@@ -31,6 +32,7 @@ interface CommunityRecipeSelectionViewProps {
   communityOnly: boolean;
   onCommunityToggle: (enabled: boolean) => void;
   defaultMobileLayout?: string;
+  onSearch: (filters: DiscoverRecipeFilters) => void;
 }
 
 export function CommunityRecipeSelectionView({ 
@@ -38,7 +40,8 @@ export function CommunityRecipeSelectionView({
   isLoading, 
   communityOnly,
   onCommunityToggle,
-  defaultMobileLayout
+  defaultMobileLayout,
+  onSearch
 }: CommunityRecipeSelectionViewProps) {
   const {
     searchTerm,
@@ -94,6 +97,20 @@ export function CommunityRecipeSelectionView({
       showNotCookedOnly: false,
     });
   };
+
+  const buildExternalFilters = useCallback((): DiscoverRecipeFilters => {
+    const keyword = (searchTerm || filters.searchTerm || "").trim();
+    return {
+      keyword: keyword || undefined,
+      mealType: (filters.mealTypes && filters.mealTypes[0]) || undefined,
+      cuisineType: (filters.cuisineRegions && filters.cuisineRegions[0]) || undefined,
+      diet: filters.dietLifestyle && filters.dietLifestyle.length ? filters.dietLifestyle : undefined,
+    };
+  }, [searchTerm, filters]);
+
+  const handleDiscoverClick = useCallback(() => {
+    onSearch(buildExternalFilters());
+  }, [onSearch, buildExternalFilters]);
 
   if (isLoading) {
     return (
@@ -190,15 +207,20 @@ export function CommunityRecipeSelectionView({
                 />
               </div>
             </div>
-            
-            {hasActiveFilters && (
-              <button
-                onClick={clearAllFilters}
-                className="text-sm text-muted-foreground hover:text-foreground underline"
-              >
-                Clear filters ({activeFilterCount})
-              </button>
-            )}
+            <div className="flex items-center gap-2">
+              <Button size="sm" onClick={handleDiscoverClick}>
+                <Search className="h-4 w-4 mr-2" />
+                Discover Recipes
+              </Button>
+              {hasActiveFilters && (
+                <button
+                  onClick={clearAllFilters}
+                  className="text-sm text-muted-foreground hover:text-foreground underline"
+                >
+                  Clear filters ({activeFilterCount})
+                </button>
+              )}
+            </div>
           </div>
         </div>
       ) : (
@@ -238,13 +260,19 @@ export function CommunityRecipeSelectionView({
             </div>
 
             {/* Community Toggle for Desktop */}
-            <div className="flex items-center gap-2 text-sm">
-              <Users className={`h-4 w-4 ${communityOnly ? 'text-terracotta' : 'text-gray-500'}`} />
-              <span>Include RealiMeali Community-Shared Recipes</span>
-              <Switch
-                checked={communityOnly}
-                onCheckedChange={onCommunityToggle}
-              />
+            <div className="flex items-center gap-3 text-sm">
+              <div className="flex items-center gap-2">
+                <Users className={`${communityOnly ? 'text-terracotta' : 'text-gray-500'} h-4 w-4`} />
+                <span>Include RealiMeali Community-Shared Recipes</span>
+                <Switch
+                  checked={communityOnly}
+                  onCheckedChange={onCommunityToggle}
+                />
+              </div>
+              <Button onClick={handleDiscoverClick} className="whitespace-nowrap">
+                <Search className="h-4 w-4 mr-2" />
+                Discover Recipes
+              </Button>
             </div>
           </div>
 
@@ -259,33 +287,32 @@ export function CommunityRecipeSelectionView({
         </div>
       )}
       
-      {filteredAndSortedRecipes.length === 0 ? (
-        <div className="text-center py-8 px-4">
-          <p className="text-muted-foreground">
-            {communityOnly 
-              ? "No community recipes found. Try adjusting your search or filters."
-              : "No recipes found. Try adjusting your search or filters."
-            }
-          </p>
-        </div>
-      ) : (
-        <>
-          <CommunityRecipeGrid
-            recipes={visibleRecipes}
-            mobileLayout={currentMobileLayout}
-          />
-          
-          <div className="flex flex-col items-center gap-4 mt-6 px-4">
-            {hasMoreRecipes && (
-              <Button onClick={handleLoadMore} variant="outline" className="w-full sm:w-auto">
-                Load More Recipes
-              </Button>
-            )}
-            <p className="text-sm text-muted-foreground text-center">
-              Showing {visibleRecipes.length} of {filteredAndSortedRecipes.length} recipes
+      {communityOnly && (
+        filteredAndSortedRecipes.length === 0 ? (
+          <div className="text-center py-8 px-4">
+            <p className="text-muted-foreground">
+              No community recipes found. Try adjusting your search or filters.
             </p>
           </div>
-        </>
+        ) : (
+          <>
+            <CommunityRecipeGrid
+              recipes={visibleRecipes}
+              mobileLayout={currentMobileLayout}
+            />
+            
+            <div className="flex flex-col items-center gap-4 mt-6 px-4">
+              {hasMoreRecipes && (
+                <Button onClick={handleLoadMore} variant="outline" className="w-full sm:w-auto">
+                  Load More Recipes
+                </Button>
+              )}
+              <p className="text-sm text-muted-foreground text-center">
+                Showing {visibleRecipes.length} of {filteredAndSortedRecipes.length} recipes
+              </p>
+            </div>
+          </>
+        )
       )}
     </div>
   );
