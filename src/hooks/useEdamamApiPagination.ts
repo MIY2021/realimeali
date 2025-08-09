@@ -20,17 +20,20 @@ export function useEdamamApiPagination(baseFilters: Omit<DiscoverRecipeFilters, 
   const [hasMoreRecipes, setHasMoreRecipes] = useState(true);
   const [totalFetched, setTotalFetched] = useState(0);
 
-  const PAGE_SIZE = 20;
-  const MAX_RECIPES = 80; // Safety limit
+  const MAX_RECIPES = 50; // Limit per search as requested
 
-  const { data, isLoading, error, refetch } = useQuery({
+  const pageSizeFor = (page: number) => (page === 0 ? 20 : 10);
+  const computeFrom = (page: number) => (page === 0 ? 0 : 20 + (page - 1) * 10);
+  const computeTo = (page: number) => Math.min(computeFrom(page) + pageSizeFor(page), MAX_RECIPES);
+
+  const { data, isLoading, error } = useQuery({
     queryKey: ['edamam-recipes-paginated', baseFilters, currentPage],
     queryFn: async (): Promise<PaginatedEdamamResponse> => {
       try {
         const filters: DiscoverRecipeFilters = {
           ...baseFilters,
-          from: currentPage * PAGE_SIZE,
-          to: (currentPage + 1) * PAGE_SIZE
+          from: computeFrom(currentPage),
+          to: computeTo(currentPage)
         };
 
         const { data, error } = await supabase.functions.invoke('discover-recipes', {

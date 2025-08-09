@@ -39,6 +39,8 @@ interface CommunityRecipeSelectionViewProps {
   hasSearched?: boolean;
   externalHits?: EdamamHit[];
   externalLoading?: boolean;
+  externalHasMore?: boolean;
+  onExternalLoadMore?: () => Promise<void>;
 }
 
 export function CommunityRecipeSelectionView({ 
@@ -51,7 +53,9 @@ export function CommunityRecipeSelectionView({
   onClearSearch,
   hasSearched,
   externalHits,
-  externalLoading
+  externalLoading,
+  externalHasMore,
+  onExternalLoadMore
 }: CommunityRecipeSelectionViewProps) {
   const {
     searchTerm,
@@ -134,6 +138,7 @@ const apiResults = externalHits && externalHits.length ? externalHits : [];
 const showCommunity = communityOnly;
 const communityList = showCommunity ? visibleRecipes : [];
 const hasAnyResults = communityList.length > 0 || apiResults.length > 0;
+const totalResults = communityList.length + apiResults.length;
 
   if (isLoading) {
     return (
@@ -154,6 +159,7 @@ const hasAnyResults = communityList.length > 0 || apiResults.length > 0;
               placeholder="Search recipes..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') handleDiscoverClick(); }}
               className="w-full text-sm"
             />
             
@@ -220,8 +226,8 @@ const hasAnyResults = communityList.length > 0 || apiResults.length > 0;
 
           {/* Row 3: Community toggle and clear filters */}
 <div className="flex flex-col gap-2">
-  <div className="flex items-center justify-between gap-3">
-    <div className="flex items-center gap-2 text-sm">
+  <div className="flex items-center gap-3">
+    <div className="flex items-center gap-2 text-sm mr-auto">
       <Users className={`h-4 w-4 ${communityOnly ? 'text-terracotta' : 'text-muted-foreground'}`} />
       <span className="font-medium">Include Community-Shared Recipes</span>
       <Switch
@@ -234,14 +240,17 @@ const hasAnyResults = communityList.length > 0 || apiResults.length > 0;
       Search
     </Button>
   </div>
-  {hasActiveFilters && (
-    <button
-      onClick={clearAllFilters}
-      className="self-end text-sm text-muted-foreground hover:text-foreground underline"
-    >
-      Clear filters ({activeFilterCount})
-    </button>
-  )}
+  <div className="flex items-center justify-between">
+    <span className="text-xs text-muted-foreground">{totalResults} result{totalResults !== 1 ? 's' : ''}</span>
+    {hasActiveFilters && (
+      <button
+        onClick={clearAllFilters}
+        className="text-sm text-muted-foreground hover:text-foreground underline"
+      >
+        Clear filters ({activeFilterCount})
+      </button>
+    )}
+  </div>
 </div>
         </div>
       ) : (
@@ -254,6 +263,7 @@ const hasAnyResults = communityList.length > 0 || apiResults.length > 0;
                 placeholder="Search recipes..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') handleDiscoverClick(); }}
                 className="w-full"
               />
             </div>
