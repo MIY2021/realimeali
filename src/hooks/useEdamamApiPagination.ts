@@ -11,7 +11,9 @@ interface PaginationState {
   hasMore: boolean;
   error: Error | null;
   totalFetched: number;
+  totalAvailable: number;
 }
+
 
 export function useEdamamApiPagination(baseFilters: Omit<DiscoverRecipeFilters, 'from' | 'to'>) {
   const { toast } = useToast();
@@ -19,6 +21,7 @@ export function useEdamamApiPagination(baseFilters: Omit<DiscoverRecipeFilters, 
   const [allRecipes, setAllRecipes] = useState<EdamamHit[]>([]);
   const [hasMoreRecipes, setHasMoreRecipes] = useState(true);
   const [totalFetched, setTotalFetched] = useState(0);
+  const [apiTotalAvailable, setApiTotalAvailable] = useState(0);
 
   const MAX_RECIPES = 50; // Limit per search as requested
 
@@ -82,10 +85,11 @@ export function useEdamamApiPagination(baseFilters: Omit<DiscoverRecipeFilters, 
           return [...prev, ...newRecipes];
         });
       }
-      setHasMoreRecipes(data.hasMore && allRecipes.length + data.hits.length < MAX_RECIPES);
+      setHasMoreRecipes(!!data.hasMore && (allRecipes.length + data.hits.length) < MAX_RECIPES);
       setTotalFetched(data.totalFetched || 0);
+      setApiTotalAvailable(typeof (data as any).count === 'number' ? (data as any).count : 0);
     }
-  }, [data, currentPage]);
+  }, [data, currentPage, allRecipes.length]);
 
   // Reset when filters change
   useEffect(() => {
@@ -106,6 +110,7 @@ export function useEdamamApiPagination(baseFilters: Omit<DiscoverRecipeFilters, 
     setAllRecipes([]);
     setHasMoreRecipes(true);
     setTotalFetched(0);
+    setApiTotalAvailable(0);
   }, []);
 
   const state: PaginationState = {
@@ -114,7 +119,8 @@ export function useEdamamApiPagination(baseFilters: Omit<DiscoverRecipeFilters, 
     isLoadingMore: isLoading && currentPage > 0,
     hasMore: hasMoreRecipes,
     error: error as Error | null,
-    totalFetched
+    totalFetched,
+    totalAvailable: apiTotalAvailable,
   };
 
   return {

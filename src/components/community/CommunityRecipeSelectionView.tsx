@@ -9,7 +9,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { SimpleRecipeFiltersComponent } from "@/components/recipes/filters/SimpleRecipeFilters";
 import { MobileLayoutSelector } from "@/components/recipes/MobileLayoutSelector";
 import { DropdownFilterSection } from "@/components/recipes/filters/DropdownFilterSection";
-import { Search, Users } from "lucide-react";
+import { Search, Users, Loader } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -134,13 +134,21 @@ const handleDiscoverClick = useCallback(() => {
   onSearch(buildExternalFilters());
 }, [onSearch, buildExternalFilters]);
 
+const handleLoadMoreCombined = useCallback(async () => {
+  if (onExternalLoadMore && externalHasMore) {
+    await onExternalLoadMore();
+  } else if (communityOnly && hasMoreRecipes) {
+    await handleLoadMore();
+  }
+}, [onExternalLoadMore, externalHasMore, communityOnly, hasMoreRecipes, handleLoadMore]);
+
 const apiResults = externalHits && externalHits.length ? externalHits : [];
 const showCommunity = communityOnly;
 const communityList = showCommunity ? visibleRecipes : [];
 const hasAnyResults = communityList.length > 0 || apiResults.length > 0;
 const totalResults = communityList.length + apiResults.length;
 
-  if (isLoading) {
+  if (isLoading && !hasSearched) {
     return (
       <div className="py-10 text-center">
         <p className="text-muted-foreground">Loading recipes...</p>
@@ -226,7 +234,7 @@ const totalResults = communityList.length + apiResults.length;
 
           {/* Row 3: Community toggle and clear filters */}
 <div className="flex flex-col gap-2">
-  <div className="flex items-center gap-3">
+  <div className="flex items-center gap-4">
     <div className="flex items-center gap-2 text-sm mr-auto">
       <Users className={`h-4 w-4 ${communityOnly ? 'text-terracotta' : 'text-muted-foreground'}`} />
       <span className="font-medium">Include Community-Shared Recipes</span>
@@ -235,12 +243,12 @@ const totalResults = communityList.length + apiResults.length;
         onCheckedChange={onCommunityToggle}
       />
     </div>
-    <Button size="sm" onClick={handleDiscoverClick} className="shrink-0">
+    <Button size="sm" onClick={handleDiscoverClick} className="shrink-0 ml-2">
       <Search className="h-4 w-4 mr-2" />
       Search
     </Button>
   </div>
-  <div className="flex items-center justify-between">
+  <div className="flex flex-wrap items-center justify-between gap-2">
     <span className="text-xs text-muted-foreground">{totalResults} result{totalResults !== 1 ? 's' : ''}</span>
     {hasActiveFilters && (
       <button
@@ -338,22 +346,32 @@ const totalResults = communityList.length + apiResults.length;
       ))}
     </div>
 
-    {communityOnly && apiResults.length === 0 && hasMoreRecipes && (
-      <div className="flex flex-col items-center gap-4 mt-6 px-4">
-        <Button onClick={handleLoadMore} variant="outline" className="w-full sm:w-auto">
+    {(externalHasMore || (communityOnly && hasMoreRecipes)) && (
+      <div className="flex justify-center mt-6 px-4">
+        <Button onClick={handleLoadMoreCombined} variant="outline" className="w-full sm:w-auto">
           Load More Recipes
         </Button>
-        <p className="text-sm text-muted-foreground text-center">
-          Showing {visibleRecipes.length} of {filteredAndSortedRecipes.length} recipes
-        </p>
       </div>
     )}
   </>
 ) : (
   <div className="text-center py-8 px-4">
-    <p className="text-muted-foreground">
-      {hasSearched ? 'No recipes found. Try adjusting your search or filters.' : 'Ready to discover something tasty? Tap Search to fetch recipes!'}
-    </p>
+    {hasSearched ? (
+      externalLoading ? (
+        <div className="flex items-center justify-center gap-2 text-muted-foreground">
+          <Loader className="h-4 w-4 animate-spin" />
+          <span>Searching recipes...</span>
+        </div>
+      ) : (
+        <p className="text-muted-foreground">
+          No recipes found. Try adjusting your search or filters.
+        </p>
+      )
+    ) : (
+      <p className="text-muted-foreground">
+        Ready to discover something tasty? Tap Search to fetch recipes!
+      </p>
+    )}
   </div>
 )}
     </div>

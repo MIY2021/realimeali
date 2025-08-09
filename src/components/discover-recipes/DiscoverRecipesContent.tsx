@@ -9,7 +9,7 @@ export function DiscoverRecipesContent() {
   const [hasSearched, setHasSearched] = useState(false);
   const [communityOnly, setCommunityOnly] = useState(true); // Default to ON
   
-  const { recipes: communityRecipes, isLoading: communityLoading, fetchCommunityRecipes } = useCommunityRecipes();
+  const { recipes: communityRecipes, isLoading: communityLoading, fetchCommunityRecipes, totalCount: communityTotal } = useCommunityRecipes();
   const { recipes: externalHits = [], isLoading: externalLoading, hasMore: externalHasMore, loadMore: loadMoreExternal, reset: resetExternal } = useEdamamApiPagination((apiFilters || {}) as DiscoverRecipeFilters);
 
   // Fetch community recipes by default when component mounts or when toggled on
@@ -17,7 +17,14 @@ export function DiscoverRecipesContent() {
     if (communityOnly) {
       fetchCommunityRecipes({ limit: 50 }); // Fetch more recipes for better discovery
     }
-  }, [communityOnly]); // Removed fetchCommunityRecipes to prevent infinite re-renders
+  }, [communityOnly, fetchCommunityRecipes]);
+
+  // Defensive refetch when toggled on but list is empty
+  useEffect(() => {
+    if (communityOnly && communityRecipes.length === 0) {
+      fetchCommunityRecipes({ limit: 50 });
+    }
+  }, [communityOnly, communityRecipes.length, fetchCommunityRecipes]);
 
   const handleCommunityToggle = (enabled: boolean) => {
     setCommunityOnly(enabled);
