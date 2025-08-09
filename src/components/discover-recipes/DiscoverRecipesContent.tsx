@@ -34,6 +34,8 @@ const { data: externalHits = [], isLoading: externalLoading } = useEdamamApi(api
         communityOnly={communityOnly}
         onCommunityToggle={handleCommunityToggle}
         onSearch={(f) => setApiFilters(f)}
+        onClearSearch={() => setApiFilters(null)}
+        hasSearched={apiFilters !== null}
         externalHits={apiFilters ? externalHits : []}
         externalLoading={externalLoading}
       />

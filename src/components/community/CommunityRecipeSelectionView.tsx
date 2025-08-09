@@ -35,6 +35,8 @@ interface CommunityRecipeSelectionViewProps {
   onCommunityToggle: (enabled: boolean) => void;
   defaultMobileLayout?: string;
   onSearch: (filters: DiscoverRecipeFilters) => void;
+  onClearSearch?: () => void;
+  hasSearched?: boolean;
   externalHits?: EdamamHit[];
   externalLoading?: boolean;
 }
@@ -46,6 +48,8 @@ export function CommunityRecipeSelectionView({
   onCommunityToggle,
   defaultMobileLayout,
   onSearch,
+  onClearSearch,
+  hasSearched,
   externalHits,
   externalLoading
 }: CommunityRecipeSelectionViewProps) {
@@ -109,6 +113,7 @@ const clearAllFilters = () => {
     showFavoritesOnly: false,
     showNotCookedOnly: false,
   });
+  onClearSearch?.();
 };
 
   const buildExternalFilters = useCallback((): DiscoverRecipeFilters => {
@@ -214,31 +219,29 @@ const hasAnyResults = communityList.length > 0 || apiResults.length > 0;
           </div>
 
           {/* Row 3: Community toggle and clear filters */}
-<div className="flex justify-between items-center">
-  <div className="flex items-center gap-3 text-sm">
-    <div className="flex items-center gap-1">
-      <Users className={`h-4 w-4 ${communityOnly ? 'text-terracotta' : 'text-gray-500'}`} />
-      <span>Include community-shared recipes</span>
+<div className="flex flex-col gap-2">
+  <div className="flex items-center justify-between gap-3">
+    <div className="flex items-center gap-2 text-sm">
+      <Users className={`h-4 w-4 ${communityOnly ? 'text-terracotta' : 'text-muted-foreground'}`} />
+      <span className="font-medium">Include Community-Shared Recipes</span>
+      <Switch
+        checked={communityOnly}
+        onCheckedChange={onCommunityToggle}
+      />
     </div>
-    <Switch
-      checked={communityOnly}
-      onCheckedChange={onCommunityToggle}
-    />
-  </div>
-  <div className="flex items-center gap-2">
-    <Button size="sm" onClick={handleDiscoverClick}>
+    <Button size="sm" onClick={handleDiscoverClick} className="shrink-0">
       <Search className="h-4 w-4 mr-2" />
       Search
     </Button>
-    {hasActiveFilters && (
-      <button
-        onClick={clearAllFilters}
-        className="text-sm text-muted-foreground hover:text-foreground underline"
-      >
-        Clear filters ({activeFilterCount})
-      </button>
-    )}
   </div>
+  {hasActiveFilters && (
+    <button
+      onClick={clearAllFilters}
+      className="self-end text-sm text-muted-foreground hover:text-foreground underline"
+    >
+      Clear filters ({activeFilterCount})
+    </button>
+  )}
 </div>
         </div>
       ) : (
@@ -281,8 +284,8 @@ const hasAnyResults = communityList.length > 0 || apiResults.length > 0;
 <div className="flex items-center gap-6 text-sm">
   <div className="flex items-center gap-3">
     <div className="flex items-center gap-2">
-      <Users className={`${communityOnly ? 'text-terracotta' : 'text-gray-500'} h-4 w-4`} />
-      <span>Include community-shared recipes</span>
+      <Users className={`${communityOnly ? 'text-terracotta' : 'text-muted-foreground'} h-4 w-4`} />
+      <span>Include Community-Shared Recipes</span>
     </div>
     <Switch
       checked={communityOnly}
@@ -339,7 +342,7 @@ const hasAnyResults = communityList.length > 0 || apiResults.length > 0;
 ) : (
   <div className="text-center py-8 px-4">
     <p className="text-muted-foreground">
-      No recipes found. Try adjusting your search or filters.
+      {hasSearched ? 'No recipes found. Try adjusting your search or filters.' : 'Ready to discover something tasty? Tap Search to fetch recipes!'}
     </p>
   </div>
 )}
