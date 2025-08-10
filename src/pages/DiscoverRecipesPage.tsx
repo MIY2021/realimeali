@@ -33,7 +33,7 @@ export default function DiscoverRecipesPage() {
               Discover Recipes
             </h1>
             <p className="text-sm sm:text-base text-muted-foreground">
-              {`Explore our carefully curated collection of over ${combinedTotal.toLocaleString()} recipes from around the world.`}
+              {`Explore a world of recipes — over ${combinedTotal.toLocaleString()} to choose from!`}
             </p>
           </div>
         </div>
