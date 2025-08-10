@@ -19,12 +19,6 @@ export function DiscoverRecipesContent() {
     }
   }, [communityOnly, fetchCommunityRecipes]);
 
-  // Defensive refetch when toggled on but list is empty
-  useEffect(() => {
-    if (communityOnly && communityRecipes.length === 0) {
-      fetchCommunityRecipes({ limit: 50 });
-    }
-  }, [communityOnly, communityRecipes.length, fetchCommunityRecipes]);
 
   const handleCommunityToggle = (enabled: boolean) => {
     setCommunityOnly(enabled);

@@ -77,7 +77,7 @@ export default function Index() {
                 <div className="rounded-full bg-sage/10 p-4">
                   <Search className="h-10 w-10 text-sage" />
                 </div>
-                <h2 className="text-xl font-bold text-navy">Find Recipes</h2>
+                <h2 className="text-xl font-bold text-navy">Discover Recipes</h2>
                 <p className="text-muted-foreground mb-4">
                   Discover thousands of recipes from around the world.
                 </p>
