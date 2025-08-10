@@ -15,9 +15,10 @@ export function DiscoverRecipesContent() {
   // Fetch community recipes by default when component mounts or when toggled on
   useEffect(() => {
     if (communityOnly) {
-      fetchCommunityRecipes({ limit: 50 }); // Fetch more recipes for better discovery
+      fetchCommunityRecipes({ limit: 50 });
     }
-  }, [communityOnly, fetchCommunityRecipes]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [communityOnly]);
 
 
   const handleCommunityToggle = (enabled: boolean) => {
