@@ -347,6 +347,7 @@ const totalResults = communityList.length + apiResults.length;
         <ExternalRecipeCard
           key={`e-${hit.recipe.uri}-${index}`}
           recipe={hit.recipe}
+          onOpen={() => { setViewerIndex(index); setViewerOpen(true); }}
         />
       ))}
     </div>
@@ -378,6 +379,14 @@ const totalResults = communityList.length + apiResults.length;
       </p>
     )}
   </div>
+)}
+{viewerOpen && (
+  <ExternalRecipeViewer 
+    hits={apiResults} 
+    index={viewerIndex} 
+    onClose={() => setViewerOpen(false)} 
+    onIndexChange={setViewerIndex}
+  />
 )}
     </div>
   );
