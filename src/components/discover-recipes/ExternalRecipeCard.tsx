@@ -6,10 +6,12 @@ import { EdamamRecipe } from "@/types/edamam";
 
 interface ExternalRecipeCardProps {
   recipe: EdamamRecipe;
+  onOpen?: () => void;
 }
 
-export function ExternalRecipeCard({ recipe }: ExternalRecipeCardProps) {
+export function ExternalRecipeCard({ recipe, onOpen }: ExternalRecipeCardProps) {
   const handleVisitSite = () => {
+    if (onOpen) return onOpen();
     window.open(recipe.url, '_blank', 'noopener,noreferrer');
   };
 
@@ -84,14 +86,14 @@ export function ExternalRecipeCard({ recipe }: ExternalRecipeCardProps) {
           )}
         </div>
 
-        {/* Visit recipe button */}
+        {/* View recipe button */}
         <Button 
           size="sm" 
           className="w-full mt-3"
           onClick={handleVisitSite}
         >
           <Link className="h-4 w-4 mr-2" />
-          Visit Recipe Site
+          View Recipe
         </Button>
       </CardContent>
     </Card>

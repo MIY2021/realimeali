@@ -26,6 +26,7 @@ import {
 import { CommunityRecipe } from "@/hooks/useCommunityRecipes";
 import { DiscoverRecipeFilters, EdamamHit } from "@/types/edamam";
 import { ExternalRecipeCard } from "@/components/discover-recipes/ExternalRecipeCard";
+import { ExternalRecipeViewer } from "@/components/discover-recipes/ExternalRecipeViewer";
 import { CommunityRecipeCard } from "./CommunityRecipeCard";
 
 interface CommunityRecipeSelectionViewProps {
@@ -77,8 +78,12 @@ export function CommunityRecipeSelectionView({
   const { mobileLayout, handleMobileLayoutChange } = useMobileLayout();
   const isMobile = useIsMobile();
   
-// Use default layout if provided, otherwise use the stored layout
-const currentMobileLayout = defaultMobileLayout || mobileLayout;
+  // Viewer state for external recipes
+  const [viewerOpen, setViewerOpen] = useState(false);
+  const [viewerIndex, setViewerIndex] = useState<number>(0);
+  
+  // Use default layout if provided, otherwise use the stored layout
+  const currentMobileLayout = defaultMobileLayout || mobileLayout;
 
 const getGridCols = () => {
   return currentMobileLayout === "2"
