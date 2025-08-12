@@ -29,6 +29,9 @@ import { ExternalRecipeCard } from "@/components/discover-recipes/ExternalRecipe
 import { CommunityRecipeCard } from "./CommunityRecipeCard";
 import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface CommunityRecipeSelectionViewProps {
   recipes: CommunityRecipe[];
@@ -83,7 +86,10 @@ export function CommunityRecipeSelectionView({
   const [leavingOpen, setLeavingOpen] = useState(false);
   const [leavingSiteName, setLeavingSiteName] = useState("");
   const [returnOpen, setReturnOpen] = useState(false);
+  const [pendingUrl, setPendingUrl] = useState("");
+  const [dontShowAgain, setDontShowAgain] = useState(false);
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const getSiteNameFromUrl = (url: string) => {
     try {
@@ -101,13 +107,21 @@ export function CommunityRecipeSelectionView({
     sessionStorage.setItem("lastVisitedRecipeTitle", title);
     sessionStorage.removeItem("lastVisitedRecipePromptShown");
 
-    // Open in new tab
-    window.open(url, "_blank", "noopener,noreferrer");
+    const storageKey = `skipLeavingNotice:${user?.id || 'anon'}`;
+    const skip = localStorage.getItem(storageKey) === 'true';
 
-    // Show leaving modal
+    if (skip) {
+      // Open directly if user opted out
+      window.open(url, "_blank", "noopener,noreferrer");
+      return;
+    }
+
+    // Show leaving modal BEFORE opening
     setLeavingSiteName(getSiteNameFromUrl(url));
+    setPendingUrl(url);
+    setDontShowAgain(false);
     setLeavingOpen(true);
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     const onVisibilityChange = () => {
@@ -448,22 +462,35 @@ const totalResults = communityList.length + apiResults.length;
 )}
 {/* Leaving site modal */}
 <Dialog open={leavingOpen} onOpenChange={setLeavingOpen}>
-  <DialogContent>
+  <DialogContent className="sm:max-w-md w-[calc(100%-2rem)] mx-auto text-center p-6">
     <DialogHeader>
       <DialogTitle>You’re leaving RealiMeali</DialogTitle>
       <DialogDescription>
         You’re heading to {leavingSiteName} to view this recipe. When you return, we’ll ask if you want to save it to My Recipes.
       </DialogDescription>
     </DialogHeader>
+    <div className="flex items-center justify-center gap-2 mt-2">
+      <Checkbox id="skip-leaving" checked={dontShowAgain} onCheckedChange={(c) => setDontShowAgain(Boolean(c))} />
+      <Label htmlFor="skip-leaving" className="text-sm">Don’t show this again</Label>
+    </div>
     <DialogFooter>
-      <Button onClick={() => setLeavingOpen(false)}>Continue</Button>
+      <Button onClick={() => {
+        if (dontShowAgain) {
+          const storageKey = `skipLeavingNotice:${user?.id || 'anon'}`;
+          localStorage.setItem(storageKey, 'true');
+        }
+        if (pendingUrl) {
+          window.open(pendingUrl, '_blank', 'noopener,noreferrer');
+        }
+        setLeavingOpen(false);
+      }}>Continue</Button>
     </DialogFooter>
   </DialogContent>
 </Dialog>
 
 {/* Return prompt modal */}
 <Dialog open={returnOpen} onOpenChange={setReturnOpen}>
-  <DialogContent>
+  <DialogContent className="sm:max-w-md w-[calc(100%-2rem)] mx-auto text-center p-6">
     <DialogHeader>
       <DialogTitle>Like the recipe?</DialogTitle>
       <DialogDescription>
@@ -471,7 +498,7 @@ const totalResults = communityList.length + apiResults.length;
       </DialogDescription>
     </DialogHeader>
     <DialogFooter>
-      <div className="flex w-full justify-end gap-2">
+      <div className="flex w-full justify-center sm:justify-end gap-2">
         <Button variant="outline" onClick={handleNoThanks}>No Thanks</Button>
         <Button onClick={handleSaveRecipe}>Save Recipe</Button>
       </div>
