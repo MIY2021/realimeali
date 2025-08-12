@@ -178,6 +178,21 @@ export function CreateRecipeContainer({ editingRecipe, isEditMode = false, defau
   // Check if this recipe is from AI
   const isFromAI = editingRecipe?.import_method === 'ai';
 
+  // Auto-import from URL if importUrl param is present
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const importUrl = params.get('importUrl');
+    if (importUrl) {
+      setActiveTab('url');
+      recipeProcessingHook.setRecipeUrl(importUrl);
+      // Trigger the existing web import flow
+      setTimeout(() => {
+        handlers.wrappedImportFromUrl();
+      }, 0);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <div className="space-y-6">
       {/* Title Section */}

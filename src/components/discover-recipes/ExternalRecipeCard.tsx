@@ -33,7 +33,13 @@ export function ExternalRecipeCard({ recipe, onOpen }: ExternalRecipeCardProps) 
 
   return (
     <Card className="group hover:shadow-lg transition-all duration-200 overflow-hidden h-full flex flex-col">
-      <div className="relative">
+      <div 
+        className="relative cursor-pointer"
+        onClick={handleVisitSite}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleVisitSite(); } }}
+      >
         <img
           src={recipe.image}
           alt={recipe.label}
@@ -51,7 +57,10 @@ export function ExternalRecipeCard({ recipe, onOpen }: ExternalRecipeCardProps) 
       
       <CardContent className="p-4 flex-1 flex flex-col justify-between">
         <div className="space-y-2">
-          <h3 className="font-semibold text-navy line-clamp-2 leading-tight min-h-[2.5rem]">
+          <h3 
+            className="font-semibold text-navy line-clamp-2 leading-tight min-h-[2.5rem] cursor-pointer hover:underline"
+            onClick={handleVisitSite}
+          >
             {recipe.label}
           </h3>
           
@@ -91,6 +100,7 @@ export function ExternalRecipeCard({ recipe, onOpen }: ExternalRecipeCardProps) 
           size="sm" 
           className="w-full mt-3"
           onClick={handleVisitSite}
+          aria-label={`View recipe on ${recipe.source}`}
         >
           <Link className="h-4 w-4 mr-2" />
           View Recipe

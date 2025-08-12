@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -24,10 +24,11 @@ import {
   COMPLEXITY_LEVEL_OPTIONS,
 } from "@/utils/recipeClassification";
 import { CommunityRecipe } from "@/hooks/useCommunityRecipes";
-import { DiscoverRecipeFilters, EdamamHit } from "@/types/edamam";
+import { DiscoverRecipeFilters, EdamamHit, EdamamRecipe } from "@/types/edamam";
 import { ExternalRecipeCard } from "@/components/discover-recipes/ExternalRecipeCard";
-import { ExternalRecipeViewer } from "@/components/discover-recipes/ExternalRecipeViewer";
 import { CommunityRecipeCard } from "./CommunityRecipeCard";
+import { useNavigate } from "react-router-dom";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 
 interface CommunityRecipeSelectionViewProps {
   recipes: CommunityRecipe[];
@@ -78,10 +79,75 @@ export function CommunityRecipeSelectionView({
   const { mobileLayout, handleMobileLayoutChange } = useMobileLayout();
   const isMobile = useIsMobile();
   
-  // Viewer state for external recipes
-  const [viewerOpen, setViewerOpen] = useState(false);
-  const [viewerIndex, setViewerIndex] = useState<number>(0);
-  
+  // Modal and navigation state for external recipes
+  const [leavingOpen, setLeavingOpen] = useState(false);
+  const [leavingSiteName, setLeavingSiteName] = useState("");
+  const [returnOpen, setReturnOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const getSiteNameFromUrl = (url: string) => {
+    try {
+      const { hostname } = new URL(url);
+      return hostname.replace(/^www\./, "");
+    } catch {
+      return "the source site";
+    }
+  };
+
+  const handleExternalOpen = useCallback((recipe: EdamamRecipe) => {
+    const url = recipe.url;
+    const title = recipe.label;
+    sessionStorage.setItem("lastVisitedRecipeUrl", url);
+    sessionStorage.setItem("lastVisitedRecipeTitle", title);
+    sessionStorage.removeItem("lastVisitedRecipePromptShown");
+
+    // Open in new tab
+    window.open(url, "_blank", "noopener,noreferrer");
+
+    // Show leaving modal
+    setLeavingSiteName(getSiteNameFromUrl(url));
+    setLeavingOpen(true);
+  }, []);
+
+  useEffect(() => {
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        const url = sessionStorage.getItem("lastVisitedRecipeUrl");
+        const promptShown = sessionStorage.getItem("lastVisitedRecipePromptShown");
+        if (url && !promptShown) {
+          sessionStorage.setItem("lastVisitedRecipePromptShown", "true");
+          setReturnOpen(true);
+        }
+      }
+    };
+
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", onVisibilityChange);
+  }, []);
+
+  const clearVisitedRecipeData = () => {
+    sessionStorage.removeItem("lastVisitedRecipeUrl");
+    sessionStorage.removeItem("lastVisitedRecipeTitle");
+    sessionStorage.removeItem("lastVisitedRecipePromptShown");
+  };
+
+  const handleSaveRecipe = () => {
+    const url = sessionStorage.getItem("lastVisitedRecipeUrl");
+    if (url) {
+      const target = `/create-recipe?tab=url&importUrl=${encodeURIComponent(url)}`;
+      clearVisitedRecipeData();
+      setReturnOpen(false);
+      navigate(target);
+    } else {
+      setReturnOpen(false);
+    }
+  };
+
+  const handleNoThanks = () => {
+    clearVisitedRecipeData();
+    setReturnOpen(false);
+  };
+
   // Use default layout if provided, otherwise use the stored layout
   const currentMobileLayout = defaultMobileLayout || mobileLayout;
 
@@ -347,7 +413,7 @@ const totalResults = communityList.length + apiResults.length;
         <ExternalRecipeCard
           key={`e-${hit.recipe.uri}-${index}`}
           recipe={hit.recipe}
-          onOpen={() => { setViewerIndex(index); setViewerOpen(true); }}
+          onOpen={() => handleExternalOpen(hit.recipe)}
         />
       ))}
     </div>
@@ -380,14 +446,38 @@ const totalResults = communityList.length + apiResults.length;
     )}
   </div>
 )}
-{viewerOpen && (
-  <ExternalRecipeViewer 
-    hits={apiResults} 
-    index={viewerIndex} 
-    onClose={() => setViewerOpen(false)} 
-    onIndexChange={setViewerIndex}
-  />
-)}
+{/* Leaving site modal */}
+<Dialog open={leavingOpen} onOpenChange={setLeavingOpen}>
+  <DialogContent>
+    <DialogHeader>
+      <DialogTitle>You’re leaving RealiMeali</DialogTitle>
+      <DialogDescription>
+        You’re heading to {leavingSiteName} to view this recipe. When you return, we’ll ask if you want to save it to My Recipes.
+      </DialogDescription>
+    </DialogHeader>
+    <DialogFooter>
+      <Button onClick={() => setLeavingOpen(false)}>Continue</Button>
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
+
+{/* Return prompt modal */}
+<Dialog open={returnOpen} onOpenChange={setReturnOpen}>
+  <DialogContent>
+    <DialogHeader>
+      <DialogTitle>Like the recipe?</DialogTitle>
+      <DialogDescription>
+        Save it to My Recipes so you can find it later.
+      </DialogDescription>
+    </DialogHeader>
+    <DialogFooter>
+      <div className="flex w-full justify-end gap-2">
+        <Button variant="outline" onClick={handleNoThanks}>No Thanks</Button>
+        <Button onClick={handleSaveRecipe}>Save Recipe</Button>
+      </div>
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
     </div>
   );
 }
