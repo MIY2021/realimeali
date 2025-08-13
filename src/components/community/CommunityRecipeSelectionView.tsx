@@ -428,6 +428,7 @@ const totalResults = communityList.length + apiResults.length;
           key={`e-${hit.recipe.uri}-${index}`}
           recipe={hit.recipe}
           onOpen={() => handleExternalOpen(hit.recipe)}
+          mobileLayout={currentMobileLayout}
         />
       ))}
     </div>
