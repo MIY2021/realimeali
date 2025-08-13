@@ -416,13 +416,37 @@ const totalResults = communityList.length + apiResults.length;
 {hasAnyResults ? (
   <>
     <div className={`grid ${getGridCols()} gap-4 sm:gap-6`}>
-      {communityList.map((recipe) => (
-        <CommunityRecipeCard
-          key={`c-${recipe.id}`}
-          recipe={recipe}
-          mobileLayout={currentMobileLayout}
-        />
-      ))}
+       {communityList.map((recipe) => (
+         <CommunityRecipeCard
+           key={`c-${recipe.id}`}
+           recipe={recipe}
+           mobileLayout={currentMobileLayout}
+           onOpen={() => {
+             if (recipe.source_url) {
+               const url = recipe.source_url;
+               const title = recipe.title;
+               sessionStorage.setItem("lastVisitedRecipeUrl", url);
+               sessionStorage.setItem("lastVisitedRecipeTitle", title);
+               sessionStorage.removeItem("lastVisitedRecipePromptShown");
+
+               const storageKey = `skipLeavingNotice:${user?.id || 'anon'}`;
+               const skip = localStorage.getItem(storageKey) === 'true';
+
+               if (skip) {
+                 // Open directly if user opted out
+                 window.open(url, "_blank", "noopener,noreferrer");
+                 return;
+               }
+
+               // Show leaving modal BEFORE opening
+               setLeavingSiteName(getSiteNameFromUrl(url));
+               setPendingUrl(url);
+               setDontShowAgain(false);
+               setLeavingOpen(true);
+             }
+           }}
+         />
+       ))}
       {apiResults.map((hit, index) => (
         <ExternalRecipeCard
           key={`e-${hit.recipe.uri}-${index}`}
