@@ -50,8 +50,6 @@ export function useCommunityRecipes() {
     limit?: number;
     offset?: number;
   }) => {
-    if (!user) return;
-
     setIsLoading(true);
     try {
       let query = supabase
@@ -98,7 +96,7 @@ export function useCommunityRecipes() {
     } finally {
       setIsLoading(false);
     }
-  }, [user, toast]);
+  }, [toast]);
 
   const submitCommunityRecipe = useCallback(async (recipeData: {
     title: string;
