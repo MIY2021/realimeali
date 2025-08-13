@@ -52,7 +52,7 @@ export function ExternalRecipeCard({ recipe, onOpen, mobileLayout = "1" }: Exter
         />
         {/* External badge */}
         <div className="absolute top-2 left-2">
-          <Badge variant="secondary" className="bg-sage text-white text-xs">
+          <Badge variant="secondary" className="bg-white/90 text-gray-800 text-xs font-medium">
             External
           </Badge>
         </div>
