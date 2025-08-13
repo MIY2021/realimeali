@@ -34,11 +34,11 @@ export function ExternalRecipeCard({ recipe, onOpen, mobileLayout = "1" }: Exter
 
   return (
     <Card className="group hover:shadow-lg transition-all duration-200 overflow-hidden h-full flex flex-col">
-      {/* Image Container - Use aspect-[4/3] for one-column mobile, h-48 for two-column */}
-      <div 
-        className={`relative cursor-pointer overflow-hidden ${
-          isMobile && mobileLayout === '1' ? 'aspect-[4/3]' : 'h-48'
-        }`}
+          {/* Image Container - Use aspect-[4/3] for one-column mobile, h-40 for two-column */}
+          <div 
+            className={`relative cursor-pointer overflow-hidden ${
+              isMobile && mobileLayout === '1' ? 'aspect-[4/3]' : 'h-40'
+            }`}
         onClick={handleVisitSite}
         role="button"
         tabIndex={0}
@@ -105,15 +105,15 @@ export function ExternalRecipeCard({ recipe, onOpen, mobileLayout = "1" }: Exter
           </p>
 
           {/* View recipe button */}
-          <Button 
-            size="sm" 
-            className="w-full bg-terracotta hover:bg-terracotta/90 text-white"
-            onClick={handleVisitSite}
-            aria-label={`View recipe on ${recipe.source}`}
-          >
-            <Link className="h-4 w-4 mr-2" />
-            Visit Recipe Site
-          </Button>
+            <Button 
+              size="sm" 
+              className="w-full bg-terracotta hover:bg-terracotta/90 text-white"
+              onClick={handleVisitSite}
+              aria-label={`View recipe on ${recipe.source}`}
+            >
+              <Link className="h-4 w-4 mr-2" />
+              View Recipe
+            </Button>
         </div>
       </CardContent>
     </Card>

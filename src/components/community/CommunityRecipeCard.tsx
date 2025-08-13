@@ -36,10 +36,10 @@ export function CommunityRecipeCard({ recipe, mobileLayout = "1", onOpen }: Comm
 
   return (
     <Card className="group hover:shadow-lg transition-all duration-200 overflow-hidden h-full flex flex-col">
-      {/* Image Container - Use aspect-[4/3] for one-column mobile, h-48 for two-column */}
+      {/* Image Container - Use aspect-[4/3] for one-column mobile, h-40 for two-column */}
       <div 
         className={`relative cursor-pointer overflow-hidden ${
-          isMobile && mobileLayout === '1' ? 'aspect-[4/3]' : 'h-48'
+          isMobile && mobileLayout === '1' ? 'aspect-[4/3]' : 'h-40'
         }`}
         onClick={handleVisitSite}
         role="button"
@@ -130,7 +130,7 @@ export function CommunityRecipeCard({ recipe, mobileLayout = "1", onOpen }: Comm
             aria-label={`View recipe on ${recipe.source_url ? new URL(recipe.source_url).hostname : 'external site'}`}
           >
             <Link className="h-4 w-4 mr-2" />
-            Visit Recipe Site
+            View Recipe
           </Button>
         </div>
       </CardContent>
