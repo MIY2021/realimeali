@@ -24,19 +24,21 @@ export default function DiscoverRecipesPage() {
   }, [communityTotal, apiTotal]);
 
   return (
-    <div className={`container max-w-7xl py-4 px-4 sm:py-8 sm:px-6 ${isMobile ? 'bg-white min-h-screen' : ''}`} data-scroll-content>
-      <div className="flex flex-col gap-4 mb-6 sm:flex-row sm:justify-between sm:items-center">
-        <div className="space-y-2">
-          <h1 className="text-2xl sm:text-3xl font-bold text-navy flex items-center gap-2">
-            <Search className="h-6 w-6 sm:h-8 sm:w-8 text-sage" />
-            Discover Recipes
-          </h1>
-          <p className="text-sm sm:text-base text-muted-foreground">
-            Explore a world of recipes — over two million to choose from!
-          </p>
+    <div className={`container max-w-7xl mx-auto py-4 px-4 sm:py-8 sm:px-6 ${isMobile ? 'bg-white min-h-screen' : ''}`} data-scroll-content>
+      <div className="w-full max-w-7xl mx-auto">
+        <div className="flex flex-col gap-4 mb-6 sm:flex-row sm:justify-between sm:items-center">
+          <div className="space-y-2">
+            <h1 className="text-2xl sm:text-3xl font-bold text-navy flex items-center gap-2">
+              <Search className="h-6 w-6 sm:h-8 sm:w-8 text-sage" />
+              Discover Recipes
+            </h1>
+            <p className="text-sm sm:text-base text-muted-foreground">
+              Explore a world of recipes — over two million to choose from!
+            </p>
+          </div>
         </div>
+        <DiscoverRecipesContent />
       </div>
-      <DiscoverRecipesContent />
     </div>
   );
 }
