@@ -23,7 +23,7 @@ export function useEdamamApiPagination(baseFilters: Omit<DiscoverRecipeFilters, 
   const [totalFetched, setTotalFetched] = useState(0);
   const [apiTotalAvailable, setApiTotalAvailable] = useState(0);
 
-  const MAX_RECIPES = 50; // Limit per search as requested
+  const MAX_RECIPES = 100; // API limit per search session
 
   const pageSizeFor = (page: number) => (page === 0 ? 20 : 10);
   const computeFrom = (page: number) => (page === 0 ? 0 : 20 + (page - 1) * 10);
@@ -66,7 +66,7 @@ export function useEdamamApiPagination(baseFilters: Omit<DiscoverRecipeFilters, 
       baseFilters.diet?.length || 
       baseFilters.time
     ),
-    staleTime: 1000 * 60 * 60, // 1 hour
+    staleTime: 1000 * 60 * 15, // 15 minutes for fresher results
     gcTime: 1000 * 60 * 60 * 24, // 24 hours
     retry: 1,
   });

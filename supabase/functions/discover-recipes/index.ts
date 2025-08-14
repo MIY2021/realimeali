@@ -31,25 +31,33 @@ serve(async (req) => {
 
     const { filters }: { filters: DiscoverRecipeFilters } = await req.json();
     
+    // For first page (from=0), add random offset to access different result sets
+    let adjustedFrom = filters.from || 0;
+    if (adjustedFrom === 0) {
+      // Use random starting points: 0, 20, 40, 60, or 80 for variety
+      const randomOffsets = [0, 20, 40, 60, 80];
+      adjustedFrom = randomOffsets[Math.floor(Math.random() * randomOffsets.length)];
+    }
+    
     // Build query string
     const params = new URLSearchParams();
     params.append('type', 'public');
     params.append('app_id', EDAMAM_APP_ID);
     params.append('app_key', EDAMAM_APP_KEY);
-    params.append('from', (filters.from || 0).toString());
-    params.append('to', (filters.to || 20).toString());
+    params.append('from', adjustedFrom.toString());
+    params.append('to', (adjustedFrom + ((filters.to || 20) - (filters.from || 0))).toString());
 
     // Add keyword search - make it more specific based on meal type
     if (filters.keyword) {
       params.append('q', filters.keyword);
     } else {
-      // Use meal type specific default keywords for better results
+      // Use broader meal type keywords for more diverse results
       const mealTypeKeywords = {
-        'breakfast': 'breakfast morning',
-        'lunch': 'lunch meal',
-        'dinner': 'dinner main course',
+        'breakfast': 'breakfast',
+        'lunch': 'lunch',
+        'dinner': 'dinner',
         'snack': 'snack',
-        'teatime': 'side dish'
+        'teatime': 'side'
       };
       const keyword = filters.mealType && mealTypeKeywords[filters.mealType as keyof typeof mealTypeKeywords] 
         ? mealTypeKeywords[filters.mealType as keyof typeof mealTypeKeywords]
