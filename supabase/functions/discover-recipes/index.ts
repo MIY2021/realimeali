@@ -117,8 +117,15 @@ serve(async (req) => {
     const data = await response.json();
     console.log(`Found ${data.hits?.length || 0} recipes from API`);
 
-    // Use all results from Edamam since they're already properly filtered
+    // Randomize results to prevent users from seeing the same recipes every time
     const filteredHits = data.hits || [];
+    if (filteredHits.length > 0) {
+      // Shuffle array using Fisher-Yates algorithm
+      for (let i = filteredHits.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [filteredHits[i], filteredHits[j]] = [filteredHits[j], filteredHits[i]];
+      }
+    }
     
     console.log(`Filtered to ${filteredHits.length} relevant recipes`);
     

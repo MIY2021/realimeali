@@ -322,7 +322,7 @@ const totalResults = communityList.length + apiResults.length;
   <div className="flex items-center gap-4">
     <div className="flex items-center gap-2 text-sm mr-auto">
       <Users className={`h-4 w-4 ${communityOnly ? 'text-terracotta' : 'text-muted-foreground'}`} />
-      <span className="font-medium">Include Community-Shared Recipes</span>
+      <span className="font-medium">Include Featured Recipes</span>
       <Switch
         checked={communityOnly}
         onCheckedChange={onCommunityToggle}
@@ -388,7 +388,7 @@ const totalResults = communityList.length + apiResults.length;
   <div className="flex items-center gap-3">
     <div className="flex items-center gap-2">
       <Users className={`${communityOnly ? 'text-terracotta' : 'text-muted-foreground'} h-4 w-4`} />
-      <span>Include Community-Shared Recipes</span>
+      <span>Include Featured Recipes</span>
     </div>
     <Switch
       checked={communityOnly}

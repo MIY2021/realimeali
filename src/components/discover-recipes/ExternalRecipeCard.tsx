@@ -34,10 +34,10 @@ export function ExternalRecipeCard({ recipe, onOpen, mobileLayout = "1" }: Exter
 
   return (
     <Card className="group hover:shadow-lg transition-all duration-200 overflow-hidden h-full flex flex-col">
-          {/* Image Container - Use aspect-[4/3] for one-column mobile, h-40 for two-column */}
+          {/* Image Container - Use aspect-[4/3] for one-column mobile, aspect-[4/3] for two-column */}
           <div 
             className={`relative cursor-pointer overflow-hidden ${
-              isMobile && mobileLayout === '1' ? 'aspect-[4/3]' : 'h-40'
+              isMobile && mobileLayout === '1' ? 'aspect-[4/3]' : 'aspect-[4/3]'
             }`}
         onClick={handleVisitSite}
         role="button"
