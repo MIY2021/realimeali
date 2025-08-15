@@ -22,8 +22,8 @@ export default function RecipesPage() {
   const { user } = useAuth();
   const { currentHousehold, isLoadingHousehold } = useHousehold();
   const { recipes, isLoading } = useRecipes();
+  // Remove skeleton loading for header - show content immediately
   const isMobile = useIsMobile();
-  const [initialLoading, setInitialLoading] = useState(true);
 
   // State for Add to Meal Plan dialog
   const [selectedRecipeForMealPlan, setSelectedRecipeForMealPlan] = useState<Recipe | null>(null);
@@ -31,13 +31,6 @@ export default function RecipesPage() {
 
   // Load recipes automatically
   useRecipesLoader();
-
-  // Track initial loading to prevent flash
-  useEffect(() => {
-    if (user && currentHousehold && !isLoadingHousehold && !isLoading) {
-      setInitialLoading(false);
-    }
-  }, [user, currentHousehold, isLoadingHousehold, isLoading]);
 
   const handleAddToMealPlan = (recipe: Recipe) => {
     setSelectedRecipeForMealPlan(recipe);
@@ -104,7 +97,7 @@ export default function RecipesPage() {
         ) : (
           <RecipeList 
             recipes={recipes}
-            isLoading={initialLoading || isLoading}
+            isLoading={isLoading}
             onAddToMealPlan={handleAddToMealPlan}
           />
         )}
