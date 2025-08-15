@@ -126,9 +126,9 @@ export function ShoppingListItem({
 
   return (
     <div 
-      className={`flex items-center p-3 rounded-lg transition-colors ${
-        isChecked ? 'bg-gray-50 opacity-75' : 'bg-white'
-      } ${copiedItemId === id ? 'bg-green-50' : ''}`}
+      className={`flex items-center transition-all duration-200 ${
+        isChecked ? 'opacity-60' : ''
+      } ${copiedItemId === id ? 'bg-green-50 rounded-md p-1 -m-1' : ''}`}
       onTouchStart={!isEditing ? handleTouchStart : undefined}
       onTouchEnd={!isEditing ? handleTouchEnd : undefined}
       onTouchMove={!isEditing ? handleTouchMove : undefined}
@@ -137,8 +137,8 @@ export function ShoppingListItem({
       onMouseLeave={!isEditing ? handleMouseLeave : undefined}
     >
       {/* Triangle icon on the left */}
-      <div className="flex items-center mr-3">
-        <span className="h-5 w-5 flex items-center justify-center text-muted-foreground text-sm">▷</span>
+      <div className="flex items-center mr-2">
+        <span className="h-4 w-4 flex items-center justify-center text-muted-foreground text-xs">▷</span>
       </div>
 
       {/* Main content in the middle */}
@@ -178,17 +178,17 @@ export function ShoppingListItem({
           </div>
         ) : (
           <div>
-            <div className={`${isChecked ? 'line-through text-gray-500' : ''}`}>
+            <div className={`text-sm ${isChecked ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
               {quantity && (
-                <span className="font-medium">
-                  {quantity} {unit && unit}{' '}
+                <span className="font-medium text-xs text-muted-foreground mr-1">
+                  {quantity}{unit && ` ${unit}`}
                 </span>
               )}
-              <span>{name}</span>
+              <span className="font-medium">{name}</span>
             </div>
             
             {recipeIds.length > 0 && (
-              <div className="mt-1 text-xs text-green-600">
+              <div className="mt-0.5 text-xs text-muted-foreground">
                 from{' '}
                 {recipeData.map((recipe, index) => {
                   const slug = generateSlug(recipe.name.trim());
@@ -196,7 +196,7 @@ export function ShoppingListItem({
                     <span key={`${recipe.id}-${recipe.name}`}>
                       <Link 
                         to={`/my-recipes/${slug}`}
-                        className="hover:underline cursor-pointer touch-manipulation"
+                        className="text-primary hover:underline cursor-pointer touch-manipulation font-medium"
                         onClick={handleRecipeLinkClick}
                         onTouchEnd={handleRecipeLinkClick}
                         style={{ 
@@ -219,22 +219,24 @@ export function ShoppingListItem({
       </div>
 
       {/* Actions and checkbox on the right */}
-      <div className="flex items-center space-x-2 ml-3">
+      <div className="flex items-center space-x-1 ml-2">
         {!isEditing && (
           <>
             <Button 
               size="sm" 
               variant="ghost" 
               onClick={() => setIsEditing(true)}
+              className="h-8 w-8 p-0 hover:bg-muted"
             >
-              <Pencil className="h-4 w-4" />
+              <Pencil className="h-3.5 w-3.5" />
             </Button>
             <Button 
               size="sm" 
               variant="ghost" 
               onClick={handleCopyName}
+              className="h-8 w-8 p-0 hover:bg-muted"
             >
-              <Copy className="h-4 w-4" />
+              <Copy className="h-3.5 w-3.5" />
             </Button>
           </>
         )}

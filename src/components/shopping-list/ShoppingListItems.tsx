@@ -27,8 +27,8 @@ export default function ShoppingListItems({
       data-shopping-list-container
     >
       {shoppingList.map((item) => (
-        <Card key={item.id} className="w-full border-0 shadow-sm" data-shopping-list-item>
-          <CardContent className={`${isMobile ? 'p-2' : 'p-3'}`}>
+        <Card key={item.id} className="w-full border border-border bg-card shadow-sm hover:shadow-md transition-shadow" data-shopping-list-item>
+          <CardContent className={`${isMobile ? 'p-3' : 'p-4'}`}>
             <ShoppingListItem
               id={item.id}
               name={item.name}
