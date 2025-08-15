@@ -249,9 +249,9 @@ export function EnhancedMealCard({
           </div>
 
           {/* Content Area - Reduced left padding to minimize white space */}
-          <div className="flex-1 pl-2 pr-4 py-4 flex flex-col justify-between min-w-0">
+          <div className="flex-1 pl-2 pr-4 py-3 flex flex-col justify-between min-w-0">
             {/* Header */}
-            <div className="flex items-start justify-between mb-2">
+            <div className="flex items-start justify-between mb-1">
               <div className="flex-1 min-w-0">
                 <Link to={recipeUrl}>
                   <h4 className={`font-medium text-sm leading-tight truncate cursor-pointer hover:text-blue-600 transition-colors ${
@@ -261,9 +261,9 @@ export function EnhancedMealCard({
                   </h4>
                 </Link>
                 
-                {/* Nutrition indicator for recipes */}
+                {/* Nutrition indicator for recipes - Reduced margin */}
                 {recipe && recipe.fruit_veg_portions && recipe.fruit_veg_portions > 0 && (
-                  <div className="mt-1">
+                  <div className="mt-0.5">
                     <FruitVegIndicator 
                       portions={recipe.fruit_veg_portions} 
                       size="tiny"
@@ -272,7 +272,7 @@ export function EnhancedMealCard({
                   </div>
                 )}
                 {isLunchLeftover && parentRecipe && (
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-gray-500 mt-0.5">
                     Leftover
                   </p>
                 )}
