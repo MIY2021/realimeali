@@ -184,34 +184,18 @@ export function ShoppingListItem({
                   {quantity}{unit && ` ${unit}`}
                 </span>
               )}
-              <span className="font-medium">{name}</span>
+              <span className="font-medium">{name.charAt(0).toUpperCase() + name.slice(1).toLowerCase()}</span>
             </div>
             
             {recipeIds.length > 0 && (
               <div className="mt-0.5 text-xs text-green-600 truncate">
                 from{' '}
-                {recipeData.map((recipe, index) => {
-                  const slug = generateSlug(recipe.name.trim());
-                  return (
-                    <span key={`${recipe.id}-${recipe.name}`}>
-                      <Link 
-                        to={`/my-recipes/${slug}`}
-                        className="text-green-600 hover:underline cursor-pointer touch-manipulation font-medium"
-                        onClick={handleRecipeLinkClick}
-                        onTouchEnd={handleRecipeLinkClick}
-                        style={{ 
-                          touchAction: 'manipulation',
-                          WebkitTouchCallout: 'none',
-                          WebkitUserSelect: 'none',
-                          WebkitTapHighlightColor: 'transparent'
-                        }}
-                      >
-                        {recipe.name.trim()}
-                      </Link>
-                      {index < recipeData.length - 1 && ', '}
-                    </span>
-                  );
-                })}
+                {recipeData.map((recipe, index) => (
+                  <span key={`${recipe.id}-${recipe.name}`}>
+                    {recipe.name.trim()}
+                    {index < recipeData.length - 1 && ', '}
+                  </span>
+                ))}
               </div>
             )}
           </div>

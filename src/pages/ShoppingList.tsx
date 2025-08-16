@@ -113,8 +113,20 @@ export default function ShoppingList() {
     const uniqueRecipeIds = [...new Set(recipeIds)];
     const recipeNames = uniqueRecipeIds
       .map(id => {
+        // First try to find it as a recipe
         const recipe = recipes.find(r => r.id === id);
-        return recipe ? recipe.title : `Recipe ${id.substring(0, 8)}`;
+        if (recipe) {
+          return recipe.title;
+        }
+        
+        // If not found as recipe, check if it's a custom meal (meal plan ID)
+        const mealPlans = getMealPlansForWeek(weekNumber);
+        const customMeal = mealPlans.find(mp => mp.id === id && mp.is_freetyped && mp.meal_name);
+        if (customMeal) {
+          return `Custom Meal: ${customMeal.meal_name}`;
+        }
+        
+        return `Recipe ${id.substring(0, 8)}`;
       })
       .filter(Boolean);
     
