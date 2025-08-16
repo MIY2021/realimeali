@@ -188,7 +188,7 @@ export function ShoppingListItem({
             </div>
             
             {recipeIds.length > 0 && (
-              <div className="mt-0.5 text-xs text-green-600">
+              <div className="mt-0.5 text-xs text-green-600 truncate">
                 from{' '}
                 {recipeData.map((recipe, index) => {
                   const slug = generateSlug(recipe.name.trim());
@@ -218,9 +218,9 @@ export function ShoppingListItem({
         )}
       </div>
 
-      {/* Actions and checkbox on the right - evenly spaced */}
-      <div className="flex items-center justify-end space-x-3 ml-4 min-w-[35%]">
-        {!isEditing && (
+      {/* Actions and checkbox on the right - evenly distributed */}
+      <div className="flex items-center justify-between ml-4 min-w-[35%]">
+        {!isEditing ? (
           <>
             <Button 
               size="sm" 
@@ -238,13 +238,21 @@ export function ShoppingListItem({
             >
               <Copy className="h-4 w-4" />
             </Button>
+            <Checkbox
+              checked={isChecked}
+              onCheckedChange={handleToggleCheck}
+              className="h-5 w-5"
+            />
           </>
+        ) : (
+          <div className="flex justify-end w-full">
+            <Checkbox
+              checked={isChecked}
+              onCheckedChange={handleToggleCheck}
+              className="h-5 w-5"
+            />
+          </div>
         )}
-        <Checkbox
-          checked={isChecked}
-          onCheckedChange={handleToggleCheck}
-          className="h-5 w-5"
-        />
       </div>
     </div>
   );
