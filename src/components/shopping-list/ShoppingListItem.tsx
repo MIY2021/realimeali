@@ -141,8 +141,8 @@ export function ShoppingListItem({
         <span className="h-4 w-4 flex items-center justify-center text-muted-foreground text-xs">▷</span>
       </div>
 
-      {/* Main content in the middle */}
-      <div className="flex-1 min-w-0">
+      {/* Main content - limited width to make room for buttons */}
+      <div className="flex-1 min-w-0 max-w-[65%]">
         {isEditing ? (
           <div className="flex items-center space-x-2">
             <Input
@@ -188,7 +188,7 @@ export function ShoppingListItem({
             </div>
             
             {recipeIds.length > 0 && (
-              <div className="mt-0.5 text-xs text-muted-foreground">
+              <div className="mt-0.5 text-xs text-green-600">
                 from{' '}
                 {recipeData.map((recipe, index) => {
                   const slug = generateSlug(recipe.name.trim());
@@ -196,7 +196,7 @@ export function ShoppingListItem({
                     <span key={`${recipe.id}-${recipe.name}`}>
                       <Link 
                         to={`/my-recipes/${slug}`}
-                        className="text-primary hover:underline cursor-pointer touch-manipulation font-medium"
+                        className="text-green-600 hover:underline cursor-pointer touch-manipulation font-medium"
                         onClick={handleRecipeLinkClick}
                         onTouchEnd={handleRecipeLinkClick}
                         style={{ 
@@ -218,31 +218,32 @@ export function ShoppingListItem({
         )}
       </div>
 
-      {/* Actions and checkbox on the right */}
-      <div className="flex items-center space-x-1 ml-2">
+      {/* Actions and checkbox on the right - evenly spaced */}
+      <div className="flex items-center justify-end space-x-3 ml-4 min-w-[35%]">
         {!isEditing && (
           <>
             <Button 
               size="sm" 
               variant="ghost" 
               onClick={() => setIsEditing(true)}
-              className="h-8 w-8 p-0 hover:bg-muted"
+              className="h-10 w-10 p-0 hover:bg-muted touch-manipulation"
             >
-              <Pencil className="h-3.5 w-3.5" />
+              <Pencil className="h-4 w-4" />
             </Button>
             <Button 
               size="sm" 
               variant="ghost" 
               onClick={handleCopyName}
-              className="h-8 w-8 p-0 hover:bg-muted"
+              className="h-10 w-10 p-0 hover:bg-muted touch-manipulation"
             >
-              <Copy className="h-3.5 w-3.5" />
+              <Copy className="h-4 w-4" />
             </Button>
           </>
         )}
         <Checkbox
           checked={isChecked}
           onCheckedChange={handleToggleCheck}
+          className="h-5 w-5"
         />
       </div>
     </div>
