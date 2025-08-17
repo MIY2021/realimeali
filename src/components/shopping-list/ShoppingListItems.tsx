@@ -9,6 +9,7 @@ interface ShoppingListItemsProps {
   copiedItemId: string | null;
   onToggleItem: (itemId: string) => void;
   onCopyItem: (itemId: string) => void;
+  onUpdateItem?: (itemId: string, newName: string) => void;
   getRecipeNames: (recipeIds: string[]) => string;
 }
 
@@ -17,6 +18,7 @@ export default function ShoppingListItems({
   copiedItemId,
   onToggleItem,
   onCopyItem,
+  onUpdateItem,
   getRecipeNames
 }: ShoppingListItemsProps) {
   const isMobile = useIsMobile();
@@ -39,6 +41,7 @@ export default function ShoppingListItems({
               copiedItemId={copiedItemId}
               onCheck={(checked) => onToggleItem(item.id)}
               onCopy={() => onCopyItem(item.id)}
+              onUpdate={onUpdateItem}
               getRecipeNames={getRecipeNames}
             />
           </CardContent>

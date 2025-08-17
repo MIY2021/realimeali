@@ -142,6 +142,22 @@ export class ShoppingListMutations {
     }
   }
 
+  static async updateItem(itemId: string, name: string, householdId: string): Promise<boolean> {
+    try {
+      const { error } = await supabase
+        .from('household_shopping_lists')
+        .update({ name: name.trim() })
+        .eq('id', itemId)
+        .eq('household_id', householdId);
+
+      if (error) throw error;
+      return true;
+    } catch (error) {
+      console.error("Error updating item:", error);
+      return false;
+    }
+  }
+
   static async removeItem(itemId: string, householdId: string): Promise<boolean> {
     try {
       const { error } = await supabase

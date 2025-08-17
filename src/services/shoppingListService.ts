@@ -12,5 +12,6 @@ export class ShoppingListService {
   static toggleItemChecked = ShoppingListMutations.toggleItemChecked;
   static addCustomItem = ShoppingListMutations.addCustomItem;
   static addConsolidatedItem = ShoppingListMutations.addConsolidatedItem;
+  static updateItem = ShoppingListMutations.updateItem;
   static removeItem = ShoppingListMutations.removeItem;
 }

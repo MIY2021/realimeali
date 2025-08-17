@@ -20,10 +20,11 @@ interface ShoppingListItemProps {
   copiedItemId: string | null;
   onCheck: (checked: boolean) => void;
   onCopy: () => void;
+  onUpdate?: (id: string, newName: string) => void;
   getRecipeNames: (recipeIds: string[]) => string;
 }
 
-export function ShoppingListItem({ 
+export function ShoppingListItem({
   id,
   name,
   quantity,
@@ -33,12 +34,11 @@ export function ShoppingListItem({
   copiedItemId,
   onCheck,
   onCopy,
+  onUpdate,
   getRecipeNames
 }: ShoppingListItemProps) {
   const [isEditing, setIsEditing] = useState(false);
-  const [editName, setEditName] = useState(name);
-  const [editQuantity, setEditQuantity] = useState(quantity?.toString() || '');
-  const [editUnit, setEditUnit] = useState(unit || '');
+  const [editText, setEditText] = useState(name);
   const { toast } = useToast();
 
   const handleCopyName = async () => {
@@ -73,15 +73,14 @@ export function ShoppingListItem({
   } = useShoppingListInteractions(isChecked, onCheck, handleCopyName);
 
   const handleSaveEdit = () => {
-    // Note: Since we don't have updateShoppingListItem in the context,
-    // we'll just close the edit mode for now
+    if (onUpdate && editText.trim() !== name) {
+      onUpdate(id, editText.trim());
+    }
     setIsEditing(false);
   };
 
   const handleCancelEdit = () => {
-    setEditName(name);
-    setEditQuantity(quantity?.toString() || '');
-    setEditUnit(unit || '');
+    setEditText(name);
     setIsEditing(false);
   };
 
@@ -144,37 +143,14 @@ export function ShoppingListItem({
       {/* Main content - limited width to make room for buttons */}
       <div className="flex-1 min-w-0 max-w-[65%]">
         {isEditing ? (
-          <div className="flex items-center space-x-2">
+          <div className="flex-1">
             <Input
-              value={editQuantity}
-              onChange={(e) => setEditQuantity(e.target.value)}
-              placeholder="Qty"
-              className="w-20"
-              autoFocus={false}
+              value={editText}
+              onChange={(e) => setEditText(e.target.value)}
+              placeholder="Edit item name"
+              className="h-8 text-sm w-full"
+              autoFocus
             />
-            <Input
-              value={editUnit}
-              onChange={(e) => setEditUnit(e.target.value)}
-              placeholder="Unit"
-              className="w-20"
-              autoFocus={false}
-            />
-            <Input
-              value={editName}
-              onChange={(e) => setEditName(e.target.value)}
-              className="flex-1"
-              autoFocus={true}
-              onFocus={(e) => {
-                // Select all text when input is focused
-                e.target.select();
-              }}
-            />
-            <Button size="sm" onClick={handleSaveEdit}>
-              <Check className="h-4 w-4" />
-            </Button>
-            <Button size="sm" variant="outline" onClick={handleCancelEdit}>
-              <X className="h-4 w-4" />
-            </Button>
           </div>
         ) : (
           <div>
@@ -211,6 +187,7 @@ export function ShoppingListItem({
               variant="ghost" 
               onClick={() => setIsEditing(true)}
               className="h-10 w-10 p-0 hover:bg-muted touch-manipulation"
+              disabled={!onUpdate}
             >
               <Pencil className="h-4 w-4" />
             </Button>
@@ -229,12 +206,23 @@ export function ShoppingListItem({
             />
           </>
         ) : (
-          <div className="flex justify-end w-full">
-            <Checkbox
-              checked={isChecked}
-              onCheckedChange={handleToggleCheck}
-              className="h-5 w-5"
-            />
+          <div className="flex gap-1 ml-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleSaveEdit}
+              className="h-8 w-8 p-0"
+            >
+              <Check className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleCancelEdit}
+              className="h-8 w-8 p-0"
+            >
+              <X className="h-4 w-4" />
+            </Button>
           </div>
         )}
       </div>

@@ -135,6 +135,34 @@ export const useShoppingList = (weekNumber: 1 | 2) => {
     }
   }, [user, currentHousehold, toast, weekNumber]);
 
+  const updateItem = useCallback(async (itemId: string, newName: string) => {
+    if (!user || !currentHousehold || !newName.trim()) return;
+
+    const oldItem = shoppingList.find(i => i.id === itemId);
+    if (!oldItem) return;
+
+    // Update local state immediately
+    setShoppingList(prev => prev.map(i => 
+      i.id === itemId ? { ...i, name: newName.trim() } : i
+    ));
+
+    // Update database
+    const success = await ShoppingListService.updateItem(itemId, newName, currentHousehold.id);
+    
+    if (!success) {
+      // Revert on error
+      setShoppingList(prev => prev.map(i => 
+        i.id === itemId ? { ...i, name: oldItem.name } : i
+      ));
+      
+      toast({
+        title: "Error",
+        description: "Failed to update item",
+        variant: "destructive",
+      });
+    }
+  }, [user, currentHousehold, shoppingList, toast]);
+
   const clearAll = useCallback(async () => {
     if (!user || !currentHousehold) return;
 
@@ -170,6 +198,7 @@ export const useShoppingList = (weekNumber: 1 | 2) => {
     isLoading,
     toggleItemChecked,
     addCustomItem,
+    updateItem,
     clearAll,
     refreshList: loadShoppingList,
   };
