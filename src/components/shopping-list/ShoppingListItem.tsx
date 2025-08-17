@@ -154,7 +154,7 @@ export function ShoppingListItem({
           </div>
         ) : (
           <div>
-            <div className={`text-sm ${isChecked ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
+            <div className={`text-xs ${isChecked ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
               {quantity && (
                 <span className="font-medium text-xs text-muted-foreground mr-1">
                   {quantity}{unit && ` ${unit}`}
@@ -172,6 +172,12 @@ export function ShoppingListItem({
                     {index < recipeData.length - 1 && ', '}
                   </span>
                 ))}
+              </div>
+            )}
+            
+            {recipeIds.length === 0 && (
+              <div className="mt-0.5 text-xs text-green-600">
+                Manually Added Item
               </div>
             )}
           </div>
