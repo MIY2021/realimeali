@@ -155,7 +155,7 @@ export function ShoppingListItem({
         ) : (
           <div>
             <div className={`text-sm ${isChecked ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
-              {quantity && recipeIds.length > 0 && (
+              {quantity && recipeIds.length > 0 && !getRecipeNames(recipeIds).includes('Custom Entry') && (
                 <span className="text-sm text-muted-foreground mr-1">
                   {quantity}{unit && ` ${unit}`}
                 </span>
