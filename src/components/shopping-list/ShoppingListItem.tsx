@@ -154,13 +154,13 @@ export function ShoppingListItem({
           </div>
         ) : (
           <div>
-            <div className={`text-xs ${isChecked ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
+            <div className={`text-sm ${isChecked ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
               {quantity && (
-                <span className="font-medium text-xs text-muted-foreground mr-1">
+                <span className="text-sm text-muted-foreground mr-1">
                   {quantity}{unit && ` ${unit}`}
                 </span>
               )}
-              <span className="font-medium">{name.charAt(0).toUpperCase() + name.slice(1).toLowerCase()}</span>
+              <span className="font-semibold">{name.charAt(0).toUpperCase() + name.slice(1).toLowerCase()}</span>
             </div>
             
             {recipeIds.length > 0 && (
