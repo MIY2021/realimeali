@@ -81,7 +81,7 @@ export default function MealListSection({
   };
 
   return (
-    <div className={`mb-${isMobile ? '4' : '6'} transform transition-all duration-500 ease-out ${
+    <div className={`mb-${isMobile ? '3' : '4'} transform transition-all duration-500 ease-out ${
       isVisible 
         ? 'translate-y-0 opacity-100 scale-100' 
         : 'translate-y-6 opacity-0 scale-98'

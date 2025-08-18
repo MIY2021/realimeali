@@ -22,7 +22,7 @@ export const MealPlannerActions = ({
       <div className="flex gap-3 sm:hidden">
         <Button
           onClick={onRandomize}
-          className="bg-sage hover:bg-sage/90 flex items-center justify-center flex-1"
+          className="bg-sage hover:bg-sage/90 text-white flex items-center justify-center flex-1"
           disabled={isLoading}
         >
           <FileSpreadsheet className="mr-2 h-4 w-4" />
@@ -54,7 +54,7 @@ export const MealPlannerActions = ({
       <div className="hidden sm:flex gap-3 justify-between">
         <Button
           onClick={onRandomize}
-          className="bg-sage hover:bg-sage/90 flex items-center justify-center px-6"
+          className="bg-sage hover:bg-sage/90 text-white flex items-center justify-center px-6"
           disabled={isLoading}
         >
           <FileSpreadsheet className="mr-2 h-4 w-4" />

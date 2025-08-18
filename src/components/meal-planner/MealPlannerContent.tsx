@@ -49,7 +49,7 @@ export const MealPlannerContent = ({
   }, [recipes]);
 
   return (
-    <>
+    <div className="space-y-3">
       <MealPlannerActions
         onRandomize={onRandomize}
         onShare={onShare}
@@ -64,7 +64,7 @@ export const MealPlannerContent = ({
         isLoading={isLoading}
       />
 
-      <div className="space-y-6">
+      <div className="space-y-4">
         {mealTypes.map((mealType, index) => (
           <MealListSection
             key={mealType}
@@ -80,6 +80,6 @@ export const MealPlannerContent = ({
           />
         ))}
       </div>
-    </>
+    </div>
   );
 };
