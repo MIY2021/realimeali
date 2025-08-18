@@ -1,7 +1,7 @@
 
 import { useCallback } from "react";
 import { MealPlannerActions } from "@/components/meal-planner/MealPlannerActions";
-import { WeekSelector } from "@/components/meal-planner/WeekSelector";
+import { MealPlanCreationInfo } from "@/components/meal-planner/MealPlanCreationInfo";
 import MealListSection from "@/components/MealListSection";
 import { MealType, Recipe, MealPlan } from "@/types";
 
@@ -19,6 +19,8 @@ interface MealPlannerContentProps {
   onRemoveMeal: (planId: string) => void;
   onCreateLeftover: (mealPlan: MealPlan, recipe: Recipe) => void;
   onReorderMeals: (mealType: MealType, sourceIndex: number, destinationIndex: number) => Promise<void>;
+  lastGenerated?: Date | null;
+  createdByUserId?: string;
 }
 
 export const MealPlannerContent = ({
@@ -35,6 +37,8 @@ export const MealPlannerContent = ({
   onRemoveMeal,
   onCreateLeftover,
   onReorderMeals,
+  lastGenerated,
+  createdByUserId,
 }: MealPlannerContentProps) => {
   const mealTypes: MealType[] = ["dinner", "lunch", "breakfast", "snacks", "sides", "desserts", "drinks"];
 
@@ -56,12 +60,13 @@ export const MealPlannerContent = ({
         onClearAll={onClearAll}
         isLoading={isLoading}
         currentWeek={currentWeek}
+        setCurrentWeek={setCurrentWeek}
       />
 
-      <WeekSelector
-        week={currentWeek}
-        onWeekChange={setCurrentWeek}
-        isLoading={isLoading}
+      <MealPlanCreationInfo 
+        lastGenerated={lastGenerated}
+        createdByUserId={createdByUserId}
+        totalMeals={currentMealPlans.length}
       />
 
       <div className="space-y-3">
