@@ -17,7 +17,7 @@ export const MealPlannerActions = ({
   isLoading
 }: MealPlannerActionsProps) => {
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
       {/* Mobile: All buttons on one row */}
       <div className="flex gap-3 sm:hidden">
         <Button
