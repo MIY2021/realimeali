@@ -2,7 +2,7 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { 
-  UtensilsCrossed, 
+  Book, 
   CalendarDays, 
   ListChecks,
   Search,
@@ -51,7 +51,7 @@ export default function Index() {
             <div className="group relative overflow-hidden rounded-lg border bg-white p-6 shadow-md transition-all hover:shadow-lg md:min-h-[300px]">
               <div className="flex flex-col items-center text-center space-y-4">
                 <div className="rounded-full bg-terracotta/10 p-4">
-                  <UtensilsCrossed className="h-10 w-10 text-terracotta" />
+                  <Book className="h-10 w-10 text-terracotta" />
                 </div>
                 <h2 className="text-xl font-bold text-navy">My Recipes</h2>
                 <p className="text-muted-foreground mb-4">
