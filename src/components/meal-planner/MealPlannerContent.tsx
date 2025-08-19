@@ -53,7 +53,7 @@ export const MealPlannerContent = ({
   }, [recipes]);
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-1">
       <MealPlannerActions
         onRandomize={onRandomize}
         onShare={onShare}

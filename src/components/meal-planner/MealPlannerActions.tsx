@@ -49,25 +49,27 @@ export const MealPlannerActions = ({
       </div>
 
       {/* Row 2: Share and Clear buttons */}
-      <div className="flex gap-3">
+      <div className="flex gap-2">
         <Button
-          onClick={onShare}
+          size="sm"
           variant="outline"
-          className="flex items-center"
+          onClick={onShare}
+          className="flex items-center gap-1 h-8 text-xs"
           disabled={isLoading}
         >
-          <Share className="mr-2 h-4 w-4" />
+          <Share className="h-3 w-3" />
           Share
         </Button>
         
         <Button
+          size="sm"
           variant="outline"
-          className="text-terracotta border-terracotta hover:bg-terracotta/10 flex items-center"
           onClick={onClearAll}
+          className="flex items-center gap-1 h-8 text-xs text-terracotta border-terracotta hover:bg-terracotta/10"
           disabled={isLoading}
         >
-          <Trash2 className="mr-2 h-4 w-4" />
-          Clear
+          <Trash2 className="h-3 w-3" />
+          Clear All
         </Button>
       </div>
     </div>
