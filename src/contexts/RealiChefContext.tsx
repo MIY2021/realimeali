@@ -1,5 +1,5 @@
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -158,9 +158,10 @@ export const RealiChefProvider = ({ children }: RealiChefProviderProps) => {
     }
   };
 
-  const updatePageContext = (data: any) => {
+  const updatePageContext = useCallback((data: any) => {
+    console.log('📝 RealiChef: Updating page context', { page: pageContext.page, data });
     setPageContext(prev => ({ ...prev, data }));
-  };
+  }, [pageContext.page]);
 
   const applyRecipeUpdate = (recipe: any) => {
     if (pageContext.data?.onRecipeUpdate) {

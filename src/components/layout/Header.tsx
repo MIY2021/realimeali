@@ -25,7 +25,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
 
 const Header = () => {
-  const { user, signOut } = useAuth();
+  const { user, signOut, isLoading } = useAuth();
   const { currentHousehold } = useHousehold();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [avatarError, setAvatarError] = useState(false);
@@ -85,19 +85,19 @@ const Header = () => {
     setAvatarError(false);
   };
 
-  // Log user data for debugging
+  // Log authentication state for debugging
   useEffect(() => {
-    if (user) {
-      console.log('Header - User data:', {
-        userId: user.id,
-        email: user.email,
-        userMetadata: user.user_metadata,
-        avatarUrl: user.user_metadata?.avatar_url,
-        fullName: user.user_metadata?.full_name,
-        timestamp: new Date().toISOString()
-      });
-    }
-  }, [user]);
+    console.log('🔐 Header Auth State:', {
+      isLoading,
+      hasUser: !!user,
+      userId: user?.id,
+      email: user?.email,
+      userMetadata: user?.user_metadata,
+      avatarUrl: user?.user_metadata?.avatar_url,
+      fullName: user?.user_metadata?.full_name,
+      timestamp: new Date().toISOString()
+    });
+  }, [user, isLoading]);
 
   return (
     <>
@@ -109,18 +109,20 @@ const Header = () => {
           </Link>
           
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-6">
-            {navigationItems.map((item) => (
-              <Link
-                key={item.to}
-                to={item.to}
-                className="flex items-center space-x-1 text-navy hover:text-terracotta transition-colors"
-              >
-                <item.icon className="h-4 w-4" />
-                <span>{item.label}</span>
-              </Link>
-            ))}
-          </nav>
+          {!isLoading && (
+            <nav className="hidden md:flex items-center space-x-6">
+              {navigationItems.map((item) => (
+                <Link
+                  key={item.to}
+                  to={item.to}
+                  className="flex items-center space-x-1 text-navy hover:text-terracotta transition-colors"
+                >
+                  <item.icon className="h-4 w-4" />
+                  <span>{item.label}</span>
+                </Link>
+              ))}
+            </nav>
+          )}
 
           <div className="flex items-center space-x-3">
             {/* Mobile Menu */}
@@ -184,10 +186,12 @@ const Header = () => {
             </Sheet>
 
             {/* Household Members Dropdown */}
-            {user && currentHousehold && <HouseholdMembersDropdown />}
+            {!isLoading && user && currentHousehold && <HouseholdMembersDropdown />}
 
             {/* User Menu */}
-            {user ? (
+            {isLoading ? (
+              <div className="w-8 h-8 rounded-full bg-muted animate-pulse" />
+            ) : user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="sm" className="flex items-center space-x-2 p-1">

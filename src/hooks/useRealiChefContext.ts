@@ -7,6 +7,7 @@ export const useRealiChefContext = (contextData?: any) => {
 
   useEffect(() => {
     if (contextData) {
+      console.log('🔄 useRealiChefContext: Updating context', { contextData });
       updatePageContext(contextData);
     }
   }, [contextData, updatePageContext]);
