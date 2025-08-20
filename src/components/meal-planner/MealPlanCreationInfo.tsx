@@ -18,7 +18,7 @@ export const MealPlanCreationInfo = ({
   const createdByText = profile?.full_name ? ` by ${profile.full_name}` : '';
 
   return (
-    <div className="mb-3">
+    <div className="py-2">
       <p className="text-xs text-muted-foreground">
         Meal plan created on {lastGenerated.toLocaleDateString()} at {lastGenerated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}{createdByText}
       </p>
