@@ -2,7 +2,8 @@
 import { useState, useMemo, useCallback } from "react";
 import { CommunityRecipe } from "@/hooks/useCommunityRecipes";
 import { SimpleRecipeFilters } from "@/components/recipes/filters/SimpleRecipeFilters";
-import { MealType, CuisineRegion, ComplexityLevel } from "@/types";
+import { MealType, CuisineRegion, CookingDuration } from "@/types";
+import { getCookingDurationCategory } from "@/utils/recipeClassification";
 
 interface UseCommunityRecipeListProps {
   recipes: CommunityRecipe[];
@@ -27,11 +28,8 @@ const safeCuisineConversion = (cuisine: string | null): CuisineRegion | null => 
   return validCuisines.find(c => c === normalized) || null;
 };
 
-const safeComplexityConversion = (difficulty: string | null): ComplexityLevel | null => {
-  if (!difficulty) return null;
-  const normalized = difficulty.toLowerCase();
-  const validComplexity: ComplexityLevel[] = ["quick_easy", "standard", "complex"];
-  return validComplexity.find(level => level === normalized) || null;
+const safeCookingDurationConversion = (prepTime: number = 0, cookTime: number = 0): CookingDuration => {
+  return getCookingDurationCategory(prepTime, cookTime) as CookingDuration;
 };
 
 export function useCommunityRecipeList({ recipes }: UseCommunityRecipeListProps) {
@@ -45,7 +43,7 @@ export function useCommunityRecipeList({ recipes }: UseCommunityRecipeListProps)
     mealTypes: [],
     cuisineRegions: [],
     dietLifestyle: [],
-    complexityLevels: [],
+    cookingDurations: [],
     showFavoritesOnly: false,
     showNotCookedOnly: false, // Add this property
   });
@@ -78,11 +76,11 @@ export function useCommunityRecipeList({ recipes }: UseCommunityRecipeListProps)
       });
     }
 
-    // Filter by complexity levels
-    if (filters.complexityLevels.length > 0) {
+    // Filter by cooking duration
+    if (filters.cookingDurations.length > 0) {
       filtered = filtered.filter(recipe => {
-        const safeComplexity = safeComplexityConversion(recipe.difficulty_level);
-        return safeComplexity && filters.complexityLevels.includes(safeComplexity);
+        const duration = safeCookingDurationConversion(recipe.prep_time, recipe.cook_time);
+        return filters.cookingDurations.includes(duration);
       });
     }
 

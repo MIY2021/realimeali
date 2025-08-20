@@ -21,7 +21,7 @@ import {
   MEAL_TYPE_OPTIONS,
   CUISINE_REGION_OPTIONS,
   DIET_LIFESTYLE_OPTIONS,
-  COMPLEXITY_LEVEL_OPTIONS,
+  COOKING_DURATION_OPTIONS,
 } from "@/utils/recipeClassification";
 import { CommunityRecipe } from "@/hooks/useCommunityRecipes";
 import { DiscoverRecipeFilters, EdamamHit, EdamamRecipe } from "@/types/edamam";
@@ -189,7 +189,7 @@ const toggleArrayFilter = (key: keyof typeof filters, value: string) => {
   const activeFilterCount = filters.mealTypes.length + 
                            filters.cuisineRegions.length + 
                            filters.dietLifestyle.length + 
-                           filters.complexityLevels.length;
+                           filters.cookingDurations.length;
 
 const clearAllFilters = () => {
   setSearchTerm("");
@@ -198,7 +198,7 @@ const clearAllFilters = () => {
     mealTypes: [],
     cuisineRegions: [],
     dietLifestyle: [],
-    complexityLevels: [],
+    cookingDurations: [],
     showFavoritesOnly: false,
     showNotCookedOnly: false,
   });
@@ -310,10 +310,10 @@ const totalResults = communityList.length + apiResults.length;
             />
 
             <DropdownFilterSection
-              title="⚡ Level"
-              options={COMPLEXITY_LEVEL_OPTIONS}
-              selectedValues={filters.complexityLevels}
-              onToggle={(value) => toggleArrayFilter('complexityLevels', value)}
+              title="⏰ Duration"
+              options={COOKING_DURATION_OPTIONS}
+              selectedValues={filters.cookingDurations}
+              onToggle={(value) => toggleArrayFilter('cookingDurations', value)}
             />
           </div>
 

@@ -144,5 +144,5 @@ export type CuisineRegion = "british" | "american" | "italian" | "french" | "mex
 
 export type DietLifestyle = "vegetarian" | "vegan" | "gluten_free" | "dairy_free" | "high_protein" | "kid_friendly" | "pescatarian" | "low_carb_keto" | "paleo" | "diabetic_friendly" | "budget_meals" | "pregnancy_safe";
 
-// Updated to match database exactly (changed easy to quick_easy)
 export type ComplexityLevel = "quick_easy" | "standard" | "complex";
+export type CookingDuration = "0-30" | "30-60" | "60+";

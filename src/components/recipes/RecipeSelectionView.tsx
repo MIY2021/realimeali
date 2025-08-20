@@ -21,7 +21,7 @@ import {
   MEAL_TYPE_OPTIONS,
   CUISINE_REGION_OPTIONS,
   DIET_LIFESTYLE_OPTIONS,
-  COMPLEXITY_LEVEL_OPTIONS,
+  COOKING_DURATION_OPTIONS,
 } from "@/utils/recipeClassification";
 import { Recipe, MealType } from "@/types";
 
@@ -66,7 +66,7 @@ export function RecipeSelectionView({
       mealTypes: [prefilterMealType],
       cuisineRegions: [],
       dietLifestyle: [],
-      complexityLevels: [],
+      cookingDurations: [],
       showFavoritesOnly: false,
       showNotCookedOnly: false,
     } : undefined
@@ -102,7 +102,7 @@ export function RecipeSelectionView({
   const activeFilterCount = filters.mealTypes.length + 
                            filters.cuisineRegions.length + 
                            filters.dietLifestyle.length + 
-                           filters.complexityLevels.length + 
+                           filters.cookingDurations.length + 
                            (filters.showFavoritesOnly ? 1 : 0) +
                            (filters.showNotCookedOnly ? 1 : 0);
 
@@ -112,7 +112,7 @@ export function RecipeSelectionView({
       mealTypes: prefilterMealType ? [prefilterMealType] : [],
       cuisineRegions: [],
       dietLifestyle: [],
-      complexityLevels: [],
+      cookingDurations: [],
       showFavoritesOnly: false,
       showNotCookedOnly: false,
     });
@@ -194,10 +194,10 @@ export function RecipeSelectionView({
             />
 
             <DropdownFilterSection
-              title="⚡ Level"
-              options={COMPLEXITY_LEVEL_OPTIONS}
-              selectedValues={filters.complexityLevels}
-              onToggle={(value) => toggleArrayFilter('complexityLevels', value)}
+              title="⏰ Duration"
+              options={COOKING_DURATION_OPTIONS}
+              selectedValues={filters.cookingDurations}
+              onToggle={(value) => toggleArrayFilter('cookingDurations', value)}
             />
           </div>
 

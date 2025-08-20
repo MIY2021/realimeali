@@ -6,17 +6,12 @@ import { FilterHeader } from "./FilterHeader";
 import { DropdownFilterSection } from "./DropdownFilterSection";
 import { Heart, User } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import {
-  MealType,
-  CuisineRegion,
-  DietLifestyle,
-  ComplexityLevel,
-} from "@/types";
+import { MealType, CuisineRegion, DietLifestyle, CookingDuration } from "@/types";
 import {
   MEAL_TYPE_OPTIONS,
   CUISINE_REGION_OPTIONS,
   DIET_LIFESTYLE_OPTIONS,
-  COMPLEXITY_LEVEL_OPTIONS,
+  COOKING_DURATION_OPTIONS,
 } from "@/utils/recipeClassification";
 
 export interface SimpleRecipeFilters {
@@ -24,7 +19,7 @@ export interface SimpleRecipeFilters {
   mealTypes: MealType[];
   cuisineRegions: CuisineRegion[];
   dietLifestyle: DietLifestyle[];
-  complexityLevels: ComplexityLevel[];
+  cookingDurations: CookingDuration[];
   showFavoritesOnly: boolean;
   showNotCookedOnly: boolean;
 }
@@ -56,7 +51,7 @@ export function SimpleRecipeFiltersComponent({
   const activeFilterCount = filters.mealTypes.length + 
                            filters.cuisineRegions.length + 
                            filters.dietLifestyle.length + 
-                           filters.complexityLevels.length +
+                           filters.cookingDurations.length +
                            (filters.showFavoritesOnly ? 1 : 0) +
                            (filters.showNotCookedOnly ? 1 : 0);
 
@@ -66,7 +61,7 @@ export function SimpleRecipeFiltersComponent({
       mealTypes: [],
       cuisineRegions: [],
       dietLifestyle: [],
-      complexityLevels: [],
+      cookingDurations: [],
       showFavoritesOnly: false,
       showNotCookedOnly: false,
     });
@@ -131,10 +126,10 @@ export function SimpleRecipeFiltersComponent({
           )}
 
           <DropdownFilterSection
-            title="⚡ Complexity"
-            options={COMPLEXITY_LEVEL_OPTIONS}
-            selectedValues={filters.complexityLevels}
-            onToggle={(value) => toggleArrayFilter('complexityLevels', value)}
+            title="⏰ Duration"
+            options={COOKING_DURATION_OPTIONS}
+            selectedValues={filters.cookingDurations}
+            onToggle={(value) => toggleArrayFilter('cookingDurations', value)}
           />
 
           <DropdownFilterSection
@@ -219,10 +214,10 @@ export function SimpleRecipeFiltersComponent({
           />
 
           <DropdownFilterSection
-            title="⚡ Complexity"
-            options={COMPLEXITY_LEVEL_OPTIONS}
-            selectedValues={filters.complexityLevels}
-            onToggle={(value) => toggleArrayFilter('complexityLevels', value)}
+            title="⏰ Duration"
+            options={COOKING_DURATION_OPTIONS}
+            selectedValues={filters.cookingDurations}
+            onToggle={(value) => toggleArrayFilter('cookingDurations', value)}
           />
 
           <DropdownFilterSection

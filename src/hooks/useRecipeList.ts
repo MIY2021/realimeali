@@ -1,7 +1,8 @@
 
 import { useState, useMemo, useCallback } from "react";
-import { Recipe, MealType, CuisineRegion, DietLifestyle, ComplexityLevel } from "@/types";
+import { Recipe, MealType, CuisineRegion, DietLifestyle, CookingDuration } from "@/types";
 import { SimpleRecipeFilters } from "@/components/recipes/filters/SimpleRecipeFilters";
+import { getCookingDurationCategory } from "@/utils/recipeClassification";
 
 interface UseRecipeListProps {
   recipes: Recipe[];
@@ -19,7 +20,7 @@ export function useRecipeList({ recipes, initialFilters }: UseRecipeListProps) {
     mealTypes: [],
     cuisineRegions: [],
     dietLifestyle: [],
-    complexityLevels: [],
+    cookingDurations: [],
     showFavoritesOnly: false,
     showNotCookedOnly: false,
   });
@@ -74,11 +75,12 @@ export function useRecipeList({ recipes, initialFilters }: UseRecipeListProps) {
       );
     }
 
-    // Filter by complexity levels
-    if (filters.complexityLevels.length > 0) {
-      filtered = filtered.filter(recipe => 
-        recipe.complexity_level && filters.complexityLevels.includes(recipe.complexity_level)
-      );
+    // Filter by cooking duration
+    if (filters.cookingDurations.length > 0) {
+      filtered = filtered.filter(recipe => {
+        const duration = getCookingDurationCategory(recipe.prep_time || 0, recipe.cook_time || 0);
+        return filters.cookingDurations.includes(duration as CookingDuration);
+      });
     }
 
     // Sort recipes

@@ -45,13 +45,13 @@ export const DIET_LIFESTYLE_OPTIONS = [
   { value: "pregnancy_safe" as DietLifestyle, label: "Pregnancy Safe", icon: "🤰" },
 ];
 
-export const COMPLEXITY_LEVEL_OPTIONS = [
-  { value: "quick_easy" as ComplexityLevel, label: "Quick & Easy", icon: "⚡" },
-  { value: "standard" as ComplexityLevel, label: "Standard", icon: "⭐" },
-  { value: "complex" as ComplexityLevel, label: "Complex", icon: "👨‍🍳" },
+export const COOKING_DURATION_OPTIONS = [
+  { value: "0-30", label: "Quick (0-30 mins)", icon: "⚡" },
+  { value: "30-60", label: "Standard (30-60 mins)", icon: "⏰" },
+  { value: "60+", label: "Extended (60+ mins)", icon: "🕰️" },
 ];
 
-export function getDisplayLabel(value: string, type: 'mealType' | 'cuisineRegion' | 'dietLifestyle' | 'complexityLevel'): string {
+export function getDisplayLabel(value: string, type: 'mealType' | 'cuisineRegion' | 'dietLifestyle' | 'cookingDuration'): string {
   let options;
   
   switch (type) {
@@ -64,8 +64,8 @@ export function getDisplayLabel(value: string, type: 'mealType' | 'cuisineRegion
     case 'dietLifestyle':
       options = DIET_LIFESTYLE_OPTIONS;
       break;
-    case 'complexityLevel':
-      options = COMPLEXITY_LEVEL_OPTIONS;
+    case 'cookingDuration':
+      options = COOKING_DURATION_OPTIONS;
       break;
     default:
       return value;
@@ -75,5 +75,14 @@ export function getDisplayLabel(value: string, type: 'mealType' | 'cuisineRegion
   return option ? option.label : value;
 }
 
+// Helper function to calculate cooking duration category
+export function getCookingDurationCategory(prepTime: number, cookTime: number): string {
+  const totalTime = prepTime + cookTime;
+  if (totalTime <= 30) return "0-30";
+  if (totalTime <= 60) return "30-60";
+  return "60+";
+}
+
 // Keep old names for backward compatibility
 export const CUISINE_OPTIONS = CUISINE_REGION_OPTIONS;
+export const COMPLEXITY_LEVEL_OPTIONS = COOKING_DURATION_OPTIONS; // Backward compatibility

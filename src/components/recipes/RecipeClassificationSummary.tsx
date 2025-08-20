@@ -1,6 +1,6 @@
 import { Recipe } from "@/types";
 import { Badge } from "@/components/ui/badge";
-import { getDisplayLabel } from "@/utils/recipeClassification";
+import { getCookingDurationCategory, getDisplayLabel } from "@/utils/recipeClassification";
 import { getMealTypesArray } from "@/utils/mealTypeUtils";
 
 interface RecipeClassificationSummaryProps {
@@ -27,10 +27,11 @@ export const RecipeClassificationSummary = ({ recipe }: RecipeClassificationSumm
     });
   }
 
-  // Add complexity level
-  if (recipe.complexity_level) {
+  // Add cooking duration (using prep + cook time)
+  const cookingDuration = getCookingDurationCategory(recipe.prep_time || 0, recipe.cook_time || 0);
+  if (cookingDuration) {
     classifications.push({
-      label: getDisplayLabel(recipe.complexity_level, 'complexityLevel'),
+      label: getDisplayLabel(cookingDuration, 'cookingDuration'),
       variant: 'outline' as const
     });
   }
