@@ -22,9 +22,6 @@ export const MealPlanCreationInfo = ({
       <p className="text-xs text-muted-foreground">
         Meal plan created on {lastGenerated.toLocaleDateString()} at {lastGenerated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}{createdByText}
       </p>
-      <p className="text-xs text-muted-foreground">
-        {totalMeals} meals planned
-      </p>
     </div>
   );
 };
