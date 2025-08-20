@@ -65,7 +65,7 @@ export const MealPlannerActions = ({
           size="sm"
           variant="outline"
           onClick={onClearAll}
-          className="flex items-center gap-1 h-8 text-xs text-terracotta border-terracotta hover:bg-terracotta/10"
+          className="flex items-center gap-1 h-8 text-xs"
           disabled={isLoading}
         >
           <Trash2 className="h-3 w-3" />

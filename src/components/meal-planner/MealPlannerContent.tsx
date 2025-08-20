@@ -52,8 +52,29 @@ export const MealPlannerContent = ({
     return recipes.find(recipe => recipe.id === id);
   }, [recipes]);
 
+  // Get creation info from meal plans
+  const getCreationInfo = () => {
+    if (currentMealPlans.length === 0) return { lastGenerated: null, createdByUserId: undefined };
+    
+    // Get the most recent meal plan's creation date
+    const mostRecent = currentMealPlans.reduce((latest, current) => {
+      const currentTime = new Date(current.created_at || '').getTime();
+      const latestTime = new Date(latest.created_at || '').getTime();
+      return currentTime > latestTime ? current : latest;
+    });
+    
+    return {
+      lastGenerated: mostRecent.created_at ? new Date(mostRecent.created_at) : null,
+      createdByUserId: mostRecent.created_by
+    };
+  };
+
+  const { lastGenerated: calculatedLastGenerated, createdByUserId: calculatedCreatedBy } = getCreationInfo();
+  const finalLastGenerated = lastGenerated || calculatedLastGenerated;
+  const finalCreatedBy = createdByUserId || calculatedCreatedBy;
+
   return (
-    <div className="space-y-1">
+    <div className="space-y-2">
       <MealPlannerActions
         onRandomize={onRandomize}
         onShare={onShare}
@@ -64,8 +85,8 @@ export const MealPlannerContent = ({
       />
 
       <MealPlanCreationInfo 
-        lastGenerated={lastGenerated}
-        createdByUserId={createdByUserId}
+        lastGenerated={finalLastGenerated}
+        createdByUserId={finalCreatedBy}
         totalMeals={currentMealPlans.length}
       />
 
