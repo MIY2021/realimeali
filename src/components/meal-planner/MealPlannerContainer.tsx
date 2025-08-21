@@ -38,7 +38,7 @@ export function MealPlannerContainer({ currentWeek }: MealPlannerContainerProps)
   const [clearAllDialog, setClearAllDialog] = useState(false);
   const [servingsDialog, setServingsDialog] = useState(false);
   const [pendingMealType, setPendingMealType] = useState<MealType | null>(null);
-  const [pendingLeftoverData, setPendingLeftoverData] = useState<{ mealPlan: MealPlan; recipe?: Recipe } | null>(null);
+  const [pendingLeftoverData, setPendingLeftoverData] = useState<{ mealPlan: any; recipe: any } | null>(null);
 
   // Initialize leftover operations
   const { handleCreateLeftover: createLeftoverOperation } = useLeftoverOperations({
@@ -123,6 +123,8 @@ export function MealPlannerContainer({ currentWeek }: MealPlannerContainerProps)
         week_number: currentWeek,
         is_completed: false,
         is_freetyped: false,
+        is_leftover: false,
+        original_servings: recipe.servings,
       }, currentWeek);
 
       setSimpleMealDialog(false);
@@ -148,6 +150,8 @@ export function MealPlannerContainer({ currentWeek }: MealPlannerContainerProps)
         is_completed: false,
         is_freetyped: true,
         meal_name: mealName,
+        is_leftover: false,
+        original_servings: servings,
       }, currentWeek);
 
       setSimpleMealDialog(false);
@@ -193,13 +197,20 @@ export function MealPlannerContainer({ currentWeek }: MealPlannerContainerProps)
     <>
       <MealPlannerContent
         currentWeek={currentWeek}
-        mealPlans={currentWeekMealPlans}
+        setCurrentWeek={() => {}} // Not used in this container
+        isLoading={false}
+        currentMealPlans={currentWeekMealPlans}
         recipes={recipes}
+        onRandomize={() => setQuantitiesDialog(true)}
+        onShare={() => {}}
+        onClearAll={() => setClearAllDialog(true)}
         onAddMeal={handleAddMeal}
+        onAddCustomMeal={handleAddMeal}
         onRemoveMeal={removeMealPlan}
         onCreateLeftover={handleCreateLeftover}
-        onReorderMeals={reorderMealPlans}
-        getRecipeById={(id: string) => recipes.find(r => r.id === id)}
+        onReorderMeals={(mealType: MealType, sourceIndex: number, destinationIndex: number) => 
+          reorderMealPlans(mealType, currentWeek, sourceIndex, destinationIndex)
+        }
       />
 
       <MealPlannerModalsContainer
@@ -232,3 +243,5 @@ export function MealPlannerContainer({ currentWeek }: MealPlannerContainerProps)
     </>
   );
 }
+
+export default MealPlannerContainer;
