@@ -13,7 +13,7 @@ interface CustomMealPlanCalendarProps {
   recipes: Recipe[];
   onAddMeal: (date: string, mealType: MealType) => void;
   onRemoveMeal: (planId: string) => void;
-  onCreateLeftover: (mealPlan: MealPlan, recipe?: Recipe) => void;
+  onCreateLeftover: (mealPlan: MealPlan, recipe: Recipe) => void;
   onReorderMeals: (mealType: MealType, reorderedPlans: MealPlan[]) => void;
 }
 
@@ -79,7 +79,7 @@ export function CustomMealPlanCalendar({
     onRemoveMeal(planId);
   };
 
-  const handleCreateLeftover = (mealPlan: MealPlan, recipe?: Recipe) => {
+  const handleCreateLeftover = (mealPlan: MealPlan, recipe: Recipe) => {
     onCreateLeftover(mealPlan, recipe);
   };
 

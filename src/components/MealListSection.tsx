@@ -16,7 +16,7 @@ interface MealListSectionProps {
   onAddMeal: (mealType: MealType) => void;
   onAddCustomMeal?: (mealType: MealType) => void;
   onRemoveMeal: (planId: string) => void;
-  onCreateLeftover?: (mealPlan: MealPlan, recipe?: Recipe) => void;
+  onCreateLeftover?: (mealPlan: MealPlan, recipe: Recipe) => void;
   onReorderMeals?: (mealType: MealType, sourceIndex: number, destinationIndex: number) => void;
   dragHandleProps?: DraggableProvidedDragHandleProps | null;
   collapsed?: boolean;
