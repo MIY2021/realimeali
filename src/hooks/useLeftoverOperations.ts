@@ -97,7 +97,7 @@ export const useLeftoverOperations = ({
       // Refresh meal plans to ensure UI shows updated data
       if (refreshMealPlans) {
         console.log("✅ Refreshing meal plans to update UI");
-        await refreshMealPlans();
+        refreshMealPlans();
       }
       
       toast({
