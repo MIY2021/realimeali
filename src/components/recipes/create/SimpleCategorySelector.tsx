@@ -5,7 +5,6 @@ import {
   MEAL_TYPE_OPTIONS,
   CUISINE_REGION_OPTIONS,
   DIET_LIFESTYLE_OPTIONS,
-  COMPLEXITY_LEVEL_OPTIONS,
 } from "@/utils/recipeClassification";
 
 interface SimpleCategorySelectorProps {
@@ -102,21 +101,6 @@ export function SimpleCategorySelector({ recipe, onRecipeChange }: SimpleCategor
                 option={option}
                 isSelected={recipe.cuisine_region === option.value}
                 onClick={() => updateRecipeField('cuisine_region', option.value)}
-              />
-            ))}
-          </div>
-        </div>
-
-        {/* Complexity Level - Fixed width issue */}
-        <div>
-          <label className="text-sm font-medium mb-3 block">Complexity Level</label>
-          <div className="flex flex-wrap gap-2">
-            {COMPLEXITY_LEVEL_OPTIONS.map((option) => (
-              <CategoryButton
-                key={option.value}
-                option={option}
-                isSelected={recipe.complexity_level === option.value}
-                onClick={() => updateRecipeField('complexity_level', option.value)}
               />
             ))}
           </div>

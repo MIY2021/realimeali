@@ -78,7 +78,7 @@ const parseRecipeUpdate = (content: string): any | null => {
     const cook_time = parseInt(headerSection.match(/Cook Time:\s*(\d+)/)?.[1] || '0');
     const meal_types = headerSection.match(/Meal Types:\s*(.*)/)?.[1]?.split(',').map(s => s.trim().toLowerCase()) || [];
     const cuisine_region = headerSection.match(/Cuisine:\s*(.*)/)?.[1]?.trim();
-    const complexity_level = headerSection.match(/Complexity:\s*(.*)/)?.[1]?.trim();
+    
     const diet_lifestyle = headerSection.match(/Diet\/Lifestyle:\s*(.*)/)?.[1]?.split(',').map(s => s.trim().toLowerCase()).filter(s => s) || [];
 
     // Parse ingredients
@@ -102,7 +102,7 @@ const parseRecipeUpdate = (content: string): any | null => {
       cook_time,
       meal_types,
       cuisine_region,
-      complexity_level,
+      
       diet_lifestyle
     };
   } catch (error) {
@@ -258,18 +258,6 @@ const parseFullRecipe = (content: string): any | null => {
         cuisine = 'International';
       }
       
-      // Determine complexity based on instruction count, cooking methods, and time
-      let complexity = 'beginner';
-      const complexMethods = ['braise', 'confit', 'sous vide', 'tempering', 'clarify', 'flambé'];
-      const hasComplexMethod = complexMethods.some(method => lowerContent.includes(method));
-      
-      if (instructions.length > 10 || hasComplexMethod || lowerContent.includes('advanced') || lowerContent.includes('complex') || 
-          lowerContent.includes('chef') || lowerContent.includes('professional')) {
-        complexity = 'advanced';
-      } else if (instructions.length > 6 || lowerContent.includes('intermediate') || lowerContent.includes('medium') || 
-                 lowerContent.includes('marinade') || lowerContent.includes('reduce') || lowerContent.includes('sear')) {
-        complexity = 'intermediate';
-      }
       
       // Determine diet/lifestyle based on ingredients
       const dietLifestyle = [];
@@ -292,7 +280,7 @@ const parseFullRecipe = (content: string): any | null => {
       }
       
       // Generate better description that includes tips if available
-      const baseDescription = `A delicious ${cuisine.toLowerCase()} recipe for ${title.toLowerCase()}. This ${complexity} dish is perfect for ${mealTypes.join(' or ')} and brings together wonderful flavors that are sure to impress.`;
+      const baseDescription = `A delicious ${cuisine.toLowerCase()} recipe for ${title.toLowerCase()}. This dish is perfect for ${mealTypes.join(' or ')} and brings together wonderful flavors that are sure to impress.`;
       const finalDescription = tipsText ? `${baseDescription}\n\nTop Tip: ${tipsText}` : baseDescription;
       
       return {
@@ -305,7 +293,7 @@ const parseFullRecipe = (content: string): any | null => {
         description: finalDescription,
         meal_types: mealTypes,
         cuisine_region: cuisine,
-        complexity_level: complexity,
+        
         diet_lifestyle: dietLifestyle,
         equipment: [],
         import_method: 'ai' as const

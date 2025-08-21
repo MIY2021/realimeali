@@ -8,7 +8,6 @@ import {
   MEAL_TYPE_OPTIONS,
   CUISINE_REGION_OPTIONS,
   DIET_LIFESTYLE_OPTIONS,
-  COMPLEXITY_LEVEL_OPTIONS,
 } from "@/utils/recipeClassification";
 
 interface RecipeClassificationSelectorProps {
@@ -95,28 +94,6 @@ export function RecipeClassificationSelector({ recipe, onRecipeChange }: RecipeC
               </SelectTrigger>
               <SelectContent>
                 {CUISINE_REGION_OPTIONS.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    <span className="flex items-center gap-2">
-                      <span>{option.icon}</span>
-                      <span>{option.label}</span>
-                    </span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <label className="text-sm font-medium mb-2 block">Complexity Level</label>
-            <Select 
-              value={recipe.complexity_level || ""} 
-              onValueChange={(value) => updateRecipeField('complexity_level', value)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select complexity" />
-              </SelectTrigger>
-              <SelectContent>
-                {COMPLEXITY_LEVEL_OPTIONS.map((option) => (
                   <SelectItem key={option.value} value={option.value}>
                     <span className="flex items-center gap-2">
                       <span>{option.icon}</span>

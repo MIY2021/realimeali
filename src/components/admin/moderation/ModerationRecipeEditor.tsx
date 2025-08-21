@@ -7,7 +7,6 @@ import { RecipeTitleInput } from "./components/RecipeTitleInput";
 import { RecipeDescriptionInput } from "./components/RecipeDescriptionInput";
 import { MealTypeSelector } from "./components/MealTypeSelector";
 import { CuisineSelector } from "./components/CuisineSelector";
-import { ComplexitySelector } from "./components/ComplexitySelector";
 import { DietLifestyleSelector } from "./components/DietLifestyleSelector";
 import { SaveButton } from "./components/SaveButton";
 
@@ -30,7 +29,6 @@ export function ModerationRecipeEditor({
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState<string | string[]>("");
   const [cuisine, setCuisine] = useState("");
-  const [difficultyLevel, setDifficultyLevel] = useState("");
   const [selectedDietLifestyle, setSelectedDietLifestyle] = useState<string[]>([]);
 
   // Reset state whenever recipe changes with enhanced logging
@@ -45,7 +43,6 @@ export function ModerationRecipeEditor({
     setDescription(recipe.description || "");
     setCategory(recipe.category || "");
     setCuisine(recipe.cuisine || "");
-    setDifficultyLevel(recipe.difficulty_level || "");
     setSelectedDietLifestyle([]);
     
     console.log("🔄 State updated for recipe:", recipe.id);
@@ -57,8 +54,7 @@ export function ModerationRecipeEditor({
       title: title.trim(),
       description: description.trim(),
       category,
-      cuisine,
-      difficultyLevel
+      cuisine
     });
 
     // Validate required fields
@@ -72,7 +68,6 @@ export function ModerationRecipeEditor({
       description: description.trim(),
       category: Array.isArray(category) ? category.join(',') : (category || null),
       cuisine: cuisine || null,
-      difficulty_level: difficultyLevel || null,
     };
     
     console.log("💾 Calling onSave with updates:", updates);
@@ -108,9 +103,7 @@ export function ModerationRecipeEditor({
 
         <CuisineSelector value={cuisine} onChange={setCuisine} />
 
-        <ComplexitySelector value={difficultyLevel} onChange={setDifficultyLevel} />
-
-        <DietLifestyleSelector 
+        <DietLifestyleSelector
           selectedValues={selectedDietLifestyle} 
           onChange={setSelectedDietLifestyle} 
         />
