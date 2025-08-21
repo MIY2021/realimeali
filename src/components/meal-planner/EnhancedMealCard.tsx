@@ -16,7 +16,7 @@ interface EnhancedMealCardProps {
   recipe?: Recipe;
   parentRecipe?: Recipe;
   onRemove: (planId: string) => void;
-  onCreateLeftover: (mealPlan: MealPlan, recipe: Recipe) => void;
+  onCreateLeftover: (mealPlan: MealPlan, recipe?: Recipe) => void;
   dragHandleProps?: DraggableProvidedDragHandleProps | null;
   animationDelay?: number;
   allMealPlans?: MealPlan[];
@@ -134,6 +134,19 @@ export function EnhancedMealCard({
                   >
                     <Check className="h-3 w-3" />
                   </Button>
+                  
+                  {/* Leftover Button for Custom Meals */}
+                  {mealPlan.meal_type === 'dinner' && !mealPlan.is_leftover && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-7 w-7 p-0 bg-orange-50 text-orange-600 border-orange-200 hover:bg-orange-100 transition-all"
+                      onClick={() => onCreateLeftover(mealPlan)}
+                      title="Save leftovers for lunch"
+                    >
+                      <UtensilsCrossed className="h-3 w-3" />
+                    </Button>
+                  )}
                   
                   {/* Trash Button */}
                   <Button

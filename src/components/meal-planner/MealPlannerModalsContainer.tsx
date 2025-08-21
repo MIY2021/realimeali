@@ -22,14 +22,14 @@ interface MealPlannerModalsContainerProps {
   setServingsDialog: (open: boolean) => void;
   pendingMealType: MealType | null;
   setPendingMealType: (mealType: MealType | null) => void;
-  pendingLeftoverData: { mealPlan: any; recipe: any } | null;
+  pendingLeftoverData: { mealPlan: any; recipe?: any } | null;
   recipes: Recipe[];
   currentWeek: 1 | 2;
   onRandomizeWithQuantities: (quantities: any) => void;
   onSimpleMealSelect: (recipeId: string) => void;
   onAddFreetypeMeal: (mealName: string, servings: number) => void;
   onLunchLeftoverConfirm: (servings: number) => void;
-  onCreateLeftover: (mealPlan: any, recipe: any, leftoverServings: number) => void;
+  onCreateLeftover: (mealPlan: any, recipe?: any, leftoverServings?: number) => void;
   onWarningConfirm: () => void;
   onClearAllConfirm: () => void;
   onServingsConfirm: (mealType: MealType, servings: number) => void;

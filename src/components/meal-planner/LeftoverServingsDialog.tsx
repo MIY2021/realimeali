@@ -19,7 +19,7 @@ interface LeftoverServingsDialogProps {
   recipe: Recipe | null;
   onConfirm: (servings: number) => void;
   isNewLunchMeal?: boolean;
-  onCreateLeftover?: (mealPlan: MealPlan, recipe: Recipe, leftoverServings: number) => void;
+  onCreateLeftover?: (mealPlan: MealPlan, recipe?: Recipe, leftoverServings?: number) => void;
 }
 
 export function LeftoverServingsDialog({
@@ -41,7 +41,7 @@ export function LeftoverServingsDialog({
     servings: servings[0]
   });
   
-  const maxServings = recipe ? recipe.servings - 1 : 8; // Default max to 8 for new lunch meals
+  const maxServings = recipe ? recipe.servings - 1 : (mealPlan?.planned_servings ? mealPlan.planned_servings - 1 : 7); // Default max based on meal plan or 8 total
 
   const handleConfirm = () => {
     console.log("✅ LeftoverServingsDialog confirm:", {
@@ -53,23 +53,24 @@ export function LeftoverServingsDialog({
     if (isNewLunchMeal) {
       // For new lunch meals, just pass the servings count
       onConfirm(servings[0]);
-    } else if (mealPlan && recipe && onCreateLeftover) {
+    } else if (mealPlan && onCreateLeftover) {
       // For creating leftovers from existing meals, create the leftover and update portions
       onCreateLeftover(mealPlan, recipe, servings[0]);
     }
     onClose();
   };
 
-  // Fix the conditional rendering - allow rendering for new lunch meals OR when we have recipe/mealPlan for leftovers
-  if (!isNewLunchMeal && (!recipe || !mealPlan)) {
+  // Fix the conditional rendering - allow rendering for new lunch meals OR when we have mealPlan for leftovers (recipe is optional for custom meals)
+  if (!isNewLunchMeal && !mealPlan) {
     console.log("❌ LeftoverServingsDialog not rendering - missing required props");
     return null;
   }
 
   const title = isNewLunchMeal ? "Add Lunch Meal" : "Create Lunch Leftovers";
+  const mealName = recipe?.title || mealPlan?.meal_name || 'Custom Meal';
   const description = isNewLunchMeal 
     ? "How many portions would you like for lunch?"
-    : `How many servings of "${recipe?.title}" would you like to save for lunch tomorrow?`;
+    : `How many servings of "${mealName}" would you like to save for lunch tomorrow?`;
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -95,9 +96,17 @@ export function LeftoverServingsDialog({
               step={1}
               className="w-full"
             />
-            {!isNewLunchMeal && recipe && (
+            {!isNewLunchMeal && (recipe || mealPlan) && (
               <div className="text-xs text-muted-foreground">
-                Original recipe serves {recipe.servings}. You can save up to {maxServings} servings for leftovers.
+                {recipe ? (
+                  <>
+                    Original recipe serves {recipe.servings}. You can save up to {maxServings} servings for leftovers.
+                  </>
+                ) : (
+                  <>
+                    Original meal serves {mealPlan?.planned_servings || 1}. You can save up to {maxServings} servings for leftovers.
+                  </>
+                )}
                 <br />
                 This will reduce the dinner portion count by {servings[0]} servings.
               </div>
