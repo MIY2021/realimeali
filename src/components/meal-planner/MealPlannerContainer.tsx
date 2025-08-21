@@ -202,8 +202,9 @@ export default function MealPlannerContainer() {
     console.log("Lunch leftover servings selected:", servings);
   }, [setLeftoverDialog, setSimpleMealDialog]);
 
-  const handleCreateLeftoverWithDialog = useCallback((mealPlan: MealPlan, recipe: Recipe) => {
-    console.log("🔄 handleCreateLeftoverWithDialog:", { mealPlan: mealPlan.id, recipe: recipe.title });
+  const handleCreateLeftoverWithDialog = useCallback((mealPlan: MealPlan, recipe?: Recipe) => {
+    const mealName = recipe?.title || mealPlan.meal_name || 'Custom Meal';
+    console.log("🔄 handleCreateLeftoverWithDialog:", { mealPlan: mealPlan.id, mealName });
     setPendingLeftoverData({ mealPlan, recipe });
     setPendingMealType('lunch'); // Set to lunch for leftover creation
     setLeftoverDialog(true);
@@ -226,7 +227,7 @@ export default function MealPlannerContainer() {
     performClearAll();
   }, [performClearAll]);
 
-  const handleCreateLeftoverWithServings = useCallback(async (mealPlan: MealPlan, recipe: Recipe, leftoverServings: number) => {
+  const handleCreateLeftoverWithServings = useCallback(async (mealPlan: MealPlan, recipe: Recipe | undefined, leftoverServings: number) => {
     console.log("🔄 handleCreateLeftoverWithServings:", { leftoverServings });
     await handleCreateLeftover(mealPlan, recipe, leftoverServings);
     setPendingLeftoverData(null);
