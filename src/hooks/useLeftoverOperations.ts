@@ -21,7 +21,7 @@ export const useLeftoverOperations = ({
   refreshMealPlans,
 }: UseLeftoverOperationsProps) => {
 
-  const handleCreateLeftover = useCallback(async (mealPlan: any, recipe: Recipe, leftoverServings?: number) => {
+  const handleCreateLeftover = useCallback(async (mealPlan: any, recipe?: Recipe, leftoverServings?: number) => {
     if (!user || !currentHousehold) {
       console.error("No user or household available for leftover creation");
       toast({
@@ -33,9 +33,12 @@ export const useLeftoverOperations = ({
     }
 
     try {
+      const mealName = recipe?.title || mealPlan.meal_name || 'Custom Meal';
+      
       console.log("Creating leftover with data:", { 
         mealPlan: mealPlan.id, 
-        recipe: recipe.title, 
+        mealName, 
+        isFreetype: mealPlan.is_freetyped,
         leftoverServings, 
         currentWeek,
         userId: user.id,
@@ -47,18 +50,19 @@ export const useLeftoverOperations = ({
       if (leftoverServings && Number.isInteger(leftoverServings) && leftoverServings > 0) {
         servingsToSave = leftoverServings;
       } else {
-        servingsToSave = Math.max(1, Math.floor((mealPlan.planned_servings || recipe.servings) / 2));
+        const defaultServings = mealPlan.planned_servings || recipe?.servings || 2;
+        servingsToSave = Math.max(1, Math.floor(defaultServings / 2));
       }
       
       console.log("✅ Calculated servings to save:", servingsToSave);
       
-      // Update the original dinner meal servings first (reduce by leftover amount)
-      const originalServings = mealPlan.planned_servings || recipe.servings;
+      // Update the original meal servings first (reduce by leftover amount)
+      const originalServings = mealPlan.planned_servings || recipe?.servings || 2;
       const remainingServings = originalServings - servingsToSave;
       
       console.log("✅ Updating original meal plan servings:", { originalServings, remainingServings, servingsToSave });
       
-      // Update the dinner meal to reflect reduced servings
+      // Update the original meal to reflect reduced servings
       await mealPlanService.updateMealPlanServings(
         mealPlan.id,
         remainingServings,
@@ -68,18 +72,21 @@ export const useLeftoverOperations = ({
 
       // Create the leftover meal with the allocated servings
       const leftoverData = {
-        recipe_id: mealPlan.recipe_id,
+        recipe_id: mealPlan.recipe_id || null, // Can be null for freetype meals
         meal_type: 'lunch' as any,
         date: mealPlan.date,
         created_by: user.id,
         slot_index: 0,
         is_leftover: true,
         leftover_servings: servingsToSave,
-        planned_servings: servingsToSave, // Use planned_servings for the leftover meal
-        original_servings: recipe.servings,
+        planned_servings: servingsToSave,
+        original_servings: recipe?.servings || mealPlan.planned_servings || 2,
         parent_meal_plan_id: mealPlan.id,
         household_id: currentHousehold.id,
         week_number: currentWeek,
+        // For freetype meals, copy the meal name
+        is_freetyped: mealPlan.is_freetyped || false,
+        meal_name: mealPlan.is_freetyped ? mealPlan.meal_name : null,
       };
 
       console.log("✅ Creating leftover meal with data:", leftoverData);
@@ -95,7 +102,7 @@ export const useLeftoverOperations = ({
       
       toast({
         title: "Leftover Added",
-        description: `${servingsToSave} servings of ${recipe.title} saved for lunch. Dinner now shows ${remainingServings} servings.`,
+        description: `${servingsToSave} servings of ${mealName} saved for lunch. Original meal now shows ${remainingServings} servings.`,
       });
     } catch (err) {
       console.error("💥 Error creating leftover:", err);

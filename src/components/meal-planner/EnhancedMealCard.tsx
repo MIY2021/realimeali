@@ -16,7 +16,7 @@ interface EnhancedMealCardProps {
   recipe?: Recipe;
   parentRecipe?: Recipe;
   onRemove: (planId: string) => void;
-  onCreateLeftover: (mealPlan: MealPlan, recipe: Recipe) => void;
+  onCreateLeftover: (mealPlan: MealPlan, recipe?: Recipe) => void;
   dragHandleProps?: DraggableProvidedDragHandleProps | null;
   animationDelay?: number;
   allMealPlans?: MealPlan[];
@@ -37,6 +37,23 @@ export function EnhancedMealCard({
 
   // Handle freetyped meals (no recipe)
   if (mealPlan.is_freetyped && !recipe) {
+    // Check if this custom meal already has leftovers created
+    const existingLeftover = allMealPlans.find(plan => 
+      plan.parent_meal_plan_id === mealPlan.id && 
+      plan.is_leftover && 
+      plan.meal_type === 'lunch'
+    );
+    const leftoverServings = existingLeftover?.planned_servings || existingLeftover?.leftover_servings;
+
+    // Calculate display servings for custom meals with leftovers
+    const displayServings = existingLeftover && leftoverServings
+      ? (mealPlan.planned_servings || 2) - leftoverServings
+      : (mealPlan.planned_servings || 2);
+
+    const handleCreateCustomLeftover = () => {
+      onCreateLeftover(mealPlan); // No recipe for custom meals
+    };
+
     return (
       <Card className={`bg-white border border-gray-200 hover:shadow-md transition-all overflow-hidden ${
         mealPlan.is_completed ? 'opacity-40 saturate-50' : ''
@@ -51,16 +68,16 @@ export function EnhancedMealCard({
             </div>
 
             {/* Content Area */}
-            <div className="flex-1 pl-2 pr-4 py-4 flex flex-col justify-between min-w-0">
+            <div className="flex-1 pl-2 pr-4 py-3 flex flex-col justify-between min-w-0">
               {/* Header */}
-              <div className="flex items-start justify-between mb-2">
+              <div className="flex items-start justify-between mb-1">
                 <div className="flex-1 min-w-0">
                   <h4 className={`font-medium text-sm leading-tight ${
                     mealPlan.is_completed ? 'text-gray-400 line-through' : 'text-gray-900'
                   }`}>
                     {mealPlan.meal_name || 'Custom Meal'}
                   </h4>
-                  <p className="text-xs text-blue-600 mt-1">Custom meal</p>
+                  <p className="text-xs text-blue-600 mt-0.5">Custom meal</p>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
                   {/* Drag Handle */}
@@ -92,7 +109,7 @@ export function EnhancedMealCard({
                     >
                       <Minus className="h-3 w-3" />
                     </Button>
-                    <span className="text-sm font-medium w-6 text-center">{servings}</span>
+                    <span className="text-sm font-medium w-6 text-center">{displayServings}</span>
                     <Button
                       variant="outline"
                       size="sm"
@@ -134,6 +151,27 @@ export function EnhancedMealCard({
                   >
                     <Check className="h-3 w-3" />
                   </Button>
+                  
+                  {/* Lunch Button for Custom Meals */}
+                  {!mealPlan.is_leftover && mealPlan.meal_type === 'dinner' && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className={`h-7 w-7 p-0 transition-all ${
+                        existingLeftover 
+                          ? 'bg-green-500 text-white border-green-500 hover:bg-green-600 shadow-sm' 
+                          : 'bg-orange-50 text-orange-600 border-orange-200 hover:bg-orange-100'
+                      }`}
+                      onClick={handleCreateCustomLeftover}
+                      disabled={!!existingLeftover}
+                      title={existingLeftover 
+                        ? `${leftoverServings} servings saved for lunch` 
+                        : 'Save leftovers for lunch'
+                      }
+                    >
+                      <UtensilsCrossed className="h-3 w-3" />
+                    </Button>
+                  )}
                   
                   {/* Trash Button */}
                   <Button
