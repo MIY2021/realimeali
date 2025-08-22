@@ -8,6 +8,7 @@ import { RecipeModerationPanel } from "@/components/admin/RecipeModerationPanel"
 import { AdminStats } from "@/components/admin/AdminStats";
 import { UserManagement } from "@/components/admin/UserManagement";
 import { FeedbackModerationPanel } from "@/components/admin/FeedbackModerationPanel";
+import { RecipeExportPanel } from "@/components/admin/RecipeExportPanel";
 import { User, AlertCircle } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -61,17 +62,20 @@ const AdminDashboard = () => {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className={`grid w-full ${isMobile ? 'grid-cols-2' : 'grid-cols-4'}`}>
-          <TabsTrigger value="moderation" className={`${isMobile ? 'text-xs px-2' : ''}`}>
+        <TabsList className={`grid w-full ${isMobile ? 'grid-cols-3' : 'grid-cols-5'}`}>
+          <TabsTrigger value="moderation" className={`${isMobile ? 'text-xs px-1' : ''}`}>
             {isMobile ? 'Recipes' : 'Recipe Moderation'}
           </TabsTrigger>
-          <TabsTrigger value="feedback" className={`${isMobile ? 'text-xs px-2' : ''}`}>
+          <TabsTrigger value="feedback" className={`${isMobile ? 'text-xs px-1' : ''}`}>
             {isMobile ? 'Feedback' : 'Feedback & Suggestions'}
+          </TabsTrigger>
+          <TabsTrigger value="export" className={`${isMobile ? 'text-xs px-1' : ''}`}>
+            {isMobile ? 'Export' : 'Export'}
           </TabsTrigger>
           {isMobile && (
             <>
-              <TabsTrigger value="stats" className="text-xs px-2">Stats</TabsTrigger>
-              <TabsTrigger value="users" className="text-xs px-2">Users</TabsTrigger>
+              <TabsTrigger value="stats" className="text-xs px-1">Stats</TabsTrigger>
+              <TabsTrigger value="users" className="text-xs px-1">Users</TabsTrigger>
             </>
           )}
           {!isMobile && (
@@ -112,6 +116,20 @@ const AdminDashboard = () => {
 
         <TabsContent value="stats" className="space-y-6">
           <AdminStats />
+        </TabsContent>
+
+        <TabsContent value="export" className="space-y-6">
+          <Card>
+            <CardHeader className={`${isMobile ? 'px-4 py-4' : ''}`}>
+              <CardTitle className={`${isMobile ? 'text-lg' : ''}`}>Recipe Export</CardTitle>
+              <CardDescription className={`${isMobile ? 'text-xs' : ''}`}>
+                Export recipe data from your accessible households
+              </CardDescription>
+            </CardHeader>
+            <CardContent className={`${isMobile ? 'px-4 pb-4' : ''}`}>
+              <RecipeExportPanel />
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="users" className="space-y-6">
