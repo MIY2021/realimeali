@@ -106,7 +106,7 @@ export const useUrlRecipeProcessing = () => {
         meal_type: recipeData.mealType || newRecipe.meal_type,
         cuisine_region: recipeData.cuisineRegion || newRecipe.cuisine_region,
         diet_lifestyle: recipeData.dietLifestyle || newRecipe.diet_lifestyle || [],
-        complexity_level: recipeData.complexityLevel || newRecipe.complexity_level,
+        // complexity_level removed
         household_id: newRecipe.household_id,
         is_favorite: newRecipe.is_favorite,
         has_cooked: newRecipe.has_cooked,

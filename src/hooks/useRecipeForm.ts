@@ -22,7 +22,7 @@ export function useRecipeForm(isEditing: boolean = false, existingRecipe?: Recip
       meal_types: [],
       cuisine_region: undefined,
       diet_lifestyle: [],
-      complexity_level: undefined,
+      // complexity_level removed - using cooking duration calculation instead
       image: undefined,
       is_favorite: false,
       has_cooked: false,

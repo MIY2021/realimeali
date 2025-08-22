@@ -26,7 +26,7 @@ export default function CategoryPage() {
     return (recipe.meal_types && recipe.meal_types.includes(decodedCategory as any)) ||
            recipe.meal_type === decodedCategory ||
            recipe.cuisine_region === decodedCategory ||
-           recipe.complexity_level === decodedCategory ||
+           // recipe.complexity_level removed
            (recipe.diet_lifestyle && recipe.diet_lifestyle.includes(decodedCategory as any));
   });
 

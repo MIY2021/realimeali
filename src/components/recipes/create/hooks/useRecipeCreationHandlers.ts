@@ -159,8 +159,7 @@ export const useRecipeCreationHandlers = ({
               servings: savedRecipe.servings,
               category: savedRecipe.meal_type || null,
               cuisine: savedRecipe.cuisine_region || null,
-              difficulty_level: recipeToSave.complexity_level === 'quick_easy' ? 'Easy' : 
-                             recipeToSave.complexity_level === 'complex' ? 'Hard' : 'Standard',
+              // difficulty_level mapping removed - complexity_level no longer exists
               submitted_by: user.id,
               submitted_by_name: user.email || 'Anonymous',
               is_approved: false,

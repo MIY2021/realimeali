@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.3 (519615d)"
@@ -802,9 +802,6 @@ export type Database = {
       }
       recipes: {
         Row: {
-          complexity_level:
-            | Database["public"]["Enums"]["complexity_level"]
-            | null
           cook_time: number | null
           cooking_method: Database["public"]["Enums"]["cooking_method"] | null
           created_at: string | null
@@ -836,9 +833,6 @@ export type Database = {
           user_id: string
         }
         Insert: {
-          complexity_level?:
-            | Database["public"]["Enums"]["complexity_level"]
-            | null
           cook_time?: number | null
           cooking_method?: Database["public"]["Enums"]["cooking_method"] | null
           created_at?: string | null
@@ -872,9 +866,6 @@ export type Database = {
           user_id: string
         }
         Update: {
-          complexity_level?:
-            | Database["public"]["Enums"]["complexity_level"]
-            | null
           cook_time?: number | null
           cooking_method?: Database["public"]["Enums"]["cooking_method"] | null
           created_at?: string | null
@@ -971,7 +962,7 @@ export type Database = {
         Returns: string[]
       }
       has_role: {
-        Args: { _user_id: string; _role: string }
+        Args: { _role: string; _user_id: string }
         Returns: boolean
       }
       increment_community_recipe_save_count: {
@@ -1023,7 +1014,7 @@ export type Database = {
         Returns: boolean
       }
       toggle_recipe_cooking_status: {
-        Args: { recipe_id_param: string; household_id_param: string }
+        Args: { household_id_param: string; recipe_id_param: string }
         Returns: boolean
       }
       toggle_recipe_cooking_status_simple: {

@@ -83,7 +83,7 @@ export function CreateRecipeContainer({ editingRecipe, isEditMode = false, defau
       ...(updatedRecipe.cook_time && { cook_time: updatedRecipe.cook_time }),
       ...(updatedRecipe.meal_types && { meal_types: updatedRecipe.meal_types }),
       ...(updatedRecipe.cuisine_region && { cuisine_region: updatedRecipe.cuisine_region }),
-      ...(updatedRecipe.complexity_level && { complexity_level: updatedRecipe.complexity_level }),
+      // complexity_level removed
       ...(updatedRecipe.diet_lifestyle && { diet_lifestyle: updatedRecipe.diet_lifestyle })
     }));
   };
@@ -99,7 +99,7 @@ export function CreateRecipeContainer({ editingRecipe, isEditMode = false, defau
       cook_time: recipeFormHook.newRecipe.cook_time || 0,
       meal_types: recipeFormHook.newRecipe.meal_types || [],
       cuisine_region: recipeFormHook.newRecipe.cuisine_region || '',
-      complexity_level: recipeFormHook.newRecipe.complexity_level || '',
+      // complexity_level removed
       diet_lifestyle: recipeFormHook.newRecipe.diet_lifestyle || []
     };
 
@@ -132,7 +132,7 @@ export function CreateRecipeContainer({ editingRecipe, isEditMode = false, defau
       servings: selectedRecipe.servings || 4,
       meal_type: selectedRecipe.meal_type || '',
       cuisine_region: selectedRecipe.cuisine_region || '',
-      complexity_level: selectedRecipe.complexity_level || 'beginner',
+      // complexity_level removed
       diet_lifestyle: selectedRecipe.diet_lifestyle || [],
     });
 

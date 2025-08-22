@@ -10,13 +10,13 @@ import {
   MealType,
   CuisineRegion,
   DietLifestyle,
-  ComplexityLevel,
+  // ComplexityLevel removed - using cooking duration instead
 } from "@/types";
 import {
   MEAL_TYPE_OPTIONS,
   CUISINE_OPTIONS,
   DIET_LIFESTYLE_OPTIONS,
-  COMPLEXITY_LEVEL_OPTIONS,
+  // COMPLEXITY_LEVEL_OPTIONS removed - using COOKING_DURATION_OPTIONS instead
 } from "@/utils/recipeClassification";
 
 export interface ToggleRecipeFilters {
@@ -24,7 +24,7 @@ export interface ToggleRecipeFilters {
   mealTypes: MealType[];
   cuisines: CuisineRegion[];
   dietLifestyle: DietLifestyle[];
-  complexityLevels: ComplexityLevel[];
+  // complexityLevels removed - complexity level feature removed
 }
 
 interface ToggleRecipeFiltersProps {
@@ -52,7 +52,7 @@ export function ToggleRecipeFiltersComponent({
       mealTypes: [],
       cuisines: [],
       dietLifestyle: [],
-      complexityLevels: [],
+      // complexityLevels removed
     });
   };
 
@@ -107,7 +107,7 @@ export function ToggleRecipeFiltersComponent({
           Filters
           {hasActiveFilters && (
             <Badge variant="secondary" className="ml-1 h-5 min-w-5 flex items-center justify-center p-1">
-              {filters.mealTypes.length + filters.cuisines.length + filters.dietLifestyle.length + filters.complexityLevels.length}
+              {filters.mealTypes.length + filters.cuisines.length + filters.dietLifestyle.length}
             </Badge>
           )}
         </Button>
@@ -175,12 +175,7 @@ export function ToggleRecipeFiltersComponent({
           onSelectionChange={(values) => updateFilter('dietLifestyle', values as DietLifestyle[])}
         />
 
-        <FilterToggleGroup
-          title="⚡ Complexity"
-          options={COMPLEXITY_LEVEL_OPTIONS}
-          selectedValues={filters.complexityLevels}
-          onSelectionChange={(values) => updateFilter('complexityLevels', values as ComplexityLevel[])}
-        />
+        {/* Complexity level filter completely removed - using cooking duration calculation instead */}
       </CardContent>
     </Card>
   );

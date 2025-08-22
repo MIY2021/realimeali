@@ -33,7 +33,7 @@ export function useRecipeSave() {
           meal_type: newRecipe.meal_type,
           cuisine_region: newRecipe.cuisine_region,
           diet_lifestyle: newRecipe.diet_lifestyle,
-          complexity_level: newRecipe.complexity_level,
+          // complexity_level removed from database
         }
       }
     });
@@ -124,8 +124,7 @@ export function useRecipeSave() {
               servings: recipe.servings,
               category: recipe.meal_type || null,
               cuisine: recipe.cuisine_region || null,
-              difficulty_level: recipe.complexity_level === 'quick_easy' ? 'Easy' : 
-                             recipe.complexity_level === 'complex' ? 'Hard' : 'Standard',
+              // difficulty_level mapping removed - complexity_level no longer exists
               submitted_by: user.id,
               submitted_by_name: user.email || 'Anonymous',
               is_approved: false, // Requires admin approval

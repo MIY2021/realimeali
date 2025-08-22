@@ -1,4 +1,4 @@
-import { MealType, CuisineRegion, DietLifestyle, ComplexityLevel } from "@/types";
+import { MealType, CuisineRegion, DietLifestyle } from "@/types";
 
 export const MEAL_TYPE_OPTIONS = [
   { value: "breakfast" as MealType, label: "Breakfast", icon: "🌅" },
@@ -85,4 +85,4 @@ export function getCookingDurationCategory(prepTime: number, cookTime: number): 
 
 // Keep old names for backward compatibility
 export const CUISINE_OPTIONS = CUISINE_REGION_OPTIONS;
-export const COMPLEXITY_LEVEL_OPTIONS = COOKING_DURATION_OPTIONS; // Backward compatibility
+// COMPLEXITY_LEVEL_OPTIONS removed - use COOKING_DURATION_OPTIONS instead

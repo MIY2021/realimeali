@@ -72,7 +72,7 @@ export function useTextRecipeProcessing() {
         meal_type: data.parsedRecipe.mealType || currentRecipe.meal_type,
         cuisine_region: data.parsedRecipe.cuisineRegion || currentRecipe.cuisine_region,
         diet_lifestyle: data.parsedRecipe.dietLifestyle || currentRecipe.diet_lifestyle || [],
-        complexity_level: data.parsedRecipe.complexityLevel || currentRecipe.complexity_level,
+        // complexity_level removed
         top_tip: data.parsedRecipe.topTip || "Enjoy cooking this delicious recipe!"
       };
       

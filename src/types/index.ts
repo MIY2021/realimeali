@@ -17,7 +17,7 @@ export interface Recipe {
   meal_types?: MealType[]; // New field for multiple meal types
   cuisine_region?: CuisineRegion;
   diet_lifestyle?: DietLifestyle[];
-  complexity_level?: ComplexityLevel;
+  // complexity_level removed - using cooking duration calculation instead
   slug?: string;
   top_tip?: string;
   has_cooked?: boolean; // New field to track if household has cooked this recipe
@@ -144,5 +144,5 @@ export type CuisineRegion = "british" | "american" | "italian" | "french" | "mex
 
 export type DietLifestyle = "vegetarian" | "vegan" | "gluten_free" | "dairy_free" | "high_protein" | "kid_friendly" | "pescatarian" | "low_carb_keto" | "paleo" | "diabetic_friendly" | "budget_meals" | "pregnancy_safe";
 
-export type ComplexityLevel = "quick_easy" | "standard" | "complex";
+// ComplexityLevel type removed - using cooking duration calculation instead
 export type CookingDuration = "0-30" | "30-60" | "60+";

@@ -684,7 +684,7 @@ export const RealiChef = () => {
                                      description: fullRecipe.description || '',
                                      meal_types: JSON.stringify(fullRecipe.meal_types || []),
                                      cuisine_region: fullRecipe.cuisine_region || '',
-                                     complexity_level: fullRecipe.complexity_level || 'beginner',
+                                     // complexity_level removed
                                      diet_lifestyle: JSON.stringify(fullRecipe.diet_lifestyle || []),
                                      equipment: JSON.stringify(fullRecipe.equipment || []),
                                      import_method: 'ai',

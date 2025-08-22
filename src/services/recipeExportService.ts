@@ -18,7 +18,6 @@ export interface RecipeExportData {
   servings: number;
   meal_types: string;
   cuisine_region: string;
-  complexity_level: string;
   diet_lifestyle: string;
   
   // Content
@@ -73,7 +72,6 @@ export const convertRecipesToExportFormat = (recipes: Recipe[]): RecipeExportDat
     servings: recipe.servings || 1,
     meal_types: recipe.meal_types?.join('; ') || recipe.meal_type || '',
     cuisine_region: recipe.cuisine_region || '',
-    complexity_level: recipe.complexity_level || '',
     diet_lifestyle: recipe.diet_lifestyle?.join('; ') || '',
     
     ingredients: recipe.ingredients?.join('; ') || '',
@@ -109,7 +107,6 @@ export const generateCSV = (exportData: RecipeExportData[]): string => {
       'servings',
       'meal_types',
       'cuisine_region',
-      'complexity_level',
       'diet_lifestyle',
       'ingredients',
       'instructions',

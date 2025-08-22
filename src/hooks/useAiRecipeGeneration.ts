@@ -75,7 +75,7 @@ export function useAiRecipeGeneration() {
         meal_type: recipe.mealType,
         cuisine_region: recipe.cuisineRegion,
         diet_lifestyle: recipe.dietLifestyle || [],
-        complexity_level: recipe.complexityLevel,
+        // complexity_level removed
         main_ingredient: recipe.mainIngredient,
         image: undefined,
         is_favorite: false,

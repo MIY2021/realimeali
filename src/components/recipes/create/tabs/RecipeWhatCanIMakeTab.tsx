@@ -27,7 +27,7 @@ interface FullRecipeIdea {
   servings: number;
   meal_type: string;
   cuisine_region?: string;
-  complexity_level: string;
+  // complexity_level removed
   diet_lifestyle: string[];
   image?: string;
 }
@@ -119,7 +119,7 @@ Generate a full recipe with ingredients list, step-by-step instructions, cooking
         const fullRecipe: FullRecipeIdea = {
           ...result,
           meal_type: mealType,
-          complexity_level: difficulty.toLowerCase(),
+          // complexity_level removed
         };
         
         toast.success(`Generated full recipe for "${selectedIdea.title}"!`);

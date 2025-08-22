@@ -19,7 +19,7 @@ export default function CreateRecipePage() {
     description: searchParams.get('description') || '',
     meal_types: searchParams.get('meal_types') ? JSON.parse(searchParams.get('meal_types')!) : [],
     cuisine_region: searchParams.get('cuisine_region') || '',
-    complexity_level: searchParams.get('complexity_level') || 'beginner',
+    // complexity_level removed
     diet_lifestyle: searchParams.get('diet_lifestyle') ? JSON.parse(searchParams.get('diet_lifestyle')!) : [],
     equipment: searchParams.get('equipment') ? JSON.parse(searchParams.get('equipment')!) : [],
     import_method: searchParams.get('import_method') || 'manual'

@@ -79,7 +79,7 @@ export const useRecipeApi = () => {
           : (recipeData.meal_type ? [recipeData.meal_type] : []),
         cuisine_region: recipeData.cuisine_region,
         diet_lifestyle: recipeData.diet_lifestyle,
-        complexity_level: recipeData.complexity_level,
+        // complexity_level removed from database
         top_tip: recipeData.top_tip,
         source_url: recipeData.source_url,
         import_method: recipeData.import_method || 'manual',
@@ -148,7 +148,7 @@ export const useRecipeApi = () => {
           : (recipe.meal_type ? [recipe.meal_type] : []),
         cuisine_region: recipe.cuisine_region,
         diet_lifestyle: recipe.diet_lifestyle,
-        complexity_level: recipe.complexity_level,
+        // complexity_level removed from database
         top_tip: recipe.top_tip,
         source_url: recipe.source_url,
         import_method: recipe.import_method,
