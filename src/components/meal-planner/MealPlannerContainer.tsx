@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
@@ -21,6 +21,9 @@ import { useToast } from "@/hooks/use-toast";
 export default function MealPlannerContainer() {
   useDocumentTitle("Meal Planner | RealiMeali");
   
+  // Initial loading state to prevent flash
+  const [initialLoad, setInitialLoad] = useState(true);
+  
   const { user } = useAuth();
   const { recipes, isLoading: recipesLoading } = useRecipes();
   const { currentHousehold } = useHousehold();
@@ -36,6 +39,17 @@ export default function MealPlannerContainer() {
   
   // Auto-load recipes when component mounts
   useRecipesLoader();
+  
+  // Handle initial loading state
+  useEffect(() => {
+    if (user && currentHousehold) {
+      // Small delay to ensure smooth transition
+      const timer = setTimeout(() => {
+        setInitialLoad(false);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [user, currentHousehold]);
   
   const {
     currentWeek,
@@ -311,7 +325,7 @@ export default function MealPlannerContainer() {
     );
   }
 
-  if (recipesLoading) {
+  if (initialLoad || recipesLoading) {
     return <MealPlannerSkeleton />;
   }
 
