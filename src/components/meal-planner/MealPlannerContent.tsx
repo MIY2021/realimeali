@@ -1,7 +1,6 @@
 
 import { useCallback } from "react";
 import { MealPlannerActions } from "@/components/meal-planner/MealPlannerActions";
-import { MealPlanCreationInfo } from "@/components/meal-planner/MealPlanCreationInfo";
 import MealListSection from "@/components/MealListSection";
 import { MealType, Recipe, MealPlan } from "@/types";
 
@@ -19,8 +18,6 @@ interface MealPlannerContentProps {
   onRemoveMeal: (planId: string) => void;
   onCreateLeftover: (mealPlan: MealPlan, recipe: Recipe) => void;
   onReorderMeals: (mealType: MealType, sourceIndex: number, destinationIndex: number) => Promise<void>;
-  lastGenerated?: Date | null;
-  createdByUserId?: string;
 }
 
 export const MealPlannerContent = ({
@@ -37,8 +34,6 @@ export const MealPlannerContent = ({
   onRemoveMeal,
   onCreateLeftover,
   onReorderMeals,
-  lastGenerated,
-  createdByUserId,
 }: MealPlannerContentProps) => {
   const mealTypes: MealType[] = ["dinner", "lunch", "breakfast", "snacks", "sides", "desserts", "drinks"];
 
@@ -52,27 +47,6 @@ export const MealPlannerContent = ({
     return recipes.find(recipe => recipe.id === id);
   }, [recipes]);
 
-  // Get creation info from meal plans
-  const getCreationInfo = () => {
-    if (currentMealPlans.length === 0) return { lastGenerated: null, createdByUserId: undefined };
-    
-    // Get the most recent meal plan's creation date
-    const mostRecent = currentMealPlans.reduce((latest, current) => {
-      const currentTime = new Date(current.created_at || '').getTime();
-      const latestTime = new Date(latest.created_at || '').getTime();
-      return currentTime > latestTime ? current : latest;
-    });
-    
-    return {
-      lastGenerated: mostRecent.created_at ? new Date(mostRecent.created_at) : null,
-      createdByUserId: mostRecent.created_by
-    };
-  };
-
-  const { lastGenerated: calculatedLastGenerated, createdByUserId: calculatedCreatedBy } = getCreationInfo();
-  const finalLastGenerated = lastGenerated || calculatedLastGenerated;
-  const finalCreatedBy = createdByUserId || calculatedCreatedBy;
-
   return (
     <div className="space-y-1">
       <MealPlannerActions
@@ -82,12 +56,6 @@ export const MealPlannerContent = ({
         isLoading={isLoading}
         currentWeek={currentWeek}
         setCurrentWeek={setCurrentWeek}
-      />
-
-      <MealPlanCreationInfo 
-        lastGenerated={finalLastGenerated}
-        createdByUserId={finalCreatedBy}
-        totalMeals={currentMealPlans.length}
       />
 
       <div className="space-y-3">

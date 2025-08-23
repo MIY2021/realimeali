@@ -1,12 +1,14 @@
 
-import { CalendarDays } from "lucide-react";
+import { CalendarDays, Info } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface MealPlannerHeaderProps {
   user: any;
   currentHousehold: any;
+  onInfoClick?: () => void;
 }
 
-export const MealPlannerHeader = ({ user, currentHousehold }: MealPlannerHeaderProps) => {
+export const MealPlannerHeader = ({ user, currentHousehold, onInfoClick }: MealPlannerHeaderProps) => {
   const getWelcomeText = () => {
     if (!currentHousehold) {
       return "Plan the week with ease — all your meals, all in one place for your household.";
@@ -16,10 +18,22 @@ export const MealPlannerHeader = ({ user, currentHousehold }: MealPlannerHeaderP
 
   return (
     <div className="space-y-2">
-      <h1 className="text-2xl sm:text-3xl font-bold text-navy flex items-center gap-2">
-        <CalendarDays className="h-6 w-6 sm:h-8 sm:w-8 text-sage" />
-        Meal Planner
-      </h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl sm:text-3xl font-bold text-navy flex items-center gap-2">
+          <CalendarDays className="h-6 w-6 sm:h-8 sm:w-8 text-sage" />
+          Meal Planner
+        </h1>
+        {onInfoClick && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onInfoClick}
+            className="h-8 w-8 p-0 rounded-full"
+          >
+            <Info className="h-4 w-4" />
+          </Button>
+        )}
+      </div>
       <p className="text-sm sm:text-base text-muted-foreground">
         {user ? getWelcomeText() : "Login to create meal plans"}
       </p>

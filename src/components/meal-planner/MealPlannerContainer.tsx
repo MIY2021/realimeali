@@ -8,6 +8,7 @@ import { MealPlannerHeader } from "@/components/meal-planner/MealPlannerHeader";
 import { MealPlannerContent } from "@/components/meal-planner/MealPlannerContent";
 import { MealPlannerModalsContainer } from "@/components/meal-planner/MealPlannerModalsContainer";
 import { CustomMealDialog } from "@/components/meal-planner/CustomMealDialog";
+import { MealPlanInfoDialog } from "@/components/meal-planner/MealPlanInfoDialog";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useMealPlanModals } from "@/hooks/useMealPlanModals";
 import { useRandomMealSelection } from "@/hooks/useRandomMealSelection";
@@ -66,6 +67,9 @@ export default function MealPlannerContainer() {
   // Custom meal dialog state
   const [customMealDialog, setCustomMealDialog] = useState(false);
   const [customMealType, setCustomMealType] = useState<MealType | null>(null);
+  
+  // Info dialog state
+  const [infoDialog, setInfoDialog] = useState(false);
 
   const { generateRandomMeals } = useRandomMealSelection();
 
@@ -276,6 +280,25 @@ export default function MealPlannerContainer() {
     }
   }, [customMealType, user, currentHousehold, currentWeek, addMealPlan, toast]);
 
+  // Get creation info from meal plans
+  const getCreationInfo = () => {
+    if (currentMealPlans.length === 0) return { lastGenerated: null, createdByUserId: undefined };
+    
+    // Get the most recent meal plan's creation date
+    const mostRecent = currentMealPlans.reduce((latest, current) => {
+      const currentTime = new Date(current.created_at || '').getTime();
+      const latestTime = new Date(latest.created_at || '').getTime();
+      return currentTime > latestTime ? current : latest;
+    });
+    
+    return {
+      lastGenerated: mostRecent.created_at ? new Date(mostRecent.created_at) : null,
+      createdByUserId: mostRecent.created_by
+    };
+  };
+
+  const { lastGenerated, createdByUserId } = getCreationInfo();
+
   if (!user || !currentHousehold) {
     return (
       <div className="container max-w-4xl py-4 px-4 sm:py-8 sm:px-6">
@@ -303,6 +326,7 @@ export default function MealPlannerContainer() {
       <MealPlannerHeader
         user={user}
         currentHousehold={currentHousehold}
+        onInfoClick={() => setInfoDialog(true)}
       />
 
       <MealPlannerContent
@@ -357,6 +381,13 @@ export default function MealPlannerContainer() {
         }}
         mealType={customMealType || "dinner"}
         onAddCustomMeal={handleCustomMealSubmit}
+      />
+
+      <MealPlanInfoDialog
+        open={infoDialog}
+        onOpenChange={setInfoDialog}
+        lastGenerated={lastGenerated}
+        createdByUserId={createdByUserId}
       />
     </div>
   );
