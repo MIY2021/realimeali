@@ -314,6 +314,10 @@ export default function MealPlannerContainer() {
 
   const { lastGenerated, createdByUserId } = getCreationInfo();
 
+  if (initialLoad || recipesLoading) {
+    return <MealPlannerSkeleton />;
+  }
+
   if (!user || !currentHousehold) {
     return (
       <div className="container max-w-4xl py-4 px-4 sm:py-8 sm:px-6">
@@ -323,10 +327,6 @@ export default function MealPlannerContainer() {
         </div>
       </div>
     );
-  }
-
-  if (initialLoad || recipesLoading) {
-    return <MealPlannerSkeleton />;
   }
 
   return (
