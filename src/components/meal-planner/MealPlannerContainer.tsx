@@ -9,6 +9,7 @@ import { MealPlannerContent } from "@/components/meal-planner/MealPlannerContent
 import { MealPlannerModalsContainer } from "@/components/meal-planner/MealPlannerModalsContainer";
 import { CustomMealDialog } from "@/components/meal-planner/CustomMealDialog";
 import { MealPlanInfoDialog } from "@/components/meal-planner/MealPlanInfoDialog";
+import MealPlannerSkeleton from "@/components/meal-planner/MealPlannerSkeleton";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useMealPlanModals } from "@/hooks/useMealPlanModals";
 import { useRandomMealSelection } from "@/hooks/useRandomMealSelection";
@@ -311,14 +312,7 @@ export default function MealPlannerContainer() {
   }
 
   if (recipesLoading) {
-    return (
-      <div className="container max-w-4xl py-4 px-4 sm:py-8 sm:px-6">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-navy mb-4">Meal Planner</h1>
-          <p className="text-muted-foreground">Loading your recipes...</p>
-        </div>
-      </div>
-    );
+    return <MealPlannerSkeleton />;
   }
 
   return (
