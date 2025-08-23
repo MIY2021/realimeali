@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { Share, Plus, ShoppingBag } from "lucide-react";
+import { Share, Plus, ShoppingBag, Info } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -11,12 +11,14 @@ interface ShoppingListHeaderProps {
   onShare: () => void;
   weekNumber: 1 | 2;
   onAddItem: (name: string) => Promise<void>;
+  onInfoClick?: () => void;
 }
 
 export default function ShoppingListHeader({ 
   onShare, 
   weekNumber,
-  onAddItem
+  onAddItem,
+  onInfoClick
 }: ShoppingListHeaderProps) {
   const isMobile = useIsMobile();
   const { currentHousehold } = useHousehold();
@@ -53,10 +55,22 @@ export default function ShoppingListHeader({
   return (
     <div className="flex flex-col gap-4 mb-6 sm:flex-row sm:justify-between sm:items-start">
       <div className="space-y-2">
-        <h1 className="text-2xl sm:text-3xl font-bold text-navy flex items-center gap-2">
-          <ShoppingBag className="h-6 w-6 sm:h-8 sm:w-8 text-sage" />
-          Shopping List
-        </h1>
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl sm:text-3xl font-bold text-navy flex items-center gap-2">
+            <ShoppingBag className="h-6 w-6 sm:h-8 sm:w-8 text-sage" />
+            Shopping List
+          </h1>
+          {onInfoClick && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onInfoClick}
+              className="h-8 w-8 p-0 rounded-full"
+            >
+              <Info className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
         <p className="text-sm sm:text-base text-muted-foreground">
           {getWelcomeText()}
         </p>

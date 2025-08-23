@@ -5,6 +5,7 @@ import ShoppingListWeekSelector from "@/components/shopping-list/ShoppingListWee
 import ShoppingListSkeleton from "@/components/shopping-list/ShoppingListSkeleton";
 import ShoppingListGenerationProgress from "@/components/shopping-list/ShoppingListGenerationProgress";
 import ShoppingListCreationInfo from "@/components/shopping-list/ShoppingListCreationInfo";
+import { ShoppingListInfoDialog } from "@/components/shopping-list/ShoppingListInfoDialog";
 import ShoppingListItems from "@/components/shopping-list/ShoppingListItems";
 import ShoppingListEmptyState from "@/components/shopping-list/ShoppingListEmptyState";
 import { useShoppingList } from "@/hooks/useShoppingList";
@@ -35,6 +36,7 @@ export default function ShoppingList() {
   const [copiedItemId, setCopiedItemId] = useState<string | null>(null);
   const [hasInitiallyLoaded, setHasInitiallyLoaded] = useState(false);
   const [showOnlyUnchecked, setShowOnlyUnchecked] = useState(false);
+  const [infoDialog, setInfoDialog] = useState(false);
   const initialLoadRef = useRef(false);
   
   const {
@@ -173,6 +175,7 @@ export default function ShoppingList() {
           onShare={handleShare} 
           weekNumber={weekNumber}
           onAddItem={addCustomItem}
+          onInfoClick={() => setInfoDialog(true)}
         />
         <div className="py-10 text-center">
           <p className="text-muted-foreground mb-4">Loading recipes...</p>
@@ -187,6 +190,7 @@ export default function ShoppingList() {
         onShare={handleShare} 
         weekNumber={weekNumber}
         onAddItem={addCustomItem}
+        onInfoClick={() => setInfoDialog(true)}
       />
 
       {!user ? (
@@ -295,6 +299,13 @@ export default function ShoppingList() {
               )}
             </div>
           )}
+
+          <ShoppingListInfoDialog
+            open={infoDialog}
+            onOpenChange={setInfoDialog}
+            lastGenerated={lastGenerated}
+            createdByUserId={shoppingList.length > 0 ? shoppingList[0].createdBy : undefined}
+          />
         </>
       )}
     </div>
