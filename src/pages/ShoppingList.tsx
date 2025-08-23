@@ -103,10 +103,21 @@ export default function ShoppingList() {
   const mealPlans = getMealPlansForWeek(weekNumber);
   const hasMealPlans = mealPlans.length > 0;
 
-  // Filter shopping list based on toggle
-  const filteredShoppingList = showOnlyUnchecked 
+  // Filter and sort shopping list - custom meals ("everything for") at top
+  const filteredShoppingList = (showOnlyUnchecked 
     ? shoppingList.filter(item => !item.isChecked)
-    : shoppingList;
+    : shoppingList)
+    .sort((a, b) => {
+      // Prioritize custom meal items ("Everything for") at the top
+      const aIsCustom = a.name.toLowerCase().startsWith('everything for');
+      const bIsCustom = b.name.toLowerCase().startsWith('everything for');
+      
+      if (aIsCustom && !bIsCustom) return -1;
+      if (!aIsCustom && bIsCustom) return 1;
+      
+      // Keep original order for items of the same type
+      return 0;
+    });
 
   // Calculate item counts
   const totalItems = shoppingList.length;
