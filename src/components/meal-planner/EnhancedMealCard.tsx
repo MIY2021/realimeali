@@ -4,7 +4,7 @@ import { Trash2, Plus, Minus, GripVertical, UtensilsCrossed, Check } from "lucid
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { RecipeImage } from "@/components/ui/recipe-image";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+
 import { MealPlan, Recipe, MealType } from "@/types";
 import { DraggableProvidedDragHandleProps } from "react-beautiful-dnd";
 import { useMealPlan } from "@/contexts/MealPlanContext";
@@ -56,20 +56,11 @@ export function EnhancedMealCard({
               {/* Header */}
               <div className="flex items-start justify-between mb-2">
                 <div className="flex-1 min-w-0">
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <h4 className={`font-medium text-sm leading-tight truncate w-full ${
-                          mealPlan.is_completed ? 'text-gray-400 line-through' : 'text-gray-900'
-                        }`}>
-                          {mealPlan.meal_name || 'Custom Meal'}
-                        </h4>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>{mealPlan.meal_name || 'Custom Meal'}</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
+                  <h4 className={`font-medium text-sm leading-tight truncate max-w-[calc(100%-3rem)] ${
+                    mealPlan.is_completed ? 'text-gray-400 line-through' : 'text-gray-900'
+                  }`}>
+                    {mealPlan.meal_name || 'Custom Meal'}
+                  </h4>
                   <p className="text-xs text-blue-600 mt-1">Custom meal</p>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
@@ -276,22 +267,13 @@ export function EnhancedMealCard({
             {/* Header */}
             <div className="flex items-start justify-between mb-1">
               <div className="flex-1 min-w-0">
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Link to={recipeUrl}>
-                        <h4 className={`font-medium text-sm leading-tight truncate cursor-pointer hover:text-blue-600 transition-colors w-full ${
-                          mealPlan.is_completed ? 'text-gray-400 line-through' : 'text-gray-900'
-                        }`}>
-                          {recipe.title}
-                        </h4>
-                      </Link>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>{recipe.title}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                <Link to={recipeUrl}>
+                  <h4 className={`font-medium text-sm leading-tight truncate cursor-pointer hover:text-blue-600 transition-colors max-w-[calc(100%-3rem)] ${
+                    mealPlan.is_completed ? 'text-gray-400 line-through' : 'text-gray-900'
+                  }`}>
+                    {recipe.title}
+                  </h4>
+                </Link>
                 
                 {/* Nutrition indicator for recipes - Reduced margin */}
                 {recipe && recipe.fruit_veg_portions && recipe.fruit_veg_portions > 0 && (

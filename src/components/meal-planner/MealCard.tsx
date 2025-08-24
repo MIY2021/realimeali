@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
 import { RecipeImage } from "@/components/ui/recipe-image";
 import { FruitVegIndicator } from "@/components/nutrition/FruitVegIndicator";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+
 
 
 interface MealCardProps {
@@ -20,16 +20,7 @@ export function MealCard({ recipe, onRemove }: MealCardProps) {
       </div>
       
       <div className="flex-1 min-w-0">
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <h4 className="font-medium text-sm leading-tight truncate w-full">{recipe.title}</h4>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>{recipe.title}</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        <h4 className="font-medium text-sm leading-tight truncate max-w-[calc(100%-3rem)]">{recipe.title}</h4>
         <div className="flex items-center gap-2 mt-1">
           <span className="text-xs text-muted-foreground">
             {recipe.prep_time + recipe.cook_time} min
