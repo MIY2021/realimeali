@@ -20,7 +20,7 @@ export function MealCard({ recipe, onRemove }: MealCardProps) {
       </div>
       
       <div className="flex-1 min-w-0">
-        <h4 className="font-medium text-sm leading-tight truncate max-w-[calc(100%-3rem)]">{recipe.title}</h4>
+        <h4 className="font-medium text-sm leading-tight truncate max-w-[calc(100%-1.5rem)]">{recipe.title}</h4>
         <div className="flex items-center gap-2 mt-1">
           <span className="text-xs text-muted-foreground">
             {recipe.prep_time + recipe.cook_time} min
