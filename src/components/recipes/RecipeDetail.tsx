@@ -86,13 +86,16 @@ export const RecipeDetail = ({
   return (
     <div className="max-w-4xl mx-auto">
       <RecipeHeroSection recipe={recipe} />
-      <RecipeActionButtons
-        recipe={recipe}
-        onEdit={onEdit}
-        onDelete={onDelete}
-        isOwner={isOwner}
-        onAddToMealPlan={handleAddToMealPlan}
-      />
+      
+      <div className="mb-2">
+        <RecipeActionButtons
+          recipe={recipe}
+          onEdit={onEdit}
+          onDelete={onDelete}
+          isOwner={isOwner}
+          onAddToMealPlan={handleAddToMealPlan}
+        />
+      </div>
 
       {/* Cooking Time */}
       <div className="mb-6 px-2">
