@@ -1,6 +1,6 @@
 import { Recipe } from "@/types";
 import { Badge } from "@/components/ui/badge";
-import { getCookingDurationCategory, getDisplayLabel } from "@/utils/recipeClassification";
+import { getDisplayLabel } from "@/utils/recipeClassification";
 import { getMealTypesArray } from "@/utils/mealTypeUtils";
 
 interface RecipeClassificationSummaryProps {
@@ -27,14 +27,6 @@ export const RecipeClassificationSummary = ({ recipe }: RecipeClassificationSumm
     });
   }
 
-  // Add cooking duration (using prep + cook time)
-  const cookingDuration = getCookingDurationCategory(recipe.prep_time || 0, recipe.cook_time || 0);
-  if (cookingDuration) {
-    classifications.push({
-      label: getDisplayLabel(cookingDuration, 'cookingDuration'),
-      variant: 'outline' as const
-    });
-  }
 
   // Add diet/lifestyle badges
   if (recipe.diet_lifestyle && recipe.diet_lifestyle.length > 0) {
