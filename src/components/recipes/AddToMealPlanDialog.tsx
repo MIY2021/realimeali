@@ -93,31 +93,41 @@ export function AddToMealPlanDialog({ recipe, open, onOpenChange, adjustedServin
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Add {recipe.title} to Meal Plan</DialogTitle>
+      <DialogContent className="sm:max-w-lg bg-white shadow-2xl border-0 rounded-2xl p-8">
+        <DialogHeader className="text-center space-y-4 pb-6">
+          <DialogTitle className="text-2xl font-semibold text-gray-900">
+            Add {recipe.title} to Meal Plan
+          </DialogTitle>
           {isAdjusted && (
-            <p className="text-sm text-gray-600 mt-2">
+            <p className="text-sm text-gray-500 bg-blue-50 px-4 py-2 rounded-lg border border-blue-100">
               Will be added with {servingsToAdd} servings (adjusted from original {recipe.servings})
             </p>
           )}
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="space-y-8">
           <div>
-            <label className="text-sm font-medium mb-3 block">Select Week</label>
+            <label className="text-base font-semibold text-gray-900 mb-4 block text-center">Select Week</label>
             <div className="grid grid-cols-2 gap-3">
               <Button
                 variant={selectedWeek === 1 ? "default" : "outline"}
                 onClick={() => setSelectedWeek(1)}
-                className="h-12"
+                className={`h-14 text-base font-medium rounded-xl transition-all duration-200 ${
+                  selectedWeek === 1 
+                    ? 'bg-primary text-white shadow-lg scale-105' 
+                    : 'border-gray-200 hover:border-primary hover:bg-gray-50'
+                }`}
               >
                 Week 1
               </Button>
               <Button
                 variant={selectedWeek === 2 ? "default" : "outline"}
                 onClick={() => setSelectedWeek(2)}
-                className="h-12"
+                className={`h-14 text-base font-medium rounded-xl transition-all duration-200 ${
+                  selectedWeek === 2 
+                    ? 'bg-primary text-white shadow-lg scale-105' 
+                    : 'border-gray-200 hover:border-primary hover:bg-gray-50'
+                }`}
               >
                 Week 2
               </Button>
@@ -125,14 +135,18 @@ export function AddToMealPlanDialog({ recipe, open, onOpenChange, adjustedServin
           </div>
 
           <div>
-            <label className="text-sm font-medium mb-3 block">Meal Type</label>
+            <label className="text-base font-semibold text-gray-900 mb-4 block text-center">Meal Type</label>
             <div className="grid grid-cols-2 gap-3">
               {mealTypes.map((mealType) => (
                 <Button
                   key={mealType.value}
                   variant={selectedMealType === mealType.value ? "default" : "outline"}
                   onClick={() => setSelectedMealType(mealType.value)}
-                  className="h-12"
+                  className={`h-14 text-base font-medium rounded-xl transition-all duration-200 ${
+                    selectedMealType === mealType.value 
+                      ? 'bg-primary text-white shadow-lg scale-105' 
+                      : 'border-gray-200 hover:border-primary hover:bg-gray-50'
+                  }`}
                 >
                   {mealType.label}
                 </Button>
@@ -140,11 +154,19 @@ export function AddToMealPlanDialog({ recipe, open, onOpenChange, adjustedServin
             </div>
           </div>
 
-          <div className="flex justify-end space-x-3 pt-4">
-            <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <div className="flex justify-center space-x-4 pt-6">
+            <Button 
+              variant="outline" 
+              onClick={() => onOpenChange(false)}
+              className="px-8 py-3 text-base font-medium rounded-xl border-gray-200 hover:bg-gray-50 min-w-[120px]"
+            >
               Cancel
             </Button>
-            <Button onClick={handleAddToMealPlan} disabled={isLoading}>
+            <Button 
+              onClick={handleAddToMealPlan} 
+              disabled={isLoading}
+              className="px-8 py-3 text-base font-medium rounded-xl bg-primary hover:bg-primary/90 text-white shadow-lg min-w-[120px] disabled:opacity-50"
+            >
               {isLoading ? "Adding..." : "Add to Meal Plan"}
             </Button>
           </div>
