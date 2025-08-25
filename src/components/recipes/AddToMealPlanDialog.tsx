@@ -93,7 +93,7 @@ export function AddToMealPlanDialog({ recipe, open, onOpenChange, adjustedServin
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg bg-white shadow-2xl border-0 rounded-2xl p-8 mx-4 w-[calc(100vw-2rem)]">
+      <DialogContent className="sm:max-w-lg bg-white shadow-2xl border-0 rounded-2xl p-8 mx-4">
         <DialogHeader className="text-center space-y-4 pb-6">
           <DialogTitle className="text-2xl font-semibold text-gray-900">
             Add {recipe.title} to Meal Plan
