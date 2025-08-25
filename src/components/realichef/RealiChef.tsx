@@ -429,6 +429,78 @@ export const RealiChef = () => {
     }
   }, [isOpen, isLoadingHistory, user, isFirstOpen]);
 
+  // Check for recipe context when component mounts or becomes open
+  useEffect(() => {
+    if (isOpen && user) {
+      const recipeContext = localStorage.getItem('realichef_recipe_context');
+      if (recipeContext) {
+        try {
+          const contextData = JSON.parse(recipeContext);
+          // Clear the context to prevent repeated sends
+          localStorage.removeItem('realichef_recipe_context');
+          
+          // Add the context message to chat
+          const contextMessage: ChatMessage = {
+            role: 'user',
+            content: contextData.message,
+            timestamp: new Date(),
+            page_context: {
+              type: 'recipe',
+              recipe_id: contextData.recipe_id,
+              recipe_title: contextData.recipe_title
+            }
+          };
+          
+          // Add the message and trigger AI response
+          addMessage(contextMessage);
+          setIsLoading(true);
+          
+          // Send to AI
+          supabase.functions.invoke('realichef-chat', {
+            body: {
+              message: contextData.message,
+              pageContext: {
+                type: 'recipe',
+                recipe_id: contextData.recipe_id,
+                recipe_title: contextData.recipe_title
+              },
+              conversationHistory: []
+            }
+          }).then(({ data, error }) => {
+            if (error) throw error;
+            
+            const assistantMessage: ChatMessage = {
+              role: 'assistant',
+              content: data.response || "👩‍🍳 I'd be happy to help you with this recipe! What would you like to know?",
+              timestamp: new Date(),
+              page_context: {
+                type: 'recipe',
+                recipe_id: contextData.recipe_id,
+                recipe_title: contextData.recipe_title
+              }
+            };
+            
+            addMessage(assistantMessage);
+          }).catch(error => {
+            console.error('Error processing recipe context:', error);
+            const errorMessage: ChatMessage = {
+              role: 'assistant',
+              content: "👩‍🍳 I'd be happy to help you with this recipe! What would you like to know?",
+              timestamp: new Date()
+            };
+            addMessage(errorMessage);
+          }).finally(() => {
+            setIsLoading(false);
+          });
+          
+        } catch (error) {
+          console.error('Error parsing recipe context:', error);
+          localStorage.removeItem('realichef_recipe_context');
+        }
+      }
+    }
+  }, [isOpen, user, addMessage]);
+
   // Scroll to bottom for new messages
   useEffect(() => {
     if (isLoading || messages.length > 0) {
