@@ -1,6 +1,5 @@
 
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { Recipe } from "@/types";
 import { RecipeHeroSection } from "./RecipeHeroSection";
 import { RecipeActionButtons } from "./RecipeActionButtons";
@@ -16,9 +15,6 @@ import { Lightbulb, Users, RotateCcw, Clock } from "lucide-react";
 import { ServingsSelector } from "@/components/meal-planner/ServingsSelector";
 import { Button } from "@/components/ui/button";
 import { RecipeScalingService } from "@/utils/recipeScaling";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
-import { toast } from "sonner";
 
 interface RecipeDetailProps {
   recipe: Recipe;
@@ -37,8 +33,6 @@ export const RecipeDetail = ({
   onAddToMealPlan,
   onImageUpdate
 }: RecipeDetailProps) => {
-  const navigate = useNavigate();
-  const { user } = useAuth();
   const [currentServings, setCurrentServings] = useState(recipe.servings);
   const [scaledIngredients, setScaledIngredients] = useState<string[]>(recipe.ingredients);
   const [showImageEditor, setShowImageEditor] = useState(false);
@@ -86,34 +80,6 @@ export const RecipeDetail = ({
     setShowImageEditor(false);
   };
 
-  const handleAskAI = async () => {
-    if (!user) {
-      toast.error("Please log in to chat with AI about recipes");
-      return;
-    }
-
-    try {
-      // Store recipe context in localStorage for RealiChef to pick up
-      const recipeContext = {
-        type: 'recipe',
-        recipe_id: recipe.id,
-        recipe_title: recipe.title,
-        message: `I'm looking at this recipe: "${recipe.title}". ${recipe.description ? `Description: ${recipe.description}. ` : ''}Prep time: ${recipe.prep_time} min, Cook time: ${recipe.cook_time} min, Serves: ${recipe.servings}. Can you help me with questions about cooking this recipe?`,
-        timestamp: new Date().toISOString()
-      };
-
-      localStorage.setItem('realichef_recipe_context', JSON.stringify(recipeContext));
-
-      // Navigate to RealiChef (index page)
-      navigate('/');
-      
-      toast.success("Opening AI chat about this recipe");
-    } catch (error) {
-      console.error('Error initializing AI chat:', error);
-      toast.error("Failed to initialize AI chat");
-    }
-  };
-
   const isScaled = currentServings !== recipe.servings;
 
 
@@ -127,7 +93,6 @@ export const RecipeDetail = ({
         onDelete={onDelete}
         isOwner={isOwner}
         onAddToMealPlan={handleAddToMealPlan}
-        onAskAI={handleAskAI}
       />
 
       {/* Cooking Time */}

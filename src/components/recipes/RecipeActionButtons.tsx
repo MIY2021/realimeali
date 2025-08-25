@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { User, Heart, Pencil, Trash2, Plus, UtensilsCrossed } from "lucide-react";
+import { User, Heart, Pencil, Trash2, Plus } from "lucide-react";
 import { Recipe } from "@/types";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { toast } from "sonner";
@@ -12,7 +12,6 @@ interface RecipeActionButtonsProps {
   onDelete?: () => Promise<void>;
   isOwner?: boolean;
   onAddToMealPlan?: () => void;
-  onAskAI?: () => void;
 }
 
 export const RecipeActionButtons = ({ 
@@ -20,8 +19,7 @@ export const RecipeActionButtons = ({
   onEdit, 
   onDelete, 
   isOwner, 
-  onAddToMealPlan,
-  onAskAI 
+  onAddToMealPlan 
 }: RecipeActionButtonsProps) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isTogglingCooked, setIsTogglingCooked] = useState(false);
@@ -96,16 +94,6 @@ export const RecipeActionButtons = ({
           >
             <User className="h-4 w-4 mr-1" />
             {recipe.has_cooked ? 'Cooked' : 'Mark as Cooked'}
-          </Button>
-
-          {/* Ask AI button */}
-          <Button
-            variant="outline"
-            onClick={onAskAI}
-            className="hover:bg-blue-50 border-blue-200 hover:text-blue-700 flex-1"
-          >
-            <UtensilsCrossed className="h-4 w-4 mr-1" />
-            Ask AI
           </Button>
 
           {/* Favorite button */}
