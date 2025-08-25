@@ -19,7 +19,7 @@ export const RecipeHeroSection = ({ recipe }: RecipeHeroSectionProps) => {
       </div>
 
       {/* Recipe Title */}
-      <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">
+      <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-1">
         {recipe.title}
       </h1>
     </div>

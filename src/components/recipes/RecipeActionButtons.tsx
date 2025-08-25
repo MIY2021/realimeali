@@ -73,9 +73,9 @@ export const RecipeActionButtons = ({
         {/* Add to Meal Plan button (full width) */}
         <Button 
           onClick={onAddToMealPlan}
-          className="bg-primary hover:bg-primary/90 text-white w-full h-12 text-base font-medium rounded-xl shadow-md hover:shadow-lg transition-all duration-200"
+          className="bg-terracotta hover:bg-terracotta/90 text-white w-full"
         >
-          <Plus className="h-5 w-5 mr-2" />
+          <Plus className="h-4 w-4 mr-2" />
           Add to Meal Plan
         </Button>
         
