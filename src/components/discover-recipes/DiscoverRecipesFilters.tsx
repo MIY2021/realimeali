@@ -118,7 +118,6 @@ export function DiscoverRecipesFilters({ onSearch, onReset }: DiscoverRecipesFil
             <SelectValue placeholder="All recipes" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All recipes</SelectItem>
             {MEAL_TYPES.map((meal) => (
               <SelectItem key={meal.value} value={meal.value}>
                 {meal.label}
@@ -143,7 +142,6 @@ export function DiscoverRecipesFilters({ onSearch, onReset }: DiscoverRecipesFil
             <SelectValue placeholder="Meal Type" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Meals</SelectItem>
             {MEAL_TYPES.map((meal) => (
               <SelectItem key={meal.value} value={meal.value}>
                 {meal.label}
@@ -157,7 +155,6 @@ export function DiscoverRecipesFilters({ onSearch, onReset }: DiscoverRecipesFil
             <SelectValue placeholder="Cuisine" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Cuisines</SelectItem>
             {CUISINE_TYPES.map((cuisine) => (
               <SelectItem key={cuisine.value} value={cuisine.value}>
                 {cuisine.label}
@@ -171,7 +168,6 @@ export function DiscoverRecipesFilters({ onSearch, onReset }: DiscoverRecipesFil
             <SelectValue placeholder="Duration" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Any Duration</SelectItem>
             {TIME_OPTIONS.map((time) => (
               <SelectItem key={time.value} value={time.value}>
                 {time.label}
@@ -185,7 +181,6 @@ export function DiscoverRecipesFilters({ onSearch, onReset }: DiscoverRecipesFil
             <SelectValue placeholder="Diet & Lifestyle" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Diets</SelectItem>
             {DIET_OPTIONS.map((diet) => (
               <SelectItem key={diet.value} value={diet.value}>
                 {diet.label}
