@@ -168,9 +168,8 @@ export const useRecipeCreationHandlers = ({
             };
 
             await supabase
-              .from('recipes')
-              .update({ title: 'community_sharing_removed' })
-              .eq('id', 'none');
+              .from('community_recipes')
+              .insert(communityRecipeData);
 
             toast({
               title: "Recipe Saved & Shared! 🌟",

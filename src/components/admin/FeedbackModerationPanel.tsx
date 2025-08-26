@@ -3,6 +3,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Clock, AlertCircle, Check } from "lucide-react";
+import { SingleFeedbackModerationView } from "./moderation/SingleFeedbackModerationView";
+import { FeedbackModerationNavigation } from "./moderation/FeedbackModerationNavigation";
+import { FeedbackTableView } from "./moderation/FeedbackTableView";
+import { FeedbackViewToggle } from "./moderation/FeedbackViewToggle";
 
 interface FeedbackItem {
   id: string;
@@ -225,10 +229,77 @@ export function FeedbackModerationPanel() {
   const currentFeedback = filteredFeedback[currentIndex];
 
   return (
-    <div className="text-center py-8">
-      <p className="text-muted-foreground">
-        Feedback moderation components are being restructured.
-      </p>
+    <div className="space-y-6">
+      {/* View Toggle and Navigation Header */}
+      <div className="flex justify-between items-start gap-4">
+        <div className="flex-1">
+          {currentView === 'cards' && (
+            <FeedbackModerationNavigation
+              currentIndex={currentIndex}
+              totalCount={filteredFeedback.length}
+              currentFilter={currentFilter}
+              onFilterChange={setCurrentFilter}
+              onNavigate={setCurrentIndex}
+              allFeedback={allFeedback}
+            />
+          )}
+        </div>
+        <FeedbackViewToggle
+          currentView={currentView}
+          onViewChange={handleViewChange}
+        />
+      </div>
+
+      {/* Main Content */}
+      {currentView === 'table' ? (
+        <FeedbackTableView
+          feedback={allFeedback}
+          onUpdateStatus={handleUpdateStatus}
+          onUpdatePriority={handleUpdatePriority}
+          onSaveNotes={handleSaveNotes}
+        />
+      ) : (
+        <>
+          {filteredFeedback.length === 0 ? (
+            <Card>
+              <CardContent className="py-8">
+                <div className="text-center">
+                  <div className="flex justify-center mb-4">
+                    {currentFilter === 'pending' && <Clock className="h-12 w-12 text-amber-500" />}
+                    {currentFilter === 'in_progress' && <AlertCircle className="h-12 w-12 text-blue-500" />}
+                    {currentFilter === 'complete' && <Check className="h-12 w-12 text-green-500" />}
+                    {currentFilter === 'dismissed' && <Check className="h-12 w-12 text-gray-500" />}
+                  </div>
+                  <h3 className="text-lg font-medium text-muted-foreground mb-2">
+                    No {currentFilter.replace('_', ' ')} feedback
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    {currentFilter === 'pending' 
+                      ? "All feedback has been reviewed!" 
+                      : `No ${currentFilter.replace('_', ' ')} feedback found.`
+                    }
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          ) : currentFeedback ? (
+            <SingleFeedbackModerationView
+              key={`feedback-${currentFeedback.id}-${currentFeedback.status}-${currentFeedback.updated_at}`}
+              feedback={currentFeedback}
+              onUpdateStatus={handleUpdateStatus}
+              onUpdatePriority={handleUpdatePriority}
+              onSaveNotes={handleSaveNotes}
+            />
+          ) : null}
+
+          {/* Keyboard shortcuts info - only show in cards view */}
+          {filteredFeedback.length > 0 && (
+            <div className="text-xs text-muted-foreground text-center py-2 border-t">
+              <p><strong>Keyboard shortcuts:</strong> ← → Navigate between feedback items</p>
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }

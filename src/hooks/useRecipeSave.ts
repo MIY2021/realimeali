@@ -135,9 +135,9 @@ export function useRecipeSave() {
             console.log("📝 Community recipe data to be submitted:", communityRecipeData);
 
             const { data: communityRecipe, error: communityError } = await supabase
-              .from('recipes')
-              .select('id')
-              .eq('id', 'none')
+              .from('community_recipes')
+              .insert(communityRecipeData)
+              .select()
               .single();
 
             if (communityError) {
