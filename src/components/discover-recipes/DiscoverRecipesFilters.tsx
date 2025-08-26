@@ -1,9 +1,11 @@
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useMobileLayout } from "@/hooks/useMobileLayout";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search } from "lucide-react";
 import { DropdownFilterSection } from "../recipes/filters/DropdownFilterSection";
+import { MobileLayoutSelector } from "../recipes/MobileLayoutSelector";
 
 // Map internal filters to Edamam API values
 const MEAL_TYPE_OPTIONS = [
@@ -82,6 +84,7 @@ export function DiscoverRecipesFilters({
   onSearch 
 }: DiscoverRecipesFiltersProps) {
   const isMobile = useIsMobile();
+  const { mobileLayout, handleMobileLayoutChange } = useMobileLayout();
 
   const hasActiveFilters = filters.mealTypes.length > 0 || 
                           filters.cuisineTypes.length > 0 || 
@@ -106,8 +109,8 @@ export function DiscoverRecipesFilters({
       {/* Mobile Grid Layout */}
       {isMobile ? (
         <div className="space-y-3">
-          {/* Row 1: Search | Sort */}
-          <div className="grid gap-2 grid-cols-[1fr_1fr]">
+          {/* Row 1: Search | Sort | Layout */}
+          <div className="grid gap-2 grid-cols-[1fr_1fr_auto]">
             <Input
               placeholder="Search recipes..."
               value={keyword}
@@ -125,6 +128,13 @@ export function DiscoverRecipesFilters({
                 <SelectItem value="oldest">Oldest First</SelectItem>
               </SelectContent>
             </Select>
+
+            <div className="w-[60px]">
+              <MobileLayoutSelector
+                value={mobileLayout}
+                onChange={handleMobileLayoutChange}
+              />
+            </div>
           </div>
 
           {/* Row 2: All filters - wider cuisine dropdown */}
@@ -158,8 +168,19 @@ export function DiscoverRecipesFilters({
             />
           </div>
 
-          {/* Row 3: Search button and clear filters */}
-          <div className="flex justify-between items-center">
+          {/* Row 3: Clear filters and search button */}
+          <div className="flex justify-between items-center">            
+            {hasActiveFilters ? (
+              <button
+                onClick={onReset}
+                className="text-sm text-muted-foreground hover:text-foreground underline"
+              >
+                Clear filters ({activeFilterCount})
+              </button>
+            ) : (
+              <div></div>
+            )}
+
             <Button 
               onClick={onSearch}
               className="h-9 px-4"
@@ -167,15 +188,6 @@ export function DiscoverRecipesFilters({
               <Search className="h-4 w-4 mr-2" />
               Search
             </Button>
-            
-            {hasActiveFilters && (
-              <button
-                onClick={onReset}
-                className="text-sm text-muted-foreground hover:text-foreground underline"
-              >
-                Clear filters ({activeFilterCount})
-              </button>
-            )}
           </div>
         </div>
       ) : (
