@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ExternalLink } from "lucide-react";
+import { Link } from "lucide-react";
 
 export function FindRecipesContent() {
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
@@ -76,7 +76,7 @@ export function FindRecipesContent() {
             <CardHeader>
               <CardTitle className="text-lg flex items-center justify-between">
                 {option.name}
-                <ExternalLink className="h-4 w-4 text-muted-foreground" />
+                <Link className="h-4 w-4 text-muted-foreground" />
               </CardTitle>
             </CardHeader>
             <CardContent>

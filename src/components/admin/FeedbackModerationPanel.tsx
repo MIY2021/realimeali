@@ -1,12 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Clock, AlertCircle, Check } from "lucide-react";
-import { SingleFeedbackModerationView } from "./moderation/SingleFeedbackModerationView";
-import { FeedbackModerationNavigation } from "./moderation/FeedbackModerationNavigation";
-import { FeedbackTableView } from "./moderation/FeedbackTableView";
-import { FeedbackViewToggle } from "./moderation/FeedbackViewToggle";
+import { Clock, AlertCircle, Check, Trash2 } from "lucide-react";
 
 interface FeedbackItem {
   id: string;
@@ -23,36 +23,14 @@ interface FeedbackItem {
   updated_at: string;
 }
 
-const VIEW_STORAGE_KEY = "feedback-moderation-view";
-
 export function FeedbackModerationPanel() {
   const [allFeedback, setAllFeedback] = useState<FeedbackItem[]>([]);
-  const [filteredFeedback, setFilteredFeedback] = useState<FeedbackItem[]>([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
   const [currentFilter, setCurrentFilter] = useState("pending");
   const [isLoading, setIsLoading] = useState(true);
-  const [currentView, setCurrentView] = useState<'table' | 'cards'>(() => {
-    try {
-      const savedView = localStorage.getItem(VIEW_STORAGE_KEY);
-      return (savedView === 'table' || savedView === 'cards') ? savedView : 'table';
-    } catch {
-      return 'table';
-    }
-  });
-
-  const handleViewChange = (view: 'table' | 'cards') => {
-    setCurrentView(view);
-    try {
-      localStorage.setItem(VIEW_STORAGE_KEY, view);
-    } catch (error) {
-      console.warn("Failed to save view preference:", error);
-    }
-  };
 
   const fetchFeedback = useCallback(async () => {
     setIsLoading(true);
     try {
-      console.log('Fetching feedback suggestions...');
       const { data, error } = await supabase
         .from('feedback_suggestions')
         .select('*')
@@ -63,7 +41,6 @@ export function FeedbackModerationPanel() {
         throw error;
       }
       
-      console.log('Fetched feedback data:', data);
       setAllFeedback(data || []);
     } catch (error) {
       console.error('Error fetching feedback:', error);
@@ -75,18 +52,11 @@ export function FeedbackModerationPanel() {
 
   const updateFeedback = async (feedbackId: string, updates: Partial<FeedbackItem>) => {
     try {
-      console.log('Updating feedback with ID:', feedbackId, 'Updates:', updates);
-      
-      // First, check if the current user is an admin
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        console.error('No authenticated user found');
         throw new Error('User not authenticated');
       }
 
-      console.log('Current user:', user.id);
-
-      // Check admin status
       const { data: adminCheck, error: adminError } = await supabase
         .rpc('is_admin');
 
@@ -96,13 +66,9 @@ export function FeedbackModerationPanel() {
       }
 
       if (!adminCheck) {
-        console.error('User is not an admin');
         throw new Error('Insufficient permissions');
       }
 
-      console.log('User is admin, proceeding with update...');
-
-      // Use update without .single() to avoid the PGRST116 error
       const { data, error } = await supabase
         .from('feedback_suggestions')
         .update({ 
@@ -118,23 +84,16 @@ export function FeedbackModerationPanel() {
       }
 
       if (!data || data.length === 0) {
-        console.error('No rows were updated - check permissions and feedback ID');
         throw new Error('Failed to update feedback - no rows affected');
       }
 
-      console.log('Database update successful:', data[0]);
-
-      // Update local state immediately
-      setAllFeedback(prev => {
-        const updated = prev.map(item => 
+      setAllFeedback(prev => 
+        prev.map(item => 
           item.id === feedbackId ? { ...item, ...updates, updated_at: new Date().toISOString() } : item
-        );
-        console.log('Local state updated for feedback:', feedbackId);
-        return updated;
-      });
+        )
+      );
 
       toast.success("Feedback updated successfully");
-      
       return true;
     } catch (error) {
       console.error('Error updating feedback:', error);
@@ -143,80 +102,66 @@ export function FeedbackModerationPanel() {
     }
   };
 
-  const handleUpdateStatus = async (feedbackId: string, status: string): Promise<boolean> => {
-    console.log('Handling status update for feedback:', feedbackId, 'New status:', status);
+  const handleUpdateStatus = async (feedbackId: string, status: string) => {
     return await updateFeedback(feedbackId, { status });
   };
 
-  const handleUpdatePriority = async (feedbackId: string, priority: string): Promise<void> => {
-    console.log('Handling priority update for feedback:', feedbackId, 'New priority:', priority);
+  const handleUpdatePriority = async (feedbackId: string, priority: string) => {
     await updateFeedback(feedbackId, { priority });
   };
 
-  const handleSaveNotes = async (feedbackId: string, notes: string): Promise<void> => {
-    console.log('Handling notes save for feedback:', feedbackId, 'Notes length:', notes.length);
+  const handleSaveNotes = async (feedbackId: string, notes: string) => {
     await updateFeedback(feedbackId, { admin_notes: notes });
   };
 
   useEffect(() => {
-    let filtered: FeedbackItem[] = [];
-    
-    switch (currentFilter) {
-      case 'pending':
-        filtered = allFeedback.filter(f => f.status === 'pending');
-        break;
-      case 'in_progress':
-        filtered = allFeedback.filter(f => f.status === 'in_progress');
-        break;
-      case 'complete':
-        filtered = allFeedback.filter(f => f.status === 'complete');
-        break;
-      case 'dismissed':
-        filtered = allFeedback.filter(f => f.status === 'dismissed');
-        break;
-      default:
-        filtered = allFeedback;
-    }
-    
-    console.log('Filtering feedback:', { currentFilter, allCount: allFeedback.length, filteredCount: filtered.length });
-    setFilteredFeedback(filtered);
-    
-    // Ensure currentIndex is within bounds
-    if (filtered.length > 0) {
-      const newIndex = Math.min(currentIndex, filtered.length - 1);
-      if (newIndex !== currentIndex) {
-        setCurrentIndex(newIndex);
-      }
-    } else {
-      setCurrentIndex(0);
-    }
-  }, [allFeedback, currentFilter, currentIndex]);
-
-  useEffect(() => {
-    const handleKeyPress = (event: KeyboardEvent) => {
-      if (filteredFeedback.length === 0 || currentView === 'table') return;
-      
-      switch (event.key) {
-        case 'ArrowLeft':
-          if (currentIndex > 0) {
-            setCurrentIndex(currentIndex - 1);
-          }
-          break;
-        case 'ArrowRight':
-          if (currentIndex < filteredFeedback.length - 1) {
-            setCurrentIndex(currentIndex + 1);
-          }
-          break;
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyPress);
-    return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [currentIndex, filteredFeedback, currentView]);
-
-  useEffect(() => {
     fetchFeedback();
   }, [fetchFeedback]);
+
+  const filteredFeedback = allFeedback.filter(feedback => {
+    switch (currentFilter) {
+      case 'pending':
+        return feedback.status === 'pending';
+      case 'in_progress':
+        return feedback.status === 'in_progress';
+      case 'complete':
+        return feedback.status === 'complete';
+      case 'dismissed':
+        return feedback.status === 'dismissed';
+      default:
+        return true;
+    }
+  });
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return <Clock className="h-4 w-4 text-amber-500" />;
+      case 'in_progress':
+        return <AlertCircle className="h-4 w-4 text-blue-500" />;
+      case 'complete':
+        return <Check className="h-4 w-4 text-green-500" />;
+      case 'dismissed':
+        return <Trash2 className="h-4 w-4 text-gray-500" />;
+      default:
+        return <Clock className="h-4 w-4 text-gray-500" />;
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return 'bg-amber-100 text-amber-800';
+      case 'in_progress':
+        return 'bg-blue-100 text-blue-800';
+      case 'complete':
+        return 'bg-green-100 text-green-800';
+      case 'dismissed':
+        return 'bg-gray-100 text-gray-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
 
   if (isLoading) {
     return (
@@ -226,80 +171,213 @@ export function FeedbackModerationPanel() {
     );
   }
 
-  const currentFeedback = filteredFeedback[currentIndex];
-
   return (
     <div className="space-y-6">
-      {/* View Toggle and Navigation Header */}
-      <div className="flex justify-between items-start gap-4">
-        <div className="flex-1">
-          {currentView === 'cards' && (
-            <FeedbackModerationNavigation
-              currentIndex={currentIndex}
-              totalCount={filteredFeedback.length}
-              currentFilter={currentFilter}
-              onFilterChange={setCurrentFilter}
-              onNavigate={setCurrentIndex}
-              allFeedback={allFeedback}
-            />
-          )}
+      {/* Filter Controls */}
+      <div className="flex gap-4 items-center">
+        <Select value={currentFilter} onValueChange={setCurrentFilter}>
+          <SelectTrigger className="w-48">
+            <SelectValue placeholder="Filter by status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Feedback</SelectItem>
+            <SelectItem value="pending">Pending</SelectItem>
+            <SelectItem value="in_progress">In Progress</SelectItem>
+            <SelectItem value="complete">Complete</SelectItem>
+            <SelectItem value="dismissed">Dismissed</SelectItem>
+          </SelectContent>
+        </Select>
+        <div className="text-sm text-muted-foreground">
+          {filteredFeedback.length} feedback items
         </div>
-        <FeedbackViewToggle
-          currentView={currentView}
-          onViewChange={handleViewChange}
-        />
       </div>
 
-      {/* Main Content */}
-      {currentView === 'table' ? (
-        <FeedbackTableView
-          feedback={allFeedback}
-          onUpdateStatus={handleUpdateStatus}
-          onUpdatePriority={handleUpdatePriority}
-          onSaveNotes={handleSaveNotes}
-        />
-      ) : (
-        <>
-          {filteredFeedback.length === 0 ? (
-            <Card>
-              <CardContent className="py-8">
-                <div className="text-center">
-                  <div className="flex justify-center mb-4">
-                    {currentFilter === 'pending' && <Clock className="h-12 w-12 text-amber-500" />}
-                    {currentFilter === 'in_progress' && <AlertCircle className="h-12 w-12 text-blue-500" />}
-                    {currentFilter === 'complete' && <Check className="h-12 w-12 text-green-500" />}
-                    {currentFilter === 'dismissed' && <Check className="h-12 w-12 text-gray-500" />}
-                  </div>
-                  <h3 className="text-lg font-medium text-muted-foreground mb-2">
-                    No {currentFilter.replace('_', ' ')} feedback
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    {currentFilter === 'pending' 
-                      ? "All feedback has been reviewed!" 
-                      : `No ${currentFilter.replace('_', ' ')} feedback found.`
-                    }
-                  </p>
+      {/* Feedback List */}
+      <div className="space-y-4">
+        {filteredFeedback.length === 0 ? (
+          <Card>
+            <CardContent className="py-8">
+              <div className="text-center">
+                <div className="flex justify-center mb-4">
+                  {getStatusIcon(currentFilter)}
                 </div>
-              </CardContent>
-            </Card>
-          ) : currentFeedback ? (
-            <SingleFeedbackModerationView
-              key={`feedback-${currentFeedback.id}-${currentFeedback.status}-${currentFeedback.updated_at}`}
-              feedback={currentFeedback}
+                <h3 className="text-lg font-medium text-muted-foreground mb-2">
+                  No {currentFilter === 'all' ? '' : currentFilter.replace('_', ' ')} feedback
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  {currentFilter === 'pending' 
+                    ? "All feedback has been reviewed!" 
+                    : `No ${currentFilter.replace('_', ' ')} feedback found.`
+                  }
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+          filteredFeedback.map((feedback) => (
+            <FeedbackCard
+              key={feedback.id}
+              feedback={feedback}
               onUpdateStatus={handleUpdateStatus}
               onUpdatePriority={handleUpdatePriority}
               onSaveNotes={handleSaveNotes}
+              getStatusIcon={getStatusIcon}
+              getStatusColor={getStatusColor}
             />
-          ) : null}
-
-          {/* Keyboard shortcuts info - only show in cards view */}
-          {filteredFeedback.length > 0 && (
-            <div className="text-xs text-muted-foreground text-center py-2 border-t">
-              <p><strong>Keyboard shortcuts:</strong> ← → Navigate between feedback items</p>
-            </div>
-          )}
-        </>
-      )}
+          ))
+        )}
+      </div>
     </div>
+  );
+}
+
+interface FeedbackCardProps {
+  feedback: FeedbackItem;
+  onUpdateStatus: (id: string, status: string) => Promise<boolean>;
+  onUpdatePriority: (id: string, priority: string) => Promise<void>;
+  onSaveNotes: (id: string, notes: string) => Promise<void>;
+  getStatusIcon: (status: string) => JSX.Element;
+  getStatusColor: (status: string) => string;
+}
+
+function FeedbackCard({ 
+  feedback, 
+  onUpdateStatus, 
+  onUpdatePriority, 
+  onSaveNotes, 
+  getStatusIcon, 
+  getStatusColor 
+}: FeedbackCardProps) {
+  const [notes, setNotes] = useState(feedback.admin_notes || '');
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  const handleStatusChange = async (newStatus: string) => {
+    setIsUpdating(true);
+    await onUpdateStatus(feedback.id, newStatus);
+    setIsUpdating(false);
+  };
+
+  const handlePriorityChange = async (newPriority: string) => {
+    setIsUpdating(true);
+    await onUpdatePriority(feedback.id, newPriority);
+    setIsUpdating(false);
+  };
+
+  const handleNotesSubmit = async () => {
+    setIsUpdating(true);
+    await onSaveNotes(feedback.id, notes);
+    setIsUpdating(false);
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex justify-between items-start">
+          <div className="flex-1">
+            <CardTitle className="text-lg flex items-center gap-2">
+              {getStatusIcon(feedback.status)}
+              {feedback.subject}
+            </CardTitle>
+            <div className="flex gap-2 mt-2">
+              <Badge className={getStatusColor(feedback.status)}>
+                {feedback.status.replace('_', ' ')}
+              </Badge>
+              {feedback.type && (
+                <Badge variant="outline">{feedback.type}</Badge>
+              )}
+              {feedback.priority && (
+                <Badge variant="secondary">{feedback.priority}</Badge>
+              )}
+            </div>
+          </div>
+          <div className="text-sm text-muted-foreground">
+            {new Date(feedback.created_at).toLocaleDateString()}
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div>
+          <h4 className="font-medium mb-2">Message:</h4>
+          <p className="text-sm bg-muted/50 p-3 rounded">{feedback.message}</p>
+        </div>
+
+        {feedback.email && (
+          <div>
+            <h4 className="font-medium mb-1">Contact:</h4>
+            <p className="text-sm text-muted-foreground">{feedback.email}</p>
+          </div>
+        )}
+
+        {feedback.image_url && (
+          <div>
+            <h4 className="font-medium mb-2">Attached Image:</h4>
+            <img 
+              src={feedback.image_url} 
+              alt="Feedback attachment" 
+              className="max-w-md rounded border"
+            />
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="text-sm font-medium mb-2 block">Status:</label>
+            <Select 
+              value={feedback.status} 
+              onValueChange={handleStatusChange}
+              disabled={isUpdating}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="in_progress">In Progress</SelectItem>
+                <SelectItem value="complete">Complete</SelectItem>
+                <SelectItem value="dismissed">Dismissed</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <label className="text-sm font-medium mb-2 block">Priority:</label>
+            <Select 
+              value={feedback.priority || 'medium'} 
+              onValueChange={handlePriorityChange}
+              disabled={isUpdating}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="low">Low</SelectItem>
+                <SelectItem value="medium">Medium</SelectItem>
+                <SelectItem value="high">High</SelectItem>
+                <SelectItem value="urgent">Urgent</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <div>
+          <label className="text-sm font-medium mb-2 block">Admin Notes:</label>
+          <div className="space-y-2">
+            <Textarea 
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Add notes about this feedback..."
+              className="min-h-20"
+            />
+            <Button 
+              onClick={handleNotesSubmit}
+              disabled={isUpdating || notes === (feedback.admin_notes || '')}
+              size="sm"
+            >
+              {isUpdating ? 'Saving...' : 'Save Notes'}
+            </Button>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
