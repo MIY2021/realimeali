@@ -1,5 +1,3 @@
-import { Switch } from "@/components/ui/switch";
-import { Heart, User } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { DropdownFilterSection } from "../recipes/filters/DropdownFilterSection";
 

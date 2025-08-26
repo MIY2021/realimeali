@@ -58,55 +58,23 @@ export function ExternalSiteDialog({ recipe, open, onOpenChange }: ExternalSiteD
   };
 
   const handleAddToMyRecipes = async () => {
-    if (!recipe || !user || !currentHousehold) return;
-
-    setIsAdding(true);
-    setStep('adding');
+    if (!recipe) return;
 
     try {
-      // Convert Edamam recipe to our recipe format
-      const newRecipe = {
-        title: recipe.label,
-        description: `Imported from ${recipe.source}`,
-        ingredients: recipe.ingredientLines || [],
-        instructions: [`Visit ${recipe.source} for full instructions: ${recipe.url}`],
-        prep_time: Math.floor(recipe.totalTime / 2) || 15, // Estimate prep time
-        cook_time: Math.floor(recipe.totalTime / 2) || 15, // Estimate cook time
-        servings: recipe.yield || 4,
-        image_url: recipe.image,
-        source_url: recipe.url,
-        source_name: recipe.source,
-        user_id: user.id,
-        household_id: currentHousehold.id,
-        is_public: false,
-        meal_types: [], // User can categorize later
-      };
-
-      const { error } = await supabase
-        .from('recipes')
-        .insert([newRecipe]);
-
-      if (error) {
-        throw error;
-      }
-
-      setStep('success');
+      // Copy URL to clipboard
+      await navigator.clipboard.writeText(recipe.url);
       
-      toast({
-        title: "Recipe Added!",
-        description: `"${recipe.label}" has been added to your recipes.`,
-      });
-
+      // Close dialog and navigate to add recipe page with URL pre-filled
+      onOpenChange(false);
+      window.location.href = `/my-recipes/new?url=${encodeURIComponent(recipe.url)}`;
+      
     } catch (error) {
-      console.error('Error adding recipe:', error);
+      console.error('Error copying URL:', error);
       toast({
-        title: "Error Adding Recipe",
-        description: "Something went wrong. Please try again.",
+        title: "Error",
+        description: "Could not copy URL. Please try again.",
         variant: "destructive",
       });
-      setStep('welcome-back');
-    } finally {
-      setIsAdding(false);
     }
   };
 
