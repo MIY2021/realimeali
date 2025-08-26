@@ -3,15 +3,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
 import { Search, Clock, MapPin, UtensilsCrossed, Heart, RotateCcw } from "lucide-react";
 import { DiscoverRecipeFilters } from "@/types/edamam";
 
 interface DiscoverRecipesFiltersProps {
   onSearch: (filters: DiscoverRecipeFilters) => void;
   onReset: () => void;
-  communityOnly: boolean;
-  onCommunityToggle: (enabled: boolean) => void;
 }
 
 const MEAL_TYPES = [
@@ -73,7 +70,7 @@ const TIME_OPTIONS = [
   { value: "60+", label: "Over 1 hour", icon: "🕰️" },
 ];
 
-export function DiscoverRecipesFilters({ onSearch, onReset, communityOnly, onCommunityToggle }: DiscoverRecipesFiltersProps) {
+export function DiscoverRecipesFilters({ onSearch, onReset }: DiscoverRecipesFiltersProps) {
   const [keyword, setKeyword] = useState("");
   const [selectedMealType, setSelectedMealType] = useState<string>("");
   const [selectedCuisine, setSelectedCuisine] = useState<string>("");
@@ -120,21 +117,6 @@ export function DiscoverRecipesFilters({ onSearch, onReset, communityOnly, onCom
     <Card>
       <CardContent className="p-6">
         <div className="space-y-6">
-          {/* Community Only Toggle */}
-          <div className="flex items-center justify-between p-4 bg-sage/10 rounded-lg">
-            <div className="space-y-1">
-              <label className="text-sm font-medium text-navy">
-                Include RealiMeali Community-Shared Recipes
-              </label>
-              <p className="text-xs text-muted-foreground">
-                Include recipes shared by our community members
-              </p>
-            </div>
-            <Switch
-              checked={communityOnly}
-              onCheckedChange={onCommunityToggle}
-            />
-          </div>
           {/* Keyword Search */}
           <div className="space-y-2">
             <label className="text-sm font-medium text-navy flex items-center gap-2">

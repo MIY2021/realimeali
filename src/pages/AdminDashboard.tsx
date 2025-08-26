@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useAdminCheck } from "@/hooks/useAdminCheck";
-import { RecipeModerationPanel } from "@/components/admin/RecipeModerationPanel";
+
 import { AdminStats } from "@/components/admin/AdminStats";
 import { UserManagement } from "@/components/admin/UserManagement";
 import { FeedbackModerationPanel } from "@/components/admin/FeedbackModerationPanel";
@@ -62,10 +62,7 @@ const AdminDashboard = () => {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className={`grid w-full ${isMobile ? 'grid-cols-3' : 'grid-cols-5'}`}>
-          <TabsTrigger value="moderation" className={`${isMobile ? 'text-xs px-1' : ''}`}>
-            {isMobile ? 'Recipes' : 'Recipe Moderation'}
-          </TabsTrigger>
+        <TabsList className={`grid w-full ${isMobile ? 'grid-cols-2' : 'grid-cols-4'}`}>
           <TabsTrigger value="feedback" className={`${isMobile ? 'text-xs px-1' : ''}`}>
             {isMobile ? 'Feedback' : 'Feedback & Suggestions'}
           </TabsTrigger>
@@ -86,19 +83,6 @@ const AdminDashboard = () => {
           )}
         </TabsList>
 
-        <TabsContent value="moderation" className="space-y-6">
-          <Card>
-            <CardHeader className={`${isMobile ? 'px-4 py-4' : ''}`}>
-              <CardTitle className={`${isMobile ? 'text-lg' : ''}`}>Community Recipe Moderation</CardTitle>
-              <CardDescription className={`${isMobile ? 'text-xs' : ''}`}>
-                Review and moderate community recipe submissions
-              </CardDescription>
-            </CardHeader>
-            <CardContent className={`${isMobile ? 'px-4 pb-4' : ''}`}>
-              <RecipeModerationPanel />
-            </CardContent>
-          </Card>
-        </TabsContent>
 
         <TabsContent value="feedback" className="space-y-6">
           <Card>

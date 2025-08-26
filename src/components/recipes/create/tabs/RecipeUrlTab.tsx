@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { CommunityRecipeSubmissionDialog } from "@/components/recipes/CommunityRecipeSubmissionDialog";
+
 import { EnhancedImageSelection } from "@/components/recipes/dialog/EnhancedImageSelection";
 import { AlertCircle, Check, Globe, Sparkles } from "lucide-react";
 
@@ -134,13 +134,6 @@ export function RecipeUrlTab({
         </Button>
       </div>
 
-      {showCommunityDialog && parsedRecipeData && (
-        <CommunityRecipeSubmissionDialog
-          isOpen={showCommunityDialog}
-          onOpenChange={setShowCommunityDialog}
-          initialData={parsedRecipeData}
-        />
-      )}
     </div>
   );
 }

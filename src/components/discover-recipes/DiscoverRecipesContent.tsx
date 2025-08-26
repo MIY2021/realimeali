@@ -1,55 +1,41 @@
-import { useState, useEffect } from "react";
-import { CommunityRecipeSelectionView } from "@/components/community/CommunityRecipeSelectionView";
-import { useCommunityRecipes } from "@/hooks/useCommunityRecipes";
+import { useState } from "react";
 import { DiscoverRecipeFilters } from "@/types/edamam";
-import { useEdamamApiPagination } from "@/hooks/useEdamamApiPagination";
+import { DiscoverRecipesFilters } from "./DiscoverRecipesFilters";
+import { DiscoverRecipesResults } from "./DiscoverRecipesResults";
 
 export function DiscoverRecipesContent() {
   const [apiFilters, setApiFilters] = useState<DiscoverRecipeFilters | null>(null);
-  const [hasSearched, setHasSearched] = useState(false);
-  const [communityOnly, setCommunityOnly] = useState(true); // Default to ON
-  const [initialLoading, setInitialLoading] = useState(true);
-  
-  const { recipes: communityRecipes, isLoading: communityLoading, fetchCommunityRecipes, totalCount: communityTotal } = useCommunityRecipes();
-  const { recipes: externalHits = [], isLoading: externalLoading, hasMore: externalHasMore, loadMore: loadMoreExternal, reset: resetExternal } = useEdamamApiPagination((apiFilters || {}) as DiscoverRecipeFilters);
 
-  // Fetch community recipes by default when component mounts or when toggled on
-  useEffect(() => {
-    if (communityOnly && initialLoading) {
-      fetchCommunityRecipes({ limit: 50 }).finally(() => {
-        setInitialLoading(false);
-      });
-    } else if (communityOnly && !initialLoading) {
-      fetchCommunityRecipes({ limit: 50 });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [communityOnly]);
+  const handleSearch = (filters: DiscoverRecipeFilters) => {
+    setApiFilters(filters);
+  };
 
-
-  const handleCommunityToggle = (enabled: boolean) => {
-    setCommunityOnly(enabled);
-    if (enabled) {
-      // Fetch community recipes when toggled on
-      fetchCommunityRecipes({ limit: 50 });
-    }
+  const handleReset = () => {
+    setApiFilters(null);
   };
 
   return (
     <div className="space-y-6">
-      <CommunityRecipeSelectionView
-        recipes={communityRecipes}
-        isLoading={initialLoading || communityLoading}
-        communityOnly={communityOnly}
-        onCommunityToggle={handleCommunityToggle}
-        onSearch={(f) => { setApiFilters(f); setHasSearched(true); setInitialLoading(false); }}
-        onClearSearch={() => { setApiFilters(null); setHasSearched(false); resetExternal(); }}
-        hasSearched={hasSearched}
-        externalHits={hasSearched ? externalHits : []}
-        externalLoading={externalLoading}
-        externalHasMore={hasSearched ? externalHasMore : false}
-        onExternalLoadMore={loadMoreExternal}
+      <DiscoverRecipesFilters 
+        onSearch={handleSearch}
+        onReset={handleReset}
       />
+      
+      {apiFilters && (
+        <DiscoverRecipesResults filters={apiFilters} />
+      )}
 
+      {!apiFilters && (
+        <div className="text-center py-12">
+          <div className="max-w-md mx-auto space-y-4">
+            <div className="text-6xl">🔍</div>
+            <h3 className="text-xl font-semibold text-navy">Ready to discover something tasty?</h3>
+            <p className="text-muted-foreground">
+              Use the filters above to search through millions of recipes from around the web!
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
