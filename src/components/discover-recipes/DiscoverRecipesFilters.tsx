@@ -1,9 +1,8 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Search, Clock, MapPin, UtensilsCrossed, Heart, RotateCcw } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Search, RotateCcw } from "lucide-react";
 import { DiscoverRecipeFilters } from "@/types/edamam";
 
 interface DiscoverRecipesFiltersProps {
@@ -12,30 +11,37 @@ interface DiscoverRecipesFiltersProps {
 }
 
 const MEAL_TYPES = [
-  { value: "breakfast", label: "Breakfast", icon: "🌅" },
-  { value: "lunch", label: "Lunch", icon: "☀️" },
-  { value: "dinner", label: "Dinner", icon: "🌙" },
-  { value: "snack", label: "Snacks", icon: "🍿" },
-  { value: "teatime", label: "Sides", icon: "🥗" },
+  { value: "breakfast", label: "Breakfast" },
+  { value: "lunch", label: "Lunch" },
+  { value: "dinner", label: "Dinner" },
+  { value: "snack", label: "Snacks" },
+  { value: "teatime", label: "Sides" },
 ];
 
 const CUISINE_TYPES = [
-  { value: "british", label: "British", icon: "🫖" },
-  { value: "american", label: "American", icon: "🍔" },
-  { value: "italian", label: "Italian", icon: "🍝" },
-  { value: "french", label: "French", icon: "🥖" },
-  { value: "mexican", label: "Mexican", icon: "🌮" },
-  { value: "indian", label: "Indian", icon: "🍛" },
-  { value: "chinese", label: "Chinese", icon: "🥡" },
-  { value: "japanese", label: "Japanese", icon: "🍣" },
-  { value: "asian", label: "Thai", icon: "🍜" },
-  { value: "mediterranean", label: "Mediterranean", icon: "🫒" },
-  { value: "middle eastern", label: "Middle Eastern", icon: "🥙" },
-  { value: "caribbean", label: "Caribbean", icon: "🏝️" },
-  { value: "korean", label: "Korean", icon: "🍲" },
-  { value: "nordic", label: "Nordic", icon: "❄️" },
-  { value: "eastern europe", label: "Eastern European", icon: "🏰" },
-  { value: "kosher", label: "Greek", icon: "🧄" },
+  { value: "british", label: "British" },
+  { value: "american", label: "American" },
+  { value: "italian", label: "Italian" },
+  { value: "french", label: "French" },
+  { value: "mexican", label: "Mexican" },
+  { value: "indian", label: "Indian" },
+  { value: "chinese", label: "Chinese" },
+  { value: "japanese", label: "Japanese" },
+  { value: "asian", label: "Thai" },
+  { value: "mediterranean", label: "Mediterranean" },
+  { value: "middle eastern", label: "Middle Eastern" },
+  { value: "caribbean", label: "Caribbean" },
+  { value: "korean", label: "Korean" },
+  { value: "nordic", label: "Nordic" },
+  { value: "eastern europe", label: "Eastern European" },
+  { value: "kosher", label: "Greek" },
+];
+
+const TIME_OPTIONS = [
+  { value: "1-15", label: "Under 15 mins" },
+  { value: "15-30", label: "15-30 mins" },
+  { value: "30-60", label: "30-60 mins" },
+  { value: "60+", label: "Over 1 hour" },
 ];
 
 const DIET_OPTIONS = [
@@ -45,9 +51,6 @@ const DIET_OPTIONS = [
   { value: "low-carb", label: "Low Carb" },
   { value: "low-fat", label: "Low Fat" },
   { value: "low-sodium", label: "Low Sodium" },
-];
-
-const HEALTH_OPTIONS = [
   { value: "vegan", label: "Vegan" },
   { value: "vegetarian", label: "Vegetarian" },
   { value: "paleo", label: "Paleo" },
@@ -63,39 +66,24 @@ const HEALTH_OPTIONS = [
   { value: "peanut-free", label: "Peanut Free" },
 ];
 
-const TIME_OPTIONS = [
-  { value: "1-15", label: "Under 15 mins", icon: "⚡" },
-  { value: "15-30", label: "15-30 mins", icon: "⏱️" },
-  { value: "30-60", label: "30-60 mins", icon: "🕐" },
-  { value: "60+", label: "Over 1 hour", icon: "🕰️" },
-];
-
 export function DiscoverRecipesFilters({ onSearch, onReset }: DiscoverRecipesFiltersProps) {
   const [keyword, setKeyword] = useState("");
   const [selectedMealType, setSelectedMealType] = useState<string>("");
   const [selectedCuisine, setSelectedCuisine] = useState<string>("");
-  const [selectedDiets, setSelectedDiets] = useState<string[]>([]);
   const [selectedTime, setSelectedTime] = useState<string>("");
-
-  const handleDietToggle = (diet: string) => {
-    setSelectedDiets(prev => 
-      prev.includes(diet) 
-        ? prev.filter(d => d !== diet)
-        : [...prev, diet]
-    );
-  };
+  const [selectedDiet, setSelectedDiet] = useState<string>("");
 
   const handleSearch = () => {
     const filters: DiscoverRecipeFilters = {
       keyword: keyword.trim() || undefined,
       mealType: selectedMealType || undefined,
       cuisineType: selectedCuisine || undefined,
-      diet: selectedDiets.length > 0 ? selectedDiets : undefined,
       time: selectedTime || undefined,
+      diet: selectedDiet ? [selectedDiet] : undefined,
     };
 
     // At least one filter must be selected
-    if (!filters.keyword && !filters.mealType && !filters.cuisineType && !filters.diet?.length && !filters.time) {
+    if (!filters.keyword && !filters.mealType && !filters.cuisineType && !filters.time && !filters.diet?.length) {
       return;
     }
 
@@ -106,158 +94,116 @@ export function DiscoverRecipesFilters({ onSearch, onReset }: DiscoverRecipesFil
     setKeyword("");
     setSelectedMealType("");
     setSelectedCuisine("");
-    setSelectedDiets([]);
     setSelectedTime("");
+    setSelectedDiet("");
     onReset();
   };
 
-  const isSearchDisabled = !keyword.trim() && !selectedMealType && !selectedCuisine && selectedDiets.length === 0 && !selectedTime;
+  const isSearchDisabled = !keyword.trim() && !selectedMealType && !selectedCuisine && !selectedTime && !selectedDiet;
 
   return (
-    <Card>
-      <CardContent className="p-6">
-        <div className="space-y-6">
-          {/* Keyword Search */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-navy flex items-center gap-2">
-              <Search className="h-4 w-4" />
-              Search by ingredient or dish
-            </label>
-            <Input
-              placeholder="e.g., chicken, pasta, chocolate..."
-              value={keyword}
-              onChange={(e) => setKeyword(e.target.value)}
-              className="w-full"
-            />
-          </div>
-
-          {/* Meal Type */}
-          <div className="space-y-3">
-            <label className="text-sm font-medium text-navy flex items-center gap-2">
-              <UtensilsCrossed className="h-4 w-4" />
-              Meal Type
-            </label>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
-              {MEAL_TYPES.map((meal) => (
-                <Button
-                  key={meal.value}
-                  variant={selectedMealType === meal.value ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setSelectedMealType(selectedMealType === meal.value ? "" : meal.value)}
-                  className="h-auto p-3 flex flex-col items-center gap-1"
-                >
-                  <span className="text-lg">{meal.icon}</span>
-                  <span className="text-xs">{meal.label}</span>
-                </Button>
-              ))}
-            </div>
-          </div>
-
-          {/* Cuisine Type */}
-          <div className="space-y-3">
-            <label className="text-sm font-medium text-navy flex items-center gap-2">
-              <MapPin className="h-4 w-4" />
-              Cuisine
-            </label>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-2">
-              {CUISINE_TYPES.map((cuisine) => (
-                <Button
-                  key={cuisine.value}
-                  variant={selectedCuisine === cuisine.value ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setSelectedCuisine(selectedCuisine === cuisine.value ? "" : cuisine.value)}
-                  className="h-auto p-3 flex flex-col items-center gap-1"
-                >
-                  <span className="text-lg">{cuisine.icon}</span>
-                  <span className="text-xs">{cuisine.label}</span>
-                </Button>
-              ))}
-            </div>
-          </div>
-
-          {/* Time Complexity */}
-          <div className="space-y-3">
-            <label className="text-sm font-medium text-navy flex items-center gap-2">
-              <Clock className="h-4 w-4" />
-              Cooking Time
-            </label>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              {TIME_OPTIONS.map((time) => (
-                <Button
-                  key={time.value}
-                  variant={selectedTime === time.value ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setSelectedTime(selectedTime === time.value ? "" : time.value)}
-                  className="h-auto p-3 flex flex-col items-center gap-1"
-                >
-                  <span className="text-lg">{time.icon}</span>
-                  <span className="text-xs">{time.label}</span>
-                </Button>
-              ))}
-            </div>
-          </div>
-
-          {/* Diet & Health Labels */}
-          <div className="space-y-3">
-            <label className="text-sm font-medium text-navy flex items-center gap-2">
-              <Heart className="h-4 w-4" />
-              Dietary Preferences
-            </label>
-            <div className="space-y-3">
-              <div>
-                <h4 className="text-xs font-medium text-muted-foreground mb-2">Diet Types</h4>
-                <div className="flex flex-wrap gap-2">
-                  {DIET_OPTIONS.map((diet) => (
-                    <Badge
-                      key={diet.value}
-                      variant={selectedDiets.includes(diet.value) ? "default" : "outline"}
-                      className="cursor-pointer"
-                      onClick={() => handleDietToggle(diet.value)}
-                    >
-                      {diet.label}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-              
-              <div>
-                <h4 className="text-xs font-medium text-muted-foreground mb-2">Health Labels</h4>
-                <div className="flex flex-wrap gap-2">
-                  {HEALTH_OPTIONS.map((health) => (
-                    <Badge
-                      key={health.value}
-                      variant={selectedDiets.includes(health.value) ? "default" : "outline"}
-                      className="cursor-pointer"
-                      onClick={() => handleDietToggle(health.value)}
-                    >
-                      {health.label}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex gap-3 pt-4">
-            <Button 
-              onClick={handleSearch}
-              disabled={isSearchDisabled}
-              className="flex-1"
-            >
-              <Search className="h-4 w-4 mr-2" />
-              Discover Recipes
-            </Button>
-            <Button 
-              variant="outline" 
-              onClick={handleReset}
-              size="icon"
-            >
-              <RotateCcw className="h-4 w-4" />
-            </Button>
-          </div>
+    <div className="space-y-4">
+      {/* Search Row */}
+      <div className="flex gap-2 items-end">
+        <div className="flex-1">
+          <Input
+            placeholder="Search by ingredient or dish name..."
+            value={keyword}
+            onChange={(e) => setKeyword(e.target.value)}
+            className="h-10"
+          />
         </div>
-      </CardContent>
-    </Card>
+        <Select value={selectedMealType} onValueChange={setSelectedMealType}>
+          <SelectTrigger className="w-[140px] h-10">
+            <SelectValue placeholder="All recipes" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="">All recipes</SelectItem>
+            {MEAL_TYPES.map((meal) => (
+              <SelectItem key={meal.value} value={meal.value}>
+                {meal.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Button 
+          onClick={handleSearch}
+          disabled={isSearchDisabled}
+          className="h-10 px-6"
+        >
+          <Search className="h-4 w-4 mr-2" />
+          Search
+        </Button>
+      </div>
+
+      {/* Filter Buttons Row */}
+      <div className="flex flex-wrap gap-2">
+        <Select value={selectedMealType} onValueChange={setSelectedMealType}>
+          <SelectTrigger className="w-[120px]">
+            <SelectValue placeholder="Meal Type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="">All Meals</SelectItem>
+            {MEAL_TYPES.map((meal) => (
+              <SelectItem key={meal.value} value={meal.value}>
+                {meal.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select value={selectedCuisine} onValueChange={setSelectedCuisine}>
+          <SelectTrigger className="w-[120px]">
+            <SelectValue placeholder="Cuisine" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="">All Cuisines</SelectItem>
+            {CUISINE_TYPES.map((cuisine) => (
+              <SelectItem key={cuisine.value} value={cuisine.value}>
+                {cuisine.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select value={selectedTime} onValueChange={setSelectedTime}>
+          <SelectTrigger className="w-[120px]">
+            <SelectValue placeholder="Duration" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="">Any Duration</SelectItem>
+            {TIME_OPTIONS.map((time) => (
+              <SelectItem key={time.value} value={time.value}>
+                {time.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select value={selectedDiet} onValueChange={setSelectedDiet}>
+          <SelectTrigger className="w-[160px]">
+            <SelectValue placeholder="Diet & Lifestyle" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="">All Diets</SelectItem>
+            {DIET_OPTIONS.map((diet) => (
+              <SelectItem key={diet.value} value={diet.value}>
+                {diet.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Button 
+          variant="outline" 
+          onClick={handleReset}
+          size="sm"
+          className="h-10"
+        >
+          <RotateCcw className="h-4 w-4 mr-2" />
+          Reset
+        </Button>
+      </div>
+    </div>
   );
 }
