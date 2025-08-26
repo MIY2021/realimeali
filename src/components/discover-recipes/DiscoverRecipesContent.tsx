@@ -1,8 +1,4 @@
 import { useState } from "react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search } from "lucide-react";
 import { DiscoverRecipeFilters } from "@/types/edamam";
 import { DiscoverRecipesFilters } from "./DiscoverRecipesFilters";
 import { DiscoverRecipesResults } from "./DiscoverRecipesResults";
@@ -51,40 +47,16 @@ export function DiscoverRecipesContent() {
 
   return (
     <div className="space-y-6">
-      {/* Search Bar */}
-      <div className="flex gap-2 items-end">
-        <div className="flex-1">
-          <Input
-            placeholder="Search recipes..."
-            value={keyword}
-            onChange={(e) => setKeyword(e.target.value)}
-            className="h-10"
-            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-          />
-        </div>
-        <Select value={sortBy} onValueChange={setSortBy}>
-          <SelectTrigger className="w-[140px] h-10">
-            <SelectValue placeholder="Newest First" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="newest">Newest First</SelectItem>
-            <SelectItem value="oldest">Oldest First</SelectItem>
-          </SelectContent>
-        </Select>
-        <Button 
-          onClick={handleSearch}
-          className="h-10 px-6"
-        >
-          <Search className="h-4 w-4 mr-2" />
-          Search
-        </Button>
-      </div>
-
-      {/* Filters */}
+      {/* Filters with integrated search and sort */}
       <DiscoverRecipesFilters
+        keyword={keyword}
+        setKeyword={setKeyword}
+        sortBy={sortBy}
+        setSortBy={setSortBy}
         filters={filters}
         onFiltersChange={handleFiltersChange}
         onReset={handleReset}
+        onSearch={handleSearch}
       />
 
       {/* Results */}

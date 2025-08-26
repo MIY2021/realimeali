@@ -1,4 +1,8 @@
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Search } from "lucide-react";
 import { DropdownFilterSection } from "../recipes/filters/DropdownFilterSection";
 
 // Map internal filters to Edamam API values
@@ -47,6 +51,10 @@ const DIET_LIFESTYLE_OPTIONS = [
 ];
 
 interface DiscoverRecipesFiltersProps {
+  keyword: string;
+  setKeyword: (keyword: string) => void;
+  sortBy: string;
+  setSortBy: (sortBy: string) => void;
   filters: {
     mealTypes: string[];
     cuisineTypes: string[];
@@ -60,9 +68,19 @@ interface DiscoverRecipesFiltersProps {
     dietLifestyle: string[];
   }) => void;
   onReset: () => void;
+  onSearch: () => void;
 }
 
-export function DiscoverRecipesFilters({ filters, onFiltersChange, onReset }: DiscoverRecipesFiltersProps) {
+export function DiscoverRecipesFilters({ 
+  keyword, 
+  setKeyword, 
+  sortBy, 
+  setSortBy, 
+  filters, 
+  onFiltersChange, 
+  onReset, 
+  onSearch 
+}: DiscoverRecipesFiltersProps) {
   const isMobile = useIsMobile();
 
   const hasActiveFilters = filters.mealTypes.length > 0 || 
@@ -84,44 +102,157 @@ export function DiscoverRecipesFilters({ filters, onFiltersChange, onReset }: Di
   };
 
   return (
-    <div className="mb-4">
-      <div className="flex flex-wrap gap-2 sm:gap-3">
-        <DropdownFilterSection
-          title="🕒 Meal Type"
-          options={MEAL_TYPE_OPTIONS}
-          selectedValues={filters.mealTypes}
-          onToggle={(value) => toggleArrayFilter('mealTypes', value)}
-        />
+    <div className={`space-y-4 sm:space-y-6 ${isMobile ? 'bg-white' : ''}`}>
+      {/* Mobile Grid Layout */}
+      {isMobile ? (
+        <div className="space-y-3">
+          {/* Row 1: Search | Sort */}
+          <div className="grid gap-2 grid-cols-[1fr_1fr]">
+            <Input
+              placeholder="Search recipes..."
+              value={keyword}
+              onChange={(e) => setKeyword(e.target.value)}
+              className="w-full text-sm"
+              onKeyDown={(e) => e.key === 'Enter' && onSearch()}
+            />
+            
+            <Select value={sortBy} onValueChange={setSortBy}>
+              <SelectTrigger className="text-sm">
+                <SelectValue placeholder="Sort" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="newest">Newest First</SelectItem>
+                <SelectItem value="oldest">Oldest First</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-        <DropdownFilterSection
-          title="🌍 Cuisine"
-          options={CUISINE_TYPE_OPTIONS}
-          selectedValues={filters.cuisineTypes}
-          onToggle={(value) => toggleArrayFilter('cuisineTypes', value)}
-        />
+          {/* Row 2: All filters - wider cuisine dropdown */}
+          <div className="grid gap-2 grid-cols-[1fr_1.2fr_1fr_1fr]">
+            <DropdownFilterSection
+              title="🕒 Meal"
+              options={MEAL_TYPE_OPTIONS}
+              selectedValues={filters.mealTypes}
+              onToggle={(value) => toggleArrayFilter('mealTypes', value)}
+            />
 
-        <DropdownFilterSection
-          title="⏰ Duration"
-          options={COOKING_DURATION_OPTIONS}
-          selectedValues={filters.cookingDurations}
-          onToggle={(value) => toggleArrayFilter('cookingDurations', value)}
-        />
+            <DropdownFilterSection
+              title="🌍 Cuisine"
+              options={CUISINE_TYPE_OPTIONS}
+              selectedValues={filters.cuisineTypes}
+              onToggle={(value) => toggleArrayFilter('cuisineTypes', value)}
+            />
 
-        <DropdownFilterSection
-          title="🍎 Diet & Lifestyle"
-          options={DIET_LIFESTYLE_OPTIONS}
-          selectedValues={filters.dietLifestyle}
-          onToggle={(value) => toggleArrayFilter('dietLifestyle', value)}
-        />
-      </div>
-      {hasActiveFilters && (
-        <div className="mt-3">
-          <button
-            onClick={onReset}
-            className="text-sm text-muted-foreground hover:text-foreground underline"
-          >
-            Clear all filters ({activeFilterCount})
-          </button>
+            <DropdownFilterSection
+              title="🥗 Diet"
+              options={DIET_LIFESTYLE_OPTIONS}
+              selectedValues={filters.dietLifestyle}
+              onToggle={(value) => toggleArrayFilter('dietLifestyle', value)}
+            />
+
+            <DropdownFilterSection
+              title="⏰ Duration"
+              options={COOKING_DURATION_OPTIONS}
+              selectedValues={filters.cookingDurations}
+              onToggle={(value) => toggleArrayFilter('cookingDurations', value)}
+            />
+          </div>
+
+          {/* Row 3: Search button and clear filters */}
+          <div className="flex justify-between items-center">
+            <Button 
+              onClick={onSearch}
+              className="h-9 px-4"
+            >
+              <Search className="h-4 w-4 mr-2" />
+              Search
+            </Button>
+            
+            {hasActiveFilters && (
+              <button
+                onClick={onReset}
+                className="text-sm text-muted-foreground hover:text-foreground underline"
+              >
+                Clear filters ({activeFilterCount})
+              </button>
+            )}
+          </div>
+        </div>
+      ) : (
+        /* Desktop Layout */
+        <div>
+          {/* Search, Sort Controls */}
+          <div className="flex gap-3 mb-6">
+            <div className="flex-1">
+              <Input
+                placeholder="Search recipes..."
+                value={keyword}
+                onChange={(e) => setKeyword(e.target.value)}
+                className="w-full"
+                onKeyDown={(e) => e.key === 'Enter' && onSearch()}
+              />
+            </div>
+            
+            <div className="w-32 sm:w-48">
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger className="text-sm sm:text-base">
+                  <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="newest">Newest First</SelectItem>
+                  <SelectItem value="oldest">Oldest First</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <Button 
+              onClick={onSearch}
+              className="px-6"
+            >
+              <Search className="h-4 w-4 mr-2" />
+              Search
+            </Button>
+          </div>
+
+          {/* Filters */}
+          <div className="flex flex-wrap gap-2 sm:gap-3">
+            <DropdownFilterSection
+              title="🕒 Meal Type"
+              options={MEAL_TYPE_OPTIONS}
+              selectedValues={filters.mealTypes}
+              onToggle={(value) => toggleArrayFilter('mealTypes', value)}
+            />
+
+            <DropdownFilterSection
+              title="🌍 Cuisine"
+              options={CUISINE_TYPE_OPTIONS}
+              selectedValues={filters.cuisineTypes}
+              onToggle={(value) => toggleArrayFilter('cuisineTypes', value)}
+            />
+
+            <DropdownFilterSection
+              title="🥗 Diet & Lifestyle"
+              options={DIET_LIFESTYLE_OPTIONS}
+              selectedValues={filters.dietLifestyle}
+              onToggle={(value) => toggleArrayFilter('dietLifestyle', value)}
+            />
+
+            <DropdownFilterSection
+              title="⏰ Duration"
+              options={COOKING_DURATION_OPTIONS}
+              selectedValues={filters.cookingDurations}
+              onToggle={(value) => toggleArrayFilter('cookingDurations', value)}
+            />
+
+            {hasActiveFilters && (
+              <button
+                onClick={onReset}
+                className="text-sm text-muted-foreground hover:text-foreground underline ml-2"
+              >
+                Clear all filters ({activeFilterCount})
+              </button>
+            )}
+          </div>
         </div>
       )}
     </div>
