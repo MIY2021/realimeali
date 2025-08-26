@@ -16,8 +16,6 @@ export function DiscoverRecipesContent() {
     cuisineTypes: [] as string[],
     cookingDurations: [] as string[],
     dietLifestyle: [] as string[],
-    showFavoritesOnly: false,
-    showNotCookedOnly: false,
   });
 
   const handleSearch = () => {
@@ -43,8 +41,6 @@ export function DiscoverRecipesContent() {
       cuisineTypes: [],
       cookingDurations: [],
       dietLifestyle: [],
-      showFavoritesOnly: false,
-      showNotCookedOnly: false,
     });
     setApiFilters(null);
   };

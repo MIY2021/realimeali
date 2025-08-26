@@ -4,18 +4,20 @@ import { Button } from "@/components/ui/button";
 import { Link, Clock, Users } from "lucide-react";
 import { EdamamRecipe } from "@/types/edamam";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useState } from "react";
+import { ExternalSiteDialog } from "./ExternalSiteDialog";
 
 interface ExternalRecipeCardProps {
   recipe: EdamamRecipe;
-  onOpen?: () => void;
   mobileLayout?: string;
 }
 
-export function ExternalRecipeCard({ recipe, onOpen, mobileLayout = "1" }: ExternalRecipeCardProps) {
+export function ExternalRecipeCard({ recipe, mobileLayout = "1" }: ExternalRecipeCardProps) {
   const isMobile = useIsMobile();
-  const handleVisitSite = () => {
-    if (onOpen) return onOpen();
-    window.open(recipe.url, '_blank', 'noopener,noreferrer');
+  const [dialogOpen, setDialogOpen] = useState(false);
+
+  const handleViewRecipe = () => {
+    setDialogOpen(true);
   };
 
   // Format cooking time
@@ -39,10 +41,10 @@ export function ExternalRecipeCard({ recipe, onOpen, mobileLayout = "1" }: Exter
             className={`relative cursor-pointer overflow-hidden ${
               isMobile && mobileLayout === '1' ? 'aspect-[4/3]' : 'aspect-[4/3]'
             }`}
-        onClick={handleVisitSite}
+        onClick={handleViewRecipe}
         role="button"
         tabIndex={0}
-        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleVisitSite(); } }}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleViewRecipe(); } }}
       >
         <img
           src={recipe.image}
@@ -62,7 +64,7 @@ export function ExternalRecipeCard({ recipe, onOpen, mobileLayout = "1" }: Exter
         {/* Title */}
         <h3 
           className="font-semibold text-lg mb-2 line-clamp-2 cursor-pointer hover:underline"
-          onClick={handleVisitSite}
+          onClick={handleViewRecipe}
         >
           {recipe.label}
         </h3>
@@ -108,7 +110,7 @@ export function ExternalRecipeCard({ recipe, onOpen, mobileLayout = "1" }: Exter
             <Button 
               size="sm" 
               className="w-full bg-terracotta hover:bg-terracotta/90 text-white"
-              onClick={handleVisitSite}
+              onClick={handleViewRecipe}
               aria-label={`View recipe on ${recipe.source}`}
             >
               <Link className="h-4 w-4 mr-2" />
@@ -116,6 +118,13 @@ export function ExternalRecipeCard({ recipe, onOpen, mobileLayout = "1" }: Exter
             </Button>
         </div>
       </CardContent>
+
+      {/* External Site Dialog */}
+      <ExternalSiteDialog
+        recipe={recipe}
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+      />
     </Card>
   );
 }

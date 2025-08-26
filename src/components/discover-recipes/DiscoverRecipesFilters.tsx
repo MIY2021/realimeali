@@ -54,16 +54,12 @@ interface DiscoverRecipesFiltersProps {
     cuisineTypes: string[];
     cookingDurations: string[];
     dietLifestyle: string[];
-    showFavoritesOnly: boolean;
-    showNotCookedOnly: boolean;
   };
   onFiltersChange: (filters: {
     mealTypes: string[];
     cuisineTypes: string[];
     cookingDurations: string[];
     dietLifestyle: string[];
-    showFavoritesOnly: boolean;
-    showNotCookedOnly: boolean;
   }) => void;
   onReset: () => void;
 }
@@ -74,16 +70,12 @@ export function DiscoverRecipesFilters({ filters, onFiltersChange, onReset }: Di
   const hasActiveFilters = filters.mealTypes.length > 0 || 
                           filters.cuisineTypes.length > 0 || 
                           filters.cookingDurations.length > 0 || 
-                          filters.dietLifestyle.length > 0 ||
-                          filters.showFavoritesOnly ||
-                          filters.showNotCookedOnly;
+                          filters.dietLifestyle.length > 0;
 
   const activeFilterCount = filters.mealTypes.length + 
                            filters.cuisineTypes.length + 
                            filters.cookingDurations.length + 
-                           filters.dietLifestyle.length +
-                           (filters.showFavoritesOnly ? 1 : 0) +
-                           (filters.showNotCookedOnly ? 1 : 0);
+                           filters.dietLifestyle.length;
 
   const toggleArrayFilter = (key: keyof typeof filters, value: string) => {
     const currentArray = filters[key] as string[];
@@ -91,14 +83,6 @@ export function DiscoverRecipesFilters({ filters, onFiltersChange, onReset }: Di
       ? currentArray.filter(item => item !== value)
       : [...currentArray, value];
     onFiltersChange({ ...filters, [key]: updatedArray });
-  };
-
-  const toggleFavorites = () => {
-    onFiltersChange({ ...filters, showFavoritesOnly: !filters.showFavoritesOnly });
-  };
-
-  const toggleNotCooked = () => {
-    onFiltersChange({ ...filters, showNotCookedOnly: !filters.showNotCookedOnly });
   };
 
   return (
@@ -118,25 +102,6 @@ export function DiscoverRecipesFilters({ filters, onFiltersChange, onReset }: Di
           onToggle={(value) => toggleArrayFilter('cuisineTypes', value)}
         />
 
-        {isMobile && (
-          <>
-            <div className="flex items-center gap-2 px-3 py-2 border rounded-md bg-background">
-              <Heart className={`h-4 w-4 ${filters.showFavoritesOnly ? "fill-red-500 text-red-500" : "text-gray-500"}`} />
-              <Switch
-                checked={filters.showFavoritesOnly}
-                onCheckedChange={toggleFavorites}
-              />
-            </div>
-            <div className="flex items-center gap-2 px-3 py-2 border rounded-md bg-background">
-              <User className={`h-4 w-4 ${filters.showNotCookedOnly ? "text-orange-500" : "text-gray-500"}`} />
-              <Switch
-                checked={filters.showNotCookedOnly}
-                onCheckedChange={toggleNotCooked}
-              />
-            </div>
-          </>
-        )}
-
         <DropdownFilterSection
           title="⏰ Duration"
           options={COOKING_DURATION_OPTIONS}
@@ -150,27 +115,6 @@ export function DiscoverRecipesFilters({ filters, onFiltersChange, onReset }: Di
           selectedValues={filters.dietLifestyle}
           onToggle={(value) => toggleArrayFilter('dietLifestyle', value)}
         />
-
-        {!isMobile && (
-          <>
-            <div className="flex items-center gap-2 px-3 py-2 border rounded-md bg-background min-w-[120px]">
-              <Heart className={`h-4 w-4 ${filters.showFavoritesOnly ? "fill-red-500 text-red-500" : "text-gray-500"}`} />
-              <span className="text-sm">Favourites</span>
-              <Switch
-                checked={filters.showFavoritesOnly}
-                onCheckedChange={toggleFavorites}
-              />
-            </div>
-            <div className="flex items-center gap-2 px-3 py-2 border rounded-md bg-background min-w-[115px]">
-              <User className={`h-4 w-4 ${filters.showNotCookedOnly ? "text-orange-500" : "text-gray-500"}`} />
-              <span className="text-sm">Not Cooked</span>
-              <Switch
-                checked={filters.showNotCookedOnly}
-                onCheckedChange={toggleNotCooked}
-              />
-            </div>
-          </>
-        )}
       </div>
       {hasActiveFilters && (
         <div className="mt-3">
