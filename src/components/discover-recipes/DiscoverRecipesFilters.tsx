@@ -1,204 +1,187 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, RotateCcw } from "lucide-react";
-import { DiscoverRecipeFilters } from "@/types/edamam";
+import { Switch } from "@/components/ui/switch";
+import { Heart, User } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { DropdownFilterSection } from "../recipes/filters/DropdownFilterSection";
+
+// Map internal filters to Edamam API values
+const MEAL_TYPE_OPTIONS = [
+  { value: "breakfast", label: "Breakfast", icon: "🌅" },
+  { value: "lunch", label: "Lunch", icon: "☀️" },
+  { value: "dinner", label: "Dinner", icon: "🌙" },
+  { value: "snack", label: "Snacks", icon: "🍿" },
+  { value: "teatime", label: "Sides", icon: "🥗" },
+];
+
+const CUISINE_TYPE_OPTIONS = [
+  { value: "british", label: "British", icon: "🫖" },
+  { value: "american", label: "American", icon: "🍔" },
+  { value: "italian", label: "Italian", icon: "🍝" },
+  { value: "french", label: "French", icon: "🥖" },
+  { value: "mexican", label: "Mexican", icon: "🌮" },
+  { value: "indian", label: "Indian", icon: "🍛" },
+  { value: "chinese", label: "Chinese", icon: "🥡" },
+  { value: "japanese", label: "Japanese", icon: "🍣" },
+  { value: "asian", label: "Thai", icon: "🍜" },
+  { value: "mediterranean", label: "Mediterranean", icon: "🫒" },
+  { value: "middle eastern", label: "Middle Eastern", icon: "🥙" },
+  { value: "caribbean", label: "Caribbean", icon: "🏝️" },
+  { value: "korean", label: "Korean", icon: "🍲" },
+];
+
+const COOKING_DURATION_OPTIONS = [
+  { value: "1-15", label: "Under 15 mins", icon: "⚡" },
+  { value: "15-30", label: "15-30 mins", icon: "⏱️" },
+  { value: "30-60", label: "30-60 mins", icon: "🕐" },
+  { value: "60+", label: "Over 1 hour", icon: "🕰️" },
+];
+
+const DIET_LIFESTYLE_OPTIONS = [
+  { value: "balanced", label: "Balanced", icon: "⚖️" },
+  { value: "high-fiber", label: "High Fiber", icon: "🌾" },
+  { value: "high-protein", label: "High Protein", icon: "💪" },
+  { value: "low-carb", label: "Low Carb", icon: "🥩" },
+  { value: "low-fat", label: "Low Fat", icon: "🥗" },
+  { value: "vegan", label: "Vegan", icon: "🌱" },
+  { value: "vegetarian", label: "Vegetarian", icon: "🥕" },
+  { value: "paleo", label: "Paleo", icon: "🦣" },
+  { value: "dairy-free", label: "Dairy Free", icon: "🚫" },
+  { value: "gluten-free", label: "Gluten Free", icon: "🌾" },
+];
 
 interface DiscoverRecipesFiltersProps {
-  onSearch: (filters: DiscoverRecipeFilters) => void;
+  filters: {
+    mealTypes: string[];
+    cuisineTypes: string[];
+    cookingDurations: string[];
+    dietLifestyle: string[];
+    showFavoritesOnly: boolean;
+    showNotCookedOnly: boolean;
+  };
+  onFiltersChange: (filters: {
+    mealTypes: string[];
+    cuisineTypes: string[];
+    cookingDurations: string[];
+    dietLifestyle: string[];
+    showFavoritesOnly: boolean;
+    showNotCookedOnly: boolean;
+  }) => void;
   onReset: () => void;
 }
 
-const MEAL_TYPES = [
-  { value: "breakfast", label: "Breakfast" },
-  { value: "lunch", label: "Lunch" },
-  { value: "dinner", label: "Dinner" },
-  { value: "snack", label: "Snacks" },
-  { value: "teatime", label: "Sides" },
-];
+export function DiscoverRecipesFilters({ filters, onFiltersChange, onReset }: DiscoverRecipesFiltersProps) {
+  const isMobile = useIsMobile();
 
-const CUISINE_TYPES = [
-  { value: "british", label: "British" },
-  { value: "american", label: "American" },
-  { value: "italian", label: "Italian" },
-  { value: "french", label: "French" },
-  { value: "mexican", label: "Mexican" },
-  { value: "indian", label: "Indian" },
-  { value: "chinese", label: "Chinese" },
-  { value: "japanese", label: "Japanese" },
-  { value: "asian", label: "Thai" },
-  { value: "mediterranean", label: "Mediterranean" },
-  { value: "middle eastern", label: "Middle Eastern" },
-  { value: "caribbean", label: "Caribbean" },
-  { value: "korean", label: "Korean" },
-  { value: "nordic", label: "Nordic" },
-  { value: "eastern europe", label: "Eastern European" },
-  { value: "kosher", label: "Greek" },
-];
+  const hasActiveFilters = filters.mealTypes.length > 0 || 
+                          filters.cuisineTypes.length > 0 || 
+                          filters.cookingDurations.length > 0 || 
+                          filters.dietLifestyle.length > 0 ||
+                          filters.showFavoritesOnly ||
+                          filters.showNotCookedOnly;
 
-const TIME_OPTIONS = [
-  { value: "1-15", label: "Under 15 mins" },
-  { value: "15-30", label: "15-30 mins" },
-  { value: "30-60", label: "30-60 mins" },
-  { value: "60+", label: "Over 1 hour" },
-];
+  const activeFilterCount = filters.mealTypes.length + 
+                           filters.cuisineTypes.length + 
+                           filters.cookingDurations.length + 
+                           filters.dietLifestyle.length +
+                           (filters.showFavoritesOnly ? 1 : 0) +
+                           (filters.showNotCookedOnly ? 1 : 0);
 
-const DIET_OPTIONS = [
-  { value: "balanced", label: "Balanced" },
-  { value: "high-fiber", label: "High Fiber" },
-  { value: "high-protein", label: "High Protein" },
-  { value: "low-carb", label: "Low Carb" },
-  { value: "low-fat", label: "Low Fat" },
-  { value: "low-sodium", label: "Low Sodium" },
-  { value: "vegan", label: "Vegan" },
-  { value: "vegetarian", label: "Vegetarian" },
-  { value: "paleo", label: "Paleo" },
-  { value: "dairy-free", label: "Dairy Free" },
-  { value: "gluten-free", label: "Gluten Free" },
-  { value: "wheat-free", label: "Wheat Free" },
-  { value: "egg-free", label: "Egg Free" },
-  { value: "pork-free", label: "Pork Free" },
-  { value: "red-meat-free", label: "Red Meat Free" },
-  { value: "fish-free", label: "Fish Free" },
-  { value: "shellfish-free", label: "Shellfish Free" },
-  { value: "tree-nut-free", label: "Tree Nut Free" },
-  { value: "peanut-free", label: "Peanut Free" },
-];
-
-export function DiscoverRecipesFilters({ onSearch, onReset }: DiscoverRecipesFiltersProps) {
-  const [keyword, setKeyword] = useState("");
-  const [selectedMealType, setSelectedMealType] = useState<string>("");
-  const [selectedCuisine, setSelectedCuisine] = useState<string>("");
-  const [selectedTime, setSelectedTime] = useState<string>("");
-  const [selectedDiet, setSelectedDiet] = useState<string>("");
-
-  const handleSearch = () => {
-    const filters: DiscoverRecipeFilters = {
-      keyword: keyword.trim() || undefined,
-      mealType: selectedMealType || undefined,
-      cuisineType: selectedCuisine || undefined,
-      time: selectedTime || undefined,
-      diet: selectedDiet ? [selectedDiet] : undefined,
-    };
-
-    // At least one filter must be selected
-    if (!filters.keyword && !filters.mealType && !filters.cuisineType && !filters.time && !filters.diet?.length) {
-      return;
-    }
-
-    onSearch(filters);
+  const toggleArrayFilter = (key: keyof typeof filters, value: string) => {
+    const currentArray = filters[key] as string[];
+    const updatedArray = currentArray.includes(value)
+      ? currentArray.filter(item => item !== value)
+      : [...currentArray, value];
+    onFiltersChange({ ...filters, [key]: updatedArray });
   };
 
-  const handleReset = () => {
-    setKeyword("");
-    setSelectedMealType("");
-    setSelectedCuisine("");
-    setSelectedTime("");
-    setSelectedDiet("");
-    onReset();
+  const toggleFavorites = () => {
+    onFiltersChange({ ...filters, showFavoritesOnly: !filters.showFavoritesOnly });
   };
 
-  const isSearchDisabled = !keyword.trim() && !selectedMealType && !selectedCuisine && !selectedTime && !selectedDiet;
+  const toggleNotCooked = () => {
+    onFiltersChange({ ...filters, showNotCookedOnly: !filters.showNotCookedOnly });
+  };
 
   return (
-    <div className="space-y-4">
-      {/* Search Row */}
-      <div className="flex gap-2 items-end">
-        <div className="flex-1">
-          <Input
-            placeholder="Search by ingredient or dish name..."
-            value={keyword}
-            onChange={(e) => setKeyword(e.target.value)}
-            className="h-10"
-          />
+    <div className="mb-4">
+      <div className="flex flex-wrap gap-2 sm:gap-3">
+        <DropdownFilterSection
+          title="🕒 Meal Type"
+          options={MEAL_TYPE_OPTIONS}
+          selectedValues={filters.mealTypes}
+          onToggle={(value) => toggleArrayFilter('mealTypes', value)}
+        />
+
+        <DropdownFilterSection
+          title="🌍 Cuisine"
+          options={CUISINE_TYPE_OPTIONS}
+          selectedValues={filters.cuisineTypes}
+          onToggle={(value) => toggleArrayFilter('cuisineTypes', value)}
+        />
+
+        {isMobile && (
+          <>
+            <div className="flex items-center gap-2 px-3 py-2 border rounded-md bg-background">
+              <Heart className={`h-4 w-4 ${filters.showFavoritesOnly ? "fill-red-500 text-red-500" : "text-gray-500"}`} />
+              <Switch
+                checked={filters.showFavoritesOnly}
+                onCheckedChange={toggleFavorites}
+              />
+            </div>
+            <div className="flex items-center gap-2 px-3 py-2 border rounded-md bg-background">
+              <User className={`h-4 w-4 ${filters.showNotCookedOnly ? "text-orange-500" : "text-gray-500"}`} />
+              <Switch
+                checked={filters.showNotCookedOnly}
+                onCheckedChange={toggleNotCooked}
+              />
+            </div>
+          </>
+        )}
+
+        <DropdownFilterSection
+          title="⏰ Duration"
+          options={COOKING_DURATION_OPTIONS}
+          selectedValues={filters.cookingDurations}
+          onToggle={(value) => toggleArrayFilter('cookingDurations', value)}
+        />
+
+        <DropdownFilterSection
+          title="🍎 Diet & Lifestyle"
+          options={DIET_LIFESTYLE_OPTIONS}
+          selectedValues={filters.dietLifestyle}
+          onToggle={(value) => toggleArrayFilter('dietLifestyle', value)}
+        />
+
+        {!isMobile && (
+          <>
+            <div className="flex items-center gap-2 px-3 py-2 border rounded-md bg-background min-w-[120px]">
+              <Heart className={`h-4 w-4 ${filters.showFavoritesOnly ? "fill-red-500 text-red-500" : "text-gray-500"}`} />
+              <span className="text-sm">Favourites</span>
+              <Switch
+                checked={filters.showFavoritesOnly}
+                onCheckedChange={toggleFavorites}
+              />
+            </div>
+            <div className="flex items-center gap-2 px-3 py-2 border rounded-md bg-background min-w-[115px]">
+              <User className={`h-4 w-4 ${filters.showNotCookedOnly ? "text-orange-500" : "text-gray-500"}`} />
+              <span className="text-sm">Not Cooked</span>
+              <Switch
+                checked={filters.showNotCookedOnly}
+                onCheckedChange={toggleNotCooked}
+              />
+            </div>
+          </>
+        )}
+      </div>
+      {hasActiveFilters && (
+        <div className="mt-3">
+          <button
+            onClick={onReset}
+            className="text-sm text-muted-foreground hover:text-foreground underline"
+          >
+            Clear all filters ({activeFilterCount})
+          </button>
         </div>
-        <Select value={selectedMealType} onValueChange={setSelectedMealType}>
-          <SelectTrigger className="w-[140px] h-10">
-            <SelectValue placeholder="All recipes" />
-          </SelectTrigger>
-          <SelectContent>
-            {MEAL_TYPES.map((meal) => (
-              <SelectItem key={meal.value} value={meal.value}>
-                {meal.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Button 
-          onClick={handleSearch}
-          disabled={isSearchDisabled}
-          className="h-10 px-6"
-        >
-          <Search className="h-4 w-4 mr-2" />
-          Search
-        </Button>
-      </div>
-
-      {/* Filter Buttons Row */}
-      <div className="flex flex-wrap gap-2">
-        <Select value={selectedMealType} onValueChange={setSelectedMealType}>
-          <SelectTrigger className="w-[120px]">
-            <SelectValue placeholder="Meal Type" />
-          </SelectTrigger>
-          <SelectContent>
-            {MEAL_TYPES.map((meal) => (
-              <SelectItem key={meal.value} value={meal.value}>
-                {meal.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        <Select value={selectedCuisine} onValueChange={setSelectedCuisine}>
-          <SelectTrigger className="w-[120px]">
-            <SelectValue placeholder="Cuisine" />
-          </SelectTrigger>
-          <SelectContent>
-            {CUISINE_TYPES.map((cuisine) => (
-              <SelectItem key={cuisine.value} value={cuisine.value}>
-                {cuisine.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        <Select value={selectedTime} onValueChange={setSelectedTime}>
-          <SelectTrigger className="w-[120px]">
-            <SelectValue placeholder="Duration" />
-          </SelectTrigger>
-          <SelectContent>
-            {TIME_OPTIONS.map((time) => (
-              <SelectItem key={time.value} value={time.value}>
-                {time.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        <Select value={selectedDiet} onValueChange={setSelectedDiet}>
-          <SelectTrigger className="w-[160px]">
-            <SelectValue placeholder="Diet & Lifestyle" />
-          </SelectTrigger>
-          <SelectContent>
-            {DIET_OPTIONS.map((diet) => (
-              <SelectItem key={diet.value} value={diet.value}>
-                {diet.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        <Button 
-          variant="outline" 
-          onClick={handleReset}
-          size="sm"
-          className="h-10"
-        >
-          <RotateCcw className="h-4 w-4 mr-2" />
-          Reset
-        </Button>
-      </div>
+      )}
     </div>
   );
 }
