@@ -58,14 +58,6 @@ export function DiscoverRecipesResults({ filters }: DiscoverRecipesResultsProps)
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-navy">
-          Found {recipes.length} recipe{recipes.length !== 1 ? 's' : ''}
-        </h2>
-        <div className="text-sm text-muted-foreground">
-          External recipes from around the web
-        </div>
-      </div>
       
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {recipes.map((hit, index) => (

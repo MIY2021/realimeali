@@ -178,17 +178,14 @@ export function CreateRecipeContainer({ editingRecipe, isEditMode = false, defau
   // Check if this recipe is from AI
   const isFromAI = editingRecipe?.import_method === 'ai';
 
-  // Auto-import from URL if importUrl param is present
+  // Auto-import from URL if importUrl or url param is present
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const importUrl = params.get('importUrl');
+    const importUrl = params.get('importUrl') || params.get('url');
     if (importUrl) {
       setActiveTab('url');
       recipeProcessingHook.setRecipeUrl(importUrl);
-      // Trigger the existing web import flow
-      setTimeout(() => {
-        handlers.wrappedImportFromUrl();
-      }, 0);
+      // Don't auto-trigger import, just pre-fill the URL field
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
