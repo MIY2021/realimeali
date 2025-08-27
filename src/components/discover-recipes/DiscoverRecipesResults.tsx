@@ -16,7 +16,6 @@ export function DiscoverRecipesResults({ filters }: DiscoverRecipesResultsProps)
   if (isLoading) {
     return (
       <div className="space-y-4">
-        <h2 className="text-xl font-semibold text-navy">Discovering recipes...</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {Array.from({ length: 8 }).map((_, i) => (
             <div key={i} className="space-y-3">
@@ -87,9 +86,6 @@ export function DiscoverRecipesResults({ filters }: DiscoverRecipesResultsProps)
               'Load More Recipes'
             )}
           </Button>
-          <p className="text-sm text-muted-foreground">
-            Showing {recipes.length} recipes{totalFetched > recipes.length ? ` (${totalFetched} total found)` : ''}
-          </p>
         </div>
       )}
       
