@@ -31,12 +31,16 @@ serve(async (req) => {
 
     const { filters }: { filters: DiscoverRecipeFilters } = await req.json();
     
-    // For first page (from=0), add random offset to access different result sets
+    // For first page (from=0), don't add random offset to ensure consistent pagination
     let adjustedFrom = filters.from || 0;
-    if (adjustedFrom === 0) {
-      // Use random starting points: 0, 20, 40, 60, or 80 for variety
-      const randomOffsets = [0, 20, 40, 60, 80];
-      adjustedFrom = randomOffsets[Math.floor(Math.random() * randomOffsets.length)];
+    let adjustedTo = filters.to || 20;
+    
+    // Ensure we don't exceed the API's limit of 100 results per session
+    if (adjustedFrom >= 100) {
+      adjustedFrom = 80; // Fallback to near the end
+    }
+    if (adjustedTo > 100) {
+      adjustedTo = 100;
     }
     
     // Build query string
@@ -45,7 +49,7 @@ serve(async (req) => {
     params.append('app_id', EDAMAM_APP_ID);
     params.append('app_key', EDAMAM_APP_KEY);
     params.append('from', adjustedFrom.toString());
-    params.append('to', (adjustedFrom + ((filters.to || 20) - (filters.from || 0))).toString());
+    params.append('to', adjustedTo.toString());
 
     // Add keyword search - make it more specific based on meal type
     if (filters.keyword) {
@@ -125,24 +129,25 @@ serve(async (req) => {
     const data = await response.json();
     console.log(`Found ${data.hits?.length || 0} recipes from API`);
 
-    // Randomize results to prevent users from seeing the same recipes every time
-    const filteredHits = data.hits || [];
-    if (filteredHits.length > 0) {
-      // Shuffle array using Fisher-Yates algorithm
-      for (let i = filteredHits.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [filteredHits[i], filteredHits[j]] = [filteredHits[j], filteredHits[i]];
-      }
-    }
+    // Filter out recipes without proper images or titles
+    const filteredHits = (data.hits || []).filter(hit => 
+      hit.recipe && 
+      hit.recipe.label && 
+      hit.recipe.image && 
+      hit.recipe.source
+    );
     
     console.log(`Filtered to ${filteredHits.length} relevant recipes`);
     
+    // Check if there are more results available
+    const hasMoreResults = !!(data._links && data._links.next && data._links.next.href);
+    
     const response_data = {
-      ...data,
       hits: filteredHits,
-      hasMore: data.more && filteredHits.length > 0,
-      nextFrom: (filters.from || 0) + (filters.to || 20),
-      totalFetched: (filters.from || 0) + filteredHits.length
+      hasMore: hasMoreResults,
+      nextFrom: (filters.from || 0) + (filters.to || 20) - (filters.from || 0),
+      totalFetched: (filters.from || 0) + filteredHits.length,
+      count: data.count || 0
     };
 
     return new Response(JSON.stringify(response_data), {
