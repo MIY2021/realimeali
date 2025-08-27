@@ -33,6 +33,13 @@ export function useEdamamApiPagination(baseFilters: Omit<DiscoverRecipeFilters, 
     queryKey: ['edamam-recipes-paginated', baseFilters, currentPage],
     queryFn: async (): Promise<PaginatedEdamamResponse> => {
       try {
+        console.log('🔄 Making API call:', {
+          from: computeFrom(currentPage),
+          to: computeTo(currentPage),
+          currentPage,
+          baseFilters
+        });
+        
         const filters: DiscoverRecipeFilters = {
           ...baseFilters,
           from: computeFrom(currentPage),
@@ -74,6 +81,14 @@ export function useEdamamApiPagination(baseFilters: Omit<DiscoverRecipeFilters, 
   // Update recipes when new data arrives
   useEffect(() => {
     if (data?.hits) {
+      console.log('📊 Pagination Debug:', {
+        currentPage,
+        dataHits: data.hits.length,
+        dataHasMore: data.hasMore,
+        allRecipesLength: allRecipes.length,
+        totalFetched
+      });
+      
       if (currentPage === 0) {
         // First page - replace all recipes
         setAllRecipes(data.hits);
@@ -82,6 +97,7 @@ export function useEdamamApiPagination(baseFilters: Omit<DiscoverRecipeFilters, 
         setAllRecipes(prev => {
           const existingUris = new Set(prev.map(hit => hit.recipe.uri));
           const newRecipes = data.hits.filter(hit => !existingUris.has(hit.recipe.uri));
+          console.log('📊 Adding new recipes:', newRecipes.length, 'from', data.hits.length, 'total');
           return [...prev, ...newRecipes];
         });
       }
@@ -89,7 +105,7 @@ export function useEdamamApiPagination(baseFilters: Omit<DiscoverRecipeFilters, 
       setTotalFetched(data.totalFetched || 0);
       setApiTotalAvailable(typeof (data as any).count === 'number' ? (data as any).count : 0);
     }
-  }, [data, currentPage, allRecipes.length]);
+  }, [data, currentPage, allRecipes.length, totalFetched]);
 
   // Reset when filters change
   useEffect(() => {
@@ -102,8 +118,9 @@ export function useEdamamApiPagination(baseFilters: Omit<DiscoverRecipeFilters, 
   const loadMore = useCallback(async () => {
     if (!hasMoreRecipes || isLoading || totalFetched >= MAX_RECIPES) return;
     
+    console.log('🔄 Load More clicked:', { hasMoreRecipes, isLoading, totalFetched, currentPage });
     setCurrentPage(prev => prev + 1);
-  }, [hasMoreRecipes, isLoading, totalFetched]);
+  }, [hasMoreRecipes, isLoading, totalFetched, currentPage]);
 
   const reset = useCallback(() => {
     setCurrentPage(0);
