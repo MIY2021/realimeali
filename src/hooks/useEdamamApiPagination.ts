@@ -74,6 +74,14 @@ export function useEdamamApiPagination(baseFilters: Omit<DiscoverRecipeFilters, 
   // Update recipes when new data arrives
   useEffect(() => {
     if (data?.hits) {
+      console.log('📊 Pagination Debug:', {
+        currentPage,
+        dataHits: data.hits.length,
+        dataHasMore: data.hasMore,
+        allRecipesLength: allRecipes.length,
+        maxRecipes: MAX_RECIPES
+      });
+      
       if (currentPage === 0) {
         // First page - replace all recipes
         setAllRecipes(data.hits);
@@ -85,7 +93,9 @@ export function useEdamamApiPagination(baseFilters: Omit<DiscoverRecipeFilters, 
           return [...prev, ...newRecipes];
         });
       }
-      setHasMoreRecipes(!!data.hasMore && (allRecipes.length + data.hits.length) < MAX_RECIPES);
+      const newHasMore = !!data.hasMore && (allRecipes.length + data.hits.length) < MAX_RECIPES;
+      console.log('📊 Setting hasMore:', newHasMore, { dataHasMore: data.hasMore, totalRecipes: allRecipes.length + data.hits.length, maxRecipes: MAX_RECIPES });
+      setHasMoreRecipes(newHasMore);
       setTotalFetched(data.totalFetched || 0);
       setApiTotalAvailable(typeof (data as any).count === 'number' ? (data as any).count : 0);
     }
@@ -122,6 +132,13 @@ export function useEdamamApiPagination(baseFilters: Omit<DiscoverRecipeFilters, 
     totalFetched,
     totalAvailable: apiTotalAvailable,
   };
+
+  console.log('📊 Final State:', { 
+    recipesLength: allRecipes.length, 
+    hasMore: hasMoreRecipes, 
+    isLoading: isLoading && currentPage === 0,
+    currentPage 
+  });
 
   return {
     ...state,

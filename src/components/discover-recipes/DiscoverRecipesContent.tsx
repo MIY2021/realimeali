@@ -2,11 +2,13 @@ import { useState } from "react";
 import { DiscoverRecipeFilters } from "@/types/edamam";
 import { DiscoverRecipesFilters } from "./DiscoverRecipesFilters";
 import { DiscoverRecipesResults } from "./DiscoverRecipesResults";
+import { useMobileLayout } from "@/hooks/useMobileLayout";
 
 export function DiscoverRecipesContent() {
   const [keyword, setKeyword] = useState("");
   const [sortBy, setSortBy] = useState("newest");
   const [apiFilters, setApiFilters] = useState<DiscoverRecipeFilters | null>(null);
+  const { mobileLayout, handleMobileLayoutChange } = useMobileLayout();
   const [filters, setFilters] = useState({
     mealTypes: [] as string[],
     cuisineTypes: [] as string[],
@@ -57,11 +59,13 @@ export function DiscoverRecipesContent() {
         onFiltersChange={handleFiltersChange}
         onReset={handleReset}
         onSearch={handleSearch}
+        mobileLayout={mobileLayout}
+        onMobileLayoutChange={handleMobileLayoutChange}
       />
 
       {/* Results */}
       {apiFilters && (
-        <DiscoverRecipesResults filters={apiFilters} />
+        <DiscoverRecipesResults filters={apiFilters} mobileLayout={mobileLayout} />
       )}
 
       {!apiFilters && (

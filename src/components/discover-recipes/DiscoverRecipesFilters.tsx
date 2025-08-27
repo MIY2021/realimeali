@@ -71,6 +71,8 @@ interface DiscoverRecipesFiltersProps {
   }) => void;
   onReset: () => void;
   onSearch: () => void;
+  mobileLayout: string;
+  onMobileLayoutChange: (layout: string) => void;
 }
 
 export function DiscoverRecipesFilters({ 
@@ -81,10 +83,11 @@ export function DiscoverRecipesFilters({
   filters, 
   onFiltersChange, 
   onReset, 
-  onSearch 
+  onSearch,
+  mobileLayout,
+  onMobileLayoutChange
 }: DiscoverRecipesFiltersProps) {
   const isMobile = useIsMobile();
-  const { mobileLayout, handleMobileLayoutChange } = useMobileLayout();
 
   const hasActiveFilters = filters.mealTypes.length > 0 || 
                           filters.cuisineTypes.length > 0 || 
@@ -132,7 +135,7 @@ export function DiscoverRecipesFilters({
             <div className="w-[60px]">
               <MobileLayoutSelector
                 value={mobileLayout}
-                onChange={handleMobileLayoutChange}
+                onChange={onMobileLayoutChange}
               />
             </div>
           </div>

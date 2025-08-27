@@ -8,9 +8,10 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface DiscoverRecipesResultsProps {
   filters: DiscoverRecipeFilters;
+  mobileLayout: string;
 }
 
-export function DiscoverRecipesResults({ filters }: DiscoverRecipesResultsProps) {
+export function DiscoverRecipesResults({ filters, mobileLayout }: DiscoverRecipesResultsProps) {
   const { recipes, isLoading, isLoadingMore, hasMore, error, totalFetched, loadMore } = useEdamamApiPagination(filters);
 
   if (isLoading) {
@@ -58,11 +59,12 @@ export function DiscoverRecipesResults({ filters }: DiscoverRecipesResultsProps)
   return (
     <div className="space-y-4">
       
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      <div className={`grid gap-4 ${mobileLayout === '2' ? 'grid-cols-2 sm:grid-cols-2' : 'grid-cols-1 sm:grid-cols-2'} lg:grid-cols-3 xl:grid-cols-4`}>
         {recipes.map((hit, index) => (
           <ExternalRecipeCard 
             key={`${hit.recipe.uri}-${index}`} 
             recipe={hit.recipe} 
+            mobileLayout={mobileLayout}
           />
         ))}
       </div>
