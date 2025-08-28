@@ -16,6 +16,7 @@ import RecipeDetail from "@/pages/RecipeDetail";
 import MealPlanner from "@/pages/MealPlanner";
 import ShoppingList from "@/pages/ShoppingList";
 import DiscoverRecipesPage from "@/pages/DiscoverRecipesPage";
+import ImportedRecipeDetailPage from "@/pages/ImportedRecipeDetailPage";
 import AdminDashboard from "@/pages/AdminDashboard";
 import Feedback from "@/pages/Feedback";
 import Contact from "@/pages/Contact";
@@ -53,6 +54,7 @@ function AppContent() {
           <Route path="/my-recipes/:slug/edit" element={<EditRecipePage />} />
           <Route path="/my-recipes/:slug" element={<RecipeDetail />} />
           <Route path="/discover-recipes" element={<DiscoverRecipesPage />} />
+          <Route path="/discover-recipes/:id" element={<ImportedRecipeDetailPage />} />
           <Route path="/meal-planner" element={<MealPlanner />} />
           <Route path="/shopping-list" element={<ShoppingList />} />
           <Route path="/admin" element={<AdminDashboard />} />

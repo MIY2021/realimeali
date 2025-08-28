@@ -200,7 +200,7 @@ export const importRecipesToDatabase = async (
   }
 
   // Update import log with final results
-  await supabase
+  const { error: updateError } = await supabase
     .from('recipe_import_logs')
     .update({
       successful_imports: successfulImports,
@@ -208,6 +208,10 @@ export const importRecipesToDatabase = async (
       import_notes: `Completed: ${successfulImports} successful, ${failedImports} failed. ${errors.length > 0 ? `Errors: ${errors.join('; ')}` : ''}`
     })
     .eq('id', importLog.id);
+
+  if (updateError) {
+    console.error('Error updating import log:', updateError);
+  }
 
   return {
     success: failedImports === 0,
