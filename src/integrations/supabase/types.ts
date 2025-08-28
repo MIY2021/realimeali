@@ -401,6 +401,106 @@ export type Database = {
         }
         Relationships: []
       }
+      imported_recipes: {
+        Row: {
+          add_count: number
+          cook_time: number | null
+          cooking_method: Database["public"]["Enums"]["cooking_method"] | null
+          created_at: string
+          cuisine_region: Database["public"]["Enums"]["cuisine_region"] | null
+          description: string | null
+          diet_lifestyle: Database["public"]["Enums"]["diet_lifestyle"][] | null
+          fruit_veg_breakdown: string | null
+          fruit_veg_ingredient_breakdown: Json | null
+          fruit_veg_portions: number | null
+          fruit_veg_recommendations: Json | null
+          fruit_veg_total_grams: number | null
+          id: string
+          image: string | null
+          import_method: string | null
+          imported_by: string
+          ingredients: string[]
+          instructions: string[]
+          is_featured: boolean
+          meal_type: Database["public"]["Enums"]["meal_type"] | null
+          meal_types: string[]
+          prep_time: number | null
+          priority_score: number | null
+          servings: number | null
+          source_url: string | null
+          title: string
+          top_tip: string | null
+          updated_at: string
+          view_count: number
+        }
+        Insert: {
+          add_count?: number
+          cook_time?: number | null
+          cooking_method?: Database["public"]["Enums"]["cooking_method"] | null
+          created_at?: string
+          cuisine_region?: Database["public"]["Enums"]["cuisine_region"] | null
+          description?: string | null
+          diet_lifestyle?:
+            | Database["public"]["Enums"]["diet_lifestyle"][]
+            | null
+          fruit_veg_breakdown?: string | null
+          fruit_veg_ingredient_breakdown?: Json | null
+          fruit_veg_portions?: number | null
+          fruit_veg_recommendations?: Json | null
+          fruit_veg_total_grams?: number | null
+          id?: string
+          image?: string | null
+          import_method?: string | null
+          imported_by: string
+          ingredients?: string[]
+          instructions?: string[]
+          is_featured?: boolean
+          meal_type?: Database["public"]["Enums"]["meal_type"] | null
+          meal_types?: string[]
+          prep_time?: number | null
+          priority_score?: number | null
+          servings?: number | null
+          source_url?: string | null
+          title: string
+          top_tip?: string | null
+          updated_at?: string
+          view_count?: number
+        }
+        Update: {
+          add_count?: number
+          cook_time?: number | null
+          cooking_method?: Database["public"]["Enums"]["cooking_method"] | null
+          created_at?: string
+          cuisine_region?: Database["public"]["Enums"]["cuisine_region"] | null
+          description?: string | null
+          diet_lifestyle?:
+            | Database["public"]["Enums"]["diet_lifestyle"][]
+            | null
+          fruit_veg_breakdown?: string | null
+          fruit_veg_ingredient_breakdown?: Json | null
+          fruit_veg_portions?: number | null
+          fruit_veg_recommendations?: Json | null
+          fruit_veg_total_grams?: number | null
+          id?: string
+          image?: string | null
+          import_method?: string | null
+          imported_by?: string
+          ingredients?: string[]
+          instructions?: string[]
+          is_featured?: boolean
+          meal_type?: Database["public"]["Enums"]["meal_type"] | null
+          meal_types?: string[]
+          prep_time?: number | null
+          priority_score?: number | null
+          servings?: number | null
+          source_url?: string | null
+          title?: string
+          top_tip?: string | null
+          updated_at?: string
+          view_count?: number
+        }
+        Relationships: []
+      }
       meal_plan_approval_requests: {
         Row: {
           created_at: string
@@ -621,6 +721,39 @@ export type Database = {
           role?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      recipe_import_logs: {
+        Row: {
+          created_at: string
+          failed_imports: number
+          filename: string
+          id: string
+          import_notes: string | null
+          imported_by: string
+          successful_imports: number
+          total_records: number
+        }
+        Insert: {
+          created_at?: string
+          failed_imports?: number
+          filename: string
+          id?: string
+          import_notes?: string | null
+          imported_by: string
+          successful_imports?: number
+          total_records?: number
+        }
+        Update: {
+          created_at?: string
+          failed_imports?: number
+          filename?: string
+          id?: string
+          import_notes?: string | null
+          imported_by?: string
+          successful_imports?: number
+          total_records?: number
         }
         Relationships: []
       }

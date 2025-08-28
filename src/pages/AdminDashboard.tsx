@@ -9,6 +9,7 @@ import { AdminStats } from "@/components/admin/AdminStats";
 import { UserManagement } from "@/components/admin/UserManagement";
 import { FeedbackModerationPanel } from "@/components/admin/FeedbackModerationPanel";
 import { RecipeExportPanel } from "@/components/admin/RecipeExportPanel";
+import { RecipeImportPanel } from "@/components/admin/RecipeImportPanel";
 import { User, AlertCircle } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -62,9 +63,12 @@ const AdminDashboard = () => {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className={`grid w-full ${isMobile ? 'grid-cols-2' : 'grid-cols-4'}`}>
+        <TabsList className={`grid w-full ${isMobile ? 'grid-cols-3' : 'grid-cols-5'}`}>
           <TabsTrigger value="feedback" className={`${isMobile ? 'text-xs px-1' : ''}`}>
             {isMobile ? 'Feedback' : 'Feedback & Suggestions'}
+          </TabsTrigger>
+          <TabsTrigger value="import" className={`${isMobile ? 'text-xs px-1' : ''}`}>
+            {isMobile ? 'Import' : 'Import'}
           </TabsTrigger>
           <TabsTrigger value="export" className={`${isMobile ? 'text-xs px-1' : ''}`}>
             {isMobile ? 'Export' : 'Export'}
@@ -100,6 +104,20 @@ const AdminDashboard = () => {
 
         <TabsContent value="stats" className="space-y-6">
           <AdminStats />
+        </TabsContent>
+
+        <TabsContent value="import" className="space-y-6">
+          <Card>
+            <CardHeader className={`${isMobile ? 'px-4 py-4' : ''}`}>
+              <CardTitle className={`${isMobile ? 'text-lg' : ''}`}>Recipe Import</CardTitle>
+              <CardDescription className={`${isMobile ? 'text-xs' : ''}`}>
+                Import high-quality recipes to the curated collection
+              </CardDescription>
+            </CardHeader>
+            <CardContent className={`${isMobile ? 'px-4 pb-4' : ''}`}>
+              <RecipeImportPanel />
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="export" className="space-y-6">
