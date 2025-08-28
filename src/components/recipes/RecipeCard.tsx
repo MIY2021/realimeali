@@ -147,9 +147,9 @@ export function RecipeCard({ recipe, onAddToMealPlan, onRecipeClick, showActions
         </p>
         
         {/* Recipe Details */}
-        <div className="flex items-center gap-4 text-sm text-muted-foreground mb-2">
+          <div className="flex items-center gap-4 text-sm text-muted-foreground mb-2">
           <div className="flex items-center gap-1">
-            <Clock className="h-4 w-4" />
+            <Clock className="h-4 w-4 text-terracotta" />
             <span>{recipe.prep_time + recipe.cook_time} min</span>
           </div>
           <div className="flex items-center gap-1">
