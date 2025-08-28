@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Heart, Eye, Plus, User, Clock } from "lucide-react";
+import { Heart, Eye, Plus, User, Clock, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Recipe } from "@/types";
 import { useRecipes } from "@/contexts/RecipesContext";
@@ -146,10 +146,16 @@ export function RecipeCard({ recipe, onAddToMealPlan, onRecipeClick, showActions
           {recipe.description}
         </p>
         
-        {/* Cooking time */}
-        <div className="flex items-center gap-1 mb-2">
-          <Clock className="h-4 w-4 text-terracotta" />
-          <span className="text-sm text-gray-600">{recipe.prep_time + recipe.cook_time} min</span>
+        {/* Recipe Details */}
+        <div className="flex items-center gap-4 text-sm text-muted-foreground mb-2">
+          <div className="flex items-center gap-1">
+            <Clock className="h-4 w-4" />
+            <span>{recipe.prep_time + recipe.cook_time} min</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <Users className="h-4 w-4" />
+            <span>{recipe.servings}</span>
+          </div>
         </div>
 
         <div className={`flex items-center gap-1 mb-3 ${isCompactLayout ? 'flex-wrap' : ''}`}>

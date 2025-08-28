@@ -88,13 +88,19 @@ export function ImportedRecipeCard({
           {recipe.description || 'No description available'}
         </p>
         
-        {/* Cooking time */}
-        {totalTime > 0 && (
-          <div className="flex items-center gap-1 mb-2">
-            <Clock className="h-4 w-4 text-terracotta" />
-            <span className="text-sm text-gray-600">{totalTime} min</span>
+        {/* Recipe Details */}
+        <div className="flex items-center gap-4 text-sm text-muted-foreground mb-2">
+          {totalTime > 0 && (
+            <div className="flex items-center gap-1">
+              <Clock className="h-4 w-4" />
+              <span>{totalTime} min</span>
+            </div>
+          )}
+          <div className="flex items-center gap-1">
+            <Users className="h-4 w-4" />
+            <span>{recipe.servings}</span>
           </div>
-        )}
+        </div>
 
         <div className={`flex items-center gap-1 mb-3 ${isCompactLayout ? 'flex-wrap' : ''}`}>
           {recipe.meal_types && recipe.meal_types.length > 0 && (
