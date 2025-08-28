@@ -240,7 +240,7 @@ export default function ImportedRecipeDetailPage() {
           className="w-full mb-6 bg-terracotta hover:bg-terracotta/90 text-white"
         >
           <Plus className="w-4 h-4 mr-2" />
-          {isAdding ? 'Adding to My Recipes...' : 'Add to Meal Plan'}
+          {isAdding ? 'Adding to My Recipes...' : 'Add to My Recipes'}
         </Button>
 
         {/* Cooking Time */}
