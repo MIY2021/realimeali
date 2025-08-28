@@ -138,7 +138,7 @@ export function DiscoverRecipesContent() {
           <>
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold text-navy">
-                Featured Recipes {totalImported > 0 && `(${totalImported} available)`}
+                Results {totalImported > 0 && `(${totalImported} available)`}
               </h2>
             </div>
             

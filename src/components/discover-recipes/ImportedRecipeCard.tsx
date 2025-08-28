@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Clock, Users, Plus, Eye } from 'lucide-react';
 import { ImportedRecipe } from '@/services/importedRecipeService';
 import { useNavigate } from 'react-router-dom';
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ImportedRecipeCardProps {
   recipe: ImportedRecipe;
@@ -18,8 +19,11 @@ export function ImportedRecipeCard({
   onAddToMealPlan 
 }: ImportedRecipeCardProps) {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   
-  const handleViewRecipe = () => {
+  const handleViewRecipe = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     navigate(`/discover-recipes/${recipe.id}`);
   };
 
@@ -30,134 +34,105 @@ export function ImportedRecipeCard({
     }
   };
 
+  const handleRecipeClick = () => {
+    navigate(`/discover-recipes/${recipe.id}`);
+  };
+
+  const capitalizeFirst = (str: string) => {
+    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+  };
+
   const totalTime = (recipe.prep_time || 0) + (recipe.cook_time || 0);
   
+  // Determine if buttons should be stacked (mobile two-column layout)
+  const shouldStackButtons = isMobile && mobileLayout === '2';
+  // Determine if we should use compact layout (mobile two-column layout)
+  const isCompactLayout = isMobile && mobileLayout === '2';
+  
   return (
-    <Card 
-      className="group cursor-pointer hover:shadow-md transition-all duration-200 border-0 bg-card"
-      onClick={handleViewRecipe}
-    >
-      {recipe.image && (
-        <div className="relative overflow-hidden rounded-t-lg">
-          <img 
-            src={recipe.image} 
-            alt={recipe.title}
-            className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-200"
-            loading="lazy"
-          />
-          {recipe.is_featured && (
+    <Card className="bg-card rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 flex flex-col h-full">
+      <div className="relative overflow-hidden rounded-t-lg">
+        <div onClick={handleRecipeClick} className="cursor-pointer">
+          {recipe.image ? (
+            <img 
+              src={recipe.image} 
+              alt={recipe.title}
+              className={`w-full aspect-[4/3] object-cover transition-transform duration-300 ${!isMobile ? 'hover:scale-110' : ''}`}
+            />
+          ) : (
+            <div className="w-full aspect-[4/3] bg-gray-200 flex items-center justify-center">
+              <span className="text-gray-400 text-4xl">🍽️</span>
+            </div>
+          )}
+        </div>
+      </div>
+      
+      <CardContent className="p-4 flex-1 flex flex-col">
+        <div onClick={handleRecipeClick} className="cursor-pointer">
+          <h3 className={`font-semibold text-gray-900 mb-2 hover:text-primary transition-colors ${isCompactLayout ? 'text-sm' : 'text-lg'}`}>
+            {recipe.title}
+          </h3>
+        </div>
+        
+        <p 
+          className="text-sm text-gray-600 mb-3 flex-1"
+          style={{
+            display: '-webkit-box',
+            WebkitLineClamp: isCompactLayout ? 1 : 2,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+            lineHeight: '1.4em',
+            maxHeight: isCompactLayout ? '1.4em' : '2.8em'
+          }}
+        >
+          {recipe.description || 'No description available'}
+        </p>
+        
+        {/* Cooking time */}
+        {totalTime > 0 && (
+          <div className="flex items-center gap-1 mb-2">
+            <Clock className="h-4 w-4 text-terracotta" />
+            <span className="text-sm text-gray-600">{totalTime} min</span>
+          </div>
+        )}
+
+        <div className={`flex items-center gap-1 mb-3 ${isCompactLayout ? 'flex-wrap' : ''}`}>
+          {recipe.meal_types && recipe.meal_types.length > 0 && (
             <Badge 
-              className="absolute top-2 left-2 bg-primary text-primary-foreground"
+              variant="secondary"
+              className={isCompactLayout ? 'text-xs px-2 py-0.5 h-5' : ''}
             >
-              Featured
+              {capitalizeFirst(recipe.meal_types[0])}
             </Badge>
           )}
         </div>
-      )}
-      
-      <CardContent className="p-4 space-y-3">
-        <div className="space-y-2">
-          <h3 className="font-semibold text-base line-clamp-2 group-hover:text-primary transition-colors">
-            {recipe.title}
-          </h3>
-          
-          {recipe.description && (
-            <p className="text-sm text-muted-foreground line-clamp-2">
-              {recipe.description}
-            </p>
-          )}
-        </div>
 
-        {/* Recipe Meta Info */}
-        <div className="flex items-center gap-4 text-xs text-muted-foreground">
-          {totalTime > 0 && (
-            <div className="flex items-center gap-1">
-              <Clock className="w-3 h-3" />
-              <span>{totalTime}m</span>
-            </div>
-          )}
-          
-          <div className="flex items-center gap-1">
-            <Users className="w-3 h-3" />
-            <span>{recipe.servings} servings</span>
-          </div>
-
-          {recipe.view_count > 0 && (
-            <div className="flex items-center gap-1">
-              <Eye className="w-3 h-3" />
-              <span>{recipe.view_count}</span>
-            </div>
-          )}
-        </div>
-
-        {/* Meal Types */}
-        {recipe.meal_types && recipe.meal_types.length > 0 && (
-          <div className="flex flex-wrap gap-1">
-            {recipe.meal_types.slice(0, 3).map((type) => (
-              <Badge 
-                key={type} 
-                variant="secondary" 
-                className="text-xs px-2 py-0.5 capitalize"
-              >
-                {type}
-              </Badge>
-            ))}
-            {recipe.meal_types.length > 3 && (
-              <Badge variant="secondary" className="text-xs px-2 py-0.5">
-                +{recipe.meal_types.length - 3}
-              </Badge>
-            )}
-          </div>
-        )}
-
-        {/* Cuisine & Diet Info */}
-        <div className="flex flex-wrap gap-1 text-xs">
-          {recipe.cuisine_region && (
-            <span className="text-muted-foreground capitalize">
-              {recipe.cuisine_region.replace('_', ' ')}
-            </span>
-          )}
-          
-          {recipe.diet_lifestyle && recipe.diet_lifestyle.length > 0 && (
-            <>
-              {recipe.cuisine_region && <span className="text-muted-foreground">•</span>}
-              <span className="text-muted-foreground capitalize">
-                {recipe.diet_lifestyle[0].replace('_', ' ')}
-                {recipe.diet_lifestyle.length > 1 && ` +${recipe.diet_lifestyle.length - 1}`}
-              </span>
-            </>
-          )}
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex gap-2 pt-2">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="flex-1 text-xs"
+        {/* Action buttons row */}
+        <div className={`mt-auto ${shouldStackButtons ? 'flex flex-col gap-2' : 'flex gap-2'}`}>
+          <Button
+            variant="outline"
+            size="sm"
+            className={`text-xs px-2 ${shouldStackButtons ? 'w-full' : 'flex-1'}`}
             onClick={handleViewRecipe}
           >
-            View Recipe
+            <Eye className="h-3 w-3 mr-1" />
+            <span className="hidden xl:inline">View Recipe</span>
+            <span className="xl:hidden">View</span>
           </Button>
           
           {onAddToMealPlan && (
-            <Button 
-              size="sm" 
-              className="text-xs px-3"
+            <Button
+              variant="default"
+              size="sm"
+              className={`text-xs px-2 ${shouldStackButtons ? 'w-full' : 'flex-1'}`}
               onClick={handleAddToMealPlan}
             >
-              <Plus className="w-3 h-3 mr-1" />
-              Add
+              <Plus className="h-3 w-3 mr-1" />
+              <span className="hidden xl:inline">Add to Meal Plan</span>
+              <span className="xl:hidden">Add</span>
             </Button>
           )}
         </div>
-
-        {/* Top Tip Preview */}
-        {recipe.top_tip && (
-          <div className="text-xs text-muted-foreground italic border-l-2 border-primary pl-2 mt-2">
-            💡 {recipe.top_tip.length > 60 ? `${recipe.top_tip.substring(0, 60)}...` : recipe.top_tip}
-          </div>
-        )}
       </CardContent>
     </Card>
   );
