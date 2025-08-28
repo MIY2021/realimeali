@@ -39,6 +39,11 @@ export interface ImportedRecipeFilters {
   offset?: number;
 }
 
+export interface ImportedRecipesResult {
+  recipes: ImportedRecipe[];
+  total: number;
+}
+
 export const fetchImportedRecipes = async (filters: ImportedRecipeFilters = {}): Promise<ImportedRecipe[]> => {
   let query = supabase
     .from('imported_recipes' as any)
@@ -102,6 +107,95 @@ export const fetchImportedRecipes = async (filters: ImportedRecipeFilters = {}):
   }
 
   return (data || []) as unknown as ImportedRecipe[];
+};
+
+export const fetchImportedRecipesWithTotal = async (filters: ImportedRecipeFilters = {}): Promise<ImportedRecipesResult> => {
+  // Build base query for counting
+  let countQuery = supabase
+    .from('imported_recipes' as any)
+    .select('*', { count: 'exact', head: true });
+
+  // Build base query for data
+  let dataQuery = supabase
+    .from('imported_recipes' as any)
+    .select('*');
+
+  // Apply filters to both queries
+  const applyFilters = (query: any) => {
+    if (filters.keyword) {
+      query = query.or(`title.ilike.%${filters.keyword}%,description.ilike.%${filters.keyword}%`);
+    }
+
+    if (filters.mealTypes && filters.mealTypes.length > 0) {
+      query = query.overlaps('meal_types', filters.mealTypes);
+    }
+
+    if (filters.cuisineTypes && filters.cuisineTypes.length > 0) {
+      query = query.in('cuisine_region', filters.cuisineTypes);
+    }
+
+    if (filters.dietLifestyle && filters.dietLifestyle.length > 0) {
+      query = query.overlaps('diet_lifestyle', filters.dietLifestyle);
+    }
+
+    if (filters.cookingDurations && filters.cookingDurations.length > 0) {
+      const timeConditions: string[] = [];
+      filters.cookingDurations.forEach(duration => {
+        switch (duration) {
+          case '0-30':
+            timeConditions.push('(prep_time + cook_time) <= 30');
+            break;
+          case '30-60':
+            timeConditions.push('(prep_time + cook_time) > 30 AND (prep_time + cook_time) <= 60');
+            break;
+          case '60+':
+            timeConditions.push('(prep_time + cook_time) > 60');
+            break;
+        }
+      });
+      if (timeConditions.length > 0) {
+        query = query.or(timeConditions.join(','));
+      }
+    }
+
+    return query;
+  };
+
+  countQuery = applyFilters(countQuery);
+  dataQuery = applyFilters(dataQuery);
+
+  // Apply pagination to data query only
+  if (filters.offset) {
+    dataQuery = dataQuery.range(filters.offset, (filters.offset + (filters.limit || 20)) - 1);
+  } else if (filters.limit) {
+    dataQuery = dataQuery.limit(filters.limit);
+  }
+
+  // Order data query
+  dataQuery = dataQuery.order('is_featured', { ascending: false })
+                      .order('priority_score', { ascending: false })
+                      .order('created_at', { ascending: false });
+
+  // Execute both queries
+  const [countResult, dataResult] = await Promise.all([
+    countQuery,
+    dataQuery
+  ]);
+
+  if (countResult.error) {
+    console.error('Error fetching recipe count:', countResult.error);
+    throw new Error(`Failed to fetch recipe count: ${countResult.error.message}`);
+  }
+
+  if (dataResult.error) {
+    console.error('Error fetching imported recipes:', dataResult.error);
+    throw new Error(`Failed to fetch imported recipes: ${dataResult.error.message}`);
+  }
+
+  return {
+    recipes: (dataResult.data || []) as unknown as ImportedRecipe[],
+    total: countResult.count || 0
+  };
 };
 
 export const fetchImportedRecipeById = async (id: string): Promise<ImportedRecipe | null> => {

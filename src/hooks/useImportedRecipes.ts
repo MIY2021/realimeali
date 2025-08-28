@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { 
-  fetchImportedRecipes, 
+  fetchImportedRecipesWithTotal, 
   ImportedRecipe, 
   ImportedRecipeFilters,
   convertFiltersToImported 
@@ -26,6 +26,7 @@ export function useImportedRecipes(
   const [page, setPage] = useState(0);
   const [allRecipes, setAllRecipes] = useState<ImportedRecipe[]>([]);
   const [hasMore, setHasMore] = useState(true);
+  const [totalCount, setTotalCount] = useState(0);
   
   const pageSize = 20;
 
@@ -43,7 +44,7 @@ export function useImportedRecipes(
     refetch: queryRefetch
   } = useQuery({
     queryKey: ['imported-recipes', importedFilters, page],
-    queryFn: () => fetchImportedRecipes(importedFilters),
+    queryFn: () => fetchImportedRecipesWithTotal(importedFilters),
     enabled: true,
     staleTime: 1000 * 60 * 5, // 5 minutes
     gcTime: 1000 * 60 * 30, // 30 minutes
@@ -53,20 +54,22 @@ export function useImportedRecipes(
   // Update recipes when new data arrives
   useEffect(() => {
     if (data) {
+      setTotalCount(data.total);
+      
       if (page === 0) {
         // First page - replace all recipes
-        setAllRecipes(data);
+        setAllRecipes(data.recipes);
       } else {
         // Additional pages - append new recipes
         setAllRecipes(prev => {
           const existingIds = new Set(prev.map(recipe => recipe.id));
-          const newRecipes = data.filter(recipe => !existingIds.has(recipe.id));
+          const newRecipes = data.recipes.filter(recipe => !existingIds.has(recipe.id));
           return [...prev, ...newRecipes];
         });
       }
 
       // Update hasMore based on returned data
-      setHasMore(data.length === pageSize);
+      setHasMore(data.recipes.length === pageSize);
     }
   }, [data, page]);
 
@@ -75,6 +78,7 @@ export function useImportedRecipes(
     setPage(0);
     setAllRecipes([]);
     setHasMore(true);
+    setTotalCount(0);
   }, [
     filters.keyword,
     filters.mealType,
@@ -93,6 +97,7 @@ export function useImportedRecipes(
     setPage(0);
     setAllRecipes([]);
     setHasMore(true);
+    setTotalCount(0);
     queryRefetch();
   }, [queryRefetch]);
 
@@ -103,6 +108,6 @@ export function useImportedRecipes(
     hasMore,
     loadMore,
     refetch,
-    total: allRecipes.length
+    total: totalCount
   };
 }

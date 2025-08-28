@@ -137,7 +137,7 @@ export function DiscoverRecipesContent() {
         ) : importedRecipes.length > 0 ? (
           <>
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-navy">
+              <h2 className="text-sm font-medium text-navy">
                 Results {totalImported > 0 && `(${totalImported} available)`}
               </h2>
             </div>
