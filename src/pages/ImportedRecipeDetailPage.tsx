@@ -15,6 +15,7 @@ import { RecipeMetaInfo } from '@/components/recipes/RecipeMetaInfo';
 import { RecipeTabContent } from '@/components/recipes/RecipeTabContent';
 import { RecipeClassificationSummary } from '@/components/recipes/RecipeClassificationSummary';
 import { RecipeSourceInfo } from '@/components/recipes/RecipeSourceInfo';
+import { RecipeImage } from '@/components/ui/recipe-image';
 import { ServingsSelector } from '@/components/meal-planner/ServingsSelector';
 import { RecipeScalingService } from '@/utils/recipeScaling';
 import { Recipe } from '@/types';
@@ -208,56 +209,59 @@ export default function ImportedRecipeDetailPage() {
 
   return (
     <div className="container max-w-4xl py-1 sm:py-4 px-4 sm:px-6">
-      {/* Header with back button and add button */}
-      <div className="flex items-center justify-between mb-2 sm:mb-4">
+      {/* Back button */}
+      <div className="mb-4">
         <Button variant="ghost" size="sm" onClick={() => navigate(-1)}>
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Discover Recipes
-        </Button>
-        
-        <Button 
-          onClick={handleAddToMyRecipes}
-          disabled={isAdding || !user || !currentHousehold}
-          className="flex items-center gap-2"
-        >
-          <Plus className="w-4 h-4" />
-          {isAdding ? 'Adding...' : 'Add to My Recipes'}
+          Back to Recipes
         </Button>
       </div>
 
       <div className="max-w-4xl mx-auto">
-        <RecipeHeroSection recipe={convertedRecipe} />
-        
-        {/* Custom action buttons for imported recipe */}
-        <div className="flex justify-center gap-2 mb-6">
-          <Button 
-            onClick={handleAddToMyRecipes}
-            disabled={isAdding || !user || !currentHousehold}
-            size="lg"
-            className="flex items-center gap-2"
-          >
-            <Plus className="w-4 h-4" />
-            {isAdding ? 'Adding to My Recipes...' : 'Add to My Recipes'}
-          </Button>
+        {/* Recipe Image */}
+        <div className="relative h-64 sm:h-80 w-full rounded-lg overflow-hidden mb-4">
+          <RecipeImage
+            recipe={convertedRecipe}
+            className="w-full h-full"
+            iconSize="h-16 w-16"
+          />
         </div>
 
+        {/* Recipe Title */}
+        <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+          {recipe.title}
+        </h1>
+
+        {/* Add to Meal Plan Button */}
+        <Button 
+          onClick={handleAddToMyRecipes}
+          disabled={isAdding || !user || !currentHousehold}
+          size="lg"
+          className="w-full mb-6 bg-terracotta hover:bg-terracotta/90 text-white"
+        >
+          <Plus className="w-4 h-4 mr-2" />
+          {isAdding ? 'Adding to My Recipes...' : 'Add to Meal Plan'}
+        </Button>
+
         {/* Cooking Time */}
-        <div className="mb-6 px-2">
+        <div className="mb-6">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
               <Clock className="h-4 w-4 text-terracotta" />
-              <span className="text-navy font-medium text-sm">Prep: {recipe.prep_time} min</span>
+              <span className="text-gray-700 font-medium">Prep: {recipe.prep_time} min</span>
             </div>
             <div className="flex items-center gap-2">
               <Clock className="h-4 w-4 text-terracotta" />
-              <span className="text-navy font-medium text-sm">Cook: {recipe.cook_time} min</span>
+              <span className="text-gray-700 font-medium">Cook: {recipe.cook_time} min</span>
             </div>
           </div>
         </div>
 
         {/* Description */}
         {recipe.description && (
-          <p className="text-gray-600 text-lg mb-6 px-2">{recipe.description}</p>
+          <p className="text-gray-600 leading-relaxed mb-6">
+            {recipe.description}
+          </p>
         )}
 
         {/* Recipe Classification */}
@@ -273,7 +277,7 @@ export default function ImportedRecipeDetailPage() {
                 </div>
                 <div className="flex-1">
                   <h3 className="font-semibold text-sage-800 mb-2">Top Tip</h3>
-                  <p className="text-gray-700 leading-relaxed sm:ml-0 -ml-8">
+                  <p className="text-gray-700 leading-relaxed">
                     {recipe.top_tip}
                   </p>
                 </div>
@@ -283,10 +287,10 @@ export default function ImportedRecipeDetailPage() {
         )}
 
         {/* Servings Controller */}
-        <div className="mb-4 px-2">
+        <div className="mb-4">
           <div className="flex items-center gap-2">
             <Users className="h-5 w-5 text-terracotta" />
-            <span className="text-navy font-medium">Servings:</span>
+            <span className="text-gray-700 font-medium">Servings:</span>
             <ServingsSelector
               currentServings={currentServings}
               onServingsChange={handleServingsChange}
@@ -321,29 +325,6 @@ export default function ImportedRecipeDetailPage() {
           createdAt={recipe.created_at}
           updatedAt={recipe.updated_at}
         />
-
-        {/* Add to My Recipes CTA */}
-        <div className="mt-8 bg-primary/5 border border-primary/20 rounded-lg p-6 text-center">
-          <h3 className="text-lg font-semibold mb-2">Love this recipe?</h3>
-          <p className="text-muted-foreground mb-4">
-            Add it to your household recipes to include it in meal planning and generate shopping lists.
-          </p>
-          <Button 
-            size="lg"
-            onClick={handleAddToMyRecipes}
-            disabled={isAdding || !user || !currentHousehold}
-            className="w-full md:w-auto"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            {isAdding ? 'Adding to My Recipes...' : 'Add to My Recipes'}
-          </Button>
-          
-          {(!user || !currentHousehold) && (
-            <p className="text-xs text-muted-foreground mt-2">
-              Please sign in and select a household to add recipes
-            </p>
-          )}
-        </div>
       </div>
     </div>
   );
