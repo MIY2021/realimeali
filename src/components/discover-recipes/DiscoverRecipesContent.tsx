@@ -137,9 +137,14 @@ export function DiscoverRecipesContent() {
         ) : importedRecipes.length > 0 ? (
           <>
             <div className="flex items-center justify-between">
-              <h2 className="text-sm font-normal text-navy">
-                {totalImported} Featured Results (Use search to access 2 million+ more!)
-              </h2>
+              <div>
+                <h2 className="text-sm font-normal text-navy">
+                  {totalImported} Featured Results
+                </h2>
+                <p className="text-xs text-muted-foreground">
+                  (Use the above search and filters to access 2 million+ more!)
+                </p>
+              </div>
             </div>
             
             <div className={`grid gap-4 ${mobileLayout === '2' ? 'grid-cols-2 sm:grid-cols-2' : 'grid-cols-1 sm:grid-cols-2'} lg:grid-cols-3 xl:grid-cols-4`}>
