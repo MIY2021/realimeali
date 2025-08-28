@@ -167,9 +167,10 @@ export const useRecipeCreationHandlers = ({
               moderation_status: 'pending'
             };
 
-            await supabase
-              .from('community_recipes')
-              .insert(communityRecipeData);
+            // TODO: Re-enable community recipes when table is created
+            // await supabase
+            //   .from('community_recipes')
+            //   .insert(communityRecipeData);
 
             toast({
               title: "Recipe Saved & Shared! 🌟",

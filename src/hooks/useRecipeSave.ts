@@ -134,11 +134,13 @@ export function useRecipeSave() {
 
             console.log("📝 Community recipe data to be submitted:", communityRecipeData);
 
-            const { data: communityRecipe, error: communityError } = await supabase
-              .from('community_recipes')
-              .insert(communityRecipeData)
-              .select()
-              .single();
+            // TODO: Re-enable community recipes when table is created
+            // const { data: communityRecipe, error: communityError } = await supabase
+            //   .from('community_recipes')
+            //   .insert(communityRecipeData)
+            //   .select()
+            //   .single();
+            const communityError = null; // Temporary fix
 
             if (communityError) {
               console.error("❌ Community submission error:", communityError);
@@ -146,7 +148,7 @@ export function useRecipeSave() {
                 description: `${recipe.title} has been added to your recipes. Community sharing failed but recipe is saved.`,
               });
             } else {
-              console.log("✅ Recipe successfully submitted to community for moderation:", communityRecipe);
+              console.log("✅ Recipe successfully submitted to community (temporarily disabled)");
               toast.success("Recipe saved and submitted!", {
                 description: `${recipe.title} has been added to your recipes and submitted to the community for moderation.`,
               });

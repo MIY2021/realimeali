@@ -57,7 +57,7 @@ export const addImportedRecipeToHousehold = async (
     // Add recipe to household
     const { data, error } = await supabase
       .from('recipes')
-      .insert(householdRecipe)
+      .insert(householdRecipe as any) // Type assertion to work around Supabase type issues
       .select('id')
       .single();
 
@@ -78,8 +78,7 @@ export const addImportedRecipeToHousehold = async (
       .eq('id', importedRecipe.id)
       .then(() => {
         console.log('Add count incremented for imported recipe:', importedRecipe.id);
-      })
-      .catch((error) => {
+      }, (error) => {
         console.error('Error incrementing add count:', error);
       });
 

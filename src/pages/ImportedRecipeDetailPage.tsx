@@ -8,7 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Clock, Users, Plus, Star } from 'lucide-react';
 import { fetchImportedRecipeById, ImportedRecipe, incrementRecipeViewCount } from '@/services/importedRecipeService';
 import { addImportedRecipeToHousehold } from '@/services/householdRecipeService';
-import { useHouseholdContext } from '@/contexts/HouseholdContext';
+import { useHousehold } from '@/contexts/HouseholdContext';
 import { AuthContext } from '@/contexts/AuthContext';
 import { useContext } from 'react';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
@@ -19,7 +19,7 @@ export default function ImportedRecipeDetailPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useContext(AuthContext);
-  const { selectedHousehold } = useHouseholdContext();
+  const { currentHousehold } = useHousehold();
   
   const [recipe, setRecipe] = useState<ImportedRecipe | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -63,7 +63,7 @@ export default function ImportedRecipeDetailPage() {
   };
 
   const handleAddToMyRecipes = async () => {
-    if (!recipe || !user || !selectedHousehold) {
+    if (!recipe || !user || !currentHousehold) {
       toast({
         title: "Authentication required",
         description: "Please sign in and select a household to add recipes.",
@@ -74,7 +74,7 @@ export default function ImportedRecipeDetailPage() {
 
     setIsAdding(true);
     try {
-      const result = await addImportedRecipeToHousehold(recipe, user.id, selectedHousehold.id);
+      const result = await addImportedRecipeToHousehold(recipe, user.id, currentHousehold.id);
       
       if (result.success) {
         toast({
@@ -165,7 +165,7 @@ export default function ImportedRecipeDetailPage() {
         
         <Button 
           onClick={handleAddToMyRecipes}
-          disabled={isAdding || !user || !selectedHousehold}
+          disabled={isAdding || !user || !currentHousehold}
           className="flex items-center gap-2"
         >
           <Plus className="w-4 h-4" />
@@ -352,14 +352,14 @@ export default function ImportedRecipeDetailPage() {
           <Button 
             size="lg"
             onClick={handleAddToMyRecipes}
-            disabled={isAdding || !user || !selectedHousehold}
+            disabled={isAdding || !user || !currentHousehold}
             className="w-full md:w-auto"
           >
             <Plus className="w-4 h-4 mr-2" />
             {isAdding ? 'Adding to My Recipes...' : 'Add to My Recipes'}
           </Button>
           
-          {(!user || !selectedHousehold) && (
+          {(!user || !currentHousehold) && (
             <p className="text-xs text-muted-foreground mt-2">
               Please sign in and select a household to add recipes
             </p>

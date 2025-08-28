@@ -101,7 +101,7 @@ export const fetchImportedRecipes = async (filters: ImportedRecipeFilters = {}):
     throw new Error(`Failed to fetch imported recipes: ${error.message}`);
   }
 
-  return data || [];
+  return (data || []) as unknown as ImportedRecipe[];
 };
 
 export const fetchImportedRecipeById = async (id: string): Promise<ImportedRecipe | null> => {
@@ -109,14 +109,14 @@ export const fetchImportedRecipeById = async (id: string): Promise<ImportedRecip
     .from('imported_recipes' as any)
     .select('*')
     .eq('id', id)
-    .single();
+    .maybeSingle();
 
   if (error) {
     console.error('Error fetching imported recipe:', error);
     return null;
   }
 
-  return data;
+  return data as unknown as ImportedRecipe | null;
 };
 
 export const incrementRecipeViewCount = async (id: string): Promise<void> => {
