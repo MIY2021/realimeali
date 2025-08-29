@@ -4,11 +4,11 @@ export const MEAL_TYPE_OPTIONS = [
   { value: "breakfast" as MealType, label: "Breakfast", icon: "🌅" },
   { value: "lunch" as MealType, label: "Lunch", icon: "☀️" },
   { value: "dinner" as MealType, label: "Dinner", icon: "🌙" },
-  { value: "snacks" as MealType, label: "Snacks", icon: "🍿" },
+  { value: "appetizers" as MealType, label: "Starters", icon: "🍽️" },
   { value: "sides" as MealType, label: "Sides", icon: "🥗" },
+  { value: "snacks" as MealType, label: "Snacks", icon: "🍿" },
   { value: "desserts" as MealType, label: "Desserts", icon: "🍰" },
   { value: "drinks" as MealType, label: "Drinks", icon: "🥤" },
-  { value: "appetizers" as MealType, label: "Appetizers / Starters", icon: "🥗" },
 ];
 
 export const CUISINE_REGION_OPTIONS = [
@@ -16,6 +16,7 @@ export const CUISINE_REGION_OPTIONS = [
   { value: "american" as CuisineRegion, label: "American", icon: "🇺🇸" },
   { value: "italian" as CuisineRegion, label: "Italian", icon: "🇮🇹" },
   { value: "french" as CuisineRegion, label: "French", icon: "🇫🇷" },
+  { value: "spanish" as CuisineRegion, label: "Spanish", icon: "🇪🇸" },
   { value: "mexican" as CuisineRegion, label: "Mexican", icon: "🇲🇽" },
   { value: "indian" as CuisineRegion, label: "Indian", icon: "🇮🇳" },
   { value: "chinese" as CuisineRegion, label: "Chinese", icon: "🇨🇳" },
@@ -29,7 +30,6 @@ export const CUISINE_REGION_OPTIONS = [
   { value: "nordic" as CuisineRegion, label: "Nordic", icon: "❄️" },
   { value: "eastern_european" as CuisineRegion, label: "Eastern European", icon: "🏰" },
   { value: "greek" as CuisineRegion, label: "Greek", icon: "🇬🇷" },
-  { value: "spanish" as CuisineRegion, label: "Spanish", icon: "🇪🇸" },
 ];
 
 export const DIET_LIFESTYLE_OPTIONS = [
@@ -37,15 +37,15 @@ export const DIET_LIFESTYLE_OPTIONS = [
   { value: "vegan" as DietLifestyle, label: "Vegan", icon: "🌱" },
   { value: "gluten_free" as DietLifestyle, label: "Gluten Free", icon: "🚫" },
   { value: "dairy_free" as DietLifestyle, label: "Dairy Free", icon: "🥛" },
+  { value: "paleo" as DietLifestyle, label: "Paleo", icon: "🦴" },
+  { value: "low_carb_keto" as DietLifestyle, label: "Low Carb/Keto", icon: "🥓" },
+  { value: "diabetic_friendly" as DietLifestyle, label: "Diabetic Friendly", icon: "🩺" },
+  { value: "low_fat" as DietLifestyle, label: "Low Fat", icon: "🥙" },
   { value: "high_protein" as DietLifestyle, label: "High Protein", icon: "💪" },
   { value: "kid_friendly" as DietLifestyle, label: "Kid Friendly", icon: "👶" },
   { value: "pescatarian" as DietLifestyle, label: "Pescatarian", icon: "🐟" },
-  { value: "low_carb_keto" as DietLifestyle, label: "Low Carb/Keto", icon: "🥓" },
-  { value: "paleo" as DietLifestyle, label: "Paleo", icon: "🦴" },
-  { value: "diabetic_friendly" as DietLifestyle, label: "Diabetic Friendly", icon: "🩺" },
-  { value: "budget_meals" as DietLifestyle, label: "Budget Meals", icon: "💰" },
   { value: "pregnancy_safe" as DietLifestyle, label: "Pregnancy Safe", icon: "🤰" },
-  { value: "low_fat" as DietLifestyle, label: "Low Fat", icon: "🥙" },
+  { value: "budget_meals" as DietLifestyle, label: "Budget Meals", icon: "💰" },
   { value: "batch_cooking" as DietLifestyle, label: "Batch Cooking", icon: "🍲" },
 ];
 
