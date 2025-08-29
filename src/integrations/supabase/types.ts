@@ -1047,6 +1047,7 @@ export type Database = {
         | "nordic"
         | "eastern_european"
         | "greek"
+        | "spanish"
       diet_lifestyle:
         | "vegetarian"
         | "vegan"
@@ -1060,6 +1061,8 @@ export type Database = {
         | "budget_meals"
         | "kid_friendly"
         | "pregnancy_safe"
+        | "low_fat"
+        | "batch_cooking"
       household_role: "owner" | "member"
       invitation_status: "pending" | "accepted" | "declined" | "expired"
       meal_type:
@@ -1070,6 +1073,7 @@ export type Database = {
         | "sides"
         | "desserts"
         | "drinks"
+        | "appetizers"
       recipe_category:
         | "Bulk"
         | "Easy"
@@ -1246,6 +1250,7 @@ export const Constants = {
         "nordic",
         "eastern_european",
         "greek",
+        "spanish",
       ],
       diet_lifestyle: [
         "vegetarian",
@@ -1260,6 +1265,8 @@ export const Constants = {
         "budget_meals",
         "kid_friendly",
         "pregnancy_safe",
+        "low_fat",
+        "batch_cooking",
       ],
       household_role: ["owner", "member"],
       invitation_status: ["pending", "accepted", "declined", "expired"],
@@ -1271,6 +1278,7 @@ export const Constants = {
         "sides",
         "desserts",
         "drinks",
+        "appetizers",
       ],
       recipe_category: [
         "Bulk",

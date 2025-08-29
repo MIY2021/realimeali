@@ -24,7 +24,8 @@ const MEAL_TYPE_LABELS: Record<MealType, string> = {
   snacks: "Snacks",
   sides: "Sides",
   desserts: "Desserts",
-  drinks: "Drinks"
+  drinks: "Drinks",
+  appetizers: "Appetizers / Starters"
 };
 
 export function MealPlannerRecipeSelection({

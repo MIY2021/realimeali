@@ -8,6 +8,7 @@ export const MEAL_TYPE_OPTIONS = [
   { value: "sides" as MealType, label: "Sides", icon: "🥗" },
   { value: "desserts" as MealType, label: "Desserts", icon: "🍰" },
   { value: "drinks" as MealType, label: "Drinks", icon: "🥤" },
+  { value: "appetizers" as MealType, label: "Appetizers / Starters", icon: "🥗" },
 ];
 
 export const CUISINE_REGION_OPTIONS = [
@@ -28,6 +29,7 @@ export const CUISINE_REGION_OPTIONS = [
   { value: "nordic" as CuisineRegion, label: "Nordic", icon: "❄️" },
   { value: "eastern_european" as CuisineRegion, label: "Eastern European", icon: "🏰" },
   { value: "greek" as CuisineRegion, label: "Greek", icon: "🇬🇷" },
+  { value: "spanish" as CuisineRegion, label: "Spanish", icon: "🇪🇸" },
 ];
 
 export const DIET_LIFESTYLE_OPTIONS = [
@@ -43,6 +45,8 @@ export const DIET_LIFESTYLE_OPTIONS = [
   { value: "diabetic_friendly" as DietLifestyle, label: "Diabetic Friendly", icon: "🩺" },
   { value: "budget_meals" as DietLifestyle, label: "Budget Meals", icon: "💰" },
   { value: "pregnancy_safe" as DietLifestyle, label: "Pregnancy Safe", icon: "🤰" },
+  { value: "low_fat" as DietLifestyle, label: "Low Fat", icon: "🥙" },
+  { value: "batch_cooking" as DietLifestyle, label: "Batch Cooking", icon: "🍲" },
 ];
 
 export const COOKING_DURATION_OPTIONS = [

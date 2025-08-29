@@ -136,13 +136,13 @@ export interface HouseholdMealPlan {
   };
 }
 
-// Updated to include sides, desserts, drinks in meal plans
-export type MealType = "breakfast" | "lunch" | "dinner" | "snacks" | "sides" | "desserts" | "drinks";
+// Updated to include sides, desserts, drinks, appetizers in meal plans
+export type MealType = "breakfast" | "lunch" | "dinner" | "snacks" | "sides" | "desserts" | "drinks" | "appetizers";
 
-// Updated to match database cuisine_region enum exactly (with greek added)
-export type CuisineRegion = "british" | "american" | "italian" | "french" | "mexican" | "indian" | "chinese" | "japanese" | "thai" | "mediterranean" | "middle_eastern" | "african" | "korean" | "caribbean" | "nordic" | "eastern_european" | "greek";
+// Updated to match database cuisine_region enum exactly (with greek and spanish added)
+export type CuisineRegion = "british" | "american" | "italian" | "french" | "mexican" | "indian" | "chinese" | "japanese" | "thai" | "mediterranean" | "middle_eastern" | "african" | "korean" | "caribbean" | "nordic" | "eastern_european" | "greek" | "spanish";
 
-export type DietLifestyle = "vegetarian" | "vegan" | "gluten_free" | "dairy_free" | "high_protein" | "kid_friendly" | "pescatarian" | "low_carb_keto" | "paleo" | "diabetic_friendly" | "budget_meals" | "pregnancy_safe";
+export type DietLifestyle = "vegetarian" | "vegan" | "gluten_free" | "dairy_free" | "high_protein" | "kid_friendly" | "pescatarian" | "low_carb_keto" | "paleo" | "diabetic_friendly" | "budget_meals" | "pregnancy_safe" | "low_fat" | "batch_cooking";
 
 // ComplexityLevel type removed - using cooking duration calculation instead
 export type CookingDuration = "0-30" | "30-60" | "60+";
