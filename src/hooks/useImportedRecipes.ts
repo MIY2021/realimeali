@@ -48,7 +48,9 @@ export function useImportedRecipes(
     enabled: true,
     staleTime: 1000 * 60 * 5, // 5 minutes
     gcTime: 1000 * 60 * 30, // 30 minutes
-    retry: 2
+    retry: 2,
+    refetchOnWindowFocus: false,
+    refetchOnMount: true
   });
 
   // Update recipes when new data arrives

@@ -27,19 +27,24 @@ export function DiscoverRecipesContent() {
 
   // Load imported recipes by default
   const { currentHousehold } = useHousehold();
-  const {
-    recipes: importedRecipes,
-    isLoading: isLoadingImported,
-    hasMore: hasMoreImported,
-    loadMore: loadMoreImported,
-    total: totalImported
-  } = useImportedRecipes({
+  
+  // Create filter object for imported recipes
+  const importedFilters = {
     keyword: keyword.trim() || undefined,
     mealType: filters.mealTypes[0] || undefined,
     cuisineType: filters.cuisineTypes[0] || undefined,
     time: filters.cookingDurations[0] || undefined,
     diet: filters.dietLifestyle.length > 0 ? filters.dietLifestyle : undefined,
-  });
+  };
+  
+  const {
+    recipes: importedRecipes,
+    isLoading: isLoadingImported,
+    hasMore: hasMoreImported,
+    loadMore: loadMoreImported,
+    total: totalImported,
+    refetch: refetchImported
+  } = useImportedRecipes(importedFilters);
 
   const handleAddToMealPlan = async (recipe: any) => {
     if (!currentHousehold?.id) {

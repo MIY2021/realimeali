@@ -71,7 +71,8 @@ export function useEdamamApiPagination(baseFilters: Omit<DiscoverRecipeFilters, 
       baseFilters.mealType || 
       baseFilters.cuisineType || 
       baseFilters.diet?.length || 
-      baseFilters.time
+      baseFilters.time ||
+      Object.keys(baseFilters).length === 0 // Enable for empty filters too
     ),
     staleTime: 1000 * 60 * 15, // 15 minutes for fresher results
     gcTime: 1000 * 60 * 60 * 24, // 24 hours
