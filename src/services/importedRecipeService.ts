@@ -235,6 +235,114 @@ export const incrementRecipeAddCount = async (id: string): Promise<void> => {
   }
 };
 
+// Admin management functions
+export const deleteImportedRecipe = async (id: string): Promise<void> => {
+  const { error } = await supabase
+    .from('imported_recipes' as any)
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    console.error('Error deleting imported recipe:', error);
+    throw new Error(`Failed to delete recipe: ${error.message}`);
+  }
+};
+
+export const deleteAllImportedRecipes = async (): Promise<void> => {
+  const { error } = await supabase
+    .from('imported_recipes' as any)
+    .delete()
+    .neq('id', '00000000-0000-0000-0000-000000000000'); // Delete all records
+
+  if (error) {
+    console.error('Error deleting all imported recipes:', error);
+    throw new Error(`Failed to delete all recipes: ${error.message}`);
+  }
+};
+
+export const toggleImportedRecipeFeatured = async (id: string): Promise<boolean> => {
+  // First get current status
+  const { data: currentData, error: fetchError } = await supabase
+    .from('imported_recipes' as any)
+    .select('is_featured')
+    .eq('id', id)
+    .single();
+
+  if (fetchError) {
+    console.error('Error fetching recipe status:', fetchError);
+    throw new Error(`Failed to fetch recipe status: ${fetchError.message}`);
+  }
+
+  if (!currentData) {
+    throw new Error('Recipe not found');
+  }
+
+  const newFeaturedStatus = !(currentData as any).is_featured;
+
+  const { error } = await supabase
+    .from('imported_recipes' as any)
+    .update({ is_featured: newFeaturedStatus })
+    .eq('id', id);
+
+  if (error) {
+    console.error('Error toggling featured status:', error);
+    throw new Error(`Failed to update featured status: ${error.message}`);
+  }
+
+  return newFeaturedStatus;
+};
+
+export const bulkDeleteImportedRecipes = async (ids: string[]): Promise<void> => {
+  const { error } = await supabase
+    .from('imported_recipes' as any)
+    .delete()
+    .in('id', ids);
+
+  if (error) {
+    console.error('Error bulk deleting recipes:', error);
+    throw new Error(`Failed to delete recipes: ${error.message}`);
+  }
+};
+
+export const bulkToggleFeatured = async (ids: string[], featured: boolean): Promise<void> => {
+  const { error } = await supabase
+    .from('imported_recipes' as any)
+    .update({ is_featured: featured })
+    .in('id', ids);
+
+  if (error) {
+    console.error('Error bulk updating featured status:', error);
+    throw new Error(`Failed to update featured status: ${error.message}`);
+  }
+};
+
+export const checkExistingRecipe = async (title: string): Promise<ImportedRecipe | null> => {
+  const { data, error } = await supabase
+    .from('imported_recipes' as any)
+    .select('*')
+    .eq('title', title)
+    .maybeSingle();
+
+  if (error) {
+    console.error('Error checking existing recipe:', error);
+    return null;
+  }
+
+  return data as unknown as ImportedRecipe | null;
+};
+
+export const updateImportedRecipe = async (id: string, updates: Partial<ImportedRecipe>): Promise<void> => {
+  const { error } = await supabase
+    .from('imported_recipes' as any)
+    .update(updates)
+    .eq('id', id);
+
+  if (error) {
+    console.error('Error updating imported recipe:', error);
+    throw new Error(`Failed to update recipe: ${error.message}`);
+  }
+};
+
 export const convertFiltersToImported = (filters: DiscoverRecipeFilters): ImportedRecipeFilters => {
   return {
     keyword: filters.keyword,

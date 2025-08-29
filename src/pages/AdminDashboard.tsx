@@ -10,6 +10,7 @@ import { UserManagement } from "@/components/admin/UserManagement";
 import { FeedbackModerationPanel } from "@/components/admin/FeedbackModerationPanel";
 import { RecipeExportPanel } from "@/components/admin/RecipeExportPanel";
 import { RecipeImportPanel } from "@/components/admin/RecipeImportPanel";
+import { ImportedRecipeManagementPanel } from "@/components/admin/ImportedRecipeManagementPanel";
 import { User, AlertCircle } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -63,12 +64,15 @@ const AdminDashboard = () => {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className={`grid w-full ${isMobile ? 'grid-cols-3' : 'grid-cols-5'}`}>
+        <TabsList className={`grid w-full ${isMobile ? 'grid-cols-4' : 'grid-cols-6'}`}>
           <TabsTrigger value="feedback" className={`${isMobile ? 'text-xs px-1' : ''}`}>
             {isMobile ? 'Feedback' : 'Feedback & Suggestions'}
           </TabsTrigger>
           <TabsTrigger value="import" className={`${isMobile ? 'text-xs px-1' : ''}`}>
             {isMobile ? 'Import' : 'Import'}
+          </TabsTrigger>
+          <TabsTrigger value="manage" className={`${isMobile ? 'text-xs px-1' : ''}`}>
+            {isMobile ? 'Manage' : 'Manage Recipes'}
           </TabsTrigger>
           <TabsTrigger value="export" className={`${isMobile ? 'text-xs px-1' : ''}`}>
             {isMobile ? 'Export' : 'Export'}
@@ -118,6 +122,10 @@ const AdminDashboard = () => {
               <RecipeImportPanel />
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="manage" className="space-y-6">
+          <ImportedRecipeManagementPanel />
         </TabsContent>
 
         <TabsContent value="export" className="space-y-6">

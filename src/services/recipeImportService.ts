@@ -1,5 +1,6 @@
-import { supabase } from "@/integrations/supabase/client";
-import Papa from "papaparse";
+import { supabase } from '@/integrations/supabase/client';
+import Papa from 'papaparse';
+import { checkExistingRecipe, updateImportedRecipe } from './importedRecipeService';
 import { RecipeExportData } from "./recipeExportService";
 
 export interface ImportedRecipe {
@@ -223,38 +224,98 @@ export const importRecipesToDatabase = async (
   };
 };
 
-export const importRecipesFromCSV = async (file: File, userId: string): Promise<ImportResult> => {
+export const importRecipesFromCSV = async (
+  file: File, 
+  userId: string, 
+  onOverwritePrompt?: (title: string) => Promise<boolean>
+): Promise<ImportResult> => {
   try {
-    console.log('Starting CSV import process...');
+    console.log('Starting CSV import process for file:', file.name);
     
-    // Parse CSV file
-    const csvData = await parseCSVFile(file);
-    console.log(`Parsed ${csvData.length} records from CSV`);
+    // Parse the CSV file
+    const rawData = await parseCSVFile(file);
+    console.log('Parsed CSV data:', rawData.length, 'records');
 
-    // Validate data
-    const validationErrors = validateRecipeData(csvData);
+    // Validate the data
+    const validationErrors = validateRecipeData(rawData);
     if (validationErrors.length > 0) {
+      console.warn('Validation errors found:', validationErrors);
       const errorMessages = validationErrors.map(e => `Row ${e.row} (${e.field}): ${e.message}`);
       return {
         success: false,
-        totalRecords: csvData.length,
+        totalRecords: rawData.length,
         successfulImports: 0,
-        failedImports: csvData.length,
+        failedImports: rawData.length,
         errors: errorMessages
       };
     }
 
-    // Convert to imported recipe format
-    const importedRecipes = csvData.map(data => convertExportDataToImportedRecipe(data, userId));
-
-    // Import to database
-    const result = await importRecipesToDatabase(importedRecipes, file.name, userId);
+    // Check for existing recipes and handle overwrites
+    const recipesToImport = [];
+    const recipesToUpdate = [];
     
-    console.log('Import completed:', result);
-    return result;
+    for (const data of rawData) {
+      const existing = await checkExistingRecipe(data.title);
+      if (existing) {
+        // If callback provided, ask user for confirmation
+        if (onOverwritePrompt) {
+          const shouldOverwrite = await onOverwritePrompt(data.title);
+          if (shouldOverwrite) {
+            const updatedRecipe = convertExportDataToImportedRecipe(data, userId);
+            recipesToUpdate.push({ id: existing.id, ...updatedRecipe });
+          }
+          // If user says no, skip this recipe
+        } else {
+          // No callback, default to overwrite
+          const updatedRecipe = convertExportDataToImportedRecipe(data, userId);
+          recipesToUpdate.push({ id: existing.id, ...updatedRecipe });
+        }
+      } else {
+        recipesToImport.push(convertExportDataToImportedRecipe(data, userId));
+      }
+    }
 
+    console.log('Recipes to import (new):', recipesToImport.length);
+    console.log('Recipes to update (existing):', recipesToUpdate.length);
+
+    // Handle updates first
+    let updateErrors: string[] = [];
+    for (const recipe of recipesToUpdate) {
+      try {
+        const { id, ...updates } = recipe;
+        await updateImportedRecipe(id, updates);
+      } catch (error) {
+        updateErrors.push(`Failed to update "${recipe.title}": ${error instanceof Error ? error.message : 'Unknown error'}`);
+      }
+    }
+
+    // Import new recipes
+    let importResult: ImportResult;
+    if (recipesToImport.length > 0) {
+      importResult = await importRecipesToDatabase(recipesToImport, file.name, userId);
+    } else {
+      importResult = {
+        success: true,
+        totalRecords: 0,
+        successfulImports: 0,
+        failedImports: 0,
+        errors: []
+      };
+    }
+
+    // Combine results
+    const combinedResult: ImportResult = {
+      success: importResult.success && updateErrors.length === 0,
+      totalRecords: rawData.length,
+      successfulImports: importResult.successfulImports + (recipesToUpdate.length - updateErrors.length),
+      failedImports: importResult.failedImports + updateErrors.length,
+      errors: [...importResult.errors, ...updateErrors]
+    };
+
+    console.log('Combined import/update completed:', combinedResult);
+    return combinedResult;
   } catch (error) {
-    console.error('Error during CSV import:', error);
+    console.error('Error importing recipes from CSV:', error);
     return {
       success: false,
       totalRecords: 0,
