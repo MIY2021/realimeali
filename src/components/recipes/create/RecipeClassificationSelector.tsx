@@ -84,7 +84,7 @@ export function RecipeClassificationSelector({ recipe, onRecipeChange }: RecipeC
           </div>
 
           <div>
-            <label className="text-sm font-medium mb-2 block">Cuisine</label>
+            <label className="text-sm font-medium mb-2 block">Cuisine (optional)</label>
             <Select 
               value={recipe.cuisine_region || ""} 
               onValueChange={(value) => updateRecipeField('cuisine_region', value)}

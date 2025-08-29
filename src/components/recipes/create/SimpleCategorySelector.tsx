@@ -93,7 +93,7 @@ export function SimpleCategorySelector({ recipe, onRecipeChange }: SimpleCategor
 
         {/* Cuisine */}
         <div>
-          <label className="text-sm font-medium mb-3 block">Cuisine</label>
+          <label className="text-sm font-medium mb-3 block">Cuisine (optional)</label>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
             {CUISINE_REGION_OPTIONS.map((option) => (
               <CategoryButton
