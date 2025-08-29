@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus, Book } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -51,12 +51,14 @@ export default function RecipesPage() {
     return "Curate your household's favourite meals — a private collection just for you.";
   };
 
-  // Update RealiChef with recipes context
-  useRealiChefContext({
+  // Update RealiChef with recipes context - memoize to prevent infinite loops
+  const realiChefContextData = useMemo(() => ({
     totalRecipes: recipes.length,
     recipeMealTypes: [...new Set(recipes.map(r => r.meal_type).filter(Boolean))],
     favoriteRecipes: recipes.filter(r => r.is_favorite).length
-  });
+  }), [recipes.length, recipes]);
+  
+  useRealiChefContext(realiChefContextData);
 
   // Header shows immediately, only recipe list shows loading
 

@@ -159,9 +159,15 @@ export const RealiChefProvider = ({ children }: RealiChefProviderProps) => {
   };
 
   const updatePageContext = useCallback((data: any) => {
-    console.log('📝 RealiChef: Updating page context', { page: pageContext.page, data });
-    setPageContext(prev => ({ ...prev, data }));
-  }, [pageContext.page]);
+    setPageContext(prev => {
+      // Only update if the data has actually changed
+      if (JSON.stringify(prev.data) === JSON.stringify(data)) {
+        return prev;
+      }
+      console.log('📝 RealiChef: Updating page context', { page: prev.page, data });
+      return { ...prev, data };
+    });
+  }, []);
 
   const applyRecipeUpdate = (recipe: any) => {
     if (pageContext.data?.onRecipeUpdate) {
