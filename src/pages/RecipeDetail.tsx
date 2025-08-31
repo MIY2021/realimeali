@@ -67,7 +67,9 @@ export default function RecipeDetail() {
   const handleDelete = async () => {
     if (!recipe) return;
     
-    const confirmed = window.confirm("Are you sure you want to delete this recipe?");
+    const confirmed = window.confirm(
+      `Are you sure you want to delete "${recipe.title}"?\n\nThis recipe will be moved to trash and can be recovered from Settings within 30 days. After 30 days, it will be permanently deleted.`
+    );
     if (confirmed) {
       const success = await deleteRecipe(recipe.id);
       if (success) {

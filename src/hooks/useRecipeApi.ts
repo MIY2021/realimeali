@@ -12,6 +12,7 @@ export const useRecipeApi = () => {
         .from('recipes')
         .select('*')
         .eq('household_id', householdId)
+        .eq('is_deleted', false) // Only fetch non-deleted recipes
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -199,16 +200,88 @@ export const useRecipeApi = () => {
 
   const deleteRecipe = async (id: string): Promise<boolean> => {
     try {
-      const { error } = await supabase
-        .from('recipes')
-        .delete()
-        .eq('id', id);
+      const { error } = await supabase.rpc('soft_delete_recipe', {
+        recipe_id: id
+      });
 
       if (error) throw error;
       
       return true;
     } catch (error) {
-      console.error('Error deleting recipe:', error);
+      console.error('Error soft deleting recipe:', error);
+      return false;
+    }
+  };
+
+  const fetchDeletedRecipes = async (householdId: string): Promise<Recipe[]> => {
+    try {
+      console.log('API: Fetching deleted recipes for household:', householdId);
+      
+      const { data, error } = await supabase
+        .from('recipes')
+        .select('*')
+        .eq('household_id', householdId)
+        .eq('is_deleted', true)
+        .order('deleted_at', { ascending: false });
+
+      if (error) {
+        console.error('API: Supabase error:', error);
+        throw error;
+      }
+      
+      // Transform database response to match Recipe interface
+      return (data || []).map(recipe => {
+        const recipeWithCookingStatus = recipe as any;
+        
+        return {
+          ...recipe,
+          created_by: recipe.user_id,
+          has_cooked: Boolean(recipeWithCookingStatus.has_cooked || false),
+          meal_type: VALID_MEAL_TYPES.includes(recipe.meal_type as MealType) 
+            ? recipe.meal_type as MealType 
+            : undefined,
+          meal_types: Array.isArray(recipeWithCookingStatus.meal_types) 
+            ? recipeWithCookingStatus.meal_types.filter((type: string) => 
+                VALID_MEAL_TYPES.includes(type as MealType)
+              ) as MealType[]
+            : (recipe.meal_type && VALID_MEAL_TYPES.includes(recipe.meal_type as MealType) 
+                ? [recipe.meal_type as MealType] 
+                : []),
+          cuisine_region: recipe.cuisine_region as any,
+        };
+      });
+    } catch (error) {
+      console.error('API: Error fetching deleted recipes:', error);
+      throw error;
+    }
+  };
+
+  const restoreRecipe = async (id: string): Promise<boolean> => {
+    try {
+      const { error } = await supabase.rpc('restore_recipe', {
+        recipe_id: id
+      });
+
+      if (error) throw error;
+      
+      return true;
+    } catch (error) {
+      console.error('Error restoring recipe:', error);
+      return false;
+    }
+  };
+
+  const permanentDeleteRecipe = async (id: string): Promise<boolean> => {
+    try {
+      const { error } = await supabase.rpc('permanent_delete_recipe', {
+        recipe_id: id
+      });
+
+      if (error) throw error;
+      
+      return true;
+    } catch (error) {
+      console.error('Error permanently deleting recipe:', error);
       return false;
     }
   };
@@ -235,6 +308,9 @@ export const useRecipeApi = () => {
     createRecipe,
     updateRecipe,
     deleteRecipe,
+    fetchDeletedRecipes,
+    restoreRecipe,
+    permanentDeleteRecipe,
     toggleCookingStatus,
   };
 };

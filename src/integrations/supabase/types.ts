@@ -808,6 +808,7 @@ export type Database = {
           cooking_method: Database["public"]["Enums"]["cooking_method"] | null
           created_at: string | null
           cuisine_region: Database["public"]["Enums"]["cuisine_region"] | null
+          deleted_at: string | null
           description: string | null
           diet_lifestyle: Database["public"]["Enums"]["diet_lifestyle"][] | null
           fruit_veg_breakdown: string | null
@@ -822,6 +823,7 @@ export type Database = {
           import_method: string | null
           ingredients: string[]
           instructions: string[]
+          is_deleted: boolean
           is_favorite: boolean | null
           meal_plan_count: number
           meal_type: Database["public"]["Enums"]["meal_type"] | null
@@ -839,6 +841,7 @@ export type Database = {
           cooking_method?: Database["public"]["Enums"]["cooking_method"] | null
           created_at?: string | null
           cuisine_region?: Database["public"]["Enums"]["cuisine_region"] | null
+          deleted_at?: string | null
           description?: string | null
           diet_lifestyle?:
             | Database["public"]["Enums"]["diet_lifestyle"][]
@@ -855,6 +858,7 @@ export type Database = {
           import_method?: string | null
           ingredients?: string[]
           instructions?: string[]
+          is_deleted?: boolean
           is_favorite?: boolean | null
           meal_plan_count?: number
           meal_type?: Database["public"]["Enums"]["meal_type"] | null
@@ -872,6 +876,7 @@ export type Database = {
           cooking_method?: Database["public"]["Enums"]["cooking_method"] | null
           created_at?: string | null
           cuisine_region?: Database["public"]["Enums"]["cuisine_region"] | null
+          deleted_at?: string | null
           description?: string | null
           diet_lifestyle?:
             | Database["public"]["Enums"]["diet_lifestyle"][]
@@ -888,6 +893,7 @@ export type Database = {
           import_method?: string | null
           ingredients?: string[]
           instructions?: string[]
+          is_deleted?: boolean
           is_favorite?: boolean | null
           meal_plan_count?: number
           meal_type?: Database["public"]["Enums"]["meal_type"] | null
@@ -941,6 +947,10 @@ export type Database = {
     Functions: {
       approve_community_recipe: {
         Args: { recipe_id: string }
+        Returns: undefined
+      }
+      cleanup_old_deleted_recipes: {
+        Args: Record<PropertyKey, never>
         Returns: undefined
       }
       create_household_with_owner: {
@@ -999,7 +1009,19 @@ export type Database = {
         Args: { check_household_id: string; check_user_id: string }
         Returns: boolean
       }
+      permanent_delete_recipe: {
+        Args: { recipe_id: string }
+        Returns: undefined
+      }
       reject_community_recipe: {
+        Args: { recipe_id: string }
+        Returns: undefined
+      }
+      restore_recipe: {
+        Args: { recipe_id: string }
+        Returns: undefined
+      }
+      soft_delete_recipe: {
         Args: { recipe_id: string }
         Returns: undefined
       }

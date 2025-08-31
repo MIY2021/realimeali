@@ -17,6 +17,9 @@ interface RecipesContextType {
   deleteRecipe: (id: string) => Promise<boolean>;
   toggleFavorite: (id: string, isFavorite: boolean) => Promise<Recipe | null>;
   toggleCookingStatus: (id: string) => Promise<Recipe | null>;
+  fetchDeletedRecipes: (householdId: string) => Promise<Recipe[]>;
+  restoreRecipe: (id: string) => Promise<boolean>;
+  permanentDeleteRecipe: (id: string) => Promise<boolean>;
 }
 
 const RecipesContext = createContext<RecipesContextType | undefined>(undefined);
@@ -116,12 +119,54 @@ export const RecipesProvider: React.FC<{ children: React.ReactNode }> = ({ child
       const success = await api.deleteRecipe(id);
       if (success) {
         setRecipes(prev => prev.filter(recipe => recipe.id !== id));
-        toast.success("Recipe deleted successfully");
+        toast.success("Recipe moved to trash. You can restore it within 30 days from Settings.");
       }
       return success;
     } catch (error) {
       console.error('Error deleting recipe:', error);
       toast.error("Failed to delete recipe");
+      return false;
+    }
+  }, [api]);
+
+  const fetchDeletedRecipes = useCallback(async (householdId: string): Promise<Recipe[]> => {
+    try {
+      return await api.fetchDeletedRecipes(householdId);
+    } catch (error) {
+      console.error('Error fetching deleted recipes:', error);
+      toast.error("Failed to load deleted recipes");
+      return [];
+    }
+  }, [api]);
+
+  const restoreRecipe = useCallback(async (id: string): Promise<boolean> => {
+    try {
+      const success = await api.restoreRecipe(id);
+      if (success) {
+        toast.success("Recipe restored successfully");
+        // Refresh recipes to show the restored recipe
+        if (currentHousehold?.id) {
+          fetchRecipes(currentHousehold.id);
+        }
+      }
+      return success;
+    } catch (error) {
+      console.error('Error restoring recipe:', error);
+      toast.error("Failed to restore recipe");
+      return false;
+    }
+  }, [api, currentHousehold?.id, fetchRecipes]);
+
+  const permanentDeleteRecipe = useCallback(async (id: string): Promise<boolean> => {
+    try {
+      const success = await api.permanentDeleteRecipe(id);
+      if (success) {
+        toast.success("Recipe permanently deleted");
+      }
+      return success;
+    } catch (error) {
+      console.error('Error permanently deleting recipe:', error);
+      toast.error("Failed to permanently delete recipe");
       return false;
     }
   }, [api]);
@@ -174,6 +219,9 @@ export const RecipesProvider: React.FC<{ children: React.ReactNode }> = ({ child
     deleteRecipe,
     toggleFavorite,
     toggleCookingStatus,
+    fetchDeletedRecipes,
+    restoreRecipe,
+    permanentDeleteRecipe,
   };
 
   return (

@@ -12,6 +12,7 @@ import { Settings as SettingsIcon, User, Bell, Trash2, Upload, Shuffle } from "l
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { DeletedRecipesSection } from "@/components/settings/DeletedRecipesSection";
 
 const FRUIT_OPTIONS = ['🍎', '🍊', '🍌', '🍇', '🍓', '🥝', '🍑', '🥭', '🍍', '🥥', '🍒', '🍈', '🥑', '🍐', '🥔'];
 
@@ -314,6 +315,9 @@ export default function Settings() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Deleted Recipes */}
+        <DeletedRecipesSection />
 
         {/* Account Management */}
         <Card>
