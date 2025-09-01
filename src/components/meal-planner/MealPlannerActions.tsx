@@ -54,30 +54,30 @@ export const MealPlannerActions = ({
       </div>
 
       {/* Row 2: Share, Clear, and Layout buttons */}
-      <div className="flex justify-between gap-2">
-        <div className="flex gap-2">
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={onShare}
-            className="flex items-center gap-1 h-8 text-xs"
-            disabled={isLoading}
-          >
-            <Share className="h-3 w-3" />
-            Share
-          </Button>
-          
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={onClearAll}
-            className="flex items-center gap-1 h-8 text-xs"
-            disabled={isLoading}
-          >
-            <Trash2 className="h-3 w-3" />
-            Clear All
-          </Button>
-        </div>
+      <div className="flex gap-2 items-center">
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={onShare}
+          className="flex items-center gap-1 h-8 text-xs"
+          disabled={isLoading}
+        >
+          <Share className="h-3 w-3" />
+          Share
+        </Button>
+        
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={onClearAll}
+          className="flex items-center gap-1 h-8 text-xs"
+          disabled={isLoading}
+        >
+          <Trash2 className="h-3 w-3" />
+          Clear All
+        </Button>
+
+        <div className="flex-1" />
 
         <MealPlannerLayoutSelector
           value={mealLayout}
