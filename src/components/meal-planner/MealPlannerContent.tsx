@@ -1,6 +1,7 @@
 
 import { useCallback } from "react";
 import { MealPlannerActions } from "@/components/meal-planner/MealPlannerActions";
+import { MealPlannerGridView } from "@/components/meal-planner/MealPlannerGridView";
 import MealListSection from "@/components/MealListSection";
 import { MealType, Recipe, MealPlan } from "@/types";
 
@@ -10,6 +11,8 @@ interface MealPlannerContentProps {
   isLoading: boolean;
   currentMealPlans: MealPlan[];
   recipes: Recipe[];
+  mealLayout: string;
+  onMealLayoutChange: (value: string) => void;
   onRandomize: () => void;
   onShare: () => void;
   onClearAll: () => void;
@@ -26,6 +29,8 @@ export const MealPlannerContent = ({
   isLoading,
   currentMealPlans,
   recipes,
+  mealLayout,
+  onMealLayoutChange,
   onRandomize,
   onShare,
   onClearAll,
@@ -56,24 +61,39 @@ export const MealPlannerContent = ({
         isLoading={isLoading}
         currentWeek={currentWeek}
         setCurrentWeek={setCurrentWeek}
+        mealLayout={mealLayout}
+        onMealLayoutChange={onMealLayoutChange}
       />
 
-      <div className="space-y-3">
-        {mealTypes.map((mealType, index) => (
-          <MealListSection
-            key={mealType}
-            mealType={mealType}
-            mealPlans={getMealPlansForType(mealType)}
-            getRecipeById={getRecipeById}
-            onAddMeal={onAddMeal}
-            onAddCustomMeal={onAddCustomMeal}
-            onRemoveMeal={onRemoveMeal}
-            onCreateLeftover={onCreateLeftover}
-            onReorderMeals={onReorderMeals}
-            sectionIndex={index}
-          />
-        ))}
-      </div>
+      {mealLayout === 'list' ? (
+        <div className="space-y-3">
+          {mealTypes.map((mealType, index) => (
+            <MealListSection
+              key={mealType}
+              mealType={mealType}
+              mealPlans={getMealPlansForType(mealType)}
+              getRecipeById={getRecipeById}
+              onAddMeal={onAddMeal}
+              onAddCustomMeal={onAddCustomMeal}
+              onRemoveMeal={onRemoveMeal}
+              onCreateLeftover={onCreateLeftover}
+              onReorderMeals={onReorderMeals}
+              sectionIndex={index}
+            />
+          ))}
+        </div>
+      ) : (
+        <MealPlannerGridView
+          currentMealPlans={currentMealPlans}
+          recipes={recipes}
+          mealLayout={mealLayout}
+          onAddMeal={onAddMeal}
+          onAddCustomMeal={onAddCustomMeal}
+          onRemoveMeal={onRemoveMeal}
+          onCreateLeftover={onCreateLeftover}
+          onReorderMeals={onReorderMeals}
+        />
+      )}
     </div>
   );
 };

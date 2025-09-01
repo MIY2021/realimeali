@@ -15,6 +15,7 @@ import { useMealPlanModals } from "@/hooks/useMealPlanModals";
 import { useRandomMealSelection } from "@/hooks/useRandomMealSelection";
 import { useMealPlannerOperations } from "@/hooks/useMealPlannerOperations";
 import { useMealPlannerState } from "@/hooks/useMealPlannerState";
+import { useMealPlannerLayout } from "@/hooks/useMealPlannerLayout";
 import { MealType, Recipe, MealPlan } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 
@@ -73,6 +74,11 @@ export default function MealPlannerContainer() {
     pendingLeftoverData,
     setPendingLeftoverData,
   } = useMealPlannerState();
+
+  const {
+    mealLayout,
+    handleMealLayoutChange,
+  } = useMealPlannerLayout();
   
   const {
     addMealModal,
@@ -343,6 +349,8 @@ export default function MealPlannerContainer() {
         isLoading={isLoading}
         currentMealPlans={currentMealPlans}
         recipes={recipes}
+        mealLayout={mealLayout}
+        onMealLayoutChange={handleMealLayoutChange}
         onRandomize={handleRandomizeClick}
         onShare={handleShare}
         onClearAll={handleClearAll}

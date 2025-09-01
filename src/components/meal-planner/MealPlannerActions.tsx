@@ -1,6 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { FileSpreadsheet, Share, Trash2 } from "lucide-react";
+import { MealPlannerLayoutSelector } from "./MealPlannerLayoutSelector";
 
 interface MealPlannerActionsProps {
   onRandomize: () => void;
@@ -9,6 +10,8 @@ interface MealPlannerActionsProps {
   isLoading: boolean;
   currentWeek: 1 | 2;
   setCurrentWeek: (week: 1 | 2) => void;
+  mealLayout: string;
+  onMealLayoutChange: (value: string) => void;
 }
 
 export const MealPlannerActions = ({ 
@@ -17,7 +20,9 @@ export const MealPlannerActions = ({
   onClearAll,
   isLoading,
   currentWeek,
-  setCurrentWeek
+  setCurrentWeek,
+  mealLayout,
+  onMealLayoutChange
 }: MealPlannerActionsProps) => {
   return (
     <div className="space-y-3">
@@ -48,29 +53,36 @@ export const MealPlannerActions = ({
         </Button>
       </div>
 
-      {/* Row 2: Share and Clear buttons */}
-      <div className="flex gap-2">
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={onShare}
-          className="flex items-center gap-1 h-8 text-xs"
-          disabled={isLoading}
-        >
-          <Share className="h-3 w-3" />
-          Share
-        </Button>
-        
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={onClearAll}
-          className="flex items-center gap-1 h-8 text-xs"
-          disabled={isLoading}
-        >
-          <Trash2 className="h-3 w-3" />
-          Clear All
-        </Button>
+      {/* Row 2: Share, Clear, and Layout buttons */}
+      <div className="flex justify-between gap-2">
+        <div className="flex gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={onShare}
+            className="flex items-center gap-1 h-8 text-xs"
+            disabled={isLoading}
+          >
+            <Share className="h-3 w-3" />
+            Share
+          </Button>
+          
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={onClearAll}
+            className="flex items-center gap-1 h-8 text-xs"
+            disabled={isLoading}
+          >
+            <Trash2 className="h-3 w-3" />
+            Clear All
+          </Button>
+        </div>
+
+        <MealPlannerLayoutSelector
+          value={mealLayout}
+          onChange={onMealLayoutChange}
+        />
       </div>
     </div>
   );
