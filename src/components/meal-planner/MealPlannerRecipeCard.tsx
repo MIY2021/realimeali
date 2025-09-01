@@ -2,12 +2,13 @@ import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Clock, Users, Eye, Trash2, Plus } from "lucide-react";
+import { Clock, Users, Eye, Trash2, Plus, Minus, Check } from "lucide-react";
 import { MealPlan, Recipe } from "@/types";
 import { RecipeImage } from "@/components/ui/recipe-image";
 import { useNavigate } from "react-router-dom";
 import { createRecipeUrl } from "@/utils/slugUtils";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useMealPlan } from "@/contexts/MealPlanContext";
 
 interface MealPlannerRecipeCardProps {
   mealPlan: MealPlan;
@@ -27,6 +28,8 @@ export function MealPlannerRecipeCard({
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [isVisible, setIsVisible] = useState(false);
+  const [servings, setServings] = useState(mealPlan.planned_servings || recipe?.servings || 1);
+  const { updateMealPlanCompletion, updateMealPlanServings } = useMealPlan();
 
   // Animation effect
   useEffect(() => {
@@ -54,6 +57,26 @@ export function MealPlannerRecipeCard({
     e.stopPropagation();
     if (recipe && onCreateLeftover) {
       onCreateLeftover(mealPlan, recipe);
+    }
+  };
+
+  const handleToggleCompletion = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    try {
+      await updateMealPlanCompletion(mealPlan.id, !mealPlan.is_completed);
+    } catch (error) {
+      console.error('Failed to toggle completion:', error);
+    }
+  };
+
+  const handleServingsChange = async (newServings: number) => {
+    if (newServings < 1) return;
+    setServings(newServings);
+    try {
+      await updateMealPlanServings(mealPlan.id, newServings);
+    } catch (error) {
+      console.error('Failed to update servings:', error);
     }
   };
 
@@ -133,31 +156,49 @@ export function MealPlannerRecipeCard({
         )}
 
         {/* Time and Servings */}
-        <div className="flex items-center gap-4 text-muted-foreground">
-          {getDuration() && (
+        <div className="flex items-center justify-between text-muted-foreground">
+          <div className="flex items-center gap-4">
+            {getDuration() && (
+              <div className="flex items-center gap-1">
+                <Clock className="h-4 w-4" />
+                <span className={`${isMobile ? 'text-xs' : 'text-sm'}`}>
+                  {getDuration()} min
+                </span>
+              </div>
+            )}
+          </div>
+          
+          {/* Servings controls */}
+          <div className="flex items-center gap-2">
             <div className="flex items-center gap-1">
-              <Clock className="h-4 w-4" />
+              <Users className="h-4 w-4" />
               <span className={`${isMobile ? 'text-xs' : 'text-sm'}`}>
-                {getDuration()} min
+                Servings:
               </span>
             </div>
-          )}
-          <div className="flex items-center gap-1">
-            <Users className="h-4 w-4" />
-            <span className={`${isMobile ? 'text-xs' : 'text-sm'}`}>
-              {getServings()}
-            </span>
+            <div className="flex items-center gap-1">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-6 w-6 p-0"
+                onClick={() => handleServingsChange(servings - 1)}
+                disabled={servings <= 1}
+              >
+                <Minus className="h-3 w-3" />
+              </Button>
+              <span className="text-sm font-medium min-w-[20px] text-center">
+                {servings}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-6 w-6 p-0"
+                onClick={() => handleServingsChange(servings + 1)}
+              >
+                <Plus className="h-3 w-3" />
+              </Button>
+            </div>
           </div>
-        </div>
-
-        {/* Meal type badge */}
-        <div className="flex justify-start">
-          <Badge 
-            variant="secondary" 
-            className="capitalize bg-sage/20 text-sage hover:bg-sage/30"
-          >
-            {mealPlan.meal_type}
-          </Badge>
         </div>
 
         {/* Action buttons */}
@@ -176,7 +217,22 @@ export function MealPlannerRecipeCard({
           )}
           
           <div className="flex gap-1">
-            {recipe && onCreateLeftover && (
+            {/* Completion toggle */}
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleToggleCompletion}
+              className={`${
+                mealPlan.is_completed 
+                  ? 'text-green-600 border-green-600 bg-green-50 hover:bg-green-100' 
+                  : 'text-gray-600 border-gray-600 hover:bg-gray-50'
+              }`}
+              title={mealPlan.is_completed ? "Mark as not cooked" : "Mark as cooked"}
+            >
+              <Check className="h-4 w-4" />
+            </Button>
+
+            {recipe && onCreateLeftover && !mealPlan.is_leftover && (
               <Button
                 size="sm"
                 variant="outline"
