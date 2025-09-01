@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { MealType, Recipe, MealPlan } from "@/types";
-import { EnhancedMealCard } from "@/components/meal-planner/EnhancedMealCard";
+import { MealPlannerRecipeCard } from "@/components/meal-planner/MealPlannerRecipeCard";
 import { Button } from "@/components/ui/button";
 import { Plus, Clock, Book, UtensilsCrossed, Search, Check, User } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -106,15 +106,13 @@ export const MealPlannerGridView = ({
             ) : (
               <div className={getMealCardGridClasses()}>
                 {meals.map((meal, index) => (
-                  <EnhancedMealCard
+                  <MealPlannerRecipeCard
                     key={meal.id}
                     mealPlan={meal}
                     recipe={getRecipeById(meal.recipe_id)}
                     onRemove={onRemoveMeal}
                     onCreateLeftover={onCreateLeftover}
-                    dragHandleProps={null}
                     animationDelay={(sectionIndex * 100) + (index * 50)}
-                    allMealPlans={currentMealPlans}
                   />
                 ))}
               </div>
