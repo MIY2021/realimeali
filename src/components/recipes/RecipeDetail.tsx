@@ -11,7 +11,7 @@ import { RecipeNotesSection } from "./RecipeNotesSection";
 import { RecipeClassificationSummary } from "./RecipeClassificationSummary";
 import { RecipeSourceInfo } from "./RecipeSourceInfo";
 import { NutritionalInfoSection } from "@/components/nutrition/NutritionalInfoSection";
-import { Lightbulb, Users, RotateCcw, Clock } from "lucide-react";
+import { Lightbulb, Users, RotateCcw, Clock, Minus, Plus } from "lucide-react";
 import { ServingsSelector } from "@/components/meal-planner/ServingsSelector";
 import { Button } from "@/components/ui/button";
 import { RecipeScalingService } from "@/utils/recipeScaling";
@@ -36,6 +36,7 @@ export const RecipeDetail = ({
   const [currentServings, setCurrentServings] = useState(recipe.servings);
   const [scaledIngredients, setScaledIngredients] = useState<string[]>(recipe.ingredients);
   const [showImageEditor, setShowImageEditor] = useState(false);
+  const [isCompact, setIsCompact] = useState(false);
 
   // Load saved servings from localStorage on mount
   useEffect(() => {
@@ -168,6 +169,15 @@ export const RecipeDetail = ({
               <RotateCcw className="h-3 w-3" />
             </Button>
           )}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsCompact(!isCompact)}
+            className="h-6 px-2 text-xs text-gray-500 hover:text-gray-700 flex-shrink-0 ml-2"
+            title={isCompact ? "Expand view" : "Compact view"}
+          >
+            {isCompact ? <Plus className="h-3 w-3" /> : <Minus className="h-3 w-3" />}
+          </Button>
         </div>
       </div>
 
@@ -175,6 +185,7 @@ export const RecipeDetail = ({
         recipe={recipe} 
         scaledIngredients={scaledIngredients}
         isScaled={isScaled}
+        isCompact={isCompact}
       />
 
       
