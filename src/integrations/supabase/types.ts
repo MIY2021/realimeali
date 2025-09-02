@@ -825,6 +825,7 @@ export type Database = {
           instructions: string[]
           is_deleted: boolean
           is_favorite: boolean | null
+          last_updated_by: string | null
           meal_plan_count: number
           meal_type: Database["public"]["Enums"]["meal_type"] | null
           meal_types: string[]
@@ -860,6 +861,7 @@ export type Database = {
           instructions?: string[]
           is_deleted?: boolean
           is_favorite?: boolean | null
+          last_updated_by?: string | null
           meal_plan_count?: number
           meal_type?: Database["public"]["Enums"]["meal_type"] | null
           meal_types?: string[]
@@ -895,6 +897,7 @@ export type Database = {
           instructions?: string[]
           is_deleted?: boolean
           is_favorite?: boolean | null
+          last_updated_by?: string | null
           meal_plan_count?: number
           meal_type?: Database["public"]["Enums"]["meal_type"] | null
           meal_types?: string[]

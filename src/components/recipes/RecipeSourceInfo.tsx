@@ -9,6 +9,7 @@ interface RecipeSourceInfoProps {
   createdBy?: string;
   createdAt?: string;
   updatedAt?: string;
+  lastUpdatedBy?: string;
 }
 
 interface Profile {
@@ -16,37 +17,56 @@ interface Profile {
   email?: string;
 }
 
-export const RecipeSourceInfo = ({ sourceUrl, importMethod, createdBy, createdAt, updatedAt }: RecipeSourceInfoProps) => {
+export const RecipeSourceInfo = ({ sourceUrl, importMethod, createdBy, createdAt, updatedAt, lastUpdatedBy }: RecipeSourceInfoProps) => {
   const [creatorProfile, setCreatorProfile] = useState<Profile | null>(null);
 
   const [updatorProfile, setUpdatorProfile] = useState<Profile | null>(null);
 
   useEffect(() => {
     const fetchProfiles = async () => {
-      if (!createdBy) return;
-      
       try {
+        const profiles: { creator?: Profile; updator?: Profile } = {};
+
         // Fetch creator profile
-        const { data: creatorData } = await supabase
-          .from('profiles')
-          .select('full_name, email')
-          .eq('id', createdBy)
-          .single();
-        
-        if (creatorData) {
-          setCreatorProfile(creatorData);
+        if (createdBy) {
+          const { data: creatorData } = await supabase
+            .from('profiles')
+            .select('full_name, email')
+            .eq('id', createdBy)
+            .single();
+          
+          if (creatorData) {
+            profiles.creator = creatorData;
+            setCreatorProfile(creatorData);
+          }
         }
 
-        // For updated_at, we'd need to track who made the last update
-        // For now, we'll assume it's the same user since we don't track update authors
-        setUpdatorProfile(creatorData);
+        // Fetch updator profile if different from creator
+        if (lastUpdatedBy && lastUpdatedBy !== createdBy) {
+          const { data: updatorData } = await supabase
+            .from('profiles')
+            .select('full_name, email')
+            .eq('id', lastUpdatedBy)
+            .single();
+          
+          if (updatorData) {
+            profiles.updator = updatorData;
+            setUpdatorProfile(updatorData);
+          }
+        } else if (lastUpdatedBy === createdBy && profiles.creator) {
+          // If updator is same as creator, use creator profile
+          setUpdatorProfile(profiles.creator);
+        } else if (profiles.creator) {
+          // Fallback to creator if no lastUpdatedBy
+          setUpdatorProfile(profiles.creator);
+        }
       } catch (error) {
         console.error('Error fetching profiles:', error);
       }
     };
 
     fetchProfiles();
-  }, [createdBy]);
+  }, [createdBy, lastUpdatedBy]);
 
   // Don't render if no relevant info
   if (!createdAt && !importMethod && !sourceUrl) return null;

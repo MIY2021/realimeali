@@ -324,6 +324,7 @@ export default function ImportedRecipeDetailPage() {
           createdBy={recipe.imported_by}
           createdAt={recipe.created_at}
           updatedAt={recipe.updated_at}
+          lastUpdatedBy={recipe.imported_by}
         />
       </div>
     </div>

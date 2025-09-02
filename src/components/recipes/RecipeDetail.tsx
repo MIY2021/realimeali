@@ -186,6 +186,7 @@ export const RecipeDetail = ({
         createdBy={recipe.created_by}
         createdAt={recipe.created_at}
         updatedAt={recipe.updated_at}
+        lastUpdatedBy={recipe.last_updated_by}
       />
 
       {/* Image Editor Dialog */}
