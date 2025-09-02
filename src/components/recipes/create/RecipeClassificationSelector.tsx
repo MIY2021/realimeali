@@ -41,7 +41,7 @@ export function RecipeClassificationSelector({ recipe, onRecipeChange }: RecipeC
       <CardContent className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="text-sm font-medium mb-2 block">Meal Type</label>
+            <label className="text-sm font-medium mb-2 block">Meal Type (select all that apply)</label>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
               {MEAL_TYPE_OPTIONS.map((option) => (
                 <button

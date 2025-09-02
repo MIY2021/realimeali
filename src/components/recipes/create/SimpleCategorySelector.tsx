@@ -65,7 +65,7 @@ export function SimpleCategorySelector({ recipe, onRecipeChange }: SimpleCategor
       <CardContent className="space-y-5">
         {/* Meal Type */}
         <div>
-          <label className="text-sm font-medium mb-3 block">Meal Type</label>
+          <label className="text-sm font-medium mb-3 block">Meal Type (select all that apply)</label>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
             {MEAL_TYPE_OPTIONS.map((option) => (
               <CategoryButton
