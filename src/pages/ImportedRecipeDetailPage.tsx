@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Plus, Lightbulb, Users, RotateCcw, Clock, Minus } from 'lucide-react';
+import { ArrowLeft, Plus, Lightbulb, Users, RotateCcw, Clock } from 'lucide-react';
 import { fetchImportedRecipeById, ImportedRecipe, incrementRecipeViewCount } from '@/services/importedRecipeService';
 import { addImportedRecipeToHousehold } from '@/services/householdRecipeService';
 import { useHousehold } from '@/contexts/HouseholdContext';
@@ -32,7 +32,6 @@ export default function ImportedRecipeDetailPage() {
   const [isAdding, setIsAdding] = useState(false);
   const [currentServings, setCurrentServings] = useState<number>(1);
   const [scaledIngredients, setScaledIngredients] = useState<string[]>([]);
-  const [isCompact, setIsCompact] = useState(false);
 
   useDocumentTitle(recipe ? `${recipe.title} | Discover Recipes` : 'Discover Recipes');
 
@@ -309,15 +308,6 @@ export default function ImportedRecipeDetailPage() {
                 <RotateCcw className="h-3 w-3" />
               </Button>
             )}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsCompact(!isCompact)}
-              className="h-6 px-2 text-xs text-gray-500 hover:text-gray-700 flex-shrink-0 ml-2"
-              title={isCompact ? "Expand view" : "Compact view"}
-            >
-              {isCompact ? <Plus className="h-3 w-3" /> : <Minus className="h-3 w-3" />}
-            </Button>
           </div>
         </div>
 
@@ -325,7 +315,6 @@ export default function ImportedRecipeDetailPage() {
           recipe={convertedRecipe} 
           scaledIngredients={scaledIngredients}
           isScaled={isScaled}
-          isCompact={isCompact}
         />
 
         {/* Recipe Source Information */}
