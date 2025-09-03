@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Plus, Lightbulb, Users, RotateCcw, Clock } from 'lucide-react';
+import { ArrowLeft, Plus, Lightbulb, Users, RotateCcw, Clock, Info } from 'lucide-react';
 import { fetchImportedRecipeById, ImportedRecipe, incrementRecipeViewCount } from '@/services/importedRecipeService';
 import { addImportedRecipeToHousehold } from '@/services/householdRecipeService';
 import { useHousehold } from '@/contexts/HouseholdContext';
@@ -13,6 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { RecipeHeroSection } from '@/components/recipes/RecipeHeroSection';
 import { RecipeMetaInfo } from '@/components/recipes/RecipeMetaInfo';
 import { RecipeTabContent } from '@/components/recipes/RecipeTabContent';
+import { RecipeInfoDialog } from '@/components/recipes/RecipeInfoDialog';
 import { RecipeClassificationSummary } from '@/components/recipes/RecipeClassificationSummary';
 import { RecipeSourceInfo } from '@/components/recipes/RecipeSourceInfo';
 import { RecipeImage } from '@/components/ui/recipe-image';
@@ -32,6 +33,7 @@ export default function ImportedRecipeDetailPage() {
   const [isAdding, setIsAdding] = useState(false);
   const [currentServings, setCurrentServings] = useState<number>(1);
   const [scaledIngredients, setScaledIngredients] = useState<string[]>([]);
+  const [showRecipeInfo, setShowRecipeInfo] = useState(false);
 
   useDocumentTitle(recipe ? `${recipe.title} | Discover Recipes` : 'Discover Recipes');
 
@@ -243,17 +245,27 @@ export default function ImportedRecipeDetailPage() {
           {isAdding ? 'Adding to My Recipes...' : 'Add to My Recipes'}
         </Button>
 
-        {/* Cooking Time */}
+        {/* Cooking Time and Recipe Info */}
         <div className="mb-6">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4 text-terracotta" />
-              <span className="text-gray-700 font-medium">Prep: {recipe.prep_time} min</span>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <Clock className="h-4 w-4 text-terracotta" />
+                <span className="text-navy font-medium text-sm">Prep: <span className="font-normal">{recipe.prep_time || 'N/A'} min</span></span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Clock className="h-4 w-4 text-terracotta" />
+                <span className="text-navy font-medium text-sm">Cook: <span className="font-normal">{recipe.cook_time || 'N/A'} min</span></span>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4 text-terracotta" />
-              <span className="text-gray-700 font-medium">Cook: {recipe.cook_time} min</span>
-            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowRecipeInfo(true)}
+              className="h-8 w-8 p-0 rounded-full"
+            >
+              <Info className="h-4 w-4" />
+            </Button>
           </div>
         </div>
 
@@ -317,10 +329,12 @@ export default function ImportedRecipeDetailPage() {
           isScaled={isScaled}
         />
 
-        {/* Recipe Source Information */}
-        <RecipeSourceInfo 
-          sourceUrl={recipe.source_url} 
-          importMethod={recipe.import_method}
+        {/* Recipe Info Dialog */}
+        <RecipeInfoDialog
+          open={showRecipeInfo}
+          onOpenChange={setShowRecipeInfo}
+          sourceUrl={recipe.source_url}
+          importMethod="imported"
           createdBy={recipe.imported_by}
           createdAt={recipe.created_at}
           updatedAt={recipe.updated_at}

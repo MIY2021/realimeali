@@ -10,8 +10,9 @@ import { RecipeImageEditor } from "./RecipeImageEditor";
 import { RecipeNotesSection } from "./RecipeNotesSection";
 import { RecipeClassificationSummary } from "./RecipeClassificationSummary";
 import { RecipeSourceInfo } from "./RecipeSourceInfo";
+import { RecipeInfoDialog } from "./RecipeInfoDialog";
 import { NutritionalInfoSection } from "@/components/nutrition/NutritionalInfoSection";
-import { Lightbulb, Users, RotateCcw, Clock } from "lucide-react";
+import { Lightbulb, Users, RotateCcw, Clock, Info } from "lucide-react";
 import { ServingsSelector } from "@/components/meal-planner/ServingsSelector";
 import { Button } from "@/components/ui/button";
 import { RecipeScalingService } from "@/utils/recipeScaling";
@@ -36,6 +37,7 @@ export const RecipeDetail = ({
   const [currentServings, setCurrentServings] = useState(recipe.servings);
   const [scaledIngredients, setScaledIngredients] = useState<string[]>(recipe.ingredients);
   const [showImageEditor, setShowImageEditor] = useState(false);
+  const [showRecipeInfo, setShowRecipeInfo] = useState(false);
 
   // Load saved servings from localStorage on mount
   useEffect(() => {
@@ -95,17 +97,27 @@ export const RecipeDetail = ({
         onAddToMealPlan={handleAddToMealPlan}
       />
 
-      {/* Cooking Time */}
+      {/* Cooking Time and Recipe Info */}
       <div className="mb-6 px-2">
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <Clock className="h-4 w-4 text-terracotta" />
-            <span className="text-navy font-medium text-sm">Prep: {recipe.prep_time} min</span>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Clock className="h-4 w-4 text-terracotta" />
+              <span className="text-navy font-medium text-sm">Prep: <span className="font-normal">{recipe.prep_time} min</span></span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Clock className="h-4 w-4 text-terracotta" />
+              <span className="text-navy font-medium text-sm">Cook: <span className="font-normal">{recipe.cook_time} min</span></span>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Clock className="h-4 w-4 text-terracotta" />
-            <span className="text-navy font-medium text-sm">Cook: {recipe.cook_time} min</span>
-          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowRecipeInfo(true)}
+            className="h-8 w-8 p-0 rounded-full"
+          >
+            <Info className="h-4 w-4" />
+          </Button>
         </div>
       </div>
 
@@ -179,9 +191,11 @@ export const RecipeDetail = ({
 
       
 
-      {/* Recipe Source Information */}
-      <RecipeSourceInfo 
-        sourceUrl={recipe.source_url} 
+      {/* Recipe Info Dialog */}
+      <RecipeInfoDialog
+        open={showRecipeInfo}
+        onOpenChange={setShowRecipeInfo}
+        sourceUrl={recipe.source_url}
         importMethod={recipe.import_method}
         createdBy={recipe.created_by}
         createdAt={recipe.created_at}
