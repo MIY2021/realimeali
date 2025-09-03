@@ -1,6 +1,7 @@
 
 import React, { useMemo } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dot } from "lucide-react";
 import { Recipe } from "@/types";
 import { IngredientSectionParser } from "@/utils/ingredientSectionParser";
 import { EquipmentExtractor } from "@/utils/equipmentExtractor";
@@ -84,12 +85,15 @@ export const RecipeTabContent = React.memo(({ recipe, scaledIngredients, isScale
                   </div>
                 ) : (
                   section.ingredients.map((ingredient, index) => (
-                    <div key={`${sectionIndex}-${index}`} className={`p-2 rounded-lg transition-all ${
+                    <div key={`${sectionIndex}-${index}`} className={`flex gap-2 p-2 rounded-lg transition-all ${
                       isScaled 
                         ? 'bg-blue-50 border border-blue-200 hover:bg-blue-100' 
                         : 'bg-gray-50 hover:bg-gray-100'
                     }`}>
-                      <p className="text-gray-700 text-sm leading-snug">{ingredient}</p>
+                      <div className="flex-shrink-0 w-6 h-6 bg-sage text-white rounded-full flex items-center justify-center">
+                        <Dot className="w-4 h-4" />
+                      </div>
+                      <p className="text-gray-700 flex-1 text-sm leading-snug">{ingredient}</p>
                     </div>
                   ))
                 )}
@@ -104,10 +108,13 @@ export const RecipeTabContent = React.memo(({ recipe, scaledIngredients, isScale
           <h2 className="font-bold text-navy text-lg mb-2">Equipment</h2>
           
           {equipment.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+            <div className="space-y-1.5">
               {equipment.map((item, index) => (
-                <div key={index} className="p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                  <p className="text-gray-700 text-sm leading-snug">{item}</p>
+                <div key={index} className="flex gap-2 p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                  <div className="flex-shrink-0 w-6 h-6 bg-butter text-white rounded-full flex items-center justify-center">
+                    <Dot className="w-4 h-4" />
+                  </div>
+                  <p className="text-gray-700 flex-1 text-sm leading-snug">{item}</p>
                 </div>
               ))}
             </div>
