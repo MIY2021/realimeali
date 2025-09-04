@@ -170,7 +170,7 @@ export default function ImportedRecipeDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="container max-w-4xl py-1 sm:py-4 px-4 sm:px-6">
+      <div className="container max-w-4xl py-4 sm:py-6 px-4 sm:px-6">
         <div className="space-y-6">
           <Skeleton className="h-64 w-full rounded-lg" />
           <Skeleton className="h-8 w-3/4" />
@@ -186,7 +186,7 @@ export default function ImportedRecipeDetailPage() {
 
   if (!recipe) {
     return (
-      <div className="container max-w-4xl py-1 sm:py-4 px-4 sm:px-6">
+      <div className="container max-w-4xl py-4 sm:py-6 px-4 sm:px-6">
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4">Recipe Not Found</h1>
           <p className="text-muted-foreground mb-6">The recipe you're looking for doesn't exist.</p>
@@ -202,7 +202,7 @@ export default function ImportedRecipeDetailPage() {
   const isScaled = currentServings !== recipe.servings;
 
   return (
-    <div className="container max-w-4xl py-1 sm:py-4 px-4 sm:px-6">
+    <div className="container max-w-4xl py-4 sm:py-6 px-4 sm:px-6">
       <div className="max-w-4xl mx-auto">
         {/* Recipe Image */}
         <div className="relative h-64 sm:h-80 w-full rounded-lg overflow-hidden mb-4">

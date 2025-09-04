@@ -103,7 +103,7 @@ export default function RecipeDetail() {
   // Show loading state while recipes are being fetched OR if we haven't attempted load yet
   if (isLoading || !hasAttemptedLoad) {
     return (
-      <div className="container max-w-4xl py-1 sm:py-4 px-4 sm:px-6">
+      <div className="container max-w-4xl py-4 sm:py-6 px-4 sm:px-6">
         <div className="space-y-6">
           <Skeleton className="h-64 w-full rounded-lg" />
           <Skeleton className="h-8 w-3/4" />
@@ -120,7 +120,7 @@ export default function RecipeDetail() {
   // Only show "Recipe Not Found" after loading is complete AND we've attempted to load AND recipe is still not found
   if (!recipe && hasAttemptedLoad) {
     return (
-      <div className="container max-w-4xl py-2 sm:py-4 px-4 sm:px-6">
+      <div className="container max-w-4xl py-4 sm:py-6 px-4 sm:px-6">
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4">Recipe Not Found</h1>
           <p className="text-muted-foreground mb-6">
@@ -137,7 +137,7 @@ export default function RecipeDetail() {
   // If we're still loading or recipe isn't found yet, show loading
   if (!recipe) {
     return (
-      <div className="container max-w-4xl py-1 sm:py-4 px-4 sm:px-6">
+      <div className="container max-w-4xl py-4 sm:py-6 px-4 sm:px-6">
         <div className="space-y-6">
           <Skeleton className="h-64 w-full rounded-lg" />
           <Skeleton className="h-8 w-3/4" />
@@ -148,7 +148,7 @@ export default function RecipeDetail() {
   }
 
   return (
-    <div className="container max-w-4xl py-1 sm:py-4 px-4 sm:px-6">
+    <div className="container max-w-4xl py-4 sm:py-6 px-4 sm:px-6">
       {recipe && (
         <>
           {/* Use the elegant RecipeDetail component */}
