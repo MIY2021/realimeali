@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -105,18 +104,6 @@ export default function RecipeDetail() {
   if (isLoading || !hasAttemptedLoad) {
     return (
       <div className="container max-w-4xl py-1 sm:py-4 px-4 sm:px-6">
-        <div className="flex items-center justify-between mb-2 sm:mb-4">
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={() => navigate("/my-recipes")}
-            className="flex items-center gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to Recipes
-          </Button>
-        </div>
-        
         <div className="space-y-6">
           <Skeleton className="h-64 w-full rounded-lg" />
           <Skeleton className="h-8 w-3/4" />
@@ -140,7 +127,6 @@ export default function RecipeDetail() {
             The recipe you're looking for doesn't exist or may have been deleted.
           </p>
           <Button onClick={() => navigate("/my-recipes")}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Recipes
           </Button>
         </div>
@@ -152,18 +138,6 @@ export default function RecipeDetail() {
   if (!recipe) {
     return (
       <div className="container max-w-4xl py-1 sm:py-4 px-4 sm:px-6">
-        <div className="flex items-center justify-between mb-2 sm:mb-4">
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={() => navigate("/my-recipes")}
-            className="flex items-center gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to Recipes
-          </Button>
-        </div>
-        
         <div className="space-y-6">
           <Skeleton className="h-64 w-full rounded-lg" />
           <Skeleton className="h-8 w-3/4" />
@@ -175,19 +149,6 @@ export default function RecipeDetail() {
 
   return (
     <div className="container max-w-4xl py-1 sm:py-4 px-4 sm:px-6">
-      {/* Header with back button only */}
-      <div className="flex items-center justify-between mb-2 sm:mb-4">
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          onClick={() => navigate("/my-recipes")}
-          className="flex items-center gap-2"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to Recipes
-        </Button>
-      </div>
-
       {recipe && (
         <>
           {/* Use the elegant RecipeDetail component */}

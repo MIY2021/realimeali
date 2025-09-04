@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
 import { RecipeCard } from "@/components/recipes/RecipeCard";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -48,16 +47,7 @@ export default function CategoryPage() {
   if (filteredRecipes.filter(recipe => recipe.household_id === currentHousehold.id).length === 0) {
     return (
       <div className="container max-w-7xl py-8 px-6">
-        <div className="flex items-center gap-4 mb-8">
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={() => navigate("/my-recipes")}
-            className="flex items-center gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to Recipes
-          </Button>
+        <div className="mb-8">
           <h1 className="text-3xl font-bold text-navy">{decodedCategory} Recipes</h1>
         </div>
         
@@ -79,15 +69,6 @@ export default function CategoryPage() {
   return (
     <div className="container max-w-7xl py-8 px-6">
       <div className="flex items-center gap-4 mb-8">
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          onClick={() => navigate("/my-recipes")}
-          className="flex items-center gap-2"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to Recipes
-        </Button>
         <h1 className="text-3xl font-bold text-navy">{decodedCategory} Recipes</h1>
         <span className="text-muted-foreground">({householdRecipes.length} recipe{householdRecipes.length !== 1 ? 's' : ''})</span>
       </div>

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Plus, Lightbulb, Users, RotateCcw, Clock, Info } from 'lucide-react';
+import { Plus, Lightbulb, Users, RotateCcw, Clock, Info } from 'lucide-react';
 import { fetchImportedRecipeById, ImportedRecipe, incrementRecipeViewCount } from '@/services/importedRecipeService';
 import { addImportedRecipeToHousehold } from '@/services/householdRecipeService';
 import { useHousehold } from '@/contexts/HouseholdContext';
@@ -171,13 +171,6 @@ export default function ImportedRecipeDetailPage() {
   if (isLoading) {
     return (
       <div className="container max-w-4xl py-1 sm:py-4 px-4 sm:px-6">
-        <div className="flex items-center justify-between mb-2 sm:mb-4">
-          <Button variant="ghost" size="sm" onClick={() => navigate(-1)}>
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
-          </Button>
-        </div>
-        
         <div className="space-y-6">
           <Skeleton className="h-64 w-full rounded-lg" />
           <Skeleton className="h-8 w-3/4" />
@@ -198,7 +191,6 @@ export default function ImportedRecipeDetailPage() {
           <h1 className="text-2xl font-bold mb-4">Recipe Not Found</h1>
           <p className="text-muted-foreground mb-6">The recipe you're looking for doesn't exist.</p>
           <Button onClick={() => navigate('/discover-recipes')}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Discover Recipes
           </Button>
         </div>
@@ -211,14 +203,6 @@ export default function ImportedRecipeDetailPage() {
 
   return (
     <div className="container max-w-4xl py-1 sm:py-4 px-4 sm:px-6">
-      {/* Back button */}
-      <div className="mb-4">
-        <Button variant="ghost" size="sm" onClick={() => navigate(-1)}>
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Recipes
-        </Button>
-      </div>
-
       <div className="max-w-4xl mx-auto">
         {/* Recipe Image */}
         <div className="relative h-64 sm:h-80 w-full rounded-lg overflow-hidden mb-4">
