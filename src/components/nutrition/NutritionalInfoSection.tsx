@@ -175,10 +175,7 @@ export const NutritionalInfoSection = ({ recipe }: NutritionalInfoSectionProps) 
             {hasNutritionInfo ? (
               <div className="space-y-4">
                 {/* Header */}
-                <div className="flex items-center justify-between">
-                  <p className="text-sm text-sage-600">
-                    Total: {portions} out of 5 recommended daily portions
-                  </p>
+                <div className="flex items-center justify-end">
                   <Button
                     variant="ghost"
                     size="sm"
@@ -186,8 +183,7 @@ export const NutritionalInfoSection = ({ recipe }: NutritionalInfoSectionProps) 
                     disabled={isLoading}
                     className="h-7 px-2 text-xs"
                   >
-                    <RotateCcw className={`h-3 w-3 mr-1 ${isLoading ? 'animate-spin' : ''}`} />
-                    Refresh Analysis
+                    <RotateCcw className={`h-3 w-3 ${isLoading ? 'animate-spin' : ''}`} />
                   </Button>
                 </div>
 
@@ -251,8 +247,8 @@ export const NutritionalInfoSection = ({ recipe }: NutritionalInfoSectionProps) 
                     <div className="space-y-2">
                       {nutritionData.recommendations.map((rec, index) => (
                         <div key={index} className="text-sm">
-                          <span className="font-medium text-green-800">{rec.suggestion}</span>
-                          <span className="text-green-600"> – +{rec.portionIncrease} portion{rec.portionIncrease !== 1 ? 's' : ''}</span>
+                          <span className="font-medium text-gray-900">{rec.suggestion}</span>
+                          <span className="text-gray-700"> – +{rec.portionIncrease} portion{rec.portionIncrease !== 1 ? 's' : ''}</span>
                         </div>
                       ))}
                     </div>
@@ -260,8 +256,8 @@ export const NutritionalInfoSection = ({ recipe }: NutritionalInfoSectionProps) 
                 )}
 
                 {/* NHS Guidelines in tooltip */}
-                <TooltipProvider>
-                  <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2">
+                  <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Button variant="ghost" size="sm" className="h-auto p-1 hover:bg-sage/10">
@@ -275,9 +271,9 @@ export const NutritionalInfoSection = ({ recipe }: NutritionalInfoSectionProps) 
                         </p>
                       </TooltipContent>
                     </Tooltip>
-                    <span className="text-xs text-sage-600">About this analysis</span>
-                  </div>
-                </TooltipProvider>
+                  </TooltipProvider>
+                  <span className="text-xs text-sage-600">About this analysis</span>
+                </div>
               </div>
             ) : (
               <div className="space-y-3">
