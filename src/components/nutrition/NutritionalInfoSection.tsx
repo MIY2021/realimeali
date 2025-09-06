@@ -176,7 +176,7 @@ export const NutritionalInfoSection = ({ recipe }: NutritionalInfoSectionProps) 
               <div className="space-y-4">
                 {/* Header */}
                 <div className="flex items-center justify-between">
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-sage-600">
                     Total: {portions} out of 5 recommended daily portions
                   </p>
                   <Button
@@ -212,14 +212,6 @@ export const NutritionalInfoSection = ({ recipe }: NutritionalInfoSectionProps) 
                         </div>
                       ))}
                       
-                       {/* Show referenced (non-counting) ingredients */}
-                      {nutritionData.referencedIngredients && nutritionData.referencedIngredients.length > 0 && (
-                        <div className="pt-2 border-t border-sage/20">
-                          <p className="text-sm text-gray-600">
-                            🧂 Other ingredients don't count towards your 5 A Day
-                          </p>
-                        </div>
-                      )}
                     </div>
                   </div>
                 )}
@@ -248,14 +240,6 @@ export const NutritionalInfoSection = ({ recipe }: NutritionalInfoSectionProps) 
                         </div>
                       ))}
                       
-                      {/* Show non-counting ingredients */}
-                      {nutritionData.perServingAnalysis.some(item => item.cappedPortions === 0) && (
-                        <div className="pt-2 border-t border-sage/20">
-                          <p className="text-sm text-gray-600">
-                            🧂 Other ingredients don't count towards your 5 A Day
-                          </p>
-                        </div>
-                      )}
                     </div>
                   </div>
                 )}
@@ -276,12 +260,12 @@ export const NutritionalInfoSection = ({ recipe }: NutritionalInfoSectionProps) 
                 )}
 
                 {/* NHS Guidelines in tooltip */}
-                <div className="flex items-center gap-2">
-                  <TooltipProvider>
+                <TooltipProvider>
+                  <div className="flex items-center gap-2">
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Button variant="ghost" size="sm" className="h-auto p-1">
-                          <Info className="h-4 w-4 text-muted-foreground" />
+                        <Button variant="ghost" size="sm" className="h-auto p-1 hover:bg-sage/10">
+                          <Info className="h-4 w-4 text-sage-600" />
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent className="max-w-xs">
@@ -291,9 +275,9 @@ export const NutritionalInfoSection = ({ recipe }: NutritionalInfoSectionProps) 
                         </p>
                       </TooltipContent>
                     </Tooltip>
-                  </TooltipProvider>
-                  <span className="text-xs text-muted-foreground">About this analysis</span>
-                </div>
+                    <span className="text-xs text-sage-600">About this analysis</span>
+                  </div>
+                </TooltipProvider>
               </div>
             ) : (
               <div className="space-y-3">
@@ -304,7 +288,7 @@ export const NutritionalInfoSection = ({ recipe }: NutritionalInfoSectionProps) 
                     <p className="text-sm text-gray-500">
                       No fruit and vegetable content detected in this recipe.
                     </p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-sage-600">
                       AI analysis follows NHS 5 A Day guidelines. Only recipes with fruit/vegetable content show estimates.
                     </p>
                   </>
