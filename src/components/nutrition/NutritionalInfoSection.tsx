@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Heart, ChevronDown, ChevronRight, RotateCcw } from "lucide-react";
+import { Heart, ChevronDown, ChevronRight, RotateCcw, Info } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Recipe } from "@/types";
 import { FruitVegIndicator } from "./FruitVegIndicator";
 import { useFruitVegEstimation } from "@/hooks/useFruitVegEstimation";
@@ -142,7 +143,7 @@ export const NutritionalInfoSection = ({ recipe }: NutritionalInfoSectionProps) 
           <div className="flex-1">
             <div className="space-y-1">
               <div className="flex items-center justify-between">
-                <h3 className="font-semibold text-sage-800">Nutritional Information</h3>
+                <h3 className="font-semibold text-sage-800">5 A Day - Fruit & Veg</h3>
                 <div className="flex items-center gap-2">
                   {hasNutritionInfo && (
                     <div className="flex items-center gap-2">
@@ -211,13 +212,11 @@ export const NutritionalInfoSection = ({ recipe }: NutritionalInfoSectionProps) 
                         </div>
                       ))}
                       
-                      {/* Show referenced (non-counting) ingredients */}
+                       {/* Show referenced (non-counting) ingredients */}
                       {nutritionData.referencedIngredients && nutritionData.referencedIngredients.length > 0 && (
                         <div className="pt-2 border-t border-sage/20">
                           <p className="text-sm text-gray-600">
-                            🧂 Other ingredients ({nutritionData.referencedIngredients
-                              .map(item => item.ingredient.toLowerCase())
-                              .join(', ')}) provide small amounts but don't count towards your 5 A Day.
+                            🧂 Other ingredients don't count towards your 5 A Day
                           </p>
                         </div>
                       )}
@@ -228,12 +227,9 @@ export const NutritionalInfoSection = ({ recipe }: NutritionalInfoSectionProps) 
                 {/* Fallback message when we have score but no breakdown */}
                 {!isLoading && hasNutritionInfo && !nutritionData?.contributingIngredients?.length && 
                  !nutritionData?.perServingAnalysis?.length && (
-                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
-                    <p className="text-sm text-amber-800">
-                      <strong>Nutrition score available but detailed breakdown is missing.</strong><br/>
-                      This can happen with older recipes. Try clicking "Refresh Analysis" to generate a detailed breakdown.
-                    </p>
-                  </div>
+                  <p className="text-sm text-amber-600">
+                    Detailed breakdown missing. Try "Refresh Analysis".
+                  </p>
                 )}
 
                 {/* Fallback to old format if new format not available */}
@@ -256,10 +252,7 @@ export const NutritionalInfoSection = ({ recipe }: NutritionalInfoSectionProps) 
                       {nutritionData.perServingAnalysis.some(item => item.cappedPortions === 0) && (
                         <div className="pt-2 border-t border-sage/20">
                           <p className="text-sm text-gray-600">
-                            🧂 Other ingredients ({nutritionData.perServingAnalysis
-                              .filter(item => item.cappedPortions === 0)
-                              .map(item => item.ingredient.toLowerCase())
-                              .join(', ')}) provide small amounts but don't count towards your 5 A Day.
+                            🧂 Other ingredients don't count towards your 5 A Day
                           </p>
                         </div>
                       )}
@@ -282,13 +275,24 @@ export const NutritionalInfoSection = ({ recipe }: NutritionalInfoSectionProps) 
                   </div>
                 )}
 
-                {/* NHS Guidelines */}
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                  <p className="text-xs text-blue-800">
-                    <strong>Based on NHS 5 A Day Guidelines:</strong> 1 portion = 80g of fruit or vegetables. 
-                    This analysis follows official NHS guidelines for what counts towards your daily 5 portions. 
-                    Estimates may vary based on specific ingredients and preparation methods.
-                  </p>
+                {/* NHS Guidelines in tooltip */}
+                <div className="flex items-center gap-2">
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button variant="ghost" size="sm" className="h-auto p-1">
+                          <Info className="h-4 w-4 text-muted-foreground" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-xs">
+                        <p className="text-xs">
+                          <strong>NHS 5 A Day Guidelines:</strong> 1 portion = 80g of fruit or vegetables. 
+                          This analysis follows official NHS guidelines. Estimates may vary based on ingredients and preparation.
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                  <span className="text-xs text-muted-foreground">About this analysis</span>
                 </div>
               </div>
             ) : (
@@ -300,12 +304,9 @@ export const NutritionalInfoSection = ({ recipe }: NutritionalInfoSectionProps) 
                     <p className="text-sm text-gray-500">
                       No fruit and vegetable content detected in this recipe.
                     </p>
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                      <p className="text-xs text-blue-800">
-                        <strong>AI Analysis:</strong> Our AI analyzes recipe ingredients to estimate fruit and vegetable portions 
-                        according to NHS 5 A Day guidelines. Only recipes with detectable fruit/vegetable content will show estimates.
-                      </p>
-                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      AI analysis follows NHS 5 A Day guidelines. Only recipes with fruit/vegetable content show estimates.
+                    </p>
                   </>
                 )}
               </div>
