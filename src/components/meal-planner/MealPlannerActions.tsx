@@ -42,7 +42,7 @@ export const MealPlannerActions = ({
             >
               Week {val}
               {mostRecentWeek === val && (
-                <div className="absolute top-1 right-1 w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+                <div className="absolute -bottom-1 right-1 w-3 h-0.5 bg-orange-500 rounded-sm"></div>
               )}
             </Button>
           ))}
