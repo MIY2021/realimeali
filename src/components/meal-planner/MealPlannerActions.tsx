@@ -10,6 +10,7 @@ interface MealPlannerActionsProps {
   isLoading: boolean;
   currentWeek: 1 | 2;
   setCurrentWeek: (week: 1 | 2) => void;
+  mostRecentWeek: 1 | 2 | null;
   mealLayout: string;
   onMealLayoutChange: (value: string) => void;
 }
@@ -21,6 +22,7 @@ export const MealPlannerActions = ({
   isLoading,
   currentWeek,
   setCurrentWeek,
+  mostRecentWeek,
   mealLayout,
   onMealLayoutChange
 }: MealPlannerActionsProps) => {
@@ -34,11 +36,14 @@ export const MealPlannerActions = ({
               key={val}
               size="sm"
               variant={currentWeek === val ? "default" : "outline"}
-              className={currentWeek === val ? "bg-terracotta hover:bg-terracotta/90 text-white" : ""}
+              className={`relative ${currentWeek === val ? "bg-terracotta hover:bg-terracotta/90 text-white" : ""}`}
               onClick={() => setCurrentWeek(val as 1 | 2)}
               disabled={isLoading}
             >
               Week {val}
+              {mostRecentWeek === val && (
+                <div className="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full"></div>
+              )}
             </Button>
           ))}
         </div>

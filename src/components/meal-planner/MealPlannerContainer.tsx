@@ -29,6 +29,7 @@ export default function MealPlannerContainer() {
   const { recipes, isLoading: recipesLoading } = useRecipes();
   const { currentHousehold } = useHousehold();
   const { 
+    mealPlans,
     getMealPlansForWeek, 
     addMealPlan, 
     removeMealPlan, 
@@ -95,6 +96,26 @@ export default function MealPlannerContainer() {
   const { generateRandomMeals } = useRandomMealSelection();
 
   const currentMealPlans = getMealPlansForWeek(currentWeek);
+
+  // Determine which week has the most recent meal plan activity
+  const getMostRecentWeek = useCallback((): 1 | 2 | null => {
+    if (mealPlans.length === 0) return null;
+    
+    const week1Plans = mealPlans.filter(plan => plan.week_number === 1);
+    const week2Plans = mealPlans.filter(plan => plan.week_number === 2);
+    
+    if (week1Plans.length === 0 && week2Plans.length === 0) return null;
+    if (week1Plans.length === 0) return 2;
+    if (week2Plans.length === 0) return 1;
+    
+    // Find the most recent updated_at timestamp for each week
+    const week1Latest = Math.max(...week1Plans.map(plan => new Date(plan.updated_at).getTime()));
+    const week2Latest = Math.max(...week2Plans.map(plan => new Date(plan.updated_at).getTime()));
+    
+    return week1Latest > week2Latest ? 1 : 2;
+  }, [mealPlans]);
+
+  const mostRecentWeek = getMostRecentWeek();
 
   // Create a wrapper function that matches the expected signature
   const generateRandomMealPlan = useCallback(async (quantities: { 
@@ -348,6 +369,7 @@ export default function MealPlannerContainer() {
         setCurrentWeek={setCurrentWeek}
         isLoading={isLoading}
         currentMealPlans={currentMealPlans}
+        mostRecentWeek={mostRecentWeek}
         recipes={recipes}
         mealLayout={mealLayout}
         onMealLayoutChange={handleMealLayoutChange}
