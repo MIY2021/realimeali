@@ -49,6 +49,10 @@ export default function ShoppingList() {
     refreshList,
   } = useShoppingList(weekNumber);
 
+  // Get shopping lists for both weeks to determine most recent
+  const { shoppingList: week1List } = useShoppingList(1);
+  const { shoppingList: week2List } = useShoppingList(2);
+
   const { shouldShowSkeleton } = usePageTransition(isLoading || recipesLoading, {
     enableSkeleton: true,
     skeletonDuration: 500
@@ -102,6 +106,24 @@ export default function ShoppingList() {
 
   const mealPlans = getMealPlansForWeek(weekNumber);
   const hasMealPlans = mealPlans.length > 0;
+
+  // Determine which week has the most recent shopping list items
+  const getMostRecentShoppingWeek = (): 1 | 2 | null => {
+    const week1Latest = week1List.length > 0 
+      ? Math.max(...week1List.map(item => new Date(item.createdAt || 0).getTime()))
+      : 0;
+    const week2Latest = week2List.length > 0 
+      ? Math.max(...week2List.map(item => new Date(item.createdAt || 0).getTime()))
+      : 0;
+
+    if (week1Latest === 0 && week2Latest === 0) return null;
+    if (week1Latest === 0) return 2;
+    if (week2Latest === 0) return 1;
+    
+    return week1Latest > week2Latest ? 1 : 2;
+  };
+
+  const mostRecentShoppingWeek = getMostRecentShoppingWeek();
 
   // Filter and sort shopping list - custom meals ("everything for") at top
   const filteredShoppingList = (showOnlyUnchecked 
@@ -230,6 +252,7 @@ export default function ShoppingList() {
             onGenerate={handleGenerate}
             isGenerating={isGenerating}
             hasItems={shoppingList.length > 0}
+            mostRecentWeek={mostRecentShoppingWeek}
           />
 
           <ShoppingListGenerationProgress

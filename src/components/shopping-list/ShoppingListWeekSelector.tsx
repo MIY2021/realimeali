@@ -8,6 +8,7 @@ interface ShoppingListWeekSelectorProps {
   onGenerate: () => void;
   isGenerating: boolean;
   hasItems: boolean;
+  mostRecentWeek?: 1 | 2 | null;
 }
 
 const humorousMessages = [
@@ -53,7 +54,8 @@ export default function ShoppingListWeekSelector({
   onWeekSelect,
   onGenerate,
   isGenerating,
-  hasItems
+  hasItems,
+  mostRecentWeek
 }: ShoppingListWeekSelectorProps) {
   const [currentMessage, setCurrentMessage] = useState(0);
 
@@ -78,10 +80,13 @@ export default function ShoppingListWeekSelector({
               key={week}
               size="sm"
               variant={selectedWeek === week ? "default" : "outline"}
-              className={selectedWeek === week ? "bg-terracotta text-white" : ""}
+              className={`relative ${selectedWeek === week ? "bg-terracotta text-white" : ""}`}
               onClick={() => onWeekSelect(week as 1 | 2)}
             >
               Week {week}
+              {mostRecentWeek === week && (
+                <div className="absolute -bottom-1 right-1 w-3 h-0.5 bg-orange-500 rounded-sm"></div>
+              )}
             </Button>
           ))}
         </div>
