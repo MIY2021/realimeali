@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { 
   fetchImportedRecipesWithTotal, 
@@ -27,6 +27,10 @@ export function useImportedRecipes(
   const [allRecipes, setAllRecipes] = useState<ImportedRecipe[]>([]);
   const [hasMore, setHasMore] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
+  const [isInitialized, setIsInitialized] = useState(false);
+  
+  // Track previous filter values to detect actual changes
+  const previousFiltersRef = useRef<DiscoverRecipeFilters>({});
   
   const pageSize = 20;
 
@@ -56,37 +60,68 @@ export function useImportedRecipes(
   // Update recipes when new data arrives
   useEffect(() => {
     if (data) {
+      console.log('Data received:', { recipesCount: data.recipes.length, total: data.total, page });
       setTotalCount(data.total);
       
       if (page === 0) {
         // First page - replace all recipes
         setAllRecipes(data.recipes);
+        console.log('Set initial recipes:', data.recipes.length);
       } else {
         // Additional pages - append new recipes
         setAllRecipes(prev => {
           const existingIds = new Set(prev.map(recipe => recipe.id));
           const newRecipes = data.recipes.filter(recipe => !existingIds.has(recipe.id));
-          return [...prev, ...newRecipes];
+          const updated = [...prev, ...newRecipes];
+          console.log('Appended recipes:', { previous: prev.length, new: newRecipes.length, total: updated.length });
+          return updated;
         });
       }
 
       // Update hasMore based on returned data
       setHasMore(data.recipes.length === pageSize);
+      setIsInitialized(true);
     }
   }, [data, page]);
 
-  // Reset when filters change
+  // Reset when filters actually change (not on initial mount)
   useEffect(() => {
-    setPage(0);
-    setAllRecipes([]);
-    setHasMore(true);
-    setTotalCount(0);
+    const currentFilters = {
+      keyword: filters.keyword,
+      mealType: filters.mealType,
+      cuisineType: filters.cuisineType,
+      diet: filters.diet,
+      time: filters.time
+    };
+    
+    // Only reset if we're initialized and filters have actually changed
+    if (isInitialized) {
+      const prevFilters = previousFiltersRef.current;
+      const hasChanged = 
+        prevFilters.keyword !== currentFilters.keyword ||
+        prevFilters.mealType !== currentFilters.mealType ||
+        prevFilters.cuisineType !== currentFilters.cuisineType ||
+        prevFilters.diet !== currentFilters.diet ||
+        prevFilters.time !== currentFilters.time;
+      
+      if (hasChanged) {
+        console.log('Filters changed, resetting state:', { prev: prevFilters, current: currentFilters });
+        setPage(0);
+        setAllRecipes([]);
+        setHasMore(true);
+        setTotalCount(0);
+      }
+    }
+    
+    // Update the ref with current filters
+    previousFiltersRef.current = currentFilters;
   }, [
     filters.keyword,
     filters.mealType,
     filters.cuisineType,
     filters.diet,
-    filters.time
+    filters.time,
+    isInitialized
   ]);
 
   const loadMore = useCallback(() => {
@@ -105,7 +140,7 @@ export function useImportedRecipes(
 
   return {
     recipes: allRecipes,
-    isLoading: isLoading && page === 0, // Only show loading for first page
+    isLoading: (isLoading && page === 0) || !isInitialized, // Show loading during initial load
     error,
     hasMore,
     loadMore,
