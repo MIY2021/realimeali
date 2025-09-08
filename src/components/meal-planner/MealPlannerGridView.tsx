@@ -82,7 +82,7 @@ export const MealPlannerGridView = ({
                   {mealType}
                 </h3>
                 {meals.length > 0 && (
-                  <span className="text-sm text-muted-foreground bg-gray-100 px-2 py-1 rounded-full">
+                  <span className="text-xs text-muted-foreground/70 bg-gray-50 px-1.5 py-0.5 rounded-full">
                     {meals.length} meal{meals.length !== 1 ? 's' : ''}
                   </span>
                 )}
