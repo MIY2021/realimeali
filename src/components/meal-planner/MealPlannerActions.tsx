@@ -27,7 +27,7 @@ export const MealPlannerActions = ({
   onMealLayoutChange
 }: MealPlannerActionsProps) => {
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 pb-4">
       {/* Row 1: Week selector and Generate button */}
       <div className="flex gap-3 items-center">
         <div className="flex gap-2">

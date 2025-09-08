@@ -108,7 +108,7 @@ export default function MealListSection({
             <span className={`text-xs text-muted-foreground/70 px-1.5 py-0.5 rounded-full animate-fade-in ${
               collapsed ? 'text-blue-600 bg-blue-100' : 'bg-gray-50'
             }`}>
-              {mealPlans.length} meal{mealPlans.length !== 1 ? 's' : ''}
+              {mealPlans.length}
             </span>
           )}
         </div>
