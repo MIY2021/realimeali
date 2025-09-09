@@ -44,11 +44,16 @@ export function EnhancedMealCard({
       }`}>
         <CardContent className="p-0">
           <div className="flex h-24">
-            {/* Custom meal icon */}
-            <div className="w-20 h-20 flex-shrink-0 m-2 bg-blue-50 rounded flex items-center justify-center">
-              <UtensilsCrossed className={`h-8 w-8 text-blue-400 ${
-                mealPlan.is_completed ? 'text-gray-400' : ''
-              }`} />
+            {/* Custom meal image with placeholder */}
+            <div className="w-20 h-20 flex-shrink-0 m-2">
+              <RecipeImage 
+                recipe={undefined}
+                alt={mealPlan.meal_name || 'Custom Meal'}
+                className={`w-full h-full rounded ${
+                  mealPlan.is_completed ? 'grayscale' : ''
+                }`}
+                iconSize="h-8 w-8"
+              />
             </div>
 
             {/* Content Area */}
