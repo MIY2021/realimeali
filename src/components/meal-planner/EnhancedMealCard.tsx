@@ -4,6 +4,7 @@ import { Trash2, Plus, Minus, GripVertical, UtensilsCrossed, Check } from "lucid
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { RecipeImage } from "@/components/ui/recipe-image";
+import { useToast } from "@/hooks/use-toast";
 
 import { MealPlan, Recipe, MealType } from "@/types";
 import { DraggableProvidedDragHandleProps } from "react-beautiful-dnd";
@@ -35,6 +36,7 @@ export function EnhancedMealCard({
 }: EnhancedMealCardProps) {
   const [servings, setServings] = useState(mealPlan.planned_servings || recipe?.servings || 1);
   const { updateMealPlanCompletion, updateMealPlanServings } = useMealPlan();
+  const { toast } = useToast();
 
   // Handle freetyped meals (no recipe)
   if (mealPlan.is_freetyped && !recipe) {
@@ -67,10 +69,12 @@ export function EnhancedMealCard({
                     }`}
                     onClick={() => {
                       if (mealPlan.meal_name && mealPlan.meal_name.length > 25) {
-                        alert(mealPlan.meal_name);
+                        toast({
+                          title: mealPlan.meal_name,
+                        });
                       }
                     }}
-                    title="Click to see full name"
+                    title="Tap to see full name"
                   >
                     {mealPlan.meal_name || 'Custom Meal'}
                   </h4>

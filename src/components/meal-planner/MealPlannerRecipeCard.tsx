@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import { createRecipeUrl } from "@/utils/slugUtils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useMealPlan } from "@/contexts/MealPlanContext";
+import { useToast } from "@/hooks/use-toast";
 
 interface MealPlannerRecipeCardProps {
   mealPlan: MealPlan;
@@ -30,6 +31,7 @@ export function MealPlannerRecipeCard({
   const [isVisible, setIsVisible] = useState(false);
   const [servings, setServings] = useState(mealPlan.planned_servings || recipe?.servings || 1);
   const { updateMealPlanCompletion, updateMealPlanServings } = useMealPlan();
+  const { toast } = useToast();
 
   // Animation effect
   useEffect(() => {
@@ -150,10 +152,12 @@ export function MealPlannerRecipeCard({
           }`}
           onClick={() => {
             if (!recipe && mealPlan.meal_name && mealPlan.meal_name.length > 30) {
-              alert(mealPlan.meal_name);
+              toast({
+                title: mealPlan.meal_name,
+              });
             }
           }}
-          title={!recipe ? "Click to see full name" : undefined}
+          title={!recipe ? "Tap to see full name" : undefined}
         >
           {getTitle()}
         </h3>
