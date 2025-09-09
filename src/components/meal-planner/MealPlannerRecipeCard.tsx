@@ -144,13 +144,25 @@ export function MealPlannerRecipeCard({
 
       <CardContent className={`${isMobile ? 'p-3' : 'p-4'} space-y-3`}>
         {/* Title */}
-        <h3 className={`font-semibold line-clamp-2 ${isMobile ? 'text-sm' : 'text-base'}`}>
+        <h3 
+          className={`font-semibold line-clamp-2 ${isMobile ? 'text-sm' : 'text-base'} ${
+            !recipe ? 'cursor-pointer hover:underline' : ''
+          }`}
+          onClick={() => {
+            if (!recipe && mealPlan.meal_name && mealPlan.meal_name.length > 30) {
+              alert(mealPlan.meal_name);
+            }
+          }}
+          title={!recipe ? "Click to see full name" : undefined}
+        >
           {getTitle()}
         </h3>
 
         {/* Description */}
         {getDescription() && (
-          <p className={`text-muted-foreground line-clamp-2 ${isMobile ? 'text-xs' : 'text-sm'}`}>
+          <p className={`line-clamp-2 ${isMobile ? 'text-xs' : 'text-sm'} ${
+            !recipe ? 'text-green-600' : 'text-muted-foreground'
+          }`}>
             {getDescription()}
           </p>
         )}
