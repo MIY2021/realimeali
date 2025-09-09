@@ -151,10 +151,18 @@ export function MealPlannerRecipeCard({
             !recipe ? 'cursor-pointer hover:underline' : ''
           }`}
           onClick={() => {
-            if (!recipe && mealPlan.meal_name && mealPlan.meal_name.length > 30) {
+            console.log('Grid meal title clicked:', {
+              hasRecipe: !!recipe,
+              mealName: mealPlan.meal_name,
+              length: mealPlan.meal_name?.length
+            });
+            if (!recipe && mealPlan.meal_name && mealPlan.meal_name.length > 15) {
+              console.log('Showing toast for grid meal:', mealPlan.meal_name);
               toast({
                 title: mealPlan.meal_name,
               });
+            } else {
+              console.log('Not showing toast - has recipe or name too short');
             }
           }}
           title={!recipe ? "Tap to see full name" : undefined}

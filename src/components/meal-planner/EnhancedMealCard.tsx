@@ -68,10 +68,17 @@ export function EnhancedMealCard({
                       mealPlan.is_completed ? 'text-gray-400 line-through' : 'text-gray-900'
                     }`}
                     onClick={() => {
-                      if (mealPlan.meal_name && mealPlan.meal_name.length > 25) {
+                      console.log('Custom meal title clicked:', {
+                        mealName: mealPlan.meal_name,
+                        length: mealPlan.meal_name?.length
+                      });
+                      if (mealPlan.meal_name && mealPlan.meal_name.length > 15) {
+                        console.log('Showing toast for:', mealPlan.meal_name);
                         toast({
                           title: mealPlan.meal_name,
                         });
+                      } else {
+                        console.log('Meal name too short, not showing toast');
                       }
                     }}
                     title="Tap to see full name"
