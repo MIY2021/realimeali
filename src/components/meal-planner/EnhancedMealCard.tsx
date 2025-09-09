@@ -4,6 +4,7 @@ import { Trash2, Plus, Minus, GripVertical, UtensilsCrossed, Check } from "lucid
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { RecipeImage } from "@/components/ui/recipe-image";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 import { MealPlan, Recipe, MealType } from "@/types";
 import { DraggableProvidedDragHandleProps } from "react-beautiful-dnd";
@@ -61,11 +62,20 @@ export function EnhancedMealCard({
               {/* Header */}
               <div className="flex items-start justify-between mb-2">
                 <div className="flex-1 min-w-0">
-                  <h4 className={`font-medium text-sm leading-tight truncate max-w-[calc(100%-1.5rem)] ${
-                    mealPlan.is_completed ? 'text-gray-400 line-through' : 'text-gray-900'
-                  }`}>
-                    {mealPlan.meal_name || 'Custom Meal'}
-                  </h4>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <h4 className={`font-medium text-sm leading-tight truncate max-w-[calc(100%-1.5rem)] cursor-help ${
+                          mealPlan.is_completed ? 'text-gray-400 line-through' : 'text-gray-900'
+                        }`}>
+                          {mealPlan.meal_name || 'Custom Meal'}
+                        </h4>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{mealPlan.meal_name || 'Custom Meal'}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                   <p className="text-xs text-blue-600 mt-1">Custom meal</p>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
