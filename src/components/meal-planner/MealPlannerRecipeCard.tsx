@@ -122,7 +122,7 @@ export function MealPlannerRecipeCard({
         <RecipeImage
           recipe={recipe}
           alt={getTitle()}
-          className={`w-full object-cover ${isMobile ? 'h-40' : 'h-48'}`}
+          className={`w-full object-cover ${isMobile ? 'h-32' : 'h-48'}`}
         />
         
         {/* Completion status badge */}
@@ -144,25 +144,17 @@ export function MealPlannerRecipeCard({
         )}
       </div>
 
-      <CardContent className={`${isMobile ? 'p-3' : 'p-4'} space-y-3`}>
+      <CardContent className={`${isMobile ? 'p-3' : 'p-4'} space-y-2`}>
         {/* Title */}
         <h3 
-          className={`font-semibold line-clamp-2 ${isMobile ? 'text-sm' : 'text-base'} ${
+          className={`font-semibold line-clamp-1 ${isMobile ? 'text-sm leading-tight' : 'text-base'} ${
             !recipe ? 'cursor-pointer hover:underline' : ''
           }`}
           onClick={() => {
-            console.log('Grid meal title clicked:', {
-              hasRecipe: !!recipe,
-              mealName: mealPlan.meal_name,
-              length: mealPlan.meal_name?.length
-            });
             if (!recipe && mealPlan.meal_name && mealPlan.meal_name.length > 15) {
-              console.log('Showing toast for grid meal:', mealPlan.meal_name);
               toast({
                 title: mealPlan.meal_name,
               });
-            } else {
-              console.log('Not showing toast - has recipe or name too short');
             }
           }}
           title={!recipe ? "Tap to see full name" : undefined}
@@ -170,114 +162,100 @@ export function MealPlannerRecipeCard({
           {getTitle()}
         </h3>
 
-        {/* Description */}
-        {getDescription() && (
-          <p className={`line-clamp-2 ${isMobile ? 'text-xs' : 'text-sm'} ${
-            !recipe ? 'text-green-600' : 'text-muted-foreground'
-          }`}>
+        {/* Description - Only show for custom meals and make it compact */}
+        {!recipe && getDescription() && (
+          <p className={`line-clamp-1 ${isMobile ? 'text-xs' : 'text-sm'} text-green-600`}>
             {getDescription()}
           </p>
         )}
 
-        {/* Time and Servings */}
+        {/* Compact info row */}
         <div className="flex items-center justify-between text-muted-foreground">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             {getDuration() && (
               <div className="flex items-center gap-1">
-                <Clock className="h-4 w-4" />
-                <span className={`${isMobile ? 'text-xs' : 'text-sm'}`}>
-                  {getDuration()} min
-                </span>
+                <Clock className="h-3 w-3" />
+                <span className="text-xs">{getDuration()} min</span>
               </div>
             )}
+            <div className="flex items-center gap-1">
+              <Users className="h-3 w-3" />
+              <span className="text-xs">{servings}</span>
+            </div>
           </div>
           
-          {/* Servings controls */}
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1">
-              <Users className="h-4 w-4" />
-              <span className={`${isMobile ? 'text-xs' : 'text-sm'}`}>
-                Servings:
-              </span>
-            </div>
-            <div className="flex items-center gap-1">
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-6 w-6 p-0"
-                onClick={() => handleServingsChange(servings - 1)}
-                disabled={servings <= 1}
-              >
-                <Minus className="h-3 w-3" />
-              </Button>
-              <span className="text-sm font-medium min-w-[20px] text-center">
-                {servings}
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-6 w-6 p-0"
-                onClick={() => handleServingsChange(servings + 1)}
-              >
-                <Plus className="h-3 w-3" />
-              </Button>
-            </div>
+          {/* Compact servings controls */}
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 w-6 p-0 hover:bg-gray-100"
+              onClick={() => handleServingsChange(servings - 1)}
+              disabled={servings <= 1}
+            >
+              <Minus className="h-3 w-3" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 w-6 p-0 hover:bg-gray-100"
+              onClick={() => handleServingsChange(servings + 1)}
+            >
+              <Plus className="h-3 w-3" />
+            </Button>
           </div>
         </div>
 
-        {/* Action buttons */}
-        <div className="flex gap-2 pt-2">
-          {recipe ? (
+        {/* Compact action buttons */}
+        <div className="flex gap-1 pt-1">
+          {recipe && (
             <Button
-              variant="outline"
+              variant="ghost"
+              size="sm"
               onClick={handleViewRecipe}
-              className="flex-1 flex items-center justify-center gap-1"
+              className="flex-1 h-8 text-xs"
             >
-              <Eye className="h-4 w-4" />
+              <Eye className="h-3 w-3 mr-1" />
               View
             </Button>
-          ) : (
-            <div className="flex-1" />
           )}
           
-          <div className="flex gap-1">
-            {/* Completion toggle */}
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={handleToggleCompletion}
-              className={`${
-                mealPlan.is_completed 
-                  ? 'text-green-600 border-green-600 bg-green-50 hover:bg-green-100' 
-                  : 'text-gray-600 border-gray-600 hover:bg-gray-50'
-              }`}
-              title={mealPlan.is_completed ? "Mark as not cooked" : "Mark as cooked"}
-            >
-              <Check className="h-4 w-4" />
-            </Button>
+          {/* Completion toggle */}
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={handleToggleCompletion}
+            className={`h-8 w-8 p-0 ${
+              mealPlan.is_completed 
+                ? 'text-green-600 bg-green-50 hover:bg-green-100' 
+                : 'hover:bg-gray-100'
+            }`}
+            title={mealPlan.is_completed ? "Mark as not cooked" : "Mark as cooked"}
+          >
+            <Check className="h-3 w-3" />
+          </Button>
 
-            {recipe && onCreateLeftover && !mealPlan.is_leftover && (
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={handleCreateLeftover}
-                className="text-sage border-sage hover:bg-sage/10"
-                title="Create leftover"
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
-            )}
-            
+          {recipe && onCreateLeftover && !mealPlan.is_leftover && (
             <Button
               size="sm"
-              variant="outline"
-              onClick={handleRemove}
-              className="text-red-600 border-red-600 hover:bg-red-50"
-              title="Remove meal"
+              variant="ghost"
+              onClick={handleCreateLeftover}
+              className="h-8 w-8 p-0 text-sage hover:bg-sage/10"
+              title="Create leftover"
             >
-              <Trash2 className="h-4 w-4" />
+              <Plus className="h-3 w-3" />
             </Button>
-          </div>
+          )}
+          
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={handleRemove}
+            className="h-8 w-8 p-0 text-red-600 hover:bg-red-50"
+            title="Remove meal"
+          >
+            <Trash2 className="h-3 w-3" />
+          </Button>
         </div>
       </CardContent>
     </Card>
