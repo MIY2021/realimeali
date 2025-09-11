@@ -59,7 +59,7 @@ export const useShoppingListGenerator = () => {
           ingredientInputs.push({
             name: `Everything for ${mealPlan.meal_name}`,
             recipeId: mealPlan.id, // Use meal plan id for freetyped meals
-            recipeTitle: mealPlan.meal_name, // Use the actual meal name as title
+            recipeTitle: mealPlan.meal_name,
             servingMultiplier: 1 // No multiplier needed for freetyped meals
           });
           return;
