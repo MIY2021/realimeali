@@ -159,7 +159,7 @@ export default function ShoppingList() {
         const mealPlans = getMealPlansForWeek(weekNumber);
         const customMeal = mealPlans.find(mp => mp.id === id && mp.is_freetyped && mp.meal_name);
         if (customMeal) {
-          return `Custom Entry`;
+          return 'Custom Entry';
         }
         
         return `Recipe ${id.substring(0, 8)}`;

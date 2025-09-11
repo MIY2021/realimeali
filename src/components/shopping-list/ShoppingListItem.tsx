@@ -91,6 +91,14 @@ export function ShoppingListItem({
 
   // Get recipe names for display - need to get individual recipe names with their IDs
   const getRecipeNamesWithIds = (recipeIds: string[]) => {
+    // If this item starts with "Everything for", it's always a custom meal
+    if (name.toLowerCase().startsWith('everything for')) {
+      return [{
+        id: recipeIds[0] || 'custom',
+        name: 'Custom Entry'
+      }];
+    }
+    
     // Get unique recipe IDs
     const uniqueRecipeIds = [...new Set(recipeIds)];
     
