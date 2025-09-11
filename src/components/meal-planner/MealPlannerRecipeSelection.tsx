@@ -5,7 +5,7 @@ import { RecipeSelectionView } from "@/components/recipes/RecipeSelectionView";
 import { FreetypeMealDialog } from "@/components/meal-planner/FreetypeMealDialog";
 import { Recipe, MealType } from "@/types";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ChevronDown } from "lucide-react";
 
 interface MealPlannerRecipeSelectionProps {
@@ -40,6 +40,14 @@ export function MealPlannerRecipeSelection({
   const [activeTab, setActiveTab] = useState("recipes");
   const [showFreetypeDialog, setShowFreetypeDialog] = useState(false);
   const [showScrollIndicator, setShowScrollIndicator] = useState(false);
+
+  // Reset to "My Recipes" tab when modal opens
+  useEffect(() => {
+    if (open) {
+      setActiveTab("recipes");
+      setShowFreetypeDialog(false);
+    }
+  }, [open]);
 
   const handleSelectRecipe = (recipe: Recipe) => {
     onSelectRecipe(recipe.id);
