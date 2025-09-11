@@ -90,7 +90,7 @@ export function MealPlannerRecipeCard({
 
   const getDescription = () => {
     if (recipe) return recipe.description || "";
-    return "Custom meal created for this meal plan";
+    return "Custom Meal";
   };
 
   const getDuration = () => {
