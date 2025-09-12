@@ -49,18 +49,18 @@ export const StatsCard = ({
 
   return (
     <Card className={`${getVariantClasses()} transition-all hover:shadow-md`}>
-      <CardContent className="p-6">
+      <CardContent className="p-4">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-muted-foreground">{title}</p>
+            <p className="text-xs font-medium text-muted-foreground">{title}</p>
             {isLoading ? (
-              <Skeleton className="h-8 w-16 mt-2" />
+              <Skeleton className="h-6 w-12 mt-1" />
             ) : (
-              <p className="text-3xl font-bold mt-2">{value}</p>
+              <p className="text-2xl font-bold mt-1">{value}</p>
             )}
           </div>
-          <div className={`p-3 rounded-full bg-background/50`}>
-            <IconComponent className={`h-6 w-6 ${getIconColor()}`} />
+          <div className={`p-2 rounded-full bg-background/50`}>
+            <IconComponent className={`h-4 w-4 ${getIconColor()}`} />
           </div>
         </div>
       </CardContent>

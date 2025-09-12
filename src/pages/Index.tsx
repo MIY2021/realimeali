@@ -54,14 +54,9 @@ export default function Index() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container max-w-7xl mx-auto px-4 py-8">
-        {/* Welcome Header */}
-        <div className="mb-8">
-          <WelcomeHeader />
-        </div>
-
-        {/* Stats Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="container max-w-6xl mx-auto px-4 py-6">
+        {/* Stats Cards Grid - 2x2 */}
+        <div className="grid grid-cols-2 gap-4 mb-6">
           <StatsCard
             title="My Recipes"
             value={stats.totalRecipes}
@@ -93,7 +88,7 @@ export default function Index() {
         </div>
 
         {/* Quick Actions and Recent Activity */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           <div className="lg:col-span-2">
             <QuickActions />
           </div>
