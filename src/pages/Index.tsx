@@ -54,7 +54,10 @@ export default function Index() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container max-w-6xl mx-auto px-4 py-6">
+      <div className="container max-w-6xl mx-auto px-4 py-4">
+        {/* Welcome Header */}
+        <WelcomeHeader />
+        
         {/* Stats Cards Grid - 2x2 */}
         <div className="grid grid-cols-2 gap-4 mb-6">
           <StatsCard

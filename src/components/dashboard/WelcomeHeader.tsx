@@ -1,12 +1,16 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
-import { format } from "date-fns";
 
 export const WelcomeHeader = () => {
   const { user } = useAuth();
-  const { currentHousehold } = useHousehold();
   
-  const today = format(new Date(), 'EEEE, MMMM d');
+  // Get time-based greeting
+  const getTimeBasedGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good morning';
+    if (hour < 17) return 'Good afternoon';
+    return 'Good evening';
+  };
   
   // Get user's first name or fall back to email
   const getDisplayName = () => {
@@ -24,24 +28,10 @@ export const WelcomeHeader = () => {
   };
 
   return (
-    <div className="space-y-2">
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">
-          Welcome back, {getDisplayName()}!
-        </h1>
-        <p className="text-muted-foreground text-lg">
-          {today}
-        </p>
-      </div>
-      
-      {currentHousehold && (
-        <div className="flex items-center gap-2">
-          <div className="h-2 w-2 rounded-full bg-sage" />
-          <span className="text-sm text-muted-foreground">
-            Managing {currentHousehold.name}
-          </span>
-        </div>
-      )}
+    <div className="mb-4">
+      <h1 className="text-2xl font-bold text-foreground">
+        {getTimeBasedGreeting()}, {getDisplayName()}!
+      </h1>
     </div>
   );
 };

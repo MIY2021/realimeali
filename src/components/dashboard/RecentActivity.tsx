@@ -6,8 +6,8 @@ import { format } from "date-fns";
 import { Clock, Heart, UtensilsCrossed, CalendarDays } from "lucide-react";
 
 interface RecentActivityProps {
-  recentRecipes: Recipe[];
-  recentMealPlans: MealPlan[];
+  recentRecipes: (Recipe & { creatorName: string })[];
+  recentMealPlans: (MealPlan & { creatorName: string })[];
   isLoading: boolean;
 }
 
@@ -49,6 +49,8 @@ export const RecentActivity = ({
       title: recipe.title,
       time: recipe.created_at,
       isFavorite: recipe.is_favorite,
+      action: 'added',
+      user: recipe.creatorName,
     })),
     ...recentMealPlans.slice(0, 2).map(plan => ({
       id: plan.id,
@@ -56,6 +58,8 @@ export const RecentActivity = ({
       title: plan.meal_name || 'Meal Plan',
       time: plan.created_at || '',
       day: new Date(plan.date).toLocaleDateString('en-US', { weekday: 'short' }),
+      action: 'planned',
+      user: plan.creatorName,
     })),
   ]
     .sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime())
@@ -115,7 +119,7 @@ export const RecentActivity = ({
                 </div>
                 <div className="flex items-center gap-2">
                   <p className="text-xs text-muted-foreground">
-                    {format(new Date(activity.time), 'MMM d')}
+                    {activity.action} by {activity.user} • {format(new Date(activity.time), 'MMM d')}
                   </p>
                   {activity.type === 'meal' && activity.day && (
                     <Badge variant="secondary" className="text-xs">
