@@ -1,10 +1,9 @@
 
 import { 
   Book, 
-  CalendarDays, 
   ListChecks,
   Heart,
-  Calendar
+  UtensilsCrossed
 } from "lucide-react";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { LoginPromptDialog } from "@/components/auth/LoginPromptDialog";
@@ -15,12 +14,25 @@ import { WelcomeHeader } from "@/components/dashboard/WelcomeHeader";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { QuickActions } from "@/components/dashboard/QuickActions";
 import { RecentActivity } from "@/components/dashboard/RecentActivity";
+import { useNavigate } from "react-router-dom";
 
 export default function Index() {
   useDocumentTitle("RealiMeali | Dashboard");
   const { showPrompt, promptTrigger, triggerPromptOnFeatureClick, closePrompt } = useLoginPrompt();
   const { user } = useAuth();
   const { stats, isLoading, hasData } = useUserStats();
+  const navigate = useNavigate();
+
+  const handleUncookedRecipesClick = () => {
+    // Navigate to recipes page and set the showNotCookedOnly filter
+    navigate('/my-recipes', { 
+      state: { 
+        filters: { 
+          showNotCookedOnly: true 
+        } 
+      } 
+    });
+  };
 
   // If user is not authenticated, show login prompt
   if (!user) {
@@ -68,11 +80,12 @@ export default function Index() {
             variant="primary"
           />
           <StatsCard
-            title="This Week's Meals"
-            value={stats.currentWeekMeals}
-            icon={CalendarDays}
+            title="Recipes To Cook"
+            value={stats.uncookedRecipes}
+            icon={UtensilsCrossed}
             isLoading={isLoading}
             variant="secondary"
+            onClick={handleUncookedRecipesClick}
           />
           <StatsCard
             title="Shopping Items"

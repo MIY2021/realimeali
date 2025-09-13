@@ -2,7 +2,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus, Book } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { RecipeList } from "@/components/recipes/RecipeList";
 import { AddToMealPlanDialog } from "@/components/recipes/AddToMealPlanDialog";
 import { useRecipes } from "@/contexts/RecipesContext";
@@ -23,11 +23,15 @@ export default function RecipesPage() {
   const { currentHousehold, isLoadingHousehold } = useHousehold();
   const { recipes, isLoading } = useRecipes();
   const isMobile = useIsMobile();
+  const location = useLocation();
   const [initialLoading, setInitialLoading] = useState(true);
 
   // State for Add to Meal Plan dialog
   const [selectedRecipeForMealPlan, setSelectedRecipeForMealPlan] = useState<Recipe | null>(null);
   const [isMealPlanDialogOpen, setIsMealPlanDialogOpen] = useState(false);
+
+  // Get initial filters from navigation state
+  const initialFilters = location.state?.filters || {};
 
   // Load recipes automatically
   useRecipesLoader();
@@ -108,6 +112,7 @@ export default function RecipesPage() {
             recipes={recipes}
             isLoading={initialLoading || isLoading}
             onAddToMealPlan={handleAddToMealPlan}
+            initialFilters={initialFilters}
           />
         )}
       </div>
