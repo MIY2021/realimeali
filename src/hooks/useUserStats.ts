@@ -40,10 +40,10 @@ export const useUserStats = () => {
         };
       });
     
-    // Recent meal plans (last 5) with creator info
+    // Recent meal plans (last 10) with creator info
     const recentMealPlans = [...mealPlans]
       .sort((a, b) => new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime())
-      .slice(0, 5)
+      .slice(0, 10)
       .map(plan => {
         const creator = householdMembers.find(member => member.user_id === plan.created_by);
         return {

@@ -1,9 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import { Recipe, MealPlan } from "@/types";
 import { format } from "date-fns";
-import { Clock, Heart, UtensilsCrossed, CalendarDays } from "lucide-react";
+import { Clock, Heart, UtensilsCrossed, CalendarDays, ChevronDown } from "lucide-react";
+import { useState } from "react";
 
 interface RecentActivityProps {
   recentRecipes: (Recipe & { creatorName: string })[];
@@ -16,6 +18,8 @@ export const RecentActivity = ({
   recentMealPlans, 
   isLoading 
 }: RecentActivityProps) => {
+  const [showMore, setShowMore] = useState(false);
+
   if (isLoading) {
     return (
       <Card>
@@ -43,27 +47,38 @@ export const RecentActivity = ({
   }
 
   const activities = [
-    ...recentRecipes.slice(0, 3).map(recipe => ({
+    ...recentRecipes.slice(0, showMore ? 8 : 3).map(recipe => ({
       id: recipe.id,
       type: 'recipe' as const,
       title: recipe.title,
       time: recipe.created_at,
       isFavorite: recipe.is_favorite,
-      action: 'added',
+      action: 'added recipe',
       user: recipe.creatorName,
+      day: '',
+      isCustomMeal: false,
     })),
-    ...recentMealPlans.slice(0, 2).map(plan => ({
-      id: plan.id,
-      type: 'meal' as const,
-      title: plan.meal_name || 'Meal Plan',
-      time: plan.created_at || '',
-      day: new Date(plan.date).toLocaleDateString('en-US', { weekday: 'short' }),
-      action: 'planned',
-      user: plan.creatorName,
-    })),
+    ...recentMealPlans.slice(0, showMore ? 7 : 4).map(plan => {
+      // Distinguish between custom meals and regular meal plans
+      const isCustomMeal = plan.is_freetyped && plan.meal_name;
+      const title = isCustomMeal ? plan.meal_name : (plan.meal_name || 'Meal Plan');
+      const action = isCustomMeal ? 'added custom meal' : 'created meal plan';
+      
+      return {
+        id: plan.id,
+        type: isCustomMeal ? 'custom-meal' : 'meal' as const,
+        title: title || 'Meal Plan',
+        time: plan.created_at || '',
+        day: plan.date ? new Date(plan.date).toLocaleDateString('en-US', { weekday: 'short' }) : '',
+        action,
+        user: plan.creatorName,
+        isCustomMeal,
+        isFavorite: false,
+      };
+    }),
   ]
     .sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime())
-    .slice(0, 5);
+    .slice(0, showMore ? 15 : 5);
 
   if (activities.length === 0) {
     return (
@@ -104,6 +119,10 @@ export const RecentActivity = ({
                   <div className="h-10 w-10 rounded-full bg-terracotta/10 flex items-center justify-center">
                     <UtensilsCrossed className="h-5 w-5 text-terracotta" />
                   </div>
+                ) : activity.type === 'custom-meal' ? (
+                  <div className="h-10 w-10 rounded-full bg-amber-500/10 flex items-center justify-center">
+                    <UtensilsCrossed className="h-5 w-5 text-amber-600" />
+                  </div>
                 ) : (
                   <div className="h-10 w-10 rounded-full bg-sage/10 flex items-center justify-center">
                     <CalendarDays className="h-5 w-5 text-sage" />
@@ -121,7 +140,7 @@ export const RecentActivity = ({
                   <p className="text-xs text-muted-foreground">
                     {activity.action} by {activity.user} • {format(new Date(activity.time), 'MMM d')}
                   </p>
-                  {activity.type === 'meal' && activity.day && (
+                  {(activity.type === 'meal' || activity.type === 'custom-meal') && activity.day && (
                     <Badge variant="secondary" className="text-xs">
                       {activity.day}
                     </Badge>
@@ -131,6 +150,20 @@ export const RecentActivity = ({
             </div>
           ))}
         </div>
+        
+        {(recentRecipes.length + recentMealPlans.length) > 5 && (
+          <div className="mt-4 text-center">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowMore(!showMore)}
+              className="text-xs"
+            >
+              {showMore ? 'Show Less' : 'View More Recent Activity'}
+              <ChevronDown className={`h-3 w-3 ml-1 transition-transform ${showMore ? 'rotate-180' : ''}`} />
+            </Button>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
