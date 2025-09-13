@@ -20,8 +20,10 @@ export const useUserStats = () => {
     // Favorite recipes count
     const favoriteRecipes = recipes.filter(recipe => recipe.is_favorite).length;
     
-    // Uncooked recipes count
-    const uncookedRecipes = recipes.filter(recipe => !recipe.has_cooked).length;
+    // Current week meals (week 1)
+    const currentWeekMeals = mealPlans.filter(plan => 
+      plan.week_number === 1 && plan.household_id === currentHousehold?.id
+    ).length;
     
     // Shopping list items count
     const shoppingItemsCount = shoppingList?.length || 0;
@@ -53,7 +55,7 @@ export const useUserStats = () => {
     return {
       totalRecipes,
       favoriteRecipes,
-      uncookedRecipes,
+      currentWeekMeals,
       shoppingItemsCount,
       recentRecipes,
       recentMealPlans

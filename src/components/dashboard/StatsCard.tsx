@@ -8,7 +8,6 @@ interface StatsCardProps {
   icon: ComponentType<{ className?: string }>;
   isLoading?: boolean;
   variant?: 'primary' | 'secondary' | 'accent' | 'muted';
-  onClick?: () => void;
 }
 
 export const StatsCard = ({ 
@@ -16,8 +15,7 @@ export const StatsCard = ({
   value, 
   icon: IconComponent, 
   isLoading = false,
-  variant = 'primary',
-  onClick
+  variant = 'primary' 
 }: StatsCardProps) => {
   const getVariantClasses = () => {
     switch (variant) {
@@ -49,10 +47,8 @@ export const StatsCard = ({
     }
   };
 
-  const cardClasses = `${getVariantClasses()} transition-all hover:shadow-md ${onClick ? 'cursor-pointer hover:bg-opacity-80' : ''}`;
-
   return (
-    <Card className={cardClasses} onClick={onClick}>
+    <Card className={`${getVariantClasses()} transition-all hover:shadow-md`}>
       <CardContent className="p-4">
         <div className="flex items-center justify-between">
           <div>
