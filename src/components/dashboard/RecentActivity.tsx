@@ -53,7 +53,7 @@ export const RecentActivity = ({
       title: recipe.title,
       time: recipe.created_at,
       isFavorite: recipe.is_favorite,
-      action: 'added recipe',
+      action: 'Recipe added by',
       user: recipe.creatorName,
       day: '',
       isCustomMeal: false,
@@ -62,7 +62,7 @@ export const RecentActivity = ({
       // Distinguish between custom meals and regular meal plans
       const isCustomMeal = plan.is_freetyped && plan.meal_name;
       const title = isCustomMeal ? plan.meal_name : (plan.meal_name || 'Meal Plan');
-      const action = isCustomMeal ? 'added custom meal' : 'created meal plan';
+      const action = isCustomMeal ? 'Custom meal added by' : 'Meal plan created by';
       
       return {
         id: plan.id,
@@ -138,13 +138,8 @@ export const RecentActivity = ({
                 </div>
                 <div className="flex items-center gap-2">
                   <p className="text-xs text-muted-foreground">
-                    {activity.action} by {activity.user} • {format(new Date(activity.time), 'MMM d')}
+                    {activity.action} {activity.user} • {format(new Date(activity.time), 'MMM d')}
                   </p>
-                  {(activity.type === 'meal' || activity.type === 'custom-meal') && activity.day && (
-                    <Badge variant="secondary" className="text-xs">
-                      {activity.day}
-                    </Badge>
-                  )}
                 </div>
               </div>
             </div>
