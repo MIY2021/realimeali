@@ -1,11 +1,12 @@
 
 import { 
   Book, 
-  CalendarDays, 
+  UtensilsCrossed, 
   ListChecks,
   Heart,
   Calendar
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { LoginPromptDialog } from "@/components/auth/LoginPromptDialog";
 import { useLoginPrompt } from "@/hooks/useLoginPrompt";
@@ -21,6 +22,11 @@ export default function Index() {
   const { showPrompt, promptTrigger, triggerPromptOnFeatureClick, closePrompt } = useLoginPrompt();
   const { user } = useAuth();
   const { stats, isLoading, hasData } = useUserStats();
+  const navigate = useNavigate();
+
+  const handleRecipesToCookClick = () => {
+    navigate("/my-recipes?filter=not-cooked");
+  };
 
   // If user is not authenticated, show login prompt
   if (!user) {
@@ -68,11 +74,12 @@ export default function Index() {
             variant="primary"
           />
           <StatsCard
-            title="This Week's Meals"
-            value={stats.currentWeekMeals}
-            icon={CalendarDays}
+            title="Recipes To Cook"
+            value={stats.recipesToCook}
+            icon={UtensilsCrossed}
             isLoading={isLoading}
             variant="secondary"
+            onClick={handleRecipesToCookClick}
           />
           <StatsCard
             title="Shopping Items"

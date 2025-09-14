@@ -2,7 +2,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus, Book } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { RecipeList } from "@/components/recipes/RecipeList";
 import { AddToMealPlanDialog } from "@/components/recipes/AddToMealPlanDialog";
 import { useRecipes } from "@/contexts/RecipesContext";
@@ -24,6 +24,10 @@ export default function RecipesPage() {
   const { recipes, isLoading } = useRecipes();
   const isMobile = useIsMobile();
   const [initialLoading, setInitialLoading] = useState(true);
+  const [searchParams] = useSearchParams();
+  
+  // Check if we should initialize with not-cooked filter
+  const initialNotCookedFilter = searchParams.get('filter') === 'not-cooked';
 
   // State for Add to Meal Plan dialog
   const [selectedRecipeForMealPlan, setSelectedRecipeForMealPlan] = useState<Recipe | null>(null);
@@ -108,6 +112,7 @@ export default function RecipesPage() {
             recipes={recipes}
             isLoading={initialLoading || isLoading}
             onAddToMealPlan={handleAddToMealPlan}
+            initialNotCookedFilter={initialNotCookedFilter}
           />
         )}
       </div>

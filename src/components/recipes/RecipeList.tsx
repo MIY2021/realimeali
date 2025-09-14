@@ -7,9 +7,10 @@ interface RecipeListProps {
   recipes: Recipe[];
   isLoading: boolean;
   onAddToMealPlan?: (recipe: Recipe) => void;
+  initialNotCookedFilter?: boolean;
 }
 
-export function RecipeList({ recipes, isLoading, onAddToMealPlan }: RecipeListProps) {
+export function RecipeList({ recipes, isLoading, onAddToMealPlan, initialNotCookedFilter }: RecipeListProps) {
   // Use simple scroll memory hook
   useSimpleScrollMemory();
 
@@ -24,6 +25,7 @@ export function RecipeList({ recipes, isLoading, onAddToMealPlan }: RecipeListPr
         isLoading={isLoading}
         onSelectRecipe={handleRecipeClick}
         onAddToMealPlan={onAddToMealPlan}
+        initialNotCookedFilter={initialNotCookedFilter}
       />
     </div>
   );
