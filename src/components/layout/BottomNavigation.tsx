@@ -1,6 +1,6 @@
 
 import { Link, useLocation } from "react-router-dom";
-import { Book, Search, CalendarDays, ListChecks } from "lucide-react";
+import { Book, Search, CalendarDays, ListChecks, Home } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
 
@@ -9,6 +9,12 @@ const BottomNavigation = () => {
   const [flashMealPlan, setFlashMealPlan] = useState(false);
   
   const navigationItems = [
+    { 
+      to: "/", 
+      icon: Home, 
+      label: "Home",
+      activePattern: /^\/$/
+    },
     { 
       to: "/my-recipes", 
       icon: Book, 
