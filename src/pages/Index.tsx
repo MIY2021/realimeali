@@ -59,13 +59,15 @@ export default function Index() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container max-w-6xl mx-auto px-4 py-4">
+    <div className="min-h-screen bg-white">
+      <div className="container max-w-6xl mx-auto px-4 py-6">
         {/* Welcome Header */}
-        <WelcomeHeader />
+        <div className="mb-8">
+          <WelcomeHeader />
+        </div>
         
-        {/* Stats Cards Grid - 2x2 */}
-        <div className="grid grid-cols-2 gap-4 mb-6">
+        {/* Stats Cards Grid - 2x2 with enhanced shadows */}
+        <div className="grid grid-cols-2 gap-4 mb-8">
           <StatsCard
             title="My Recipes"
             value={stats.totalRecipes}
@@ -97,17 +99,19 @@ export default function Index() {
           />
         </div>
 
-        {/* Quick Actions and Recent Activity */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <div className="lg:col-span-2">
-            <QuickActions />
-          </div>
-          <div>
-            <RecentActivity
-              recentRecipes={stats.recentRecipes}
-              recentMealPlans={stats.recentMealPlans}
-              isLoading={isLoading}
-            />
+        {/* Quick Actions and Recent Activity with subtle background */}
+        <div className="bg-gray-50/50 rounded-2xl p-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2">
+              <QuickActions />
+            </div>
+            <div>
+              <RecentActivity
+                recentRecipes={stats.recentRecipes}
+                recentMealPlans={stats.recentMealPlans}
+                isLoading={isLoading}
+              />
+            </div>
           </div>
         </div>
       </div>
