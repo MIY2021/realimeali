@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Calendar, ShoppingBag, Search } from "lucide-react";
+import { Plus, Calendar, ShoppingBag, Search, Star } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export const QuickActions = () => {
@@ -34,7 +34,10 @@ export const QuickActions = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg font-semibold">Quick Actions</CardTitle>
+        <CardTitle className="text-lg font-semibold flex items-center gap-2">
+          <Star className="h-5 w-5 text-sage" />
+          Quick Actions
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">

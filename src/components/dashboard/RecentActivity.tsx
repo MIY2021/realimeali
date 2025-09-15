@@ -26,7 +26,7 @@ export const RecentActivity = ({
         <CardHeader>
           <CardTitle className="text-lg font-semibold flex items-center gap-2">
             <Clock className="h-5 w-5" />
-            Recent Activity
+            Recent Household Activity
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -86,7 +86,7 @@ export const RecentActivity = ({
         <CardHeader>
           <CardTitle className="text-lg font-semibold flex items-center gap-2">
             <Clock className="h-5 w-5" />
-            Recent Activity
+           Recent Household Activity
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -107,7 +107,7 @@ export const RecentActivity = ({
       <CardHeader>
         <CardTitle className="text-lg font-semibold flex items-center gap-2">
           <Clock className="h-5 w-5" />
-          Recent Activity
+          Recent Household Activity
         </CardTitle>
       </CardHeader>
       <CardContent>
