@@ -115,7 +115,7 @@ export default function Index() {
         </div>
 
         {/* Quick Actions and Recent Activity with subtle background */}
-        <div className="bg-gray-50/50 rounded-2xl p-4">
+        <div className="bg-gray-50/50 rounded-2xl py-4">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <div className="lg:col-span-2">
               <QuickActions />
