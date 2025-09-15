@@ -27,7 +27,7 @@ export const QuickActions = () => {
       title: "Discover",
       icon: Search,
       href: "/discover-recipes",
-      variant: "ghost" as const,
+      variant: "outline" as const,
     },
   ];
 
