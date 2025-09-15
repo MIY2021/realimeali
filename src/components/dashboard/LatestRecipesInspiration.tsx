@@ -9,21 +9,19 @@ import { ImportedRecipe } from "@/services/importedRecipeService";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export const LatestRecipesInspiration = () => {
-  // Fetch featured imported recipes
+  // Fetch newest imported recipes
   const { data: recipes, isLoading, error } = useQuery({
-    queryKey: ['featured-imported-recipes'],
+    queryKey: ['newest-imported-recipes'],
     queryFn: async (): Promise<ImportedRecipe[]> => {
       const { data, error } = await supabase
         .from('imported_recipes')
         .select('*')
-        .eq('is_featured', true)
-        .order('priority_score', { ascending: false })
         .order('created_at', { ascending: false })
         .limit(3);
 
       if (error) {
-        console.error('Error fetching featured recipes:', error);
-        throw new Error(`Failed to fetch featured recipes: ${error.message}`);
+        console.error('Error fetching newest recipes:', error);
+        throw new Error(`Failed to fetch newest recipes: ${error.message}`);
       }
 
       return (data || []) as unknown as ImportedRecipe[];
@@ -80,7 +78,7 @@ export const LatestRecipesInspiration = () => {
         ) : (
           <div className="text-center py-8">
             <p className="text-muted-foreground mb-4">
-              No featured recipes available at the moment.
+              No recipes available at the moment.
             </p>
             <Button asChild>
               <Link to="/discover-recipes">
