@@ -34,6 +34,7 @@ interface RecipeSelectionViewProps {
   onAddToMealPlan?: (recipe: Recipe) => void;
   defaultMobileLayout?: string;
   initialNotCookedFilter?: boolean;
+  initialFavouritesFilter?: boolean;
 }
 
 export function RecipeSelectionView({ 
@@ -44,7 +45,8 @@ export function RecipeSelectionView({
   showAddToMealPlan = true,
   onAddToMealPlan,
   defaultMobileLayout,
-  initialNotCookedFilter
+  initialNotCookedFilter,
+  initialFavouritesFilter
 }: RecipeSelectionViewProps) {
   const {
     searchTerm,
@@ -79,6 +81,14 @@ export function RecipeSelectionView({
       cookingDurations: [],
       showFavoritesOnly: false,
       showNotCookedOnly: true,
+    } : initialFavouritesFilter ? {
+      searchTerm: "",
+      mealTypes: [],
+      cuisineRegions: [],
+      dietLifestyle: [],
+      cookingDurations: [],
+      showFavoritesOnly: true,
+      showNotCookedOnly: false,
     } : undefined
   });
 

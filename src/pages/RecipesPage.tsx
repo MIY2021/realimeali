@@ -26,8 +26,9 @@ export default function RecipesPage() {
   const [initialLoading, setInitialLoading] = useState(true);
   const [searchParams] = useSearchParams();
   
-  // Check if we should initialize with not-cooked filter
+  // Check if we should initialize with filters
   const initialNotCookedFilter = searchParams.get('filter') === 'not-cooked';
+  const initialFavouritesFilter = searchParams.get('filter') === 'favourites';
 
   // State for Add to Meal Plan dialog
   const [selectedRecipeForMealPlan, setSelectedRecipeForMealPlan] = useState<Recipe | null>(null);
@@ -113,6 +114,7 @@ export default function RecipesPage() {
             isLoading={initialLoading || isLoading}
             onAddToMealPlan={handleAddToMealPlan}
             initialNotCookedFilter={initialNotCookedFilter}
+            initialFavouritesFilter={initialFavouritesFilter}
           />
         )}
       </div>

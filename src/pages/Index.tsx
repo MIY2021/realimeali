@@ -28,6 +28,18 @@ export default function Index() {
     navigate("/my-recipes?filter=not-cooked");
   };
 
+  const handleMyRecipesClick = () => {
+    navigate("/my-recipes");
+  };
+
+  const handleShoppingItemsClick = () => {
+    navigate("/shopping-list");
+  };
+
+  const handleFavouritesClick = () => {
+    navigate("/my-recipes?filter=favourites");
+  };
+
   // If user is not authenticated, show login prompt
   if (!user) {
     return (
@@ -74,6 +86,7 @@ export default function Index() {
             icon={Book}
             isLoading={isLoading}
             variant="primary"
+            onClick={handleMyRecipesClick}
           />
           <StatsCard
             title="Recipes To Cook"
@@ -89,13 +102,15 @@ export default function Index() {
             icon={ListChecks}
             isLoading={isLoading}
             variant="accent"
+            onClick={handleShoppingItemsClick}
           />
           <StatsCard
-            title="Favorites"
+            title="Favourites"
             value={stats.favoriteRecipes}
             icon={Heart}
             isLoading={isLoading}
             variant="muted"
+            onClick={handleFavouritesClick}
           />
         </div>
 
