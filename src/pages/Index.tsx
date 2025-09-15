@@ -16,6 +16,7 @@ import { WelcomeHeader } from "@/components/dashboard/WelcomeHeader";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { QuickActions } from "@/components/dashboard/QuickActions";
 import { RecentActivity } from "@/components/dashboard/RecentActivity";
+import { LatestRecipesInspiration } from "@/components/dashboard/LatestRecipesInspiration";
 
 export default function Index() {
   useDocumentTitle("RealiMeali | Dashboard");
@@ -128,6 +129,11 @@ export default function Index() {
               />
             </div>
           </div>
+        </div>
+
+        {/* Latest Recipes Inspiration */}
+        <div className="mt-8">
+          <LatestRecipesInspiration />
         </div>
       </div>
     </div>
