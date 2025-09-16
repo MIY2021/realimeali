@@ -80,7 +80,7 @@ export default function Index() {
         </div>
         
         {/* Stats Cards Grid - 2x2 with enhanced shadows */}
-        <div className="grid grid-cols-2 gap-4 mb-8">
+        <div className="grid grid-cols-2 gap-4 mb-4">
           <StatsCard
             title="My Recipes"
             value={stats.totalRecipes}
