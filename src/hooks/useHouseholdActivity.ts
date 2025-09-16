@@ -154,7 +154,7 @@ export const useHouseholdActivity = () => {
           id: `recipe-deleted-${recipe.id}`,
           type: 'recipe-deleted',
           title: recipe.title,
-          user: getUserName((recipe as any).last_updated_by || recipe.user_id || ''),
+          user: getUserName((recipe as any).last_updated_by || recipe.created_by || ''),
           timestamp: (recipe as any).deleted_at,
           description: 'Recipe deleted'
         });
