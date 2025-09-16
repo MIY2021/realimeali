@@ -1,24 +1,100 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { Recipe, MealPlan } from "@/types";
 import { format } from "date-fns";
-import { Clock, Heart, UtensilsCrossed, CalendarDays, ChevronDown } from "lucide-react";
+import { 
+  Clock, 
+  Heart, 
+  UtensilsCrossed, 
+  CalendarDays, 
+  ChevronDown,
+  Check,
+  Edit,
+  FileText,
+  User,
+  Trash2,
+  RotateCcw,
+  Star,
+  X
+} from "lucide-react";
 import { useState } from "react";
+import { useHouseholdActivity, type HouseholdActivity } from "@/hooks/useHouseholdActivity";
 
 interface RecentActivityProps {
-  recentRecipes: (Recipe & { creatorName: string })[];
-  recentMealPlans: (MealPlan & { creatorName: string })[];
-  isLoading: boolean;
+  isLoading?: boolean;
 }
 
-export const RecentActivity = ({ 
-  recentRecipes, 
-  recentMealPlans, 
-  isLoading 
-}: RecentActivityProps) => {
+export const RecentActivity = ({ isLoading: externalLoading }: RecentActivityProps) => {
+  const { activities, isLoading: activityLoading } = useHouseholdActivity();
   const [showMore, setShowMore] = useState(false);
+  
+  const isLoading = externalLoading || activityLoading;
+
+  const getActivityIcon = (type: HouseholdActivity['type']) => {
+    switch (type) {
+      case 'recipe-added':
+        return <UtensilsCrossed className="h-5 w-5 text-emerald-600" />;
+      case 'recipe-edited':
+        return <Edit className="h-5 w-5 text-blue-600" />;
+      case 'recipe-favorited':
+        return <Star className="h-5 w-5 text-amber-500" />;
+      case 'recipe-unfavorited':
+        return <X className="h-5 w-5 text-gray-500" />;
+      case 'recipe-cooked':
+        return <Check className="h-5 w-5 text-orange-600" />;
+      case 'recipe-uncooked':
+        return <Check className="h-5 w-5 text-gray-500" />;
+      case 'meal-plan-added':
+        return <CalendarDays className="h-5 w-5 text-sage" />;
+      case 'custom-meal-added':
+        return <UtensilsCrossed className="h-5 w-5 text-amber-600" />;
+      case 'leftover-meal-added':
+        return <UtensilsCrossed className="h-5 w-5 text-purple-600" />;
+      case 'recipe-note-added':
+        return <FileText className="h-5 w-5 text-indigo-600" />;
+      case 'member-joined':
+        return <User className="h-5 w-5 text-green-600" />;
+      case 'recipe-deleted':
+        return <Trash2 className="h-5 w-5 text-red-500" />;
+      case 'recipe-restored':
+        return <RotateCcw className="h-5 w-5 text-green-500" />;
+      default:
+        return <UtensilsCrossed className="h-5 w-5 text-terracotta" />;
+    }
+  };
+
+  const getActivityBgColor = (type: HouseholdActivity['type']) => {
+    switch (type) {
+      case 'recipe-added':
+        return 'bg-emerald-500/10';
+      case 'recipe-edited':
+        return 'bg-blue-500/10';
+      case 'recipe-favorited':
+        return 'bg-amber-500/10';
+      case 'recipe-unfavorited':
+        return 'bg-gray-500/10';
+      case 'recipe-cooked':
+        return 'bg-orange-500/10';
+      case 'recipe-uncooked':
+        return 'bg-gray-500/10';
+      case 'meal-plan-added':
+        return 'bg-sage/10';
+      case 'custom-meal-added':
+        return 'bg-amber-500/10';
+      case 'leftover-meal-added':
+        return 'bg-purple-500/10';
+      case 'recipe-note-added':
+        return 'bg-indigo-500/10';
+      case 'member-joined':
+        return 'bg-green-500/10';
+      case 'recipe-deleted':
+        return 'bg-red-500/10';
+      case 'recipe-restored':
+        return 'bg-green-500/10';
+      default:
+        return 'bg-terracotta/10';
+    }
+  };
 
   if (isLoading) {
     return (
@@ -46,39 +122,7 @@ export const RecentActivity = ({
     );
   }
 
-  const activities = [
-    ...recentRecipes.slice(0, showMore ? 8 : 3).map(recipe => ({
-      id: recipe.id,
-      type: 'recipe' as const,
-      title: recipe.title,
-      time: recipe.created_at,
-      isFavorite: recipe.is_favorite,
-      action: 'Recipe added by',
-      user: recipe.creatorName,
-      day: '',
-      isCustomMeal: false,
-    })),
-    ...recentMealPlans.slice(0, showMore ? 7 : 4).map(plan => {
-      // Distinguish between custom meals and regular meal plans
-      const isCustomMeal = plan.is_freetyped && plan.meal_name;
-      const title = isCustomMeal ? plan.meal_name : (plan.meal_name || 'Meal Plan');
-      const action = isCustomMeal ? 'Custom meal added by' : 'Meal plan created by';
-      
-      return {
-        id: plan.id,
-        type: isCustomMeal ? 'custom-meal' : 'meal' as const,
-        title: title || 'Meal Plan',
-        time: plan.created_at || '',
-        day: plan.date ? new Date(plan.date).toLocaleDateString('en-US', { weekday: 'short' }) : '',
-        action,
-        user: plan.creatorName,
-        isCustomMeal,
-        isFavorite: false,
-      };
-    }),
-  ]
-    .sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime())
-    .slice(0, showMore ? 15 : 5);
+  const displayActivities = activities.slice(0, showMore ? 20 : 6);
 
   if (activities.length === 0) {
     return (
@@ -112,33 +156,18 @@ export const RecentActivity = ({
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {activities.map((activity) => (
-            <div key={`${activity.type}-${activity.id}`} className="flex items-center gap-3">
-              <div className="flex-shrink-0">
-                {activity.type === 'recipe' ? (
-                  <div className="h-10 w-10 rounded-full bg-terracotta/10 flex items-center justify-center">
-                    <UtensilsCrossed className="h-5 w-5 text-terracotta" />
-                  </div>
-                ) : activity.type === 'custom-meal' ? (
-                  <div className="h-10 w-10 rounded-full bg-amber-500/10 flex items-center justify-center">
-                    <UtensilsCrossed className="h-5 w-5 text-amber-600" />
-                  </div>
-                ) : (
-                  <div className="h-10 w-10 rounded-full bg-sage/10 flex items-center justify-center">
-                    <CalendarDays className="h-5 w-5 text-sage" />
-                  </div>
-                )}
+          {displayActivities.map((activity) => (
+            <div key={activity.id} className="flex items-center gap-3">
+              <div className={`flex-shrink-0 h-10 w-10 rounded-full ${getActivityBgColor(activity.type)} flex items-center justify-center`}>
+                {getActivityIcon(activity.type)}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
                   <p className="text-sm font-medium truncate">{activity.title}</p>
-                  {activity.type === 'recipe' && activity.isFavorite && (
-                    <Heart className="h-3 w-3 text-terracotta fill-current" />
-                  )}
                 </div>
                 <div className="flex items-center gap-2">
                   <p className="text-xs text-muted-foreground">
-                    {activity.action} {activity.user} • {format(new Date(activity.time), 'MMM d')}
+                    {activity.description} by {activity.user} • {format(new Date(activity.timestamp), 'MMM d')}
                   </p>
                 </div>
               </div>
@@ -146,7 +175,7 @@ export const RecentActivity = ({
           ))}
         </div>
         
-        {(recentRecipes.length + recentMealPlans.length) > 5 && (
+        {activities.length > 6 && (
           <div className="mt-4 text-center">
             <Button
               variant="ghost"

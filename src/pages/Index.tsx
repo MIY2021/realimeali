@@ -122,11 +122,7 @@ export default function Index() {
               <QuickActions />
             </div>
             <div>
-              <RecentActivity
-                recentRecipes={stats.recentRecipes}
-                recentMealPlans={stats.recentMealPlans}
-                isLoading={isLoading}
-              />
+              <RecentActivity isLoading={isLoading} />
             </div>
           </div>
         </div>
