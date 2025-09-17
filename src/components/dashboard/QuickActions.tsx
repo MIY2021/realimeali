@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Calendar, ShoppingBag, Search, Star } from "lucide-react";
+import { Plus, Calendar, ListChecks, Search, Star } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export const QuickActions = () => {
@@ -19,7 +19,7 @@ export const QuickActions = () => {
     },
     {
       title: "Shopping List",
-      icon: ShoppingBag,
+      icon: ListChecks,
       href: "/shopping-list",
       variant: "outline" as const,
     },
