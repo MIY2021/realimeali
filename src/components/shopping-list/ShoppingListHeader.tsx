@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { Share, Plus, ShoppingBag, Info } from "lucide-react";
+import { Share, Plus, ListChecks, Info } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -57,7 +57,7 @@ export default function ShoppingListHeader({
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl sm:text-3xl font-bold text-navy flex items-center gap-2">
-            <ShoppingBag className="h-6 w-6 sm:h-8 sm:w-8 text-sage" />
+            <ListChecks className="h-6 w-6 sm:h-8 sm:w-8 text-sage" />
             Shopping List
           </h1>
           {onInfoClick && (
