@@ -13,6 +13,7 @@ export const QuickActions = () => {
       href: "/create-recipe",
       variant: "outline" as const,
       type: "navigation" as const,
+      iconColor: "text-terracotta",
     },
     {
       title: "Plan Meals",
@@ -20,6 +21,7 @@ export const QuickActions = () => {
       href: "/meal-planner",
       variant: "outline" as const,
       type: "navigation" as const,
+      iconColor: "text-sage",
     },
     {
       title: "Shopping List",
@@ -27,6 +29,7 @@ export const QuickActions = () => {
       href: "/shopping-list",
       variant: "outline" as const,
       type: "navigation" as const,
+      iconColor: "text-butter",
     },
     {
       title: "Discover",
@@ -34,6 +37,7 @@ export const QuickActions = () => {
       href: "/discover-recipes",
       variant: "outline" as const,
       type: "navigation" as const,
+      iconColor: "text-navy",
     },
     {
       title: "AI Chef",
@@ -41,6 +45,7 @@ export const QuickActions = () => {
       variant: "outline" as const,
       type: "modal" as const,
       onClick: () => setIsOpen(true),
+      iconColor: "text-primary",
     },
     {
       title: "Random Recipe",
@@ -48,6 +53,7 @@ export const QuickActions = () => {
       href: "/my-recipes",
       variant: "outline" as const,
       type: "navigation" as const,
+      iconColor: "text-sage",
     },
   ];
 
@@ -75,7 +81,7 @@ export const QuickActions = () => {
               className="flex flex-col h-24 p-4"
             >
               <Link to={action.href!}>
-                <action.icon className="h-6 w-6 mb-2" />
+                <action.icon className={`h-6 w-6 mb-2 ${action.iconColor}`} />
                 <span className="text-xs font-medium">{action.title}</span>
               </Link>
             </Button>
@@ -86,7 +92,7 @@ export const QuickActions = () => {
               onClick={() => handleActionClick(action)}
               className="flex flex-col h-24 p-4"
             >
-              <action.icon className="h-6 w-6 mb-2" />
+              <action.icon className={`h-6 w-6 mb-2 ${action.iconColor}`} />
               <span className="text-xs font-medium">{action.title}</span>
             </Button>
           )
