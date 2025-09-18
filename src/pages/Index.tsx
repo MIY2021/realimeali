@@ -115,16 +115,14 @@ export default function Index() {
           />
         </div>
 
-        {/* Quick Actions and Recent Activity with subtle background */}
-        <div className="bg-gray-50/50 rounded-2xl py-4">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            <div className="lg:col-span-2">
-              <QuickActions />
-            </div>
-            <div>
-              <RecentActivity isLoading={isLoading} />
-            </div>
-          </div>
+        {/* Quick Actions with subtle background */}
+        <div className="bg-gray-50/50 rounded-2xl py-4 mb-8">
+          <QuickActions />
+        </div>
+
+        {/* Recent Activity */}
+        <div className="mb-8">
+          <RecentActivity isLoading={isLoading} />
         </div>
 
         {/* Latest Recipes Inspiration */}

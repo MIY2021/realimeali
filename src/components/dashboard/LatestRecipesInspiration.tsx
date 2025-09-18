@@ -7,8 +7,20 @@ import { supabase } from "@/integrations/supabase/client";
 import { ImportedRecipeCard } from "@/components/discover-recipes/ImportedRecipeCard";
 import { ImportedRecipe } from "@/services/importedRecipeService";
 import { Skeleton } from "@/components/ui/skeleton";
+import { 
+  Carousel, 
+  CarouselContent, 
+  CarouselItem, 
+  CarouselNext, 
+  CarouselPrevious 
+} from "@/components/ui/carousel";
+import { useState, useEffect } from "react";
 
 export const LatestRecipesInspiration = () => {
+  const [api, setApi] = useState<any>();
+  const [current, setCurrent] = useState(0);
+  const [count, setCount] = useState(0);
+
   // Fetch newest imported recipes
   const { data: recipes, isLoading, error } = useQuery({
     queryKey: ['newest-imported-recipes'],
@@ -17,7 +29,7 @@ export const LatestRecipesInspiration = () => {
         .from('imported_recipes')
         .select('*')
         .order('created_at', { ascending: false })
-        .limit(3);
+        .limit(5);
 
       if (error) {
         console.error('Error fetching newest recipes:', error);
@@ -30,6 +42,17 @@ export const LatestRecipesInspiration = () => {
     gcTime: 1000 * 60 * 60, // 1 hour
     retry: 1,
   });
+
+  useEffect(() => {
+    if (!api) return;
+
+    setCount(api.scrollSnapList().length);
+    setCurrent(api.selectedScrollSnap() + 1);
+
+    api.on("select", () => {
+      setCurrent(api.selectedScrollSnap() + 1);
+    });
+  }, [api]);
 
   if (error) {
     return null; // Silently fail if we can't fetch inspiration recipes
@@ -45,25 +68,54 @@ export const LatestRecipesInspiration = () => {
       </CardHeader>
       <CardContent>
         {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="space-y-3">
-                <Skeleton className="h-48 w-full rounded-lg" />
-                <Skeleton className="h-4 w-3/4" />
-                <Skeleton className="h-3 w-1/2" />
-              </div>
-            ))}
+          <div className="relative">
+            <div className="flex gap-4 overflow-hidden">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="flex-none w-[300px] space-y-3">
+                  <Skeleton className="h-48 w-full rounded-lg" />
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-3 w-1/2" />
+                </div>
+              ))}
+            </div>
           </div>
         ) : recipes && recipes.length > 0 ? (
           <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {recipes.map((recipe) => (
-                <ImportedRecipeCard
-                  key={recipe.id}
-                  recipe={recipe}
-                  mobileLayout="1"
-                />
-              ))}
+            <div className="relative">
+              <Carousel
+                setApi={setApi}
+                className="w-full"
+                opts={{
+                  align: "start",
+                  loop: true,
+                }}
+              >
+                <CarouselContent className="-ml-2 md:-ml-4">
+                  {recipes.map((recipe) => (
+                    <CarouselItem key={recipe.id} className="pl-2 md:pl-4 basis-full md:basis-1/2 lg:basis-1/3">
+                      <ImportedRecipeCard
+                        recipe={recipe}
+                        mobileLayout="1"
+                      />
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+                <CarouselPrevious className="absolute left-4 top-1/2 -translate-y-1/2" />
+                <CarouselNext className="absolute right-4 top-1/2 -translate-y-1/2" />
+              </Carousel>
+              
+              {/* Carousel dots */}
+              <div className="flex justify-center mt-4 space-x-2">
+                {Array.from({ length: count }).map((_, index) => (
+                  <button
+                    key={index}
+                    className={`w-2 h-2 rounded-full transition-colors ${
+                      index + 1 === current ? 'bg-sage' : 'bg-gray-300'
+                    }`}
+                    onClick={() => api?.scrollTo(index)}
+                  />
+                ))}
+              </div>
             </div>
             
             {/* Discover More Button at bottom */}
