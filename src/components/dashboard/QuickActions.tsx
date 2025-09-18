@@ -78,7 +78,7 @@ export const QuickActions = () => {
               key={action.title}
               variant={action.variant}
               asChild
-              className="flex flex-col h-24 p-4"
+              className="flex flex-col h-24 p-4 bg-terracotta/10 border-terracotta/20 hover:bg-terracotta/15"
             >
               <Link to={action.href!}>
                 <action.icon className={`h-6 w-6 mb-2 ${action.iconColor}`} />
@@ -90,7 +90,7 @@ export const QuickActions = () => {
               key={action.title}
               variant={action.variant}
               onClick={() => handleActionClick(action)}
-              className="flex flex-col h-24 p-4"
+              className="flex flex-col h-24 p-4 bg-terracotta/10 border-terracotta/20 hover:bg-terracotta/15"
             >
               <action.icon className={`h-6 w-6 mb-2 ${action.iconColor}`} />
               <span className="text-xs font-medium">{action.title}</span>
