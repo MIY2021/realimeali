@@ -26,6 +26,7 @@ export default {
         sage: "#81B29A",
         butter: "#F2CC8F",
         cream: "#F4F1DE",
+        rose: "hsl(var(--rose))",
         
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

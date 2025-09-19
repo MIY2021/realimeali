@@ -1,145 +1,135 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Clock, Users } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { ImportedRecipeCard } from "@/components/discover-recipes/ImportedRecipeCard";
 import { ImportedRecipe } from "@/services/importedRecipeService";
 import { Skeleton } from "@/components/ui/skeleton";
-import { 
-  Carousel, 
-  CarouselContent, 
-  CarouselItem, 
-  CarouselNext, 
-  CarouselPrevious 
-} from "@/components/ui/carousel";
-import { useState, useEffect } from "react";
+import { RecipeImage } from "@/components/ui/recipe-image";
 
 export const LatestRecipesInspiration = () => {
-  const [api, setApi] = useState<any>();
-  const [current, setCurrent] = useState(0);
-  const [count, setCount] = useState(0);
-
-  // Fetch newest imported recipes
-  const { data: recipes, isLoading, error } = useQuery({
-    queryKey: ['newest-imported-recipes'],
-    queryFn: async (): Promise<ImportedRecipe[]> => {
+  // Fetch a single random imported recipe
+  const { data: recipe, isLoading, error } = useQuery({
+    queryKey: ['featured-recipe-inspiration'],
+    queryFn: async (): Promise<ImportedRecipe | null> => {
       const { data, error } = await supabase
         .from('imported_recipes')
         .select('*')
         .order('created_at', { ascending: false })
-        .limit(5);
+        .limit(1)
+        .single();
 
       if (error) {
-        console.error('Error fetching newest recipes:', error);
-        throw new Error(`Failed to fetch newest recipes: ${error.message}`);
+        console.error('Error fetching featured recipe:', error);
+        return null;
       }
 
-      return (data || []) as unknown as ImportedRecipe[];
+      return data as unknown as ImportedRecipe;
     },
     staleTime: 1000 * 60 * 15, // 15 minutes
     gcTime: 1000 * 60 * 60, // 1 hour
     retry: 1,
   });
 
-  useEffect(() => {
-    if (!api) return;
-
-    setCount(api.scrollSnapList().length);
-    setCurrent(api.selectedScrollSnap() + 1);
-
-    api.on("select", () => {
-      setCurrent(api.selectedScrollSnap() + 1);
-    });
-  }, [api]);
-
   if (error) {
     return null; // Silently fail if we can't fetch inspiration recipes
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-lg font-semibold flex items-center gap-2">
+    <div className="w-full">
+      <div className="mb-6">
+        <h2 className="text-lg font-semibold flex items-center gap-2">
           <Sparkles className="h-5 w-5 text-sage" />
           Discover Recipes
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        {isLoading ? (
-          <div className="relative">
-            <div className="flex gap-4 overflow-hidden">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="flex-none w-[300px] space-y-3">
-                  <Skeleton className="h-48 w-full rounded-lg" />
-                  <Skeleton className="h-4 w-3/4" />
-                  <Skeleton className="h-3 w-1/2" />
+        </h2>
+      </div>
+      <Card>
+        <CardContent className="p-0">
+          {isLoading ? (
+            <div className="space-y-4">
+              <Skeleton className="h-48 w-full rounded-t-lg" />
+              <div className="p-4 space-y-3">
+                <Skeleton className="h-6 w-3/4" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-2/3" />
+                <div className="flex gap-2">
+                  <Skeleton className="h-8 w-16" />
+                  <Skeleton className="h-8 w-24" />
                 </div>
-              ))}
-            </div>
-          </div>
-        ) : recipes && recipes.length > 0 ? (
-          <div className="space-y-6">
-            <div className="relative">
-              <Carousel
-                setApi={setApi}
-                className="w-full"
-                opts={{
-                  align: "start",
-                  loop: true,
-                }}
-              >
-                <CarouselContent className="-ml-2 md:-ml-4">
-                  {recipes.map((recipe) => (
-                    <CarouselItem key={recipe.id} className="pl-2 md:pl-4 basis-full md:basis-1/2 lg:basis-1/3">
-                      <ImportedRecipeCard
-                        recipe={recipe}
-                        mobileLayout="1"
-                      />
-                    </CarouselItem>
-                  ))}
-                </CarouselContent>
-                <CarouselPrevious className="absolute left-4 top-1/2 -translate-y-1/2" />
-                <CarouselNext className="absolute right-4 top-1/2 -translate-y-1/2" />
-              </Carousel>
-              
-              {/* Carousel dots */}
-              <div className="flex justify-center mt-4 space-x-2">
-                {Array.from({ length: count }).map((_, index) => (
-                  <button
-                    key={index}
-                    className={`w-2 h-2 rounded-full transition-colors ${
-                      index + 1 === current ? 'bg-sage' : 'bg-gray-300'
-                    }`}
-                    onClick={() => api?.scrollTo(index)}
-                  />
-                ))}
               </div>
             </div>
-            
-            {/* Discover More Button at bottom */}
-            <div className="flex justify-center pt-2">
-              <Button variant="outline" asChild>
+          ) : recipe ? (
+            <div className="space-y-4">
+              {/* Recipe Image */}
+              <div className="relative h-48 w-full overflow-hidden rounded-t-lg">
+                {recipe.image ? (
+                  <img
+                    src={recipe.image}
+                    alt={recipe.title}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <div className="h-full w-full bg-muted flex items-center justify-center">
+                    <Sparkles className="h-16 w-16 text-muted-foreground" />
+                  </div>
+                )}
+              </div>
+              
+              {/* Recipe Details */}
+              <div className="p-4 space-y-4">
+                <div>
+                  <h3 className="font-semibold text-lg mb-2">{recipe.title}</h3>
+                  <p className="text-sm text-muted-foreground line-clamp-2">
+                    {recipe.description || "Discover this delicious recipe and add it to your collection"}
+                  </p>
+                </div>
+                
+                {/* Recipe Meta Info */}
+                <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                  {recipe.cook_time && (
+                    <div className="flex items-center gap-1">
+                      <Clock className="h-3 w-3" />
+                      <span>{recipe.cook_time} min</span>
+                    </div>
+                  )}
+                  {recipe.servings && (
+                    <div className="flex items-center gap-1">
+                      <Users className="h-3 w-3" />
+                      <span>{recipe.servings} servings</span>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Action Buttons */}
+                <div className="flex gap-2 pt-2">
+                  <Button size="sm" asChild>
+                    <Link to={`/imported-recipe/${recipe.id}`}>
+                      View
+                    </Link>
+                  </Button>
+                  <Button variant="outline" size="sm" asChild>
+                    <Link to="/discover-recipes">
+                      Discover More Recipes
+                    </Link>
+                  </Button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-8 px-4">
+              <p className="text-muted-foreground mb-4">
+                No recipes available at the moment.
+              </p>
+              <Button asChild>
                 <Link to="/discover-recipes">
-                  Discover More Recipes
+                  Explore Discover Recipes
                 </Link>
               </Button>
             </div>
-          </div>
-        ) : (
-          <div className="text-center py-8">
-            <p className="text-muted-foreground mb-4">
-              No recipes available at the moment.
-            </p>
-            <Button asChild>
-              <Link to="/discover-recipes">
-                Explore Discover Recipes
-              </Link>
-            </Button>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   );
 };

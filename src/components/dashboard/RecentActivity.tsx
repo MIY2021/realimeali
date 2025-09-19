@@ -1,5 +1,6 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { format } from "date-fns";
 import { 
   Clock, 
@@ -104,15 +105,19 @@ export const RecentActivity = ({ isLoading: externalLoading }: RecentActivityPro
             Recent Household Activity
           </h2>
         </div>
-        <div className="space-y-4">
+        <div className="grid gap-3">
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="flex items-center gap-3">
-              <Skeleton className="h-10 w-10 rounded-full" />
-              <div className="flex-1">
-                <Skeleton className="h-4 w-32 mb-1" />
-                <Skeleton className="h-3 w-24" />
-              </div>
-            </div>
+            <Card key={i}>
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <Skeleton className="h-10 w-10 rounded-full" />
+                  <div className="flex-1">
+                    <Skeleton className="h-4 w-32 mb-1" />
+                    <Skeleton className="h-3 w-24" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           ))}
         </div>
       </div>
@@ -130,13 +135,15 @@ export const RecentActivity = ({ isLoading: externalLoading }: RecentActivityPro
             Recent Household Activity
           </h2>
         </div>
-        <div className="text-center py-8">
-          <UtensilsCrossed className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <p className="text-muted-foreground">No recent activity</p>
-          <p className="text-sm text-muted-foreground mt-1">
-            Start by adding a recipe or planning a meal
-          </p>
-        </div>
+        <Card>
+          <CardContent className="text-center py-8">
+            <UtensilsCrossed className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <p className="text-muted-foreground">No recent activity</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              Start by adding a recipe or planning a meal
+            </p>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -149,23 +156,27 @@ export const RecentActivity = ({ isLoading: externalLoading }: RecentActivityPro
           Recent Household Activity
         </h2>
       </div>
-      <div className="space-y-4">
+      <div className="grid gap-3">
         {displayActivities.map((activity) => (
-          <div key={activity.id} className="flex items-center gap-3">
-            <div className={`flex-shrink-0 h-10 w-10 rounded-full ${getActivityBgColor(activity.type)} flex items-center justify-center`}>
-              {getActivityIcon(activity.type)}
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <p className="text-sm font-medium truncate">{activity.title}</p>
+          <Card key={activity.id}>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className={`flex-shrink-0 h-10 w-10 rounded-full ${getActivityBgColor(activity.type)} flex items-center justify-center`}>
+                  {getActivityIcon(activity.type)}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <p className="text-sm font-medium truncate">{activity.title}</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <p className="text-xs text-muted-foreground">
+                      {activity.description} by {activity.user} • {format(new Date(activity.timestamp), 'MMM d')}
+                    </p>
+                  </div>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <p className="text-xs text-muted-foreground">
-                  {activity.description} by {activity.user} • {format(new Date(activity.timestamp), 'MMM d')}
-                </p>
-              </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         ))}
       </div>
       
