@@ -232,7 +232,7 @@ export class RecipeScalingService {
             // Reconstruct as "Name – quantity unit"
             scaledIngredient = parsed.name;
             if (parsed.unit) {
-              scaledIngredient += ` – ${formattedQuantity}${parsed.unit}`;
+              scaledIngredient += ` – ${formattedQuantity} ${parsed.unit}`;
             } else {
               scaledIngredient += ` – ${formattedQuantity}`;
             }
