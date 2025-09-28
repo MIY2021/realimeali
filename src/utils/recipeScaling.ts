@@ -112,6 +112,7 @@ export class RecipeScalingService {
       if (!quantityMatch) {
         const dashMatch = trimmed.match(/^(.+?)\s*[-–—]\s*(\d+(?:\.\d+)?(?:[⅐-⅞])?|\d+\/\d+|[⅐-⅞])\s*([a-z]+)?/i);
         if (dashMatch) {
+          console.log('Dash match found:', dashMatch);
           const quantityStr = dashMatch[2];
           originalQuantityStr = quantityStr;
           if (fractionMap[quantityStr]) {
@@ -129,8 +130,18 @@ export class RecipeScalingService {
       }
       
       // Extract unit (enhanced with more cooking units including pinches)
-      const unitMatch = trimmed.match(/\b(cups?|tbsp|tablespoons?|tsp|teaspoons?|oz|ounces?|lbs?|pounds?|cloves?|pieces?|slices?|g|grams?|kg|kilograms?|ml|milliliters?|l|liters?|tins?|cans?|packets?|sachets?|bottles?|jars?|pinches?)\b/i);
-      const unit = unitMatch ? unitMatch[1] : undefined;
+      let unit: string | undefined;
+      
+      // For dash patterns, use the unit captured in the dash match
+      if (quantityMatch && quantityMatch.length > 3 && quantityMatch[3]) {
+        unit = quantityMatch[3];
+        console.log('Using dash pattern unit:', unit);
+      } else {
+        // Standard unit matching for other patterns
+        const unitMatch = trimmed.match(/\b(cups?|tbsp|tablespoons?|tsp|teaspoons?|oz|ounces?|lbs?|pounds?|cloves?|pieces?|slices?|g|grams?|kg|kilograms?|ml|milliliters?|l|liters?|tins?|cans?|packets?|sachets?|bottles?|jars?|pinches?)\b/i);
+        unit = unitMatch ? unitMatch[1] : undefined;
+        console.log('Using standard pattern unit:', unit);
+      }
       
       // Extract ingredient name (everything after quantity and unit)
       let name = trimmed;
@@ -144,8 +155,9 @@ export class RecipeScalingService {
         if (quantityMatch) {
           name = name.replace(quantityMatch[0], '').trim();
         }
-        if (unitMatch) {
-          name = name.replace(unitMatch[0], '').trim();
+        // For standard patterns, also remove unit if found
+        if (unit) {
+          name = name.replace(new RegExp(`\\b${unit}\\b`, 'i'), '').trim();
         }
       }
       
@@ -224,6 +236,8 @@ export class RecipeScalingService {
           const scaledQuantity = parsed.quantity * scaleFactor;
           const formattedQuantity = this.formatQuantity(scaledQuantity);
           
+          console.log('Scaling ingredient:', ingredient, 'parsed unit:', parsed.unit);
+          
           // Check if this was originally a dash pattern by looking at the original ingredient
           const isDashPattern = ingredient.match(/^(.+?)\s*[-–—]\s*(\d+(?:\.\d+)?(?:[⅐-⅞])?|\d+\/\d+|[⅐-⅞])\s*([a-z]+)?/i);
           
@@ -245,6 +259,7 @@ export class RecipeScalingService {
             scaledIngredient += ` ${parsed.name}`;
           }
           
+          console.log('Scaled result:', scaledIngredient);
           return scaledIngredient;
         }
         
