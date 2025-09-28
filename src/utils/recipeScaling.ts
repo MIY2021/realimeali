@@ -108,6 +108,26 @@ export class RecipeScalingService {
         }
       }
       
+      // Pattern 6: Check for quantities after dashes like "Prawns – 120g" or "Butter - 50ml"
+      if (!quantityMatch) {
+        const dashMatch = trimmed.match(/^(.+?)\s*[-–—]\s*(\d+(?:\.\d+)?(?:[⅐-⅞])?|\d+\/\d+|[⅐-⅞])\s*([a-z]+)?/i);
+        if (dashMatch) {
+          const quantityStr = dashMatch[2];
+          originalQuantityStr = quantityStr;
+          if (fractionMap[quantityStr]) {
+            quantity = fractionMap[quantityStr];
+          } else if (quantityStr.includes('/')) {
+            const parts = quantityStr.split('/');
+            if (parts.length === 2) {
+              quantity = parseFloat(parts[0]) / parseFloat(parts[1]);
+            }
+          } else {
+            quantity = parseFloat(quantityStr);
+          }
+          quantityMatch = dashMatch;
+        }
+      }
+      
       // Extract unit (enhanced with more cooking units including pinches)
       const unitMatch = trimmed.match(/\b(cups?|tbsp|tablespoons?|tsp|teaspoons?|oz|ounces?|lbs?|pounds?|cloves?|pieces?|slices?|g|grams?|kg|kilograms?|ml|milliliters?|l|liters?|tins?|cans?|packets?|sachets?|bottles?|jars?|pinches?)\b/i);
       const unit = unitMatch ? unitMatch[1] : undefined;
