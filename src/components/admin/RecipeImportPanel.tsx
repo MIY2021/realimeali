@@ -154,9 +154,9 @@ export function RecipeImportPanel() {
   };
 
   const downloadSampleCSV = () => {
-    const sampleData = `title,description,prep_time,cook_time,servings,meal_types,cuisine_region,diet_lifestyle,ingredients,instructions,image,source_url,import_method,top_tip,fruit_veg_portions,fruit_veg_breakdown,fruit_veg_total_grams
-"Spaghetti Carbonara","Classic Italian pasta dish with eggs, cheese, and pancetta",15,20,4,"dinner","italian","","400g spaghetti; 200g pancetta; 4 large eggs; 100g Parmesan cheese; Black pepper; Salt","Cook pasta according to package directions; Fry pancetta until crispy; Whisk eggs with cheese; Combine hot pasta with pancetta; Add egg mixture off heat; Toss until creamy","","","admin_import","Use room temperature eggs for best results",1,"Contains onions and garlic",150
-"Chicken Stir Fry","Quick and healthy chicken stir fry with vegetables",10,15,2,"lunch; dinner","chinese","high_protein","300g chicken breast; 200g mixed vegetables; 2 tbsp soy sauce; 1 tbsp oil; 1 tsp ginger","Cut chicken into strips; Heat oil in wok; Cook chicken until done; Add vegetables; Stir fry for 3-4 minutes; Add sauces","","","admin_import","Keep ingredients prepped before cooking",3,"Rich in colorful vegetables",400`;
+    const sampleData = `title,description,prep_time,cook_time,servings,meal_types,cuisine_region,diet_lifestyle,ingredients,instructions,image,source_url,import_method,top_tip
+"Spaghetti Carbonara","Classic Italian pasta dish with eggs, cheese, and pancetta",15,20,4,"dinner","italian","","400g spaghetti; 200g pancetta; 4 large eggs; 100g Parmesan cheese; Black pepper; Salt","Cook pasta according to package directions; Fry pancetta until crispy; Whisk eggs with cheese; Combine hot pasta with pancetta; Add egg mixture off heat; Toss until creamy","","","admin_import","Use room temperature eggs for best results"
+"Chicken Stir Fry","Quick and healthy chicken stir fry with vegetables",10,15,2,"lunch; dinner","chinese","high_protein","300g chicken breast; 200g mixed vegetables; 2 tbsp soy sauce; 1 tbsp oil; 1 tsp ginger","Cut chicken into strips; Heat oil in wok; Cook chicken until done; Add vegetables; Stir fry for 3-4 minutes; Add sauces","","","admin_import","Keep ingredients prepped before cooking"`;
     
     const blob = new Blob([sampleData], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);

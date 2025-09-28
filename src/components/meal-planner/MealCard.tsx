@@ -3,7 +3,7 @@ import { Recipe } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
 import { RecipeImage } from "@/components/ui/recipe-image";
-import { FruitVegIndicator } from "@/components/nutrition/FruitVegIndicator";
+
 
 
 
@@ -29,17 +29,6 @@ export function MealCard({ recipe, onRemove }: MealCardProps) {
           <span className="text-xs text-muted-foreground">
             {recipe.servings} servings
           </span>
-          {recipe.fruit_veg_portions && recipe.fruit_veg_portions > 0 && (
-            <>
-              <span className="text-xs text-muted-foreground">•</span>
-              <FruitVegIndicator 
-                portions={recipe.fruit_veg_portions} 
-                size="small"
-                showLabel={false}
-                className="scale-75"
-              />
-            </>
-          )}
         </div>
       </div>
       

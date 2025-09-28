@@ -11,7 +11,7 @@ import { DraggableProvidedDragHandleProps } from "react-beautiful-dnd";
 import { useMealPlan } from "@/contexts/MealPlanContext";
 import { Link } from "react-router-dom";
 import { generateSlug } from "@/utils/slugUtils";
-import { FruitVegIndicator } from "@/components/nutrition/FruitVegIndicator";
+
 
 interface EnhancedMealCardProps {
   mealPlan: MealPlan;
@@ -299,16 +299,6 @@ export function EnhancedMealCard({
                   </h4>
                 </Link>
                 
-                {/* Nutrition indicator for recipes - Reduced margin */}
-                {recipe && recipe.fruit_veg_portions && recipe.fruit_veg_portions > 0 && (
-                  <div className="mt-0.5">
-                    <FruitVegIndicator 
-                      portions={recipe.fruit_veg_portions} 
-                      size="tiny"
-                      showLabel={false}
-                    />
-                  </div>
-                )}
                 {isLunchLeftover && parentRecipe && (
                   <p className="text-xs text-gray-500 mt-0.5">
                     Leftover

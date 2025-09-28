@@ -155,14 +155,6 @@ export const useRecipeApi = () => {
         import_method: recipe.import_method,
       };
 
-      // Clear fruit/veg data if ingredients have changed
-      if (ingredientsChanged) {
-        updateData.fruit_veg_portions = null;
-        updateData.fruit_veg_breakdown = null;
-        updateData.fruit_veg_ingredient_breakdown = null;
-        updateData.fruit_veg_recommendations = null;
-        updateData.fruit_veg_total_grams = null;
-      }
 
       const { data, error } = await supabase
         .from('recipes')

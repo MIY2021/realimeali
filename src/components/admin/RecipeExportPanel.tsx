@@ -129,7 +129,7 @@ export const RecipeExportPanel = () => {
               <li>• Recipe details (title, description, prep/cook time, servings)</li>
               <li>• Complete ingredients and instructions</li>
               <li>• Categories, cuisine, diet preferences, and complexity</li>
-              <li>• Nutrition and fruit/vegetable analysis</li>
+              
               <li>• Usage statistics and cooking status</li>
               <li>• Creation and modification timestamps</li>
               <li>• Image URLs and source information</li>

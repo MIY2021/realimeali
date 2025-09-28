@@ -11,7 +11,7 @@ import { RecipeNotesSection } from "./RecipeNotesSection";
 import { RecipeClassificationSummary } from "./RecipeClassificationSummary";
 import { RecipeSourceInfo } from "./RecipeSourceInfo";
 import { RecipeInfoDialog } from "./RecipeInfoDialog";
-import { NutritionalInfoSection } from "@/components/nutrition/NutritionalInfoSection";
+
 import { Lightbulb, Users, RotateCcw, Clock, Info } from "lucide-react";
 import { ServingsSelector } from "@/components/meal-planner/ServingsSelector";
 import { Button } from "@/components/ui/button";
@@ -148,10 +148,6 @@ export const RecipeDetail = ({
         </div>
       )}
 
-      {/* Nutritional Information */}
-      <div className="mb-6">
-        <NutritionalInfoSection recipe={recipe} />
-      </div>
 
       {/* Recipe Notes */}
       <div className="mb-6">
