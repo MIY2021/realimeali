@@ -134,11 +134,19 @@ export class RecipeScalingService {
       
       // Extract ingredient name (everything after quantity and unit)
       let name = trimmed;
-      if (quantityMatch) {
-        name = name.replace(quantityMatch[0], '').trim();
-      }
-      if (unitMatch) {
-        name = name.replace(unitMatch[0], '').trim();
+      
+      // Special handling for dash patterns
+      if (quantityMatch && quantityMatch.length > 3 && quantityMatch[1]) {
+        // This is a dash pattern like "Prawns – 120g"
+        name = quantityMatch[1].trim();
+      } else {
+        // Standard patterns - remove quantity and unit from string
+        if (quantityMatch) {
+          name = name.replace(quantityMatch[0], '').trim();
+        }
+        if (unitMatch) {
+          name = name.replace(unitMatch[0], '').trim();
+        }
       }
       
       // Clean up the name
@@ -216,11 +224,26 @@ export class RecipeScalingService {
           const scaledQuantity = parsed.quantity * scaleFactor;
           const formattedQuantity = this.formatQuantity(scaledQuantity);
           
-          let scaledIngredient = formattedQuantity;
-          if (parsed.unit) {
-            scaledIngredient += ` ${parsed.unit}`;
+          // Check if this was originally a dash pattern by looking at the original ingredient
+          const isDashPattern = ingredient.match(/^(.+?)\s*[-–—]\s*(\d+(?:\.\d+)?(?:[⅐-⅞])?|\d+\/\d+|[⅐-⅞])\s*([a-z]+)?/i);
+          
+          let scaledIngredient;
+          if (isDashPattern) {
+            // Reconstruct as "Name – quantity unit"
+            scaledIngredient = parsed.name;
+            if (parsed.unit) {
+              scaledIngredient += ` – ${formattedQuantity}${parsed.unit}`;
+            } else {
+              scaledIngredient += ` – ${formattedQuantity}`;
+            }
+          } else {
+            // Standard format: "quantity unit name"
+            scaledIngredient = formattedQuantity;
+            if (parsed.unit) {
+              scaledIngredient += ` ${parsed.unit}`;
+            }
+            scaledIngredient += ` ${parsed.name}`;
           }
-          scaledIngredient += ` ${parsed.name}`;
           
           return scaledIngredient;
         }
