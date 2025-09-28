@@ -243,10 +243,10 @@ export class RecipeScalingService {
           
           let scaledIngredient;
           if (isDashPattern) {
-            // Reconstruct as "Name – quantity unit"
+            // Reconstruct as "Name – quantity unit" (no space between quantity and unit)
             scaledIngredient = parsed.name;
             if (parsed.unit) {
-              scaledIngredient += ` – ${formattedQuantity} ${parsed.unit}`;
+              scaledIngredient += ` – ${formattedQuantity}${parsed.unit}`;
             } else {
               scaledIngredient += ` – ${formattedQuantity}`;
             }
