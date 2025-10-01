@@ -28,10 +28,13 @@ export const WelcomeHeader = () => {
   };
 
   return (
-    <div className="mb-4">
-      <h1 className="text-2xl font-bold text-foreground">
+    <div className="bg-gradient-to-br from-amber-100 to-yellow-100 rounded-3xl p-6 shadow-sm">
+      <h1 className="text-2xl font-bold text-amber-900 mb-2">
         {getTimeBasedGreeting()}, {getDisplayName()}!
       </h1>
+      <p className="text-sm text-amber-800">
+        <span className="font-semibold">Top Tip:</span> Soak your cashews to make the creamiest sauces.
+      </p>
     </div>
   );
 };
