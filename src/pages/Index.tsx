@@ -72,15 +72,51 @@ export default function Index() {
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#fef7ef' }}>
+    <div className="min-h-screen bg-white">
       <div className="container max-w-6xl mx-auto px-4 py-6">
         {/* Welcome Header */}
-        <div className="mb-6">
+        <div className="mb-8">
           <WelcomeHeader />
         </div>
         
-        {/* Quick Actions - 2x2 grid matching design */}
-        <div className="mb-8">
+        {/* Stats Cards Grid - 2x2 with enhanced shadows */}
+        <div className="grid grid-cols-2 gap-4 mb-4">
+          <StatsCard
+            title="My Recipes"
+            value={stats.totalRecipes}
+            icon={Book}
+            isLoading={isLoading}
+            variant="primary"
+            onClick={handleMyRecipesClick}
+          />
+          <StatsCard
+            title="Recipes To Cook"
+            value={stats.recipesToCook}
+            icon={UtensilsCrossed}
+            isLoading={isLoading}
+            variant="secondary"
+            onClick={handleRecipesToCookClick}
+          />
+          <StatsCard
+            title="Shopping Items"
+            value={stats.shoppingItemsCount}
+            icon={ListChecks}
+            isLoading={isLoading}
+            variant="accent"
+            onClick={handleShoppingItemsClick}
+          />
+          <StatsCard
+            title="Favourites"
+            value={stats.favoriteRecipes}
+            icon={Heart}
+            isLoading={isLoading}
+            variant="muted"
+            onClick={handleFavouritesClick}
+          />
+        </div>
+
+        {/* Quick Actions with subtle background */}
+        <div className="bg-gray-50/50 rounded-2xl py-4 mb-8">
           <QuickActions />
         </div>
 
