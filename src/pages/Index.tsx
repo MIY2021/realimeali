@@ -72,7 +72,7 @@ export default function Index() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen" style={{ backgroundColor: '#fef7ef' }}>
       <div className="container max-w-6xl mx-auto px-4 py-6">
         {/* Welcome Header */}
         <div className="mb-6">
