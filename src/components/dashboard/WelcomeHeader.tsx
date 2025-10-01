@@ -28,11 +28,11 @@ export const WelcomeHeader = () => {
   };
 
   return (
-    <div className="bg-gradient-to-br from-amber-100 to-yellow-100 rounded-3xl p-6 shadow-sm">
+    <div className="bg-gradient-to-r from-yellow-200 to-amber-200 rounded-3xl p-6 shadow-sm">
       <h1 className="text-2xl font-bold text-amber-900 mb-2">
         {getTimeBasedGreeting()}, {getDisplayName()}!
       </h1>
-      <p className="text-sm text-amber-800">
+      <p className="text-sm text-amber-900/80">
         <span className="font-semibold">Top Tip:</span> Soak your cashews to make the creamiest sauces.
       </p>
     </div>
