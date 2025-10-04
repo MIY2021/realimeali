@@ -107,7 +107,7 @@ export const AchievementsBadges = () => {
                   `}
                 >
                   <Icon 
-                    className={`h-9 w-9 ${isUnlocked ? 'text-white' : 'text-gray-400'}`}
+                    className={`h-7 w-7 ${isUnlocked ? 'text-white' : 'text-gray-400'}`}
                   />
                 </div>
                 
