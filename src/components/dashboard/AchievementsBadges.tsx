@@ -89,8 +89,8 @@ export const AchievementsBadges = () => {
           ))}
         </div>
       ) : (
-        <div className="flex gap-6 overflow-x-auto scrollbar-hide pb-2">
-          {achievements.slice(0, 3).map((achievement) => {
+        <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-2">
+          {achievements.slice(0, 4).map((achievement) => {
             const isUnlocked = achievement.unlockCondition(stats);
             const Icon = achievement.icon;
 
@@ -98,7 +98,7 @@ export const AchievementsBadges = () => {
               <div key={achievement.id} className="flex flex-col items-center gap-2 flex-shrink-0">
                 <div
                   className={`
-                    w-20 h-20 rounded-full flex items-center justify-center
+                    w-16 h-16 rounded-full flex items-center justify-center
                     transition-all duration-300 shadow-md
                     ${isUnlocked 
                       ? `bg-gradient-to-br ${achievement.gradient}` 
@@ -107,11 +107,11 @@ export const AchievementsBadges = () => {
                   `}
                 >
                   <Icon 
-                    className={`h-7 w-7 ${isUnlocked ? 'text-white' : 'text-gray-400'}`}
+                    className={`h-6 w-6 ${isUnlocked ? 'text-white' : 'text-gray-400'}`}
                   />
                 </div>
                 
-                <p className="text-xs font-semibold text-gray-900 text-center max-w-[80px] line-clamp-2">
+                <p className="text-xs font-semibold text-gray-900 text-center max-w-[64px] line-clamp-2">
                   {achievement.title}
                 </p>
               </div>
