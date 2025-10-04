@@ -72,7 +72,7 @@ export const AchievementsBadges = () => {
   return (
     <div className="w-full">
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-lg font-semibold">
+        <h2 className="text-xl font-bold">
           Achievements Unlocked!
         </h2>
         <button className="text-sm font-medium text-gray-600 hover:text-gray-900">
