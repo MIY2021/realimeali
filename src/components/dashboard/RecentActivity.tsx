@@ -17,6 +17,7 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useHouseholdActivity, type HouseholdActivity } from "@/hooks/useHouseholdActivity";
 import { useHousehold } from "@/contexts/HouseholdContext";
+import { useRecipes } from "@/contexts/RecipesContext";
 
 interface RecentActivityProps {
   isLoading?: boolean;
@@ -25,6 +26,7 @@ interface RecentActivityProps {
 export const RecentActivity = ({ isLoading: externalLoading }: RecentActivityProps) => {
   const { activities, isLoading: activityLoading } = useHouseholdActivity();
   const { householdMembers } = useHousehold();
+  const { recipes } = useRecipes();
   const navigate = useNavigate();
   const [showMore, setShowMore] = useState(false);
   
@@ -158,6 +160,8 @@ export const RecentActivity = ({ isLoading: externalLoading }: RecentActivityPro
         {displayActivities.map((activity) => {
           const avatarUrl = getUserAvatar(activity.metadata?.userId || '');
           const recipeId = activity.metadata?.recipeId;
+          const recipe = recipeId ? recipes.find(r => r.id === recipeId) : undefined;
+          const recipeSlug = recipe?.slug;
           
           // Parse the description to extract action and recipe name
           const descriptionText = activity.description.replace(/"/g, '').replace(/ for .*$/, '').replace(/ on .*$/, '').replace(/ as .*$/, '');
@@ -186,15 +190,15 @@ export const RecentActivity = ({ isLoading: externalLoading }: RecentActivityPro
                     {' '}
                     <span className="text-gray-700">
                       {action}{' '}
-                      {recipeId ? (
+                      {recipeSlug ? (
                         <Link 
-                          to={`/recipe/${recipeId}`}
-                          className="font-medium text-blue-600 hover:text-blue-700 hover:underline"
+                          to={`/my-recipes/${recipeSlug}`}
+                          className="text-blue-600 hover:text-blue-700 hover:underline"
                         >
                           {recipeName}
                         </Link>
                       ) : (
-                        <span className="font-medium text-gray-900">{recipeName}</span>
+                        <span className="text-gray-900">{recipeName}</span>
                       )}
                     </span>
                   </p>
