@@ -1,5 +1,4 @@
 import { useAuth } from "@/contexts/AuthContext";
-import { Lightbulb, Sparkles } from "lucide-react";
 import { useState, useEffect } from "react";
 
 const dailyTips = [
@@ -48,23 +47,13 @@ export const WelcomeHeader = () => {
   }, []);
 
   return (
-    <div className="relative rounded-3xl bg-gradient-to-br from-[#FFE5B4] via-[#FFDAB9] to-[#FFE4CC] p-6 shadow-lg overflow-hidden">
-      {/* Decorative Sparkles Background */}
-      <Sparkles className="absolute top-4 right-4 h-16 w-16 text-white/20" />
-      <Sparkles className="absolute bottom-4 left-4 h-12 w-12 text-white/10 rotate-12" />
-      
-      {/* Content Card */}
-      <div className="relative bg-white/90 backdrop-blur-sm rounded-2xl p-5 shadow-md">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">
-          {getTimeBasedGreeting()}, {getDisplayName()}!
-        </h1>
-        <div className="flex items-start gap-2">
-          <Lightbulb className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
-          <p className="text-sm text-gray-700">
-            <span className="font-semibold">Top Tip:</span> {dailyTip}
-          </p>
-        </div>
-      </div>
+    <div className="rounded-2xl bg-gradient-to-br from-[#FFE5B4] to-[#FFDAB9] p-5 shadow-md">
+      <h1 className="text-xl font-bold text-[#654321] mb-1">
+        {getTimeBasedGreeting()}, {getDisplayName()}!
+      </h1>
+      <p className="text-sm text-[#654321]">
+        <span className="font-semibold">Top Tip:</span> {dailyTip}
+      </p>
     </div>
   );
 };
