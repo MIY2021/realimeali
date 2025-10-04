@@ -1,4 +1,4 @@
-import { Plus, Calendar, ListChecks, Search, Sparkles, Shuffle } from "lucide-react";
+import { Plus, Calendar, ListChecks, Search, Sparkles, Shuffle, Star } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useRealiChef } from "@/contexts/RealiChefContext";
 
@@ -11,42 +11,48 @@ export const QuickActions = () => {
       icon: Plus,
       href: "/create-recipe",
       type: "navigation" as const,
-      gradient: "from-orange-400 to-red-500",
+      gradient: "from-orange-200 to-red-300",
+      textColor: "text-orange-800",
     },
     {
       title: "Plan Meals",
       icon: Calendar,
       href: "/meal-planner",
       type: "navigation" as const,
-      gradient: "from-green-400 to-emerald-500",
+      gradient: "from-green-200 to-emerald-300",
+      textColor: "text-green-800",
     },
     {
       title: "Shopping",
       icon: ListChecks,
       href: "/shopping-list",
       type: "navigation" as const,
-      gradient: "from-purple-400 to-purple-600",
+      gradient: "from-purple-200 to-purple-300",
+      textColor: "text-purple-800",
     },
     {
       title: "Discover",
       icon: Search,
       href: "/discover-recipes",
       type: "navigation" as const,
-      gradient: "from-blue-400 to-cyan-500",
+      gradient: "from-blue-200 to-cyan-300",
+      textColor: "text-blue-800",
     },
     {
       title: "AI Chef",
       icon: Sparkles,
       type: "modal" as const,
       onClick: () => setIsOpen(true),
-      gradient: "from-pink-400 to-rose-500",
+      gradient: "from-pink-200 to-rose-300",
+      textColor: "text-pink-800",
     },
     {
       title: "Random",
       icon: Shuffle,
       href: "/my-recipes",
       type: "navigation" as const,
-      gradient: "from-yellow-400 to-amber-500",
+      gradient: "from-yellow-200 to-amber-300",
+      textColor: "text-yellow-800",
     },
   ];
 
@@ -57,7 +63,13 @@ export const QuickActions = () => {
   };
 
   return (
-    <div className="w-full px-4">
+    <div className="w-full">
+      <div className="mb-4">
+        <h2 className="text-lg font-semibold flex items-center gap-2">
+          <Star className="h-5 w-5 text-sage" />
+          Quick Actions
+        </h2>
+      </div>
       <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
         {actions.map((action) => {
           const content = (
@@ -67,16 +79,16 @@ export const QuickActions = () => {
                 bg-gradient-to-br ${action.gradient}
                 rounded-2xl p-4 min-h-[88px]
                 flex flex-col items-center justify-center gap-2
-                shadow-lg
+                shadow-md
                 transition-all duration-300
-                hover:scale-105 hover:shadow-xl
+                hover:scale-105 hover:shadow-lg
                 active:scale-95
                 cursor-pointer
                 group
               `}
             >
-              <action.icon className="h-8 w-8 text-white drop-shadow-md group-hover:animate-float" />
-              <span className="text-xs font-semibold text-white text-center leading-tight">
+              <action.icon className={`h-8 w-8 ${action.textColor} group-hover:animate-float`} />
+              <span className={`text-xs font-semibold ${action.textColor} text-center leading-tight`}>
                 {action.title}
               </span>
             </div>
