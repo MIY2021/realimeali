@@ -105,13 +105,13 @@ export const RecentActivity = ({ isLoading: externalLoading }: RecentActivityPro
     return (
       <div className="w-full">
         <div className="mb-4">
-          <h2 className="text-xl font-bold">
+          <h2 className="text-xl font-extrabold">
             Recent Household Activity
           </h2>
         </div>
         <div className="space-y-2">
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="bg-white rounded-xl shadow-sm p-4">
+            <div key={i} className="bg-white rounded-3xl shadow-sm p-4">
               <div className="flex items-start gap-3">
                 <Skeleton className="h-10 w-10 rounded-full flex-shrink-0" />
                 <div className="flex-1">
@@ -132,11 +132,11 @@ export const RecentActivity = ({ isLoading: externalLoading }: RecentActivityPro
     return (
       <div className="w-full">
       <div className="mb-4">
-        <h2 className="text-xl font-bold">
+        <h2 className="text-xl font-extrabold">
           Recent Household Activity
         </h2>
       </div>
-        <div className="bg-white rounded-xl shadow-sm p-8 text-center">
+        <div className="bg-white rounded-3xl shadow-sm p-8 text-center">
           <UtensilsCrossed className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
           <p className="text-muted-foreground">No recent activity</p>
           <p className="text-sm text-muted-foreground mt-1">
@@ -150,7 +150,7 @@ export const RecentActivity = ({ isLoading: externalLoading }: RecentActivityPro
   return (
     <div className="w-full">
       <div className="mb-4">
-        <h2 className="text-xl font-bold">
+        <h2 className="text-xl font-extrabold">
           Recent Household Activity
         </h2>
       </div>
@@ -161,7 +161,7 @@ export const RecentActivity = ({ isLoading: externalLoading }: RecentActivityPro
           return (
             <div 
               key={activity.id} 
-              className="bg-white rounded-xl shadow-sm p-3"
+              className="bg-white rounded-3xl shadow-sm p-3"
             >
               <div className="flex items-start gap-3">
                 <Avatar className="h-10 w-10 flex-shrink-0">

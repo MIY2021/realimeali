@@ -37,7 +37,7 @@ export const StatsCard = ({
     <div 
       className={`
         bg-white
-        rounded-2xl p-4 shadow-sm
+        rounded-3xl p-4 shadow-sm
         transition-all duration-200
         ${onClick ? 'cursor-pointer hover:shadow-md active:scale-95' : ''}
       `}
@@ -45,7 +45,7 @@ export const StatsCard = ({
     >
       <div className="flex flex-col h-full">
         <div className="flex items-start justify-between mb-6">
-          <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">{title}</p>
+          <p className="text-xs font-extrabold text-gray-500 uppercase tracking-wide">{title}</p>
           <IconComponent className={`h-5 w-5 ${getIconColor()}`} />
         </div>
         {isLoading ? (

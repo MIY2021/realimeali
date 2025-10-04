@@ -47,8 +47,8 @@ export const WelcomeHeader = () => {
   }, []);
 
   return (
-    <div className="rounded-2xl bg-gradient-to-br from-[#FFE5B4] to-[#FFDAB9] p-5 shadow-md">
-      <h1 className="text-xl font-bold text-[#654321] mb-1">
+    <div className="rounded-3xl bg-gradient-to-br from-[#FFE5B4] to-[#FFDAB9] p-5 shadow-md">
+      <h1 className="text-2xl font-bold text-[#654321] mb-1">
         {getTimeBasedGreeting()}, {getDisplayName()}!
       </h1>
       <p className="text-sm text-[#654321]">

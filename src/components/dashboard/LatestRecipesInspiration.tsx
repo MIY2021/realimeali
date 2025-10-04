@@ -61,14 +61,14 @@ export const LatestRecipesInspiration = () => {
   return (
     <div className="w-full">
       <div className="mb-4">
-        <h2 className="text-xl font-bold">
+        <h2 className="text-xl font-extrabold">
           Discover Recipes
         </h2>
       </div>
       
       {isLoading ? (
         <div className="space-y-4">
-          <Skeleton className="h-48 w-full rounded-2xl" />
+          <Skeleton className="h-48 w-full rounded-3xl" />
           <Skeleton className="h-6 w-3/4" />
           <Skeleton className="h-4 w-full" />
           <Skeleton className="h-10 w-full rounded-full" />
@@ -76,7 +76,7 @@ export const LatestRecipesInspiration = () => {
       ) : recipes && recipes.length > 0 ? (
         <div className="space-y-4">
           {/* Featured Recipe */}
-          <div className="bg-white rounded-2xl overflow-hidden shadow-sm">
+          <div className="bg-white rounded-3xl overflow-hidden shadow-sm">
             <div className="relative h-48 w-full">
               <img 
                 src={recipes[0].image || '/placeholder.svg'} 
@@ -122,7 +122,7 @@ export const LatestRecipesInspiration = () => {
           </Link>
         </div>
       ) : (
-        <div className="text-center py-12 bg-white rounded-2xl shadow-sm">
+        <div className="text-center py-12 bg-white rounded-3xl shadow-sm">
           <Sparkles className="h-12 w-12 text-gray-300 mx-auto mb-4" />
           <p className="text-gray-600 mb-4">
             No recipes available at the moment.

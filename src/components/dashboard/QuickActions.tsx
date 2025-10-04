@@ -49,7 +49,7 @@ export const QuickActions = () => {
   return (
     <div className="w-full">
       <div className="mb-4">
-        <h2 className="text-xl font-bold">
+        <h2 className="text-xl font-extrabold">
           Quick Actions
         </h2>
       </div>
@@ -59,7 +59,7 @@ export const QuickActions = () => {
             <div
               className="
                 bg-white
-                rounded-2xl p-5
+                rounded-3xl p-5
                 flex flex-col items-center justify-center gap-3
                 shadow-sm
                 transition-all duration-200
