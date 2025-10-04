@@ -120,7 +120,8 @@ export const useHouseholdActivity = () => {
         title: recipe.title,
         user: getUserName(recipe.created_by || ''),
         timestamp: recipe.created_at || new Date().toISOString(),
-        description: 'Recipe added'
+        description: `added recipe "${recipe.title}"`,
+        metadata: { userId: recipe.created_by, recipeId: recipe.id }
       });
 
       // Recipe edited (if updated_at is different from created_at)
@@ -130,9 +131,10 @@ export const useHouseholdActivity = () => {
           id: `recipe-edited-${recipe.id}`,
           type: 'recipe-edited',
           title: recipe.title,
-          user: getUserName(recipe.created_by || ''),
+          user: getUserName(recipe.last_updated_by || recipe.created_by || ''),
           timestamp: recipe.updated_at,
-          description: 'Recipe updated'
+          description: `updated recipe "${recipe.title}"`,
+          metadata: { userId: recipe.last_updated_by || recipe.created_by, recipeId: recipe.id }
         });
       }
 
@@ -144,7 +146,8 @@ export const useHouseholdActivity = () => {
           title: recipe.title,
           user: getUserName(recipe.created_by || ''),
           timestamp: recipe.updated_at || recipe.created_at || new Date().toISOString(),
-          description: 'Recipe favorited'
+          description: `favorited "${recipe.title}"`,
+          metadata: { userId: recipe.created_by, recipeId: recipe.id }
         });
       }
 
@@ -156,13 +159,19 @@ export const useHouseholdActivity = () => {
           title: recipe.title,
           user: getUserName((recipe as any).last_updated_by || recipe.created_by || ''),
           timestamp: (recipe as any).deleted_at,
-          description: 'Recipe deleted'
+          description: `deleted recipe "${recipe.title}"`,
+          metadata: { userId: (recipe as any).last_updated_by || recipe.created_by }
         });
       }
     });
 
     // Meal plan activities
     mealPlans.forEach(plan => {
+      const mealTypeDisplay = plan.meal_types?.[0] || plan.meal_type || 'meal';
+      const dateDisplay = plan.date 
+        ? new Date(plan.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+        : '';
+      
       if (plan.is_freetyped && plan.meal_name) {
         if (plan.is_leftover) {
           allActivities.push({
@@ -171,7 +180,8 @@ export const useHouseholdActivity = () => {
             title: plan.meal_name,
             user: getUserName(plan.created_by),
             timestamp: plan.created_at || '',
-            description: 'Leftover meal added'
+            description: `planned "${plan.meal_name}" as leftover ${mealTypeDisplay}${dateDisplay ? ` for ${dateDisplay}` : ''}`,
+            metadata: { userId: plan.created_by }
           });
         } else {
           allActivities.push({
@@ -180,19 +190,23 @@ export const useHouseholdActivity = () => {
             title: plan.meal_name,
             user: getUserName(plan.created_by),
             timestamp: plan.created_at || '',
-            description: 'Custom meal added'
+            description: `planned "${plan.meal_name}" for ${mealTypeDisplay}${dateDisplay ? ` on ${dateDisplay}` : ''}`,
+            metadata: { userId: plan.created_by }
           });
         }
       } else if (plan.recipe_id) {
         const recipe = recipes.find(r => r.id === plan.recipe_id);
-        allActivities.push({
-          id: `meal-plan-${plan.id}`,
-          type: 'meal-plan-added',
-          title: recipe?.title || plan.meal_name || 'Meal Plan',
-          user: getUserName(plan.created_by),
-          timestamp: plan.created_at || '',
-          description: 'Meal planned'
-        });
+        if (recipe) {
+          allActivities.push({
+            id: `meal-plan-${plan.id}`,
+            type: 'meal-plan-added',
+            title: recipe.title,
+            user: getUserName(plan.created_by),
+            timestamp: plan.created_at || '',
+            description: `planned "${recipe.title}" for ${mealTypeDisplay}${dateDisplay ? ` on ${dateDisplay}` : ''}`,
+            metadata: { userId: plan.created_by, recipeId: recipe.id }
+          });
+        }
       }
     });
 
@@ -205,7 +219,10 @@ export const useHouseholdActivity = () => {
           title: status.recipes.title,
           user: getUserName(status.recipes.created_by || ''),
           timestamp: status.updated_at,
-          description: status.has_cooked ? 'Recipe marked as cooked' : 'Recipe marked as not cooked'
+          description: status.has_cooked 
+            ? `marked "${status.recipes.title}" as cooked` 
+            : `marked "${status.recipes.title}" as not cooked yet`,
+          metadata: { userId: status.recipes.created_by, recipeId: status.recipe_id }
         });
       }
     });
@@ -219,7 +236,8 @@ export const useHouseholdActivity = () => {
           title: note.recipes.title,
           user: getUserName(note.created_by),
           timestamp: note.created_at,
-          description: 'Recipe note added'
+          description: `added a note to "${note.recipes.title}"`,
+          metadata: { userId: note.created_by, recipeId: note.recipe_id }
         });
       }
     });
@@ -234,7 +252,8 @@ export const useHouseholdActivity = () => {
           title: getUserName(member.user_id),
           user: getUserName(member.user_id),
           timestamp: member.joined_at,
-          description: 'Joined household'
+          description: 'joined the household',
+          metadata: { userId: member.user_id }
         });
       }
     });
