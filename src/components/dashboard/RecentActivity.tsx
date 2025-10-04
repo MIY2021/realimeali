@@ -14,7 +14,7 @@ import {
   RotateCcw
 } from "lucide-react";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useHouseholdActivity, type HouseholdActivity } from "@/hooks/useHouseholdActivity";
 import { useHousehold } from "@/contexts/HouseholdContext";
 
@@ -157,6 +157,14 @@ export const RecentActivity = ({ isLoading: externalLoading }: RecentActivityPro
       <div className="space-y-2">
         {displayActivities.map((activity) => {
           const avatarUrl = getUserAvatar(activity.metadata?.userId || '');
+          const recipeId = activity.metadata?.recipeId;
+          
+          // Parse the description to extract action and recipe name
+          const descriptionText = activity.description.replace(/"/g, '').replace(/ for .*$/, '').replace(/ on .*$/, '').replace(/ as .*$/, '');
+          const recipeName = activity.title;
+          
+          // Extract action (e.g., "planned", "added recipe", etc.)
+          const action = descriptionText.replace(recipeName, '').trim();
 
           return (
             <div 
@@ -172,12 +180,23 @@ export const RecentActivity = ({ isLoading: externalLoading }: RecentActivityPro
                 </Avatar>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm leading-relaxed">
-                    <span className="font-bold text-gray-900">{activity.user}</span>
+                    <span className="font-bold text-gray-900">
+                      {activity.user.split(' ')[0]}
+                    </span>
                     {' '}
-                    <span className="text-gray-700">{activity.description}</span>
-                  </p>
-                  <p className="text-xs text-gray-500 mt-1">
-                    {format(new Date(activity.timestamp), 'MMM d, yyyy')}
+                    <span className="text-gray-700">
+                      {action}{' '}
+                      {recipeId ? (
+                        <Link 
+                          to={`/recipe/${recipeId}`}
+                          className="font-medium text-gray-900 hover:underline"
+                        >
+                          {recipeName}
+                        </Link>
+                      ) : (
+                        <span className="font-medium text-gray-900">{recipeName}</span>
+                      )}
+                    </span>
                   </p>
                 </div>
               </div>
