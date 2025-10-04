@@ -1,5 +1,4 @@
-import { Button } from "@/components/ui/button";
-import { Plus, Calendar, ListChecks, Search, Star, User, Shuffle } from "lucide-react";
+import { Plus, Calendar, ListChecks, Search, Sparkles, Shuffle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useRealiChef } from "@/contexts/RealiChefContext";
 
@@ -11,49 +10,43 @@ export const QuickActions = () => {
       title: "Add Recipe",
       icon: Plus,
       href: "/create-recipe",
-      variant: "outline" as const,
       type: "navigation" as const,
-      iconColor: "text-terracotta",
+      gradient: "from-orange-400 to-red-500",
     },
     {
       title: "Plan Meals",
       icon: Calendar,
       href: "/meal-planner",
-      variant: "outline" as const,
       type: "navigation" as const,
-      iconColor: "text-sage",
+      gradient: "from-green-400 to-emerald-500",
     },
     {
-      title: "Shopping List",
+      title: "Shopping",
       icon: ListChecks,
       href: "/shopping-list",
-      variant: "outline" as const,
       type: "navigation" as const,
-      iconColor: "text-butter",
+      gradient: "from-purple-400 to-purple-600",
     },
     {
       title: "Discover",
       icon: Search,
       href: "/discover-recipes",
-      variant: "outline" as const,
       type: "navigation" as const,
-      iconColor: "text-navy",
+      gradient: "from-blue-400 to-cyan-500",
     },
     {
       title: "AI Chef",
-      icon: User,
-      variant: "outline" as const,
+      icon: Sparkles,
       type: "modal" as const,
       onClick: () => setIsOpen(true),
-      iconColor: "text-primary",
+      gradient: "from-pink-400 to-rose-500",
     },
     {
-      title: "Random Recipe",
+      title: "Random",
       icon: Shuffle,
       href: "/my-recipes",
-      variant: "outline" as const,
       type: "navigation" as const,
-      iconColor: "text-sage",
+      gradient: "from-yellow-400 to-amber-500",
     },
   ];
 
@@ -64,39 +57,41 @@ export const QuickActions = () => {
   };
 
   return (
-    <div className="w-full">
-      <div className="mb-6">
-        <h2 className="text-lg font-semibold flex items-center gap-2">
-          <Star className="h-5 w-5 text-sage" />
-          Quick Actions
-        </h2>
-      </div>
-      <div className="grid grid-cols-3 lg:grid-cols-6 gap-4">
-        {actions.map((action) => (
-          action.type === 'navigation' ? (
-            <Button
-              key={action.title}
-              variant={action.variant}
-              asChild
-              className="flex flex-col h-24 p-4 bg-sage/10 border-sage/20 hover:bg-sage/15"
+    <div className="w-full px-4">
+      <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
+        {actions.map((action) => {
+          const content = (
+            <div
+              className={`
+                relative overflow-hidden
+                bg-gradient-to-br ${action.gradient}
+                rounded-2xl p-4 min-h-[88px]
+                flex flex-col items-center justify-center gap-2
+                shadow-lg
+                transition-all duration-300
+                hover:scale-105 hover:shadow-xl
+                active:scale-95
+                cursor-pointer
+                group
+              `}
             >
-              <Link to={action.href!}>
-                <action.icon className={`h-6 w-6 mb-2 ${action.iconColor}`} />
-                <span className="text-xs font-medium">{action.title}</span>
-              </Link>
-            </Button>
+              <action.icon className="h-8 w-8 text-white drop-shadow-md group-hover:animate-float" />
+              <span className="text-xs font-semibold text-white text-center leading-tight">
+                {action.title}
+              </span>
+            </div>
+          );
+
+          return action.type === 'navigation' ? (
+            <Link key={action.title} to={action.href!}>
+              {content}
+            </Link>
           ) : (
-            <Button
-              key={action.title}
-              variant={action.variant}
-              onClick={() => handleActionClick(action)}
-              className="flex flex-col h-24 p-4 bg-sage/10 border-sage/20 hover:bg-sage/15"
-            >
-              <action.icon className={`h-6 w-6 mb-2 ${action.iconColor}`} />
-              <span className="text-xs font-medium">{action.title}</span>
-            </Button>
-          )
-        ))}
+            <div key={action.title} onClick={() => handleActionClick(action)}>
+              {content}
+            </div>
+          );
+        })}
       </div>
     </div>
   );

@@ -17,6 +17,7 @@ import { StatsCard } from "@/components/dashboard/StatsCard";
 import { QuickActions } from "@/components/dashboard/QuickActions";
 import { RecentActivity } from "@/components/dashboard/RecentActivity";
 import { LatestRecipesInspiration } from "@/components/dashboard/LatestRecipesInspiration";
+import { AchievementsBadges } from "@/components/dashboard/AchievementsBadges";
 
 export default function Index() {
   useDocumentTitle("RealiMeali | Dashboard");
@@ -72,15 +73,13 @@ export default function Index() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="container max-w-6xl mx-auto px-4 py-6">
-        {/* Welcome Header */}
-        <div className="mb-8">
-          <WelcomeHeader />
-        </div>
+    <div className="min-h-screen" style={{ backgroundColor: '#fef7ef' }}>
+      <div className="container max-w-6xl mx-auto px-4 py-6 space-y-8">
+        {/* Welcome Header with Daily Tip */}
+        <WelcomeHeader />
         
-        {/* Stats Cards Grid - 2x2 with enhanced shadows */}
-        <div className="grid grid-cols-2 gap-4 mb-4">
+        {/* Stats Cards Grid - 2x2 with bold gradients */}
+        <div className="grid grid-cols-2 gap-4">
           <StatsCard
             title="My Recipes"
             value={stats.totalRecipes}
@@ -90,7 +89,7 @@ export default function Index() {
             onClick={handleMyRecipesClick}
           />
           <StatsCard
-            title="Recipes To Cook"
+            title="To Cook"
             value={stats.recipesToCook}
             icon={UtensilsCrossed}
             isLoading={isLoading}
@@ -98,7 +97,7 @@ export default function Index() {
             onClick={handleRecipesToCookClick}
           />
           <StatsCard
-            title="Shopping Items"
+            title="Shopping"
             value={stats.shoppingItemsCount}
             icon={ListChecks}
             isLoading={isLoading}
@@ -115,20 +114,17 @@ export default function Index() {
           />
         </div>
 
-        {/* Quick Actions with subtle background */}
-        <div className="bg-gray-50/50 rounded-2xl py-4 mb-8">
-          <QuickActions />
-        </div>
+        {/* Achievements Section */}
+        <AchievementsBadges />
+
+        {/* Quick Actions */}
+        <QuickActions />
 
         {/* Recent Activity */}
-        <div className="mb-8">
-          <RecentActivity isLoading={isLoading} />
-        </div>
+        <RecentActivity isLoading={isLoading} />
 
         {/* Latest Recipes Inspiration */}
-        <div className="mt-8">
-          <LatestRecipesInspiration />
-        </div>
+        <LatestRecipesInspiration />
       </div>
     </div>
   );

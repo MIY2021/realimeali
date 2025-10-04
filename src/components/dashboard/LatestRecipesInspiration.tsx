@@ -59,87 +59,89 @@ export const LatestRecipesInspiration = () => {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-lg font-semibold flex items-center gap-2">
+    <div className="w-full">
+      <div className="mb-4">
+        <h2 className="text-lg font-semibold flex items-center gap-2">
           <Sparkles className="h-5 w-5 text-sage" />
-          Discover Recipes
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        {isLoading ? (
-          <div className="relative">
-            <div className="flex gap-4 overflow-hidden">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="flex-none w-[300px] space-y-3">
-                  <Skeleton className="h-48 w-full rounded-lg" />
-                  <Skeleton className="h-4 w-3/4" />
-                  <Skeleton className="h-3 w-1/2" />
-                </div>
-              ))}
-            </div>
+          Discover New Recipes
+        </h2>
+      </div>
+      
+      {isLoading ? (
+        <div className="relative">
+          <div className="flex gap-4 overflow-hidden">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="flex-none w-[300px] space-y-3">
+                <Skeleton className="h-56 w-full rounded-2xl" />
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-3 w-1/2" />
+              </div>
+            ))}
           </div>
-        ) : recipes && recipes.length > 0 ? (
-          <div className="space-y-6">
-            <div className="relative">
-              <Carousel
-                setApi={setApi}
-                className="w-full"
-                opts={{
-                  align: "start",
-                  loop: true,
-                }}
-              >
-                <CarouselContent className="-ml-2 md:-ml-4">
-                  {recipes.map((recipe) => (
-                    <CarouselItem key={recipe.id} className="pl-2 md:pl-4 basis-full md:basis-1/2 lg:basis-1/3">
+        </div>
+      ) : recipes && recipes.length > 0 ? (
+        <div className="space-y-6">
+          <div className="relative">
+            <Carousel
+              setApi={setApi}
+              className="w-full"
+              opts={{
+                align: "start",
+                loop: true,
+              }}
+            >
+              <CarouselContent className="-ml-2 md:-ml-4">
+                {recipes.map((recipe) => (
+                  <CarouselItem key={recipe.id} className="pl-2 md:pl-4 basis-full md:basis-1/2 lg:basis-1/3">
+                    <div className="group relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
                       <ImportedRecipeCard
                         recipe={recipe}
                         mobileLayout="1"
                       />
-                    </CarouselItem>
-                  ))}
-                </CarouselContent>
-                <CarouselPrevious className="absolute left-4 top-1/2 -translate-y-1/2" />
-                <CarouselNext className="absolute right-4 top-1/2 -translate-y-1/2" />
-              </Carousel>
-              
-              {/* Carousel dots */}
-              <div className="flex justify-center mt-4 space-x-2">
-                {Array.from({ length: count }).map((_, index) => (
-                  <button
-                    key={index}
-                    className={`w-2 h-2 rounded-full transition-colors ${
-                      index + 1 === current ? 'bg-sage' : 'bg-gray-300'
-                    }`}
-                    onClick={() => api?.scrollTo(index)}
-                  />
+                    </div>
+                  </CarouselItem>
                 ))}
-              </div>
-            </div>
+              </CarouselContent>
+              <CarouselPrevious className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white shadow-lg" />
+              <CarouselNext className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white shadow-lg" />
+            </Carousel>
             
-            {/* Discover More Button at bottom */}
-            <div className="flex justify-center pt-2">
-              <Button variant="outline" asChild>
-                <Link to="/discover-recipes">
-                  Discover More Recipes
-                </Link>
-              </Button>
+            {/* Carousel dots */}
+            <div className="flex justify-center mt-6 space-x-2">
+              {Array.from({ length: count }).map((_, index) => (
+                <button
+                  key={index}
+                  className={`h-2 rounded-full transition-all duration-300 ${
+                    index + 1 === current ? 'w-8 bg-sage' : 'w-2 bg-gray-300'
+                  }`}
+                  onClick={() => api?.scrollTo(index)}
+                />
+              ))}
             </div>
           </div>
-        ) : (
-          <div className="text-center py-8">
-            <p className="text-muted-foreground mb-4">
-              No recipes available at the moment.
-            </p>
-            <Button asChild>
-              <Link to="/discover-recipes">
-                Explore Discover Recipes
-              </Link>
-            </Button>
+          
+          {/* Discover More Button */}
+          <div className="flex justify-center pt-2">
+            <Link to="/discover-recipes">
+              <button className="px-8 py-3 bg-gradient-to-r from-sage to-emerald-500 text-white rounded-full font-semibold shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-300">
+                Discover More Recipes →
+              </button>
+            </Link>
           </div>
-        )}
-      </CardContent>
-    </Card>
+        </div>
+      ) : (
+        <div className="text-center py-12 bg-white rounded-2xl shadow-md">
+          <Sparkles className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+          <p className="text-gray-600 mb-4">
+            No recipes available at the moment.
+          </p>
+          <Link to="/discover-recipes">
+            <button className="px-6 py-2 bg-sage text-white rounded-full font-medium hover:bg-sage/90 transition-colors">
+              Explore Recipes
+            </button>
+          </Link>
+        </div>
+      )}
+    </div>
   );
 };

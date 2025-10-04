@@ -1,4 +1,3 @@
-import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { type ComponentType } from "react";
 
@@ -19,56 +18,44 @@ export const StatsCard = ({
   variant = 'primary',
   onClick
 }: StatsCardProps) => {
-  const getVariantClasses = () => {
+  const getGradientClasses = () => {
     switch (variant) {
       case 'primary':
-        return 'bg-terracotta/10 text-primary border-terracotta/20';
+        return 'bg-gradient-to-br from-blue-500 to-blue-600';
       case 'secondary':
-        return 'bg-sage/10 text-secondary border-sage/20';
+        return 'bg-gradient-to-br from-emerald-500 to-emerald-600';
       case 'accent':
-        return 'bg-butter/10 text-accent-foreground border-butter/20';
+        return 'bg-gradient-to-br from-purple-500 to-purple-600';
       case 'muted':
-        return 'bg-navy/10 text-foreground border-navy/20';
+        return 'bg-gradient-to-br from-red-500 to-pink-500';
       default:
-        return 'bg-terracotta/10 text-primary border-terracotta/20';
-    }
-  };
-
-  const getIconColor = () => {
-    switch (variant) {
-      case 'primary':
-        return 'text-terracotta';
-      case 'secondary':
-        return 'text-sage';
-      case 'accent':
-        return 'text-butter';
-      case 'muted':
-        return 'text-navy';
-      default:
-        return 'text-terracotta';
+        return 'bg-gradient-to-br from-blue-500 to-blue-600';
     }
   };
 
   return (
-    <Card 
-      className={`${getVariantClasses()} transition-all hover:shadow-md ${onClick ? 'cursor-pointer hover:scale-105' : ''}`}
+    <div 
+      className={`
+        ${getGradientClasses()} 
+        rounded-3xl p-6 shadow-lg
+        transition-all duration-300
+        ${onClick ? 'cursor-pointer hover:scale-105 hover:shadow-xl active:scale-95' : ''}
+      `}
       onClick={onClick}
     >
-      <CardContent className="p-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-xs font-medium text-muted-foreground">{title}</p>
-            {isLoading ? (
-              <Skeleton className="h-6 w-12 mt-1" />
-            ) : (
-              <p className="text-2xl font-bold mt-1">{value}</p>
-            )}
-          </div>
-          <div className={`p-2 rounded-full bg-background/50`}>
-            <IconComponent className={`h-4 w-4 ${getIconColor()}`} />
+      <div className="flex flex-col justify-between h-full">
+        <div className="flex items-start justify-between mb-4">
+          <p className="text-sm font-medium text-white/90">{title}</p>
+          <div className="p-2 rounded-full bg-white/20 backdrop-blur-sm">
+            <IconComponent className="h-6 w-6 text-white" />
           </div>
         </div>
-      </CardContent>
-    </Card>
+        {isLoading ? (
+          <Skeleton className="h-10 w-16" />
+        ) : (
+          <p className="text-4xl font-extrabold text-white">{value}</p>
+        )}
+      </div>
+    </div>
   );
 };

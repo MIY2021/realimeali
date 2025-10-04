@@ -143,26 +143,38 @@ export const RecentActivity = ({ isLoading: externalLoading }: RecentActivityPro
 
   return (
     <div className="w-full">
-      <div className="mb-6">
+      <div className="mb-4">
         <h2 className="text-lg font-semibold flex items-center gap-2">
           <Clock className="h-5 w-5 text-sage" />
-          Recent Household Activity
+          Recent Activity
         </h2>
       </div>
-      <div className="space-y-4">
+      <div className="space-y-3">
         {displayActivities.map((activity) => (
-          <div key={activity.id} className="flex items-center gap-3">
-            <div className={`flex-shrink-0 h-10 w-10 rounded-full ${getActivityBgColor(activity.type)} flex items-center justify-center`}>
-              {getActivityIcon(activity.type)}
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <p className="text-sm font-medium truncate">{activity.title}</p>
+          <div 
+            key={activity.id} 
+            className="bg-white rounded-2xl p-4 shadow-md hover:shadow-lg transition-all duration-300 border-l-4 border-sage"
+          >
+            <div className="flex items-center gap-3">
+              <div className={`flex-shrink-0 h-12 w-12 rounded-full ${getActivityBgColor(activity.type)} flex items-center justify-center shadow-sm`}>
+                {getActivityIcon(activity.type)}
               </div>
-              <div className="flex items-center gap-2">
-                <p className="text-xs text-muted-foreground">
-                  {activity.description} by {activity.user} • {format(new Date(activity.timestamp), 'MMM d')}
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold text-gray-900 truncate mb-1">
+                  {activity.title}
                 </p>
+                <p className="text-xs text-gray-600">
+                  {activity.description}
+                </p>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="text-xs text-gray-500 font-medium">
+                    {activity.user}
+                  </span>
+                  <span className="text-xs text-gray-400">•</span>
+                  <span className="text-xs text-gray-500">
+                    {format(new Date(activity.timestamp), 'MMM d')}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -171,15 +183,13 @@ export const RecentActivity = ({ isLoading: externalLoading }: RecentActivityPro
       
       {activities.length > 6 && (
         <div className="mt-4 text-center">
-          <Button
-            variant="ghost"
-            size="sm"
+          <button
             onClick={() => setShowMore(!showMore)}
-            className="text-xs"
+            className="text-sm font-medium text-sage hover:text-sage/80 transition-colors flex items-center gap-1 mx-auto"
           >
-            {showMore ? 'Show Less' : 'View More Recent Activity'}
-            <ChevronDown className={`h-3 w-3 ml-1 transition-transform ${showMore ? 'rotate-180' : ''}`} />
-          </Button>
+            {showMore ? 'Show Less' : 'View More Activity'}
+            <ChevronDown className={`h-4 w-4 transition-transform ${showMore ? 'rotate-180' : ''}`} />
+          </button>
         </div>
       )}
     </div>
