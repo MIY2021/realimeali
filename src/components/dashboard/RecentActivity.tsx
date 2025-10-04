@@ -190,9 +190,9 @@ export const RecentActivity = ({ isLoading: externalLoading }: RecentActivityPro
                     {' '}
                     <span className="text-gray-700">
                       {action}{' '}
-                      {recipeSlug ? (
+                      {recipeId ? (
                         <Link 
-                          to={`/my-recipes/${recipeSlug}`}
+                          to={`/my-recipes/${recipeSlug || recipeId}`}
                           className="text-blue-600 hover:text-blue-700 hover:underline"
                         >
                           {recipeName}
