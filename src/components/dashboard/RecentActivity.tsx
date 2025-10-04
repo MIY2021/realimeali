@@ -2,7 +2,16 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { format } from "date-fns";
 import { 
-  UtensilsCrossed
+  UtensilsCrossed,
+  Edit,
+  Star,
+  X,
+  Check,
+  CalendarDays,
+  FileText,
+  User,
+  Trash2,
+  RotateCcw
 } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -21,31 +30,75 @@ export const RecentActivity = ({ isLoading: externalLoading }: RecentActivityPro
   
   const isLoading = externalLoading || activityLoading;
 
-  const parseActivityDescription = (activity: HouseholdActivity) => {
-    const { user, description, metadata } = activity;
-    
-    // Extract recipe name from description (usually after verbs like "added", "edited", "cooked", etc.)
-    const verbs = ['added', 'edited', 'updated', 'favorited', 'unfavorited', 'cooked', 'uncooked', 'deleted', 'restored', 'added a note to'];
-    let recipeName = '';
-    let action = description;
-    
-    for (const verb of verbs) {
-      if (description.includes(verb)) {
-        const parts = description.split(verb);
-        if (parts.length > 1) {
-          recipeName = parts[1].trim();
-          action = verb;
-        }
-        break;
-      }
-    }
-
-    return { user, action, recipeName, recipeId: metadata?.recipeId };
-  };
-
   const getUserAvatar = (userId: string) => {
     const member = householdMembers.find(m => m.user_id === userId);
     return member?.profile?.avatar_url;
+  };
+
+  const getActivityIcon = (type: HouseholdActivity['type']) => {
+    switch (type) {
+      case 'recipe-added':
+        return <UtensilsCrossed className="h-4 w-4 text-emerald-600" />;
+      case 'recipe-edited':
+        return <Edit className="h-4 w-4 text-blue-600" />;
+      case 'recipe-favorited':
+        return <Star className="h-4 w-4 text-amber-500" />;
+      case 'recipe-unfavorited':
+        return <X className="h-4 w-4 text-gray-500" />;
+      case 'recipe-cooked':
+        return <Check className="h-4 w-4 text-orange-600" />;
+      case 'recipe-uncooked':
+        return <Check className="h-4 w-4 text-gray-500" />;
+      case 'meal-plan-added':
+        return <CalendarDays className="h-4 w-4 text-sage" />;
+      case 'custom-meal-added':
+        return <UtensilsCrossed className="h-4 w-4 text-amber-600" />;
+      case 'leftover-meal-added':
+        return <UtensilsCrossed className="h-4 w-4 text-purple-600" />;
+      case 'recipe-note-added':
+        return <FileText className="h-4 w-4 text-indigo-600" />;
+      case 'member-joined':
+        return <User className="h-4 w-4 text-green-600" />;
+      case 'recipe-deleted':
+        return <Trash2 className="h-4 w-4 text-red-500" />;
+      case 'recipe-restored':
+        return <RotateCcw className="h-4 w-4 text-green-500" />;
+      default:
+        return <UtensilsCrossed className="h-4 w-4 text-terracotta" />;
+    }
+  };
+
+  const getActivityBgColor = (type: HouseholdActivity['type']) => {
+    switch (type) {
+      case 'recipe-added':
+        return 'bg-emerald-50';
+      case 'recipe-edited':
+        return 'bg-blue-50';
+      case 'recipe-favorited':
+        return 'bg-amber-50';
+      case 'recipe-unfavorited':
+        return 'bg-gray-50';
+      case 'recipe-cooked':
+        return 'bg-orange-50';
+      case 'recipe-uncooked':
+        return 'bg-gray-50';
+      case 'meal-plan-added':
+        return 'bg-sage/10';
+      case 'custom-meal-added':
+        return 'bg-amber-50';
+      case 'leftover-meal-added':
+        return 'bg-purple-50';
+      case 'recipe-note-added':
+        return 'bg-indigo-50';
+      case 'member-joined':
+        return 'bg-green-50';
+      case 'recipe-deleted':
+        return 'bg-red-50';
+      case 'recipe-restored':
+        return 'bg-green-50';
+      default:
+        return 'bg-terracotta/10';
+    }
   };
 
   if (isLoading) {
@@ -103,7 +156,6 @@ export const RecentActivity = ({ isLoading: externalLoading }: RecentActivityPro
       </div>
       <div className="space-y-2">
         {displayActivities.map((activity) => {
-          const { user, action, recipeName, recipeId } = parseActivityDescription(activity);
           const avatarUrl = getUserAvatar(activity.metadata?.userId || '');
 
           return (
@@ -113,33 +165,16 @@ export const RecentActivity = ({ isLoading: externalLoading }: RecentActivityPro
             >
               <div className="flex items-start gap-3">
                 <Avatar className="h-10 w-10 flex-shrink-0">
-                  {avatarUrl && <AvatarImage src={avatarUrl} alt={user} />}
-                  <AvatarFallback className="bg-muted">
-                    {user.charAt(0).toUpperCase()}
+                  {avatarUrl && <AvatarImage src={avatarUrl} alt={activity.user} />}
+                  <AvatarFallback className={getActivityBgColor(activity.type)}>
+                    {getActivityIcon(activity.type)}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm leading-relaxed">
-                    <span className="font-bold text-gray-900">{user}</span>
+                    <span className="font-bold text-gray-900">{activity.user}</span>
                     {' '}
-                    <span className="text-gray-700">{action}</span>
-                    {recipeName && recipeId && (
-                      <>
-                        {' '}
-                        <button
-                          onClick={() => navigate(`/recipes/${recipeId}`)}
-                          className="text-blue-600 hover:text-blue-700 hover:underline font-medium"
-                        >
-                          {recipeName}
-                        </button>
-                      </>
-                    )}
-                    {recipeName && !recipeId && (
-                      <>
-                        {' '}
-                        <span className="text-gray-900">{recipeName}</span>
-                      </>
-                    )}
+                    <span className="text-gray-700">{activity.description}</span>
                   </p>
                   <p className="text-xs text-gray-500 mt-1">
                     {format(new Date(activity.timestamp), 'MMM d, yyyy')}
