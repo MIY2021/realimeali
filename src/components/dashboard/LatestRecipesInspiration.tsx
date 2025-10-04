@@ -61,82 +61,74 @@ export const LatestRecipesInspiration = () => {
   return (
     <div className="w-full">
       <div className="mb-4">
-        <h2 className="text-lg font-semibold flex items-center gap-2">
-          <Sparkles className="h-5 w-5 text-sage" />
-          Discover New Recipes
+        <h2 className="text-lg font-semibold">
+          Discover Recipes
         </h2>
       </div>
       
       {isLoading ? (
-        <div className="relative">
-          <div className="flex gap-4 overflow-hidden">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="flex-none w-[300px] space-y-3">
-                <Skeleton className="h-56 w-full rounded-2xl" />
-                <Skeleton className="h-4 w-3/4" />
-                <Skeleton className="h-3 w-1/2" />
-              </div>
-            ))}
-          </div>
+        <div className="space-y-4">
+          <Skeleton className="h-48 w-full rounded-2xl" />
+          <Skeleton className="h-6 w-3/4" />
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-10 w-full rounded-full" />
         </div>
       ) : recipes && recipes.length > 0 ? (
-        <div className="space-y-6">
-          <div className="relative">
-            <Carousel
-              setApi={setApi}
-              className="w-full"
-              opts={{
-                align: "start",
-                loop: true,
-              }}
-            >
-              <CarouselContent className="-ml-2 md:-ml-4">
-                {recipes.map((recipe) => (
-                  <CarouselItem key={recipe.id} className="pl-2 md:pl-4 basis-full md:basis-1/2 lg:basis-1/3">
-                    <div className="group relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
-                      <ImportedRecipeCard
-                        recipe={recipe}
-                        mobileLayout="1"
-                      />
-                    </div>
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-              <CarouselPrevious className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white shadow-lg" />
-              <CarouselNext className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white shadow-lg" />
-            </Carousel>
-            
-            {/* Carousel dots */}
-            <div className="flex justify-center mt-6 space-x-2">
-              {Array.from({ length: count }).map((_, index) => (
-                <button
-                  key={index}
-                  className={`h-2 rounded-full transition-all duration-300 ${
-                    index + 1 === current ? 'w-8 bg-sage' : 'w-2 bg-gray-300'
-                  }`}
-                  onClick={() => api?.scrollTo(index)}
-                />
-              ))}
+        <div className="space-y-4">
+          {/* Featured Recipe */}
+          <div className="bg-white rounded-2xl overflow-hidden shadow-sm">
+            <div className="relative h-48 w-full">
+              <img 
+                src={recipes[0].image || '/placeholder.svg'} 
+                alt={recipes[0].title}
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <div className="p-4 space-y-3">
+              <h3 className="text-xl font-bold text-gray-900">
+                {recipes[0].title}
+              </h3>
+              <p className="text-sm text-gray-600 line-clamp-2">
+                {recipes[0].description || "A healthy and delicious recipe loaded with fresh ingredients."}
+              </p>
+              
+              {/* Meta info */}
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
+                  🍃 {recipes[0].meal_types?.[0] || 'Dinner'}
+                </span>
+                <span className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
+                  ⏰ {(recipes[0].prep_time + recipes[0].cook_time) || 25} min
+                </span>
+                <span className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
+                  👥 {recipes[0].servings || 4}
+                </span>
+              </div>
+              
+              {/* CTA Button */}
+              <Link to={`/discover-recipes/${recipes[0].id}`} className="block">
+                <button className="w-full bg-[#FFDD6B] hover:bg-[#FFDD6B]/90 text-gray-900 font-semibold py-3 px-4 rounded-full transition-colors flex items-center justify-center gap-2">
+                  👁 View Recipe
+                </button>
+              </Link>
             </div>
           </div>
           
           {/* Discover More Button */}
-          <div className="flex justify-center pt-2">
-            <Link to="/discover-recipes">
-              <button className="px-8 py-3 bg-gradient-to-r from-sage to-emerald-500 text-white rounded-full font-semibold shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-300">
-                Discover More Recipes →
-              </button>
-            </Link>
-          </div>
+          <Link to="/discover-recipes">
+            <button className="w-full bg-white hover:bg-gray-50 text-gray-900 font-semibold py-3 px-4 rounded-full transition-colors border border-gray-200">
+              Discover More Recipes
+            </button>
+          </Link>
         </div>
       ) : (
-        <div className="text-center py-12 bg-white rounded-2xl shadow-md">
+        <div className="text-center py-12 bg-white rounded-2xl shadow-sm">
           <Sparkles className="h-12 w-12 text-gray-300 mx-auto mb-4" />
           <p className="text-gray-600 mb-4">
             No recipes available at the moment.
           </p>
           <Link to="/discover-recipes">
-            <button className="px-6 py-2 bg-sage text-white rounded-full font-medium hover:bg-sage/90 transition-colors">
+            <button className="px-6 py-2 bg-[#FFDD6B] text-gray-900 rounded-full font-semibold hover:bg-[#FFDD6B]/90 transition-colors">
               Explore Recipes
             </button>
           </Link>

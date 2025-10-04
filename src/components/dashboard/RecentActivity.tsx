@@ -1,5 +1,6 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { format } from "date-fns";
 import { 
   Clock, 
@@ -144,51 +145,37 @@ export const RecentActivity = ({ isLoading: externalLoading }: RecentActivityPro
   return (
     <div className="w-full">
       <div className="mb-4">
-        <h2 className="text-lg font-semibold flex items-center gap-2">
-          <Clock className="h-5 w-5 text-sage" />
-          Recent Activity
+        <h2 className="text-lg font-semibold">
+          Recent Household Activity
         </h2>
       </div>
       <div className="space-y-3">
-        {displayActivities.map((activity) => (
+        {displayActivities.slice(0, 3).map((activity) => (
           <div 
             key={activity.id} 
-            className="bg-white rounded-2xl p-4 shadow-md hover:shadow-lg transition-all duration-300 border-l-4 border-sage"
+            className="flex items-start gap-3"
           >
-            <div className="flex items-center gap-3">
-              <div className={`flex-shrink-0 h-12 w-12 rounded-full ${getActivityBgColor(activity.type)} flex items-center justify-center shadow-sm`}>
+            <Avatar className="h-10 w-10 flex-shrink-0">
+              <AvatarFallback className={`${getActivityBgColor(activity.type)}`}>
                 {getActivityIcon(activity.type)}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold text-gray-900 truncate mb-1">
-                  {activity.title}
-                </p>
-                <p className="text-xs text-gray-600">
-                  {activity.description}
-                </p>
-                <div className="flex items-center gap-2 mt-1">
-                  <span className="text-xs text-gray-500 font-medium">
-                    {activity.user}
-                  </span>
-                  <span className="text-xs text-gray-400">•</span>
-                  <span className="text-xs text-gray-500">
-                    {format(new Date(activity.timestamp), 'MMM d')}
-                  </span>
-                </div>
-              </div>
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm text-gray-900">
+                <span className="font-semibold">{activity.user}</span> {activity.description}
+              </p>
+              <p className="text-xs text-gray-500 mt-0.5">
+                {format(new Date(activity.timestamp), 'MMM d')}
+              </p>
             </div>
           </div>
         ))}
       </div>
       
-      {activities.length > 6 && (
+      {activities.length > 3 && (
         <div className="mt-4 text-center">
-          <button
-            onClick={() => setShowMore(!showMore)}
-            className="text-sm font-medium text-sage hover:text-sage/80 transition-colors flex items-center gap-1 mx-auto"
-          >
-            {showMore ? 'Show Less' : 'View More Activity'}
-            <ChevronDown className={`h-4 w-4 transition-transform ${showMore ? 'rotate-180' : ''}`} />
+          <button className="text-sm font-medium text-gray-900 hover:text-gray-700 transition-colors">
+            View More
           </button>
         </div>
       )}

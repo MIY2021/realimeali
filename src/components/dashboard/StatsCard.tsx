@@ -18,57 +18,40 @@ export const StatsCard = ({
   variant = 'primary',
   onClick
 }: StatsCardProps) => {
-  const getGradientClasses = () => {
+  const getIconColor = () => {
     switch (variant) {
       case 'primary':
-        return 'bg-gradient-to-br from-blue-200 to-blue-300';
+        return 'text-blue-500';
       case 'secondary':
-        return 'bg-gradient-to-br from-emerald-200 to-emerald-300';
+        return 'text-emerald-500';
       case 'accent':
-        return 'bg-gradient-to-br from-purple-200 to-purple-300';
+        return 'text-purple-500';
       case 'muted':
-        return 'bg-gradient-to-br from-rose-200 to-pink-300';
+        return 'text-red-500';
       default:
-        return 'bg-gradient-to-br from-blue-200 to-blue-300';
-    }
-  };
-
-  const getTextColor = () => {
-    switch (variant) {
-      case 'primary':
-        return 'text-blue-800';
-      case 'secondary':
-        return 'text-emerald-800';
-      case 'accent':
-        return 'text-purple-800';
-      case 'muted':
-        return 'text-rose-800';
-      default:
-        return 'text-blue-800';
+        return 'text-blue-500';
     }
   };
 
   return (
     <div 
       className={`
-        ${getGradientClasses()} 
-        rounded-3xl p-6 shadow-md
-        transition-all duration-300
-        ${onClick ? 'cursor-pointer hover:scale-105 hover:shadow-lg active:scale-95' : ''}
+        bg-white
+        rounded-2xl p-4 shadow-sm
+        transition-all duration-200
+        ${onClick ? 'cursor-pointer hover:shadow-md active:scale-95' : ''}
       `}
       onClick={onClick}
     >
-      <div className="flex flex-col justify-between h-full">
-        <div className="flex items-start justify-between mb-4">
-          <p className={`text-sm font-medium ${getTextColor()} opacity-80`}>{title}</p>
-          <div className="p-2 rounded-full bg-white/40 backdrop-blur-sm">
-            <IconComponent className={`h-6 w-6 ${getTextColor()}`} />
-          </div>
+      <div className="flex flex-col h-full">
+        <div className="flex items-start justify-between mb-6">
+          <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">{title}</p>
+          <IconComponent className={`h-5 w-5 ${getIconColor()}`} />
         </div>
         {isLoading ? (
-          <Skeleton className="h-10 w-16" />
+          <Skeleton className="h-9 w-12" />
         ) : (
-          <p className={`text-4xl font-extrabold ${getTextColor()}`}>{value}</p>
+          <p className="text-3xl font-bold text-gray-900">{value}</p>
         )}
       </div>
     </div>

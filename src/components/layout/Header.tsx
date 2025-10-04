@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { HouseholdMembersDropdown } from "@/components/household/HouseholdMembersDropdown";
+import { NotificationBell } from "@/components/layout/NotificationBell";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -186,8 +187,8 @@ const Header = () => {
               </SheetContent>
             </Sheet>
 
-            {/* Household Members Dropdown */}
-            {!isLoading && user && currentHousehold && <HouseholdMembersDropdown />}
+            {/* Notification Bell - Only show when logged in */}
+            {!isLoading && user && <NotificationBell />}
 
             {/* User Menu */}
             {isLoading ? (

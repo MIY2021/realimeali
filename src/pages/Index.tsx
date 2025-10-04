@@ -74,12 +74,12 @@ export default function Index() {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#fef7ef' }}>
-      <div className="container max-w-6xl mx-auto px-4 py-6 space-y-8">
+      <div className="container max-w-2xl mx-auto px-4 py-4 space-y-5">
         {/* Welcome Header with Daily Tip */}
         <WelcomeHeader />
         
-        {/* Stats Cards Grid - 2x2 with bold gradients */}
-        <div className="grid grid-cols-2 gap-4">
+        {/* Stats Cards Grid - 2x2 with white backgrounds */}
+        <div className="grid grid-cols-2 gap-3">
           <StatsCard
             title="My Recipes"
             value={stats.totalRecipes}

@@ -69,94 +69,56 @@ const achievements: Achievement[] = [
 export const AchievementsBadges = () => {
   const { stats, isLoading } = useUserStats();
 
-  if (isLoading) {
-    return (
-      <div className="w-full">
-        <div className="mb-4">
-          <h2 className="text-lg font-semibold flex items-center gap-2">
-            <Heart className="h-5 w-5 text-sage" />
-            Achievements
-          </h2>
-        </div>
-        <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
-          {[...Array(5)].map((_, i) => (
-            <Skeleton key={i} className="w-24 h-24 rounded-full flex-shrink-0" />
-          ))}
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="w-full">
-      <div className="mb-4">
-        <h2 className="text-lg font-semibold flex items-center gap-2">
-          <Heart className="h-5 w-5 text-sage" />
-          Achievements
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="text-lg font-semibold">
+          Achievements Unlocked!
         </h2>
+        <button className="text-sm font-medium text-gray-600 hover:text-gray-900">
+          View All
+        </button>
       </div>
-      <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
-        {achievements.map((achievement) => {
-          const isUnlocked = achievement.unlockCondition(stats);
-          const progress = achievement.progress(stats);
-          const Icon = achievement.icon;
+      {isLoading ? (
+        <div className="flex gap-6 overflow-x-auto scrollbar-hide pb-2">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="flex flex-col items-center gap-2 flex-shrink-0">
+              <Skeleton className="h-20 w-20 rounded-full" />
+              <Skeleton className="h-3 w-16" />
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="flex gap-6 overflow-x-auto scrollbar-hide pb-2">
+          {achievements.slice(0, 3).map((achievement) => {
+            const isUnlocked = achievement.unlockCondition(stats);
+            const Icon = achievement.icon;
 
-          return (
-            <div key={achievement.id} className="flex-shrink-0 text-center">
-              <div className="relative w-24 h-24 mb-2">
-                {/* Badge Circle */}
+            return (
+              <div key={achievement.id} className="flex flex-col items-center gap-2 flex-shrink-0">
                 <div
                   className={`
-                    w-full h-full rounded-full flex items-center justify-center
-                    transition-all duration-300
-                    ${
-                      isUnlocked
-                        ? `bg-gradient-to-br ${achievement.gradient} shadow-lg hover:scale-110 cursor-pointer`
-                        : "bg-gray-300 grayscale opacity-60"
+                    w-20 h-20 rounded-full flex items-center justify-center
+                    transition-all duration-300 shadow-md
+                    ${isUnlocked 
+                      ? `bg-gradient-to-br ${achievement.gradient}` 
+                      : 'bg-gray-200 grayscale'
                     }
                   `}
                 >
-                  <Icon className={`h-10 w-10 ${isUnlocked ? 'text-white animate-pulse-glow' : 'text-gray-500'}`} />
+                  <Icon 
+                    className={`h-9 w-9 ${isUnlocked ? 'text-white' : 'text-gray-400'}`}
+                  />
                 </div>
-
-                {/* Progress Ring */}
-                {!isUnlocked && (
-                  <svg className="absolute top-0 left-0 w-full h-full -rotate-90">
-                    <circle
-                      cx="48"
-                      cy="48"
-                      r="44"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                      fill="none"
-                      className="text-gray-200"
-                    />
-                    <circle
-                      cx="48"
-                      cy="48"
-                      r="44"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                      fill="none"
-                      strokeDasharray={`${2 * Math.PI * 44}`}
-                      strokeDashoffset={`${2 * Math.PI * 44 * (1 - progress / 100)}`}
-                      className="text-sage transition-all duration-500"
-                    />
-                  </svg>
-                )}
-              </div>
-              <p className="text-xs font-medium text-foreground mb-1">
-                {achievement.title}
-              </p>
-              {!isUnlocked && (
-                <p className="text-xs text-muted-foreground">
-                  {Math.floor(progress)}%
+                
+                <p className="text-xs font-semibold text-gray-900 text-center max-w-[80px] line-clamp-2">
+                  {achievement.title}
                 </p>
-              )}
-            </div>
-          );
-        })}
-      </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };
