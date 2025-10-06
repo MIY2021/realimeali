@@ -1,6 +1,6 @@
 
 import { Link, useLocation } from "react-router-dom";
-import { Book, Search, CalendarDays, ShoppingBag, Home } from "lucide-react";
+import { Book, Search, CalendarDays, ShoppingCart, Home } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
 
@@ -35,7 +35,7 @@ const BottomNavigation = () => {
     },
     { 
       to: "/shopping-list", 
-      icon: ShoppingBag, 
+      icon: ShoppingCart, 
       label: "Shopping",
       activePattern: /^\/shopping-list/
     },

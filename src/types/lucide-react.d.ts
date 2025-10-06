@@ -3,6 +3,7 @@
 declare module 'lucide-react' {
   import { LucideIcon } from 'lucide-react';
   
+  export const ShoppingCart: LucideIcon;
   export const UtensilsCrossed: LucideIcon;
   export const User: LucideIcon;
   export const CalendarDays: LucideIcon;

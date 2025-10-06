@@ -2,7 +2,7 @@
 import { 
   Book, 
   UtensilsCrossed, 
-  ShoppingBag,
+  ShoppingCart,
   Heart,
   Calendar
 } from "lucide-react";
@@ -99,7 +99,7 @@ export default function Index() {
           <StatsCard
             title="Shopping"
             value={stats.shoppingItemsCount}
-            icon={ShoppingBag}
+            icon={ShoppingCart}
             isLoading={isLoading}
             variant="accent"
             onClick={handleShoppingItemsClick}
