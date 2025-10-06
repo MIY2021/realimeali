@@ -4,6 +4,7 @@ import Header from "./Header";
 import CustomFooter from "./CustomFooter";
 import BottomNavigation from "./BottomNavigation";
 import { useSimpleScrollMemory } from "@/hooks/useSimpleScrollMemory";
+import { RealiChef } from "@/components/realichef/RealiChef";
 
 interface LayoutProps {
   children: ReactNode;
@@ -21,6 +22,7 @@ const Layout = ({ children }: LayoutProps) => {
       </main>
       <CustomFooter />
       <BottomNavigation />
+      <RealiChef />
     </div>
   );
 };
