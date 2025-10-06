@@ -1,9 +1,22 @@
 import { Plus, Calendar, ListChecks, Search, Sparkles, Shuffle, Star } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useRealiChef } from "@/contexts/RealiChefContext";
+import { useRecipes } from "@/contexts/RecipesContext";
+import { toast } from "sonner";
 
 export const QuickActions = () => {
   const { setIsOpen } = useRealiChef();
+  const { recipes } = useRecipes();
+  const navigate = useNavigate();
+
+  const handleRandomRecipe = () => {
+    if (!recipes || recipes.length === 0) {
+      toast.error("No recipes available");
+      return;
+    }
+    const randomRecipe = recipes[Math.floor(Math.random() * recipes.length)];
+    navigate(`/my-recipes/${randomRecipe.id}`);
+  };
 
   const actions = [
     {
@@ -33,8 +46,8 @@ export const QuickActions = () => {
     {
       title: "Random Recipe",
       icon: Shuffle,
-      href: "/my-recipes",
-      type: "navigation" as const,
+      type: "modal" as const,
+      onClick: handleRandomRecipe,
       iconBg: "bg-red-500",
       iconColor: "text-white",
     },
