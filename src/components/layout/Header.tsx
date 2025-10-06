@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { User, UtensilsCrossed, CalendarDays, Book, ListChecks, AlignJustify, Search, User as UserIcon, Home } from "lucide-react";
+import { User, UtensilsCrossed, CalendarDays, Book, ShoppingBag, AlignJustify, Search, User as UserIcon, Home } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -64,7 +64,7 @@ const Header = () => {
     { to: "/my-recipes", icon: Book, label: "My Recipes" },
     { to: "/discover-recipes", icon: Search, label: "Discover Recipes" },
     { to: "/meal-planner", icon: CalendarDays, label: "Meal Planner" },
-    { to: "/shopping-list", icon: ListChecks, label: "Shopping List" },
+    { to: "/shopping-list", icon: ShoppingBag, label: "Shopping List" },
   ];
 
   const handleAvatarError = () => {
