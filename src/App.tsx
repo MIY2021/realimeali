@@ -33,14 +33,10 @@ import { HouseholdShoppingProvider } from "@/contexts/HouseholdShoppingContext";
 import { Toaster } from "@/components/ui/toaster";
 
 import { RealiChefProvider } from "@/contexts/RealiChefContext";
-import { RealiChef } from "@/components/realichef/RealiChef";
-import { useAuth } from "@/contexts/AuthContext";
 
 const queryClient = new QueryClient();
 
 function AppContent() {
-  const { user } = useAuth();
-
   return (
     <div className="App">
       <Layout>
@@ -66,7 +62,6 @@ function AppContent() {
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Layout>
-      {user && <RealiChef />}
       <Toaster />
     </div>
   );
