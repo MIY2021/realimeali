@@ -524,34 +524,6 @@ export const RealiChef = () => {
 
   return (
     <>
-      {/* Floating Chef Hat Icon */}
-      {!isOpen && (
-        <div className="fixed bottom-20 right-4 z-[60] md:bottom-16 md:right-8">
-          <button
-            onClick={handleChatButtonClick}
-            className={cn(
-              "h-14 w-14 rounded-full shadow-lg transition-all duration-300 hover:scale-110",
-              "bg-gradient-to-r from-sage/40 to-terracotta/40 hover:from-sage/50 hover:to-terracotta/50",
-              "pointer-events-auto cursor-pointer border-2 border-white/20",
-              "flex items-center justify-center"
-            )}
-            type="button"
-            aria-label="Open RealiChef AI Assistant"
-          >
-            <div className="relative">
-              <img 
-                src="/lovable-uploads/48f73020-608a-4375-a69f-2e7bc147e319.png" 
-                alt="Chef Hat"
-                className="h-6 w-6 text-white"
-              />
-              <Sparkles 
-                className="absolute -top-1 -right-1 h-3 w-3 text-yellow-300 animate-pulse" 
-              />
-            </div>
-          </button>
-        </div>
-      )}
-
       {/* Chat Interface */}
       {isOpen && (
         <>
