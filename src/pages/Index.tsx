@@ -89,7 +89,7 @@ export default function Index() {
             onClick={handleMyRecipesClick}
           />
           <StatsCard
-            title="To Cook"
+            title="Not Cooked"
             value={stats.recipesToCook}
             icon={UtensilsCrossed}
             isLoading={isLoading}
