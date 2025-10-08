@@ -9,7 +9,8 @@ import { RecipeGrid } from "./RecipeGrid";
 import { SimpleRecipeFiltersComponent } from "./filters/SimpleRecipeFilters";
 import { MobileLayoutSelector } from "./MobileLayoutSelector";
 import { DropdownFilterSection } from "./filters/DropdownFilterSection";
-import { Heart, User } from "lucide-react";
+import { ViewToggleButtons } from "./ViewToggleButtons";
+import { Heart, X, Search } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -147,28 +148,32 @@ export function RecipeSelectionView({
   }
 
   return (
-    <div className={`space-y-4 sm:space-y-6 ${isMobile ? 'bg-white min-h-screen' : ''}`}>
+    <div className={`space-y-4 sm:space-y-6 ${isMobile ? 'bg-[#FAFAFA] min-h-screen' : ''}`}>
       {/* Mobile Grid Layout */}
       {isMobile ? (
         <div className="space-y-3">
-          {/* Row 1: Search | Sort | Layout */}
-          <div className={`grid gap-2 ${defaultMobileLayout ? 'grid-cols-[1fr_1fr]' : 'grid-cols-[1fr_1fr_auto]'}`}>
+          {/* Row 1: Search Bar - Full Width */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
             <Input
               placeholder="Search recipes..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full text-sm"
+              className="w-full pl-10 h-11 bg-white border-gray-300 rounded-lg text-sm"
             />
-            
+          </div>
+
+          {/* Row 2: Sort Dropdown + View Toggle */}
+          <div className="flex items-center gap-2">
             <Select value={`${sortBy}-${sortOrder}`} onValueChange={(value) => {
               const [newSortBy, newSortOrder] = value.split('-');
               setSortBy(newSortBy as "title" | "prepTime" | "cookTime" | "dateAdded");
               setSortOrder(newSortOrder as "asc" | "desc");
             }}>
-              <SelectTrigger className="text-sm">
+              <SelectTrigger className="flex-1 h-9 bg-white border-gray-300 rounded-full text-sm font-medium text-gray-700">
                 <SelectValue placeholder="Sort" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-white">
                 <SelectItem value="dateAdded-desc">Newest First</SelectItem>
                 <SelectItem value="dateAdded-asc">Oldest First</SelectItem>
                 <SelectItem value="title-asc">Title A-Z</SelectItem>
@@ -181,63 +186,67 @@ export function RecipeSelectionView({
             </Select>
 
             {!defaultMobileLayout && (
-              <div className="w-[60px]">
-                <MobileLayoutSelector
-                  value={mobileLayout}
-                  onChange={handleMobileLayoutChange}
-                />
-              </div>
+              <ViewToggleButtons
+                value={mobileLayout}
+                onChange={handleMobileLayoutChange}
+              />
             )}
           </div>
 
-          {/* Row 2: All filters on equal width - wider cuisine dropdown */}
-          <div className={`grid gap-2 ${defaultMobileLayout ? 'grid-cols-[1fr_1.2fr_1fr_1fr]' : 'grid-cols-[1fr_1.2fr_1fr_1fr]'}`}>
+          {/* Row 3: Filter Buttons - 2x2 Grid */}
+          <div className="grid grid-cols-2 gap-2">
             <DropdownFilterSection
-              title="🕒 Meal"
+              title="Meal"
+              icon="utensils"
               options={MEAL_TYPE_OPTIONS}
               selectedValues={filters.mealTypes}
               onToggle={(value) => toggleArrayFilter('mealTypes', value)}
             />
 
             <DropdownFilterSection
-              title="🌍 Cuisine"
+              title="Cuisine"
+              icon="globe"
               options={CUISINE_REGION_OPTIONS}
               selectedValues={filters.cuisineRegions}
               onToggle={(value) => toggleArrayFilter('cuisineRegions', value)}
             />
 
             <DropdownFilterSection
-              title="🥗 Diet"
+              title="Diet"
+              icon="salad"
               options={DIET_LIFESTYLE_OPTIONS}
               selectedValues={filters.dietLifestyle}
               onToggle={(value) => toggleArrayFilter('dietLifestyle', value)}
             />
 
             <DropdownFilterSection
-              title="⏰ Duration"
+              title="Duration"
+              icon="clock"
               options={COOKING_DURATION_OPTIONS}
               selectedValues={filters.cookingDurations}
               onToggle={(value) => toggleArrayFilter('cookingDurations', value)}
             />
           </div>
 
-          {/* Row 3: Favorites and Not Cooked toggles and clear filters */}
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-2 text-sm">
-              <div className="flex items-center gap-1">
-                <Heart className={`h-4 w-4 ${filters.showFavoritesOnly ? 'fill-red-500 text-red-500' : 'text-gray-500'}`} />
-                <span>Favourites</span>
+          {/* Row 4: Favorites and Not Cooked toggles */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <Heart className={`h-4 w-4 ${filters.showFavoritesOnly ? 'fill-[#F5B82E] text-[#F5B82E]' : 'text-gray-400'}`} />
+                <span className="text-sm text-gray-700">Favourites</span>
                 <Switch
                   checked={filters.showFavoritesOnly}
                   onCheckedChange={(checked) => handleFiltersChange({ ...filters, showFavoritesOnly: checked })}
+                  className="data-[state=checked]:bg-[#F5B82E]"
                 />
               </div>
-              <div className="flex items-center gap-1">
-                <User className={`h-4 w-4 ${filters.showNotCookedOnly ? 'text-orange-500' : 'text-gray-500'}`} />
-                <span>Not Cooked</span>
+              <div className="flex items-center gap-2">
+                <X className={`h-4 w-4 ${filters.showNotCookedOnly ? 'text-[#F5B82E]' : 'text-gray-400'}`} />
+                <span className="text-sm text-gray-700">Not Cooked</span>
                 <Switch
                   checked={filters.showNotCookedOnly}
                   onCheckedChange={(checked) => handleFiltersChange({ ...filters, showNotCookedOnly: checked })}
+                  className="data-[state=checked]:bg-[#F5B82E]"
                 />
               </div>
             </div>
@@ -245,9 +254,9 @@ export function RecipeSelectionView({
             {hasActiveFilters && (
               <button
                 onClick={clearAllFilters}
-                className="text-sm text-muted-foreground hover:text-foreground underline"
+                className="text-xs text-gray-500 hover:text-gray-700 underline"
               >
-                Clear filters ({activeFilterCount})
+                Clear ({activeFilterCount})
               </button>
             )}
           </div>

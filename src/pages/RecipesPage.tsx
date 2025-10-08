@@ -69,19 +69,27 @@ export default function RecipesPage() {
 
   return (
     <>
-      <div className={`container max-w-7xl py-4 px-4 sm:py-8 sm:px-6 ${isMobile ? 'bg-white min-h-screen' : ''}`} data-scroll-content>
-        <div className="flex flex-col gap-4 mb-6 sm:flex-row sm:justify-between sm:items-center">
-          <div className="space-y-2">
-        <h1 className="text-2xl sm:text-3xl font-bold text-navy flex items-center gap-2">
-          <Book className="h-6 w-6 sm:h-8 sm:w-8 text-sage" />
-          My Recipes
-        </h1>
-            <p className="text-sm sm:text-base text-muted-foreground">
+      <div className={`container max-w-7xl py-4 px-4 sm:py-8 sm:px-6 ${isMobile ? 'bg-[#FAFAFA] min-h-screen' : ''}`} data-scroll-content>
+        <div className="flex flex-col gap-3 mb-4 sm:mb-6">
+          <div className="space-y-1">
+            <h1 className="text-2xl sm:text-3xl font-bold text-[#2C3E50] flex items-center gap-2">
+              <Book className="h-6 w-6 sm:h-7 sm:w-7 text-[#F5B82E]" />
+              My Recipes
+            </h1>
+            <p className="text-sm text-[#6B7280]">
               {getWelcomeText()}
             </p>
           </div>
-          {user && currentHousehold && (
-            <Button asChild className="w-full sm:w-auto" style={{ backgroundColor: '#81b29a' }}>
+          {user && currentHousehold && isMobile && (
+            <Button asChild className="w-full h-12 bg-[#F5B82E] hover:bg-[#E8A542] text-white font-semibold rounded-lg shadow-sm">
+              <Link to="/my-recipes/new">
+                <Plus className="h-5 w-5 mr-2" />
+                Add Recipe
+              </Link>
+            </Button>
+          )}
+          {user && currentHousehold && !isMobile && (
+            <Button asChild className="w-auto self-start" style={{ backgroundColor: '#81b29a' }}>
               <Link to="/my-recipes/new">
                 <Plus className="h-4 w-4 mr-2" />
                 Add Recipe

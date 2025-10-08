@@ -7,10 +7,11 @@ import {
   DropdownMenuCheckboxItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, UtensilsCrossed, Globe, Circle, Clock } from "lucide-react";
 
 interface DropdownFilterSectionProps {
   title: string;
+  icon?: string;
   options: { value: string; label: string; icon: string }[];
   selectedValues: string[];
   onToggle: (value: string) => void;
@@ -18,6 +19,7 @@ interface DropdownFilterSectionProps {
 
 export function DropdownFilterSection({
   title,
+  icon,
   options,
   selectedValues,
   onToggle,
@@ -32,24 +34,32 @@ export function DropdownFilterSection({
 
   const hasActiveFilters = selectedValues.length > 0;
 
+  const IconComponent = icon === 'utensils' ? UtensilsCrossed :
+                       icon === 'globe' ? Globe :
+                       icon === 'salad' ? Circle :
+                       icon === 'clock' ? Clock : null;
+
   return (
     <div className="relative">
       <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
         <DropdownMenuTrigger asChild>
           <Button
             variant="outline"
-            className={`flex items-center gap-1 w-full justify-between h-10 px-2 sm:px-3 text-xs sm:text-sm ${
+            className={`flex items-center gap-2 w-full justify-between h-10 px-3 text-sm font-medium rounded-lg ${
               hasActiveFilters 
-                ? 'bg-sage/20 border-sage/40 text-sage hover:bg-sage/30' 
-                : ''
+                ? 'bg-[#FFF9E6] border-[#F5B82E] text-[#F5B82E]' 
+                : 'bg-white border-gray-300 text-gray-700 hover:border-gray-400'
             }`}
           >
-            <span className="truncate flex-1 text-left">{title}</span>
-            <ChevronDown className="h-3 w-3 sm:h-4 sm:w-4 opacity-50 flex-shrink-0" />
+            <div className="flex items-center gap-2">
+              {IconComponent && <IconComponent className="h-4 w-4" />}
+              <span className="truncate">{title}</span>
+            </div>
+            <ChevronDown className="h-4 w-4 opacity-50 flex-shrink-0" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent 
-          className="w-56 max-h-96 overflow-y-auto bg-white border border-border shadow-lg z-50" 
+          className="w-56 max-h-96 overflow-y-auto bg-white border border-gray-200 shadow-lg z-50 rounded-lg" 
           align="start"
           onCloseAutoFocus={(e) => e.preventDefault()}
         >

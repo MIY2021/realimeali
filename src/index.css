@@ -26,6 +26,9 @@
 
     --accent: 39 78% 75%;
     --accent-foreground: 233 10% 30%;
+    
+    --warm-yellow: 42 91% 57%;
+    --warm-yellow-foreground: 0 0% 100%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 39 42% 91%;
