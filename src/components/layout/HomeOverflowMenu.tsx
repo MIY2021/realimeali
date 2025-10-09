@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Menu, Settings, LayoutDashboard, ArrowRight } from "lucide-react";
+import { MoreHorizontal, Settings, LayoutDashboard, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -61,7 +61,7 @@ export const HomeOverflowMenu = () => {
         onClick={() => setIsOpen(true)}
         className="fixed top-4 right-4 z-50 h-10 w-10 rounded-full hover:bg-[#F5B82E]/10"
       >
-        <Menu className="h-5 w-5 text-[#2C3E50]" />
+        <MoreHorizontal className="h-5 w-5 text-[#2C3E50]" />
         <span className="sr-only">Open menu</span>
       </Button>
 
