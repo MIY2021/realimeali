@@ -297,7 +297,7 @@ export default function ShoppingList() {
               </div>
               
               <div className="flex items-center gap-2">
-                <label htmlFor="show-unchecked" className="text-sm font-medium whitespace-nowrap" style={{ color: 'hsl(var(--shopping-navy))' }}>
+                <label htmlFor="show-unchecked" className="text-xs font-medium whitespace-nowrap" style={{ color: 'hsl(var(--shopping-navy))' }}>
                   Show Only Unchecked
                 </label>
                 <Switch

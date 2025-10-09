@@ -1,5 +1,6 @@
 
 import { Button } from "@/components/ui/button";
+import { Sparkles } from "lucide-react";
 import { useState, useEffect } from "react";
 
 interface ShoppingListWeekSelectorProps {
@@ -134,20 +135,7 @@ export default function ShoppingListWeekSelector({
             </>
           ) : (
             <>
-              <svg 
-                className="h-4 w-4" 
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24" 
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round" 
-                  strokeWidth={2} 
-                  d="M4 6h16M4 12h16M4 18h16" 
-                />
-              </svg>
+              <Sparkles className="h-4 w-4" />
               <span>
                 Generate Shopping List
               </span>
