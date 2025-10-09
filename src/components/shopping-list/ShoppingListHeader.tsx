@@ -53,26 +53,26 @@ export default function ShoppingListHeader({
   };
 
   return (
-    <div className="flex flex-col gap-2 mb-6">
-      <div className="flex items-center gap-2">
-        <ShoppingCart className="h-6 w-6" style={{ color: 'hsl(var(--shopping-navy))' }} />
-        <h1 className="text-3xl font-bold flex-1" style={{ color: 'hsl(var(--shopping-navy))' }}>
+    <div className="flex flex-col gap-3 mb-4 sm:mb-6">
+      <div className="space-y-1">
+        <h1 className="text-2xl sm:text-3xl font-bold text-[#2C3E50] flex items-center gap-2">
+          <ShoppingCart className="h-6 w-6 sm:h-7 sm:w-7 text-[#F5B82E]" />
           Shopping List
+          {onInfoClick && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onInfoClick}
+              className="h-8 w-8 p-0 rounded-full ml-auto"
+            >
+              <Info className="h-4 w-4" />
+            </Button>
+          )}
         </h1>
-        {onInfoClick && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onInfoClick}
-            className="h-8 w-8 p-0 rounded-full"
-          >
-            <Info className="h-4 w-4" />
-          </Button>
-        )}
+        <p className="text-sm text-[#6B7280]">
+          {getWelcomeText()}
+        </p>
       </div>
-      <p className="text-sm" style={{ color: 'hsl(var(--shopping-grey))' }}>
-        {getWelcomeText()}
-      </p>
     </div>
   );
 }
