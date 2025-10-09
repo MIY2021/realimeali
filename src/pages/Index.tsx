@@ -18,6 +18,7 @@ import { QuickActions } from "@/components/dashboard/QuickActions";
 import { RecentActivity } from "@/components/dashboard/RecentActivity";
 import { LatestRecipesInspiration } from "@/components/dashboard/LatestRecipesInspiration";
 import { AchievementsBadges } from "@/components/dashboard/AchievementsBadges";
+import { HomeOverflowMenu } from "@/components/layout/HomeOverflowMenu";
 
 export default function Index() {
   useDocumentTitle("RealiMeali | Dashboard");
@@ -74,6 +75,9 @@ export default function Index() {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#fef7ef' }}>
+      {/* Overflow Menu - Only on Home page */}
+      <HomeOverflowMenu />
+      
       <div className="container max-w-2xl mx-auto px-4 py-4 space-y-5">
         {/* Welcome Header with Daily Tip */}
         <WelcomeHeader />
