@@ -59,9 +59,9 @@ export const HomeOverflowMenu = () => {
         variant="ghost"
         size="icon"
         onClick={() => setIsOpen(true)}
-        className="fixed top-4 right-4 z-50 h-10 w-10 rounded-full hover:bg-[#F5B82E]/10"
+        className="fixed top-6 right-6 z-50 h-10 w-10 rounded-full hover:bg-[#F5B82E]/10"
       >
-        <MoreHorizontal className="h-5 w-5 text-[#2C3E50]" />
+        <MoreHorizontal className="h-6 w-6 text-[#2C3E50]" />
         <span className="sr-only">Open menu</span>
       </Button>
 
