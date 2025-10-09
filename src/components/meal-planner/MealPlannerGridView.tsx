@@ -67,40 +67,38 @@ export const MealPlannerGridView = ({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 pt-2">
       {mealTypes.map((mealType, sectionIndex) => {
         const meals = getMealPlansForType(mealType);
         const Icon = getMealTypeIcon(mealType);
         
         return (
-          <div key={mealType} className="space-y-4">
+          <div key={mealType} className="space-y-3">
             {/* Section Header */}
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Icon className="h-5 w-5 text-sage" />
-                <h3 className="text-lg font-semibold capitalize text-navy">
+              <div className="flex items-center gap-2">
+                <h3 className="text-base font-semibold capitalize text-navy">
                   {mealType}
                 </h3>
                 {meals.length > 0 && (
-                  <span className="text-xs text-muted-foreground/70 bg-gray-50 px-1.5 py-0.5 rounded-full">
-                    {meals.length}
+                  <span className="text-sm text-grey-light">
+                    ({meals.length})
                   </span>
                 )}
               </div>
               <Button
                 size="sm"
-                variant="outline"
+                variant="ghost"
                 onClick={() => onAddMeal(mealType)}
-                className="text-terracotta border-terracotta hover:bg-terracotta/10"
+                className="h-8 w-8 rounded-full bg-butter hover:bg-butter/90 p-0"
               >
-                <Plus className="h-3 w-3 mr-1" />
-                Add
+                <Plus className="h-4 w-4 text-navy" />
               </Button>
             </div>
 
             {/* Meals Grid */}
             {meals.length === 0 ? (
-              <div className="border border-dashed border-gray-300 rounded-md p-4 text-center text-muted-foreground">
+              <div className="border border-dashed border-gray-200 rounded-lg p-4 text-center text-grey-light">
                 <span className="text-sm">No {mealType} planned yet</span>
               </div>
             ) : (

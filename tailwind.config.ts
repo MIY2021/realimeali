@@ -20,12 +20,18 @@ export default {
     },
     extend: {
       colors: {
-        // RealiMeali Brand Colors
-        navy: "#3D405B",
+        // RealiMeali Brand Colors - Updated for Meal Planner
+        navy: "#232D3F", // Dark navy for titles
+        "navy-old": "#3D405B", // Legacy navy
         terracotta: "#E07A5F", 
-        sage: "#81B29A",
-        butter: "#F2CC8F",
+        sage: "#48A97D", // Brand green
+        "sage-light": "#81B29A", // Legacy sage
+        "sage-muted": "#CFE7D9", // Muted green backgrounds
+        butter: "#FEEA97", // Warm yellow
+        "butter-old": "#F2CC8F", // Legacy butter
         cream: "#F4F1DE",
+        "grey-light": "#9DA4AF", // Light grey for subtitles
+        "red-action": "#E35B5B", // Action red
         
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

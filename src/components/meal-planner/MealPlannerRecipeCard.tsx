@@ -108,7 +108,7 @@ export function MealPlannerRecipeCard({
 
   return (
     <Card 
-      className={`overflow-hidden transition-all duration-500 ease-out hover:shadow-lg ${
+      className={`overflow-hidden rounded-xl shadow-sm hover:shadow-md transition-all duration-300 ${
         isVisible 
           ? 'translate-y-0 opacity-100 scale-100' 
           : 'translate-y-4 opacity-0 scale-95'
@@ -122,13 +122,13 @@ export function MealPlannerRecipeCard({
         <RecipeImage
           recipe={recipe}
           alt={getTitle()}
-          className={`w-full object-cover ${isMobile ? 'h-32' : 'h-48'}`}
+          className="w-full object-cover h-36 rounded-t-xl"
         />
         
         {/* Completion status badge */}
         {mealPlan.is_completed && (
           <div className="absolute top-2 left-2">
-            <Badge className="bg-green-500 text-white">
+            <Badge className="bg-sage text-white border-0 rounded-full px-2 py-0.5 text-xs font-medium shadow-sm">
               Cooked
             </Badge>
           </div>
@@ -137,19 +137,17 @@ export function MealPlannerRecipeCard({
         {/* Leftover badge */}
         {mealPlan.is_leftover && (
           <div className="absolute top-2 right-2">
-            <Badge variant="secondary">
+            <Badge className="bg-white/90 text-navy border-0 rounded-full px-2 py-0.5 text-xs font-medium shadow-sm">
               Leftover
             </Badge>
           </div>
         )}
       </div>
 
-      <CardContent className={`${isMobile ? 'p-3' : 'p-4'} space-y-2`}>
+      <CardContent className="p-3 space-y-2">
         {/* Title */}
         <h3 
-          className={`font-semibold line-clamp-1 ${isMobile ? 'text-sm leading-tight' : 'text-base'} ${
-            !recipe ? 'cursor-pointer hover:underline' : ''
-          }`}
+          className="font-bold text-sm leading-tight text-navy line-clamp-2 min-h-[2.5rem]"
           onClick={() => {
             if (!recipe && mealPlan.meal_name && mealPlan.meal_name.length > 15) {
               toast({
@@ -157,66 +155,34 @@ export function MealPlannerRecipeCard({
               });
             }
           }}
-          title={!recipe ? "Tap to see full name" : undefined}
         >
           {getTitle()}
         </h3>
 
-        {/* Description - Only show for custom meals and make it compact */}
-        {!recipe && getDescription() && (
-          <p className={`line-clamp-1 ${isMobile ? 'text-xs' : 'text-sm'} text-green-600`}>
-            {getDescription()}
-          </p>
-        )}
-
-        {/* Compact info row */}
-        <div className="flex items-center justify-between text-muted-foreground">
-          <div className="flex items-center gap-3">
-            {getDuration() && (
-              <div className="flex items-center gap-1">
-                <Clock className="h-3 w-3" />
-                <span className="text-xs">{getDuration()} min</span>
-              </div>
-            )}
-            <div className="flex items-center gap-1">
-              <Users className="h-3 w-3" />
-              <span className="text-xs">{servings}</span>
-            </div>
-          </div>
-          
-          {/* Compact servings controls */}
-          <div className="flex items-center gap-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-6 w-6 p-0 hover:bg-gray-100"
-              onClick={() => handleServingsChange(servings - 1)}
-              disabled={servings <= 1}
-            >
-              <Minus className="h-3 w-3" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-6 w-6 p-0 hover:bg-gray-100"
-              onClick={() => handleServingsChange(servings + 1)}
-            >
-              <Plus className="h-3 w-3" />
-            </Button>
-          </div>
+        {/* Subtext info */}
+        <div className="text-xs text-grey-light">
+          {!recipe ? (
+            <span className="text-sage">Custom Meal</span>
+          ) : (
+            <span>
+              {getDuration() && `${getDuration()} min`}
+              {getDuration() && servings && " • "}
+              {servings && `${servings} servings`}
+            </span>
+          )}
         </div>
 
-        {/* Compact action buttons */}
-        <div className="flex gap-1 pt-1">
+        {/* Action buttons row */}
+        <div className="flex gap-1.5 pt-1">
           {recipe && (
             <Button
               variant="ghost"
               size="sm"
               onClick={handleViewRecipe}
-              className="flex-1 h-8 text-xs"
+              className="h-7 px-2 text-grey-light hover:text-navy hover:bg-gray-50"
+              title="View recipe"
             >
-              <Eye className="h-3 w-3 mr-1" />
-              View
+              <Eye className="h-3.5 w-3.5" />
             </Button>
           )}
           
@@ -225,36 +191,38 @@ export function MealPlannerRecipeCard({
             size="sm"
             variant="ghost"
             onClick={handleToggleCompletion}
-            className={`h-8 w-8 p-0 ${
+            className={`h-7 px-2 ${
               mealPlan.is_completed 
-                ? 'text-green-600 bg-green-50 hover:bg-green-100' 
-                : 'hover:bg-gray-100'
+                ? 'text-sage hover:text-sage hover:bg-sage/10' 
+                : 'text-grey-light hover:text-navy hover:bg-gray-50'
             }`}
             title={mealPlan.is_completed ? "Mark as not cooked" : "Mark as cooked"}
           >
-            <Check className="h-3 w-3" />
+            <Check className="h-3.5 w-3.5" />
           </Button>
 
-          {recipe && onCreateLeftover && !mealPlan.is_leftover && (
+          {recipe && onCreateLeftover && mealPlan.meal_type === 'dinner' && !mealPlan.is_leftover && (
             <Button
               size="sm"
               variant="ghost"
               onClick={handleCreateLeftover}
-              className="h-8 w-8 p-0 text-sage hover:bg-sage/10"
+              className="h-7 px-2 text-grey-light hover:text-navy hover:bg-gray-50"
               title="Create leftover"
             >
-              <Plus className="h-3 w-3" />
+              <Plus className="h-3.5 w-3.5" />
             </Button>
           )}
+          
+          <div className="flex-1" />
           
           <Button
             size="sm"
             variant="ghost"
             onClick={handleRemove}
-            className="h-8 w-8 p-0 text-red-600 hover:bg-red-50"
+            className="h-7 px-2 text-red-action hover:text-red-action hover:bg-red-50"
             title="Remove meal"
           >
-            <Trash2 className="h-3 w-3" />
+            <Trash2 className="h-3.5 w-3.5" />
           </Button>
         </div>
       </CardContent>

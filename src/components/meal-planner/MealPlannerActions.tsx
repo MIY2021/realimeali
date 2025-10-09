@@ -27,34 +27,35 @@ export const MealPlannerActions = ({
   onMealLayoutChange
 }: MealPlannerActionsProps) => {
   return (
-    <div className="space-y-3 pb-4">
+    <div className="space-y-2 pb-3">
       {/* Row 1: Week selector and Generate button */}
-      <div className="flex gap-3 items-center">
+      <div className="flex gap-2 items-center">
         <div className="flex gap-2">
           {[1, 2].map((val) => (
             <Button
               key={val}
               size="sm"
               variant={currentWeek === val ? "default" : "outline"}
-              className={`relative ${currentWeek === val ? "bg-terracotta hover:bg-terracotta/90 text-white" : ""}`}
+              className={`h-9 px-4 font-semibold rounded-lg shadow-sm ${
+                currentWeek === val 
+                  ? "bg-butter text-navy hover:bg-butter/90 border-0" 
+                  : "bg-white text-navy border-gray-200 hover:bg-gray-50"
+              }`}
               onClick={() => setCurrentWeek(val as 1 | 2)}
               disabled={isLoading}
             >
               Week {val}
-              {mostRecentWeek === val && (
-                <div className="absolute -bottom-1 right-1 w-3 h-0.5 bg-orange-500 rounded-sm"></div>
-              )}
             </Button>
           ))}
         </div>
         
         <Button
           onClick={onRandomize}
-          className="bg-sage hover:bg-sage/90 text-white flex items-center justify-center flex-1"
+          className="bg-sage-muted hover:bg-sage-muted/90 text-navy flex items-center justify-center flex-1 h-9 font-semibold rounded-lg shadow-sm"
           disabled={isLoading}
         >
           <FileSpreadsheet className="mr-2 h-4 w-4" />
-          Generate Meal Plan
+          Generate
         </Button>
       </div>
 
@@ -64,8 +65,8 @@ export const MealPlannerActions = ({
           size="sm"
           variant="outline"
           onClick={onShare}
-          className="flex items-center gap-1 h-8 text-xs"
-          disabled={isLoading}
+          className="flex items-center gap-1 h-8 text-xs bg-gray-100 text-gray-600 border-0 hover:bg-gray-200 rounded-lg opacity-50"
+          disabled={true}
         >
           <Share className="h-3 w-3" />
           Share
@@ -75,8 +76,8 @@ export const MealPlannerActions = ({
           size="sm"
           variant="outline"
           onClick={onClearAll}
-          className="flex items-center gap-1 h-8 text-xs"
-          disabled={isLoading}
+          className="flex items-center gap-1 h-8 text-xs bg-gray-100 text-gray-600 border-0 hover:bg-gray-200 rounded-lg opacity-50"
+          disabled={true}
         >
           <Trash2 className="h-3 w-3" />
           Clear All
