@@ -73,32 +73,43 @@ export default function ShoppingListWeekSelector({
 
   return (
     <div className="flex flex-col gap-4 mb-6">
-      <div className="flex items-center justify-between">
-        <div className="flex gap-2">
-          {[1, 2].map((week) => (
-            <Button
-              key={week}
-              size="sm"
-              variant={selectedWeek === week ? "default" : "outline"}
-              className={`relative ${selectedWeek === week ? "bg-terracotta text-white" : ""}`}
-              onClick={() => onWeekSelect(week as 1 | 2)}
-            >
-              Week {week}
-              {mostRecentWeek === week && (
-                <div className="absolute -bottom-1 right-1 w-3 h-0.5 bg-orange-500 rounded-sm"></div>
-              )}
-            </Button>
-          ))}
-        </div>
+      <div className="flex items-center gap-2">
+        {[1, 2].map((week) => (
+          <Button
+            key={week}
+            size="sm"
+            variant="outline"
+            className={`rounded-lg font-medium border transition-all ${
+              selectedWeek === week 
+                ? 'shadow-sm' 
+                : 'bg-white'
+            }`}
+            style={
+              selectedWeek === week
+                ? { 
+                    backgroundColor: 'hsl(var(--shopping-yellow))',
+                    borderColor: 'hsl(var(--shopping-yellow))',
+                    color: 'hsl(var(--shopping-navy))'
+                  }
+                : { 
+                    borderColor: 'hsl(var(--border))',
+                    color: 'hsl(var(--shopping-navy))'
+                  }
+            }
+            onClick={() => onWeekSelect(week as 1 | 2)}
+          >
+            Week {week}
+          </Button>
+        ))}
         
         <Button
           onClick={onGenerate}
           disabled={isGenerating}
           size="sm"
-          className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all duration-300 ease-in-out shadow-lg hover:shadow-xl"
+          className="flex items-center gap-2 px-4 py-2 rounded-lg font-bold transition-all shadow-sm ml-auto"
           style={{ 
-            backgroundColor: '#81b29a',
-            color: 'white'
+            backgroundColor: 'hsl(var(--shopping-green))',
+            color: 'hsl(var(--shopping-navy))'
           }}
         >
           {isGenerating ? (
@@ -134,7 +145,7 @@ export default function ShoppingListWeekSelector({
                   strokeLinecap="round" 
                   strokeLinejoin="round" 
                   strokeWidth={2} 
-                  d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" 
+                  d="M4 6h16M4 12h16M4 18h16" 
                 />
               </svg>
               <span>

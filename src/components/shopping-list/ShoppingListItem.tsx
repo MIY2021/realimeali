@@ -162,17 +162,17 @@ export function ShoppingListItem({
           </div>
         ) : (
           <div>
-            <div className={`text-sm ${isChecked ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
+            <div className={`text-sm ${isChecked ? 'line-through' : ''}`} style={{ color: isChecked ? 'hsl(var(--shopping-grey))' : 'hsl(var(--shopping-navy))' }}>
               {quantity && recipeIds.length > 0 && !getRecipeNames(recipeIds).includes('Custom Entry') && (
-                <span className="text-sm text-muted-foreground mr-1">
+                <span className="text-sm mr-1" style={{ color: 'hsl(var(--shopping-grey))' }}>
                   {quantity}{unit && ` ${unit}`}
                 </span>
               )}
-              <span className="font-semibold">{name.charAt(0).toUpperCase() + name.slice(1).toLowerCase()}</span>
+              <span className="font-bold">{name.charAt(0).toUpperCase() + name.slice(1).toLowerCase()}</span>
             </div>
             
             {recipeIds.length > 0 && (
-              <div className="mt-0.5 text-xs text-green-600 truncate">
+              <div className="mt-0.5 text-xs truncate" style={{ color: 'hsl(var(--shopping-action-green))' }}>
                 from{' '}
                 {recipeData.map((recipe, index) => (
                   <span key={`${recipe.id}-${recipe.name}`}>
@@ -184,7 +184,7 @@ export function ShoppingListItem({
             )}
             
             {recipeIds.length === 0 && (
-              <div className="mt-0.5 text-xs text-green-600">
+              <div className="mt-0.5 text-xs" style={{ color: 'hsl(var(--shopping-action-green))' }}>
                 Manually Added Item
               </div>
             )}

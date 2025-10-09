@@ -53,28 +53,26 @@ export default function ShoppingListHeader({
   };
 
   return (
-    <div className="flex flex-col gap-4 mb-6 sm:flex-row sm:justify-between sm:items-start">
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl sm:text-3xl font-bold text-navy flex items-center gap-2">
-            <ShoppingCart className="h-6 w-6 sm:h-8 sm:w-8 text-sage" />
-            Shopping List
-          </h1>
-          {onInfoClick && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onInfoClick}
-              className="h-8 w-8 p-0 rounded-full"
-            >
-              <Info className="h-4 w-4" />
-            </Button>
-          )}
-        </div>
-        <p className="text-sm sm:text-base text-muted-foreground">
-          {getWelcomeText()}
-        </p>
+    <div className="flex flex-col gap-2 mb-6">
+      <div className="flex items-center gap-2">
+        <ShoppingCart className="h-6 w-6" style={{ color: 'hsl(var(--shopping-navy))' }} />
+        <h1 className="text-3xl font-bold flex-1" style={{ color: 'hsl(var(--shopping-navy))' }}>
+          Shopping List
+        </h1>
+        {onInfoClick && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onInfoClick}
+            className="h-8 w-8 p-0 rounded-full"
+          >
+            <Info className="h-4 w-4" />
+          </Button>
+        )}
       </div>
+      <p className="text-sm" style={{ color: 'hsl(var(--shopping-grey))' }}>
+        {getWelcomeText()}
+      </p>
     </div>
   );
 }

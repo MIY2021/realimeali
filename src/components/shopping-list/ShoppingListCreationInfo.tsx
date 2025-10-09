@@ -15,14 +15,10 @@ export default function ShoppingListCreationInfo({
   completedItems
 }: ShoppingListCreationInfoProps) {
   const { profile } = useUserProfile(createdByUserId || null);
-  
-  if (!lastGenerated) return null;
-
-  const createdByText = profile?.full_name ? ` by ${profile.full_name}` : '';
 
   return (
-    <div className="mb-3">
-      <p className="text-xs text-muted-foreground">
+    <div className="mb-4">
+      <p className="text-sm" style={{ color: 'hsl(var(--shopping-grey))' }}>
         {completedItems} of {totalItems} items completed
       </p>
     </div>

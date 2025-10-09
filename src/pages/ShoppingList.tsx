@@ -218,7 +218,7 @@ export default function ShoppingList() {
   }
 
   return (
-    <div className="container max-w-4xl py-4 px-4 sm:py-8 sm:px-6" data-scroll-content>
+    <div className="container max-w-4xl py-4 px-4 sm:py-8 sm:px-6" data-scroll-content style={{ backgroundColor: 'hsl(var(--shopping-cream))' }}>
       <ShoppingListHeader
         onShare={handleShare} 
         weekNumber={weekNumber}
@@ -260,38 +260,44 @@ export default function ShoppingList() {
             generationProgress={generationProgress}
           />
 
-          {/* Mobile control row */}
-          {isMobile && user && currentHousehold && (
+          {/* Action row - always visible */}
+          {user && currentHousehold && (
             <div className="flex items-center justify-between gap-4 mb-4">
               <div className="flex items-center gap-2">
                 <Button
                   size="sm"
-                  variant="outline"
                   onClick={() => {
                     const itemName = prompt("Enter item name:");
                     if (itemName?.trim()) {
                       addCustomItem(itemName.trim());
                     }
                   }}
-                  className="flex items-center gap-1 h-8 text-xs"
+                  className="flex items-center gap-2 h-9 px-3 rounded-lg font-medium"
+                  style={{ 
+                    backgroundColor: 'hsl(var(--muted))',
+                    color: 'hsl(var(--shopping-navy))'
+                  }}
                 >
-                  <Plus className="h-3 w-3" />
-                  Add Item
+                  <Plus className="h-4 w-4" />
+                  <span className="text-sm">Add Item</span>
                 </Button>
                 
                 <Button
                   size="sm"
-                  variant="outline"
                   onClick={handleShare}
-                  className="flex items-center gap-1 h-8 text-xs"
+                  className="flex items-center gap-2 h-9 px-3 rounded-lg font-medium"
+                  style={{ 
+                    backgroundColor: 'hsl(var(--muted))',
+                    color: 'hsl(var(--shopping-navy))'
+                  }}
                 >
-                  <Share className="h-3 w-3" />
-                  Share
+                  <Share className="h-4 w-4" />
+                  <span className="text-sm">Share</span>
                 </Button>
               </div>
               
               <div className="flex items-center gap-2">
-                <label htmlFor="show-unchecked" className="text-xs font-medium whitespace-nowrap">
+                <label htmlFor="show-unchecked" className="text-sm font-medium whitespace-nowrap" style={{ color: 'hsl(var(--shopping-navy))' }}>
                   Show Only Unchecked
                 </label>
                 <Switch

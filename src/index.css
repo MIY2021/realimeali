@@ -39,6 +39,14 @@
 
     --radius: 0.5rem;
 
+    /* Shopping List specific colors */
+    --shopping-yellow: 48 96% 79%;
+    --shopping-green: 157 43% 85%;
+    --shopping-navy: 218 30% 19%;
+    --shopping-grey: 220 8% 64%;
+    --shopping-action-green: 145 58% 38%;
+    --shopping-cream: 48 100% 98%;
+
     --sidebar-background: 0 0% 98%;
 
     --sidebar-foreground: 240 5.3% 26.1%;
