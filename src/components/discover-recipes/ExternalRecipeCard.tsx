@@ -1,23 +1,54 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Link, Clock, Users } from "lucide-react";
+import { Clock, Users, Eye, Plus, Check } from "lucide-react";
 import { EdamamRecipe } from "@/types/edamam";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { ExternalSiteDialog } from "./ExternalSiteDialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface ExternalRecipeCardProps {
   recipe: EdamamRecipe;
   mobileLayout?: string;
+  addedRecipeUrls: Set<string>;
+  onRecipeAdded: (url: string) => void;
 }
 
-export function ExternalRecipeCard({ recipe, mobileLayout = "1" }: ExternalRecipeCardProps) {
+export function ExternalRecipeCard({ recipe, mobileLayout = "1", addedRecipeUrls, onRecipeAdded }: ExternalRecipeCardProps) {
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const isAdded = addedRecipeUrls.has(recipe.url);
 
   const handleViewRecipe = () => {
-    setDialogOpen(true);
+    setShowConfirmDialog(true);
+  };
+
+  const handleOpenExternal = () => {
+    sessionStorage.setItem('pendingRecipeImport', JSON.stringify({
+      url: recipe.url,
+      title: recipe.label,
+      image: recipe.image,
+      timestamp: Date.now()
+    }));
+    window.open(recipe.url, '_blank');
+    setShowConfirmDialog(false);
+  };
+
+  const handleAddRecipe = () => {
+    navigate(`/my-recipes/new?url=${encodeURIComponent(recipe.url)}&tab=url`);
+    onRecipeAdded(recipe.url);
   };
 
   // Format cooking time
@@ -106,18 +137,54 @@ export function ExternalRecipeCard({ recipe, mobileLayout = "1" }: ExternalRecip
             Source: {recipe.source}
           </p>
 
-          {/* View recipe button */}
+          {/* Action buttons */}
+          <div className="flex gap-2">
             <Button 
-              size="sm" 
-              className="w-full bg-terracotta hover:bg-terracotta/90 text-white"
               onClick={handleViewRecipe}
-              aria-label={`View recipe on ${recipe.source}`}
+              variant="outline"
+              className="flex-1 h-9 text-sm"
             >
-              <Link className="h-4 w-4 mr-2" />
-              View Recipe
+              <Eye className="h-4 w-4 mr-1" />
+              View
             </Button>
+            
+            <Button 
+              onClick={handleAddRecipe}
+              disabled={isAdded}
+              className="flex-1 h-9 text-sm"
+              style={{ backgroundColor: isAdded ? '#E8E8E8' : '#81b29a' }}
+            >
+              {isAdded ? (
+                <>
+                  <Check className="h-4 w-4 mr-1" />
+                  In My Recipes
+                </>
+              ) : (
+                <>
+                  <Plus className="h-4 w-4 mr-1" />
+                  Add
+                </>
+              )}
+            </Button>
+          </div>
         </div>
       </CardContent>
+
+      {/* Confirmation Dialog */}
+      <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <AlertDialogContent>
+          <AlertDialogTitle>View Recipe on External Site</AlertDialogTitle>
+          <AlertDialogDescription>
+            You're about to view this recipe on an external website. When you return, we'll ask if you'd like to add it to your collection.
+          </AlertDialogDescription>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleOpenExternal} className="bg-[#48A97D]">
+              Continue to Recipe
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* External Site Dialog */}
       <ExternalSiteDialog
