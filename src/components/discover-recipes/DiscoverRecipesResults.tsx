@@ -9,9 +9,11 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 interface DiscoverRecipesResultsProps {
   filters: DiscoverRecipeFilters;
   mobileLayout: string;
+  addedRecipeUrls: Set<string>;
+  onRecipeAdded: (url: string) => void;
 }
 
-export function DiscoverRecipesResults({ filters, mobileLayout }: DiscoverRecipesResultsProps) {
+export function DiscoverRecipesResults({ filters, mobileLayout, addedRecipeUrls, onRecipeAdded }: DiscoverRecipesResultsProps) {
   const { recipes, isLoading, isLoadingMore, hasMore, error, totalFetched, loadMore } = useEdamamApiPagination(filters);
 
   if (isLoading) {
@@ -65,6 +67,8 @@ export function DiscoverRecipesResults({ filters, mobileLayout }: DiscoverRecipe
             key={`${hit.recipe.uri}-${index}`} 
             recipe={hit.recipe} 
             mobileLayout={mobileLayout}
+            addedRecipeUrls={addedRecipeUrls}
+            onRecipeAdded={onRecipeAdded}
           />
         ))}
       </div>

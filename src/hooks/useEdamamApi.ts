@@ -3,12 +3,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { DiscoverRecipeFilters, EdamamHit } from "@/types/edamam";
 import { useToast } from "@/hooks/use-toast";
 
-export function useEdamamApi(filters: DiscoverRecipeFilters) {
+export function useEdamamApi(filters: DiscoverRecipeFilters | null) {
   const { toast } = useToast();
 
   return useQuery({
     queryKey: ['edamam-recipes', filters],
     queryFn: async (): Promise<EdamamHit[]> => {
+      if (!filters) return [];
       try {
         const { data, error } = await supabase.functions.invoke('discover-recipes', {
           body: { filters }
@@ -30,15 +31,15 @@ export function useEdamamApi(filters: DiscoverRecipeFilters) {
         throw error;
       }
     },
-    enabled: !!(
+    enabled: !!filters && !!(
       filters.keyword || 
       filters.mealType || 
       filters.cuisineType || 
       filters.diet?.length || 
       filters.time
     ),
-    staleTime: 1000 * 60 * 60, // 1 hour
-    gcTime: 1000 * 60 * 60 * 24, // 24 hours
+    staleTime: 1000 * 60 * 10, // 10 minutes
+    gcTime: 1000 * 60 * 15, // 15 minutes
     retry: 1,
   });
 }

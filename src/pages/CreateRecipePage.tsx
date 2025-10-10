@@ -8,6 +8,10 @@ export default function CreateRecipePage() {
   useDocumentTitle("Add Recipe | RealiMeali");
   const [searchParams] = useSearchParams();
   
+  // Extract URL and auto flag
+  const urlParam = searchParams.get('url');
+  const autoParam = searchParams.get('auto');
+  
   // Extract recipe data from URL parameters (from AI chat)
   const aiRecipeData = {
     title: searchParams.get('title') || '',
@@ -19,7 +23,6 @@ export default function CreateRecipePage() {
     description: searchParams.get('description') || '',
     meal_types: searchParams.get('meal_types') ? JSON.parse(searchParams.get('meal_types')!) : [],
     cuisine_region: searchParams.get('cuisine_region') || '',
-    // complexity_level removed
     diet_lifestyle: searchParams.get('diet_lifestyle') ? JSON.parse(searchParams.get('diet_lifestyle')!) : [],
     equipment: searchParams.get('equipment') ? JSON.parse(searchParams.get('equipment')!) : [],
     import_method: searchParams.get('import_method') || 'manual'
@@ -36,7 +39,7 @@ export default function CreateRecipePage() {
       <CreateRecipeContainer 
         editingRecipe={hasAiData ? aiRecipeData : undefined}
         isEditMode={false}
-        defaultTab={hasAiData ? targetTab : undefined}
+        defaultTab={hasAiData || urlParam ? targetTab : undefined}
       />
     </div>
   );
