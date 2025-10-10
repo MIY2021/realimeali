@@ -63,24 +63,28 @@ export const MealPlannerActions = ({
       <div className="flex gap-2 items-center">
         <Button
           size="sm"
-          variant="outline"
           onClick={onShare}
-          className="flex items-center gap-1 h-8 text-xs bg-gray-100 text-gray-600 border-0 hover:bg-gray-200 rounded-lg opacity-50"
-          disabled={true}
+          className="flex items-center gap-2 h-9 px-3 rounded-lg font-medium"
+          style={{ 
+            backgroundColor: 'hsl(var(--muted))',
+            color: '#232D3F'
+          }}
         >
-          <Share className="h-3 w-3" />
-          Share
+          <Share className="h-4 w-4" />
+          <span className="text-sm">Share</span>
         </Button>
         
         <Button
           size="sm"
-          variant="outline"
           onClick={onClearAll}
-          className="flex items-center gap-1 h-8 text-xs bg-gray-100 text-gray-600 border-0 hover:bg-gray-200 rounded-lg opacity-50"
-          disabled={true}
+          className="flex items-center gap-2 h-9 px-3 rounded-lg font-medium"
+          style={{ 
+            backgroundColor: 'hsl(var(--muted))',
+            color: '#232D3F'
+          }}
         >
-          <Trash2 className="h-3 w-3" />
-          Clear All
+          <Trash2 className="h-4 w-4" />
+          <span className="text-sm">Clear All</span>
         </Button>
 
         <div className="flex-1" />
