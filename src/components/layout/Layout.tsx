@@ -1,6 +1,5 @@
 
 import { ReactNode } from "react";
-import CustomFooter from "./CustomFooter";
 import BottomNavigation from "./BottomNavigation";
 import { useSimpleScrollMemory } from "@/hooks/useSimpleScrollMemory";
 import { RealiChef } from "@/components/realichef/RealiChef";
@@ -18,7 +17,6 @@ const Layout = ({ children }: LayoutProps) => {
       <main className="flex-1 w-full pb-16 md:pb-0" data-page-content>
         {children}
       </main>
-      <CustomFooter />
       <BottomNavigation />
       <RealiChef />
     </div>
