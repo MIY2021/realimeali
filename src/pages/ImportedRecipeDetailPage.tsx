@@ -37,6 +37,11 @@ export default function ImportedRecipeDetailPage() {
 
   useDocumentTitle(recipe ? `${recipe.title} | Discover Recipes` : 'Discover Recipes');
 
+  // Scroll to top when recipe loads or changes
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [id]);
+
   // Convert ImportedRecipe to Recipe format for compatibility with existing components
   const convertToRecipe = (importedRecipe: ImportedRecipe): Recipe => ({
     id: importedRecipe.id,

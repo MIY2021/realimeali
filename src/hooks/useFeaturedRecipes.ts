@@ -82,16 +82,16 @@ export function useFeaturedRecipes(options: UseFeaturedRecipesOptions = {}) {
     }
   }, [data, page]);
 
-  // Reset when filters change
+  // Reset when filters change - use stable serialization to avoid unnecessary resets
   useEffect(() => {
     setPage(0);
     setAllRecipes([]);
   }, [
-    filters.keyword,
-    filters.mealTypes?.join(','),
-    filters.cuisineTypes?.join(','),
-    filters.dietLifestyle?.join(','),
-    filters.cookingDurations?.join(','),
+    filters.keyword || '',
+    JSON.stringify(filters.mealTypes || []),
+    JSON.stringify(filters.cuisineTypes || []),
+    JSON.stringify(filters.dietLifestyle || []),
+    JSON.stringify(filters.cookingDurations || []),
   ]);
 
   const loadMore = useCallback(() => {
