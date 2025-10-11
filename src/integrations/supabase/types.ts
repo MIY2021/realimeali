@@ -1099,6 +1099,7 @@ export type Database = {
         | "desserts"
         | "drinks"
         | "appetizers"
+        | "sauce"
       recipe_category:
         | "Bulk"
         | "Easy"
@@ -1304,6 +1305,7 @@ export const Constants = {
         "desserts",
         "drinks",
         "appetizers",
+        "sauce",
       ],
       recipe_category: [
         "Bulk",

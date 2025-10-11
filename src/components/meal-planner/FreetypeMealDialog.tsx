@@ -19,7 +19,8 @@ const MEAL_TYPE_LABELS: Record<MealType, string> = {
   sides: "Sides",
   desserts: "Desserts",
   drinks: "Drinks",
-  appetizers: "Appetizers / Starters"
+  appetizers: "Appetizers / Starters",
+  sauce: "Sauce"
 };
 
 export function FreetypeMealDialog({

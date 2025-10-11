@@ -9,6 +9,7 @@ export const MEAL_TYPE_OPTIONS = [
   { value: "snacks" as MealType, label: "Snacks", icon: "🍿" },
   { value: "desserts" as MealType, label: "Desserts", icon: "🍰" },
   { value: "drinks" as MealType, label: "Drinks", icon: "🥤" },
+  { value: "sauce" as MealType, label: "Sauce", icon: "🍯" },
 ];
 
 export const CUISINE_REGION_OPTIONS = [

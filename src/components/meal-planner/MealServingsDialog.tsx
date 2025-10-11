@@ -14,7 +14,8 @@ const MEAL_TYPE_LABELS: Record<MealType, string> = {
   sides: "Sides",
   desserts: "Desserts",
   drinks: "Drinks",
-  appetizers: "Appetizers / Starters"
+  appetizers: "Appetizers / Starters",
+  sauce: "Sauce"
 };
 
 const DEFAULT_SERVINGS: Record<MealType, number> = {
@@ -25,7 +26,8 @@ const DEFAULT_SERVINGS: Record<MealType, number> = {
   sides: 4,
   desserts: 4,
   drinks: 4,
-  appetizers: 2
+  appetizers: 2,
+  sauce: 4
 };
 
 interface MealServingsDialogProps {

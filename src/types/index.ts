@@ -138,7 +138,7 @@ export interface HouseholdMealPlan {
 }
 
 // Updated to include sides, desserts, drinks, appetizers in meal plans
-export type MealType = "breakfast" | "lunch" | "dinner" | "snacks" | "sides" | "desserts" | "drinks" | "appetizers";
+export type MealType = "breakfast" | "lunch" | "dinner" | "snacks" | "sides" | "desserts" | "drinks" | "appetizers" | "sauce";
 
 // Updated to match database cuisine_region enum exactly (with greek and spanish added)
 export type CuisineRegion = "british" | "american" | "italian" | "french" | "mexican" | "indian" | "chinese" | "japanese" | "thai" | "mediterranean" | "middle_eastern" | "african" | "korean" | "caribbean" | "nordic" | "eastern_european" | "greek" | "spanish";

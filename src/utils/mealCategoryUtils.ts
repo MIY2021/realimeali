@@ -13,7 +13,8 @@ export const getAllowedCategoriesForMealType = (mealType: MealType): string[] =>
     sides: ["sides", "accompaniment"],
     desserts: ["desserts", "sweet"],
     drinks: ["drinks", "beverages"],
-    appetizers: ["appetizers", "starters", "light"]
+    appetizers: ["appetizers", "starters", "light"],
+    sauce: ["sauce", "condiment", "accompaniment"]
   };
 
   return mealTypeMap[mealType] || [];
