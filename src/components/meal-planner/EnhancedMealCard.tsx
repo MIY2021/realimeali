@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Trash2, Plus, Minus, GripVertical, UtensilsCrossed, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -52,6 +52,16 @@ export function EnhancedMealCard({
     : initialServings;
 
   const [servings, setServings] = useState(adjustedInitialServings);
+
+  // Update servings when leftovers change
+  useEffect(() => {
+    const recalculatedInitial = mealPlan.planned_servings || recipe?.servings || 1;
+    const recalculatedAdjusted = mealPlan.meal_type === 'dinner' && leftoverServings > 0
+      ? recalculatedInitial - leftoverServings
+      : recalculatedInitial;
+    
+    setServings(recalculatedAdjusted);
+  }, [leftoverServings, mealPlan.planned_servings, mealPlan.meal_type, recipe?.servings]);
 
   // Handle freetyped meals (no recipe)
   if (mealPlan.is_freetyped && !recipe) {
