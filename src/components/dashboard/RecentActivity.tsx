@@ -1,6 +1,6 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { format, formatDistanceToNow } from "date-fns";
+import { format } from "date-fns";
 import { 
   UtensilsCrossed,
   Edit,
@@ -203,7 +203,7 @@ export const RecentActivity = ({ isLoading: externalLoading }: RecentActivityPro
                     </span>
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    {formatDistanceToNow(new Date(activity.timestamp), { addSuffix: true })}
+                    {format(new Date(activity.timestamp), 'd MMMM')}
                   </p>
                 </div>
               </div>
