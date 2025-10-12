@@ -71,18 +71,19 @@ export const MealPlannerContent = ({
       {mealLayout === 'list' ? (
         <div className="space-y-3">
           {mealTypes.map((mealType, index) => (
-            <MealListSection
-              key={mealType}
-              mealType={mealType}
-              mealPlans={getMealPlansForType(mealType)}
-              getRecipeById={getRecipeById}
-              onAddMeal={onAddMeal}
-              onAddCustomMeal={onAddCustomMeal}
-              onRemoveMeal={onRemoveMeal}
-              onCreateLeftover={onCreateLeftover}
-              onReorderMeals={onReorderMeals}
-              sectionIndex={index}
-            />
+          <MealListSection
+            key={mealType}
+            mealType={mealType}
+            mealPlans={getMealPlansForType(mealType)}
+            allMealPlans={currentMealPlans}
+            getRecipeById={getRecipeById}
+            onAddMeal={onAddMeal}
+            onAddCustomMeal={onAddCustomMeal}
+            onRemoveMeal={onRemoveMeal}
+            onCreateLeftover={onCreateLeftover}
+            onReorderMeals={onReorderMeals}
+            sectionIndex={index}
+          />
           ))}
         </div>
       ) : (
