@@ -34,9 +34,24 @@ export function EnhancedMealCard({
   animationDelay = 0,
   allMealPlans = [],
 }: EnhancedMealCardProps) {
-  const [servings, setServings] = useState(mealPlan.planned_servings || recipe?.servings || 1);
   const { updateMealPlanCompletion, updateMealPlanServings } = useMealPlan();
   const { toast } = useToast();
+
+  // Calculate existing leftovers FIRST (before state initialization)
+  const existingLeftover = allMealPlans.find(plan => 
+    plan.parent_meal_plan_id === mealPlan.id && 
+    plan.is_leftover && 
+    plan.meal_type === 'lunch'
+  );
+  const leftoverServings = existingLeftover?.planned_servings || existingLeftover?.leftover_servings || 0;
+
+  // Initialize servings with leftover adjustment for dinner meals
+  const initialServings = mealPlan.planned_servings || recipe?.servings || 1;
+  const adjustedInitialServings = mealPlan.meal_type === 'dinner' && leftoverServings > 0
+    ? initialServings - leftoverServings
+    : initialServings;
+
+  const [servings, setServings] = useState(adjustedInitialServings);
 
   // Handle freetyped meals (no recipe)
   if (mealPlan.is_freetyped && !recipe) {
@@ -217,7 +232,11 @@ export function EnhancedMealCard({
     const newServings = Math.max(1, servings - 1);
     setServings(newServings);
     try {
-      await updateMealPlanServings(mealPlan.id, newServings);
+      // For dinner meals with leftovers, update database with full amount
+      const dbServings = mealPlan.meal_type === 'dinner' && leftoverServings > 0
+        ? newServings + leftoverServings
+        : newServings;
+      await updateMealPlanServings(mealPlan.id, dbServings);
     } catch (error) {
       console.error('Error updating servings:', error);
       setServings(servings); // Revert on error
@@ -228,7 +247,11 @@ export function EnhancedMealCard({
     const newServings = servings + 1;
     setServings(newServings);
     try {
-      await updateMealPlanServings(mealPlan.id, newServings);
+      // For dinner meals with leftovers, update database with full amount
+      const dbServings = mealPlan.meal_type === 'dinner' && leftoverServings > 0
+        ? newServings + leftoverServings
+        : newServings;
+      await updateMealPlanServings(mealPlan.id, dbServings);
     } catch (error) {
       console.error('Error updating servings:', error);
       setServings(servings); // Revert on error
@@ -238,18 +261,8 @@ export function EnhancedMealCard({
   const isLeftover = mealPlan.is_leftover;
   const isLunchLeftover = isLeftover && mealPlan.meal_type === 'lunch';
   
-  // Check if this dinner meal already has leftovers created
-  const existingLeftover = allMealPlans.find(plan => 
-    plan.parent_meal_plan_id === mealPlan.id && 
-    plan.is_leftover && 
-    plan.meal_type === 'lunch'
-  );
-  const leftoverServings = existingLeftover?.planned_servings || existingLeftover?.leftover_servings;
-
-  // Calculate actual servings to display for dinner meals
-  const displayServings = mealPlan.meal_type === 'dinner' && existingLeftover && leftoverServings
-    ? servings - leftoverServings
-    : servings;
+  // Servings already adjusted for display (no additional calculation needed)
+  const displayServings = servings;
 
   // Enhanced debugging for leftover button
   console.log('EnhancedMealCard - Leftover button debug:', {
