@@ -248,8 +248,8 @@ export function EnhancedMealCard({
 
   // Calculate actual servings to display for dinner meals
   const displayServings = mealPlan.meal_type === 'dinner' && existingLeftover && leftoverServings
-    ? (mealPlan.planned_servings || recipe.servings) - leftoverServings
-    : (mealPlan.planned_servings || recipe.servings);
+    ? servings - leftoverServings
+    : servings;
 
   // Enhanced debugging for leftover button
   console.log('EnhancedMealCard - Leftover button debug:', {
