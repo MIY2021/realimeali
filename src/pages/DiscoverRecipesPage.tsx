@@ -8,7 +8,7 @@ export default function DiscoverRecipesPage() {
   const isMobile = useIsMobile();
 
   return (
-    <div className={`container max-w-7xl py-4 px-4 sm:py-8 sm:px-6 ${isMobile ? 'bg-[#FAFAFA] min-h-screen' : ''}`} data-scroll-content>
+    <div className={`container max-w-7xl py-4 px-4 sm:py-8 sm:px-6 ${isMobile ? 'min-h-screen' : ''}`} data-scroll-content>
       <div className="flex flex-col gap-3 mb-4 sm:mb-6">
         <div className="space-y-1">
           <h1 className="text-2xl sm:text-3xl font-bold text-[#2C3E50] flex items-center gap-2">

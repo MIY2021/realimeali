@@ -74,7 +74,7 @@ export default function Index() {
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#fef7ef' }}>
+    <div className="min-h-screen">
       {/* Overflow Menu - Only on Home page */}
       <HomeOverflowMenu />
       

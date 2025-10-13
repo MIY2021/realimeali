@@ -218,7 +218,7 @@ export default function ShoppingList() {
   }
 
   return (
-    <div className="container max-w-4xl py-4 px-4 sm:py-8 sm:px-6" data-scroll-content style={{ backgroundColor: 'hsl(var(--shopping-cream))' }}>
+    <div className="container max-w-4xl py-4 px-4 sm:py-8 sm:px-6" data-scroll-content>
       <ShoppingListHeader
         onShare={handleShare} 
         weekNumber={weekNumber}

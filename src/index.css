@@ -6,7 +6,7 @@
 
 @layer base {
   :root {
-    --background: 39 42% 91%;
+    --background: 37 78% 97%; /* Warm salmon #fef7ef */
     --foreground: 233 10% 30%;
 
     --card: 0 0% 100%;

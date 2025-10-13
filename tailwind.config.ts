@@ -30,6 +30,7 @@ export default {
         butter: "#FEEA97", // Warm yellow
         "butter-old": "#F2CC8F", // Legacy butter
         cream: "#F4F1DE",
+        "warm-salmon": "#fef7ef", // Universal app background
         "grey-light": "#9DA4AF", // Light grey for subtitles
         "red-action": "#E35B5B", // Action red
         
