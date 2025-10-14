@@ -49,7 +49,7 @@ export const RecipeHeader = ({
         />
         
         {/* Overlay gradient for better text contrast */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/40" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/40 pointer-events-none" />
         
         {/* Info icon - top left */}
         {onInfoClick && (
@@ -57,21 +57,21 @@ export const RecipeHeader = ({
             variant="ghost"
             size="icon"
             onClick={onInfoClick}
-            className="absolute top-4 left-4 h-10 w-10 rounded-full bg-white/80 hover:bg-white shadow-md backdrop-blur-sm"
+            className="absolute top-4 left-4 h-10 w-10 rounded-full bg-white/80 hover:bg-white shadow-md backdrop-blur-sm pointer-events-auto"
           >
             <Info className="h-4 w-4 text-gray-800" />
           </Button>
         )}
 
         {/* Action icons - top right */}
-        <div className="absolute top-4 right-4 flex gap-2">
+        <div className="absolute top-4 right-4 flex gap-2 pointer-events-none">
           {isOwner && (
             <>
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={onEdit}
-                className="h-12 w-12 rounded-full bg-white/80 hover:bg-white shadow-md backdrop-blur-sm"
+                className="h-12 w-12 rounded-full bg-white/80 hover:bg-white shadow-md backdrop-blur-sm pointer-events-auto"
               >
                 <Pencil className="h-5 w-5 text-gray-800" />
               </Button>
@@ -79,7 +79,7 @@ export const RecipeHeader = ({
                 variant="ghost"
                 size="icon"
                 onClick={onDelete}
-                className="h-12 w-12 rounded-full bg-white/80 hover:bg-white shadow-md backdrop-blur-sm"
+                className="h-12 w-12 rounded-full bg-white/80 hover:bg-white shadow-md backdrop-blur-sm pointer-events-auto"
               >
                 <Trash2 className="h-5 w-5 text-red-600" />
               </Button>
@@ -89,7 +89,7 @@ export const RecipeHeader = ({
             variant="ghost"
             size="icon"
             onClick={onToggleFavorite}
-            className="h-12 w-12 rounded-full bg-white/80 hover:bg-white shadow-md backdrop-blur-sm"
+            className="h-12 w-12 rounded-full bg-white/80 hover:bg-white shadow-md backdrop-blur-sm pointer-events-auto"
           >
             <Heart className={`h-5 w-5 ${isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-800'}`} />
           </Button>
@@ -98,17 +98,17 @@ export const RecipeHeader = ({
               variant="ghost"
               size="icon"
               onClick={onAddToMealPlan}
-              className="h-12 w-12 rounded-full bg-sage/90 hover:bg-sage shadow-md backdrop-blur-sm"
+              className="h-12 w-12 rounded-full bg-gray-200/90 hover:bg-gray-300 shadow-md backdrop-blur-sm pointer-events-auto"
               title="Add to Meal Plan"
             >
-              <Plus className="h-6 w-6 text-white" />
+              <Plus className="h-6 w-6 text-green-600" />
             </Button>
           )}
         </div>
       </div>
       
       {/* Title section - just below image */}
-      <div className="bg-background px-4 sm:px-6 pt-6 pb-2 rounded-t-3xl -mt-6 relative z-10">
+      <div className="bg-background px-6 sm:px-8 pt-6 pb-2 rounded-t-3xl -mt-6 relative z-10">
         <div className="flex items-start justify-between gap-4">
           <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 flex-1">
             {recipe.title}
