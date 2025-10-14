@@ -29,7 +29,7 @@ export const RecipeHeader = ({
   const navigate = useNavigate();
 
   return (
-    <div className="relative mb-6 -mx-4 sm:-mx-6">
+    <div className="relative -mx-4 sm:-mx-6 -mt-6">
       {/* Hero Image */}
       <div className="relative h-72 sm:h-96 w-full">
         <RecipeImage
@@ -85,7 +85,7 @@ export const RecipeHeader = ({
       </div>
       
       {/* Title section - just below image */}
-      <div className="bg-background px-4 sm:px-6 pt-6 pb-2">
+      <div className="bg-background px-4 sm:px-6 pt-6 pb-2 rounded-t-3xl -mt-6 relative z-10">
         <div className="flex items-start justify-between gap-4">
           <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 flex-1">
             {recipe.title}
