@@ -4,16 +4,13 @@ import { RecipeHeader } from "./RecipeHeader";
 import { RecipeMetaInfo } from "./RecipeMetaInfo";
 import { RecipeTabContent } from "./RecipeTabContent";
 import { RecipeImageEditor } from "./RecipeImageEditor";
-import { RecipeNotesSection } from "./RecipeNotesSection";
 import { RecipeClassificationSummary } from "./RecipeClassificationSummary";
 import { RecipeInfoDialog } from "./RecipeInfoDialog";
-import { DrinkPairingCard } from "./DrinkPairingCard";
-import { AskRealiChefButton } from "./AskRealiChefButton";
+import { ChefsInsightCard } from "./ChefsInsightCard";
 
-import { Clock, Info, Plus } from "lucide-react";
+import { Clock, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RecipeScalingService } from "@/utils/recipeScaling";
-import { Card, CardContent } from "@/components/ui/card";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { toast } from "sonner";
 
@@ -177,35 +174,8 @@ export const RecipeDetail = ({
         </Button>
       </div>
 
-      {/* Top Tip - only show if it exists */}
-      {recipe.top_tip && recipe.top_tip !== "Enjoy cooking this delicious recipe!" && (
-        <Card className="mb-6 bg-sage/10 border-sage/20 shadow-sm">
-          <CardContent className="p-5">
-            <div className="flex gap-3">
-              <div className="flex-shrink-0 mt-0.5">
-                <div className="h-8 w-8 rounded-full bg-sage/20 flex items-center justify-center">
-                  <span className="text-lg">💡</span>
-                </div>
-              </div>
-              <div className="flex-1">
-                <h3 className="font-semibold text-sage mb-1">Top Tip</h3>
-                <p className="text-sm text-gray-700">{recipe.top_tip}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Drink Pairing Card */}
-      <DrinkPairingCard recipeId={recipe.id} />
-
-      {/* Recipe Notes */}
-      <div className="mb-6">
-        <RecipeNotesSection recipeId={recipe.id} />
-      </div>
-
-      {/* Ask RealiChef Button - Fixed Inline */}
-      <AskRealiChefButton />
+      {/* Chef's Insight Module */}
+      <ChefsInsightCard recipe={recipe} recipeId={recipe.id} />
 
       {/* Servings Controller */}
       <div className="mb-4 px-2">
