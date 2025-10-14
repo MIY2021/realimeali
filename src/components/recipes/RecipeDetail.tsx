@@ -127,7 +127,15 @@ export const RecipeDetail = ({
         onEdit={() => onEdit?.(recipe)}
         onDelete={onDelete}
         onInfoClick={() => setShowRecipeInfo(true)}
+        onAddToMealPlan={handleAddToMealPlan}
       />
+
+      {/* Description */}
+      {recipe.description && (
+        <div className="mb-4 px-2">
+          <p className="text-gray-600 leading-relaxed">{recipe.description}</p>
+        </div>
+      )}
 
       {/* Time Info Section */}
       {(recipe.prep_time || recipe.cook_time) && (
@@ -152,28 +160,11 @@ export const RecipeDetail = ({
       )}
 
 
-      {recipe.description && (
-        <div className="mb-4 px-2">
-          <p className="text-gray-600 leading-relaxed">{recipe.description}</p>
-        </div>
-      )}
-
-
       {/* Recipe Classification Summary (Category badges) */}
       <div className="mb-6">
         <RecipeClassificationSummary recipe={recipe} />
       </div>
 
-      {/* Add to Meal Plan Button - Prominent Position */}
-      <div className="mb-6 px-2">
-        <Button 
-          onClick={handleAddToMealPlan}
-          className="bg-terracotta hover:bg-terracotta/90 text-white w-full py-6 rounded-lg shadow-sm"
-        >
-          <Plus className="h-5 w-5 mr-2" />
-          Add to Meal Plan
-        </Button>
-      </div>
 
       {/* Chef's Insight Module */}
       <ChefsInsightCard recipe={recipe} recipeId={recipe.id} />

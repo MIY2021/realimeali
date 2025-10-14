@@ -1,7 +1,7 @@
 import { Recipe } from "@/types";
 import { RecipeImage } from "@/components/ui/recipe-image";
 import { Button } from "@/components/ui/button";
-import { Heart, Pencil, Trash2, Info } from "lucide-react";
+import { Heart, Pencil, Trash2, Info, Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface RecipeHeaderProps {
@@ -14,6 +14,7 @@ interface RecipeHeaderProps {
   onEdit?: () => void;
   onDelete?: () => void;
   onInfoClick?: () => void;
+  onAddToMealPlan?: () => void;
 }
 
 export const RecipeHeader = ({
@@ -25,7 +26,8 @@ export const RecipeHeader = ({
   onToggleCooked,
   onEdit,
   onDelete,
-  onInfoClick
+  onInfoClick,
+  onAddToMealPlan
 }: RecipeHeaderProps) => {
   return (
     <div className="relative -mx-4 sm:-mx-6 -mt-6">
@@ -54,6 +56,17 @@ export const RecipeHeader = ({
 
         {/* Action icons - top right */}
         <div className="absolute top-4 right-4 flex gap-2">
+          {onAddToMealPlan && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onAddToMealPlan}
+              className="h-12 w-12 rounded-full bg-sage/90 hover:bg-sage shadow-md backdrop-blur-sm"
+              title="Add to Meal Plan"
+            >
+              <Plus className="h-6 w-6 text-white" />
+            </Button>
+          )}
           {isOwner && (
             <>
               <Button
