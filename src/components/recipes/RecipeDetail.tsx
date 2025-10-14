@@ -1,21 +1,21 @@
-
 import { useState, useEffect } from "react";
 import { Recipe } from "@/types";
-import { RecipeHeroSection } from "./RecipeHeroSection";
-import { RecipeActionButtons } from "./RecipeActionButtons";
+import { RecipeHeader } from "./RecipeHeader";
 import { RecipeMetaInfo } from "./RecipeMetaInfo";
 import { RecipeTabContent } from "./RecipeTabContent";
-import { RecipeFooter } from "./RecipeFooter";
 import { RecipeImageEditor } from "./RecipeImageEditor";
 import { RecipeNotesSection } from "./RecipeNotesSection";
 import { RecipeClassificationSummary } from "./RecipeClassificationSummary";
-import { RecipeSourceInfo } from "./RecipeSourceInfo";
 import { RecipeInfoDialog } from "./RecipeInfoDialog";
+import { DrinkPairingCard } from "./DrinkPairingCard";
+import { AskRealiChefButton } from "./AskRealiChefButton";
 
-import { Lightbulb, Users, RotateCcw, Clock, Info } from "lucide-react";
-import { ServingsSelector } from "@/components/meal-planner/ServingsSelector";
+import { Clock, Info, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RecipeScalingService } from "@/utils/recipeScaling";
+import { Card, CardContent } from "@/components/ui/card";
+import { useRecipes } from "@/contexts/RecipesContext";
+import { toast } from "sonner";
 
 interface RecipeDetailProps {
   recipe: Recipe;
@@ -38,6 +38,7 @@ export const RecipeDetail = ({
   const [scaledIngredients, setScaledIngredients] = useState<string[]>(recipe.ingredients);
   const [showImageEditor, setShowImageEditor] = useState(false);
   const [showRecipeInfo, setShowRecipeInfo] = useState(false);
+  const { toggleFavorite, toggleCookingStatus } = useRecipes();
 
   // Load saved servings from localStorage on mount
   useEffect(() => {
@@ -82,108 +83,148 @@ export const RecipeDetail = ({
     setShowImageEditor(false);
   };
 
+  const handleToggleFavorite = async () => {
+    try {
+      const newFavoriteStatus = !recipe.is_favorite;
+      await toggleFavorite(recipe.id, newFavoriteStatus);
+      
+      if (newFavoriteStatus) {
+        toast.success("Added to favorites", {
+          description: `${recipe.title} has been added to your favorites`
+        });
+      } else {
+        toast.success("Removed from favorites", {
+          description: `${recipe.title} has been removed from your favorites`
+        });
+      }
+    } catch (error) {
+      console.error('Failed to toggle favorite:', error);
+      toast.error("Failed to update favorite status");
+    }
+  };
+
+  const handleToggleCooked = async () => {
+    try {
+      await toggleCookingStatus(recipe.id);
+    } catch (error) {
+      console.error('Failed to toggle cooked status:', error);
+      toast.error("Failed to update cooked status");
+    }
+  };
+
   const isScaled = currentServings !== recipe.servings;
+
+  const totalTime = (recipe.prep_time || 0) + (recipe.cook_time || 0);
 
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <RecipeHeroSection recipe={recipe} />
-      
-      <RecipeActionButtons
+    <div className="w-full max-w-4xl mx-auto px-0">
+      {/* Hero Header with Image and Actions */}
+      <RecipeHeader
         recipe={recipe}
-        onEdit={onEdit}
-        onDelete={onDelete}
         isOwner={isOwner}
-        onAddToMealPlan={handleAddToMealPlan}
+        isFavorite={recipe.is_favorite}
+        isCooked={recipe.has_cooked}
+        onToggleFavorite={handleToggleFavorite}
+        onToggleCooked={handleToggleCooked}
+        onEdit={() => onEdit?.(recipe)}
+        onDelete={onDelete}
       />
 
-      {/* Cooking Time and Recipe Info */}
-      <div className="mb-6 px-2">
+      {/* Description */}
+      {recipe.description && (
+        <div className="mb-4 px-2">
+          <p className="text-gray-600 leading-relaxed">{recipe.description}</p>
+        </div>
+      )}
+
+      {/* Time Info Section */}
+      <div className="mb-4 px-2">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4 text-terracotta" />
-              <span className="text-navy font-medium text-sm">Prep: <span className="font-normal">{recipe.prep_time} min</span></span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4 text-terracotta" />
-              <span className="text-navy font-medium text-sm">Cook: <span className="font-normal">{recipe.cook_time} min</span></span>
-            </div>
+          <div className="flex items-center gap-6">
+            {(recipe.prep_time || recipe.cook_time) && (
+              <div className="flex items-center gap-2">
+                <Clock className="h-4 w-4 text-gray-500" />
+                <span className="text-sm text-gray-600">
+                  {totalTime} mins total
+                </span>
+              </div>
+            )}
           </div>
           <Button
             variant="ghost"
-            size="sm"
+            size="icon"
             onClick={() => setShowRecipeInfo(true)}
-            className="h-8 w-8 p-0 rounded-full"
+            className="h-8 w-8"
           >
             <Info className="h-4 w-4" />
           </Button>
         </div>
       </div>
 
-      {/* Description */}
-      {recipe.description && (
-        <p className="text-gray-600 text-lg mb-6 px-2">{recipe.description}</p>
-      )}
+      {/* Recipe Classification Summary (Category badges) */}
+      <div className="mb-6">
+        <RecipeClassificationSummary recipe={recipe} />
+      </div>
 
-      {/* Recipe Classification */}
-      <RecipeClassificationSummary recipe={recipe} />
+      {/* Add to Meal Plan Button - Prominent Position */}
+      <div className="mb-6 px-2">
+        <Button 
+          onClick={handleAddToMealPlan}
+          className="bg-terracotta hover:bg-terracotta/90 text-white w-full py-6 rounded-lg shadow-sm"
+        >
+          <Plus className="h-5 w-5 mr-2" />
+          Add to Meal Plan
+        </Button>
+      </div>
 
-      {/* Top Tip */}
+      {/* Top Tip - only show if it exists */}
       {recipe.top_tip && recipe.top_tip !== "Enjoy cooking this delicious recipe!" && (
-        <div className="mb-6">
-          <div className="bg-sage/10 border border-sage/20 rounded-lg p-4">
-            <div className="flex items-start gap-3">
+        <Card className="mb-6 bg-sage/10 border-sage/20 shadow-sm">
+          <CardContent className="p-5">
+            <div className="flex gap-3">
               <div className="flex-shrink-0 mt-0.5">
-                <Lightbulb className="h-5 w-5 text-sage" />
+                <div className="h-8 w-8 rounded-full bg-sage/20 flex items-center justify-center">
+                  <span className="text-lg">💡</span>
+                </div>
               </div>
               <div className="flex-1">
-                <h3 className="font-semibold text-sage-800 mb-2">Top Tip</h3>
-                <p className="text-gray-700 leading-relaxed sm:ml-0 -ml-8">
-                  {recipe.top_tip}
-                </p>
+                <h3 className="font-semibold text-sage mb-1">Top Tip</h3>
+                <p className="text-sm text-gray-700">{recipe.top_tip}</p>
               </div>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       )}
 
+      {/* Drink Pairing Card */}
+      <DrinkPairingCard recipeId={recipe.id} />
 
       {/* Recipe Notes */}
       <div className="mb-6">
         <RecipeNotesSection recipeId={recipe.id} />
       </div>
 
+      {/* Ask RealiChef Button - Fixed Inline */}
+      <AskRealiChefButton />
+
       {/* Servings Controller */}
       <div className="mb-4 px-2">
-        <div className="flex items-center gap-2">
-          <Users className="h-5 w-5 text-terracotta" />
-          <span className="text-navy font-medium">Servings:</span>
-          <ServingsSelector
-            currentServings={currentServings}
-            onServingsChange={handleServingsChange}
-            minServings={1}
-            maxServings={20}
-          />
-          {isScaled && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleServingsReset}
-              className="h-6 px-2 text-xs text-gray-500 hover:text-gray-700 flex-shrink-0"
-              title="Reset to original servings"
-            >
-              <RotateCcw className="h-3 w-3" />
-            </Button>
-          )}
-        </div>
+        <RecipeMetaInfo
+          recipe={recipe}
+          onServingsChange={handleServingsChange}
+          currentServings={currentServings}
+        />
       </div>
 
-      <RecipeTabContent
-        recipe={recipe} 
-        scaledIngredients={scaledIngredients}
-        isScaled={isScaled}
-      />
+      {/* Tabbed Content - Ingredients, Equipment, Instructions */}
+      <div className="mb-6">
+        <RecipeTabContent
+          recipe={recipe}
+          scaledIngredients={scaledIngredients}
+          isScaled={isScaled}
+        />
+      </div>
 
       
 
