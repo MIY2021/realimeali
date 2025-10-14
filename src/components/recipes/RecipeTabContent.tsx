@@ -35,22 +35,22 @@ export const RecipeTabContent = React.memo(({ recipe, scaledIngredients, isScale
 
   return (
     <Tabs defaultValue="ingredients" className="w-full">
-      <TabsList className="grid w-full grid-cols-3 bg-gray-100 rounded-lg p-1 mb-6">
+      <TabsList className="grid w-full grid-cols-3 gap-2 bg-transparent p-0 mb-6">
         <TabsTrigger 
           value="ingredients" 
-          className="text-gray-600 data-[state=active]:bg-sage data-[state=active]:text-white font-medium rounded-md transition-all"
+          className="data-[state=inactive]:bg-white data-[state=inactive]:text-gray-600 data-[state=inactive]:border data-[state=inactive]:border-gray-200 data-[state=active]:bg-gradient-to-br data-[state=active]:from-sage data-[state=active]:to-sage/90 data-[state=active]:text-white data-[state=active]:shadow-md font-medium rounded-xl py-3 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
         >
           Ingredients
         </TabsTrigger>
         <TabsTrigger 
           value="equipment" 
-          className="text-gray-600 data-[state=active]:bg-butter data-[state=active]:text-white font-medium rounded-md transition-all"
+          className="data-[state=inactive]:bg-white data-[state=inactive]:text-gray-600 data-[state=inactive]:border data-[state=inactive]:border-gray-200 data-[state=active]:bg-gradient-to-br data-[state=active]:from-butter data-[state=active]:to-butter/90 data-[state=active]:text-white data-[state=active]:shadow-md font-medium rounded-xl py-3 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
         >
           Equipment
         </TabsTrigger>
         <TabsTrigger 
           value="instructions" 
-          className="text-gray-600 data-[state=active]:bg-terracotta data-[state=active]:text-white font-medium rounded-md transition-all"
+          className="data-[state=inactive]:bg-white data-[state=inactive]:text-gray-600 data-[state=inactive]:border data-[state=inactive]:border-gray-200 data-[state=active]:bg-gradient-to-br data-[state=active]:from-terracotta data-[state=active]:to-terracotta/90 data-[state=active]:text-white data-[state=active]:shadow-md font-medium rounded-xl py-3 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
         >
           Instructions
         </TabsTrigger>
