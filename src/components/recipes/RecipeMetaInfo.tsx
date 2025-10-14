@@ -45,12 +45,6 @@ export const RecipeMetaInfo = ({ recipe, onServingsChange, currentServings }: Re
     <div className="space-y-3 mb-6 px-2">
       {/* Mobile layout - compact single row */}
       <div className="flex sm:hidden items-center justify-between gap-4">
-        {/* Time info */}
-        <div className="flex items-center gap-2">
-          <Clock className="h-5 w-5 text-terracotta" />
-          <span className="text-navy font-medium">{totalTime} min</span>
-        </div>
-        
         {/* Compact servings */}
         <div className="flex items-center gap-1">
           <Users className="h-4 w-4 text-terracotta" />
@@ -74,14 +68,8 @@ export const RecipeMetaInfo = ({ recipe, onServingsChange, currentServings }: Re
         </div>
       </div>
 
-      {/* Desktop layout - all on one row */}
+      {/* Desktop layout */}
       <div className="hidden sm:flex items-center gap-6 flex-wrap">
-        {/* Time info */}
-        <div className="flex items-center gap-2">
-          <Clock className="h-5 w-5 text-terracotta" />
-          <span className="text-navy font-medium">{totalTime} min total</span>
-        </div>
-        
         {/* Servings controls */}
         <div className="flex items-center gap-2">
           <Users className="h-5 w-5 text-terracotta" />

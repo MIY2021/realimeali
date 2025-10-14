@@ -178,6 +178,15 @@ export const RecipeDetail = ({
       {/* Chef's Insight Module */}
       <ChefsInsightCard recipe={recipe} recipeId={recipe.id} />
 
+      {/* Servings Controller */}
+      <div className="mb-4 px-2">
+        <RecipeMetaInfo
+          recipe={recipe}
+          onServingsChange={handleServingsChange}
+          currentServings={currentServings}
+        />
+      </div>
+
 
       {/* Tabbed Content - Ingredients, Equipment, Instructions */}
       <div className="mb-6">
