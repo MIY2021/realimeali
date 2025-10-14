@@ -129,6 +129,7 @@ export const RecipeDetail = ({
         onToggleCooked={handleToggleCooked}
         onEdit={() => onEdit?.(recipe)}
         onDelete={onDelete}
+        onInfoClick={() => setShowRecipeInfo(true)}
       />
 
       {/* Description */}

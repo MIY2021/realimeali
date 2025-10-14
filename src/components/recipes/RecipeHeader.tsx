@@ -1,8 +1,7 @@
 import { Recipe } from "@/types";
 import { RecipeImage } from "@/components/ui/recipe-image";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Heart, Pencil, Trash2 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Heart, Pencil, Trash2, Info } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface RecipeHeaderProps {
@@ -14,6 +13,7 @@ interface RecipeHeaderProps {
   onToggleCooked: () => void;
   onEdit?: () => void;
   onDelete?: () => void;
+  onInfoClick?: () => void;
 }
 
 export const RecipeHeader = ({
@@ -24,10 +24,9 @@ export const RecipeHeader = ({
   onToggleFavorite,
   onToggleCooked,
   onEdit,
-  onDelete
+  onDelete,
+  onInfoClick
 }: RecipeHeaderProps) => {
-  const navigate = useNavigate();
-
   return (
     <div className="relative -mx-4 sm:-mx-6 -mt-6">
       {/* Hero Image */}
@@ -41,17 +40,7 @@ export const RecipeHeader = ({
         {/* Overlay gradient for better text contrast */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/40" />
         
-        {/* Back button */}
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => navigate(-1)}
-          className="absolute top-4 left-4 h-12 w-12 rounded-full bg-white/90 hover:bg-white shadow-md"
-        >
-          <ArrowLeft className="h-5 w-5 text-gray-800" />
-        </Button>
-        
-        {/* Action icons */}
+        {/* Action icons - top right */}
         <div className="absolute top-4 right-4 flex gap-2">
           {isOwner && (
             <>
@@ -59,7 +48,7 @@ export const RecipeHeader = ({
                 variant="ghost"
                 size="icon"
                 onClick={onEdit}
-                className="h-12 w-12 rounded-full bg-white/90 hover:bg-white shadow-md"
+                className="h-12 w-12 rounded-full bg-white/50 hover:bg-white/70 shadow-md backdrop-blur-sm"
               >
                 <Pencil className="h-5 w-5 text-gray-800" />
               </Button>
@@ -67,7 +56,7 @@ export const RecipeHeader = ({
                 variant="ghost"
                 size="icon"
                 onClick={onDelete}
-                className="h-12 w-12 rounded-full bg-white/90 hover:bg-white shadow-md"
+                className="h-12 w-12 rounded-full bg-white/50 hover:bg-white/70 shadow-md backdrop-blur-sm"
               >
                 <Trash2 className="h-5 w-5 text-red-600" />
               </Button>
@@ -77,11 +66,23 @@ export const RecipeHeader = ({
             variant="ghost"
             size="icon"
             onClick={onToggleFavorite}
-            className="h-12 w-12 rounded-full bg-white/90 hover:bg-white shadow-md"
+            className="h-12 w-12 rounded-full bg-white/50 hover:bg-white/70 shadow-md backdrop-blur-sm"
           >
             <Heart className={`h-5 w-5 ${isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-800'}`} />
           </Button>
         </div>
+
+        {/* Info icon - bottom right */}
+        {onInfoClick && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onInfoClick}
+            className="absolute bottom-4 right-4 h-10 w-10 rounded-full bg-white/50 hover:bg-white/70 shadow-md backdrop-blur-sm"
+          >
+            <Info className="h-4 w-4 text-gray-800" />
+          </Button>
+        )}
       </div>
       
       {/* Title section - just below image */}
