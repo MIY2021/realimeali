@@ -9,9 +9,11 @@ interface RecipeImageProps {
   alt?: string;
   className?: string;
   iconSize?: string;
+  onClick?: () => void;
+  clickable?: boolean;
 }
 
-export function RecipeImage({ recipe, alt, className, iconSize = "h-8 w-8" }: RecipeImageProps) {
+export function RecipeImage({ recipe, alt, className, iconSize = "h-8 w-8", onClick, clickable }: RecipeImageProps) {
   const [imgError, setImgError] = useState(false);
   const [placeholderError, setPlaceholderError] = useState(false);
 
@@ -23,8 +25,9 @@ export function RecipeImage({ recipe, alt, className, iconSize = "h-8 w-8" }: Re
       <img
         src={recipe.image}
         alt={imageAlt}
-        className={cn("object-cover", className)}
+        className={cn("object-cover", clickable && "cursor-pointer hover:brightness-95 transition-all", className)}
         onError={() => setImgError(true)}
+        onClick={onClick}
       />
     );
   }

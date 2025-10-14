@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { Recipe } from "@/types";
 import { RecipeImage } from "@/components/ui/recipe-image";
+import { ImageLightbox } from "@/components/ui/image-lightbox";
 import { Button } from "@/components/ui/button";
 import { Heart, Pencil, Trash2, Info, Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -29,7 +31,12 @@ export const RecipeHeader = ({
   onInfoClick,
   onAddToMealPlan
 }: RecipeHeaderProps) => {
+  const [isImageLightboxOpen, setIsImageLightboxOpen] = useState(false);
+  
+  const hasRecipeImage = recipe?.image;
+
   return (
+    <>
     <div className="relative -mx-4 sm:-mx-6 -mt-6">
       {/* Hero Image */}
       <div className="relative h-72 sm:h-96 w-full">
@@ -37,6 +44,8 @@ export const RecipeHeader = ({
           recipe={recipe}
           className="w-full h-full object-cover"
           iconSize="h-16 w-16"
+          onClick={hasRecipeImage ? () => setIsImageLightboxOpen(true) : undefined}
+          clickable={!!hasRecipeImage}
         />
         
         {/* Overlay gradient for better text contrast */}
@@ -114,6 +123,17 @@ export const RecipeHeader = ({
           </Badge>
         </div>
       </div>
-    </div>
+      </div>
+
+      {/* Image Lightbox */}
+      {hasRecipeImage && (
+        <ImageLightbox
+          isOpen={isImageLightboxOpen}
+          onClose={() => setIsImageLightboxOpen(false)}
+          imageUrl={recipe.image!}
+          alt={recipe.title}
+        />
+      )}
+    </>
   );
 };
