@@ -48,6 +48,7 @@ export const RecipeMetaInfo = ({ recipe, onServingsChange, currentServings }: Re
         {/* Compact servings */}
         <div className="flex items-center gap-1">
           <Users className="h-4 w-4 text-terracotta" />
+          <span className="text-sm text-gray-600">Servings:</span>
           <ServingsSelector
             currentServings={adjustedServings}
             onServingsChange={handleServingsChange}

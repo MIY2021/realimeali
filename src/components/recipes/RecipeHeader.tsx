@@ -56,17 +56,6 @@ export const RecipeHeader = ({
 
         {/* Action icons - top right */}
         <div className="absolute top-4 right-4 flex gap-2">
-          {onAddToMealPlan && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onAddToMealPlan}
-              className="h-12 w-12 rounded-full bg-sage/90 hover:bg-sage shadow-md backdrop-blur-sm"
-              title="Add to Meal Plan"
-            >
-              <Plus className="h-6 w-6 text-white" />
-            </Button>
-          )}
           {isOwner && (
             <>
               <Button
@@ -95,6 +84,17 @@ export const RecipeHeader = ({
           >
             <Heart className={`h-5 w-5 ${isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-800'}`} />
           </Button>
+          {onAddToMealPlan && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onAddToMealPlan}
+              className="h-12 w-12 rounded-full bg-sage/90 hover:bg-sage shadow-md backdrop-blur-sm"
+              title="Add to Meal Plan"
+            >
+              <Plus className="h-6 w-6 text-white" />
+            </Button>
+          )}
         </div>
       </div>
       
