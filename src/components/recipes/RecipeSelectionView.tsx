@@ -148,7 +148,7 @@ export function RecipeSelectionView({
   }
 
   return (
-    <div className={`space-y-4 sm:space-y-6 ${isMobile ? 'bg-[#FAFAFA] min-h-screen' : ''}`}>
+    <div className={`space-y-4 sm:space-y-6 ${isMobile ? 'min-h-screen' : ''}`}>
       {/* Mobile Grid Layout */}
       {isMobile ? (
         <div className="space-y-3">
