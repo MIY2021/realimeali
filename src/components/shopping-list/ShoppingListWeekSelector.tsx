@@ -85,7 +85,7 @@ export default function ShoppingListWeekSelector({
         primaryAction={
           <Button 
             variant="primary" 
-            size="lg" 
+            size="md" 
             onClick={onGenerate} 
             disabled={isGenerating}
             aria-busy={isGenerating}
@@ -94,12 +94,13 @@ export default function ShoppingListWeekSelector({
             {isGenerating ? (
               <>
                 <Loader className="w-5 h-5 animate-spin" />
-                <span className="whitespace-nowrap truncate">{humorousMessages[currentMessage]}</span>
+                <span className="hidden sm:inline whitespace-nowrap truncate">{humorousMessages[currentMessage]}</span>
               </>
             ) : (
               <>
                 <Sparkles className="w-5 h-5" />
-                Generate Shopping List
+                <span className="hidden sm:inline">Generate Shopping List</span>
+                <span className="sm:hidden">Generate</span>
               </>
             )}
           </Button>

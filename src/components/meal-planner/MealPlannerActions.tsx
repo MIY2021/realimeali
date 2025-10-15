@@ -39,7 +39,7 @@ export const MealPlannerActions = ({
       primaryAction={
         <Button 
           variant="primary" 
-          size="lg" 
+          size="md" 
           onClick={onRandomize} 
           disabled={isLoading}
           aria-busy={isLoading}

@@ -15,12 +15,10 @@ export function HeaderControls({
 }: HeaderControlsProps) {
   return (
     <div className="space-y-3">
-      {/* Row 1: Week selector and primary action */}
-      <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
-        <div className="flex-shrink-0">
-          {weekControl}
-        </div>
-        <div className="flex-1 sm:max-w-[280px] sm:ml-auto">
+      {/* Row 1: Week selector and primary action on same row */}
+      <div className="flex gap-2 items-center">
+        {weekControl}
+        <div className="flex-1">
           {primaryAction}
         </div>
       </div>
