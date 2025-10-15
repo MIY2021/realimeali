@@ -12,7 +12,7 @@ export default function MealPlannerSkeleton() {
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <CalendarDays className="h-6 w-6 sm:h-8 sm:w-8 text-sage" />
+            <CalendarDays className="h-6 w-6 sm:h-8 sm:w-8" style={{ color: '#F5B82E', stroke: '#F5B82E' }} />
             <h1 className="text-2xl sm:text-3xl font-bold text-navy">Meal Planner</h1>
           </div>
           <Skeleton className="h-8 w-8 rounded-full" />
