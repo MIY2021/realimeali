@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Plus, Book } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
 import { RecipeList } from "@/components/recipes/RecipeList";
+import { PageHeader } from "@/components/layout/PageHeader";
 import { AddToMealPlanDialog } from "@/components/recipes/AddToMealPlanDialog";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -70,33 +71,31 @@ export default function RecipesPage() {
   return (
     <>
       <div className={`container max-w-7xl py-4 px-4 sm:py-8 sm:px-6 ${isMobile ? 'min-h-screen' : ''}`} data-scroll-content>
-        <div className="flex flex-col gap-3 mb-4 sm:mb-6">
-          <div className="space-y-1">
-            <h1 className="text-2xl sm:text-3xl font-bold text-[#2C3E50] flex items-center gap-2">
-              <Book className="h-6 w-6 sm:h-7 sm:w-7 text-[#F5B82E]" />
-              My Recipes
-            </h1>
-            <p className="text-sm text-[#6B7280]">
-              {getWelcomeText()}
-            </p>
-          </div>
-          {user && currentHousehold && isMobile && (
-            <Button asChild className="w-full h-12 bg-[#F5B82E] hover:bg-[#E8A542] text-white font-semibold rounded-lg shadow-sm">
-              <Link to="/my-recipes/new">
-                <Plus className="h-5 w-5 mr-2" />
-                Add Recipe
-              </Link>
-            </Button>
-          )}
-          {user && currentHousehold && !isMobile && (
-            <Button asChild className="w-auto self-start" style={{ backgroundColor: '#81b29a' }}>
-              <Link to="/my-recipes/new">
-                <Plus className="h-4 w-4 mr-2" />
-                Add Recipe
-              </Link>
-            </Button>
-          )}
-        </div>
+        <PageHeader
+          icon={Book}
+          title="My Recipes"
+          description={getWelcomeText()}
+          actions={
+            <>
+              {user && currentHousehold && isMobile && (
+                <Button asChild className="w-full h-12 bg-[#F5B82E] hover:bg-[#E8A542] text-white font-semibold rounded-lg shadow-sm">
+                  <Link to="/my-recipes/new">
+                    <Plus className="h-5 w-5 mr-2" />
+                    Add Recipe
+                  </Link>
+                </Button>
+              )}
+              {user && currentHousehold && !isMobile && (
+                <Button asChild className="w-auto self-start" style={{ backgroundColor: '#81b29a' }}>
+                  <Link to="/my-recipes/new">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Recipe
+                  </Link>
+                </Button>
+              )}
+            </>
+          }
+        />
 
         {!user ? (
           <div className="py-10 text-center px-4">
