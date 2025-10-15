@@ -262,49 +262,41 @@ export default function ShoppingList() {
 
           {/* Action row - always visible */}
           {user && currentHousehold && (
-            <div className="flex items-center justify-between gap-4 mb-4">
+            <div className="flex items-center justify-between gap-2 mb-4 flex-wrap">
               <div className="flex items-center gap-2">
                 <Button
-                  size="sm"
+                  variant="secondary"
+                  size="md"
                   onClick={() => {
                     const itemName = prompt("Enter item name:");
                     if (itemName?.trim()) {
                       addCustomItem(itemName.trim());
                     }
                   }}
-                  className="flex items-center gap-2 h-9 px-3 rounded-lg font-medium"
-                  style={{ 
-                    backgroundColor: 'hsl(var(--muted))',
-                    color: 'hsl(var(--shopping-navy))'
-                  }}
                 >
-                  <Plus className="h-4 w-4" />
-                  <span className="text-sm">Add Item</span>
+                  <Plus className="w-5 h-5" />
+                  Add Item
                 </Button>
                 
                 <Button
-                  size="sm"
+                  variant="secondary"
+                  size="md"
                   onClick={handleShare}
-                  className="flex items-center gap-2 h-9 px-3 rounded-lg font-medium"
-                  style={{ 
-                    backgroundColor: 'hsl(var(--muted))',
-                    color: 'hsl(var(--shopping-navy))'
-                  }}
                 >
-                  <Share className="h-4 w-4" />
-                  <span className="text-sm">Share</span>
+                  <Share className="w-5 h-5" />
+                  Share
                 </Button>
               </div>
               
               <div className="flex items-center gap-2">
-                <label htmlFor="show-unchecked" className="text-xs font-medium whitespace-nowrap" style={{ color: 'hsl(var(--shopping-navy))' }}>
-                  Show Only Unchecked
-                </label>
                 <Switch
                   id="show-unchecked"
                   checked={showOnlyUnchecked}
                   onCheckedChange={setShowOnlyUnchecked}
                 />
+                <label htmlFor="show-unchecked" className="text-sm font-medium whitespace-nowrap text-[#1A1A1A]">
+                  Show Only Unchecked
+                </label>
               </div>
             </div>
           )}

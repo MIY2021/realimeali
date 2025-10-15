@@ -1,5 +1,6 @@
 import { LayoutList, Grid2X2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface MealPlannerLayoutSelectorProps {
   value: string;
@@ -10,31 +11,44 @@ export function MealPlannerLayoutSelector({ value, onChange }: MealPlannerLayout
   const isGridView = value === "2";
   
   return (
-    <div className="flex gap-1 bg-gray-50 rounded-lg p-1">
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => onChange("list")}
-        className={`h-7 w-7 p-0 ${
-          value === "list" 
-            ? "bg-white shadow-sm" 
-            : "hover:bg-gray-100"
-        }`}
-      >
-        <LayoutList className="h-4 w-4 text-gray-600" />
-      </Button>
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => onChange("2")}
-        className={`h-7 w-7 p-0 ${
-          isGridView 
-            ? "bg-white shadow-sm border border-sage" 
-            : "hover:bg-gray-100"
-        }`}
-      >
-        <Grid2X2 className="h-4 w-4 text-gray-600" />
-      </Button>
-    </div>
+    <TooltipProvider>
+      <div className="flex gap-1 bg-gray-50 rounded-[12px] p-1">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="tertiary"
+              size="sm"
+              onClick={() => onChange("list")}
+              className={`h-9 w-9 p-0 ${
+                value === "list" 
+                  ? "bg-white shadow-sm" 
+                  : ""
+              }`}
+            >
+              <LayoutList className="h-5 w-5 text-gray-600" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>List View</TooltipContent>
+        </Tooltip>
+        
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="tertiary"
+              size="sm"
+              onClick={() => onChange("2")}
+              className={`h-9 w-9 p-0 ${
+                isGridView 
+                  ? "bg-white shadow-sm" 
+                  : ""
+              }`}
+            >
+              <Grid2X2 className="h-5 w-5 text-gray-600" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Grid View</TooltipContent>
+        </Tooltip>
+      </div>
+    </TooltipProvider>
   );
 }
