@@ -20,7 +20,13 @@ export const MealPlannerHeader = ({ user, currentHousehold, onInfoClick }: MealP
 
   return (
     <PageHeader
-      icon={CalendarDays}
+      icon={
+        <CalendarDays 
+          className="h-6 w-6 sm:h-7 sm:w-7" 
+          style={{ color: '#F5B82E', stroke: '#F5B82E' }}
+          aria-hidden="true"
+        />
+      }
       title="Meal Planner"
       description={getWelcomeText()}
     />

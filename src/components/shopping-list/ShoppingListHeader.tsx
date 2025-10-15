@@ -26,7 +26,13 @@ export default function ShoppingListHeader({
 
   return (
     <PageHeader
-      icon={ShoppingCart}
+      icon={
+        <ShoppingCart 
+          className="h-6 w-6 sm:h-7 sm:w-7" 
+          style={{ color: '#F5B82E', stroke: '#F5B82E' }}
+          aria-hidden="true"
+        />
+      }
       title="Shopping List"
       description={getWelcomeText()}
     />
