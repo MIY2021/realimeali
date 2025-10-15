@@ -13,7 +13,9 @@ export function PageHeader({ icon: Icon, title, description, actions }: PageHead
       <div className="space-y-1.5">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl sm:text-3xl font-semibold text-[#1A1A1A] flex items-center gap-2">
-            <Icon className="h-6 w-6 sm:h-7 sm:w-7" style={{ color: '#F5B82E' }} />
+            <span className="inline-flex !text-[#F5B82E]" style={{ color: '#F5B82E' }}>
+              <Icon className="h-6 w-6 sm:h-7 sm:w-7" aria-hidden="true" />
+            </span>
             {title}
           </h1>
           {actions}
