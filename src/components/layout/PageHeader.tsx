@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 
 interface PageHeaderProps {
-  icon: React.ComponentType<{ className?: string }>;
+  icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
   title: string;
   description: string;
   actions?: ReactNode;
@@ -13,7 +13,7 @@ export function PageHeader({ icon: Icon, title, description, actions }: PageHead
       <div className="space-y-1.5">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl sm:text-3xl font-semibold text-[#1A1A1A] flex items-center gap-2">
-            <Icon className="h-6 w-6 sm:h-7 sm:w-7 !text-[#F5B82E] transition-none" />
+            <Icon className="h-6 w-6 sm:h-7 sm:w-7" style={{ color: '#F5B82E' }} />
             {title}
           </h1>
           {actions}
