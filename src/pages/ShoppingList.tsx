@@ -262,7 +262,7 @@ export default function ShoppingList() {
 
           {/* Action row - always visible */}
           {user && currentHousehold && (
-            <div className="flex items-center justify-between gap-2 mb-4 flex-wrap">
+            <div className="flex items-center justify-between gap-2 mb-4">
               <div className="flex items-center gap-2">
                 <Button
                   variant="secondary"
@@ -289,14 +289,14 @@ export default function ShoppingList() {
               </div>
               
               <div className="flex items-center gap-2">
+                <label htmlFor="show-unchecked" className="text-xs font-medium whitespace-nowrap text-[#1A1A1A]">
+                  Show Only Unchecked
+                </label>
                 <Switch
                   id="show-unchecked"
                   checked={showOnlyUnchecked}
                   onCheckedChange={setShowOnlyUnchecked}
                 />
-                <label htmlFor="show-unchecked" className="text-sm font-medium whitespace-nowrap text-[#1A1A1A]">
-                  Show Only Unchecked
-                </label>
               </div>
             </div>
           )}
