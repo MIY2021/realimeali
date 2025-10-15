@@ -290,7 +290,7 @@ export default function ShoppingList() {
               
               <div className="flex items-center gap-2">
                 <label htmlFor="show-unchecked" className="text-xs font-medium whitespace-nowrap text-[#1A1A1A]">
-                  Show Only Unchecked
+                  Hide Checked
                 </label>
                 <Switch
                   id="show-unchecked"
