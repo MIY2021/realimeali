@@ -67,20 +67,27 @@ export function EnhancedMealCard({
   if (mealPlan.is_freetyped && !recipe) {
     return (
       <Card className={`bg-white border border-gray-200 hover:shadow-md transition-all overflow-hidden ${
-        mealPlan.is_completed ? 'opacity-40 saturate-50' : ''
+        mealPlan.is_completed ? 'opacity-85 saturate-75' : ''
       }`}>
         <CardContent className="p-0">
           <div className="flex h-24">
             {/* Custom meal image with placeholder */}
-            <div className="w-20 h-20 flex-shrink-0 m-2">
+            <div className="w-20 h-20 flex-shrink-0 m-2 relative">
               <RecipeImage 
                 recipe={undefined}
                 alt={mealPlan.meal_name || 'Custom Meal'}
-                className={`w-full h-full rounded ${
+                className={`w-full h-full rounded transition-all duration-250 ${
                   mealPlan.is_completed ? 'grayscale' : ''
                 }`}
                 iconSize="h-8 w-8"
               />
+              
+              {/* Cooked icon - top-right */}
+              {mealPlan.is_completed && (
+                <div className="absolute top-1 right-1 w-6 h-6 rounded-full bg-green-500 flex items-center justify-center shadow-sm animate-scale-in">
+                  <Check className="h-4 w-4 text-white" />
+                </div>
+              )}
             </div>
 
             {/* Content Area */}
@@ -190,9 +197,18 @@ export function EnhancedMealCard({
                     <Button
                       variant="outline"
                       size="sm"
-                      className="h-7 w-7 p-0 bg-orange-50 text-orange-600 border-orange-200 hover:bg-orange-100 transition-all"
+                      className={`h-7 w-7 p-0 transition-all ${
+                        existingLeftover 
+                          ? 'bg-yellow-50 text-yellow-700 border-yellow-200' 
+                          : 'bg-orange-50 text-orange-600 border-orange-200 hover:bg-orange-100'
+                      }`}
                       onClick={() => onCreateLeftover(mealPlan)}
-                      title="Save leftovers for lunch"
+                      disabled={!!existingLeftover}
+                      title={existingLeftover 
+                        ? `${leftoverServings} servings saved for lunch` 
+                        : 'Save leftovers for lunch'
+                      }
+                      aria-pressed={!!existingLeftover}
                     >
                       <UtensilsCrossed className="h-3 w-3" />
                     </Button>
@@ -292,21 +308,35 @@ export function EnhancedMealCard({
 
   return (
     <Card className={`bg-white border border-gray-200 hover:shadow-md transition-all overflow-hidden ${
-      mealPlan.is_completed ? 'opacity-40 saturate-50' : ''
+      mealPlan.is_completed ? 'opacity-85 saturate-75' : ''
     }`}>
       <CardContent className="p-0">
         <div className="flex h-24">
           {/* Recipe Image - Slightly smaller with padding */}
-          <div className="w-20 h-20 flex-shrink-0 m-2">
+          <div className="w-20 h-20 flex-shrink-0 m-2 relative">
             <Link to={recipeUrl}>
               <RecipeImage 
                 recipe={recipe}
-                className={`w-full h-full rounded cursor-pointer hover:opacity-80 transition-opacity ${
+                className={`w-full h-full rounded cursor-pointer hover:opacity-80 transition-all duration-250 ${
                   mealPlan.is_completed ? 'grayscale' : ''
                 }`}
                 iconSize="h-8 w-8"
               />
             </Link>
+            
+            {/* Lunch Leftover icon - top-left */}
+            {existingLeftover && (
+              <div className="absolute top-1 left-1 w-6 h-6 rounded-full bg-yellow-500 flex items-center justify-center shadow-sm animate-scale-in">
+                <UtensilsCrossed className="h-4 w-4 text-white" />
+              </div>
+            )}
+            
+            {/* Cooked icon - top-right */}
+            {mealPlan.is_completed && (
+              <div className="absolute top-1 right-1 w-6 h-6 rounded-full bg-green-500 flex items-center justify-center shadow-sm animate-scale-in">
+                <Check className="h-4 w-4 text-white" />
+              </div>
+            )}
           </div>
 
           {/* Content Area - Reduced left padding to minimize white space */}
@@ -386,7 +416,7 @@ export function EnhancedMealCard({
                     size="sm"
                     className={`h-7 w-7 p-0 transition-all ${
                       existingLeftover 
-                        ? 'bg-green-500 text-white border-green-500 hover:bg-green-600 shadow-sm' 
+                        ? 'bg-yellow-50 text-yellow-700 border-yellow-200' 
                         : 'bg-orange-50 text-orange-600 border-orange-200 hover:bg-orange-100'
                     }`}
                     onClick={handleCreateLeftover}
@@ -395,6 +425,7 @@ export function EnhancedMealCard({
                       ? `${leftoverServings} servings saved for lunch` 
                       : 'Save leftovers for lunch'
                     }
+                    aria-pressed={!!existingLeftover}
                   >
                     <UtensilsCrossed className="h-3 w-3" />
                   </Button>

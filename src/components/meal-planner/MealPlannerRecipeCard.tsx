@@ -122,6 +122,8 @@ export function MealPlannerRecipeCard({
         isVisible 
           ? 'translate-y-0 opacity-100 scale-100' 
           : 'translate-y-4 opacity-0 scale-95'
+      } ${
+        mealPlan.is_completed ? 'opacity-85 saturate-75' : ''
       }`}
       style={{ 
         transitionDelay: `${animationDelay}ms`,
@@ -132,24 +134,22 @@ export function MealPlannerRecipeCard({
         <RecipeImage
           recipe={recipe}
           alt={getTitle()}
-          className="w-full object-cover h-32 rounded-t-xl"
+          className={`w-full object-cover h-32 rounded-t-xl transition-all duration-250 ${
+            mealPlan.is_completed ? 'grayscale' : ''
+          }`}
         />
         
-        {/* Completion status badge */}
-        {mealPlan.is_completed && (
-          <div className="absolute top-2 left-2">
-            <Badge className="bg-sage text-white border-0 rounded-full px-2 py-0.5 text-xs font-medium shadow-sm">
-              Cooked
-            </Badge>
+        {/* Lunch Leftover icon - top-left */}
+        {existingLeftover && (
+          <div className="absolute top-2 left-2 w-6 h-6 rounded-full bg-yellow-500 flex items-center justify-center shadow-sm animate-scale-in">
+            <UtensilsCrossed className="h-4 w-4 text-white" />
           </div>
         )}
-
-        {/* Leftover badge */}
-        {mealPlan.is_leftover && (
-          <div className="absolute top-2 right-2">
-            <Badge className="bg-white/90 text-navy border-0 rounded-full px-2 py-0.5 text-xs font-medium shadow-sm">
-              Leftover
-            </Badge>
+        
+        {/* Cooked icon - top-right */}
+        {mealPlan.is_completed && (
+          <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-green-500 flex items-center justify-center shadow-sm animate-scale-in">
+            <Check className="h-4 w-4 text-white" />
           </div>
         )}
       </div>
