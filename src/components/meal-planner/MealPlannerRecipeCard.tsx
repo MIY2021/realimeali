@@ -154,7 +154,7 @@ export function MealPlannerRecipeCard({
         )}
       </div>
 
-      <CardContent className="p-3 space-y-2">
+      <CardContent className="p-3 space-y-1.5">
         {/* Title */}
         <h3 
           className="font-bold text-sm leading-tight text-navy line-clamp-2 min-h-[2.5rem]"

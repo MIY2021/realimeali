@@ -260,39 +260,45 @@ export default function ShoppingList() {
             generationProgress={generationProgress}
           />
 
-          {/* Action row */}
+          {/* Action rows */}
           {user && currentHousehold && (
-            <div className="flex items-center justify-between gap-2 mb-4">
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={handleShare}
-                >
-                  <Share className="w-4 h-4" />
-                  Share
-                </Button>
+            <div className="space-y-2 mb-4">
+              {/* Row 1: Share, Clear All, and Hide Checked */}
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={handleShare}
+                  >
+                    <Share className="w-4 h-4" />
+                    Share
+                  </Button>
+                  
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={clearAll}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    Clear All
+                  </Button>
+                </div>
                 
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={clearAll}
-                >
-                  <Trash2 className="w-4 h-4" />
-                  Clear All
-                </Button>
+                <div className="flex items-center gap-2">
+                  <label htmlFor="show-unchecked" className="text-xs font-medium whitespace-nowrap text-[#1A1A1A]">
+                    Hide Checked
+                  </label>
+                  <Switch
+                    id="show-unchecked"
+                    checked={showOnlyUnchecked}
+                    onCheckedChange={setShowOnlyUnchecked}
+                  />
+                </div>
               </div>
               
-              <div className="flex items-center gap-2">
-                <label htmlFor="show-unchecked" className="text-xs font-medium whitespace-nowrap text-[#1A1A1A]">
-                  Hide Checked
-                </label>
-                <Switch
-                  id="show-unchecked"
-                  checked={showOnlyUnchecked}
-                  onCheckedChange={setShowOnlyUnchecked}
-                />
-                
+              {/* Row 2: Add button aligned to right */}
+              <div className="flex justify-end">
                 <Button
                   size="sm"
                   onClick={() => {
@@ -301,9 +307,9 @@ export default function ShoppingList() {
                       addCustomItem(itemName.trim());
                     }
                   }}
-                  className="h-7 w-7 rounded-full bg-[#F5B82E] hover:bg-[#F5B82E]/90 text-white p-0 border-0"
+                  className="h-6 w-6 rounded-full bg-[#F5B82E]/70 hover:bg-[#F5B82E]/90 text-white p-0 border-0"
                 >
-                  <Plus className="h-3.5 w-3.5" />
+                  <Plus className="h-3 w-3" />
                 </Button>
               </div>
             </div>

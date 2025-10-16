@@ -117,9 +117,9 @@ export default function MealListSection({
             size="sm"
             variant="ghost"
             onClick={handleAddMeal}
-            className="h-7 w-7 rounded-full bg-[#F5B82E] hover:bg-[#F5B82E]/90 p-0"
+            className="h-6 w-6 rounded-full bg-[#F5B82E]/70 hover:bg-[#F5B82E]/90 p-0"
           >
-            <Plus className="h-3.5 w-3.5 text-white" />
+            <Plus className="h-3 w-3 text-white" />
           </Button>
         )}
       </div>
