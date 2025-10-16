@@ -50,13 +50,13 @@ export const ServingsSelector = ({
   return (
     <div className={`flex items-center gap-1 ${isMobile ? 'scale-90' : ''}`}>
       <Button
-        variant="outline"
+        variant="ghost"
         size={isMobile ? "sm" : "sm"}
         onClick={handleDecrease}
         disabled={disabled || isUpdating || currentServings <= minServings}
-        className={`${isMobile ? 'h-7 w-7 p-0' : 'h-9 w-9 p-0'} border-gray-300 hover:bg-gray-50`}
+        className={`${isMobile ? 'h-6 w-6 p-0' : 'h-7 w-7 p-0'} hover:bg-accent`}
       >
-        <Minus className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
+        <Minus className="h-3 w-3" />
       </Button>
       
       <span className={`${isMobile ? 'text-sm' : 'text-base'} font-medium min-w-[2rem] text-center ${isUpdating ? 'opacity-50' : ''}`}>
@@ -64,13 +64,13 @@ export const ServingsSelector = ({
       </span>
       
       <Button
-        variant="outline"
+        variant="ghost"
         size={isMobile ? "sm" : "sm"}
         onClick={handleIncrease}
         disabled={disabled || isUpdating || currentServings >= maxServings}
-        className={`${isMobile ? 'h-7 w-7 p-0' : 'h-9 w-9 p-0'} border-gray-300 hover:bg-gray-50`}
+        className={`${isMobile ? 'h-6 w-6 p-0' : 'h-7 w-7 p-0'} hover:bg-accent`}
       >
-        <Plus className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
+        <Plus className="h-3 w-3" />
       </Button>
     </div>
   );
