@@ -260,10 +260,9 @@ export default function ShoppingList() {
             generationProgress={generationProgress}
           />
 
-          {/* Action rows */}
+          {/* Action row */}
           {user && currentHousehold && (
-            <div className="space-y-3 mb-4">
-              {/* Row 1: Share and Clear All */}
+            <div className="flex items-center justify-between gap-2 mb-4">
               <div className="flex items-center gap-2">
                 <Button
                   variant="secondary"
@@ -284,32 +283,28 @@ export default function ShoppingList() {
                 </Button>
               </div>
               
-              {/* Row 2: Add button and Hide Checked toggle */}
-              <div className="flex items-center justify-between">
-                <div></div>
-                <div className="flex items-center gap-2">
-                  <Button
-                    size="sm"
-                    onClick={() => {
-                      const itemName = prompt("Enter item name:");
-                      if (itemName?.trim()) {
-                        addCustomItem(itemName.trim());
-                      }
-                    }}
-                    className="h-8 w-8 rounded-full bg-[#F5B82E] hover:bg-[#F5B82E]/90 text-white p-0 border-0"
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                  
-                  <label htmlFor="show-unchecked" className="text-xs font-medium whitespace-nowrap text-[#1A1A1A]">
-                    Hide Checked
-                  </label>
-                  <Switch
-                    id="show-unchecked"
-                    checked={showOnlyUnchecked}
-                    onCheckedChange={setShowOnlyUnchecked}
-                  />
-                </div>
+              <div className="flex items-center gap-2">
+                <label htmlFor="show-unchecked" className="text-xs font-medium whitespace-nowrap text-[#1A1A1A]">
+                  Hide Checked
+                </label>
+                <Switch
+                  id="show-unchecked"
+                  checked={showOnlyUnchecked}
+                  onCheckedChange={setShowOnlyUnchecked}
+                />
+                
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    const itemName = prompt("Enter item name:");
+                    if (itemName?.trim()) {
+                      addCustomItem(itemName.trim());
+                    }
+                  }}
+                  className="h-7 w-7 rounded-full bg-[#F5B82E] hover:bg-[#F5B82E]/90 text-white p-0 border-0"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                </Button>
               </div>
             </div>
           )}

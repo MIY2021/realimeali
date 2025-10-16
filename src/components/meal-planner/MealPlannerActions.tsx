@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { FileSpreadsheet, Share, Trash2, Loader } from "lucide-react";
+import { Share, Trash2, Sparkles, Loader } from "lucide-react";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { HeaderControls } from "@/components/layout/HeaderControls";
 import { MealPlannerLayoutSelector } from "./MealPlannerLayoutSelector";
@@ -46,11 +46,17 @@ export const MealPlannerActions = ({
           className="w-full"
         >
           {isLoading ? (
-            <Loader className="w-5 h-5 animate-spin" />
+            <>
+              <Loader className="w-5 h-5 animate-spin" />
+              <span className="hidden sm:inline">Generating...</span>
+            </>
           ) : (
-            <FileSpreadsheet className="w-5 h-5" />
+            <>
+              <Sparkles className="w-5 h-5" />
+              <span className="hidden sm:inline">Generate Meal Plan</span>
+              <span className="sm:hidden">Generate</span>
+            </>
           )}
-          Generate
         </Button>
       }
       utilityActions={
