@@ -20,8 +20,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { Share, Trash2 } from "lucide-react";
-import { FloatingAddButton } from "@/components/shared/FloatingAddButton";
+import { Share, Trash2, Plus } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export default function ShoppingList() {
@@ -285,6 +284,20 @@ export default function ShoppingList() {
               </div>
               
               <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    const itemName = prompt("Enter item name:");
+                    if (itemName?.trim()) {
+                      addCustomItem(itemName.trim());
+                    }
+                  }}
+                  className="bg-[#F5B82E] hover:bg-[#F5B82E]/90 text-white border-0"
+                >
+                  <Plus className="w-4 h-4" />
+                  Add
+                </Button>
+                
                 <label htmlFor="show-unchecked" className="text-xs font-medium whitespace-nowrap text-[#1A1A1A]">
                   Hide Checked
                 </label>
@@ -335,19 +348,6 @@ export default function ShoppingList() {
             createdByUserId={shoppingList.length > 0 ? shoppingList[0].createdBy : undefined}
           />
         </>
-      )}
-
-      {/* Floating Add button */}
-      {user && currentHousehold && (
-        <FloatingAddButton
-          onClick={() => {
-            const itemName = prompt("Enter item name:");
-            if (itemName?.trim()) {
-              addCustomItem(itemName.trim());
-            }
-          }}
-          ariaLabel="Add shopping item"
-        />
       )}
     </div>
   );

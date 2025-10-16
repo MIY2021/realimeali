@@ -18,7 +18,6 @@ import { useMealPlannerState } from "@/hooks/useMealPlannerState";
 import { useMealPlannerLayout } from "@/hooks/useMealPlannerLayout";
 import { MealType, Recipe, MealPlan } from "@/types";
 import { useToast } from "@/hooks/use-toast";
-import { FloatingAddButton } from "@/components/shared/FloatingAddButton";
 
 export default function MealPlannerContainer() {
   useDocumentTitle("Meal Planner | RealiMeali");
@@ -427,15 +426,6 @@ export default function MealPlannerContainer() {
         onOpenChange={setInfoDialog}
         lastGenerated={lastGenerated}
         createdByUserId={createdByUserId}
-      />
-
-      {/* Floating Add button */}
-      <FloatingAddButton
-        onClick={() => {
-          setPendingMealType('dinner');
-          setSimpleMealDialog(true);
-        }}
-        ariaLabel="Add meal"
       />
     </div>
   );
