@@ -132,7 +132,7 @@ export function MealPlannerRecipeCard({
         <RecipeImage
           recipe={recipe}
           alt={getTitle()}
-          className="w-full object-cover h-36 rounded-t-xl"
+          className="w-full object-cover h-32 rounded-t-xl"
         />
         
         {/* Completion status badge */}
@@ -154,7 +154,7 @@ export function MealPlannerRecipeCard({
         )}
       </div>
 
-      <CardContent className="p-4 space-y-3">
+      <CardContent className="p-3 space-y-2">
         {/* Title */}
         <h3 
           className="font-bold text-sm leading-tight text-navy line-clamp-2 min-h-[2.5rem]"
@@ -169,25 +169,14 @@ export function MealPlannerRecipeCard({
           {getTitle()}
         </h3>
 
-        {/* Subtext info */}
-        <div className="text-xs text-grey-light">
-          {!recipe ? (
-            <span className="text-sage">Custom Meal</span>
-          ) : (
-            <span>
-              {getDuration() && `${getDuration()} min`}
-            </span>
-          )}
-        </div>
-
         {/* Servings Stepper */}
-        <div className="flex items-center gap-2 py-1">
-          <span className="text-xs text-[#4A4A4A]">Servings:</span>
-          <div className="flex items-center gap-1 rounded-full border border-[#E3E3E3] bg-[#FAF9F7] px-2 py-1">
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-gray-600">Servings:</span>
+          <div className="flex items-center gap-1">
             <Button
               variant="ghost"
               size="sm"
-              className="h-6 w-6 p-0 hover:bg-transparent"
+              className="h-6 w-6 p-0 focus:ring-2 focus:ring-[#7CC4A0] focus:ring-offset-2"
               onClick={async (e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -200,14 +189,16 @@ export function MealPlannerRecipeCard({
                   setServings(servings);
                 }
               }}
+              disabled={servings <= 1}
+              aria-label="Decrease servings"
             >
-              <Minus className="h-3 w-3 text-[#4A4A4A]" />
+              <Minus className="h-3 w-3" />
             </Button>
-            <span className="text-sm font-medium w-8 text-center text-[#4A4A4A]">{servings}</span>
+            <span className="text-sm font-medium w-6 text-center">{servings}</span>
             <Button
               variant="ghost"
               size="sm"
-              className="h-6 w-6 p-0 hover:bg-transparent"
+              className="h-6 w-6 p-0 focus:ring-2 focus:ring-[#7CC4A0] focus:ring-offset-2"
               onClick={async (e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -220,61 +211,62 @@ export function MealPlannerRecipeCard({
                   setServings(servings);
                 }
               }}
+              aria-label="Increase servings"
             >
-              <Plus className="h-3 w-3 text-[#4A4A4A]" />
+              <Plus className="h-3 w-3" />
             </Button>
           </div>
         </div>
 
         {/* Action buttons row */}
-        <div className="flex gap-2 items-center">
+        <div className="flex items-center justify-end gap-2 mt-2">
           {/* Completion toggle */}
           <Button
+            variant="outline"
             size="sm"
-            variant="ghost"
-            onClick={handleToggleCompletion}
-            className={`h-8 w-8 p-0 rounded-md ${
+            className={`h-7 w-7 p-0 focus:ring-2 focus:ring-[#7CC4A0] focus:ring-offset-2 ${
               mealPlan.is_completed 
-                ? 'bg-green-50 text-green-600 border border-green-200 hover:bg-green-100' 
-                : 'bg-gray-50 text-gray-400 border border-gray-200 hover:bg-gray-100'
+                ? 'bg-green-50 text-green-600 border-green-200 hover:bg-green-100' 
+                : 'bg-gray-50 text-gray-400 border-gray-200 hover:bg-gray-100'
             }`}
-            title={mealPlan.is_completed ? "Mark as not cooked" : "Mark as cooked"}
+            onClick={handleToggleCompletion}
+            title={mealPlan.is_completed ? "Mark as incomplete" : "Mark as complete"}
+            aria-pressed={mealPlan.is_completed}
           >
-            <Check className="h-5 w-5" />
+            <Check className="h-3 w-3" />
           </Button>
 
           {/* Lunch Leftover button - Only for dinner meals */}
           {recipe && onCreateLeftover && mealPlan.meal_type === 'dinner' && !mealPlan.is_leftover && (
             <Button
+              variant="outline"
               size="sm"
-              variant="ghost"
-              onClick={handleCreateLeftover}
-              className={`h-8 w-8 p-0 rounded-md ${
+              className={`h-7 w-7 p-0 transition-all focus:ring-2 focus:ring-[#7CC4A0] focus:ring-offset-2 ${
                 existingLeftover 
-                  ? 'bg-green-500 text-white border-green-500 hover:bg-green-600' 
-                  : 'bg-orange-50 text-orange-600 border border-orange-200 hover:bg-orange-100'
+                  ? 'bg-yellow-50 text-yellow-700 border-yellow-200' 
+                  : 'bg-orange-50 text-orange-600 border-orange-200 hover:bg-orange-100'
               }`}
+              onClick={handleCreateLeftover}
               disabled={!!existingLeftover}
               title={existingLeftover 
                 ? `${leftoverServings} servings saved for lunch` 
                 : 'Save leftovers for lunch'
               }
+              aria-pressed={!!existingLeftover}
             >
-              <UtensilsCrossed className="h-5 w-5" />
+              <UtensilsCrossed className="h-3 w-3" />
             </Button>
           )}
           
-          <div className="flex-1" />
-          
           {/* Delete */}
           <Button
+            variant="outline"
             size="sm"
-            variant="ghost"
+            className="h-7 w-7 p-0 text-red-500 hover:text-red-600 hover:bg-red-50 focus:ring-2 focus:ring-[#7CC4A0] focus:ring-offset-2"
             onClick={handleRemove}
-            className="h-8 w-8 p-0 rounded-md text-red-500 hover:text-red-600 hover:bg-red-50 border border-transparent hover:border-red-200"
             title="Remove meal"
           >
-            <Trash2 className="h-5 w-5" />
+            <Trash2 className="h-3 w-3" />
           </Button>
         </div>
       </CardContent>
