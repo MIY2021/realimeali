@@ -135,21 +135,21 @@ export function MealPlannerRecipeCard({
           recipe={recipe}
           alt={getTitle()}
           className={`w-full object-cover h-32 rounded-t-xl transition-all duration-250 ${
-            mealPlan.is_completed ? 'grayscale' : ''
+            mealPlan.is_completed ? 'grayscale-[40%]' : ''
           }`}
         />
         
         {/* Lunch Leftover icon - top-left */}
         {existingLeftover && (
-          <div className="absolute top-2 left-2 w-6 h-6 rounded-full bg-yellow-500 flex items-center justify-center shadow-sm animate-scale-in">
-            <UtensilsCrossed className="h-4 w-4 text-white" />
+          <div className="absolute top-2 left-2 w-5 h-5 rounded-full bg-yellow-500 flex items-center justify-center shadow-sm animate-scale-in">
+            <UtensilsCrossed className="h-3 w-3 text-white" />
           </div>
         )}
         
         {/* Cooked icon - top-right */}
         {mealPlan.is_completed && (
-          <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-green-500 flex items-center justify-center shadow-sm animate-scale-in">
-            <Check className="h-4 w-4 text-white" />
+          <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-green-500 flex items-center justify-center shadow-sm animate-scale-in">
+            <Check className="h-3 w-3 text-white" />
           </div>
         )}
       </div>

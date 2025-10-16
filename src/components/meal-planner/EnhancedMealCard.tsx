@@ -77,15 +77,15 @@ export function EnhancedMealCard({
                 recipe={undefined}
                 alt={mealPlan.meal_name || 'Custom Meal'}
                 className={`w-full h-full rounded transition-all duration-250 ${
-                  mealPlan.is_completed ? 'grayscale' : ''
+                  mealPlan.is_completed ? 'grayscale-[40%]' : ''
                 }`}
                 iconSize="h-8 w-8"
               />
               
               {/* Cooked icon - top-right */}
               {mealPlan.is_completed && (
-                <div className="absolute top-1 right-1 w-6 h-6 rounded-full bg-green-500 flex items-center justify-center shadow-sm animate-scale-in">
-                  <Check className="h-4 w-4 text-white" />
+                <div className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-green-500 flex items-center justify-center shadow-sm animate-scale-in">
+                  <Check className="h-3 w-3 text-white" />
                 </div>
               )}
             </div>
@@ -318,7 +318,7 @@ export function EnhancedMealCard({
               <RecipeImage 
                 recipe={recipe}
                 className={`w-full h-full rounded cursor-pointer hover:opacity-80 transition-all duration-250 ${
-                  mealPlan.is_completed ? 'grayscale' : ''
+                  mealPlan.is_completed ? 'grayscale-[40%]' : ''
                 }`}
                 iconSize="h-8 w-8"
               />
@@ -326,15 +326,15 @@ export function EnhancedMealCard({
             
             {/* Lunch Leftover icon - top-left */}
             {existingLeftover && (
-              <div className="absolute top-1 left-1 w-6 h-6 rounded-full bg-yellow-500 flex items-center justify-center shadow-sm animate-scale-in">
-                <UtensilsCrossed className="h-4 w-4 text-white" />
+              <div className="absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-yellow-500 flex items-center justify-center shadow-sm animate-scale-in">
+                <UtensilsCrossed className="h-3 w-3 text-white" />
               </div>
             )}
             
             {/* Cooked icon - top-right */}
             {mealPlan.is_completed && (
-              <div className="absolute top-1 right-1 w-6 h-6 rounded-full bg-green-500 flex items-center justify-center shadow-sm animate-scale-in">
-                <Check className="h-4 w-4 text-white" />
+              <div className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-green-500 flex items-center justify-center shadow-sm animate-scale-in">
+                <Check className="h-3 w-3 text-white" />
               </div>
             )}
           </div>
