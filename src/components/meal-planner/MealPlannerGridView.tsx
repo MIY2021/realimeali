@@ -90,9 +90,9 @@ export const MealPlannerGridView = ({
                 size="sm"
                 variant="ghost"
                 onClick={() => onAddMeal(mealType)}
-                className="h-8 w-8 rounded-full bg-butter hover:bg-butter/90 p-0"
+                className="h-8 w-8 rounded-full bg-[#F5B82E] hover:bg-[#F5B82E]/90 p-0"
               >
-                <Plus className="h-4 w-4 text-navy" />
+                <Plus className="h-4 w-4 text-white" />
               </Button>
             </div>
 

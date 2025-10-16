@@ -114,13 +114,12 @@ export default function MealListSection({
         </div>
         {!collapsed && (
           <Button
-            size={isMobile ? "sm" : "sm"}
-            variant="outline"
+            size="sm"
+            variant="ghost"
             onClick={handleAddMeal}
-            className={`text-terracotta border-terracotta hover:bg-terracotta/10 transition-all duration-200 hover:scale-105 ${isMobile ? 'h-8 px-3 text-xs' : ''}`}
+            className="h-8 w-8 rounded-full bg-[#F5B82E] hover:bg-[#F5B82E]/90 p-0"
           >
-            <Plus className={`${isMobile ? 'h-3 w-3 mr-1' : 'h-4 w-4 mr-1'}`} />
-            Add
+            <Plus className="h-4 w-4 text-white" />
           </Button>
         )}
       </div>

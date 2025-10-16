@@ -128,14 +128,14 @@ export function EnhancedMealCard({
               </div>
 
               {/* Bottom Controls */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-gray-600">Servings:</span>
-                  <div className="flex items-center gap-1">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] text-gray-600 leading-none">Servings:</span>
+                  <div className="flex items-center gap-0.5">
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-6 w-6 p-0"
+                      className="h-5 w-5 p-0"
                       onClick={async () => {
                         const newServings = Math.max(1, servings - 1);
                         setServings(newServings);
@@ -147,13 +147,13 @@ export function EnhancedMealCard({
                         }
                       }}
                     >
-                      <Minus className="h-3 w-3" />
+                      <Minus className="h-2.5 w-2.5" />
                     </Button>
-                    <span className="text-sm font-medium w-6 text-center">{servings}</span>
+                    <span className="text-xs font-medium w-5 text-center">{servings}</span>
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-6 w-6 p-0"
+                      className="h-5 w-5 p-0"
                       onClick={async () => {
                         const newServings = servings + 1;
                         setServings(newServings);
@@ -165,7 +165,7 @@ export function EnhancedMealCard({
                         }
                       }}
                     >
-                      <Plus className="h-3 w-3" />
+                      <Plus className="h-2.5 w-2.5" />
                     </Button>
                   </div>
                 </div>
@@ -367,29 +367,27 @@ export function EnhancedMealCard({
             </div>
 
             {/* Bottom Controls */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-gray-600">Servings:</span>
-                  <div className="flex items-center gap-1">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-6 w-6 p-0"
-                      onClick={handleServingsDecrease}
-                    >
-                      <Minus className="h-3 w-3" />
-                    </Button>
-                    <span className="text-sm font-medium w-6 text-center">{displayServings}</span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-6 w-6 p-0"
-                      onClick={handleServingsIncrease}
-                    >
-                      <Plus className="h-3 w-3" />
-                    </Button>
-                  </div>
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] text-gray-600 leading-none">Servings:</span>
+                <div className="flex items-center gap-0.5">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-5 w-5 p-0"
+                    onClick={handleServingsDecrease}
+                  >
+                    <Minus className="h-2.5 w-2.5" />
+                  </Button>
+                  <span className="text-xs font-medium w-5 text-center">{displayServings}</span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-5 w-5 p-0"
+                    onClick={handleServingsIncrease}
+                  >
+                    <Plus className="h-2.5 w-2.5" />
+                  </Button>
                 </div>
               </div>
 
