@@ -57,18 +57,18 @@ export const MealPlannerActions = ({
         <>
           <Button 
             variant="secondary" 
-            size="md" 
+            size="sm" 
             onClick={onShare}
           >
-            <Share className="w-5 h-5" />
+            <Share className="w-4 h-4" />
             Share
           </Button>
           <Button 
             variant="destructive" 
-            size="md" 
+            size="sm" 
             onClick={onClearAll}
           >
-            <Trash2 className="w-5 h-5" />
+            <Trash2 className="w-4 h-4" />
             Clear All
           </Button>
         </>

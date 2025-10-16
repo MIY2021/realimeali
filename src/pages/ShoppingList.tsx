@@ -20,7 +20,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { Plus, Share } from "lucide-react";
+import { Share, Trash2 } from "lucide-react";
+import { FloatingAddButton } from "@/components/shared/FloatingAddButton";
 import { Link } from "react-router-dom";
 
 export default function ShoppingList() {
@@ -266,25 +267,20 @@ export default function ShoppingList() {
               <div className="flex items-center gap-2">
                 <Button
                   variant="secondary"
-                  size="md"
-                  onClick={() => {
-                    const itemName = prompt("Enter item name:");
-                    if (itemName?.trim()) {
-                      addCustomItem(itemName.trim());
-                    }
-                  }}
+                  size="sm"
+                  onClick={handleShare}
                 >
-                  <Plus className="w-5 h-5" />
-                  Add Item
+                  <Share className="w-4 h-4" />
+                  Share
                 </Button>
                 
                 <Button
-                  variant="secondary"
-                  size="md"
-                  onClick={handleShare}
+                  variant="destructive"
+                  size="sm"
+                  onClick={clearAll}
                 >
-                  <Share className="w-5 h-5" />
-                  Share
+                  <Trash2 className="w-4 h-4" />
+                  Clear All
                 </Button>
               </div>
               
@@ -339,6 +335,19 @@ export default function ShoppingList() {
             createdByUserId={shoppingList.length > 0 ? shoppingList[0].createdBy : undefined}
           />
         </>
+      )}
+
+      {/* Floating Add button */}
+      {user && currentHousehold && (
+        <FloatingAddButton
+          onClick={() => {
+            const itemName = prompt("Enter item name:");
+            if (itemName?.trim()) {
+              addCustomItem(itemName.trim());
+            }
+          }}
+          ariaLabel="Add shopping item"
+        />
       )}
     </div>
   );
