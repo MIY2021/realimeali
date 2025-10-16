@@ -111,6 +111,7 @@ export const MealPlannerGridView = ({
                     onRemove={onRemoveMeal}
                     onCreateLeftover={onCreateLeftover}
                     animationDelay={(sectionIndex * 100) + (index * 50)}
+                    allMealPlans={currentMealPlans}
                   />
                 ))}
               </div>
