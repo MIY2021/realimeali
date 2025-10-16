@@ -126,9 +126,9 @@ export function EnhancedMealCard({
                   <span className="text-xs text-gray-600">Servings:</span>
                   <div className="flex items-center gap-1">
                     <Button
-                      variant="outline"
+                      variant="ghost"
                       size="sm"
-                      className="h-6 w-6 p-0 rounded-full"
+                      className="h-6 w-6 p-0"
                       onClick={async () => {
                         const newServings = Math.max(1, servings - 1);
                         setServings(newServings);
@@ -144,9 +144,9 @@ export function EnhancedMealCard({
                     </Button>
                     <span className="text-sm font-medium w-6 text-center">{servings}</span>
                     <Button
-                      variant="outline"
+                      variant="ghost"
                       size="sm"
-                      className="h-6 w-6 p-0 rounded-full"
+                      className="h-6 w-6 p-0"
                       onClick={async () => {
                         const newServings = servings + 1;
                         setServings(newServings);
@@ -343,18 +343,18 @@ export function EnhancedMealCard({
                   <span className="text-xs text-gray-600">Servings:</span>
                   <div className="flex items-center gap-1">
                     <Button
-                      variant="outline"
+                      variant="ghost"
                       size="sm"
-                      className="h-6 w-6 p-0 rounded-full"
+                      className="h-6 w-6 p-0"
                       onClick={handleServingsDecrease}
                     >
                       <Minus className="h-3 w-3" />
                     </Button>
                     <span className="text-sm font-medium w-6 text-center">{displayServings}</span>
                     <Button
-                      variant="outline"
+                      variant="ghost"
                       size="sm"
-                      className="h-6 w-6 p-0 rounded-full"
+                      className="h-6 w-6 p-0"
                       onClick={handleServingsIncrease}
                     >
                       <Plus className="h-3 w-3" />
