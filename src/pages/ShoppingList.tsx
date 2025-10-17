@@ -297,21 +297,27 @@ export default function ShoppingList() {
                 </div>
               </div>
               
-              {/* Row 2: Add button aligned to right */}
-              <div className="flex justify-end">
-                <Button
-                  size="sm"
-                  onClick={() => {
-                    const itemName = prompt("Enter item name:");
-                    if (itemName?.trim()) {
-                      addCustomItem(itemName.trim());
-                    }
-                  }}
-                  className="h-6 w-6 rounded-full bg-[#F5B82E]/70 hover:bg-[#F5B82E]/90 text-white p-0 border-0"
-                >
-                  <Plus className="h-3 w-3" />
-                </Button>
-              </div>
+              {/* Row 2: Item count on left, Add button on right */}
+              {shoppingList.length > 0 && (
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-sm" style={{ color: 'hsl(var(--shopping-grey))' }}>
+                    {completedItems} of {totalItems} items completed
+                  </p>
+                  
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      const itemName = prompt("Enter item name:");
+                      if (itemName?.trim()) {
+                        addCustomItem(itemName.trim());
+                      }
+                    }}
+                    className="h-6 w-6 rounded-full bg-[#F5B82E]/70 hover:bg-[#F5B82E]/90 text-white p-0 border-0"
+                  >
+                    <Plus className="h-3 w-3" />
+                  </Button>
+                </div>
+              )}
             </div>
           )}
 
@@ -327,12 +333,6 @@ export default function ShoppingList() {
                 />
               ) : (
                 <>
-                  <ShoppingListCreationInfo 
-                    lastGenerated={lastGenerated}
-                    createdByUserId={shoppingList.length > 0 ? shoppingList[0].createdBy : undefined}
-                    totalItems={totalItems}
-                    completedItems={completedItems}
-                  />
                   <ShoppingListItems
                     shoppingList={filteredShoppingList}
                     copiedItemId={copiedItemId}
