@@ -84,8 +84,8 @@ export function EnhancedMealCard({
               
               {/* Cooked icon - top-right */}
               {mealPlan.is_completed && (
-                <div className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-green-500 flex items-center justify-center shadow-sm animate-scale-in">
-                  <Check className="h-3 w-3 text-white" />
+                <div className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-green-500/80 flex items-center justify-center shadow-sm animate-scale-in">
+                  <Check className="h-2.5 w-2.5 text-white" />
                 </div>
               )}
             </div>
@@ -326,15 +326,15 @@ export function EnhancedMealCard({
             
             {/* Lunch Leftover icon - top-left */}
             {existingLeftover && (
-              <div className="absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-yellow-500 flex items-center justify-center shadow-sm animate-scale-in">
-                <UtensilsCrossed className="h-3 w-3 text-white" />
+              <div className="absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-yellow-500/80 flex items-center justify-center shadow-sm animate-scale-in">
+                <UtensilsCrossed className="h-2.5 w-2.5 text-white" />
               </div>
             )}
             
             {/* Cooked icon - top-right */}
             {mealPlan.is_completed && (
-              <div className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-green-500 flex items-center justify-center shadow-sm animate-scale-in">
-                <Check className="h-3 w-3 text-white" />
+              <div className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-green-500/80 flex items-center justify-center shadow-sm animate-scale-in">
+                <Check className="h-2.5 w-2.5 text-white" />
               </div>
             )}
           </div>
