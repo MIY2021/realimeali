@@ -128,9 +128,9 @@ export function EnhancedMealCard({
               </div>
 
               {/* Bottom Controls */}
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] text-gray-600 leading-none">Servings:</span>
+              <div className="flex items-center justify-between gap-1">
+                <div className="flex items-center gap-1">
+                  <span className="text-[10px] text-gray-600 leading-none whitespace-nowrap">Servings:</span>
                   <div className="flex items-center gap-0.5">
                     <Button
                       variant="ghost"
@@ -170,7 +170,7 @@ export function EnhancedMealCard({
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 flex-shrink-0">
                   {/* Completion Tick Icon */}
                   <Button
                     variant="outline"
@@ -367,9 +367,9 @@ export function EnhancedMealCard({
             </div>
 
             {/* Bottom Controls */}
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-1.5">
-                <span className="text-[10px] text-gray-600 leading-none">Servings:</span>
+            <div className="flex items-center justify-between gap-1">
+              <div className="flex items-center gap-1">
+                <span className="text-[10px] text-gray-600 leading-none whitespace-nowrap">Servings:</span>
                 <div className="flex items-center gap-0.5">
                   <Button
                     variant="ghost"
@@ -391,7 +391,7 @@ export function EnhancedMealCard({
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 flex-shrink-0">
                 {/* Completion Tick Icon */}
                 <Button
                   variant="outline"

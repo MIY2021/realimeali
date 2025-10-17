@@ -157,7 +157,9 @@ export function MealPlannerRecipeCard({
       <CardContent className="p-3 space-y-1.5">
         {/* Title */}
         <h3 
-          className="font-bold text-sm leading-tight text-navy line-clamp-2 min-h-[2.5rem]"
+          className={`font-bold text-sm leading-tight text-navy line-clamp-2 min-h-[2.5rem] ${
+            mealPlan.is_completed ? 'line-through text-gray-400' : ''
+          }`}
           onClick={() => {
             if (!recipe && mealPlan.meal_name && mealPlan.meal_name.length > 15) {
               toast({
