@@ -134,8 +134,8 @@ export function MealPlannerRecipeCard({
         <RecipeImage
           recipe={recipe}
           alt={getTitle()}
-          className={`w-full object-cover h-32 rounded-t-xl transition-all duration-250 ${
-            mealPlan.is_completed ? 'grayscale-[40%]' : ''
+          className={`w-full object-cover h-32 rounded-t-xl transition-all duration-300 ease-in-out ${
+            mealPlan.is_completed ? 'grayscale brightness-75' : ''
           }`}
         />
         

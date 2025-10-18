@@ -76,8 +76,8 @@ export function EnhancedMealCard({
               <RecipeImage 
                 recipe={undefined}
                 alt={mealPlan.meal_name || 'Custom Meal'}
-                className={`w-full h-full rounded transition-all duration-250 ${
-                  mealPlan.is_completed ? 'grayscale-[40%]' : ''
+                className={`w-full h-full rounded transition-all duration-300 ease-in-out ${
+                  mealPlan.is_completed ? 'grayscale brightness-75' : ''
                 }`}
                 iconSize="h-8 w-8"
               />
@@ -317,8 +317,8 @@ export function EnhancedMealCard({
             <Link to={recipeUrl}>
               <RecipeImage 
                 recipe={recipe}
-                className={`w-full h-full rounded cursor-pointer hover:opacity-80 transition-all duration-250 ${
-                  mealPlan.is_completed ? 'grayscale-[40%]' : ''
+                className={`w-full h-full rounded cursor-pointer hover:opacity-80 transition-all duration-300 ease-in-out ${
+                  mealPlan.is_completed ? 'grayscale brightness-75' : ''
                 }`}
                 iconSize="h-8 w-8"
               />
