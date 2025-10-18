@@ -304,8 +304,8 @@ export default function ShoppingList() {
                     {completedItems} of {totalItems} items completed
                   </p>
                   
+                  {/* Remove size prop to prevent min-height/min-width override - allows h-6 w-6 (24px) to work */}
                   <Button
-                    size="sm"
                     onClick={() => {
                       const itemName = prompt("Enter item name:");
                       if (itemName?.trim()) {

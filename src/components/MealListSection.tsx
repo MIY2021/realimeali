@@ -113,8 +113,8 @@ export default function MealListSection({
           )}
         </div>
         {!collapsed && (
+          /* Remove size prop to prevent min-height/min-width override - allows h-6 w-6 (24px) to work */
           <Button
-            size="sm"
             variant="ghost"
             onClick={handleAddMeal}
             className="h-6 w-6 rounded-full bg-[#F5B82E]/50 hover:bg-[#F5B82E]/70 p-0"
