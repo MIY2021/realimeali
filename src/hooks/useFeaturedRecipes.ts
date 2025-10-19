@@ -1,10 +1,11 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ImportedRecipe } from "@/services/importedRecipeService";
 
 interface UseFeaturedRecipesFilters {
   keyword?: string;
+  sortBy?: string;
   mealTypes?: string[];
   cuisineTypes?: string[];
   cookingDurations?: string[];
@@ -22,8 +23,30 @@ export function useFeaturedRecipes(options: UseFeaturedRecipesOptions = {}) {
 
   const filters = options.initialFilters || {};
 
+  // Note: filterKey uses stable string dependencies to prevent unnecessary resets
+  // caused by React's object identity checks. This ensures the recipe list
+  // doesn't flicker or disappear unexpectedly.
+  const filterKey = useMemo(() => 
+    JSON.stringify({
+      keyword: filters.keyword || '',
+      sortBy: filters.sortBy || 'priority',
+      mealTypes: filters.mealTypes || [],
+      cuisineTypes: filters.cuisineTypes || [],
+      dietLifestyle: filters.dietLifestyle || [],
+      cookingDurations: filters.cookingDurations || [],
+    }),
+    [
+      filters.keyword,
+      filters.sortBy,
+      filters.mealTypes?.join(','),
+      filters.cuisineTypes?.join(','),
+      filters.dietLifestyle?.join(','),
+      filters.cookingDurations?.join(','),
+    ]
+  );
+
   const { data, isLoading, error } = useQuery({
-    queryKey: ['featured-recipes', filters, page],
+    queryKey: ['featured-recipes', filterKey, page],
     queryFn: async () => {
       let query = supabase
         .from('imported_recipes')
@@ -58,9 +81,24 @@ export function useFeaturedRecipes(options: UseFeaturedRecipesOptions = {}) {
         query = query.lte('prep_time', maxDuration).lte('cook_time', maxDuration);
       }
 
+      // Apply sorting
+      let orderColumn = 'priority_score';
+      let ascending = false;
+
+      if (filters.sortBy === 'newest') {
+        orderColumn = 'created_at';
+        ascending = false;
+      } else if (filters.sortBy === 'oldest') {
+        orderColumn = 'created_at';
+        ascending = true;
+      } else {
+        // 'priority' or default
+        orderColumn = 'priority_score';
+        ascending = false;
+      }
+
       query = query
-        .order('priority_score', { ascending: false })
-        .order('created_at', { ascending: false })
+        .order(orderColumn, { ascending })
         .range(page * RECIPES_PER_PAGE, (page + 1) * RECIPES_PER_PAGE - 1);
 
       const { data, error } = await query;
@@ -82,17 +120,11 @@ export function useFeaturedRecipes(options: UseFeaturedRecipesOptions = {}) {
     }
   }, [data, page]);
 
-  // Reset when filters change - use stable serialization to avoid unnecessary resets
+  // Reset when filters change - use stable filterKey
   useEffect(() => {
     setPage(0);
     setAllRecipes([]);
-  }, [
-    filters.keyword || '',
-    JSON.stringify(filters.mealTypes || []),
-    JSON.stringify(filters.cuisineTypes || []),
-    JSON.stringify(filters.dietLifestyle || []),
-    JSON.stringify(filters.cookingDurations || []),
-  ]);
+  }, [filterKey]);
 
   const loadMore = useCallback(() => {
     setPage(prev => prev + 1);

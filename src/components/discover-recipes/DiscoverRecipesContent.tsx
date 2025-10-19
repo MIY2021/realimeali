@@ -71,6 +71,7 @@ export function DiscoverRecipesContent() {
   } = useFeaturedRecipes({
     initialFilters: {
       keyword,
+      sortBy,
       mealTypes: filters.mealTypes,
       cuisineTypes: filters.cuisineTypes,
       dietLifestyle: filters.dietLifestyle,
