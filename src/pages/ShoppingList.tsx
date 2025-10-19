@@ -255,11 +255,6 @@ export default function ShoppingList() {
             mostRecentWeek={mostRecentShoppingWeek}
           />
 
-          <ShoppingListGenerationProgress
-            isGenerating={isGenerating}
-            generationProgress={generationProgress}
-          />
-
           {/* Action rows */}
           {user && currentHousehold && (
             <div className="space-y-2 mb-4">
