@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useMemo } from "react";
+import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ImportedRecipe } from "@/services/importedRecipeService";
@@ -109,8 +109,19 @@ export function useFeaturedRecipes(options: UseFeaturedRecipesOptions = {}) {
     staleTime: 1000 * 60 * 15, // 15 minutes
   });
 
+  // Track the previous filterKey to detect changes
+  const prevFilterKeyRef = useRef(filterKey);
+
   // Update recipes when new data arrives
   useEffect(() => {
+    // If filterKey changed, reset everything
+    if (prevFilterKeyRef.current !== filterKey) {
+      setPage(0);
+      setAllRecipes([]);
+      prevFilterKeyRef.current = filterKey;
+    }
+    
+    // Now update recipes based on current data
     if (data) {
       if (page === 0) {
         setAllRecipes(data);
@@ -118,13 +129,8 @@ export function useFeaturedRecipes(options: UseFeaturedRecipesOptions = {}) {
         setAllRecipes(prev => [...prev, ...data]);
       }
     }
-  }, [data, page]);
+  }, [data, page, filterKey]);
 
-  // Reset when filters change - use stable filterKey
-  useEffect(() => {
-    setPage(0);
-    setAllRecipes([]);
-  }, [filterKey]);
 
   const loadMore = useCallback(() => {
     setPage(prev => prev + 1);
