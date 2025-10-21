@@ -114,24 +114,24 @@ export function CreateRecipeTabNavigation({
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         {/* Mobile Dropdown */}
         {isMobile ? (
-          <div className="mb-4">
+          <div className="mb-6">
             <Select value={activeTab} onValueChange={setActiveTab}>
-              <SelectTrigger className="w-full">
+              <SelectTrigger className="w-full h-12 rounded-[12px] border border-[#E3E3E3] bg-white shadow-sm">
                 <SelectValue>
                   {activeTabOption && (
                     <div className="flex items-center gap-2">
-                      <span>{activeTabOption.emoji}</span>
-                      {activeTabOption.label}
+                      <span className="text-lg">{activeTabOption.emoji}</span>
+                      <span className="font-medium">{activeTabOption.label}</span>
                     </div>
                   )}
                 </SelectValue>
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-white border border-[#E3E3E3] shadow-lg rounded-[12px]">
                 {tabOptions.map((tab) => (
-                  <SelectItem key={tab.value} value={tab.value}>
+                  <SelectItem key={tab.value} value={tab.value} className="py-3">
                     <div className="flex items-center gap-2">
-                      <span>{tab.emoji}</span>
-                      {tab.label}
+                      <span className="text-lg">{tab.emoji}</span>
+                      <span>{tab.label}</span>
                     </div>
                   </SelectItem>
                 ))}
@@ -139,11 +139,15 @@ export function CreateRecipeTabNavigation({
             </Select>
           </div>
         ) : (
-          /* Desktop Tabs - Fixed width to prevent layout shift */
-          <div className="mb-4 sm:mb-6">
-            <TabsList className={`grid w-full ${isEditMode ? 'grid-cols-1' : 'grid-cols-6'} mb-3 min-h-[40px]`}>
+          /* Desktop Tabs */
+          <div className="mb-6">
+            <TabsList className={`grid w-full ${isEditMode ? 'grid-cols-1' : 'grid-cols-6'} mb-4 bg-white/50 p-1 rounded-[12px] border border-[#E3E3E3]`}>
               {tabOptions.map((tab) => (
-                <TabsTrigger key={tab.value} value={tab.value} className="p-2 min-w-0 flex-1">
+                <TabsTrigger 
+                  key={tab.value} 
+                  value={tab.value} 
+                  className="p-3 min-w-0 flex-1 rounded-[10px] data-[state=active]:bg-white data-[state=active]:shadow-sm"
+                >
                   <span className="mr-2">{tab.emoji}</span>
                   <span className="truncate">{tab.label}</span>
                 </TabsTrigger>

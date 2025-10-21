@@ -191,15 +191,15 @@ export function CreateRecipeContainer({ editingRecipe, isEditMode = false, defau
   }, []);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Title Section */}
-      <div className="flex flex-col gap-4 mb-6 sm:flex-row sm:justify-between sm:items-start">
-        <div className="space-y-2 flex-1">
-          <h1 className="text-2xl sm:text-3xl font-bold text-navy flex items-center gap-2">
-            <Plus className="h-6 w-6 sm:h-8 sm:w-8 text-sage" />
+      <div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-start">
+        <div className="space-y-3 flex-1">
+          <h1 className="text-3xl sm:text-4xl font-bold text-[#1A1A1A] flex items-center gap-3">
+            <Plus className="h-8 w-8 sm:h-10 sm:w-10 text-sage" />
             {isEditMode ? "Edit Recipe" : "Add New Recipe"}
           </h1>
-          <p className="text-sm sm:text-base text-muted-foreground">
+          <p className="text-base sm:text-lg text-[#6B6B6B] leading-relaxed max-w-2xl">
             {isEditMode 
               ? "Update your recipe with any changes. All your existing data is preserved and ready for editing."
               : "Turn your culinary imagination into reality! Whether you're recreating a family favorite or experimenting with new flavors, every great meal starts with the perfect recipe."

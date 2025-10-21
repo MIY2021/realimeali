@@ -41,76 +41,78 @@ export function RecipeGenerateTab({
   };
 
   return (
-    <div className="space-y-6 p-4 sm:p-6">
-      <div className="text-center space-y-2">
-        <div className="flex justify-center items-center gap-2 mb-2">
-          <Star className="h-8 w-8 text-sage" />
-          <Sparkles className="h-6 w-6 text-yellow-500" />
+    <div className="max-w-2xl mx-auto">
+      <div className="bg-white rounded-[12px] border border-[#E3E3E3] shadow-sm p-6 sm:p-8 space-y-6">
+        <div className="text-center space-y-3">
+          <div className="flex justify-center items-center gap-2 mb-2">
+            <Star className="h-10 w-10 text-sage" />
+            <Sparkles className="h-7 w-7 text-yellow-500" />
+          </div>
+          <h2 className="text-2xl sm:text-3xl font-semibold text-[#1A1A1A]">Generate with AI</h2>
+          <p className="text-sm text-[#6B6B6B] leading-relaxed max-w-md mx-auto">
+            Describe what you want to cook and let AI create a complete recipe
+          </p>
         </div>
-        <h2 className="text-2xl font-bold text-navy">Generate with AI</h2>
-        <p className="text-muted-foreground">
-          Describe what you want to cook and let AI create a complete recipe
-        </p>
-      </div>
-      
-      <div className="space-y-3">
-        <Label htmlFor="recipe-request" className="text-base font-medium">What recipe would you like me to create?</Label>
-        <Textarea
-          id="recipe-request"
-          value={aiPrompt}
-          onChange={(e) => setAiPrompt(e.target.value)}
-          placeholder="Tell me what you're craving! E.g., 'A quick vegetarian dinner for 4 people using ingredients I might have at home' or 'A fancy dessert for a dinner party' or 'Healthy breakfast ideas with oats'."
-          className="w-full h-40 p-4 border rounded-lg resize-none text-base leading-relaxed"
-        />
         
-        <div className="space-y-3">
-          <Label className="text-base font-medium">Style Preferences (Optional)</Label>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {styleOptions.map((style) => (
-              <div
-                key={style.id}
-                onClick={() => toggleStyle(style.id)}
-                className={`p-3 border rounded-lg cursor-pointer transition-colors ${
-                  stylePreferences.includes(style.id)
-                    ? 'border-blue-500 bg-blue-50'
-                    : 'border-gray-200 hover:border-gray-300'
-                }`}
-              >
-                <div className="font-medium text-sm">{style.label}</div>
-                <div className="text-xs text-muted-foreground mt-1">{style.description}</div>
-              </div>
-            ))}
+        <div className="space-y-4">
+          <Label htmlFor="recipe-request" className="text-base font-medium text-[#1A1A1A]">What recipe would you like me to create?</Label>
+          <Textarea
+            id="recipe-request"
+            value={aiPrompt}
+            onChange={(e) => setAiPrompt(e.target.value)}
+            placeholder="Tell me what you're craving! E.g., 'A quick vegetarian dinner for 4 people using ingredients I might have at home' or 'A fancy dessert for a dinner party' or 'Healthy breakfast ideas with oats'."
+            className="w-full h-40 p-4 border border-[#E3E3E3] rounded-[12px] resize-none text-base leading-relaxed focus:border-sage focus:ring-sage"
+          />
+          
+          <div className="space-y-4">
+            <Label className="text-base font-medium text-[#1A1A1A]">Style Preferences (Optional)</Label>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {styleOptions.map((style) => (
+                <div
+                  key={style.id}
+                  onClick={() => toggleStyle(style.id)}
+                  className={`p-4 border rounded-[12px] cursor-pointer transition-all ${
+                    stylePreferences.includes(style.id)
+                      ? 'border-sage bg-[#CFE6D6]/20 shadow-sm'
+                      : 'border-[#E3E3E3] hover:border-[#B8D9C5]'
+                  }`}
+                >
+                  <div className="font-medium text-sm text-[#1A1A1A]">{style.label}</div>
+                  <div className="text-xs text-[#6B6B6B] mt-1">{style.description}</div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Progress display - identical to website import */}
-      {isProcessing && (
-        <div className="space-y-3">
-          <div className="flex justify-between items-center">
-            <span className="text-sm font-medium">Processing recipe...</span>
-            <span className="text-sm text-muted-foreground">{Math.round(progressValue)}%</span>
+        {/* Progress display */}
+        {isProcessing && (
+          <div className="space-y-3">
+            <div className="flex justify-between items-center">
+              <span className="text-sm font-medium">Processing recipe...</span>
+              <span className="text-sm text-[#6B6B6B]">{Math.round(progressValue)}%</span>
+            </div>
+            <Progress value={progressValue} className="w-full" />
+            {generationProgress && (
+              <p className="text-sm text-sage font-medium">{generationProgress}</p>
+            )}
           </div>
-          <Progress value={progressValue} className="w-full" />
-          {generationProgress && (
-            <p className="text-sm text-blue-600">{generationProgress}</p>
-          )}
+        )}
+        
+        <div className="flex justify-end pt-2">
+          <Button
+            onClick={onGenerate}
+            disabled={!aiPrompt.trim() || isProcessing}
+            className="bg-[#CFE6D6] hover:bg-[#B8D9C5] text-[#1A1A1A] rounded-[12px] min-h-[44px] shadow-[0_1px_0_rgba(0,0,0,0.04)] font-medium"
+          >
+            {isProcessing ? "Generating..." : (
+              <>
+                <Sparkles className="h-4 w-4 mr-2" />
+                Generate Recipe
+              </>
+            )}
+          </Button>
         </div>
-      )}
-      
-      <div className="flex justify-end">
-        <Button
-          onClick={onGenerate}
-          disabled={!aiPrompt.trim() || isProcessing}
-          className="bg-blue-600 hover:bg-blue-700"
-        >
-          {isProcessing ? "Generating..." : (
-            <>
-              <Sparkles className="h-4 w-4 mr-2" />
-              Generate Recipe
-            </>
-          )}
-        </Button>
       </div>
     </div>
   );

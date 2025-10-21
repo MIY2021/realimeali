@@ -35,12 +35,14 @@ export default function CreateRecipePage() {
   const hasAiData = aiRecipeData.title && aiRecipeData.ingredients.length > 0;
   
   return (
-    <div className="container max-w-7xl py-4 px-4 sm:py-8 sm:px-6">
-      <CreateRecipeContainer 
-        editingRecipe={hasAiData ? aiRecipeData : undefined}
-        isEditMode={false}
-        defaultTab={hasAiData || urlParam ? targetTab : undefined}
-      />
+    <div className="min-h-screen bg-[#FAF9F6]">
+      <div className="container max-w-4xl py-6 px-4 sm:py-10 sm:px-6">
+        <CreateRecipeContainer 
+          editingRecipe={hasAiData ? aiRecipeData : undefined}
+          isEditMode={false}
+          defaultTab={hasAiData || urlParam ? targetTab : undefined}
+        />
+      </div>
     </div>
   );
 }

@@ -31,7 +31,7 @@ export function RecipeTabsContent({
   onSelectWhatCanIMakeRecipe,
 }: RecipeTabsContentProps) {
   return (
-    <div className="pt-0 p-0 sm:p-4 sm:pt-0">
+    <div className="pt-0">
       <TabsContent value="whatcanImake">
         <RecipeWhatCanIMakeTab
           onSelectRecipe={onSelectWhatCanIMakeRecipe || (() => {})}

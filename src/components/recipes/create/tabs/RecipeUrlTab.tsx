@@ -56,84 +56,88 @@ export function RecipeUrlTab({
   const hasSuccessfullyImported = parsedRecipeData && !isProcessing;
 
   return (
-    <div className="space-y-6 p-4 sm:p-6">
-      <div className="text-center space-y-2">
-        <div className="flex justify-center items-center gap-2 mb-2">
-          <Globe className="h-8 w-8 text-sage" />
-          <Sparkles className="h-6 w-6 text-yellow-500" />
-        </div>
-        <h2 className="text-2xl font-bold text-navy">From Website</h2>
-        <p className="text-muted-foreground">
-          Import recipes directly from cooking websites with one click
-        </p>
-      </div>
-      
-      <div className="space-y-3">
-        <Label htmlFor="website-url" className="text-base font-medium">Recipe Website URL</Label>
-        <Input
-          id="website-url"
-          type="url"
-          value={recipeUrl}
-          onChange={(e) => setRecipeUrl(e.target.value)}
-          placeholder="https://example-recipe-website.com/recipe/your-recipe"
-          className="text-base p-4 h-12"
-          disabled={isProcessing}
-        />
-      </div>
-      
-      {isProcessing && importProgress && (
-        <div className="space-y-3">
-          <div className="flex justify-between items-center">
-            <span className="text-sm font-medium">Processing website...</span>
-            <span className="text-sm text-muted-foreground">{Math.round(progressValue)}%</span>
+    <div className="max-w-2xl mx-auto">
+      <div className="bg-white rounded-[12px] border border-[#E3E3E3] shadow-sm p-6 sm:p-8 space-y-6">
+        <div className="text-center space-y-3">
+          <div className="flex justify-center items-center gap-2 mb-2">
+            <Globe className="h-10 w-10 text-sage" />
+            <Sparkles className="h-7 w-7 text-yellow-500" />
           </div>
-          <Progress value={progressValue} className="w-full" />
-          <p className="text-sm text-blue-600">{importProgress}</p>
-          
-          <Alert>
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              If this is taking too long, you can cancel and try copying the recipe text instead using the "Paste Recipe Text" tab.
+          <h2 className="text-2xl sm:text-3xl font-semibold text-[#1A1A1A]">From Website</h2>
+          <p className="text-sm text-[#6B6B6B] leading-relaxed max-w-md mx-auto">
+            Import recipes directly from cooking websites with one click
+          </p>
+        </div>
+        
+        <div className="space-y-4">
+          <Label htmlFor="website-url" className="text-base font-medium text-[#1A1A1A]">Recipe Website URL</Label>
+          <div className="relative">
+            <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-[#6B6B6B]" />
+            <Input
+              id="website-url"
+              type="url"
+              value={recipeUrl}
+              onChange={(e) => setRecipeUrl(e.target.value)}
+              placeholder="https://example-recipe-website.com/recipe/your-recipe"
+              className="text-base pl-11 pr-4 h-12 rounded-[12px] border-[#E3E3E3] focus:border-sage focus:ring-sage"
+              disabled={isProcessing}
+            />
+          </div>
+        </div>
+      
+        {isProcessing && importProgress && (
+          <div className="space-y-3">
+            <div className="flex justify-between items-center">
+              <span className="text-sm font-medium">Processing website...</span>
+              <span className="text-sm text-[#6B6B6B]">{Math.round(progressValue)}%</span>
+            </div>
+            <Progress value={progressValue} className="w-full" />
+            <p className="text-sm text-sage font-medium">{importProgress}</p>
+            
+            <Alert className="bg-blue-50 border-blue-200">
+              <AlertCircle className="h-4 w-4 text-blue-600" />
+              <AlertDescription className="text-sm text-blue-800">
+                If this is taking too long, you can cancel and try copying the recipe text instead using the "Paste Recipe Text" tab.
+              </AlertDescription>
+            </Alert>
+          </div>
+        )}
+
+        {/* Success state with images */}
+        {hasImages && !isProcessing && (
+          <Alert className="bg-green-50 border-green-200">
+            <Check className="h-4 w-4 text-green-600" />
+            <AlertDescription className="text-sm text-green-800">
+              ✅ Recipe imported successfully! Found {websiteImages.length} images. Select one below or proceed to edit the recipe.
             </AlertDescription>
           </Alert>
-        </div>
-      )}
+        )}
 
-      {/* Success state with images */}
-      {hasImages && !isProcessing && (
-        <Alert>
-          <Check className="h-4 w-4" />
-          <AlertDescription>
-            ✅ Recipe imported successfully! Found {websiteImages.length} images. Select one below or proceed to edit the recipe.
-          </AlertDescription>
-        </Alert>
-      )}
-
-      {/* Show image selection if we have images */}
-      {hasImages && (
-        <div className="mt-6 p-4 border rounded-lg bg-gray-50">
-          <h3 className="text-sm font-medium mb-3">📸 Images found from website ({websiteImages.length}):</h3>
-          <EnhancedImageSelection
-            images={websiteImages}
-            storedImages={storedImages}
-            selectedImage={selectedImage}
-            onImageSelect={onImageSelect}
-            onDownloadImages={onDownloadImages}
-            isDownloading={isDownloadingImages}
-          />
+        {/* Show image selection if we have images */}
+        {hasImages && (
+          <div className="p-4 border border-[#E3E3E3] rounded-[12px] bg-[#FAF9F6]">
+            <h3 className="text-sm font-medium mb-3 text-[#1A1A1A]">📸 Images found from website ({websiteImages.length}):</h3>
+            <EnhancedImageSelection
+              images={websiteImages}
+              storedImages={storedImages}
+              selectedImage={selectedImage}
+              onImageSelect={onImageSelect}
+              onDownloadImages={onDownloadImages}
+              isDownloading={isDownloadingImages}
+            />
+          </div>
+        )}
+        
+        <div className="flex justify-end pt-2">
+          <Button
+            onClick={onImportWithImages}
+            disabled={!recipeUrl.trim() || isProcessing}
+            className="bg-[#CFE6D6] hover:bg-[#B8D9C5] text-[#1A1A1A] rounded-[12px] min-h-[44px] shadow-[0_1px_0_rgba(0,0,0,0.04)] font-medium"
+          >
+            {isProcessing ? "Importing..." : "Import Recipe"}
+          </Button>
         </div>
-      )}
-      
-      <div className="flex justify-end">
-        <Button
-          onClick={onImportWithImages}
-          disabled={!recipeUrl.trim() || isProcessing}
-          className="bg-blue-600 hover:bg-blue-700"
-        >
-          {isProcessing ? "Importing..." : "Import Recipe"}
-        </Button>
       </div>
-
     </div>
   );
 }
