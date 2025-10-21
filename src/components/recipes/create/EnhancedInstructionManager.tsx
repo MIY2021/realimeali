@@ -68,10 +68,10 @@ export function EnhancedInstructionManager({ instructions, onInstructionsChange 
   };
 
   return (
-    <Card className="p-3 space-y-3 bg-white/60 backdrop-blur-sm border-white/30 h-full flex flex-col">
+    <Card className="rounded-[12px] border border-[#E3E3E3] shadow-sm bg-white p-4 sm:p-5 space-y-3 h-full flex flex-col">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-gray-900">Instructions</h3>
-        <Badge variant="secondary" className="bg-green-50 text-green-700 text-xs">
+        <h3 className="text-base font-semibold text-[#1A1A1A]">Instructions</h3>
+        <Badge variant="secondary" className="bg-sage/10 text-sage-dark text-[10px] px-2 py-0.5">
           {instructions.length}
         </Badge>
       </div>
@@ -94,8 +94,8 @@ export function EnhancedInstructionManager({ instructions, onInstructionsChange 
                         ref={provided.innerRef}
                         {...provided.draggableProps}
                         className={`
-                          flex gap-1.5 p-1 rounded-lg bg-white/50 hover:bg-white/70 transition-all duration-200 group
-                          ${snapshot.isDragging ? 'shadow-lg scale-105 rotate-1 z-50 bg-white border-2 border-blue-300' : ''}
+                          flex gap-1.5 p-2 rounded-[8px] bg-[#FAF9F6] hover:bg-white border border-transparent hover:border-[#E3E3E3] transition-all duration-200 group
+                          ${snapshot.isDragging ? 'shadow-md scale-[1.02] z-50 bg-white border border-sage' : ''}
                         `}
                         style={{
                           ...provided.draggableProps.style,
@@ -110,11 +110,11 @@ export function EnhancedInstructionManager({ instructions, onInstructionsChange 
                             {...provided.dragHandleProps}
                             className="touch-none"
                           >
-                            <GripVertical className="h-4 w-4 text-gray-400 hover:text-gray-600 cursor-grab active:cursor-grabbing transition-colors" />
+                            <GripVertical className="h-3.5 w-3.5 text-[#6B6B6B] hover:text-sage cursor-grab active:cursor-grabbing transition-colors" />
                           </div>
                           
                           {/* Step number */}
-                          <div className="w-5 h-5 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-semibold">
+                          <div className="w-5 h-5 bg-sage text-white rounded-full flex items-center justify-center text-[10px] font-semibold">
                             {index + 1}
                           </div>
                         </div>
@@ -124,14 +124,14 @@ export function EnhancedInstructionManager({ instructions, onInstructionsChange 
                             <Textarea
                               value={editValue}
                               onChange={(e) => setEditValue(e.target.value)}
-                              className="flex-1 min-h-[50px] text-sm"
+                              className="flex-1 min-h-[60px] text-sm rounded-[8px] border-[#E3E3E3] focus:border-sage focus:ring-sage"
                               autoFocus
                             />
                             <div className="flex gap-1">
-                              <Button size="sm" onClick={saveEdit} className="text-xs h-6">
+                              <Button size="sm" onClick={saveEdit} className="text-xs h-7 bg-[#CFE6D6] hover:bg-[#B8D9C5] text-[#1A1A1A]">
                                 Save
                               </Button>
-                              <Button size="sm" variant="outline" onClick={cancelEdit} className="text-xs h-6">
+                              <Button size="sm" variant="outline" onClick={cancelEdit} className="text-xs h-7 border-[#E3E3E3]">
                                 Cancel
                               </Button>
                             </div>
@@ -139,7 +139,7 @@ export function EnhancedInstructionManager({ instructions, onInstructionsChange 
                         ) : (
                           <div className="flex-1 flex justify-between gap-2">
                             <p
-                              className="text-sm leading-relaxed cursor-pointer hover:text-blue-600 transition-colors flex-1 break-words"
+                              className="text-sm leading-relaxed cursor-pointer hover:text-sage transition-colors flex-1 break-words"
                               onClick={() => startEditing(index)}
                             >
                               {instruction}
@@ -148,7 +148,7 @@ export function EnhancedInstructionManager({ instructions, onInstructionsChange 
                               size="sm"
                               variant="ghost"
                               onClick={() => removeInstruction(index)}
-                              className="opacity-70 group-hover:opacity-100 transition-opacity hover:bg-red-50 hover:text-red-600 flex-shrink-0 h-5 w-5 p-0"
+                              className="opacity-70 group-hover:opacity-100 transition-opacity hover:bg-red-50 hover:text-red-600 flex-shrink-0 h-6 w-6 p-0 rounded-md"
                             >
                               <X className="h-3 w-3" />
                             </Button>
@@ -170,15 +170,15 @@ export function EnhancedInstructionManager({ instructions, onInstructionsChange 
           value={newInstruction}
           onChange={(e) => setNewInstruction(e.target.value)}
           placeholder="Describe the next step..."
-          className="min-h-[50px] text-sm"
+          className="min-h-[60px] text-sm rounded-[8px] border-[#E3E3E3] focus:border-sage focus:ring-sage"
         />
         <Button 
           onClick={addInstruction} 
           disabled={!newInstruction.trim()}
-          className="w-full h-8 text-sm"
+          className="w-full h-9 text-sm rounded-[8px] bg-[#CFE6D6] hover:bg-[#B8D9C5] text-[#1A1A1A]"
           size="sm"
         >
-          <Plus className="h-3 w-3 mr-1" />
+          <Plus className="h-3.5 w-3.5 mr-1.5" />
           Add Step {instructions.length + 1}
         </Button>
       </div>

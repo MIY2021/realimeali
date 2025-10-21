@@ -101,19 +101,19 @@ export function EnhancedImageUpload({
   if (hasCurrentImage && !showUploadMode) {
     return (
       <div className="space-y-4">
-        <div className="relative">
+        <div className="relative group">
           <img
             src={imagePreview}
             alt="Recipe preview"
-            className="w-full h-48 object-cover rounded-lg border"
+            className="w-full h-48 object-cover rounded-[12px] border border-[#E3E3E3] group-hover:border-sage/40 transition-colors"
           />
           <Button
             onClick={handleRemoveImage}
             variant="destructive"
             size="sm"
-            className="absolute top-2 right-2"
+            className="absolute top-2 right-2 h-7 w-7 p-0 rounded-full"
           >
-            <X className="h-4 w-4" />
+            <X className="h-3.5 w-3.5" />
           </Button>
         </div>
 
@@ -137,7 +137,7 @@ export function EnhancedImageUpload({
           <Button
             onClick={() => setShowUploadMode(true)}
             variant="outline"
-            className="w-full"
+            className="w-full h-10 rounded-[10px] border-[#E3E3E3] hover:border-sage hover:bg-sage/5"
           >
             <Upload className="h-4 w-4 mr-2" />
             Upload Different Image
@@ -146,8 +146,7 @@ export function EnhancedImageUpload({
           <Button
             onClick={onGenerateImage}
             disabled={isGenerating || !recipeTitle.trim()}
-            variant="outline"
-            className="w-full"
+            className="w-full h-10 rounded-[10px] bg-[#CFE6D6] hover:bg-[#B8D9C5] text-[#1A1A1A]"
           >
             {isGenerating ? (
               <>

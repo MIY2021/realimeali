@@ -75,7 +75,7 @@ export function ImageUploadInterface({
           />
           <label
             htmlFor="recipe-image-upload"
-            className="w-full cursor-pointer inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2"
+            className="w-full h-10 cursor-pointer inline-flex items-center justify-center rounded-[10px] text-sm font-medium border border-[#E3E3E3] bg-white hover:bg-sage/5 hover:border-sage transition-colors"
           >
             <Upload className="h-4 w-4 mr-2" />
             Upload Image
@@ -85,8 +85,7 @@ export function ImageUploadInterface({
         <Button
           onClick={onGenerateImage}
           disabled={isGenerating || !recipeTitle.trim()}
-          variant="outline"
-          className="w-full"
+          className="w-full h-10 rounded-[10px] bg-[#CFE6D6] hover:bg-[#B8D9C5] text-[#1A1A1A]"
         >
           {isGenerating ? (
             <>
@@ -102,8 +101,9 @@ export function ImageUploadInterface({
         </Button>
       </div>
 
-      <p className="text-xs text-gray-500">
-        💡 Tip: High-quality images make your recipes more appealing and easier to follow.
+      <p className="text-[10px] sm:text-xs text-[#6B6B6B] leading-tight flex items-start gap-1.5">
+        <span className="text-sm">💡</span>
+        <span>High-quality images make your recipes more appealing and easier to follow.</span>
       </p>
     </div>
   );

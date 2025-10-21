@@ -90,10 +90,10 @@ export function EnhancedIngredientManager({ ingredients, onIngredientsChange }: 
   };
 
   return (
-    <Card className="p-3 space-y-3 bg-white/60 backdrop-blur-sm border-white/30 h-full flex flex-col">
+    <Card className="rounded-[12px] border border-[#E3E3E3] shadow-sm bg-white p-4 sm:p-5 space-y-3 h-full flex flex-col">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-gray-900">Ingredients</h3>
-        <Badge variant="secondary" className="bg-blue-50 text-blue-700 text-xs">
+        <h3 className="text-base font-semibold text-[#1A1A1A]">Ingredients</h3>
+        <Badge variant="secondary" className="bg-sage/10 text-sage-dark text-[10px] px-2 py-0.5">
           {ingredients.length}
         </Badge>
       </div>
@@ -119,12 +119,12 @@ export function EnhancedIngredientManager({ ingredients, onIngredientsChange }: 
                           ref={provided.innerRef}
                           {...provided.draggableProps}
                           className={`
-                            flex items-center gap-1.5 p-1 rounded-lg transition-all duration-200 group
+                            flex items-center gap-1.5 p-2 rounded-[8px] transition-all duration-200 group
                             ${ingredientIsHeader 
-                              ? 'bg-sage/20 border-l-4 border-sage font-medium text-sage-800' 
-                              : 'bg-white/50 hover:bg-white/70'
+                              ? 'bg-sage/10 border-l-3 border-sage font-medium text-sage-dark' 
+                              : 'bg-[#FAF9F6] hover:bg-white border border-transparent hover:border-[#E3E3E3]'
                             }
-                            ${snapshot.isDragging ? 'shadow-lg scale-105 rotate-1 z-50 bg-white border-2 border-blue-300' : ''}
+                            ${snapshot.isDragging ? 'shadow-md scale-[1.02] z-50 bg-white border border-sage' : ''}
                           `}
                           style={{
                             ...provided.draggableProps.style,
@@ -138,12 +138,12 @@ export function EnhancedIngredientManager({ ingredients, onIngredientsChange }: 
                             {...provided.dragHandleProps}
                             className="flex-shrink-0 touch-none"
                           >
-                            <GripVertical className="h-4 w-4 text-gray-400 hover:text-gray-600 cursor-grab active:cursor-grabbing transition-colors" />
+                            <GripVertical className="h-3.5 w-3.5 text-[#6B6B6B] hover:text-sage cursor-grab active:cursor-grabbing transition-colors" />
                           </div>
                           
                           {/* Group/Header indicator */}
                           {ingredientIsHeader && (
-                            <LayoutGrid className="h-3 w-3 text-sage-600 flex-shrink-0" />
+                            <LayoutGrid className="h-3 w-3 text-sage flex-shrink-0" />
                           )}
                           
                           {editingIndex === index ? (
@@ -152,15 +152,15 @@ export function EnhancedIngredientManager({ ingredients, onIngredientsChange }: 
                                 value={editValue}
                                 onChange={(e) => setEditValue(e.target.value)}
                                 onKeyPress={(e) => handleKeyPress(e, saveEdit)}
-                                className="flex-1 text-sm h-7"
+                                className="flex-1 text-sm h-8 rounded-[8px] border-[#E3E3E3] focus:border-sage focus:ring-sage"
                                 autoFocus
                                 placeholder={ingredientIsHeader ? "Group name (e.g., For the sauce)" : "Ingredient (e.g., 2 cups flour)"}
                               />
                               <div className="flex gap-1">
-                                <Button size="sm" onClick={saveEdit} className="px-2 text-xs h-6">
+                                <Button size="sm" onClick={saveEdit} className="px-2 text-xs h-7 bg-[#CFE6D6] hover:bg-[#B8D9C5] text-[#1A1A1A]">
                                   Save
                                 </Button>
-                                <Button size="sm" variant="outline" onClick={cancelEdit} className="px-2 text-xs h-6">
+                                <Button size="sm" variant="outline" onClick={cancelEdit} className="px-2 text-xs h-7 border-[#E3E3E3]">
                                   Cancel
                                 </Button>
                               </div>
@@ -168,7 +168,7 @@ export function EnhancedIngredientManager({ ingredients, onIngredientsChange }: 
                           ) : (
                             <>
                               <span className={`flex-1 text-sm break-words leading-snug select-text ${
-                                ingredientIsHeader ? 'font-semibold text-sage-800' : ''
+                                ingredientIsHeader ? 'font-semibold text-sage-dark' : ''
                               }`}>
                                 {ingredient}
                               </span>
@@ -176,7 +176,7 @@ export function EnhancedIngredientManager({ ingredients, onIngredientsChange }: 
                                 size="sm"
                                 variant="ghost"
                                 onClick={() => startEditing(index)}
-                                className="opacity-70 group-hover:opacity-100 transition-opacity hover:bg-blue-50 hover:text-blue-600 h-5 w-5 p-0 flex-shrink-0"
+                                className="opacity-70 group-hover:opacity-100 transition-opacity hover:bg-sage/10 hover:text-sage h-6 w-6 p-0 flex-shrink-0 rounded-md"
                               >
                                 <Edit className="h-3 w-3" />
                               </Button>
@@ -184,7 +184,7 @@ export function EnhancedIngredientManager({ ingredients, onIngredientsChange }: 
                                 size="sm"
                                 variant="ghost"
                                 onClick={() => removeIngredient(index)}
-                                className="opacity-70 group-hover:opacity-100 transition-opacity hover:bg-red-50 hover:text-red-600 h-5 w-5 p-0 flex-shrink-0"
+                                className="opacity-70 group-hover:opacity-100 transition-opacity hover:bg-red-50 hover:text-red-600 h-6 w-6 p-0 flex-shrink-0 rounded-md"
                               >
                                 <X className="h-3 w-3" />
                               </Button>
@@ -210,7 +210,7 @@ export function EnhancedIngredientManager({ ingredients, onIngredientsChange }: 
               value={newGroup}
               onChange={(e) => setNewGroup(e.target.value)}
               placeholder="Group name (e.g., 'For the sauce')"
-              className="text-sm h-8"
+              className="text-sm h-9 rounded-[8px] border-[#E3E3E3] focus:border-sage focus:ring-sage"
               onKeyPress={(e) => handleKeyPress(e, addGroup)}
               autoFocus
             />
@@ -218,7 +218,7 @@ export function EnhancedIngredientManager({ ingredients, onIngredientsChange }: 
               <Button 
                 onClick={addGroup} 
                 disabled={!newGroup.trim()}
-                className="flex-1 h-7 text-xs bg-sage hover:bg-sage/90"
+                className="flex-1 h-8 text-xs bg-[#CFE6D6] hover:bg-[#B8D9C5] text-[#1A1A1A] rounded-[8px]"
                 size="sm"
               >
                 <LayoutGrid className="h-3 w-3 mr-1" />
@@ -230,7 +230,7 @@ export function EnhancedIngredientManager({ ingredients, onIngredientsChange }: 
                   setNewGroup("");
                 }}
                 variant="outline"
-                className="h-7 text-xs px-2"
+                className="h-8 text-xs px-2 border-[#E3E3E3] rounded-[8px]"
                 size="sm"
               >
                 Cancel
@@ -244,7 +244,7 @@ export function EnhancedIngredientManager({ ingredients, onIngredientsChange }: 
               value={newIngredient}
               onChange={(e) => setNewIngredient(e.target.value)}
               placeholder="Add ingredient (e.g., 2 cups flour)"
-              className="text-sm h-8"
+              className="text-sm h-9 rounded-[8px] border-[#E3E3E3] focus:border-sage focus:ring-sage"
               onKeyPress={(e) => handleKeyPress(e, addIngredient)}
             />
             
@@ -253,20 +253,20 @@ export function EnhancedIngredientManager({ ingredients, onIngredientsChange }: 
               <Button 
                 onClick={addIngredient} 
                 disabled={!newIngredient.trim()}
-                className="flex-1 h-8 text-sm"
+                className="flex-1 h-9 text-sm rounded-[8px] bg-[#CFE6D6] hover:bg-[#B8D9C5] text-[#1A1A1A]"
                 size="sm"
               >
-                <Plus className="h-3 w-3 mr-1" />
+                <Plus className="h-3.5 w-3.5 mr-1.5" />
                 Add Ingredient
               </Button>
               <Button 
                 onClick={() => setIsAddingGroup(true)}
                 variant="outline"
-                className="h-8 text-xs px-3 border-sage text-sage hover:bg-sage hover:text-white"
+                className="h-9 text-xs px-3 rounded-[8px] border-[#E3E3E3] hover:border-sage hover:bg-sage/5"
                 size="sm"
                 title="Add ingredient group (e.g., 'For the sauce:')"
               >
-                <Plus className="h-3 w-3 mr-1" />
+                <Plus className="h-3.5 w-3.5 mr-1" />
                 Group
               </Button>
             </div>
@@ -274,8 +274,9 @@ export function EnhancedIngredientManager({ ingredients, onIngredientsChange }: 
         )}
         
         {/* Helper text */}
-        <p className="text-xs text-gray-500 leading-tight">
-          💡 Tip: Use groups to organize ingredients by sections (e.g., "For the sauce:", "For the topping:")
+        <p className="text-[10px] sm:text-xs text-[#6B6B6B] leading-tight flex items-start gap-1.5">
+          <span className="text-sm">💡</span>
+          <span>Tip: Use groups to organize ingredients by sections (e.g., "For the sauce:", "For the topping:")</span>
         </p>
       </div>
     </Card>

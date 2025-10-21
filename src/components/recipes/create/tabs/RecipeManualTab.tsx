@@ -84,82 +84,82 @@ export function RecipeManualTab({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {/* Basic Information + Image - Two column layout on desktop */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
         {/* Basic Information - Takes up 2 columns */}
-        <Card className="lg:col-span-2">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg">Basic Information</CardTitle>
+        <Card className="lg:col-span-2 rounded-[12px] border border-[#E3E3E3] shadow-sm bg-white">
+          <CardHeader className="pb-2 px-4 sm:px-6">
+            <CardTitle className="text-base font-semibold text-[#1A1A1A]">Basic Information</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-3 px-4 sm:px-6">
             <div>
-              <Label htmlFor="title" className="text-sm font-medium">Recipe Title</Label>
+              <Label htmlFor="title" className="text-xs sm:text-sm font-medium text-[#1A1A1A]">Recipe Title</Label>
               <Input
                 id="title"
                 value={newRecipe.title}
                 onChange={(e) => setNewRecipe({ ...newRecipe, title: e.target.value })}
                 placeholder="Enter recipe title"
-                className="mt-1"
+                className="mt-1 h-10 rounded-[8px] border-[#E3E3E3] focus:border-sage focus:ring-sage"
               />
             </div>
 
             <div>
-              <Label htmlFor="description" className="text-sm font-medium">Description</Label>
+              <Label htmlFor="description" className="text-xs sm:text-sm font-medium text-[#1A1A1A]">Description</Label>
               <Textarea
                 id="description"
                 value={newRecipe.description}
                 onChange={(e) => setNewRecipe({ ...newRecipe, description: e.target.value })}
                 placeholder="Brief description of the recipe"
-                className="mt-1 min-h-20 resize-none"
+                className="mt-1 min-h-20 resize-none rounded-[8px] border-[#E3E3E3] focus:border-sage focus:ring-sage"
                 rows={3}
               />
             </div>
 
             <div>
-              <Label htmlFor="top-tip" className="text-sm font-medium">Chef's Top Tip</Label>
+              <Label htmlFor="top-tip" className="text-xs sm:text-sm font-medium text-[#1A1A1A]">Chef's Top Tip</Label>
               <Textarea
                 id="top-tip"
                 value={newRecipe.top_tip || ""}
                 onChange={(e) => setNewRecipe({ ...newRecipe, top_tip: e.target.value })}
                 placeholder="Share your best tip for making this recipe (optional)"
-                className="mt-1 min-h-16 resize-none"
+                className="mt-1 min-h-16 resize-none rounded-[8px] border-[#E3E3E3] focus:border-sage focus:ring-sage"
                 rows={2}
               />
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
               <div>
-                <Label htmlFor="prep-time" className="text-sm font-medium">Prep Time (min)</Label>
+                <Label htmlFor="prep-time" className="text-xs sm:text-sm font-medium text-[#1A1A1A]">Prep Time (min)</Label>
                 <Input
                   id="prep-time"
                   type="number"
                   value={newRecipe.prep_time || ''}
                   onChange={(e) => setNewRecipe({ ...newRecipe, prep_time: parseInt(e.target.value) || 0 })}
                   placeholder="0"
-                  className="mt-1"
+                  className="mt-1 h-10 rounded-[8px] border-[#E3E3E3] focus:border-sage focus:ring-sage"
                 />
               </div>
               <div>
-                <Label htmlFor="cook-time" className="text-sm font-medium">Cook Time (min)</Label>
+                <Label htmlFor="cook-time" className="text-xs sm:text-sm font-medium text-[#1A1A1A]">Cook Time (min)</Label>
                 <Input
                   id="cook-time"
                   type="number"
                   value={newRecipe.cook_time || ''}
                   onChange={(e) => setNewRecipe({ ...newRecipe, cook_time: parseInt(e.target.value) || 0 })}
                   placeholder="0"
-                  className="mt-1"
+                  className="mt-1 h-10 rounded-[8px] border-[#E3E3E3] focus:border-sage focus:ring-sage"
                 />
               </div>
               <div>
-                <Label htmlFor="servings" className="text-sm font-medium">Servings</Label>
+                <Label htmlFor="servings" className="text-xs sm:text-sm font-medium text-[#1A1A1A]">Servings</Label>
                 <Input
                   id="servings"
                   type="number"
                   value={newRecipe.servings || ''}
                   onChange={(e) => setNewRecipe({ ...newRecipe, servings: parseInt(e.target.value) || 1 })}
                   placeholder="1"
-                  className="mt-1"
+                  className="mt-1 h-10 rounded-[8px] border-[#E3E3E3] focus:border-sage focus:ring-sage"
                 />
               </div>
             </div>
@@ -167,11 +167,11 @@ export function RecipeManualTab({
         </Card>
 
         {/* Image Upload - Takes up 1 column */}
-        <Card className="lg:col-span-1">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg">Recipe Image</CardTitle>
+        <Card className="lg:col-span-1 rounded-[12px] border border-[#E3E3E3] shadow-sm bg-white">
+          <CardHeader className="pb-2 px-4 sm:px-6">
+            <CardTitle className="text-base font-semibold text-[#1A1A1A]">Recipe Image</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-4 sm:px-6">
             <EnhancedImageUpload
               imagePreview={imagePreview}
               isGenerating={isGeneratingImage}
@@ -197,7 +197,7 @@ export function RecipeManualTab({
       />
 
       {/* Ingredients + Instructions - Two column layout on desktop */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
         {/* Enhanced Ingredients Manager */}
         <div className="lg:col-span-1">
           <EnhancedIngredientManager

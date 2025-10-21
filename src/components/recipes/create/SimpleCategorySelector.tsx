@@ -37,19 +37,19 @@ export function SimpleCategorySelector({ recipe, onRecipeChange }: SimpleCategor
     <button
       type="button"
       onClick={onClick}
-      className={`p-3 rounded-lg border-2 transition-all text-left relative ${
+      className={`p-2.5 rounded-[10px] border transition-all text-left relative hover:shadow-sm ${
         isSelected
-          ? 'border-green-500 bg-green-50 text-green-700'
-          : 'border-gray-200 hover:border-gray-300 bg-white/50 hover:bg-white/70'
+          ? 'border-sage bg-sage/10 text-sage-dark'
+          : 'border-[#E3E3E3] hover:border-sage/40 bg-white hover:bg-sage/5'
       }`}
     >
       <div className="flex items-center gap-2">
-        <span className="text-lg">{option.icon}</span>
-        <span className="text-sm">{option.label}</span>
+        <span className="text-base">{option.icon}</span>
+        <span className="text-xs sm:text-sm font-medium">{option.label}</span>
       </div>
       {isSelected && (
         <div className="absolute top-1 right-1">
-          <div className="h-5 w-5 bg-green-500 text-white rounded-full flex items-center justify-center text-xs font-bold">
+          <div className="h-4 w-4 bg-sage text-white rounded-full flex items-center justify-center text-[10px] font-bold">
             ✓
           </div>
         </div>
@@ -58,15 +58,15 @@ export function SimpleCategorySelector({ recipe, onRecipeChange }: SimpleCategor
   );
 
   return (
-    <Card className="bg-white/60 backdrop-blur-sm border-white/30">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-lg">Categories</CardTitle>
+    <Card className="rounded-[12px] border border-[#E3E3E3] shadow-sm bg-white">
+      <CardHeader className="pb-2 px-4 sm:px-6">
+        <CardTitle className="text-base font-semibold text-[#1A1A1A]">Categories</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-5">
+      <CardContent className="space-y-4 px-4 sm:px-6">
         {/* Meal Type */}
         <div>
-          <label className="text-sm font-medium mb-3 block">Meal Type (select all that apply)</label>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
+          <label className="text-xs sm:text-sm font-medium text-[#1A1A1A] mb-2 block">Meal Type (select all that apply)</label>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-1.5">
             {MEAL_TYPE_OPTIONS.map((option) => (
               <CategoryButton
                 key={option.value}
@@ -93,8 +93,8 @@ export function SimpleCategorySelector({ recipe, onRecipeChange }: SimpleCategor
 
         {/* Cuisine */}
         <div>
-          <label className="text-sm font-medium mb-3 block">Cuisine (optional)</label>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
+          <label className="text-xs sm:text-sm font-medium text-[#1A1A1A] mb-2 block">Cuisine (optional)</label>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-1.5">
             {CUISINE_REGION_OPTIONS.map((option) => (
               <CategoryButton
                 key={option.value}
@@ -108,8 +108,8 @@ export function SimpleCategorySelector({ recipe, onRecipeChange }: SimpleCategor
 
         {/* Diet & Lifestyle */}
         <div>
-          <label className="text-sm font-medium mb-3 block">Diet & Lifestyle (select multiple)</label>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
+          <label className="text-xs sm:text-sm font-medium text-[#1A1A1A] mb-2 block">Diet & Lifestyle (select multiple)</label>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-1.5">
             {DIET_LIFESTYLE_OPTIONS.map((option) => {
               const isSelected = (recipe.diet_lifestyle || []).includes(option.value as any);
               return (
@@ -117,19 +117,19 @@ export function SimpleCategorySelector({ recipe, onRecipeChange }: SimpleCategor
                   key={option.value}
                   type="button"
                   onClick={() => toggleDietLifestyle(option.value)}
-                  className={`p-3 rounded-lg border-2 transition-all text-left relative ${
+                  className={`p-2.5 rounded-[10px] border transition-all text-left relative hover:shadow-sm ${
                     isSelected
-                      ? 'border-green-500 bg-green-50 text-green-700'
-                      : 'border-gray-200 hover:border-gray-300 bg-white/50 hover:bg-white/70'
+                      ? 'border-sage bg-sage/10 text-sage-dark'
+                      : 'border-[#E3E3E3] hover:border-sage/40 bg-white hover:bg-sage/5'
                   }`}
                 >
                   <div className="flex items-center gap-2">
-                    <span className="text-lg">{option.icon}</span>
-                    <span className="text-sm">{option.label}</span>
+                    <span className="text-base">{option.icon}</span>
+                    <span className="text-xs sm:text-sm font-medium">{option.label}</span>
                   </div>
                   {isSelected && (
                     <div className="absolute top-1 right-1">
-                      <div className="h-5 w-5 bg-green-500 text-white rounded-full flex items-center justify-center text-xs font-bold">
+                      <div className="h-4 w-4 bg-sage text-white rounded-full flex items-center justify-center text-[10px] font-bold">
                         ✓
                       </div>
                     </div>
