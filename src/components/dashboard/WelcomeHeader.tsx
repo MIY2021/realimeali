@@ -1,20 +1,34 @@
 import { useAuth } from "@/contexts/AuthContext";
-import { useState, useEffect } from "react";
-
-const dailyTips = [
-  "Prep ingredients the night before to save time during busy weekdays",
-  "Double your recipes and freeze half for quick future meals",
-  "Use meal planning to reduce food waste and save money",
-  "Try batch cooking on weekends for stress-free weeknight dinners",
-  "Keep a well-stocked pantry with versatile basics",
-  "Season your food in layers throughout cooking for best flavor",
-  "Let meat rest after cooking for juicier results",
-  "Mise en place: prep all ingredients before you start cooking",
-];
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 export const WelcomeHeader = () => {
   const { user } = useAuth();
-  const [dailyTip, setDailyTip] = useState("");
+  
+  // Calculate day of year (1-365)
+  const getDayOfYear = () => {
+    const now = new Date();
+    const start = new Date(now.getFullYear(), 0, 0);
+    const diff = now.getTime() - start.getTime();
+    const oneDay = 1000 * 60 * 60 * 24;
+    return Math.floor(diff / oneDay);
+  };
+
+  // Fetch daily tip from database
+  const { data: dailyTip } = useQuery({
+    queryKey: ['daily-tip', getDayOfYear()],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('daily_cooking_tips')
+        .select('tip')
+        .eq('day_of_year', getDayOfYear())
+        .single();
+      
+      if (error) throw error;
+      return data?.tip || "Plan your meals ahead for a stress-free week";
+    },
+    staleTime: 1000 * 60 * 60 * 24, // Cache for 24 hours
+  });
   
   // Get time-based greeting
   const getTimeBasedGreeting = () => {
@@ -36,15 +50,8 @@ export const WelcomeHeader = () => {
       return user.email.split('@')[0];
     }
     
-    return 'there';
+  return 'there';
   };
-
-  // Get daily tip based on day of year
-  useEffect(() => {
-    const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000);
-    const tipIndex = dayOfYear % dailyTips.length;
-    setDailyTip(dailyTips[tipIndex]);
-  }, []);
 
   return (
     <div className="rounded-3xl bg-gradient-to-br from-[#FFE5B4] to-[#FFDAB9] p-5 shadow-md">

@@ -14,6 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      daily_cooking_tips: {
+        Row: {
+          created_at: string | null
+          day_of_year: number
+          id: string
+          tip: string
+        }
+        Insert: {
+          created_at?: string | null
+          day_of_year: number
+          id?: string
+          tip: string
+        }
+        Update: {
+          created_at?: string | null
+          day_of_year?: number
+          id?: string
+          tip?: string
+        }
+        Relationships: []
+      }
       feedback_suggestions: {
         Row: {
           admin_notes: string | null
