@@ -100,7 +100,7 @@ const BottomNavigation = () => {
       `}</style>
       
       <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 md:hidden">
-        <div className="flex items-center justify-evenly h-16 px-4">
+        <div className="grid grid-cols-5 h-16">
           {navigationItems.map((item) => {
             const active = isActive(item.activePattern);
             const isMealPlan = item.to === "/meal-planner";
@@ -111,7 +111,7 @@ const BottomNavigation = () => {
                 to={item.to}
                 onClick={handleNavClick}
                 className={cn(
-                  "flex flex-col items-center justify-center min-w-0 flex-1 py-2 px-1 transition-all duration-300 relative",
+                  "flex flex-col items-center justify-center py-2 transition-all duration-300 relative",
                   active 
                     ? "text-sage" 
                     : "text-gray-600 hover:text-sage"
