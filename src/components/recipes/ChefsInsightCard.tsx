@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Lightbulb, Sparkles, Mail, ChevronDown } from "lucide-react";
+import { Lightbulb, Sparkles, ChevronDown } from "lucide-react";
 import { Recipe } from "@/types";
 import { useRealiChef } from "@/contexts/RealiChefContext";
 import {
@@ -7,6 +7,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { Separator } from "@/components/ui/separator";
 
 interface ChefsInsightCardProps {
   recipe: Recipe;
@@ -17,6 +18,12 @@ export const ChefsInsightCard = ({ recipe, recipeId }: ChefsInsightCardProps) =>
   const [isAlcoholic, setIsAlcoholic] = useState(true);
   const [isExpanded, setIsExpanded] = useState(false);
   const { setIsOpen } = useRealiChef();
+
+  // Format date to readable string
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  };
 
   // Load expanded state from localStorage
   useEffect(() => {
@@ -94,16 +101,40 @@ export const ChefsInsightCard = ({ recipe, recipeId }: ChefsInsightCardProps) =>
 
       <CollapsibleContent className="data-[state=open]:animate-slide-down data-[state=closed]:animate-slide-up">
         <div className="px-6 pb-6 sm:px-8 sm:pb-8 space-y-6">
-          {/* Top Tip Section */}
+          {/* Ask RealiChef Section - MOVED TO TOP */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-purple-500" />
+              <h3 className="text-sm font-medium text-gray-600">Ask RealiChef AI</h3>
+            </div>
+
+            {/* Interactive input field with soft background */}
+            <button
+              onClick={handleAskRealiChef}
+              className="w-full bg-amber-50/30 border border-gray-200 rounded-2xl px-4 py-3 text-left text-sm text-gray-500 shadow-sm hover:border-gray-300 hover:bg-amber-50/50 hover:shadow-md focus:scale-[1.01] focus:shadow-lg transition-all duration-200"
+            >
+              Ask RealiChef AI about this recipe...
+            </button>
+          </div>
+
+          {/* Chef's Tip Section - WITH NEW HEADING */}
           {hasValidTopTip && (
-            <div className="flex items-start gap-3 animate-fade-in">
-              <Lightbulb className="h-5 w-5 text-gray-600 flex-shrink-0 mt-0.5" />
-              <p className="text-[15px] text-gray-700 leading-relaxed">{recipe.top_tip}</p>
+            <div className="space-y-2">
+              {/* New heading */}
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-base">💡</span>
+                <h3 className="text-sm font-medium text-gray-700">Chef's Tip</h3>
+              </div>
+              
+              {/* Tip content */}
+              <div className="animate-fade-in">
+                <p className="text-[15px] text-gray-700 leading-relaxed">{recipe.top_tip}</p>
+              </div>
             </div>
           )}
 
-          {/* Perfect Pairing Section */}
-          <div className="space-y-3">
+          {/* Perfect Pairing Section - MORE SPACING */}
+          <div className="space-y-3 mt-6">
             <div className="flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-gray-500" />
               <h3 className="text-sm font-medium text-gray-600">Perfect Pairing</h3>
@@ -139,20 +170,48 @@ export const ChefsInsightCard = ({ recipe, recipeId }: ChefsInsightCardProps) =>
             </div>
           </div>
 
-          {/* Ask RealiChef Section */}
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <Mail className="h-4 w-4 text-gray-500" />
-              <h3 className="text-sm font-medium text-gray-600">Ask RealiChef</h3>
+          {/* Recipe Info Metadata Row - NEW SECTION */}
+          <div className="space-y-3 pt-4">
+            <Separator className="mb-3" />
+            
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500">
+              {/* Created date */}
+              <div className="flex items-center gap-1.5">
+                <span>🕒</span>
+                <span>Created: {formatDate(recipe.created_at)}</span>
+              </div>
+              
+              {recipe.updated_at && recipe.updated_at !== recipe.created_at && (
+                <>
+                  <span className="text-gray-300">•</span>
+                  
+                  {/* Updated date */}
+                  <div className="flex items-center gap-1.5">
+                    <span>🔁</span>
+                    <span>Updated: {formatDate(recipe.updated_at)}</span>
+                  </div>
+                </>
+              )}
+              
+              <span className="text-gray-300">•</span>
+              
+              {/* Source */}
+              <div className="flex items-center gap-1.5">
+                <span>🌐</span>
+                {recipe.source_url ? (
+                  <a 
+                    href={recipe.source_url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="hover:text-gray-700 hover:underline transition-colors"
+                  >
+                    Source: External
+                  </a>
+                ) : (
+                  <span>Source: Original</span>
+                )}
+              </div>
             </div>
-
-            {/* Interactive input field */}
-            <button
-              onClick={handleAskRealiChef}
-              className="w-full bg-white border border-gray-200 rounded-2xl px-4 py-3 text-left text-sm text-gray-500 placeholder:text-gray-400 shadow-sm hover:border-gray-300 hover:shadow-md focus:scale-[1.01] focus:shadow-lg transition-all duration-200"
-            >
-              Ask a question about this recipe...
-            </button>
           </div>
         </div>
       </CollapsibleContent>
