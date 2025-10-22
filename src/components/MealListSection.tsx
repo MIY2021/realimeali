@@ -41,10 +41,11 @@ export default function MealListSection({
   const [isVisible, setIsVisible] = useState(false);
   
 
+  // Performance: Reduced animation delay from 100ms to 50ms per section
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsVisible(true);
-    }, sectionIndex * 100);
+    }, sectionIndex * 50);
     
     return () => clearTimeout(timer);
   }, [sectionIndex]);
@@ -87,7 +88,7 @@ export default function MealListSection({
         : 'translate-y-6 opacity-0 scale-98'
     } ${collapsed ? 'opacity-70 scale-98' : ''}`}
     style={{ 
-      transitionDelay: `${sectionIndex * 100}ms`,
+      transitionDelay: `${sectionIndex * 50}ms`,
       willChange: 'transform, opacity'
     }}>
       <div className={`flex items-center justify-between mb-3 ${isMobile ? 'px-1' : ''} ${
@@ -130,7 +131,7 @@ export default function MealListSection({
             <div className={`border border-dashed border-gray-300 rounded-md ${isMobile ? 'p-3' : 'p-4'} text-center text-muted-foreground transform transition-all duration-500 ease-out ${
               isVisible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
             }`}
-            style={{ transitionDelay: `${(sectionIndex * 100) + 200}ms` }}>
+            style={{ transitionDelay: `${(sectionIndex * 50) + 100}ms` }}>
               <span className={`${isMobile ? 'text-sm' : ''}`}>No {mealType} planned yet</span>
             </div>
           ) : (
@@ -178,7 +179,7 @@ export default function MealListSection({
                                 onCreateLeftover={onCreateLeftover}
                                 parentRecipe={parentRecipe}
                                 dragHandleProps={provided.dragHandleProps}
-                                animationDelay={(sectionIndex * 100) + (index * 50)}
+                                animationDelay={(sectionIndex * 50) + (index * 25)}
                                 leftoverMap={leftoverMap}
                               />
                             </div>

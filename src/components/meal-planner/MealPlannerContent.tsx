@@ -61,9 +61,17 @@ export const MealPlannerContent = ({
       .sort((a, b) => (a.slot_index || 0) - (b.slot_index || 0));
   }, [currentMealPlans]);
 
-  const getRecipeById = useCallback((id: string): Recipe | undefined => {
-    return recipes.find(recipe => recipe.id === id);
+  // Performance: Memoize recipe lookup map for O(1) access instead of O(n)
+  const recipeMap = useMemo(() => {
+    const map = new Map<string, Recipe>();
+    recipes.forEach(recipe => map.set(recipe.id, recipe));
+    console.log('[Performance] Recipe map computed:', map.size, 'recipes');
+    return map;
   }, [recipes]);
+
+  const getRecipeById = useCallback((id: string): Recipe | undefined => {
+    return recipeMap.get(id);
+  }, [recipeMap]);
 
   return (
     <div className="space-y-1">

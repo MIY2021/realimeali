@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
 import { Recipe } from '@/types';
 import { useRecipeApi } from '@/hooks/useRecipeApi';
 import { toast } from 'sonner';
@@ -30,20 +30,27 @@ export const RecipesProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [error, setError] = useState<string | null>(null);
   const { currentHousehold, isLoadingHousehold } = useHousehold();
   const api = useRecipeApi();
+  
+  // Performance: Track last fetched household to prevent duplicate fetches
+  const lastFetchedHouseholdIdRef = useRef<string | null>(null);
 
   // Auto-fetch recipes when household is available
   useEffect(() => {
+    const householdId = currentHousehold?.id || null;
+    
     // Don't fetch if household is still loading
     if (isLoadingHousehold) {
       return;
     }
 
-    // Auto-fetch recipes when a household is available
-    if (currentHousehold?.id) {
-      console.log('RecipesContext: Auto-fetching recipes for household:', currentHousehold.id);
-      fetchRecipes(currentHousehold.id);
-    } else {
+    // Only fetch if household ID actually changed
+    if (householdId && householdId !== lastFetchedHouseholdIdRef.current) {
+      console.log('RecipesContext: Auto-fetching recipes for household:', householdId);
+      lastFetchedHouseholdIdRef.current = householdId;
+      fetchRecipes(householdId);
+    } else if (!householdId && lastFetchedHouseholdIdRef.current) {
       console.log('RecipesContext: No household available, clearing recipes');
+      lastFetchedHouseholdIdRef.current = null;
       setRecipes([]);
     }
   }, [currentHousehold?.id, isLoadingHousehold]);

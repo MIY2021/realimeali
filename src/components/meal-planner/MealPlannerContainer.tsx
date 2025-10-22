@@ -1,4 +1,4 @@
-import { useCallback, useState, useEffect } from "react";
+import { useCallback, useState, useEffect, useMemo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
@@ -42,14 +42,10 @@ export default function MealPlannerContainer() {
   // Auto-load recipes when component mounts
   useRecipesLoader();
   
-  // Handle initial loading state
+  // Handle initial loading state (Performance: removed artificial delay)
   useEffect(() => {
     if (user && currentHousehold) {
-      // Small delay to ensure smooth transition
-      const timer = setTimeout(() => {
-        setInitialLoad(false);
-      }, 100);
-      return () => clearTimeout(timer);
+      setInitialLoad(false);
     }
   }, [user, currentHousehold]);
   
@@ -97,8 +93,8 @@ export default function MealPlannerContainer() {
 
   const currentMealPlans = getMealPlansForWeek(currentWeek);
 
-  // Determine which week has the most recent meal plan activity
-  const getMostRecentWeek = useCallback((): 1 | 2 | null => {
+  // Performance: Memoize expensive computation
+  const mostRecentWeek = useMemo((): 1 | 2 | null => {
     if (mealPlans.length === 0) return null;
     
     const week1Plans = mealPlans.filter(plan => plan.week_number === 1);
@@ -114,8 +110,6 @@ export default function MealPlannerContainer() {
     
     return week1Latest > week2Latest ? 1 : 2;
   }, [mealPlans]);
-
-  const mostRecentWeek = getMostRecentWeek();
 
   // Create a wrapper function that matches the expected signature
   const generateRandomMealPlan = useCallback(async (quantities: { 
