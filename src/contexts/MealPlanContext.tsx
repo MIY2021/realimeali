@@ -63,6 +63,7 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
     try {
       setIsLoading(true);
       isFetchingRef.current = true;
+      console.time('[Performance] Meal plans fetch');
       console.log('DEBUG: Fetching meal plans for household:', householdId);
       
       currentUserIdRef.current = userId;
@@ -71,6 +72,7 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
       const plans = await mealPlanService.fetchMealPlans(householdId);
       console.log('DEBUG: Transformed plans:', plans);
       setMealPlans(plans);
+      console.timeEnd('[Performance] Meal plans fetch');
     } catch (err) {
       console.error("Error fetching meal plans:", err);
       toast({
@@ -78,6 +80,7 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
         description: "Failed to fetch meal plans. Please try again.",
         variant: "destructive",
       });
+      console.timeEnd('[Performance] Meal plans fetch');
     } finally {
       setIsLoading(false);
       isFetchingRef.current = false;

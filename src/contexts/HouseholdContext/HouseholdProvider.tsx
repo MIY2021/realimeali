@@ -110,12 +110,17 @@ export function HouseholdProvider({ children }: { children: React.ReactNode }) {
       }
 
       isLoadingHouseholdRef.current = true;
+      console.time('[Performance] Household data load');
       console.log('DEBUG: Loading household for user:', userId);
       
       try {
         const household = await fetchHousehold();
         setCurrentHousehold(household);
         setIsInitialized(true);
+        console.timeEnd('[Performance] Household data load');
+      } catch (error) {
+        console.timeEnd('[Performance] Household data load');
+        throw error;
       } finally {
         isLoadingHouseholdRef.current = false;
       }

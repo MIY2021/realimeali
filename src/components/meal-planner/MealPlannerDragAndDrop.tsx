@@ -1,6 +1,6 @@
 
 import { DragDropContext, Droppable, Draggable, DropResult } from "react-beautiful-dnd";
-import { MealType } from "@/types";
+import { MealType, MealPlan } from "@/types";
 import MealListSection from "@/components/MealListSection";
 
 interface MealPlannerDragAndDropProps {
@@ -15,6 +15,7 @@ interface MealPlannerDragAndDropProps {
   onAddMeal: (mealType: MealType) => void;
   onCreateLeftover: (mealPlan: any, recipe: any) => void;
   onReorderMeals: (mealType: MealType, sourceIndex: number, destinationIndex: number) => Promise<void>;
+  leftoverMap: Map<string, MealPlan>; // Performance: Pre-computed leftover relationships
 }
 
 export const MealPlannerDragAndDrop = ({
@@ -29,6 +30,7 @@ export const MealPlannerDragAndDrop = ({
   onAddMeal,
   onCreateLeftover,
   onReorderMeals,
+  leftoverMap,
 }: MealPlannerDragAndDropProps) => {
   return (
     <DragDropContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
@@ -67,6 +69,7 @@ export const MealPlannerDragAndDrop = ({
                     <MealListSection
                       mealType={mealType}
                       mealPlans={getMealPlansForType(mealType)}
+                      leftoverMap={leftoverMap}
                       getRecipeById={getRecipeById}
                       onRemoveMeal={onRemoveMeal}
                       onAddMeal={() => onAddMeal(mealType)}

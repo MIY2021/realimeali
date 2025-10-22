@@ -21,7 +21,7 @@ interface EnhancedMealCardProps {
   onCreateLeftover: (mealPlan: MealPlan, recipe?: Recipe) => void;
   dragHandleProps?: DraggableProvidedDragHandleProps | null;
   animationDelay?: number;
-  allMealPlans?: MealPlan[];
+  leftoverMap: Map<string, MealPlan>; // Performance: Pre-computed leftover relationships
 }
 
 export function EnhancedMealCard({
@@ -32,17 +32,13 @@ export function EnhancedMealCard({
   onCreateLeftover,
   dragHandleProps,
   animationDelay = 0,
-  allMealPlans = [],
+  leftoverMap,
 }: EnhancedMealCardProps) {
   const { updateMealPlanCompletion, updateMealPlanServings } = useMealPlan();
   const { toast } = useToast();
 
-  // Calculate existing leftovers FIRST (before state initialization)
-  const existingLeftover = allMealPlans.find(plan => 
-    plan.parent_meal_plan_id === mealPlan.id && 
-    plan.is_leftover && 
-    plan.meal_type === 'lunch'
-  );
+  // Performance: O(1) lookup using pre-computed map instead of O(n) find()
+  const existingLeftover = leftoverMap.get(mealPlan.id);
   const leftoverServings = existingLeftover?.planned_servings || existingLeftover?.leftover_servings || 0;
 
   // Initialize servings with leftover adjustment for dinner meals
@@ -289,18 +285,6 @@ export function EnhancedMealCard({
   
   // Servings already adjusted for display (no additional calculation needed)
   const displayServings = servings;
-
-  // Enhanced debugging for leftover button
-  console.log('EnhancedMealCard - Leftover button debug:', {
-    mealPlanId: mealPlan.id,
-    mealType: mealPlan.meal_type,
-    recipeTitle: recipe.title,
-    hasExistingLeftover: !!existingLeftover,
-    existingLeftoverId: existingLeftover?.id,
-    leftoverServings,
-    allMealPlansCount: allMealPlans.length,
-    shouldShowGreen: !!(existingLeftover && mealPlan.meal_type === 'dinner' && !isLeftover)
-  });
 
   // Generate recipe URL
   const recipeSlug = generateSlug(recipe.title);

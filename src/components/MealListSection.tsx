@@ -11,7 +11,7 @@ import { useEffect } from "react";
 interface MealListSectionProps {
   mealType: MealType;
   mealPlans: MealPlan[];
-  allMealPlans?: MealPlan[]; // Add this prop
+  leftoverMap: Map<string, MealPlan>; // Performance: Pre-computed leftover relationships
   getRecipeById: (id: string) => Recipe | undefined;
   onAddMeal: (mealType: MealType) => void;
   onAddCustomMeal?: (mealType: MealType) => void;
@@ -26,7 +26,7 @@ interface MealListSectionProps {
 export default function MealListSection({
   mealType,
   mealPlans,
-  allMealPlans = [], // Default value
+  leftoverMap,
   getRecipeById,
   onAddMeal,
   onAddCustomMeal,
@@ -179,7 +179,7 @@ export default function MealListSection({
                                 parentRecipe={parentRecipe}
                                 dragHandleProps={provided.dragHandleProps}
                                 animationDelay={(sectionIndex * 100) + (index * 50)}
-                                allMealPlans={allMealPlans}
+                                leftoverMap={leftoverMap}
                               />
                             </div>
                           )}

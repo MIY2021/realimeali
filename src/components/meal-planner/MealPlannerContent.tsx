@@ -1,5 +1,4 @@
-
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { MealPlannerActions } from "@/components/meal-planner/MealPlannerActions";
 import { MealPlannerGridView } from "@/components/meal-planner/MealPlannerGridView";
 import MealListSection from "@/components/MealListSection";
@@ -44,6 +43,18 @@ export const MealPlannerContent = ({
 }: MealPlannerContentProps) => {
   const mealTypes: MealType[] = ["dinner", "lunch", "breakfast", "snacks", "sides", "desserts", "drinks"];
 
+  // Pre-compute leftover relationships for O(1) lookup (Performance optimization)
+  const leftoverMap = useMemo(() => {
+    const map = new Map<string, MealPlan>();
+    currentMealPlans.forEach(plan => {
+      if (plan.parent_meal_plan_id && plan.is_leftover) {
+        map.set(plan.parent_meal_plan_id, plan);
+      }
+    });
+    console.log('[Performance] Leftover map computed:', map.size, 'leftovers');
+    return map;
+  }, [currentMealPlans]);
+
   const getMealPlansForType = useCallback((mealType: MealType): MealPlan[] => {
     return currentMealPlans
       .filter(plan => plan.meal_type === mealType)
@@ -75,7 +86,7 @@ export const MealPlannerContent = ({
             key={mealType}
             mealType={mealType}
             mealPlans={getMealPlansForType(mealType)}
-            allMealPlans={currentMealPlans}
+            leftoverMap={leftoverMap}
             getRecipeById={getRecipeById}
             onAddMeal={onAddMeal}
             onAddCustomMeal={onAddCustomMeal}

@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Calendar, ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -28,6 +28,17 @@ export function CustomMealPlanCalendar({
   onReorderMeals,
 }: CustomMealPlanCalendarProps) {
   const [currentDate, setCurrentDate] = useState(new Date());
+
+  // Pre-compute leftover relationships for O(1) lookup (Performance optimization)
+  const leftoverMap = useMemo(() => {
+    const map = new Map<string, MealPlan>();
+    mealPlans.forEach(plan => {
+      if (plan.parent_meal_plan_id && plan.is_leftover) {
+        map.set(plan.parent_meal_plan_id, plan);
+      }
+    });
+    return map;
+  }, [mealPlans]);
 
   useEffect(() => {
     // Set the date to the start of the current week
@@ -156,6 +167,7 @@ export function CustomMealPlanCalendar({
                                 parentRecipe={parentRecipe}
                                 onRemove={handleRemove}
                                 onCreateLeftover={handleCreateLeftover}
+                                leftoverMap={leftoverMap}
                               />
                             );
                           })

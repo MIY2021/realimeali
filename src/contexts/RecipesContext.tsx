@@ -54,6 +54,7 @@ export const RecipesProvider: React.FC<{ children: React.ReactNode }> = ({ child
       return;
     }
     
+    console.time('[Performance] Recipes fetch');
     console.log('RecipesContext: Fetching recipes for household:', householdId);
     setIsLoading(true);
     setError(null);
@@ -61,10 +62,12 @@ export const RecipesProvider: React.FC<{ children: React.ReactNode }> = ({ child
       const fetchedRecipes = await api.fetchRecipes(householdId);
       console.log('RecipesContext: Fetched recipes:', fetchedRecipes.length);
       setRecipes(fetchedRecipes);
+      console.timeEnd('[Performance] Recipes fetch');
     } catch (error) {
       console.error('RecipesContext: Error fetching recipes:', error);
       setError('Failed to load recipes');
       toast.error("Failed to load recipes");
+      console.timeEnd('[Performance] Recipes fetch');
     } finally {
       setIsLoading(false);
     }

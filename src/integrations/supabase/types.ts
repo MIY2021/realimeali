@@ -973,10 +973,7 @@ export type Database = {
         Args: { recipe_id: string }
         Returns: undefined
       }
-      cleanup_old_deleted_recipes: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      cleanup_old_deleted_recipes: { Args: never; Returns: undefined }
       create_household_with_owner: {
         Args: { household_name: string }
         Returns: string
@@ -985,22 +982,10 @@ export type Database = {
         Args: { user_id_param: string }
         Returns: string
       }
-      generate_invitation_code: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      generate_public_share_id: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      get_user_households: {
-        Args: { user_id: string }
-        Returns: string[]
-      }
-      has_role: {
-        Args: { _role: string; _user_id: string }
-        Returns: boolean
-      }
+      generate_invitation_code: { Args: never; Returns: string }
+      generate_public_share_id: { Args: never; Returns: string }
+      get_user_households: { Args: { user_id: string }; Returns: string[] }
+      has_role: { Args: { _role: string; _user_id: string }; Returns: boolean }
       increment_recipe_meal_plan_count: {
         Args: { recipe_id_param: string }
         Returns: undefined
@@ -1009,10 +994,7 @@ export type Database = {
         Args: { share_id: string }
         Returns: undefined
       }
-      is_admin: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
+      is_admin: { Args: never; Returns: boolean }
       is_household_member: {
         Args: { household_id: string; user_id: string }
         Returns: boolean
@@ -1041,14 +1023,8 @@ export type Database = {
         Args: { recipe_id: string }
         Returns: undefined
       }
-      restore_recipe: {
-        Args: { recipe_id: string }
-        Returns: undefined
-      }
-      soft_delete_recipe: {
-        Args: { recipe_id: string }
-        Returns: undefined
-      }
+      restore_recipe: { Args: { recipe_id: string }; Returns: undefined }
+      soft_delete_recipe: { Args: { recipe_id: string }; Returns: undefined }
       toggle_community_recipe_favorite: {
         Args: { recipe_id: string }
         Returns: boolean
