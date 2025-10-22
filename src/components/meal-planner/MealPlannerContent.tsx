@@ -8,6 +8,7 @@ interface MealPlannerContentProps {
   currentWeek: 1 | 2;
   setCurrentWeek: (week: 1 | 2) => void;
   isLoading: boolean;
+  isDataLoading?: boolean;
   currentMealPlans: MealPlan[];
   recipes: Recipe[];
   mealLayout: string;
@@ -26,6 +27,7 @@ export const MealPlannerContent = ({
   currentWeek,
   setCurrentWeek,
   isLoading,
+  isDataLoading = false,
   currentMealPlans,
   recipes,
   mealLayout,
@@ -77,7 +79,7 @@ export const MealPlannerContent = ({
         onRandomize={onRandomize}
         onShare={onShare}
         onClearAll={onClearAll}
-        isLoading={isLoading}
+        isLoading={isLoading || isDataLoading}
         currentWeek={currentWeek}
         setCurrentWeek={setCurrentWeek}
         mealLayout={mealLayout}
@@ -93,6 +95,7 @@ export const MealPlannerContent = ({
             mealPlans={getMealPlansForType(mealType)}
             leftoverMap={leftoverMap}
             getRecipeById={getRecipeById}
+            isDataLoading={isDataLoading}
             onAddMeal={onAddMeal}
             onAddCustomMeal={onAddCustomMeal}
             onRemoveMeal={onRemoveMeal}
@@ -107,6 +110,7 @@ export const MealPlannerContent = ({
           currentMealPlans={currentMealPlans}
           recipes={recipes}
           mealLayout={mealLayout}
+          isDataLoading={isDataLoading}
           onAddMeal={onAddMeal}
           onAddCustomMeal={onAddCustomMeal}
           onRemoveMeal={onRemoveMeal}

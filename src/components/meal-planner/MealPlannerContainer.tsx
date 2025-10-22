@@ -42,12 +42,36 @@ export default function MealPlannerContainer() {
   // Auto-load recipes when component mounts
   useRecipesLoader();
   
+  // Performance logging
+  useEffect(() => {
+    console.time('[Performance] plannerShellFirstPaint');
+    requestAnimationFrame(() => {
+      console.timeEnd('[Performance] plannerShellFirstPaint');
+    });
+  }, []);
+
+  useEffect(() => {
+    if (user && currentHousehold) {
+      console.time('[Performance] plannerDataFetch');
+    }
+  }, [user, currentHousehold]);
+
   // Handle initial loading state (Performance: removed artificial delay)
   useEffect(() => {
     if (user && currentHousehold) {
       setInitialLoad(false);
     }
   }, [user, currentHousehold]);
+
+  useEffect(() => {
+    if (!initialLoad && !recipesLoading) {
+      console.timeEnd('[Performance] plannerDataFetch');
+      console.time('[Performance] plannerHydration');
+      requestAnimationFrame(() => {
+        console.timeEnd('[Performance] plannerHydration');
+      });
+    }
+  }, [initialLoad, recipesLoading]);
   
   const {
     currentWeek,
@@ -317,9 +341,8 @@ export default function MealPlannerContainer() {
 
   const { lastGenerated, createdByUserId } = getCreationInfo();
 
-  if (initialLoad || recipesLoading) {
-    return <MealPlannerSkeleton />;
-  }
+  // Compute data loading state
+  const isDataLoading = initialLoad || recipesLoading;
 
   if (!user || !currentHousehold) {
     return (
@@ -344,8 +367,9 @@ export default function MealPlannerContainer() {
         currentWeek={currentWeek}
         setCurrentWeek={setCurrentWeek}
         isLoading={isLoading}
-        currentMealPlans={currentMealPlans}
-        recipes={recipes}
+        isDataLoading={isDataLoading}
+        currentMealPlans={isDataLoading ? [] : currentMealPlans}
+        recipes={isDataLoading ? [] : recipes}
         mealLayout={mealLayout}
         onMealLayoutChange={handleMealLayoutChange}
         onRandomize={handleRandomizeClick}

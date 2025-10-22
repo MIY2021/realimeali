@@ -3,7 +3,7 @@ import { MealType, MealPlan, Recipe } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Plus, GripVertical } from "lucide-react";
 import { EnhancedMealCard } from "@/components/meal-planner/EnhancedMealCard";
-
+import { MealSectionSkeleton } from "@/components/meal-planner/MealSectionSkeleton";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { DragDropContext, Droppable, Draggable, DropResult, DraggableProvidedDragHandleProps } from "react-beautiful-dnd";
 import { useEffect } from "react";
@@ -13,6 +13,7 @@ interface MealListSectionProps {
   mealPlans: MealPlan[];
   leftoverMap: Map<string, MealPlan>; // Performance: Pre-computed leftover relationships
   getRecipeById: (id: string) => Recipe | undefined;
+  isDataLoading?: boolean;
   onAddMeal: (mealType: MealType) => void;
   onAddCustomMeal?: (mealType: MealType) => void;
   onRemoveMeal: (planId: string) => void;
@@ -28,6 +29,7 @@ export default function MealListSection({
   mealPlans,
   leftoverMap,
   getRecipeById,
+  isDataLoading = false,
   onAddMeal,
   onAddCustomMeal,
   onRemoveMeal,
@@ -41,14 +43,10 @@ export default function MealListSection({
   const [isVisible, setIsVisible] = useState(false);
   
 
-  // Performance: Reduced animation delay from 100ms to 50ms per section
+  // Performance: Instant visibility for shell-first loading
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsVisible(true);
-    }, sectionIndex * 50);
-    
-    return () => clearTimeout(timer);
-  }, [sectionIndex]);
+    setIsVisible(true);
+  }, []);
 
   const handleDragEnd = (result: DropResult) => {
     if (!result.destination || !onReorderMeals) {
@@ -105,20 +103,20 @@ export default function MealListSection({
           } transition-colors`}>
             {mealType}
           </h3>
-          {mealPlans.length > 0 && (
-            <span className={`text-xs text-muted-foreground/70 px-1.5 py-0.5 rounded-full animate-fade-in ${
-              collapsed ? 'text-blue-600 bg-blue-100' : 'bg-gray-50'
-            }`}>
-              {mealPlans.length}
-            </span>
-          )}
+          <span className={`text-xs text-muted-foreground/70 px-1.5 py-0.5 rounded-full animate-fade-in ${
+            collapsed ? 'text-blue-600 bg-blue-100' : 'bg-gray-50'
+          }`}>
+            {isDataLoading ? '–' : mealPlans.length}
+          </span>
         </div>
         {!collapsed && (
           /* Override min-height/min-width with !important to allow h-6 w-6 (24px) sizing */
           <Button
             variant="ghost"
             onClick={handleAddMeal}
-            className="h-6 w-6 !min-h-0 !min-w-0 rounded-full bg-[#F5B82E]/50 hover:bg-[#F5B82E]/70 p-0"
+            disabled={isDataLoading}
+            aria-busy={isDataLoading}
+            className="h-6 w-6 !min-h-0 !min-w-0 rounded-full bg-[#F5B82E]/50 hover:bg-[#F5B82E]/70 p-0 disabled:opacity-50"
           >
             <Plus className="h-4 w-4 text-white" />
           </Button>
@@ -127,7 +125,9 @@ export default function MealListSection({
 
       {collapsed ? null : (
         <div className="overflow-hidden">
-          {mealPlans.length === 0 ? (
+          {isDataLoading ? (
+            <MealSectionSkeleton count={3} />
+          ) : mealPlans.length === 0 ? (
             <div className={`border border-dashed border-gray-300 rounded-md ${isMobile ? 'p-3' : 'p-4'} text-center text-muted-foreground transform transition-all duration-500 ease-out ${
               isVisible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
             }`}

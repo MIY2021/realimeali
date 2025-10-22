@@ -1,6 +1,7 @@
 import { useCallback } from "react";
 import { MealType, Recipe, MealPlan } from "@/types";
 import { MealPlannerRecipeCard } from "@/components/meal-planner/MealPlannerRecipeCard";
+import { MealSectionSkeleton } from "@/components/meal-planner/MealSectionSkeleton";
 import { Button } from "@/components/ui/button";
 import { Plus, Clock, Book, UtensilsCrossed, Search, Check, User } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -9,6 +10,7 @@ interface MealPlannerGridViewProps {
   currentMealPlans: MealPlan[];
   recipes: Recipe[];
   mealLayout: string;
+  isDataLoading?: boolean;
   onAddMeal: (mealType: MealType) => void;
   onAddCustomMeal: (mealType: MealType) => void;
   onRemoveMeal: (planId: string) => void;
@@ -20,6 +22,7 @@ export const MealPlannerGridView = ({
   currentMealPlans,
   recipes,
   mealLayout,
+  isDataLoading = false,
   onAddMeal,
   onAddCustomMeal,
   onRemoveMeal,
@@ -80,24 +83,26 @@ export const MealPlannerGridView = ({
                 <h3 className="text-base font-semibold capitalize text-navy">
                   {mealType}
                 </h3>
-                {meals.length > 0 && (
-                  <span className="text-sm text-grey-light">
-                    ({meals.length})
-                  </span>
-                )}
+                <span className="text-sm text-grey-light">
+                  ({isDataLoading ? '–' : meals.length})
+                </span>
               </div>
               {/* Override min-height/min-width with !important to allow h-6 w-6 (24px) sizing */}
               <Button
                 variant="ghost"
                 onClick={() => onAddMeal(mealType)}
-                className="h-6 w-6 !min-h-0 !min-w-0 rounded-full bg-[#F5B82E]/50 hover:bg-[#F5B82E]/70 p-0"
+                disabled={isDataLoading}
+                aria-busy={isDataLoading}
+                className="h-6 w-6 !min-h-0 !min-w-0 rounded-full bg-[#F5B82E]/50 hover:bg-[#F5B82E]/70 p-0 disabled:opacity-50"
               >
                 <Plus className="h-4 w-4 text-white" />
               </Button>
             </div>
 
             {/* Meals Grid */}
-            {meals.length === 0 ? (
+            {isDataLoading ? (
+              <MealSectionSkeleton count={3} />
+            ) : meals.length === 0 ? (
               <div className="border border-dashed border-gray-200 rounded-lg p-4 text-center text-grey-light">
                 <span className="text-sm">No {mealType} planned yet</span>
               </div>
