@@ -11,7 +11,6 @@ interface MealPlannerActionsProps {
   isLoading: boolean;
   currentWeek: 1 | 2;
   setCurrentWeek: (week: 1 | 2) => void;
-  mostRecentWeek: 1 | 2 | null;
   mealLayout: string;
   onMealLayoutChange: (value: string) => void;
 }
@@ -23,7 +22,6 @@ export const MealPlannerActions = ({
   isLoading,
   currentWeek,
   setCurrentWeek,
-  mostRecentWeek,
   mealLayout,
   onMealLayoutChange
 }: MealPlannerActionsProps) => {

@@ -9,7 +9,6 @@ interface MealPlannerContentProps {
   setCurrentWeek: (week: 1 | 2) => void;
   isLoading: boolean;
   currentMealPlans: MealPlan[];
-  mostRecentWeek: 1 | 2 | null;
   recipes: Recipe[];
   mealLayout: string;
   onMealLayoutChange: (value: string) => void;
@@ -28,7 +27,6 @@ export const MealPlannerContent = ({
   setCurrentWeek,
   isLoading,
   currentMealPlans,
-  mostRecentWeek,
   recipes,
   mealLayout,
   onMealLayoutChange,
@@ -82,7 +80,6 @@ export const MealPlannerContent = ({
         isLoading={isLoading}
         currentWeek={currentWeek}
         setCurrentWeek={setCurrentWeek}
-        mostRecentWeek={mostRecentWeek}
         mealLayout={mealLayout}
         onMealLayoutChange={onMealLayoutChange}
       />
