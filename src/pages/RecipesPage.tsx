@@ -9,7 +9,6 @@ import { AddToMealPlanDialog } from "@/components/recipes/AddToMealPlanDialog";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
-import { useRecipesLoader } from "@/hooks/useRecipesLoader";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { usePageTransition } from "@/hooks/usePageTransition";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -34,9 +33,6 @@ export default function RecipesPage() {
   // State for Add to Meal Plan dialog
   const [selectedRecipeForMealPlan, setSelectedRecipeForMealPlan] = useState<Recipe | null>(null);
   const [isMealPlanDialogOpen, setIsMealPlanDialogOpen] = useState(false);
-
-  // Load recipes automatically
-  useRecipesLoader();
 
   // Handle initial loading state
   useEffect(() => {

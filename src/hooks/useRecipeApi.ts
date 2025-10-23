@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Recipe, MealType } from "@/types";
 
@@ -334,7 +335,7 @@ export const useRecipeApi = () => {
     }
   };
 
-  return {
+  return useMemo(() => ({
     fetchRecipes,
     fetchRecipesLite,
     createRecipe,
@@ -344,5 +345,5 @@ export const useRecipeApi = () => {
     restoreRecipe,
     permanentDeleteRecipe,
     toggleCookingStatus,
-  };
+  }), []); // Empty deps - all functions are stable
 };
