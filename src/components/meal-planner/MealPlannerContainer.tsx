@@ -3,7 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { useMealPlan } from "@/contexts/MealPlanContext";
-import { useRecipesLoader } from "@/hooks/useRecipesLoader";
+
 import { MealPlannerHeader } from "@/components/meal-planner/MealPlannerHeader";
 import { MealPlannerContent } from "@/components/meal-planner/MealPlannerContent";
 import { MealPlannerModalsContainer } from "@/components/meal-planner/MealPlannerModalsContainer";
@@ -35,12 +35,11 @@ export default function MealPlannerContainer() {
     removeMealPlan, 
     clearWeek, 
     reorderMealPlans,
-    fetchMealPlans 
+    fetchMealPlans,
+    isLoading: mealPlansLoading
   } = useMealPlan();
   const { toast } = useToast();
   
-  // Auto-load recipes when component mounts
-  useRecipesLoader();
   
   // Performance logging
   useEffect(() => {
@@ -64,14 +63,14 @@ export default function MealPlannerContainer() {
   }, [user, currentHousehold]);
 
   useEffect(() => {
-    if (!initialLoad && !recipesLoading) {
+    if (!initialLoad && !recipesLoading && !mealPlansLoading) {
       console.timeEnd('[Performance] plannerDataFetch');
       console.time('[Performance] plannerHydration');
       requestAnimationFrame(() => {
         console.timeEnd('[Performance] plannerHydration');
       });
     }
-  }, [initialLoad, recipesLoading]);
+  }, [initialLoad, recipesLoading, mealPlansLoading]);
   
   const {
     currentWeek,
@@ -341,8 +340,8 @@ export default function MealPlannerContainer() {
 
   const { lastGenerated, createdByUserId } = getCreationInfo();
 
-  // Compute data loading state
-  const isDataLoading = initialLoad || recipesLoading;
+  // Compute data loading state - wait for BOTH recipes and meal plans
+  const isDataLoading = initialLoad || recipesLoading || mealPlansLoading;
 
   if (!user || !currentHousehold) {
     return (
