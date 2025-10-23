@@ -33,10 +33,13 @@ import { HouseholdShoppingProvider } from "@/contexts/HouseholdShoppingContext";
 import { Toaster } from "@/components/ui/toaster";
 
 import { RealiChefProvider } from "@/contexts/RealiChefContext";
+import { useParallelDataLoader } from "@/hooks/useParallelDataLoader";
 
 const queryClient = new QueryClient();
 
 function AppContent() {
+  // Coordinate parallel loading of recipes and meal plans
+  useParallelDataLoader();
   return (
     <div className="App">
       <Layout>

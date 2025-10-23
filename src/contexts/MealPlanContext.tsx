@@ -87,14 +87,18 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [stableUserId, stableHouseholdId, toast]);
 
-  // Single effect to handle data fetching - only depend on stable IDs
+  // Auto-fetch disabled - now controlled by useParallelDataLoader for better performance
+  // Clear meal plans when user/household changes to null
   useEffect(() => {
-    // Only fetch if the user/household combination actually changed
-    if (currentUserIdRef.current !== stableUserId || 
-        lastFetchedHouseholdIdRef.current !== stableHouseholdId) {
-      fetchMealPlans();
+    if (!stableUserId || !stableHouseholdId) {
+      if (lastFetchedHouseholdIdRef.current) {
+        console.log('MealPlanContext: No user or household, clearing meal plans');
+        setMealPlans([]);
+        lastFetchedHouseholdIdRef.current = null;
+        currentUserIdRef.current = null;
+      }
     }
-  }, [stableUserId, stableHouseholdId, fetchMealPlans]);
+  }, [stableUserId, stableHouseholdId]);
 
   const getMealPlansForWeek = useCallback((weekNumber: 1 | 2): MealPlan[] => {
     if (!stableUserId || !stableHouseholdId) return [];

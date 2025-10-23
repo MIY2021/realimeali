@@ -34,30 +34,27 @@ export const RecipesProvider: React.FC<{ children: React.ReactNode }> = ({ child
   // Performance: Track last fetched household to prevent duplicate fetches
   const lastFetchedHouseholdIdRef = useRef<string | null>(null);
 
-  // Auto-fetch recipes when household is available
+  // Auto-fetch disabled - now controlled by useParallelDataLoader for better performance
+  // Clear recipes when household changes to null
   useEffect(() => {
     const householdId = currentHousehold?.id || null;
     
-    // Don't fetch if household is still loading
-    if (isLoadingHousehold) {
-      return;
-    }
-
-    // Only fetch if household ID actually changed
-    if (householdId && householdId !== lastFetchedHouseholdIdRef.current) {
-      console.log('RecipesContext: Auto-fetching recipes for household:', householdId);
-      lastFetchedHouseholdIdRef.current = householdId;
-      fetchRecipes(householdId);
-    } else if (!householdId && lastFetchedHouseholdIdRef.current) {
+    if (!householdId && lastFetchedHouseholdIdRef.current) {
       console.log('RecipesContext: No household available, clearing recipes');
       lastFetchedHouseholdIdRef.current = null;
       setRecipes([]);
     }
-  }, [currentHousehold?.id, isLoadingHousehold]);
+  }, [currentHousehold?.id]);
 
   const fetchRecipes = useCallback(async (householdId: string | null) => {
     if (!householdId) {
       console.log('RecipesContext: No household ID provided, skipping fetch');
+      return;
+    }
+
+    // Prevent duplicate fetches
+    if (lastFetchedHouseholdIdRef.current === householdId) {
+      console.log('RecipesContext: Already fetched for this household, skipping');
       return;
     }
     
@@ -65,6 +62,8 @@ export const RecipesProvider: React.FC<{ children: React.ReactNode }> = ({ child
     console.log('RecipesContext: Fetching recipes for household:', householdId);
     setIsLoading(true);
     setError(null);
+    lastFetchedHouseholdIdRef.current = householdId;
+    
     try {
       const fetchedRecipes = await api.fetchRecipes(householdId);
       console.log('RecipesContext: Fetched recipes:', fetchedRecipes.length);
