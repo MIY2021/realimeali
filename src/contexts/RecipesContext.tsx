@@ -10,7 +10,6 @@ interface RecipesContextType {
   isLoading: boolean;
   error: string | null;
   fetchRecipes: (householdId: string | null) => Promise<void>;
-  fetchRecipeById: (id: string) => Promise<Recipe | null>;
   getRecipeById: (id: string) => Recipe | undefined;
   getRecipeBySlug: (slug: string) => Recipe | undefined;
   createRecipe: (recipe: Omit<Recipe, 'id' | 'created_at' | 'updated_at' | 'created_by'>, householdId: string) => Promise<Recipe | null>;
@@ -66,7 +65,7 @@ export const RecipesProvider: React.FC<{ children: React.ReactNode }> = ({ child
     lastFetchedHouseholdIdRef.current = householdId;
     
     try {
-      const fetchedRecipes = await api.fetchRecipesLite(householdId);
+      const fetchedRecipes = await api.fetchRecipes(householdId);
       console.log('RecipesContext: Fetched recipes:', fetchedRecipes.length);
       setRecipes(fetchedRecipes);
       console.timeEnd('[Performance] Recipes fetch');
@@ -77,32 +76,6 @@ export const RecipesProvider: React.FC<{ children: React.ReactNode }> = ({ child
       console.timeEnd('[Performance] Recipes fetch');
     } finally {
       setIsLoading(false);
-    }
-  }, [api]);
-
-  const fetchRecipeById = useCallback(async (id: string): Promise<Recipe | null> => {
-    try {
-      console.log('RecipesContext: Fetching single recipe:', id);
-      const recipe = await api.fetchRecipeById(id);
-      
-      // Update the recipe in the context if it exists
-      if (recipe) {
-        setRecipes(prev => {
-          const index = prev.findIndex(r => r.id === id);
-          if (index >= 0) {
-            const updated = [...prev];
-            updated[index] = recipe;
-            return updated;
-          }
-          return prev;
-        });
-      }
-      
-      return recipe;
-    } catch (error) {
-      console.error('RecipesContext: Error fetching recipe by ID:', error);
-      toast.error("Failed to load recipe");
-      return null;
     }
   }, [api]);
 
@@ -248,7 +221,6 @@ export const RecipesProvider: React.FC<{ children: React.ReactNode }> = ({ child
     isLoading,
     error,
     fetchRecipes,
-    fetchRecipeById,
     getRecipeById,
     getRecipeBySlug,
     createRecipe,

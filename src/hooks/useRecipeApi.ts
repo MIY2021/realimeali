@@ -44,50 +44,6 @@ export const useRecipeApi = () => {
     }
   };
 
-  // Fetch single recipe by ID with full details (for recipe detail page)
-  const fetchRecipeById = async (recipeId: string): Promise<Recipe | null> => {
-    try {
-      console.log('API: Fetching single recipe:', recipeId);
-      
-      const { data, error } = await supabase
-        .from('recipes')
-        .select('*')
-        .eq('id', recipeId)
-        .eq('is_deleted', false)
-        .single();
-
-      if (error) {
-        console.error('API: Supabase error:', error);
-        throw error;
-      }
-
-      if (!data) return null;
-      
-      // Transform database response to match Recipe interface
-      const recipeWithCookingStatus = data as any;
-      
-      return {
-        ...data,
-        created_by: data.user_id,
-        has_cooked: Boolean(recipeWithCookingStatus.has_cooked || false),
-        meal_type: VALID_MEAL_TYPES.includes(data.meal_type as MealType) 
-          ? data.meal_type as MealType 
-          : undefined,
-        meal_types: Array.isArray(recipeWithCookingStatus.meal_types) 
-          ? recipeWithCookingStatus.meal_types.filter((type: string) => 
-              VALID_MEAL_TYPES.includes(type as MealType)
-            ) as MealType[]
-          : (data.meal_type && VALID_MEAL_TYPES.includes(data.meal_type as MealType) 
-              ? [data.meal_type as MealType] 
-              : []),
-        cuisine_region: data.cuisine_region as any,
-      };
-    } catch (error) {
-      console.error('API: Error fetching recipe by ID:', error);
-      throw error;
-    }
-  };
-
   const fetchRecipes = async (householdId: string): Promise<Recipe[]> => {
     try {
       console.log('API: Fetching recipes for household:', householdId);
@@ -382,7 +338,6 @@ export const useRecipeApi = () => {
   return useMemo(() => ({
     fetchRecipes,
     fetchRecipesLite,
-    fetchRecipeById,
     createRecipe,
     updateRecipe,
     deleteRecipe,
