@@ -1,4 +1,4 @@
-
+import React, { Suspense, lazy } from "react";
 import {
   BrowserRouter,
   Routes,
@@ -6,34 +6,37 @@ import {
 } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Layout from "@/components/layout/Layout";
-import Index from "@/pages/Index";
-import Login from "@/pages/Login";
-import Settings from "@/pages/Settings";
-import RecipesPage from "@/pages/RecipesPage";
-import CreateRecipePage from "@/pages/CreateRecipePage";
-import EditRecipePage from "@/pages/EditRecipePage";
-import RecipeDetail from "@/pages/RecipeDetail";
-import MealPlanner from "@/pages/MealPlanner";
-import ShoppingList from "@/pages/ShoppingList";
-import DiscoverRecipesPage from "@/pages/DiscoverRecipesPage";
-import ImportedRecipeDetailPage from "@/pages/ImportedRecipeDetailPage";
-import AdminDashboard from "@/pages/AdminDashboard";
-import Feedback from "@/pages/Feedback";
-import Contact from "@/pages/Contact";
-import About from "@/pages/About";
-import PrivacyPolicy from "@/pages/PrivacyPolicy";
-import TermsOfService from "@/pages/TermsOfService";
-import NotFound from "@/pages/NotFound";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { HouseholdProvider } from "@/contexts/HouseholdContext";
 import { RecipesProvider } from "@/contexts/RecipesContext";
 import { MealPlanProvider } from "@/contexts/MealPlanContext";
 import { MealPlanApprovalProvider } from "@/contexts/MealPlanApprovalContext";
 import { HouseholdShoppingProvider } from "@/contexts/HouseholdShoppingContext";
-import { Toaster } from "@/components/ui/toaster";
-
 import { RealiChefProvider } from "@/contexts/RealiChefContext";
 import { useParallelDataLoader } from "@/hooks/useParallelDataLoader";
+import { Toaster } from "@/components/ui/toaster";
+
+// Eager load: Home page (most visited)
+import Index from "@/pages/Index";
+
+// Lazy load: All other pages (code splitting)
+const Login = lazy(() => import("@/pages/Login"));
+const Settings = lazy(() => import("@/pages/Settings"));
+const RecipesPage = lazy(() => import("@/pages/RecipesPage"));
+const CreateRecipePage = lazy(() => import("@/pages/CreateRecipePage"));
+const EditRecipePage = lazy(() => import("@/pages/EditRecipePage"));
+const RecipeDetail = lazy(() => import("@/pages/RecipeDetail"));
+const MealPlanner = lazy(() => import("@/pages/MealPlanner"));
+const ShoppingList = lazy(() => import("@/pages/ShoppingList"));
+const DiscoverRecipesPage = lazy(() => import("@/pages/DiscoverRecipesPage"));
+const ImportedRecipeDetailPage = lazy(() => import("@/pages/ImportedRecipeDetailPage"));
+const AdminDashboard = lazy(() => import("@/pages/AdminDashboard"));
+const Feedback = lazy(() => import("@/pages/Feedback"));
+const Contact = lazy(() => import("@/pages/Contact"));
+const About = lazy(() => import("@/pages/About"));
+const PrivacyPolicy = lazy(() => import("@/pages/PrivacyPolicy"));
+const TermsOfService = lazy(() => import("@/pages/TermsOfService"));
+const NotFound = lazy(() => import("@/pages/NotFound"));
 
 const queryClient = new QueryClient();
 
@@ -43,27 +46,33 @@ function AppContent() {
   return (
     <div className="App">
       <Layout>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="/my-recipes" element={<RecipesPage />} />
-          <Route path="/my-recipes/new" element={<CreateRecipePage />} />
-          <Route path="/create-recipe" element={<CreateRecipePage />} />
-          <Route path="/my-recipes/:slug/edit" element={<EditRecipePage />} />
-          <Route path="/my-recipes/:slug" element={<RecipeDetail />} />
-          <Route path="/discover-recipes" element={<DiscoverRecipesPage />} />
-          <Route path="/discover-recipes/:id" element={<ImportedRecipeDetailPage />} />
-          <Route path="/meal-planner" element={<MealPlanner />} />
-          <Route path="/shopping-list" element={<ShoppingList />} />
-          <Route path="/admin" element={<AdminDashboard />} />
-          <Route path="/feedback" element={<Feedback />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-          <Route path="/terms-of-service" element={<TermsOfService />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <Suspense fallback={
+          <div className="flex items-center justify-center min-h-[60vh]">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          </div>
+        }>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/my-recipes" element={<RecipesPage />} />
+            <Route path="/my-recipes/new" element={<CreateRecipePage />} />
+            <Route path="/create-recipe" element={<CreateRecipePage />} />
+            <Route path="/my-recipes/:slug/edit" element={<EditRecipePage />} />
+            <Route path="/my-recipes/:slug" element={<RecipeDetail />} />
+            <Route path="/discover-recipes" element={<DiscoverRecipesPage />} />
+            <Route path="/discover-recipes/:id" element={<ImportedRecipeDetailPage />} />
+            <Route path="/meal-planner" element={<MealPlanner />} />
+            <Route path="/shopping-list" element={<ShoppingList />} />
+            <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/feedback" element={<Feedback />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/terms-of-service" element={<TermsOfService />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Suspense>
       </Layout>
       <Toaster />
     </div>
