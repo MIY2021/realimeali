@@ -11,9 +11,11 @@ interface RecipeImageProps {
   iconSize?: string;
   onClick?: () => void;
   clickable?: boolean;
+  width?: number;
+  height?: number;
 }
 
-export function RecipeImage({ recipe, alt, className, iconSize = "h-8 w-8", onClick, clickable }: RecipeImageProps) {
+export function RecipeImage({ recipe, alt, className, iconSize = "h-8 w-8", onClick, clickable, width = 80, height = 80 }: RecipeImageProps) {
   const [imgError, setImgError] = useState(false);
   const [placeholderError, setPlaceholderError] = useState(false);
 
@@ -25,6 +27,10 @@ export function RecipeImage({ recipe, alt, className, iconSize = "h-8 w-8", onCl
       <img
         src={recipe.image}
         alt={imageAlt}
+        width={width}
+        height={height}
+        loading="lazy"
+        decoding="async"
         className={cn("object-cover", clickable && "cursor-pointer hover:brightness-95 transition-all", className)}
         onError={() => setImgError(true)}
         onClick={onClick}
@@ -38,9 +44,12 @@ export function RecipeImage({ recipe, alt, className, iconSize = "h-8 w-8", onCl
       <img
         src="/lovable-uploads/ee0bb47d-e780-4d0c-bbcb-9406228849f4.png"
         alt={imageAlt}
+        width={width}
+        height={height}
+        loading="lazy"
+        decoding="async"
         className={cn("object-cover bg-muted", className)}
         onError={() => setPlaceholderError(true)}
-        onLoad={() => console.log("Placeholder image loaded successfully")}
       />
     );
   }

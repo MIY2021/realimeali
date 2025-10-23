@@ -4,6 +4,44 @@ import { Recipe, MealType } from "@/types";
 const VALID_MEAL_TYPES: MealType[] = ["breakfast", "lunch", "dinner", "snacks", "sides", "desserts", "drinks"];
 
 export const useRecipeApi = () => {
+  // Lite version for meal planner - only fetches essential fields
+  const fetchRecipesLite = async (householdId: string): Promise<Recipe[]> => {
+    try {
+      console.log('API: Fetching lite recipes for household:', householdId);
+      
+      const { data, error } = await supabase
+        .from('recipes')
+        .select('id, title, image, servings, meal_type, meal_types, is_deleted')
+        .eq('household_id', householdId)
+        .eq('is_deleted', false)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('API: Supabase error:', error);
+        throw error;
+      }
+      
+      // Transform to minimal Recipe objects
+      return (data || []).map(recipe => ({
+        id: recipe.id,
+        title: recipe.title,
+        image: recipe.image,
+        servings: recipe.servings,
+        meal_type: VALID_MEAL_TYPES.includes(recipe.meal_type as MealType) 
+          ? recipe.meal_type as MealType 
+          : undefined,
+        meal_types: Array.isArray((recipe as any).meal_types) 
+          ? (recipe as any).meal_types.filter((type: string) => 
+              VALID_MEAL_TYPES.includes(type as MealType)
+            ) as MealType[]
+          : [],
+      } as Recipe));
+    } catch (error) {
+      console.error('API: Error fetching lite recipes:', error);
+      throw error;
+    }
+  };
+
   const fetchRecipes = async (householdId: string): Promise<Recipe[]> => {
     try {
       console.log('API: Fetching recipes for household:', householdId);
@@ -297,6 +335,7 @@ export const useRecipeApi = () => {
 
   return {
     fetchRecipes,
+    fetchRecipesLite,
     createRecipe,
     updateRecipe,
     deleteRecipe,

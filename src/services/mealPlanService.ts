@@ -9,8 +9,9 @@ export const mealPlanService = {
     
     const { data, error } = await supabase
       .from('household_meal_plans')
-      .select('*')
+      .select('id, household_id, recipe_id, meal_type, week_number, slot_index, date_scheduled, created_by, created_at, updated_at, parent_meal_plan_id, is_leftover, leftover_servings, original_servings, planned_servings, is_completed, is_freetyped, meal_name')
       .eq('household_id', householdId)
+      .order('week_number', { ascending: true })
       .order('created_at', { ascending: true });
 
     if (error) {
