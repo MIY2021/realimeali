@@ -110,7 +110,8 @@ export function RecipeCard({ recipe, onAddToMealPlan, onRecipeClick, showActions
       <div className="relative overflow-hidden rounded-t-lg">
         <div onClick={handleRecipeClick} className="cursor-pointer">
           <RecipeImage 
-            recipe={recipe} 
+            recipe={recipe}
+            useThumbnail={true}
             className={`w-full aspect-[4/3] object-cover transition-transform duration-300 ${!isMobile ? 'hover:scale-110' : ''}`} 
             iconSize="h-5 w-5" 
           />

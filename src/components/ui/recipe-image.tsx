@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 
 interface RecipeImageProps {
   recipe?: Recipe;
+  useThumbnail?: boolean;
   alt?: string;
   className?: string;
   iconSize?: string;
@@ -15,17 +16,20 @@ interface RecipeImageProps {
   height?: number;
 }
 
-export function RecipeImage({ recipe, alt, className, iconSize = "h-8 w-8", onClick, clickable, width = 80, height = 80 }: RecipeImageProps) {
+export function RecipeImage({ recipe, useThumbnail = false, alt, className, iconSize = "h-8 w-8", onClick, clickable, width = 80, height = 80 }: RecipeImageProps) {
   const [imgError, setImgError] = useState(false);
   const [placeholderError, setPlaceholderError] = useState(false);
 
   const imageAlt = alt || recipe?.title || "Recipe image";
+  
+  const imageUrl = useThumbnail 
+    ? ((recipe as any)?.image_thumbnail || recipe?.image)
+    : recipe?.image;
 
-  // If we have a recipe image and no error, show it
-  if (recipe?.image && !imgError) {
+  if (imageUrl && !imgError) {
     return (
       <img
-        src={recipe.image}
+        src={imageUrl}
         alt={imageAlt}
         width={width}
         height={height}

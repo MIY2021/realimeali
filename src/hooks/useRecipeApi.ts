@@ -11,7 +11,7 @@ export const useRecipeApi = () => {
       
       const { data, error } = await supabase
         .from('recipes')
-        .select('id, title, image, servings, meal_type, meal_types, is_deleted')
+        .select('id, title, image, image_thumbnail, servings, meal_type, meal_types, is_deleted')
         .eq('household_id', householdId)
         .eq('is_deleted', false)
         .order('created_at', { ascending: false });
@@ -21,11 +21,12 @@ export const useRecipeApi = () => {
         throw error;
       }
       
-      // Transform to minimal Recipe objects
+      // Transform to minimal Recipe objects (cast as any to allow partial Recipe)
       return (data || []).map(recipe => ({
         id: recipe.id,
         title: recipe.title,
         image: recipe.image,
+        image_thumbnail: (recipe as any).image_thumbnail,
         servings: recipe.servings,
         meal_type: VALID_MEAL_TYPES.includes(recipe.meal_type as MealType) 
           ? recipe.meal_type as MealType 
@@ -35,7 +36,7 @@ export const useRecipeApi = () => {
               VALID_MEAL_TYPES.includes(type as MealType)
             ) as MealType[]
           : [],
-      } as Recipe));
+      } as any as Recipe));
     } catch (error) {
       console.error('API: Error fetching lite recipes:', error);
       throw error;

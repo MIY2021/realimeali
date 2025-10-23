@@ -841,6 +841,7 @@ export type Database = {
           household_id: string
           id: string
           image: string | null
+          image_thumbnail: string | null
           import_method: string | null
           ingredients: string[]
           instructions: string[]
@@ -877,6 +878,7 @@ export type Database = {
           household_id: string
           id?: string
           image?: string | null
+          image_thumbnail?: string | null
           import_method?: string | null
           ingredients?: string[]
           instructions?: string[]
@@ -913,6 +915,7 @@ export type Database = {
           household_id?: string
           id?: string
           image?: string | null
+          image_thumbnail?: string | null
           import_method?: string | null
           ingredients?: string[]
           instructions?: string[]

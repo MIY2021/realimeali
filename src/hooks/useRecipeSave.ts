@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Recipe } from "@/types";
+import { uploadRecipeImage } from "@/services/imageUploadService";
 
 export function useRecipeSave() {
   const navigate = useNavigate();
@@ -15,7 +16,8 @@ export function useRecipeSave() {
   const handleSave = async (
     newRecipe: Omit<Recipe, 'id' | 'created_at' | 'updated_at' | 'created_by'>, 
     shareWithCommunity: boolean = false,
-    originalSourceUrl?: string
+    originalSourceUrl?: string,
+    uploadedImageFile?: File | null
   ) => {
     console.log("🍳 Save recipe called with:", { 
       newRecipe, 
@@ -109,6 +111,36 @@ export function useRecipeSave() {
       console.log("✅ Recipe creation response:", recipe);
       
       if (recipe) {
+        // Upload compressed images if a file was uploaded
+        if (uploadedImageFile && user) {
+          console.log("📸 Uploading compressed images to storage...");
+          try {
+            const { fullUrl, thumbnailUrl } = await uploadRecipeImage(
+              uploadedImageFile,
+              user.id,
+              recipe.id
+            );
+
+            console.log("📸 Images uploaded successfully, updating recipe...");
+            const { error: updateError } = await supabase
+              .from('recipes')
+              .update({
+                image: fullUrl,
+                image_thumbnail: thumbnailUrl,
+              })
+              .eq('id', recipe.id);
+
+            if (updateError) {
+              console.error("❌ Failed to update recipe with image URLs:", updateError);
+            } else {
+              console.log("✅ Recipe updated with optimized images");
+            }
+          } catch (imageError) {
+            console.error("❌ Failed to upload images:", imageError);
+            // Continue anyway - recipe is saved
+          }
+        }
+        
         // If user wants to share with community, submit it directly to community_recipes table
         if (shareWithCommunity) {
           console.log("🌍 Submitting recipe to community for moderation...");
