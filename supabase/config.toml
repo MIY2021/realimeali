@@ -4,6 +4,9 @@ project_id = "bdjzefekuahfofwzxqxd"
 [functions.parse-recipe-ai]
 verify_jwt = false
 
+[functions.generate-missing-thumbnails]
+verify_jwt = false
+
 [functions.recipe-meta]
 verify_jwt = false
 
