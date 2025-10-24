@@ -130,7 +130,10 @@ export function MealPlannerRecipeCard({
         willChange: 'transform, opacity'
       }}
     >
-      <div className="relative">
+      <div 
+        className="relative cursor-pointer" 
+        onClick={recipe ? handleViewRecipe : undefined}
+      >
         <RecipeImage
           recipe={recipe}
           useThumbnail={true}
@@ -160,9 +163,11 @@ export function MealPlannerRecipeCard({
         <h3 
           className={`font-bold text-sm leading-tight text-navy line-clamp-2 min-h-[2.5rem] ${
             mealPlan.is_completed ? 'line-through text-gray-400' : ''
-          }`}
+          } ${recipe ? 'cursor-pointer hover:text-terracotta transition-colors' : ''}`}
           onClick={() => {
-            if (!recipe && mealPlan.meal_name && mealPlan.meal_name.length > 15) {
+            if (recipe) {
+              handleViewRecipe();
+            } else if (mealPlan.meal_name && mealPlan.meal_name.length > 15) {
               toast({
                 title: mealPlan.meal_name,
               });
