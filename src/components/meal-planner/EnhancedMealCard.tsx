@@ -301,6 +301,7 @@ export function EnhancedMealCard({
             <Link to={recipeUrl}>
               <RecipeImage 
                 recipe={recipe}
+                useThumbnail={true}
                 className={`w-full h-full rounded cursor-pointer hover:opacity-80 transition-all duration-300 ease-in-out ${
                   mealPlan.is_completed ? 'grayscale brightness-75' : ''
                 }`}
