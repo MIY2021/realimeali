@@ -49,22 +49,10 @@ export function useRecipeForm(isEditing: boolean = false, existingRecipe?: Recip
       // Store file for upload during save
       setUploadedImageFile(file);
       
-      // Create preview
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const result = reader.result as string;
-        console.log('📁 File read complete, updating recipe image preview');
-        setNewRecipe(prev => ({ ...prev, image: result }));
-      };
-      reader.onerror = (error) => {
-        console.error('❌ Error reading file:', error);
-        toast({
-          title: "Error",
-          description: "Failed to read the image file. Please try again.",
-          variant: "destructive",
-        });
-      };
-      reader.readAsDataURL(file);
+      // Create local preview URL for display only
+      const previewUrl = URL.createObjectURL(file);
+      console.log('📁 Created preview URL for display');
+      setNewRecipe(prev => ({ ...prev, image: previewUrl }));
     } else {
       console.log('📁 No file selected, clearing recipe image');
       setUploadedImageFile(null);

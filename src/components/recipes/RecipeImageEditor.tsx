@@ -212,21 +212,31 @@ Lighting: natural daylight style or softbox imitation — bright but soft shadow
     
     setIsUploading(true);
     try {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const result = reader.result as string;
-        onImageUpdate(result);
-        toast({
-          title: "Image Uploaded!",
-          description: "Your custom image has been applied to the recipe.",
-        });
-        onClose();
-      };
-      reader.readAsDataURL(selectedFile);
+      // Import upload service
+      const { uploadRecipeImage } = await import('@/services/imageUploadService');
+      
+      // Get user ID from recipe's created_by field
+      const userId = recipe.created_by;
+      if (!userId) {
+        throw new Error('User ID is required to upload images');
+      }
+
+      // Upload to Supabase Storage
+      const uploadedImages = await uploadRecipeImage(selectedFile, userId, recipe.id);
+      
+      // Update recipe with storage URL instead of base64
+      onImageUpdate(uploadedImages.fullUrl);
+      
+      toast({
+        title: "Image Uploaded!",
+        description: "Your custom image has been uploaded to storage.",
+      });
+      onClose();
     } catch (error) {
+      console.error('Upload error:', error);
       toast({
         title: "Upload Failed",
-        description: "Failed to upload image. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to upload image. Please try again.",
         variant: "destructive",
       });
     } finally {

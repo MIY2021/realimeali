@@ -84,7 +84,8 @@ export function useImageRecipeProcessing() {
         diet_lifestyle: data.parsedRecipe.dietLifestyle || [],
         // complexity_level removed
         top_tip: data.parsedRecipe.topTip || "Enjoy cooking this delicious recipe!",
-        image: base64, // Include the processed image
+        image: undefined, // Image will be uploaded separately via uploadRecipeImage
+        imageFile: file, // Pass the original file for upload
         is_favorite: false,
         has_cooked: false,
         household_id: '',
