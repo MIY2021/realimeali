@@ -65,7 +65,7 @@ export const RecipesProvider: React.FC<{ children: React.ReactNode }> = ({ child
     lastFetchedHouseholdIdRef.current = householdId;
     
     try {
-      const fetchedRecipes = await api.fetchRecipes(householdId);
+      const fetchedRecipes = await api.fetchRecipesLite(householdId);
       console.log('RecipesContext: Fetched recipes:', fetchedRecipes.length);
       setRecipes(fetchedRecipes);
       console.timeEnd('[Performance] Recipes fetch');
