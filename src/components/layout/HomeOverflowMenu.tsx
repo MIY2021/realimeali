@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MoreHorizontal, Settings, LayoutDashboard, ArrowRight } from "lucide-react";
+import { MoreHorizontal, Settings, LayoutDashboard, ArrowRight, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -43,6 +43,12 @@ export const HomeOverflowMenu = () => {
       icon: Settings,
       label: "Settings",
       to: "/settings",
+      show: true,
+    },
+    {
+      icon: Mail,
+      label: "Report a Bug",
+      to: "/feedback",
       show: true,
     },
     {
