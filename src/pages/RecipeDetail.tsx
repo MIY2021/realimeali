@@ -16,13 +16,15 @@ import { useRealiChefContext } from "@/hooks/useRealiChefContext";
 export default function RecipeDetail() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
-  const { recipes, getRecipeById, updateRecipe, deleteRecipe, isLoading } = useRecipes();
+  const { recipes, getRecipeById, fetchRecipeById, updateRecipe, deleteRecipe, isLoading } = useRecipes();
   const { user } = useAuth();
   const { householdMembers, currentHousehold } = useHousehold();
   
   const [isAddToMealPlanOpen, setIsAddToMealPlanOpen] = useState(false);
   const [adjustedServings, setAdjustedServings] = useState<number | undefined>(undefined);
   const [hasAttemptedLoad, setHasAttemptedLoad] = useState(false);
+  const [fullRecipe, setFullRecipe] = useState<Recipe | null>(null);
+  const [isLoadingDetail, setIsLoadingDetail] = useState(false);
 
   // Scroll to top when component mounts or recipe changes
   useEffect(() => {
@@ -36,8 +38,8 @@ export default function RecipeDetail() {
     }
   }, [isLoading]);
 
-  // Find recipe by slug or legacy ID
-  const recipe = (() => {
+  // Find recipe stub from context (lightweight data)
+  const recipeStub = (() => {
     if (!slug || isLoading) return undefined;
     
     // First try to find by slug (generated from title)
@@ -47,6 +49,36 @@ export default function RecipeDetail() {
     // Fall back to legacy ID lookup (for backwards compatibility)
     return getRecipeById(slug);
   })();
+
+  // Fetch full recipe details when stub is found
+  useEffect(() => {
+    const loadFullRecipe = async () => {
+      if (!recipeStub?.id) {
+        setFullRecipe(null);
+        return;
+      }
+      
+      // Check if we already have full data (ingredients exists)
+      if (recipeStub.ingredients && recipeStub.instructions) {
+        setFullRecipe(recipeStub);
+        return;
+      }
+      
+      setIsLoadingDetail(true);
+      try {
+        const full = await fetchRecipeById(recipeStub.id);
+        setFullRecipe(full);
+      } catch (error) {
+        console.error('Error loading full recipe:', error);
+      } finally {
+        setIsLoadingDetail(false);
+      }
+    };
+    
+    loadFullRecipe();
+  }, [recipeStub?.id, fetchRecipeById]);
+
+  const recipe = fullRecipe || recipeStub;
 
   // Update RealiChef context with recipe information
   useRealiChefContext({
@@ -100,8 +132,8 @@ export default function RecipeDetail() {
     (recipe.household_id && householdMembers.some(member => member.user_id === user.id)) // Household members can edit
   );
 
-  // Show loading state while recipes are being fetched OR if we haven't attempted load yet
-  if (isLoading || !hasAttemptedLoad) {
+  // Show loading state while recipes are being fetched OR if we haven't attempted load yet OR loading details
+  if (isLoading || !hasAttemptedLoad || isLoadingDetail) {
     return (
       <div className="container max-w-4xl py-4 sm:py-6 px-4 sm:px-6">
         <div className="space-y-6">

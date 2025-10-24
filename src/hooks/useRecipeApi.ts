@@ -12,7 +12,7 @@ export const useRecipeApi = () => {
       
       const { data, error } = await supabase
         .from('recipes')
-        .select('id, title, image_thumbnail, servings, meal_type, meal_types, is_deleted')
+        .select('id, title, image_thumbnail, servings, meal_type, meal_types, is_deleted, is_favorite, has_cooked, user_id, household_id, prep_time, cook_time, description')
         .eq('household_id', householdId)
         .eq('is_deleted', false)
         .order('created_at', { ascending: false });
@@ -22,12 +22,19 @@ export const useRecipeApi = () => {
         throw error;
       }
       
-      // Transform to minimal Recipe objects (cast as any to allow partial Recipe)
+      // Transform to Recipe objects with essential fields
       return (data || []).map(recipe => ({
         id: recipe.id,
         title: recipe.title,
         image_thumbnail: (recipe as any).image_thumbnail,
         servings: recipe.servings,
+        prep_time: recipe.prep_time,
+        cook_time: recipe.cook_time,
+        description: recipe.description,
+        is_favorite: recipe.is_favorite,
+        has_cooked: Boolean((recipe as any).has_cooked || false),
+        created_by: (recipe as any).user_id,
+        household_id: recipe.household_id,
         meal_type: VALID_MEAL_TYPES.includes(recipe.meal_type as MealType) 
           ? recipe.meal_type as MealType 
           : undefined,
@@ -39,6 +46,45 @@ export const useRecipeApi = () => {
       } as any as Recipe));
     } catch (error) {
       console.error('API: Error fetching lite recipes:', error);
+      throw error;
+    }
+  };
+
+  const fetchRecipeById = async (id: string): Promise<Recipe | null> => {
+    try {
+      console.log('API: Fetching full recipe details for:', id);
+      
+      const { data, error } = await supabase
+        .from('recipes')
+        .select('*, image_thumbnail')
+        .eq('id', id)
+        .eq('is_deleted', false)
+        .maybeSingle();
+
+      if (error) {
+        console.error('API: Error fetching recipe by ID:', error);
+        throw error;
+      }
+
+      if (!data) return null;
+
+      const recipeData = data as any;
+
+      return {
+        ...data,
+        created_by: data.user_id,
+        has_cooked: Boolean(recipeData.has_cooked || false),
+        meal_type: VALID_MEAL_TYPES.includes(data.meal_type as MealType) 
+          ? data.meal_type as MealType 
+          : undefined,
+        meal_types: Array.isArray(recipeData.meal_types) 
+          ? recipeData.meal_types.filter((type: string) => 
+              VALID_MEAL_TYPES.includes(type as MealType)
+            ) as MealType[]
+          : [],
+      } as Recipe;
+    } catch (error) {
+      console.error('API: Error fetching recipe by ID:', error);
       throw error;
     }
   };
@@ -337,6 +383,7 @@ export const useRecipeApi = () => {
   return useMemo(() => ({
     fetchRecipes,
     fetchRecipesLite,
+    fetchRecipeById,
     createRecipe,
     updateRecipe,
     deleteRecipe,

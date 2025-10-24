@@ -10,6 +10,7 @@ interface RecipesContextType {
   isLoading: boolean;
   error: string | null;
   fetchRecipes: (householdId: string | null) => Promise<void>;
+  fetchRecipeById: (id: string) => Promise<Recipe | null>;
   getRecipeById: (id: string) => Recipe | undefined;
   getRecipeBySlug: (slug: string) => Recipe | undefined;
   createRecipe: (recipe: Omit<Recipe, 'id' | 'created_at' | 'updated_at' | 'created_by'>, householdId: string) => Promise<Recipe | null>;
@@ -216,11 +217,22 @@ export const RecipesProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   }, [api, getRecipeById]);
 
+  const fetchRecipeById = useCallback(async (id: string): Promise<Recipe | null> => {
+    try {
+      return await api.fetchRecipeById(id);
+    } catch (error) {
+      console.error('Error fetching recipe by ID:', error);
+      toast.error("Failed to load recipe details");
+      return null;
+    }
+  }, [api]);
+
   const value: RecipesContextType = {
     recipes,
     isLoading,
     error,
     fetchRecipes,
+    fetchRecipeById,
     getRecipeById,
     getRecipeBySlug,
     createRecipe,
