@@ -17,16 +17,26 @@ interface RecipeImageProps {
 }
 
 export function RecipeImage({ recipe, useThumbnail = false, alt, className, iconSize = "h-8 w-8", onClick, clickable, width = 80, height = 80 }: RecipeImageProps) {
-  const [imgError, setImgError] = useState(false);
+  const [thumbnailError, setThumbnailError] = useState(false);
+  const [fullImageError, setFullImageError] = useState(false);
   const [placeholderError, setPlaceholderError] = useState(false);
 
   const imageAlt = alt || recipe?.title || "Recipe image";
   
-  const imageUrl = useThumbnail 
-    ? ((recipe as any)?.image_thumbnail || recipe?.image)
-    : recipe?.image;
+  // Determine which image to show with proper fallback chain
+  let imageUrl: string | undefined;
+  let isUsingThumbnail = false;
+  
+  if (useThumbnail && (recipe as any)?.image_thumbnail && !thumbnailError) {
+    imageUrl = (recipe as any).image_thumbnail;
+    isUsingThumbnail = true;
+  } else if (recipe?.image && !fullImageError) {
+    imageUrl = recipe.image;
+    isUsingThumbnail = false;
+  }
 
-  if (imageUrl && !imgError) {
+  // Try to render recipe image
+  if (imageUrl) {
     return (
       <img
         src={imageUrl}
@@ -36,7 +46,13 @@ export function RecipeImage({ recipe, useThumbnail = false, alt, className, icon
         loading="lazy"
         decoding="async"
         className={cn("object-cover", clickable && "cursor-pointer hover:brightness-95 transition-all", className)}
-        onError={() => setImgError(true)}
+        onError={() => {
+          if (isUsingThumbnail) {
+            setThumbnailError(true);
+          } else {
+            setFullImageError(true);
+          }
+        }}
         onClick={onClick}
       />
     );

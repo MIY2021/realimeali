@@ -72,25 +72,44 @@ Deno.serve(async (req) => {
       try {
         console.log(`\n🖼️  Processing: ${recipe.title} (${recipe.id})`);
         
-        // Download the existing image
+        // Download the existing image (works for both external URLs and Storage URLs)
         const imageBlob = await generateThumbnailFromUrl(recipe.image);
         
-        // Create thumbnail filename
         const timestamp = Date.now();
-        const thumbnailPath = `${recipe.user_id}/${recipe.id}-${timestamp}-thumb.jpg`;
         
+        // Upload full image to Storage (for external URLs, this moves them to Storage)
+        const fullPath = `${recipe.user_id}/${recipe.id}-${timestamp}.jpg`;
+        console.log(`📤 Uploading full image to: ${fullPath}`);
+        
+        const { error: fullUploadError } = await supabase.storage
+          .from('recipe-images')
+          .upload(fullPath, imageBlob, {
+            contentType: 'image/jpeg',
+            upsert: true,
+          });
+
+        if (fullUploadError) {
+          throw fullUploadError;
+        }
+
+        // Get public URL for full image
+        const { data: fullData } = supabase.storage
+          .from('recipe-images')
+          .getPublicUrl(fullPath);
+
+        // Upload thumbnail (same blob for now - actual compression happens client-side)
+        const thumbnailPath = `${recipe.user_id}/${recipe.id}-${timestamp}-thumb.jpg`;
         console.log(`📤 Uploading thumbnail to: ${thumbnailPath}`);
         
-        // Upload thumbnail to storage
-        const { error: uploadError } = await supabase.storage
+        const { error: thumbError } = await supabase.storage
           .from('recipe-images')
           .upload(thumbnailPath, imageBlob, {
             contentType: 'image/jpeg',
             upsert: true,
           });
 
-        if (uploadError) {
-          throw uploadError;
+        if (thumbError) {
+          throw thumbError;
         }
 
         // Get public URL for thumbnail
@@ -98,17 +117,20 @@ Deno.serve(async (req) => {
           .from('recipe-images')
           .getPublicUrl(thumbnailPath);
 
-        // Update recipe with thumbnail URL
+        // Update recipe with both URLs
         const { error: updateError } = await supabase
           .from('recipes')
-          .update({ image_thumbnail: thumbData.publicUrl })
+          .update({ 
+            image: fullData.publicUrl,
+            image_thumbnail: thumbData.publicUrl 
+          })
           .eq('id', recipe.id);
 
         if (updateError) {
           throw updateError;
         }
 
-        console.log(`✅ Successfully generated thumbnail for: ${recipe.title}`);
+        console.log(`✅ Successfully migrated images for: ${recipe.title}`);
         
         results.push({
           recipeId: recipe.id,
