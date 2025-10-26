@@ -121,9 +121,9 @@ export function RecipeCard({ recipe, onAddToMealPlan, onRecipeClick, showActions
           size="icon"
           onClick={handleToggleFavorite}
           disabled={isTogglingFavorite}
-          className="absolute top-2 right-2 bg-white/80 backdrop-blur-sm border border-white/20 shadow-sm hover:bg-white/90 transition-all duration-200"
+          className={`absolute top-2 right-2 bg-white/80 backdrop-blur-sm border border-white/20 shadow-sm hover:bg-white/90 transition-all duration-200 ${isCompactLayout ? 'h-7 w-7' : ''}`}
         >
-          <Heart className={`${isCompactLayout ? 'h-4 w-4' : 'h-5 w-5'} ${recipe.is_favorite ? 'fill-red-500 text-red-500' : 'text-gray-600 hover:text-red-500'}`} />
+          <Heart className={`${isCompactLayout ? 'h-3.5 w-3.5' : 'h-5 w-5'} ${recipe.is_favorite ? 'fill-red-500 text-red-500' : 'text-gray-600 hover:text-red-500'}`} />
         </Button>
       </div>
       
