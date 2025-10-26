@@ -63,10 +63,12 @@ export const useRecipeApi = () => {
 
       if (error) {
         console.error('API: Error fetching recipe by ID:', error);
-        throw error;
+        throw new Error(`Failed to load recipe: ${error.message || 'Unknown error'}`);
       }
 
-      if (!data) return null;
+      if (!data) {
+        throw new Error('Recipe not found or you do not have permission to view it');
+      }
 
       const recipeData = data as any;
 

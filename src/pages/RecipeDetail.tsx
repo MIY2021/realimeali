@@ -25,6 +25,7 @@ export default function RecipeDetail() {
   const [hasAttemptedLoad, setHasAttemptedLoad] = useState(false);
   const [fullRecipe, setFullRecipe] = useState<Recipe | null>(null);
   const [isLoadingDetail, setIsLoadingDetail] = useState(false);
+  const [fetchError, setFetchError] = useState<Error | null>(null);
 
   // Scroll to top when component mounts or recipe changes
   useEffect(() => {
@@ -50,35 +51,57 @@ export default function RecipeDetail() {
     return getRecipeById(slug);
   })();
 
-  // Fetch full recipe details when stub is found
+  // Fetch full recipe details - either from context or directly from database
   useEffect(() => {
     const loadFullRecipe = async () => {
-      if (!recipeStub?.id) {
-        setFullRecipe(null);
-        return;
-      }
-      
-      // Check if we already have full data (ingredients exists)
-      if (recipeStub.ingredients && recipeStub.instructions) {
-        setFullRecipe(recipeStub);
-        return;
-      }
+      if (!slug || isLoading) return;
       
       setIsLoadingDetail(true);
+      setFetchError(null);
+      
       try {
-        const full = await fetchRecipeById(recipeStub.id);
-        setFullRecipe(full);
+        // First try to find recipe in context
+        const recipeBySlug = recipes.find(r => generateSlug(r.title) === slug);
+        const recipeInContext = recipeBySlug || getRecipeById(slug);
+        
+        if (recipeInContext) {
+          // Check if we have full data (ingredients and instructions)
+          if (recipeInContext.ingredients && recipeInContext.instructions) {
+            setFullRecipe(recipeInContext);
+            setIsLoadingDetail(false);
+            return;
+          }
+          
+          // Fetch full details by ID
+          const full = await fetchRecipeById(recipeInContext.id);
+          if (full) {
+            setFullRecipe(full);
+          } else {
+            throw new Error(`Recipe "${slug}" could not be loaded. It may have been deleted or you may not have permission to view it.`);
+          }
+        } else if (hasAttemptedLoad) {
+          // Recipes are loaded in context but this recipe wasn't found
+          // This means the recipe doesn't exist or user doesn't have access
+          setFullRecipe(null);
+        }
       } catch (error) {
-        console.error('Error loading full recipe:', error);
+        console.error('Error loading recipe:', error);
+        const err = error instanceof Error ? error : new Error('Failed to load recipe');
+        setFetchError(err);
       } finally {
         setIsLoadingDetail(false);
       }
     };
     
     loadFullRecipe();
-  }, [recipeStub?.id, fetchRecipeById]);
+  }, [slug, recipes, hasAttemptedLoad, isLoading, fetchRecipeById, getRecipeById]);
 
-  const recipe = fullRecipe || recipeStub;
+  // Throw error to trigger Error Boundary if fetch failed
+  if (fetchError) {
+    throw fetchError;
+  }
+
+  const recipe = fullRecipe;
 
   // Update RealiChef context with recipe information
   useRealiChefContext({
@@ -150,20 +173,9 @@ export default function RecipeDetail() {
   }
 
   // Only show "Recipe Not Found" after loading is complete AND we've attempted to load AND recipe is still not found
-  if (!recipe && hasAttemptedLoad) {
-    return (
-      <div className="container max-w-4xl py-4 sm:py-6 px-4 sm:px-6">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Recipe Not Found</h1>
-          <p className="text-muted-foreground mb-6">
-            The recipe you're looking for doesn't exist or may have been deleted.
-          </p>
-          <Button onClick={() => navigate("/my-recipes")}>
-            Back to Recipes
-          </Button>
-        </div>
-      </div>
-    );
+  if (!recipe && hasAttemptedLoad && !isLoadingDetail) {
+    // Throw error to trigger Error Boundary with a descriptive message
+    throw new Error(`Recipe not found. The recipe may have been deleted, or you may not have permission to view it.`);
   }
 
   // If we're still loading or recipe isn't found yet, show loading
