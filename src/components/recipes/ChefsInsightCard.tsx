@@ -19,6 +19,17 @@ export const ChefsInsightCard = ({ recipe, recipeId }: ChefsInsightCardProps) =>
   const [isExpanded, setIsExpanded] = useState(false);
   const { setIsOpen } = useRealiChef();
 
+  // Get creator display name
+  const getCreatorName = () => {
+    if (recipe.created_by_profile?.full_name) {
+      return recipe.created_by_profile.full_name;
+    }
+    if (recipe.created_by_profile?.email) {
+      return recipe.created_by_profile.email.split('@')[0];
+    }
+    return 'Unknown';
+  };
+
   // Format the import method to a human-readable string
   const getImportMethodDisplay = () => {
     const method = recipe.import_method || 'manual';
@@ -189,11 +200,17 @@ export const ChefsInsightCard = ({ recipe, recipeId }: ChefsInsightCardProps) =>
             </div>
           </div>
 
-          {/* Recipe Info Metadata Row - Enhanced with import method */}
+          {/* Recipe Info Metadata Row - Enhanced with creator and import method */}
           <div className="space-y-3 pt-4">
             <Separator className="mb-3" />
             
             <div className="flex flex-col gap-2 text-xs text-gray-500">
+              {/* Creator info */}
+              <div className="flex items-center gap-1.5">
+                <span>👤</span>
+                <span className="font-medium text-gray-700">Added by {getCreatorName()}</span>
+              </div>
+              
               {/* Import method - highlighted */}
               <div className="flex items-center gap-1.5">
                 <span>{importMethodDisplay.icon}</span>
@@ -221,7 +238,9 @@ export const ChefsInsightCard = ({ recipe, recipeId }: ChefsInsightCardProps) =>
                   <span>Created: {formatDate(recipe.created_at)}</span>
                 </div>
                 
-                {recipe.updated_at && recipe.updated_at !== recipe.created_at && (
+                {/* Only show updated date if it's different from created date */}
+                {recipe.updated_at && 
+                 new Date(recipe.updated_at).getTime() !== new Date(recipe.created_at).getTime() && (
                   <>
                     <span className="text-gray-300">•</span>
                     

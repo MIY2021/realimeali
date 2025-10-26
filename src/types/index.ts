@@ -12,6 +12,10 @@ export interface Recipe {
   created_at: string;
   updated_at: string;
   created_by: string;
+  created_by_profile?: {
+    full_name?: string;
+    email?: string;
+  };
   last_updated_by?: string;
   household_id: string;
   meal_type?: MealType; // Legacy field - use meal_types instead
