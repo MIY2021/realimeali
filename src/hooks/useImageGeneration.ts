@@ -66,7 +66,7 @@ export function useImageGeneration() {
       
       toast({
         title: "Image Generated!",
-        description: `Professional cookbook-style image created using DALL-E 3! (${data.fileSizeMB}MB PNG)`,
+        description: `Professional cookbook-style image created using Gemini! (${data.fileSizeMB}MB WebP)`,
       });
 
       // Reset progress after a delay

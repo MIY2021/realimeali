@@ -204,15 +204,17 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-5-nano-2025-08-07',
         messages,
-        max_tokens: 800, // Increased for complete recipe responses
-        temperature: 0.7, // Slightly more deterministic for recipe accuracy
+        max_completion_tokens: 800, // Changed from max_tokens for GPT-5 compatibility
+        // Note: temperature not supported by GPT-5 models (defaults to 1.0)
       }),
     });
 
     if (!response.ok) {
-      throw new Error(`OpenAI API error: ${response.status}`);
+      const errorText = await response.text();
+      console.error('OpenAI API error:', response.status, errorText);
+      throw new Error(`OpenAI API error: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
