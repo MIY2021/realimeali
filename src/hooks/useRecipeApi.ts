@@ -56,11 +56,7 @@ export const useRecipeApi = () => {
       
       const { data, error } = await supabase
         .from('recipes')
-        .select(`
-          *, 
-          image_thumbnail,
-          created_by_profile:profiles!recipes_user_id_fkey(full_name, email)
-        `)
+        .select('*, image_thumbnail')
         .eq('id', id)
         .eq('is_deleted', false)
         .maybeSingle();
@@ -77,7 +73,6 @@ export const useRecipeApi = () => {
       return {
         ...data,
         created_by: data.user_id,
-        created_by_profile: recipeData.created_by_profile || undefined,
         has_cooked: Boolean(recipeData.has_cooked || false),
         meal_type: VALID_MEAL_TYPES.includes(data.meal_type as MealType) 
           ? data.meal_type as MealType 
