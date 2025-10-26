@@ -6,6 +6,7 @@ import { useRecipes } from "@/contexts/RecipesContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useRecipeValidation } from "./useRecipeValidation";
+import { uploadRecipeImage } from "@/services/imageUploadService";
 
 export type RecipeOrigin = 'url' | 'image' | 'generate' | 'text' | 'manual' | 'whatcanImake';
 
@@ -143,6 +144,39 @@ export const useRecipeCreationHandlers = ({
       
       if (savedRecipe) {
         console.log('✅ Recipe saved successfully:', savedRecipe.id);
+        
+        // Upload image if a file was provided
+        if (recipeFormHook.uploadedImageFile && user) {
+          console.log('📸 Uploading image to storage...');
+          try {
+            const { fullUrl, thumbnailUrl } = await uploadRecipeImage(
+              recipeFormHook.uploadedImageFile,
+              user.id,
+              savedRecipe.id
+            );
+
+            console.log('📸 Images uploaded, updating recipe with URLs...');
+            const { error: updateError } = await supabase
+              .from('recipes')
+              .update({
+                image: fullUrl,
+                image_thumbnail: thumbnailUrl,
+              })
+              .eq('id', savedRecipe.id);
+
+            if (updateError) {
+              console.error('❌ Failed to update recipe with image URLs:', updateError);
+            } else {
+              console.log('✅ Recipe updated with image URLs');
+              // Update the savedRecipe object with the new URLs for navigation
+              savedRecipe.image = fullUrl;
+              savedRecipe.image_thumbnail = thumbnailUrl;
+            }
+          } catch (imageError) {
+            console.error('❌ Failed to upload images:', imageError);
+            // Continue anyway - recipe is saved
+          }
+        }
         
         // Handle community sharing if enabled and is from URL import (only for new recipes)
         const effectiveShareWithCommunity = !isEditMode && recipeOrigin === 'url' ? recipeFormHook.shareWithCommunity : false;
