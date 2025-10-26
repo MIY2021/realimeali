@@ -9,6 +9,7 @@ import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { CreateRecipeContainer } from "@/components/recipes/create/CreateRecipeContainer";
 import { Recipe } from "@/types";
 import { generateSlug } from "@/utils/slugUtils";
+import { useRecipeApi } from "@/hooks/useRecipeApi";
 
 export default function EditRecipePage() {
   const { slug } = useParams<{ slug: string }>();
@@ -16,7 +17,10 @@ export default function EditRecipePage() {
   const { recipes, getRecipeById, isLoading } = useRecipes();
   const { user } = useAuth();
   const { householdMembers } = useHousehold();
+  const { fetchRecipeById } = useRecipeApi();
   const [hasAttemptedLoad, setHasAttemptedLoad] = useState(false);
+  const [fullRecipe, setFullRecipe] = useState<Recipe | null>(null);
+  const [isLoadingFullRecipe, setIsLoadingFullRecipe] = useState(false);
 
   // Scroll to top when component mounts
   useEffect(() => {
@@ -30,8 +34,8 @@ export default function EditRecipePage() {
     }
   }, [isLoading]);
 
-  // Find recipe by slug or legacy ID
-  const recipe = (() => {
+  // Find recipe by slug or legacy ID (lite version)
+  const liteRecipe = (() => {
     if (!slug || isLoading) return undefined;
     
     // First try to find by slug (generated from title)
@@ -42,15 +46,34 @@ export default function EditRecipePage() {
     return getRecipeById(slug);
   })();
 
-  useDocumentTitle(recipe ? `Edit ${recipe.title} | RealiMeali` : "Edit Recipe | RealiMeali");
+  // Fetch full recipe details when lite recipe is found
+  useEffect(() => {
+    const loadFullRecipe = async () => {
+      if (liteRecipe?.id && !fullRecipe) {
+        setIsLoadingFullRecipe(true);
+        try {
+          const full = await fetchRecipeById(liteRecipe.id);
+          setFullRecipe(full);
+        } catch (error) {
+          console.error("Failed to fetch full recipe:", error);
+        } finally {
+          setIsLoadingFullRecipe(false);
+        }
+      }
+    };
+    
+    loadFullRecipe();
+  }, [liteRecipe?.id, fullRecipe, fetchRecipeById]);
+
+  useDocumentTitle(fullRecipe ? `Edit ${fullRecipe.title} | RealiMeali` : "Edit Recipe | RealiMeali");
 
   // Check if user is a member of the recipe's household (which allows editing)
-  const canEdit = user && recipe && householdMembers.some(member => 
-    member.user_id === user.id && member.household_id === recipe.household_id
+  const canEdit = user && fullRecipe && householdMembers.some(member => 
+    member.user_id === user.id && member.household_id === fullRecipe.household_id
   );
 
-  // Show loading state while recipes are being fetched OR if we haven't attempted load yet
-  if (isLoading || !hasAttemptedLoad) {
+  // Show loading state while recipes are being fetched OR if we haven't attempted load yet OR loading full recipe
+  if (isLoading || !hasAttemptedLoad || isLoadingFullRecipe) {
     return (
       <div className="container max-w-7xl py-4 px-4 sm:py-8 sm:px-6">
         <div className="space-y-6">
@@ -63,7 +86,7 @@ export default function EditRecipePage() {
   }
 
   // Only show "Recipe Not Found" after loading is complete AND we've attempted to load AND recipe is still not found
-  if (!recipe && hasAttemptedLoad) {
+  if (!liteRecipe && hasAttemptedLoad) {
     return (
       <div className="container max-w-7xl py-4 px-4 sm:py-8 sm:px-6">
         <div className="text-center">
@@ -80,7 +103,7 @@ export default function EditRecipePage() {
   }
 
   // Check if user can edit this recipe
-  if (recipe && !canEdit) {
+  if (fullRecipe && !canEdit) {
     return (
       <div className="container max-w-7xl py-4 px-4 sm:py-8 sm:px-6">
         <div className="text-center">
@@ -97,7 +120,7 @@ export default function EditRecipePage() {
   }
 
   // If we're still loading or recipe isn't found yet, show loading
-  if (!recipe) {
+  if (!fullRecipe) {
     return (
       <div className="container max-w-7xl py-4 px-4 sm:py-8 sm:px-6">
         <div className="space-y-6">
@@ -113,7 +136,7 @@ export default function EditRecipePage() {
     <div className="container max-w-7xl py-4 px-4 sm:py-8 sm:px-6">
       {/* Use the unified CreateRecipeContainer in edit mode */}
       <CreateRecipeContainer 
-        editingRecipe={recipe}
+        editingRecipe={fullRecipe}
         isEditMode={true}
       />
     </div>
