@@ -3,7 +3,7 @@ import { Recipe } from "@/types";
 import { RecipeImage } from "@/components/ui/recipe-image";
 import { ImageLightbox } from "@/components/ui/image-lightbox";
 import { Button } from "@/components/ui/button";
-import { Heart, Pencil, Trash2, Info, Plus } from "lucide-react";
+import { Heart, Pencil, Trash2, Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface RecipeHeaderProps {
@@ -50,18 +50,6 @@ export const RecipeHeader = ({
         
         {/* Overlay gradient for better text contrast */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/40 pointer-events-none" />
-        
-        {/* Info icon - top left */}
-        {onInfoClick && (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onInfoClick}
-            className="absolute top-4 left-4 h-10 w-10 rounded-full bg-white/80 hover:bg-white shadow-md backdrop-blur-sm pointer-events-auto"
-          >
-            <Info className="h-4 w-4 text-gray-800" />
-          </Button>
-        )}
 
         {/* Action icons - top right */}
         <div className="absolute top-4 right-4 flex gap-2 pointer-events-none">
