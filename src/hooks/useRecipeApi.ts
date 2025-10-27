@@ -12,7 +12,7 @@ export const useRecipeApi = () => {
       
       const { data, error } = await supabase
         .from('recipes')
-        .select('id, title, image_thumbnail, servings, meal_type, meal_types, is_deleted, is_favorite, has_cooked, user_id, household_id, prep_time, cook_time, description, ingredients')
+        .select('id, title, image_thumbnail, servings, meal_type, meal_types, is_deleted, is_favorite, has_cooked, user_id, household_id, prep_time, cook_time, description, ingredients, created_at')
         .eq('household_id', householdId)
         .eq('is_deleted', false)
         .order('created_at', { ascending: false });
@@ -35,6 +35,7 @@ export const useRecipeApi = () => {
         is_favorite: recipe.is_favorite,
         has_cooked: Boolean((recipe as any).has_cooked || false),
         created_by: (recipe as any).user_id,
+        created_at: (recipe as any).created_at,
         household_id: recipe.household_id,
         meal_type: VALID_MEAL_TYPES.includes(recipe.meal_type as MealType) 
           ? recipe.meal_type as MealType 
