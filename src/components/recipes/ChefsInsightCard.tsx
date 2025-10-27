@@ -44,12 +44,9 @@ export const ChefsInsightCard = ({ recipe, recipeId }: ChefsInsightCardProps) =>
     return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
   };
 
-  // Load expanded state from localStorage
+  // Reset to collapsed when recipe changes
   useEffect(() => {
-    const savedExpanded = localStorage.getItem(`chef-insight-expanded-${recipeId}`);
-    if (savedExpanded !== null) {
-      setIsExpanded(savedExpanded === "true");
-    }
+    setIsExpanded(false);
   }, [recipeId]);
 
   // Load drink preference from localStorage
