@@ -8,7 +8,7 @@ import { generateSlug } from "@/utils/slugUtils";
 import { Link } from "react-router-dom";
 import { useShoppingListInteractions } from "./ShoppingListInteractions";
 import { useToast } from "@/hooks/use-toast";
-import { extractIngredientName } from "@/utils/shoppingListUtils";
+import { extractIngredientName, formatQuantity } from "@/utils/shoppingListUtils";
 
 interface ShoppingListItemProps {
   id: string;
@@ -165,7 +165,7 @@ export function ShoppingListItem({
             <div className={`text-sm ${isChecked ? 'line-through' : ''}`} style={{ color: isChecked ? 'hsl(var(--shopping-grey))' : 'hsl(var(--shopping-navy))' }}>
               {quantity && recipeIds.length > 0 && !getRecipeNames(recipeIds).includes('Custom Entry') && (
                 <span className="text-sm mr-1" style={{ color: 'hsl(var(--shopping-grey))' }}>
-                  {quantity}{unit && ` ${unit}`}
+                  {formatQuantity(quantity)}{unit && ` ${unit}`}
                 </span>
               )}
               <span className="font-bold">{name.charAt(0).toUpperCase() + name.slice(1).toLowerCase()}</span>
