@@ -8,6 +8,11 @@ import { useHousehold } from "@/contexts/HouseholdContext";
 import { ShoppingListService } from "@/services/shoppingListService";
 import { IngredientConsolidationService } from "@/services/ingredientConsolidation";
 
+// Helper function to detect ingredient group headers (same as EnhancedIngredientManager)
+const isHeader = (ingredient: string) => {
+  return ingredient.trim().endsWith(':') && !ingredient.match(/\d+.*:/);
+};
+
 export const useShoppingListGenerator = () => {
   const { recipes } = useRecipes();
   const { getMealPlansForWeek } = useMealPlan();
@@ -79,9 +84,13 @@ export const useShoppingListGenerator = () => {
                    `(${plannedServings} planned vs ${recipe.servings} recipe servings, multiplier: ${servingMultiplier})`);
 
         recipe.ingredients.forEach(ingredient => {
-          // Filter out empty or invalid ingredients
+          // Filter out empty, invalid ingredients, and section headers
           const trimmed = ingredient?.trim();
-          if (trimmed && trimmed.length > 0 && trimmed !== 'undefined' && trimmed !== 'null') {
+          if (trimmed && 
+              trimmed.length > 0 && 
+              trimmed !== 'undefined' && 
+              trimmed !== 'null' &&
+              !isHeader(trimmed)) { // Filter out section headers
             ingredientInputs.push({
               name: trimmed,
               recipeId: recipe.id,
