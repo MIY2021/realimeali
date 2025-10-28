@@ -163,9 +163,9 @@ export function ShoppingListItem({
         ) : (
           <div>
             <div className={`text-sm ${isChecked ? 'line-through' : ''}`} style={{ color: isChecked ? 'hsl(var(--shopping-grey))' : 'hsl(var(--shopping-navy))' }}>
-              {quantity && recipeIds.length > 0 && !getRecipeNames(recipeIds).includes('Custom Entry') && (
+              {quantity && unit && recipeIds.length > 0 && !getRecipeNames(recipeIds).includes('Custom Entry') && (
                 <span className="text-sm mr-1" style={{ color: 'hsl(var(--shopping-grey))' }}>
-                  {formatQuantity(quantity)}{unit && ` ${unit}`}
+                  {formatQuantity(quantity)} {unit}
                 </span>
               )}
               <span className="font-bold">{name.charAt(0).toUpperCase() + name.slice(1).toLowerCase()}</span>
