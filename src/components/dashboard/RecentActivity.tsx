@@ -108,7 +108,7 @@ export const RecentActivity = ({ isLoading: externalLoading }: RecentActivityPro
       <div className="w-full">
         <div className="mb-4">
           <h2 className="text-xl font-extrabold">
-            Recent Household Activity
+            Recent Activity
           </h2>
         </div>
         <div className="space-y-2">
@@ -135,7 +135,7 @@ export const RecentActivity = ({ isLoading: externalLoading }: RecentActivityPro
       <div className="w-full">
       <div className="mb-4">
         <h2 className="text-xl font-extrabold">
-          Recent Household Activity
+          Recent Activity
         </h2>
       </div>
         <div className="bg-white rounded-3xl shadow-sm p-8 text-center">
@@ -153,7 +153,7 @@ export const RecentActivity = ({ isLoading: externalLoading }: RecentActivityPro
     <div className="w-full">
       <div className="mb-4">
         <h2 className="text-xl font-extrabold">
-          Recent Household Activity
+          Recent Activity
         </h2>
       </div>
       <div className="space-y-2">
