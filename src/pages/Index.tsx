@@ -2,9 +2,8 @@
 import { 
   Book, 
   UtensilsCrossed, 
-  ShoppingCart,
   Heart,
-  Calendar
+  Star
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
@@ -17,7 +16,6 @@ import { StatsCard } from "@/components/dashboard/StatsCard";
 import { QuickActions } from "@/components/dashboard/QuickActions";
 import { RecentActivity } from "@/components/dashboard/RecentActivity";
 import { LatestRecipesInspiration } from "@/components/dashboard/LatestRecipesInspiration";
-import { AchievementsBadges } from "@/components/dashboard/AchievementsBadges";
 import { HomeOverflowMenu } from "@/components/layout/HomeOverflowMenu";
 
 export default function Index() {
@@ -35,12 +33,13 @@ export default function Index() {
     navigate("/my-recipes");
   };
 
-  const handleShoppingItemsClick = () => {
-    navigate("/shopping-list");
-  };
-
   const handleFavouritesClick = () => {
     navigate("/my-recipes?filter=favourites");
+  };
+
+  const handleAchievementsClick = () => {
+    // TODO: navigate to /achievements when route exists
+    console.log('Achievements clicked - route not yet implemented');
   };
 
   // If user is not authenticated, show login prompt
@@ -101,14 +100,6 @@ export default function Index() {
             onClick={handleRecipesToCookClick}
           />
           <StatsCard
-            title="Shopping"
-            value={stats.shoppingItemsCount}
-            icon={ShoppingCart}
-            isLoading={isLoading}
-            variant="accent"
-            onClick={handleShoppingItemsClick}
-          />
-          <StatsCard
             title="Favourites"
             value={stats.favoriteRecipes}
             icon={Heart}
@@ -116,10 +107,15 @@ export default function Index() {
             variant="muted"
             onClick={handleFavouritesClick}
           />
+          <StatsCard
+            title="Achievements"
+            value="0/45"
+            icon={Star}
+            isLoading={false}
+            variant="accent"
+            onClick={handleAchievementsClick}
+          />
         </div>
-
-        {/* Achievements Section */}
-        <AchievementsBadges />
 
         {/* Quick Actions */}
         <QuickActions />
