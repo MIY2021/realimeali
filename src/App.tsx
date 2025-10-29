@@ -32,6 +32,7 @@ const ShoppingList = lazy(() => import("@/pages/ShoppingList"));
 const DiscoverRecipesPage = lazy(() => import("@/pages/DiscoverRecipesPage"));
 const ImportedRecipeDetailPage = lazy(() => import("@/pages/ImportedRecipeDetailPage"));
 const AdminDashboard = lazy(() => import("@/pages/AdminDashboard"));
+const AchievementsPage = lazy(() => import("@/pages/AchievementsPage"));
 const Feedback = lazy(() => import("@/pages/Feedback"));
 const Contact = lazy(() => import("@/pages/Contact"));
 const About = lazy(() => import("@/pages/About"));
@@ -65,6 +66,7 @@ function AppContent() {
             <Route path="/discover-recipes/:id" element={<ImportedRecipeDetailPage />} />
             <Route path="/meal-planner" element={<MealPlanner />} />
             <Route path="/shopping-list" element={<ShoppingList />} />
+            <Route path="/achievements" element={<AchievementsPage />} />
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/feedback" element={<Feedback />} />
             <Route path="/contact" element={<Contact />} />

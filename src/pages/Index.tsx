@@ -38,8 +38,7 @@ export default function Index() {
   };
 
   const handleAchievementsClick = () => {
-    // TODO: navigate to /achievements when route exists
-    console.log('Achievements clicked - route not yet implemented');
+    navigate("/achievements");
   };
 
   // If user is not authenticated, show login prompt
