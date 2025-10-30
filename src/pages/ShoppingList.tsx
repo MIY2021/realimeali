@@ -34,10 +34,8 @@ export default function ShoppingList() {
   const isMobile = useIsMobile();
   const [weekNumber, setWeekNumber] = useState<1 | 2>(1);
   const [copiedItemId, setCopiedItemId] = useState<string | null>(null);
-  const [hasInitiallyLoaded, setHasInitiallyLoaded] = useState(false);
   const [showOnlyUnchecked, setShowOnlyUnchecked] = useState(false);
   const [infoDialog, setInfoDialog] = useState(false);
-  const initialLoadRef = useRef(false);
   
   const {
     shoppingList,
@@ -52,11 +50,6 @@ export default function ShoppingList() {
   // Get shopping lists for both weeks to determine most recent
   const { shoppingList: week1List } = useShoppingList(1);
   const { shoppingList: week2List } = useShoppingList(2);
-
-  const { shouldShowSkeleton } = usePageTransition(isLoading || recipesLoading, {
-    enableSkeleton: true,
-    skeletonDuration: 500
-  });
 
   const {
     isGenerating,
@@ -78,14 +71,6 @@ export default function ShoppingList() {
   useEffect(() => {
     localStorage.setItem('realiMeali_showOnlyUnchecked', JSON.stringify(showOnlyUnchecked));
   }, [showOnlyUnchecked]);
-
-  // Track when we've initially loaded to prevent unnecessary skeleton flashing
-  useEffect(() => {
-    if (!initialLoadRef.current && (shoppingList.length > 0 || !isLoading)) {
-      initialLoadRef.current = true;
-      setHasInitiallyLoaded(true);
-    }
-  }, [shoppingList.length, isLoading]);
 
 
   // Check for existing shopping list creation time on load
@@ -200,8 +185,8 @@ export default function ShoppingList() {
     }
   };
 
-  // Show loading state while recipes are loading, but only on initial load
-  if (recipesLoading && !hasInitiallyLoaded) {
+  // Show loading state while recipes are loading
+  if (recipesLoading && shoppingList.length === 0) {
   return (
     <div className="container max-w-4xl py-4 px-4 sm:py-8 sm:px-6" data-scroll-content>
         <ShoppingListHeader 
@@ -316,11 +301,11 @@ export default function ShoppingList() {
             </div>
           )}
 
-          {/* Only show skeleton if we're loading AND we haven't loaded before AND we don't have data */}
-          {isLoading && !hasInitiallyLoaded && shoppingList.length === 0 ? (
+          {/* Only show skeleton if we're loading AND we don't have data */}
+          {isLoading && shoppingList.length === 0 ? (
             <ShoppingListSkeleton />
           ) : (
-            <div className={`transition-opacity duration-200 ${isLoading && !hasInitiallyLoaded ? 'opacity-50' : 'opacity-100'}`}>
+            <div className={`transition-opacity duration-150 ${isLoading ? 'opacity-50' : 'opacity-100'}`}>
               {shoppingList.length === 0 ? (
                 <ShoppingListEmptyState
                   weekNumber={weekNumber}

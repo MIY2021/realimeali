@@ -22,9 +22,6 @@ import { useToast } from "@/hooks/use-toast";
 export default function MealPlannerContainer() {
   useDocumentTitle("Meal Planner | RealiMeali");
   
-  // Initial loading state to prevent flash
-  const [initialLoad, setInitialLoad] = useState(true);
-  
   const { user } = useAuth();
   const { recipes, isLoading: recipesLoading } = useRecipes();
   const { currentHousehold } = useHousehold();
@@ -39,38 +36,9 @@ export default function MealPlannerContainer() {
     isLoading: mealPlansLoading
   } = useMealPlan();
   const { toast } = useToast();
-  
-  
-  // Performance logging
-  useEffect(() => {
-    console.time('[Performance] plannerShellFirstPaint');
-    requestAnimationFrame(() => {
-      console.timeEnd('[Performance] plannerShellFirstPaint');
-    });
-  }, []);
 
-  useEffect(() => {
-    if (user && currentHousehold) {
-      console.time('[Performance] plannerDataFetch');
-    }
-  }, [user, currentHousehold]);
-
-  // Handle initial loading state (Performance: removed artificial delay)
-  useEffect(() => {
-    if (user && currentHousehold) {
-      setInitialLoad(false);
-    }
-  }, [user, currentHousehold]);
-
-  useEffect(() => {
-    if (!initialLoad && !recipesLoading && !mealPlansLoading) {
-      console.timeEnd('[Performance] plannerDataFetch');
-      console.time('[Performance] plannerHydration');
-      requestAnimationFrame(() => {
-        console.timeEnd('[Performance] plannerHydration');
-      });
-    }
-  }, [initialLoad, recipesLoading, mealPlansLoading]);
+  // Handle initial loading - show content immediately when data is available
+  const isDataLoading = !user || !currentHousehold || recipesLoading || mealPlansLoading;
   
   const {
     currentWeek,
@@ -339,9 +307,6 @@ export default function MealPlannerContainer() {
   };
 
   const { lastGenerated, createdByUserId } = getCreationInfo();
-
-  // Compute data loading state - wait for BOTH recipes and meal plans
-  const isDataLoading = initialLoad || recipesLoading || mealPlansLoading;
 
   if (!user || !currentHousehold) {
     return (

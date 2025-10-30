@@ -49,8 +49,16 @@ function AppContent() {
     <div className="App">
       <Layout>
         <Suspense fallback={
-          <div className="flex items-center justify-center min-h-[60vh]">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          <div className="min-h-screen flex flex-col">
+            <div className="h-16" />
+            <div className="flex-1 container max-w-7xl py-6 px-4">
+              <div className="h-8 w-48 mb-6 bg-muted animate-pulse rounded" />
+              <div className="space-y-4">
+                <div className="h-12 w-full bg-muted animate-pulse rounded" />
+                <div className="h-64 w-full bg-muted animate-pulse rounded" />
+              </div>
+            </div>
+            <div className="h-16 md:h-0" />
           </div>
         }>
           <Routes>

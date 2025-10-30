@@ -3,6 +3,8 @@ import { useState } from "react";
 import { UtensilsCrossed } from "lucide-react";
 import { Recipe } from "@/types";
 import { cn } from "@/lib/utils";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface RecipeImageProps {
   recipe?: Recipe;
@@ -20,6 +22,7 @@ export function RecipeImage({ recipe, useThumbnail = false, alt, className, icon
   const [thumbnailError, setThumbnailError] = useState(false);
   const [fullImageError, setFullImageError] = useState(false);
   const [placeholderError, setPlaceholderError] = useState(false);
+  const [imageLoading, setImageLoading] = useState(true);
 
   const imageAlt = alt || recipe?.title || "Recipe image";
   
@@ -35,49 +38,80 @@ export function RecipeImage({ recipe, useThumbnail = false, alt, className, icon
     isUsingThumbnail = false;
   }
 
+  const handleImageLoad = () => {
+    setImageLoading(false);
+  };
+
+  const handleImageError = () => {
+    setImageLoading(false);
+    if (isUsingThumbnail) {
+      setThumbnailError(true);
+    } else {
+      setFullImageError(true);
+    }
+  };
+
+  const handlePlaceholderError = () => {
+    setImageLoading(false);
+    setPlaceholderError(true);
+  };
+
   // Try to render recipe image
   if (imageUrl) {
     return (
-      <img
-        src={imageUrl}
-        alt={imageAlt}
-        width={width}
-        height={height}
-        loading="lazy"
-        decoding="async"
-        className={cn("object-cover", clickable && "cursor-pointer hover:brightness-95 transition-all", className)}
-        onError={() => {
-          if (isUsingThumbnail) {
-            setThumbnailError(true);
-          } else {
-            setFullImageError(true);
-          }
-        }}
-        onClick={onClick}
-      />
+      <AspectRatio ratio={4 / 3} className="relative overflow-hidden rounded-lg bg-muted">
+        {imageLoading && (
+          <Skeleton className="absolute inset-0 w-full h-full" />
+        )}
+        <img
+          src={imageUrl}
+          alt={imageAlt}
+          loading="lazy"
+          decoding="async"
+          className={cn(
+            "w-full h-full object-cover transition-opacity duration-150",
+            imageLoading ? "opacity-0" : "opacity-100",
+            clickable && "cursor-pointer hover:brightness-95 transition-all",
+            className
+          )}
+          onLoad={handleImageLoad}
+          onError={handleImageError}
+          onClick={onClick}
+        />
+      </AspectRatio>
     );
   }
 
   // If recipe image failed or doesn't exist, try the uploaded placeholder
   if (!placeholderError) {
     return (
-      <img
-        src="/lovable-uploads/ee0bb47d-e780-4d0c-bbcb-9406228849f4.png"
-        alt={imageAlt}
-        width={width}
-        height={height}
-        loading="lazy"
-        decoding="async"
-        className={cn("object-cover bg-muted", className)}
-        onError={() => setPlaceholderError(true)}
-      />
+      <AspectRatio ratio={4 / 3} className="relative overflow-hidden rounded-lg bg-muted">
+        {imageLoading && (
+          <Skeleton className="absolute inset-0 w-full h-full" />
+        )}
+        <img
+          src="/lovable-uploads/ee0bb47d-e780-4d0c-bbcb-9406228849f4.png"
+          alt={imageAlt}
+          loading="lazy"
+          decoding="async"
+          className={cn(
+            "w-full h-full object-cover transition-opacity duration-150",
+            imageLoading ? "opacity-0" : "opacity-100",
+            className
+          )}
+          onLoad={handleImageLoad}
+          onError={handlePlaceholderError}
+        />
+      </AspectRatio>
     );
   }
 
   // Final fallback: UtensilsCrossed icon
   return (
-    <div className={cn("flex items-center justify-center bg-muted", className)}>
-      <UtensilsCrossed className={cn("text-muted-foreground", iconSize)} />
-    </div>
+    <AspectRatio ratio={4 / 3} className="relative">
+      <div className={cn("flex items-center justify-center bg-muted rounded-lg w-full h-full", className)}>
+        <UtensilsCrossed className={cn("text-muted-foreground", iconSize)} />
+      </div>
+    </AspectRatio>
   );
 }

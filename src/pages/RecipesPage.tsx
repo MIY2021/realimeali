@@ -23,7 +23,6 @@ export default function RecipesPage() {
   const { currentHousehold, isLoadingHousehold } = useHousehold();
   const { recipes, isLoading } = useRecipes();
   const isMobile = useIsMobile();
-  const [initialLoading, setInitialLoading] = useState(true);
   const [searchParams] = useSearchParams();
   
   // Check if we should initialize with filters
@@ -33,13 +32,6 @@ export default function RecipesPage() {
   // State for Add to Meal Plan dialog
   const [selectedRecipeForMealPlan, setSelectedRecipeForMealPlan] = useState<Recipe | null>(null);
   const [isMealPlanDialogOpen, setIsMealPlanDialogOpen] = useState(false);
-
-  // Handle initial loading state
-  useEffect(() => {
-    if (!isLoading && user && currentHousehold) {
-      setInitialLoading(false);
-    }
-  }, [isLoading, user, currentHousehold]);
 
   const handleAddToMealPlan = (recipe: Recipe) => {
     setSelectedRecipeForMealPlan(recipe);
@@ -109,7 +101,7 @@ export default function RecipesPage() {
         ) : (
           <RecipeList 
             recipes={recipes}
-            isLoading={initialLoading || isLoading}
+            isLoading={isLoading}
             onAddToMealPlan={handleAddToMealPlan}
             initialNotCookedFilter={initialNotCookedFilter}
             initialFavouritesFilter={initialFavouritesFilter}
