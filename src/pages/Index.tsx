@@ -21,7 +21,7 @@ import { HomeOverflowMenu } from "@/components/layout/HomeOverflowMenu";
 export default function Index() {
   useDocumentTitle("RealiMeali | Dashboard");
   const { showPrompt, promptTrigger, triggerPromptOnFeatureClick, closePrompt } = useLoginPrompt();
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const { stats, isLoading, hasData } = useUserStats();
   const navigate = useNavigate();
 
@@ -40,6 +40,15 @@ export default function Index() {
   const handleAchievementsClick = () => {
     navigate("/achievements");
   };
+
+  // Show loading state while checking authentication
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[80vh]">
+        <div className="animate-pulse text-muted-foreground">Loading...</div>
+      </div>
+    );
+  }
 
   // If user is not authenticated, show login prompt
   if (!user) {
