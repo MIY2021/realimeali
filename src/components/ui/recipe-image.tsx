@@ -70,9 +70,10 @@ export function RecipeImage({ recipe, useThumbnail = false, alt, className, imgC
           loading="lazy"
           decoding="async"
           className={cn(
-            "w-full h-full object-cover transition-opacity duration-300",
+            "w-full h-full object-cover",
+            "transition-opacity duration-300",
             imageLoading ? "opacity-0" : "opacity-100",
-            clickable && "cursor-pointer hover:brightness-95 transition-all",
+            clickable && "cursor-pointer hover:brightness-95",
             imgClassName
           )}
           onLoad={handleImageLoad}
@@ -96,7 +97,8 @@ export function RecipeImage({ recipe, useThumbnail = false, alt, className, imgC
           loading="lazy"
           decoding="async"
           className={cn(
-            "w-full h-full object-cover transition-opacity duration-300",
+            "w-full h-full object-cover",
+            "transition-opacity duration-300",
             imageLoading ? "opacity-0" : "opacity-100",
             imgClassName
           )}
