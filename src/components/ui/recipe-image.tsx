@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { UtensilsCrossed } from "lucide-react";
 import { Recipe } from "@/types";
 import { cn } from "@/lib/utils";
@@ -24,6 +24,7 @@ export function RecipeImage({ recipe, useThumbnail = false, alt, className, imgC
   const [fullImageError, setFullImageError] = useState(false);
   const [placeholderError, setPlaceholderError] = useState(false);
   const [imageLoading, setImageLoading] = useState(true);
+  const imgRef = useRef<HTMLImageElement>(null);
 
   const imageAlt = alt || recipe?.title || "Recipe image";
   
@@ -38,6 +39,18 @@ export function RecipeImage({ recipe, useThumbnail = false, alt, className, imgC
     imageUrl = recipe.image;
     isUsingThumbnail = false;
   }
+
+  // Handle cached images - ensure fade-in is visible
+  useEffect(() => {
+    if (imgRef.current?.complete && imgRef.current?.naturalHeight !== 0) {
+      // Image is cached, add small delay to ensure fade-in is visible
+      const timer = setTimeout(() => {
+        setImageLoading(false);
+      }, 50);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [imageUrl]);
 
   const handleImageLoad = () => {
     setImageLoading(false);
@@ -65,6 +78,7 @@ export function RecipeImage({ recipe, useThumbnail = false, alt, className, imgC
           <Skeleton className="absolute inset-0 w-full h-full" />
         )}
         <img
+          ref={imgRef}
           src={imageUrl}
           alt={imageAlt}
           loading="lazy"
@@ -92,6 +106,7 @@ export function RecipeImage({ recipe, useThumbnail = false, alt, className, imgC
           <Skeleton className="absolute inset-0 w-full h-full" />
         )}
         <img
+          ref={imgRef}
           src="/lovable-uploads/ee0bb47d-e780-4d0c-bbcb-9406228849f4.png"
           alt={imageAlt}
           loading="lazy"
