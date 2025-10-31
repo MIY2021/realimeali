@@ -51,7 +51,7 @@ export const StatsCard = ({
         {isLoading ? (
           <Skeleton className="h-9 w-12" />
         ) : (
-          <p className="text-3xl font-bold text-gray-900">{value}</p>
+          <p className="text-3xl font-bold text-gray-900 animate-in fade-in-0 zoom-in-95 duration-300">{value}</p>
         )}
       </div>
     </div>
