@@ -40,13 +40,6 @@ export default function MealListSection({
   sectionIndex = 0,
 }: MealListSectionProps) {
   const isMobile = useIsMobile();
-  const [isVisible, setIsVisible] = useState(false);
-  
-
-  // Performance: Instant visibility for shell-first loading
-  useEffect(() => {
-    setIsVisible(true);
-  }, []);
 
   const handleDragEnd = (result: DropResult) => {
     if (!result.destination || !onReorderMeals) {
@@ -80,15 +73,7 @@ export default function MealListSection({
   };
 
   return (
-    <div className={`mb-${isMobile ? '2' : '3'} transform transition-all duration-500 ease-out ${
-      isVisible 
-        ? 'translate-y-0 opacity-100 scale-100' 
-        : 'translate-y-6 opacity-0 scale-98'
-    } ${collapsed ? 'opacity-70 scale-98' : ''}`}
-    style={{ 
-      transitionDelay: `${sectionIndex * 50}ms`,
-      willChange: 'transform, opacity'
-    }}>
+    <div className={`mb-${isMobile ? '2' : '3'} ${collapsed ? 'opacity-70 scale-98' : ''}`}>
       <div className={`flex items-center justify-between mb-3 ${isMobile ? 'px-1' : ''} ${
         collapsed ? 'bg-blue-50 rounded-lg px-3 py-2 border border-blue-200' : ''
       }`}>
@@ -128,10 +113,7 @@ export default function MealListSection({
           {isDataLoading ? (
             <MealSectionSkeleton count={3} />
           ) : mealPlans.length === 0 ? (
-            <div className={`border border-dashed border-gray-300 rounded-md ${isMobile ? 'p-3' : 'p-4'} text-center text-muted-foreground transform transition-all duration-500 ease-out ${
-              isVisible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
-            }`}
-            style={{ transitionDelay: `${(sectionIndex * 50) + 100}ms` }}>
+            <div className={`border border-dashed border-gray-300 rounded-md ${isMobile ? 'p-3' : 'p-4'} text-center text-muted-foreground`}>
               <span className={`${isMobile ? 'text-sm' : ''}`}>No {mealType} planned yet</span>
             </div>
           ) : (
@@ -179,7 +161,6 @@ export default function MealListSection({
                                 onCreateLeftover={onCreateLeftover}
                                 parentRecipe={parentRecipe}
                                 dragHandleProps={provided.dragHandleProps}
-                                animationDelay={(sectionIndex * 50) + (index * 25)}
                                 leftoverMap={leftoverMap}
                               />
                             </div>

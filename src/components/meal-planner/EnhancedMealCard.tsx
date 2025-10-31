@@ -20,7 +20,6 @@ interface EnhancedMealCardProps {
   onRemove: (planId: string) => void;
   onCreateLeftover: (mealPlan: MealPlan, recipe?: Recipe) => void;
   dragHandleProps?: DraggableProvidedDragHandleProps | null;
-  animationDelay?: number;
   leftoverMap: Map<string, MealPlan>; // Performance: Pre-computed leftover relationships
 }
 
@@ -31,7 +30,6 @@ export function EnhancedMealCard({
   onRemove,
   onCreateLeftover,
   dragHandleProps,
-  animationDelay = 0,
   leftoverMap,
 }: EnhancedMealCardProps) {
   const { updateMealPlanCompletion, updateMealPlanServings } = useMealPlan();

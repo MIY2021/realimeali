@@ -16,7 +16,6 @@ interface MealPlannerRecipeCardProps {
   recipe?: Recipe;
   onRemove: (planId: string) => void;
   onCreateLeftover?: (mealPlan: MealPlan, recipe: Recipe) => void;
-  animationDelay?: number;
   allMealPlans?: MealPlan[];
 }
 
@@ -25,12 +24,10 @@ export function MealPlannerRecipeCard({
   recipe, 
   onRemove, 
   onCreateLeftover,
-  animationDelay = 0,
   allMealPlans = []
 }: MealPlannerRecipeCardProps) {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  const [isVisible, setIsVisible] = useState(false);
   const [servings, setServings] = useState(mealPlan.planned_servings || recipe?.servings || 1);
   const { updateMealPlanCompletion, updateMealPlanServings } = useMealPlan();
   const { toast } = useToast();
@@ -42,14 +39,6 @@ export function MealPlannerRecipeCard({
     plan.meal_type === 'lunch'
   );
   const leftoverServings = existingLeftover?.planned_servings || existingLeftover?.leftover_servings || 0;
-
-  // Animation effect
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsVisible(true);
-    }, animationDelay);
-    return () => clearTimeout(timer);
-  }, [animationDelay]);
 
   const handleViewRecipe = () => {
     if (recipe) {
@@ -118,17 +107,9 @@ export function MealPlannerRecipeCard({
 
   return (
     <Card 
-      className={`overflow-hidden rounded-xl shadow-sm hover:shadow-md transition-all duration-300 ${
-        isVisible 
-          ? 'translate-y-0 opacity-100 scale-100' 
-          : 'translate-y-4 opacity-0 scale-95'
-      } ${
+      className={`overflow-hidden rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 ${
         mealPlan.is_completed ? 'opacity-85 saturate-75' : ''
       }`}
-      style={{ 
-        transitionDelay: `${animationDelay}ms`,
-        willChange: 'transform, opacity'
-      }}
     >
       <div 
         className="relative cursor-pointer" 
