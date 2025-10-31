@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -20,6 +20,7 @@ export function ImportedRecipeCard({
 }: ImportedRecipeCardProps) {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const [imageLoading, setImageLoading] = useState(true);
   
   const handleViewRecipe = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -57,7 +58,10 @@ export function ImportedRecipeCard({
             <img 
               src={recipe.image} 
               alt={recipe.title}
-              className={`w-full aspect-[4/3] object-cover transition-transform duration-300 ${!isMobile ? 'hover:scale-110' : ''}`}
+              className={`w-full aspect-[4/3] object-cover transition-all duration-300 ${!isMobile ? 'hover:scale-110' : ''} ${
+                imageLoading ? 'opacity-0' : 'opacity-100'
+              }`}
+              onLoad={() => setImageLoading(false)}
             />
           ) : (
             <div className="w-full aspect-[4/3] bg-gray-200 flex items-center justify-center">

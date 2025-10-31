@@ -29,6 +29,7 @@ export function ExternalRecipeCard({ recipe, mobileLayout = "1", addedRecipeUrls
   const navigate = useNavigate();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [imageLoading, setImageLoading] = useState(true);
   const isAdded = addedRecipeUrls.has(recipe.url);
 
   const handleViewRecipe = () => {
@@ -80,8 +81,11 @@ export function ExternalRecipeCard({ recipe, mobileLayout = "1", addedRecipeUrls
         <img
           src={recipe.image}
           alt={recipe.label}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+          className={`w-full h-full object-cover group-hover:scale-105 transition-all duration-200 ${
+            imageLoading ? 'opacity-0' : 'opacity-100'
+          }`}
           loading="lazy"
+          onLoad={() => setImageLoading(false)}
         />
         {/* External badge */}
         <div className="absolute top-2 left-2">
