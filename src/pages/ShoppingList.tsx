@@ -278,26 +278,28 @@ export default function ShoppingList() {
               </div>
               
               {/* Row 2: Item count on left, Add button on right */}
-              {shoppingList.length > 0 && (
-                <div className="flex items-center justify-between gap-2">
-                  <p className="text-sm" style={{ color: 'hsl(var(--shopping-grey))' }}>
+              <div className="flex items-center justify-between gap-2 min-h-[24px]">
+                {shoppingList.length > 0 ? (
+                  <p className="text-sm animate-in fade-in-0 duration-300" style={{ color: 'hsl(var(--shopping-grey))' }}>
                     {completedItems} of {totalItems} items completed
                   </p>
-                  
-                  {/* Override min-height/min-width with !important to allow h-6 w-6 (24px) sizing */}
-                  <Button
-                    onClick={() => {
-                      const itemName = prompt("Enter item name:");
-                      if (itemName?.trim()) {
-                        addCustomItem(itemName.trim());
-                      }
-                    }}
-                    className="h-6 w-6 !min-h-0 !min-w-0 rounded-full bg-[#F5B82E]/50 hover:bg-[#F5B82E]/70 text-white p-0 border-0"
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </div>
-              )}
+                ) : (
+                  <div className="h-5 w-32 bg-muted/30 rounded animate-pulse" />
+                )}
+                
+                {/* Override min-height/min-width with !important to allow h-6 w-6 (24px) sizing */}
+                <Button
+                  onClick={() => {
+                    const itemName = prompt("Enter item name:");
+                    if (itemName?.trim()) {
+                      addCustomItem(itemName.trim());
+                    }
+                  }}
+                  className="h-6 w-6 !min-h-0 !min-w-0 rounded-full bg-[#F5B82E]/50 hover:bg-[#F5B82E]/70 text-white p-0 border-0"
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           )}
 
