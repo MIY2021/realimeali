@@ -43,10 +43,10 @@ export function RecipeImage({ recipe, useThumbnail = false, alt, className, imgC
   // Handle cached images - ensure fade-in is visible
   useEffect(() => {
     if (imgRef.current?.complete && imgRef.current?.naturalHeight !== 0) {
-      // Image is cached, add small delay to ensure fade-in is visible
+      // Image is cached, add delay to ensure fade-in is visible
       const timer = setTimeout(() => {
         setImageLoading(false);
-      }, 50);
+      }, 150);
       
       return () => clearTimeout(timer);
     }
