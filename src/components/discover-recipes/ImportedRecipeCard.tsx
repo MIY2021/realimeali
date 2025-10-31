@@ -58,8 +58,8 @@ export function ImportedRecipeCard({
             <img 
               src={recipe.image} 
               alt={recipe.title}
-              className={`w-full aspect-[4/3] object-cover transition-all duration-300 ${!isMobile ? 'hover:scale-110' : ''} ${
-                imageLoading ? 'opacity-0' : 'opacity-100'
+              className={`w-full aspect-[4/3] object-cover transition-transform duration-300 ${!isMobile ? 'hover:scale-110' : ''} ${
+                imageLoading ? 'opacity-0 transition-opacity duration-300' : 'opacity-100 transition-opacity duration-300'
               }`}
               onLoad={() => setImageLoading(false)}
             />

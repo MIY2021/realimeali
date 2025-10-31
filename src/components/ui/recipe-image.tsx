@@ -11,6 +11,7 @@ interface RecipeImageProps {
   useThumbnail?: boolean;
   alt?: string;
   className?: string;
+  imgClassName?: string;
   iconSize?: string;
   onClick?: () => void;
   clickable?: boolean;
@@ -18,7 +19,7 @@ interface RecipeImageProps {
   height?: number;
 }
 
-export function RecipeImage({ recipe, useThumbnail = false, alt, className, iconSize = "h-8 w-8", onClick, clickable, width = 80, height = 80 }: RecipeImageProps) {
+export function RecipeImage({ recipe, useThumbnail = false, alt, className, imgClassName, iconSize = "h-8 w-8", onClick, clickable, width = 80, height = 80 }: RecipeImageProps) {
   const [thumbnailError, setThumbnailError] = useState(false);
   const [fullImageError, setFullImageError] = useState(false);
   const [placeholderError, setPlaceholderError] = useState(false);
@@ -69,10 +70,10 @@ export function RecipeImage({ recipe, useThumbnail = false, alt, className, icon
           loading="lazy"
           decoding="async"
           className={cn(
-            "w-full h-full object-cover transition-opacity duration-150",
+            "w-full h-full object-cover transition-opacity duration-300",
             imageLoading ? "opacity-0" : "opacity-100",
             clickable && "cursor-pointer hover:brightness-95 transition-all",
-            className
+            imgClassName
           )}
           onLoad={handleImageLoad}
           onError={handleImageError}
@@ -95,9 +96,9 @@ export function RecipeImage({ recipe, useThumbnail = false, alt, className, icon
           loading="lazy"
           decoding="async"
           className={cn(
-            "w-full h-full object-cover transition-opacity duration-150",
+            "w-full h-full object-cover transition-opacity duration-300",
             imageLoading ? "opacity-0" : "opacity-100",
-            className
+            imgClassName
           )}
           onLoad={handleImageLoad}
           onError={handlePlaceholderError}

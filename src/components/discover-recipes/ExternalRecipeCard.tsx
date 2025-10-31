@@ -81,8 +81,8 @@ export function ExternalRecipeCard({ recipe, mobileLayout = "1", addedRecipeUrls
         <img
           src={recipe.image}
           alt={recipe.label}
-          className={`w-full h-full object-cover group-hover:scale-105 transition-all duration-200 ${
-            imageLoading ? 'opacity-0' : 'opacity-100'
+          className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ${
+            imageLoading ? 'opacity-0 transition-opacity duration-300' : 'opacity-100 transition-opacity duration-300'
           }`}
           loading="lazy"
           onLoad={() => setImageLoading(false)}

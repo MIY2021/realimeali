@@ -112,7 +112,7 @@ export function RecipeCard({ recipe, onAddToMealPlan, onRecipeClick, showActions
           <RecipeImage 
             recipe={recipe}
             useThumbnail={true}
-            className={`w-full aspect-[4/3] object-cover transition-transform duration-300 ${!isMobile ? 'hover:scale-110' : ''}`} 
+            imgClassName={`transition-transform duration-300 ${!isMobile ? 'hover:scale-110' : ''}`} 
             iconSize="h-5 w-5" 
           />
         </div>
