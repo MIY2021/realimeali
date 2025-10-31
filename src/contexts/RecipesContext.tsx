@@ -27,9 +27,12 @@ const RecipesContext = createContext<RecipesContextType | undefined>(undefined);
 
 export const RecipesProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const { currentHousehold, isLoadingHousehold } = useHousehold();
+  // Start with loading=true if we have a household but no recipes yet
+  const [isLoading, setIsLoading] = useState(
+    !isLoadingHousehold && currentHousehold !== null && recipes.length === 0
+  );
+  const [error, setError] = useState<string | null>(null);
   const api = useRecipeApi();
   
   // Performance: Track last fetched household to prevent duplicate fetches
@@ -40,12 +43,18 @@ export const RecipesProvider: React.FC<{ children: React.ReactNode }> = ({ child
   useEffect(() => {
     const householdId = currentHousehold?.id || null;
     
+    // When household loads and we have no recipes, set loading to true
+    if (householdId && recipes.length === 0 && !isLoadingHousehold) {
+      setIsLoading(true);
+    }
+    
     if (!householdId && lastFetchedHouseholdIdRef.current) {
       console.log('RecipesContext: No household available, clearing recipes');
       lastFetchedHouseholdIdRef.current = null;
       setRecipes([]);
+      setIsLoading(false);
     }
-  }, [currentHousehold?.id]);
+  }, [currentHousehold?.id, isLoadingHousehold, recipes.length]);
 
   const fetchRecipes = useCallback(async (householdId: string | null) => {
     if (!householdId) {
