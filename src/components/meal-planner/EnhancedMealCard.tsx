@@ -60,13 +60,13 @@ export function EnhancedMealCard({
   // Handle freetyped meals (no recipe)
   if (mealPlan.is_freetyped && !recipe) {
     return (
-      <Card className={`bg-white border border-gray-200 hover:shadow-md overflow-hidden transition-all duration-300 ${
+      <Card className={`bg-white border border-gray-200 hover:shadow-md transition-all overflow-hidden ${
         mealPlan.is_completed ? 'opacity-85 saturate-75' : ''
       }`}>
         <CardContent className="p-0">
           <div className="flex h-24">
             {/* Custom meal image with placeholder */}
-            <div className="w-24 h-full flex-shrink-0 relative">
+            <div className="w-20 h-20 flex-shrink-0 m-2 relative">
               <RecipeImage 
                 recipe={undefined}
                 alt={mealPlan.meal_name || 'Custom Meal'}
@@ -289,13 +289,13 @@ export function EnhancedMealCard({
   const recipeUrl = `/my-recipes/${recipeSlug}`;
 
   return (
-    <Card className={`bg-white border border-gray-200 hover:shadow-md overflow-hidden transition-all duration-300 ${
+    <Card className={`bg-white border border-gray-200 hover:shadow-md transition-all overflow-hidden ${
       mealPlan.is_completed ? 'opacity-85 saturate-75' : ''
     }`}>
       <CardContent className="p-0">
         <div className="flex h-24">
-          {/* Recipe Image - Full height */}
-          <div className="w-24 h-full flex-shrink-0 relative">
+          {/* Recipe Image - Slightly smaller with padding */}
+          <div className="w-20 h-20 flex-shrink-0 m-2 relative">
             <Link to={recipeUrl}>
               <RecipeImage 
                 recipe={recipe}
