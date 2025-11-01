@@ -48,11 +48,15 @@ export const StatsCard = ({
           <p className="text-xs font-extrabold text-gray-500 uppercase tracking-wide">{title}</p>
           <IconComponent className={`h-5 w-5 ${getIconColor()}`} />
         </div>
-        {isLoading ? (
-          <Skeleton className="h-9 w-12" />
-        ) : (
-          <p className="text-3xl font-bold text-gray-900 animate-in fade-in-0 zoom-in-95 duration-300">{value}</p>
-        )}
+        <p 
+          className={`
+            text-3xl font-bold text-gray-900
+            transition-opacity duration-300
+            ${isLoading ? 'opacity-0' : 'opacity-100'}
+          `}
+        >
+          {isLoading ? '0' : value}
+        </p>
       </div>
     </div>
   );
