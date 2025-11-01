@@ -49,10 +49,17 @@ export const StatsCard = ({
           <IconComponent className={`h-5 w-5 ${getIconColor()}`} />
         </div>
         <div className="relative h-9">
-          {/* Loading state - subtle animated placeholder */}
+          {/* Loading state - subtle shimmer effect */}
           {isLoading && (
             <div className="absolute inset-0 flex items-center">
-              <div className="h-8 w-16 bg-gray-200 rounded-md animate-pulse" />
+              <div 
+                className="h-8 w-20 rounded-md overflow-hidden"
+                style={{
+                  background: 'linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.04) 50%, transparent 100%)',
+                  backgroundSize: '200% 100%',
+                  animation: 'shimmer 1.5s ease-in-out infinite'
+                }}
+              />
             </div>
           )}
           
@@ -60,7 +67,7 @@ export const StatsCard = ({
           <p 
             className={`
               text-3xl font-bold text-gray-900
-              transition-opacity duration-500
+              transition-opacity duration-500 ease-out
               ${isLoading ? 'opacity-0' : 'opacity-100'}
             `}
           >
