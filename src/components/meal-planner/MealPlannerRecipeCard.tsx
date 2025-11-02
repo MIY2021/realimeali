@@ -152,7 +152,7 @@ export function MealPlannerRecipeCard({
             overflow: 'hidden',
             textOverflow: 'ellipsis',
             minHeight: '2.5rem',
-          }}
+          } as React.CSSProperties}
           onClick={() => {
             if (recipe) {
               handleViewRecipe();
