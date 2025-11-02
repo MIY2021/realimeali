@@ -142,9 +142,17 @@ export function MealPlannerRecipeCard({
       <CardContent className="p-3 space-y-1.5">
         {/* Title */}
         <h3 
-          className={`font-bold text-sm leading-tight text-navy line-clamp-2 min-h-[2.5rem] break-words ${
+          className={`font-bold text-sm leading-tight text-navy break-words ${
             mealPlan.is_completed ? 'line-through text-gray-400' : ''
           } ${recipe ? 'cursor-pointer hover:text-terracotta transition-colors' : ''}`}
+          style={{
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            minHeight: '2.5rem',
+          }}
           onClick={() => {
             if (recipe) {
               handleViewRecipe();
