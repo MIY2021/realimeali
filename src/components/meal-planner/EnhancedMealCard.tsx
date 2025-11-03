@@ -91,7 +91,7 @@ export function EnhancedMealCard({
               <div className="flex items-start justify-between mb-2">
                 <div className="flex-1 min-w-0">
                   <h4 
-                    className={`font-medium text-sm leading-tight truncate max-w-[calc(100%-1.5rem)] cursor-pointer hover:underline ${
+                    className={`font-medium text-sm leading-tight max-w-[calc(100%-1.5rem)] cursor-pointer hover:underline line-clamp-2 ${
                       mealPlan.is_completed ? 'text-gray-400 line-through' : 'text-gray-900'
                     }`}
                     onClick={() => {
@@ -330,7 +330,7 @@ export function EnhancedMealCard({
             <div className="flex items-start justify-between mb-1">
               <div className="flex-1 min-w-0">
                 <Link to={recipeUrl}>
-                  <h4 className={`font-medium text-sm leading-tight truncate cursor-pointer hover:text-blue-600 transition-colors max-w-[calc(100%-1.5rem)] ${
+                  <h4 className={`font-medium text-sm leading-tight cursor-pointer hover:text-blue-600 transition-colors max-w-[calc(100%-1.5rem)] line-clamp-2 ${
                     mealPlan.is_completed ? 'text-gray-400 line-through' : 'text-gray-900'
                   }`}>
                     {recipe.title}
