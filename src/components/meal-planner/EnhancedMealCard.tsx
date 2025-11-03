@@ -64,9 +64,9 @@ export function EnhancedMealCard({
         mealPlan.is_completed ? 'opacity-85 saturate-75' : ''
       }`}>
         <CardContent className="p-0">
-          <div className="flex h-24">
-            {/* Custom meal image with placeholder */}
-            <div className="w-20 h-20 flex-shrink-0 m-2 relative">
+        <div className="flex min-h-32">
+          {/* Custom meal image with placeholder */}
+          <div className="w-24 h-28 flex-shrink-0 ml-3 my-3 mr-0 relative">
               <RecipeImage 
                 recipe={undefined}
                 alt={mealPlan.meal_name || 'Custom Meal'}
@@ -74,6 +74,7 @@ export function EnhancedMealCard({
                   mealPlan.is_completed ? 'grayscale brightness-75' : ''
                 }`}
                 iconSize="h-8 w-8"
+                fixedSize={true}
               />
               
               {/* Cooked icon - top-right */}
@@ -84,8 +85,8 @@ export function EnhancedMealCard({
               )}
             </div>
 
-            {/* Content Area */}
-            <div className="flex-1 pl-2 pr-4 py-4 flex flex-col justify-between min-w-0">
+          {/* Content Area */}
+          <div className="flex-1 pl-3 pr-4 py-4 flex flex-col justify-center min-w-0">
               {/* Header */}
               <div className="flex items-start justify-between mb-2">
                 <div className="flex-1 min-w-0">
@@ -293,9 +294,9 @@ export function EnhancedMealCard({
       mealPlan.is_completed ? 'opacity-85 saturate-75' : ''
     }`}>
       <CardContent className="p-0">
-        <div className="flex h-24">
+        <div className="flex min-h-32">
           {/* Recipe Image - Slightly smaller with padding */}
-          <div className="w-20 h-20 flex-shrink-0 m-2 relative">
+          <div className="w-24 h-28 flex-shrink-0 ml-3 my-3 mr-0 relative">
             <Link to={recipeUrl}>
               <RecipeImage 
                 recipe={recipe}
@@ -304,6 +305,7 @@ export function EnhancedMealCard({
                   mealPlan.is_completed ? 'grayscale brightness-75' : ''
                 }`}
                 iconSize="h-8 w-8"
+                fixedSize={true}
               />
             </Link>
             
@@ -323,7 +325,7 @@ export function EnhancedMealCard({
           </div>
 
           {/* Content Area - Reduced left padding to minimize white space */}
-          <div className="flex-1 pl-2 pr-4 py-3 flex flex-col justify-between min-w-0">
+          <div className="flex-1 pl-3 pr-4 py-4 flex flex-col justify-center min-w-0">
             {/* Header */}
             <div className="flex items-start justify-between mb-1">
               <div className="flex-1 min-w-0">

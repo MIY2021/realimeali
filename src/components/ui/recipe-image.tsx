@@ -17,9 +17,10 @@ interface RecipeImageProps {
   clickable?: boolean;
   width?: number;
   height?: number;
+  fixedSize?: boolean; // Skip AspectRatio wrapper for consistent heights in lists
 }
 
-export function RecipeImage({ recipe, useThumbnail = false, alt, className, imgClassName, iconSize = "h-8 w-8", onClick, clickable, width = 80, height = 80 }: RecipeImageProps) {
+export function RecipeImage({ recipe, useThumbnail = false, alt, className, imgClassName, iconSize = "h-8 w-8", onClick, clickable, width = 80, height = 80, fixedSize = false }: RecipeImageProps) {
   const [thumbnailError, setThumbnailError] = useState(false);
   const [fullImageError, setFullImageError] = useState(false);
   const [placeholderError, setPlaceholderError] = useState(false);
@@ -72,6 +73,34 @@ export function RecipeImage({ recipe, useThumbnail = false, alt, className, imgC
 
   // Try to render recipe image
   if (imageUrl) {
+    // For fixed size mode (meal planner lists), skip AspectRatio wrapper
+    if (fixedSize) {
+      return (
+        <div className={cn("relative overflow-hidden rounded-lg bg-muted w-full h-full", className)}>
+          {imageLoading && (
+            <Skeleton className="absolute inset-0 w-full h-full" />
+          )}
+          <img
+            ref={imgRef}
+            src={imageUrl}
+            alt={imageAlt}
+            loading="lazy"
+            decoding="async"
+            className={cn(
+              "w-full h-full object-cover",
+              "transition-opacity duration-300",
+              imageLoading ? "opacity-0" : "opacity-100",
+              clickable && "cursor-pointer hover:brightness-95",
+              imgClassName
+            )}
+            onLoad={handleImageLoad}
+            onError={handleImageError}
+            onClick={onClick}
+          />
+        </div>
+      );
+    }
+    
     return (
       <AspectRatio ratio={4 / 3} className="relative overflow-hidden rounded-lg bg-muted">
         {imageLoading && (
@@ -100,6 +129,31 @@ export function RecipeImage({ recipe, useThumbnail = false, alt, className, imgC
 
   // If recipe image failed or doesn't exist, try the uploaded placeholder
   if (!placeholderError) {
+    if (fixedSize) {
+      return (
+        <div className={cn("relative overflow-hidden rounded-lg bg-muted w-full h-full", className)}>
+          {imageLoading && (
+            <Skeleton className="absolute inset-0 w-full h-full" />
+          )}
+          <img
+            ref={imgRef}
+            src="/lovable-uploads/ee0bb47d-e780-4d0c-bbcb-9406228849f4.png"
+            alt={imageAlt}
+            loading="lazy"
+            decoding="async"
+            className={cn(
+              "w-full h-full object-cover",
+              "transition-opacity duration-300",
+              imageLoading ? "opacity-0" : "opacity-100",
+              imgClassName
+            )}
+            onLoad={handleImageLoad}
+            onError={handlePlaceholderError}
+          />
+        </div>
+      );
+    }
+    
     return (
       <AspectRatio ratio={4 / 3} className="relative overflow-hidden rounded-lg bg-muted">
         {imageLoading && (
@@ -125,6 +179,14 @@ export function RecipeImage({ recipe, useThumbnail = false, alt, className, imgC
   }
 
   // Final fallback: UtensilsCrossed icon
+  if (fixedSize) {
+    return (
+      <div className={cn("flex items-center justify-center bg-muted rounded-lg w-full h-full", className)}>
+        <UtensilsCrossed className={cn("text-muted-foreground", iconSize)} />
+      </div>
+    );
+  }
+  
   return (
     <AspectRatio ratio={4 / 3} className="relative">
       <div className={cn("flex items-center justify-center bg-muted rounded-lg w-full h-full", className)}>
