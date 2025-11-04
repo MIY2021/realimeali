@@ -3,15 +3,8 @@ import { Recipe } from "@/types";
 import { RecipeImage } from "@/components/ui/recipe-image";
 import { ImageLightbox } from "@/components/ui/image-lightbox";
 import { Button } from "@/components/ui/button";
-import { Heart, Pencil, Trash2, Plus, MoreVertical } from "lucide-react";
+import { Heart, Pencil, Trash2, Plus, MoreHorizontal } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 interface RecipeHeaderProps {
   recipe: Recipe;
@@ -39,6 +32,7 @@ export const RecipeHeader = ({
   onAddToMealPlan
 }: RecipeHeaderProps) => {
   const [isImageLightboxOpen, setIsImageLightboxOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   
   const hasRecipeImage = recipe?.image;
 
@@ -58,57 +52,62 @@ export const RecipeHeader = ({
         {/* Overlay gradient for better text contrast */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/40 pointer-events-none" />
 
-        {/* Three-dot menu - top right */}
-        <div className="absolute top-4 right-4">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
+        {/* Action menu - top right */}
+        <div className="absolute top-4 right-4 flex gap-2 items-center">
+          {/* Action buttons - slide in from right */}
+          <div className={`flex gap-2 transition-all duration-300 ${
+            isMenuOpen ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-4 pointer-events-none'
+          }`}>
+            {isOwner && (
+              <>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={onEdit}
+                  className="h-12 w-12 rounded-full bg-white/80 hover:bg-white shadow-md backdrop-blur-sm"
+                >
+                  <Pencil className="h-5 w-5 text-gray-800" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={onDelete}
+                  className="h-12 w-12 rounded-full bg-white/80 hover:bg-white shadow-md backdrop-blur-sm"
+                >
+                  <Trash2 className="h-5 w-5 text-red-600" />
+                </Button>
+              </>
+            )}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onToggleFavorite}
+              className="h-12 w-12 rounded-full bg-white/80 hover:bg-white shadow-md backdrop-blur-sm"
+            >
+              <Heart className={`h-5 w-5 ${isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-800'}`} />
+            </Button>
+            {onAddToMealPlan && (
               <Button
                 variant="ghost"
                 size="icon"
+                onClick={onAddToMealPlan}
                 className="h-12 w-12 rounded-full bg-white/80 hover:bg-white shadow-md backdrop-blur-sm"
+                title="Add to Meal Plan"
               >
-                <MoreVertical className="h-5 w-5 text-gray-800" />
+                <Plus className="h-6 w-6 text-green-600" />
               </Button>
-            </DropdownMenuTrigger>
-            
-            <DropdownMenuContent 
-              align="end" 
-              side="left"
-              className="w-56 animate-slide-in-left"
-            >
-              {/* Favorite option - always visible */}
-              <DropdownMenuItem onClick={onToggleFavorite}>
-                <Heart className={`h-4 w-4 mr-2 ${isFavorite ? 'fill-red-500 text-red-500' : ''}`} />
-                {isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}
-              </DropdownMenuItem>
-              
-              {/* Add to Meal Plan - if callback provided */}
-              {onAddToMealPlan && (
-                <DropdownMenuItem onClick={onAddToMealPlan}>
-                  <Plus className="h-4 w-4 mr-2 text-green-600" />
-                  Add to Meal Plan
-                </DropdownMenuItem>
-              )}
-              
-              {/* Owner actions */}
-              {isOwner && (
-                <>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={onEdit}>
-                    <Pencil className="h-4 w-4 mr-2" />
-                    Edit Recipe
-                  </DropdownMenuItem>
-                  <DropdownMenuItem 
-                    onClick={onDelete}
-                    className="text-red-600 focus:text-red-600"
-                  >
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Delete Recipe
-                  </DropdownMenuItem>
-                </>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
+            )}
+          </div>
+
+          {/* Menu toggle button */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className="h-12 w-12 rounded-full bg-white/80 hover:bg-white shadow-md backdrop-blur-sm"
+          >
+            <MoreHorizontal className="h-6 w-6 text-gray-800" strokeWidth={3} />
+          </Button>
         </div>
       </div>
       
