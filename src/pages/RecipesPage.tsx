@@ -71,15 +71,6 @@ export default function RecipesPage() {
           description={getWelcomeText()}
         />
 
-        {user && currentHousehold && (
-          <Button asChild className="w-full h-12 bg-[#F5B82E] hover:bg-[#E8A542] text-white font-semibold rounded-lg shadow-sm flex items-center justify-center gap-2 mb-4">
-            <Link to="/my-recipes/new">
-              <Plus className="h-5 w-5" />
-              Add Recipe
-            </Link>
-          </Button>
-        )}
-
         {!user ? (
           <div className="py-10 text-center px-4">
             <p className="text-muted-foreground mb-4">Please log in to view and manage recipes.</p>

@@ -10,7 +10,10 @@ import { SimpleRecipeFiltersComponent } from "./filters/SimpleRecipeFilters";
 import { MobileLayoutSelector } from "./MobileLayoutSelector";
 import { DropdownFilterSection } from "./filters/DropdownFilterSection";
 import { ViewToggleButtons } from "./ViewToggleButtons";
-import { Heart, X, Search } from "lucide-react";
+import { Heart, X, Search, Plus } from "lucide-react";
+import { Link } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { useHousehold } from "@/contexts/HouseholdContext";
 import {
   Select,
   SelectContent,
@@ -95,6 +98,8 @@ export function RecipeSelectionView({
 
   const { mobileLayout, handleMobileLayoutChange } = useMobileLayout();
   const isMobile = useIsMobile();
+  const { user } = useAuth();
+  const { currentHousehold } = useHousehold();
   
   // Use default layout if provided, otherwise use the stored layout
   const currentMobileLayout = defaultMobileLayout || mobileLayout;
@@ -260,7 +265,7 @@ export function RecipeSelectionView({
             />
           </div>
 
-          {/* Row 4: Favorites and Not Cooked toggles */}
+          {/* Row 4: Favorites and Not Cooked toggles + Add Recipe button */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
@@ -283,14 +288,25 @@ export function RecipeSelectionView({
               </div>
             </div>
             
-            {hasActiveFilters && (
-              <button
-                onClick={clearAllFilters}
-                className="text-xs text-gray-500 hover:text-gray-700 underline"
-              >
-                Clear ({activeFilterCount})
-              </button>
-            )}
+            <div className="flex items-center gap-2">
+              {hasActiveFilters && (
+                <button
+                  onClick={clearAllFilters}
+                  className="text-xs text-gray-500 hover:text-gray-700 underline"
+                >
+                  Clear ({activeFilterCount})
+                </button>
+              )}
+              
+              {user && currentHousehold && (
+                <Button asChild size="icon" className="h-10 w-10 rounded-full bg-[#F5B82E] hover:bg-[#E8A542] shadow-md">
+                  <Link to="/my-recipes/new">
+                    <Plus className="h-5 w-5 text-white" />
+                    <span className="sr-only">Add Recipe</span>
+                  </Link>
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       ) : (
