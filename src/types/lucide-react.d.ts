@@ -19,6 +19,7 @@ declare module 'lucide-react' {
   export const ChevronDown: LucideIcon;
   export const ChevronRight: LucideIcon;
   export const MoreHorizontal: LucideIcon;
+  export const MoreVertical: LucideIcon;
   export const ChevronLeft: LucideIcon;
   export const Check: LucideIcon;
   export const Search: LucideIcon;
