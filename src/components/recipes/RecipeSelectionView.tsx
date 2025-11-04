@@ -299,9 +299,9 @@ export function RecipeSelectionView({
               )}
               
               {user && currentHousehold && (
-                <Button asChild size="icon" className="h-10 w-10 rounded-full bg-[#F5B82E] hover:bg-[#E8A542] shadow-md">
+                <Button asChild className="h-6 w-6 !min-h-0 !min-w-0 rounded-full bg-[#F5B82E]/50 hover:bg-[#F5B82E]/70 text-white p-0 border-0">
                   <Link to="/my-recipes/new">
-                    <Plus className="h-5 w-5 text-white" />
+                    <Plus className="h-4 w-4" />
                     <span className="sr-only">Add Recipe</span>
                   </Link>
                 </Button>
