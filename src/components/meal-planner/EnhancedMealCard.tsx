@@ -66,7 +66,7 @@ export function EnhancedMealCard({
         <CardContent className="p-0">
         <div className="flex min-h-24">
           {/* Custom meal image with placeholder */}
-          <div className="w-28 h-20 flex-shrink-0 ml-3 my-2 mr-0 relative">
+          <div className="w-20 h-20 flex-shrink-0 ml-3 my-2 mr-0 relative">
               <RecipeImage 
                 recipe={undefined}
                 alt={mealPlan.meal_name || 'Custom Meal'}
@@ -296,7 +296,7 @@ export function EnhancedMealCard({
       <CardContent className="p-0">
         <div className="flex min-h-24">
           {/* Recipe Image - Slightly smaller with padding */}
-          <div className="w-28 h-20 flex-shrink-0 ml-3 my-2 mr-0 relative">
+          <div className="w-20 h-20 flex-shrink-0 ml-3 my-2 mr-0 relative">
             <Link to={recipeUrl}>
               <RecipeImage 
                 recipe={recipe}
