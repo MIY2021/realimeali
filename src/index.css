@@ -184,3 +184,37 @@
   }
 }
 
+/* Hide Sonner toast container when empty to prevent loading bar artifact */
+[data-sonner-toaster]:empty {
+  display: none !important;
+}
+
+[data-sonner-toaster]:not(:has([data-sonner-toast])) {
+  display: none !important;
+}
+
+/* Ensure Sonner doesn't show a loading bar */
+[data-sonner-toaster] {
+  --normal-bg: transparent;
+}
+
+/* Hide Sonner progress bars and loading indicators */
+[data-sonner-toast] [data-progress],
+[data-sonner-toast] [data-progress-bar],
+.sonner-loading-bar,
+[data-sonner-toaster] [data-progress],
+[data-sonner-toaster] [data-progress-bar] {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  height: 0 !important;
+}
+
+/* Ensure no visual artifacts from toast transitions */
+[data-sonner-toaster] {
+  pointer-events: none;
+}
+
+[data-sonner-toast] {
+  pointer-events: auto;
+}
