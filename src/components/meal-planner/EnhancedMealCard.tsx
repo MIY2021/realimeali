@@ -60,13 +60,13 @@ export function EnhancedMealCard({
   // Handle freetyped meals (no recipe)
   if (mealPlan.is_freetyped && !recipe) {
     return (
-      <Card className={`bg-white border border-gray-200 hover:shadow-md transition-all overflow-hidden ${
+      <Card className={`w-full max-w-full bg-white border border-gray-200 hover:shadow-md transition-all overflow-hidden ${
         mealPlan.is_completed ? 'opacity-85 saturate-75' : ''
       }`}>
         <CardContent className="p-0">
-        <div className="flex min-h-24">
+        <div className="flex min-h-24 max-w-full overflow-hidden">
           {/* Custom meal image with placeholder */}
-          <div className="w-24 h-20 flex-shrink-0 ml-3 my-2 mr-0 relative">
+          <div className="w-24 h-20 flex-shrink-0 ml-2 my-2 mr-0 relative">
               <RecipeImage 
                 recipe={undefined}
                 alt={mealPlan.meal_name || 'Custom Meal'}
@@ -86,7 +86,7 @@ export function EnhancedMealCard({
             </div>
 
           {/* Content Area */}
-          <div className="flex-1 pl-3 pr-4 py-2 flex flex-col justify-center min-w-0">
+          <div className="flex-1 pl-2 pr-3 py-2 flex flex-col justify-center min-w-0">
               {/* Header */}
               <div className="flex items-start justify-between mb-2">
                 <div className="flex-1 min-w-0">
@@ -123,7 +123,7 @@ export function EnhancedMealCard({
               </div>
 
               {/* Bottom Controls */}
-              <div className="flex items-center justify-between gap-1">
+              <div className="flex items-center justify-between gap-0.5">
                 <div className="flex items-center gap-1">
                   <span className="text-[10px] text-gray-600 leading-none whitespace-nowrap">Servings:</span>
                   <div className="flex items-center gap-0.5">
@@ -290,13 +290,13 @@ export function EnhancedMealCard({
   const recipeUrl = `/my-recipes/${recipeSlug}`;
 
   return (
-    <Card className={`bg-white border border-gray-200 hover:shadow-md transition-all overflow-hidden ${
+    <Card className={`w-full max-w-full bg-white border border-gray-200 hover:shadow-md transition-all overflow-hidden ${
       mealPlan.is_completed ? 'opacity-85 saturate-75' : ''
     }`}>
       <CardContent className="p-0">
-        <div className="flex min-h-24">
+        <div className="flex min-h-24 max-w-full overflow-hidden">
           {/* Recipe Image - Slightly smaller with padding */}
-          <div className="w-24 h-20 flex-shrink-0 ml-3 my-2 mr-0 relative">
+          <div className="w-24 h-20 flex-shrink-0 ml-2 my-2 mr-0 relative">
             <Link to={recipeUrl}>
               <RecipeImage 
                 recipe={recipe}
@@ -325,7 +325,7 @@ export function EnhancedMealCard({
           </div>
 
           {/* Content Area - Reduced left padding to minimize white space */}
-          <div className="flex-1 pl-3 pr-4 py-2 flex flex-col justify-center min-w-0">
+          <div className="flex-1 pl-2 pr-3 py-2 flex flex-col justify-center min-w-0">
             {/* Header */}
             <div className="flex items-start justify-between mb-1">
               <div className="flex-1 min-w-0">
@@ -352,7 +352,7 @@ export function EnhancedMealCard({
             </div>
 
             {/* Bottom Controls */}
-            <div className="flex items-center justify-between gap-1">
+            <div className="flex items-center justify-between gap-0.5">
               <div className="flex items-center gap-1">
                 <span className="text-[10px] text-gray-600 leading-none whitespace-nowrap">Servings:</span>
                 <div className="flex items-center gap-0.5">
