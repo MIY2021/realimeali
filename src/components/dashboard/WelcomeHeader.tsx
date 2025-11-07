@@ -15,7 +15,7 @@ export const WelcomeHeader = () => {
   };
 
   // Fetch daily tip from database
-  const { data: dailyTip } = useQuery({
+  const { data: dailyTip, isLoading } = useQuery({
     queryKey: ['daily-tip', getDayOfYear()],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -58,8 +58,12 @@ export const WelcomeHeader = () => {
       <h1 className="text-2xl font-bold text-[#654321] mb-1">
         {getTimeBasedGreeting()}, {getDisplayName()}!
       </h1>
-      <p className="text-sm text-[#654321]">
-        <span className="font-semibold">Top Tip:</span> {dailyTip}
+      <p className="text-sm text-[#654321] min-h-[20px]">
+        {!isLoading && dailyTip && (
+          <span className="animate-fade-in">
+            <span className="font-semibold">Top Tip:</span> {dailyTip}
+          </span>
+        )}
       </p>
     </div>
   );
