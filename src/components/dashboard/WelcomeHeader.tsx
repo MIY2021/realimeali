@@ -55,12 +55,12 @@ export const WelcomeHeader = () => {
 
   return (
     <div className="rounded-3xl bg-gradient-to-br from-[#FFE5B4] to-[#FFDAB9] p-5 shadow-md h-28 flex flex-col justify-center">
-      <h1 className="text-2xl font-bold text-[#654321] mb-1 opacity-0 animate-[fade-in_1.2s_ease-out_forwards]">
+      <h1 className="text-2xl font-bold text-[#654321] mb-1 animate-[fade-in_1s_ease-out]">
         {getTimeBasedGreeting()}, {getDisplayName()}!
       </h1>
       <p className="text-sm text-[#654321] leading-relaxed">
         {!isLoading && dailyTip && (
-          <span className="opacity-0 animate-[fade-in_1.5s_ease-out_0.3s_forwards] inline-block">
+          <span className="animate-[fade-in_1.2s_ease-out] inline-block">
             <span className="font-semibold">Top Tip:</span> {dailyTip}
           </span>
         )}
