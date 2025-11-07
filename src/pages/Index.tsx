@@ -45,7 +45,7 @@ export default function Index() {
   if (authLoading) {
     return (
       <div className="container max-w-2xl mx-auto px-4 py-4 space-y-5">
-        <div className="h-24 w-full bg-muted animate-pulse rounded-3xl" />
+        <div className="h-28 w-full bg-muted animate-pulse rounded-3xl" />
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map((i) => (
             <div key={i} className="h-24 bg-muted animate-pulse rounded-xl" />
