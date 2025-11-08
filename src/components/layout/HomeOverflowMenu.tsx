@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAdminCheck } from "@/hooks/useAdminCheck";
+import { ThemeSelector } from "@/components/settings/ThemeSelector";
 import {
   Drawer,
   DrawerContent,
@@ -76,6 +77,13 @@ export const HomeOverflowMenu = () => {
           <DrawerHeader className="text-left border-b border-[#E5E7EB] pb-4">
             <DrawerTitle className="text-[#2C3E50] font-semibold">Menu</DrawerTitle>
           </DrawerHeader>
+          
+          <div className="p-4 border-b border-[#E5E7EB]">
+            <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide mb-3">
+              Appearance
+            </p>
+            <ThemeSelector />
+          </div>
           
           <div className="flex flex-col p-4 space-y-2">
             {menuItems.map((item) => 

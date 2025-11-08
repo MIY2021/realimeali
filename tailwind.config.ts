@@ -34,6 +34,21 @@ export default {
         "grey-light": "#9DA4AF", // Light grey for subtitles
         "red-action": "#E35B5B", // Action red
         
+        // Semantic theme tokens (work via CSS variables)
+        surface: {
+          DEFAULT: "hsl(var(--surface) / <alpha-value>)",
+          elevated: "hsl(var(--surface-elevated) / <alpha-value>)",
+          card: "hsl(var(--surface-card) / <alpha-value>)",
+        },
+        content: {
+          primary: "hsl(var(--content-primary) / <alpha-value>)",
+          secondary: "hsl(var(--content-secondary) / <alpha-value>)",
+          tertiary: "hsl(var(--content-tertiary) / <alpha-value>)",
+        },
+        "border-subtle": "hsl(var(--border-subtle) / <alpha-value>)",
+        "border-default": "hsl(var(--border-default) / <alpha-value>)",
+        
+        // Existing shadcn/radix color system
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",

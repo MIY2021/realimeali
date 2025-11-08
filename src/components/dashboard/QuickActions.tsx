@@ -71,7 +71,7 @@ export const QuickActions = () => {
           const content = (
             <div
               className="
-                bg-white
+                bg-surface
                 rounded-3xl p-5
                 flex flex-col items-center justify-center gap-3
                 shadow-sm
@@ -85,7 +85,7 @@ export const QuickActions = () => {
               <div className={`${action.iconBg} rounded-full p-3 shadow-sm`}>
                 <action.icon className={`h-7 w-7 ${action.iconColor}`} />
               </div>
-              <span className="text-sm font-semibold text-gray-900 text-center leading-tight">
+              <span className="text-sm font-semibold text-content-primary text-center leading-tight">
                 {action.title}
               </span>
             </div>

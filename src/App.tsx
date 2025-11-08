@@ -16,6 +16,7 @@ import { RealiChefProvider } from "@/contexts/RealiChefContext";
 import { useParallelDataLoader } from "@/hooks/useParallelDataLoader";
 import { Toaster } from "@/components/ui/toaster";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import { ThemeProvider } from "next-themes";
 
 // Eager load: Home page (most visited)
 import Index from "@/pages/Index";
@@ -93,25 +94,34 @@ function AppContent() {
 function App() {
   return (
     <ErrorBoundary>
-      <QueryClientProvider client={queryClient}>
-        <BrowserRouter>
-          <AuthProvider>
-            <HouseholdProvider>
-              <RecipesProvider>
-                <MealPlanProvider>
-                  <MealPlanApprovalProvider>
-                    <HouseholdShoppingProvider>
-                      <RealiChefProvider>
-                        <AppContent />
-                      </RealiChefProvider>
-                    </HouseholdShoppingProvider>
-                  </MealPlanApprovalProvider>
-                </MealPlanProvider>
-              </RecipesProvider>
-            </HouseholdProvider>
-          </AuthProvider>
-        </BrowserRouter>
-      </QueryClientProvider>
+      <ThemeProvider 
+        attribute="class"
+        defaultTheme="light"
+        enableSystem={false}
+        themes={['light', 'dark', 'black']}
+        storageKey="realimeali-theme"
+        disableTransitionOnChange={false}
+      >
+        <QueryClientProvider client={queryClient}>
+          <BrowserRouter>
+            <AuthProvider>
+              <HouseholdProvider>
+                <RecipesProvider>
+                  <MealPlanProvider>
+                    <MealPlanApprovalProvider>
+                      <HouseholdShoppingProvider>
+                        <RealiChefProvider>
+                          <AppContent />
+                        </RealiChefProvider>
+                      </HouseholdShoppingProvider>
+                    </MealPlanApprovalProvider>
+                  </MealPlanProvider>
+                </RecipesProvider>
+              </HouseholdProvider>
+            </AuthProvider>
+          </BrowserRouter>
+        </QueryClientProvider>
+      </ThemeProvider>
     </ErrorBoundary>
   );
 }
