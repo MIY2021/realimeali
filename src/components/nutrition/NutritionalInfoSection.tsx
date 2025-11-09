@@ -132,9 +132,9 @@ export const NutritionalInfoSection = ({ recipe }: NutritionalInfoSectionProps) 
 
   return (
     <div className="mb-6">
-      <div className="bg-white border border-sage/20 rounded-lg p-4">
+      <div className="bg-surface border border-sage/20 rounded-lg p-4">
         <div 
-          className="flex items-start gap-3 cursor-pointer hover:bg-gray-50/50 transition-colors rounded-lg p-2 -m-2"
+          className="flex items-start gap-3 cursor-pointer hover:bg-surface-elevated/50 transition-colors rounded-lg p-2 -m-2"
           onClick={() => setIsExpanded(!isExpanded)}
         >
           <div className="flex-shrink-0 mt-0.5">
@@ -167,7 +167,7 @@ export const NutritionalInfoSection = ({ recipe }: NutritionalInfoSectionProps) 
         </div>
         
         {hasNutritionInfo && !isExpanded && (
-          <p className="text-xs text-gray-600 mt-2 ml-8">Estimated fruit & vegetable portions per serving</p>
+          <p className="text-xs text-content-secondary mt-2 ml-8">Estimated fruit & vegetable portions per serving</p>
         )}
 
         {isExpanded && (
@@ -247,8 +247,8 @@ export const NutritionalInfoSection = ({ recipe }: NutritionalInfoSectionProps) 
                     <div className="space-y-2">
                       {nutritionData.recommendations.map((rec, index) => (
                         <div key={index} className="text-sm">
-                          <span className="font-medium text-gray-900">{rec.suggestion}</span>
-                          <span className="text-gray-700"> – +{rec.portionIncrease} portion{rec.portionIncrease !== 1 ? 's' : ''}</span>
+                          <span className="font-medium text-content-primary">{rec.suggestion}</span>
+                          <span className="text-content-secondary"> – +{rec.portionIncrease} portion{rec.portionIncrease !== 1 ? 's' : ''}</span>
                         </div>
                       ))}
                     </div>
@@ -278,10 +278,10 @@ export const NutritionalInfoSection = ({ recipe }: NutritionalInfoSectionProps) 
             ) : (
               <div className="space-y-3">
                 {isLoading ? (
-                  <p className="text-sm text-gray-500">Analyzing ingredients...</p>
+                  <p className="text-sm text-content-tertiary">Analyzing ingredients...</p>
                 ) : (
                   <>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-content-tertiary">
                       No fruit and vegetable content detected in this recipe.
                     </p>
                     <p className="text-xs text-sage-600">

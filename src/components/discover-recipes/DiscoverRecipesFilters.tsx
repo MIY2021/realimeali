@@ -108,7 +108,7 @@ export function DiscoverRecipesFilters({
   };
 
   return (
-    <div className={`space-y-4 sm:space-y-6 ${isMobile ? 'bg-white' : ''}`}>
+    <div className={`space-y-4 sm:space-y-6 ${isMobile ? 'bg-surface' : ''}`}>
       {/* Mobile Grid Layout */}
       {isMobile ? (
         <div className="space-y-3">

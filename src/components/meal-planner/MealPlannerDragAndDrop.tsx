@@ -52,7 +52,7 @@ export const MealPlannerDragAndDrop = ({
                     className={`
                       transition-all duration-300 ease-out transform-gpu
                       ${snapshot.isDragging ? 
-                        'shadow-2xl scale-[1.02] rotate-1 z-50 bg-white rounded-xl border-2 border-blue-400 ring-4 ring-blue-200' : 
+                        'shadow-2xl scale-[1.02] rotate-1 z-50 bg-surface rounded-xl border-2 border-blue-400 ring-4 ring-blue-200' : 
                         isDraggingCategory && draggedCategoryId !== `category-${mealType}` ? 
                           'opacity-50 scale-95 blur-sm' : 
                           'opacity-100 scale-100 hover:shadow-lg'

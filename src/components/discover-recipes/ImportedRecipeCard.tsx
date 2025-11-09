@@ -64,8 +64,8 @@ export function ImportedRecipeCard({
               onLoad={() => setImageLoading(false)}
             />
           ) : (
-            <div className="w-full aspect-[4/3] bg-gray-200 flex items-center justify-center">
-              <span className="text-gray-400 text-4xl">🍽️</span>
+            <div className="w-full aspect-[4/3] bg-surface-elevated flex items-center justify-center">
+              <span className="text-content-tertiary text-4xl">🍽️</span>
             </div>
           )}
         </div>
@@ -73,13 +73,13 @@ export function ImportedRecipeCard({
       
       <CardContent className="p-4 flex-1 flex flex-col">
         <div onClick={handleRecipeClick} className="cursor-pointer">
-          <h3 className={`font-semibold text-gray-900 mb-2 hover:text-primary transition-colors ${isCompactLayout ? 'text-sm' : 'text-lg'}`}>
+          <h3 className={`font-semibold text-content-primary mb-2 hover:text-primary transition-colors ${isCompactLayout ? 'text-sm' : 'text-lg'}`}>
             {recipe.title}
           </h3>
         </div>
         
         <p 
-          className="text-sm text-gray-600 mb-3 flex-1"
+          className="text-sm text-content-secondary mb-3 flex-1"
           style={{
             display: '-webkit-box',
             WebkitLineClamp: isCompactLayout ? 1 : 2,

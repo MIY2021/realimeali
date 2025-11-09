@@ -133,25 +133,25 @@ export const RecipeDetail = ({
       {/* Description */}
       {recipe.description && (
         <div className="mb-4 px-2">
-          <p className="text-gray-600 leading-relaxed">{recipe.description}</p>
+          <p className="text-content-secondary leading-relaxed">{recipe.description}</p>
         </div>
       )}
 
       {/* Time Info Section */}
       {(recipe.prep_time || recipe.cook_time) && (
         <div className="mb-6 px-2">
-          <div className="border-t border-gray-200 pt-4 pb-4 border-b">
+          <div className="border-t border-border-subtle pt-4 pb-4 border-b">
             <div className="flex items-center justify-start gap-8">
               {recipe.prep_time && (
                 <div className="flex items-center gap-2">
-                  <Clock className="h-5 w-5 text-gray-500" />
-                  <span className="text-gray-600">Prep: {recipe.prep_time} min</span>
+                  <Clock className="h-5 w-5 text-content-tertiary" />
+                  <span className="text-content-secondary">Prep: {recipe.prep_time} min</span>
                 </div>
               )}
               {recipe.cook_time && (
                 <div className="flex items-center gap-2">
-                  <Clock className="h-5 w-5 text-gray-500" />
-                  <span className="text-gray-600">Cook: {recipe.cook_time} min</span>
+                  <Clock className="h-5 w-5 text-content-tertiary" />
+                  <span className="text-content-secondary">Cook: {recipe.cook_time} min</span>
                 </div>
               )}
             </div>

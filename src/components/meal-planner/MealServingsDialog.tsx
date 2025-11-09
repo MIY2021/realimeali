@@ -52,7 +52,7 @@ export function MealServingsDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md bg-white">
+      <DialogContent className="sm:max-w-md bg-surface">
         <DialogHeader>
           <DialogTitle>Add {MEAL_TYPE_LABELS[mealType]}</DialogTitle>
         </DialogHeader>

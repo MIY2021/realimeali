@@ -269,7 +269,7 @@ export default function Feedback() {
                 <div className="space-y-2">
                   <Label>Attachment (optional)</Label>
                   {!selectedImage ? (
-                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6">
+                    <div className="border-2 border-dashed border-border-default rounded-lg p-6">
                       <input
                         type="file"
                         accept="image/*"
@@ -281,18 +281,18 @@ export default function Feedback() {
                         htmlFor="image-upload"
                         className="flex flex-col items-center justify-center cursor-pointer"
                       >
-                        <Upload className="h-8 w-8 text-gray-400 mb-2" />
-                        <span className="text-gray-600 text-center text-sm">
+                        <Upload className="h-8 w-8 text-content-tertiary mb-2" />
+                        <span className="text-content-secondary text-center text-sm">
                           Click to upload an image
                           <br />
-                          <span className="text-xs text-gray-500">Max size: 5MB</span>
+                          <span className="text-xs text-content-tertiary">Max size: 5MB</span>
                         </span>
                       </label>
                     </div>
                   ) : (
                     <div className="relative border rounded-lg p-4">
                       <div className="flex items-center gap-3 mb-3">
-                        <Camera className="h-4 w-4 text-gray-500" />
+                        <Camera className="h-4 w-4 text-content-tertiary" />
                         <span className="flex-1 truncate text-sm">
                           {selectedImage.name}
                         </span>

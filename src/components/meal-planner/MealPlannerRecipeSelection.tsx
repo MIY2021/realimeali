@@ -72,10 +72,10 @@ export function MealPlannerRecipeSelection({
     <Sheet open={open} onOpenChange={onClose}>
       <SheetContent 
         side="bottom" 
-        className="h-screen w-full bg-white p-0 overflow-hidden"
+        className="h-screen w-full bg-surface p-0 overflow-hidden"
       >
         <div className="flex flex-col h-full">
-          <SheetHeader className="px-4 py-4 bg-white border-b">
+          <SheetHeader className="px-4 py-4 bg-surface border-b">
             <SheetTitle>Add {MEAL_TYPE_LABELS[mealType]}</SheetTitle>
           </SheetHeader>
 
@@ -119,7 +119,7 @@ export function MealPlannerRecipeSelection({
                 </TabsContent>
               </div>
 
-              <TabsList className="grid w-full grid-cols-2 bg-white border-t rounded-none h-12 mx-0">
+              <TabsList className="grid w-full grid-cols-2 bg-surface border-t rounded-none h-12 mx-0">
                 <TabsTrigger value="recipes" className="rounded-none">My Recipes</TabsTrigger>
                 <TabsTrigger value="custom" className="rounded-none">Custom</TabsTrigger>
               </TabsList>

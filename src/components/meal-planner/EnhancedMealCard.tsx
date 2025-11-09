@@ -60,7 +60,7 @@ export function EnhancedMealCard({
   // Handle freetyped meals (no recipe)
   if (mealPlan.is_freetyped && !recipe) {
     return (
-      <Card className={`w-full max-w-full bg-white border border-gray-200 hover:shadow-md transition-all overflow-hidden ${
+      <Card className={`w-full max-w-full bg-surface border border-border-subtle hover:shadow-md transition-all overflow-hidden ${
         mealPlan.is_completed ? 'opacity-85 saturate-75' : ''
       }`}>
         <CardContent className="p-0">
@@ -92,7 +92,7 @@ export function EnhancedMealCard({
                 <div className="flex-1 min-w-0">
                   <h4 
                     className={`font-medium text-sm leading-tight max-w-[calc(100%-1.5rem)] cursor-pointer hover:underline line-clamp-2 ${
-                      mealPlan.is_completed ? 'text-gray-400 line-through' : 'text-gray-900'
+                      mealPlan.is_completed ? 'text-content-tertiary line-through' : 'text-content-primary'
                     }`}
                     onClick={() => {
                       console.log('Custom meal title clicked:', {
@@ -117,7 +117,7 @@ export function EnhancedMealCard({
                 <div className="flex items-center gap-2 flex-shrink-0">
                   {/* Drag Handle */}
                   <div {...dragHandleProps} className="touch-none cursor-grab active:cursor-grabbing">
-                    <GripVertical className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+                    <GripVertical className="h-4 w-4 text-content-tertiary hover:text-content-secondary" />
                   </div>
                 </div>
               </div>
@@ -125,7 +125,7 @@ export function EnhancedMealCard({
               {/* Bottom Controls */}
               <div className="flex items-center justify-between gap-0.5">
                 <div className="flex items-center gap-1">
-                  <span className="text-[10px] text-gray-600 leading-none whitespace-nowrap">Servings:</span>
+                  <span className="text-[10px] text-content-secondary leading-none whitespace-nowrap">Servings:</span>
                   <div className="flex items-center gap-0.5">
                     <Button
                       variant="ghost"
@@ -173,7 +173,7 @@ export function EnhancedMealCard({
                     className={`h-7 w-7 p-0 ${
                       mealPlan.is_completed 
                         ? 'bg-green-50 text-green-600 border-green-200 hover:bg-green-100' 
-                        : 'bg-gray-50 text-gray-400 border-gray-200 hover:bg-gray-100'
+                        : 'bg-surface-elevated text-content-tertiary border-border-subtle hover:bg-surface-elevated/80'
                     }`}
                     onClick={async () => {
                       try {
@@ -290,7 +290,7 @@ export function EnhancedMealCard({
   const recipeUrl = `/my-recipes/${recipeSlug}`;
 
   return (
-    <Card className={`w-full max-w-full bg-white border border-gray-200 hover:shadow-md transition-all overflow-hidden ${
+    <Card className={`w-full max-w-full bg-surface border border-border-subtle hover:shadow-md transition-all overflow-hidden ${
       mealPlan.is_completed ? 'opacity-85 saturate-75' : ''
     }`}>
       <CardContent className="p-0">
@@ -331,14 +331,14 @@ export function EnhancedMealCard({
               <div className="flex-1 min-w-0">
                 <Link to={recipeUrl}>
                   <h4 className={`font-medium text-sm leading-tight cursor-pointer hover:text-blue-600 transition-colors max-w-[calc(100%-1.5rem)] line-clamp-2 ${
-                    mealPlan.is_completed ? 'text-gray-400 line-through' : 'text-gray-900'
+                    mealPlan.is_completed ? 'text-content-tertiary line-through' : 'text-content-primary'
                   }`}>
                     {recipe.title}
                   </h4>
                 </Link>
                 
                 {isLunchLeftover && parentRecipe && (
-                  <p className="text-xs text-gray-500 mt-0.5">
+                  <p className="text-xs text-content-tertiary mt-0.5">
                     Leftover
                   </p>
                 )}
@@ -346,7 +346,7 @@ export function EnhancedMealCard({
               <div className="flex items-center gap-2 flex-shrink-0">
                 {/* Drag Handle - Moved to right side */}
                 <div {...dragHandleProps} className="touch-none cursor-grab active:cursor-grabbing">
-                  <GripVertical className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+                  <GripVertical className="h-4 w-4 text-content-tertiary hover:text-content-secondary" />
                 </div>
               </div>
             </div>
@@ -354,7 +354,7 @@ export function EnhancedMealCard({
             {/* Bottom Controls */}
             <div className="flex items-center justify-between gap-0.5">
               <div className="flex items-center gap-1">
-                <span className="text-[10px] text-gray-600 leading-none whitespace-nowrap">Servings:</span>
+                <span className="text-[10px] text-content-secondary leading-none whitespace-nowrap">Servings:</span>
                 <div className="flex items-center gap-0.5">
                   <Button
                     variant="ghost"
@@ -384,7 +384,7 @@ export function EnhancedMealCard({
                   className={`h-7 w-7 p-0 ${
                     mealPlan.is_completed 
                       ? 'bg-green-50 text-green-600 border-green-200 hover:bg-green-100' 
-                      : 'bg-gray-50 text-gray-400 border-gray-200 hover:bg-gray-100'
+                      : 'bg-surface-elevated text-content-tertiary border-border-subtle hover:bg-surface-elevated/80'
                   }`}
                   onClick={handleCompletionChange}
                   title={mealPlan.is_completed ? 'Mark as incomplete' : 'Mark as complete'}

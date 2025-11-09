@@ -79,7 +79,7 @@ export function CustomMealDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md bg-white">
+      <DialogContent className="sm:max-w-md bg-surface">
         <DialogHeader>
           <DialogTitle>Add Custom {MEAL_TYPE_LABELS[mealType]}</DialogTitle>
         </DialogHeader>

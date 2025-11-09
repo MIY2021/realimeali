@@ -121,20 +121,20 @@ export function RecipeCard({ recipe, onAddToMealPlan, onRecipeClick, showActions
           size={isCompactLayout ? "xs" : "icon"}
           onClick={handleToggleFavorite}
           disabled={isTogglingFavorite}
-          className="absolute top-2 right-2 bg-white/80 backdrop-blur-sm border border-white/20 shadow-sm hover:bg-white/90 transition-all duration-200"
+          className="absolute top-2 right-2 bg-surface/80 backdrop-blur-sm border border-border-subtle/20 shadow-sm hover:bg-surface/90 transition-all duration-200"
         >
-          <Heart className={`${isCompactLayout ? 'h-3.5 w-3.5' : 'h-5 w-5'} ${recipe.is_favorite ? 'fill-red-500 text-red-500' : 'text-gray-600 hover:text-red-500'}`} />
+          <Heart className={`${isCompactLayout ? 'h-3.5 w-3.5' : 'h-5 w-5'} ${recipe.is_favorite ? 'fill-red-500 text-red-500' : 'text-content-secondary hover:text-red-500'}`} />
         </Button>
       </div>
       
       <CardContent className="p-4 flex-1 flex flex-col">
         <div onClick={handleRecipeClick} className="cursor-pointer">
-          <h3 className={`font-semibold text-gray-900 mb-2 hover:text-primary transition-colors ${isCompactLayout ? 'text-sm' : 'text-lg'}`}>
+          <h3 className={`font-semibold text-content-primary mb-2 hover:text-primary transition-colors ${isCompactLayout ? 'text-sm' : 'text-lg'}`}>
             {recipe.title}
           </h3>
         </div>
         <p 
-          className="text-sm text-gray-600 mb-3 flex-1"
+          className="text-sm text-content-secondary mb-3 flex-1"
           style={{
             display: '-webkit-box',
             WebkitLineClamp: isCompactLayout ? 1 : 2,
@@ -175,7 +175,7 @@ export function RecipeCard({ recipe, onAddToMealPlan, onRecipeClick, showActions
             disabled={isTogglingCooked}
             className={`${isCompactLayout ? 'h-5 px-2 text-xs' : 'h-6 px-2 text-xs'} ${recipe.has_cooked 
               ? 'bg-green-100 text-green-700 hover:bg-green-200' 
-              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              : 'bg-surface-elevated text-content-secondary hover:bg-surface-elevated/80'
             }`}
           >
             {!isCompactLayout && <User className="h-3 w-3 mr-1" />}

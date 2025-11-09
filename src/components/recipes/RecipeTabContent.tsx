@@ -38,19 +38,19 @@ export const RecipeTabContent = React.memo(({ recipe, scaledIngredients, isScale
       <TabsList className="grid w-full grid-cols-3 gap-2 bg-transparent p-0 mb-6">
         <TabsTrigger 
           value="ingredients" 
-          className="data-[state=inactive]:bg-white data-[state=inactive]:text-gray-600 data-[state=inactive]:border data-[state=inactive]:border-gray-200 data-[state=active]:bg-gradient-to-br data-[state=active]:from-sage data-[state=active]:to-sage/90 data-[state=active]:text-white data-[state=active]:shadow-md font-medium rounded-xl py-3 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+          className="data-[state=inactive]:bg-surface data-[state=inactive]:text-content-secondary data-[state=inactive]:border data-[state=inactive]:border-border-subtle data-[state=active]:bg-gradient-to-br data-[state=active]:from-sage data-[state=active]:to-sage/90 data-[state=active]:text-white data-[state=active]:shadow-md font-medium rounded-xl py-3 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
         >
           Ingredients
         </TabsTrigger>
         <TabsTrigger 
           value="equipment" 
-          className="data-[state=inactive]:bg-white data-[state=inactive]:text-gray-600 data-[state=inactive]:border data-[state=inactive]:border-gray-200 data-[state=active]:bg-gradient-to-br data-[state=active]:from-butter data-[state=active]:to-butter/90 data-[state=active]:text-white data-[state=active]:shadow-md font-medium rounded-xl py-3 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+          className="data-[state=inactive]:bg-surface data-[state=inactive]:text-content-secondary data-[state=inactive]:border data-[state=inactive]:border-border-subtle data-[state=active]:bg-gradient-to-br data-[state=active]:from-butter data-[state=active]:to-butter/90 data-[state=active]:text-white data-[state=active]:shadow-md font-medium rounded-xl py-3 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
         >
           Equipment
         </TabsTrigger>
         <TabsTrigger 
           value="instructions" 
-          className="data-[state=inactive]:bg-white data-[state=inactive]:text-gray-600 data-[state=inactive]:border data-[state=inactive]:border-gray-200 data-[state=active]:bg-gradient-to-br data-[state=active]:from-terracotta data-[state=active]:to-terracotta/90 data-[state=active]:text-white data-[state=active]:shadow-md font-medium rounded-xl py-3 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+          className="data-[state=inactive]:bg-surface data-[state=inactive]:text-content-secondary data-[state=inactive]:border data-[state=inactive]:border-border-subtle data-[state=active]:bg-gradient-to-br data-[state=active]:from-terracotta data-[state=active]:to-terracotta/90 data-[state=active]:text-white data-[state=active]:shadow-md font-medium rounded-xl py-3 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
         >
           Instructions
         </TabsTrigger>
@@ -63,8 +63,8 @@ export const RecipeTabContent = React.memo(({ recipe, scaledIngredients, isScale
           </h2>
           
           {ingredientSections.length === 0 ? (
-            <div className="bg-gray-50 rounded-lg p-2">
-              <p className="text-gray-500 text-xs">No ingredients found</p>
+            <div className="bg-surface-elevated rounded-lg p-2">
+              <p className="text-content-tertiary text-xs">No ingredients found</p>
             </div>
           ) : (
             ingredientSections.map((section, sectionIndex) => (
@@ -79,17 +79,17 @@ export const RecipeTabContent = React.memo(({ recipe, scaledIngredients, isScale
                 )}
                 
                 {section.ingredients.length === 0 ? (
-                  <div className="bg-gray-50 rounded-lg p-2">
-                    <p className="text-gray-500 text-xs">No ingredients in this section</p>
+                  <div className="bg-surface-elevated rounded-lg p-2">
+                    <p className="text-content-tertiary text-xs">No ingredients in this section</p>
                   </div>
                 ) : (
                   section.ingredients.map((ingredient, index) => (
                     <div key={`${sectionIndex}-${index}`} className={`p-2 rounded-lg transition-all ${
                       isScaled 
                         ? 'bg-blue-50 border border-blue-200 hover:bg-blue-100' 
-                        : 'bg-gray-50 hover:bg-gray-100'
+                        : 'bg-surface-elevated hover:bg-surface-elevated/80'
                     }`}>
-                      <p className="text-gray-700 text-sm leading-snug">{ingredient}</p>
+                      <p className="text-content-secondary text-sm leading-snug">{ingredient}</p>
                     </div>
                   ))
                 )}
@@ -106,14 +106,14 @@ export const RecipeTabContent = React.memo(({ recipe, scaledIngredients, isScale
           {equipment.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
               {equipment.map((item, index) => (
-                <div key={index} className="p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                  <p className="text-gray-700 text-sm leading-snug">{item}</p>
+                <div key={index} className="p-2 bg-surface-elevated rounded-lg hover:bg-surface-elevated/80 transition-colors">
+                  <p className="text-content-secondary text-sm leading-snug">{item}</p>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="bg-gray-50 rounded-lg text-center p-3">
-              <p className="text-gray-500 text-sm">No specific equipment detected for this recipe.</p>
+            <div className="bg-surface-elevated rounded-lg text-center p-3">
+              <p className="text-content-tertiary text-sm">No specific equipment detected for this recipe.</p>
             </div>
           )}
         </div>
@@ -123,11 +123,11 @@ export const RecipeTabContent = React.memo(({ recipe, scaledIngredients, isScale
         <div className="space-y-2">
           <h2 className="font-bold text-navy text-lg mb-2">Instructions</h2>
           {recipe.instructions.map((step, index) => (
-            <div key={index} className="flex gap-2 p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+            <div key={index} className="flex gap-2 p-2 bg-surface-elevated rounded-lg hover:bg-surface-elevated/80 transition-colors">
               <div className="flex-shrink-0 w-6 h-6 bg-terracotta text-white rounded-full flex items-center justify-center text-xs font-bold">
                 {index + 1}
               </div>
-              <p className="text-gray-700 flex-1 text-sm leading-snug">{step}</p>
+              <p className="text-content-secondary flex-1 text-sm leading-snug">{step}</p>
             </div>
           ))}
         </div>

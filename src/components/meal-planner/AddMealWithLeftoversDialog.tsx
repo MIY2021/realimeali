@@ -42,7 +42,7 @@ export function AddMealWithLeftoversDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px] bg-white">
+      <DialogContent className="sm:max-w-[425px] bg-surface">
         <DialogHeader>
           <DialogTitle>Add Meal with Leftovers</DialogTitle>
           <DialogDescription>
