@@ -194,22 +194,22 @@ export function DiscoverRecipesContent() {
           <div className="space-y-3">
             {/* Row 1: Search Bar - Full Width */}
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-content-tertiary" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
                 placeholder="Search recipes..."
                 value={keyword}
                 onChange={(e) => setKeyword(e.target.value)}
-                className="w-full pl-10 h-11 bg-surface border-border-default rounded-lg text-sm"
+                className="w-full pl-10 h-11 bg-white border-gray-300 rounded-lg text-sm"
               />
             </div>
 
             {/* Row 2: Sort Dropdown + View Toggle */}
             <div className="flex items-center gap-2">
               <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="flex-1 h-9 bg-surface border-border-default rounded-full text-sm font-medium text-content-secondary">
+                <SelectTrigger className="flex-1 h-9 bg-white border-gray-300 rounded-full text-sm font-medium text-gray-700">
                   <SelectValue placeholder="Sort" />
                 </SelectTrigger>
-                <SelectContent className="bg-surface">
+                <SelectContent className="bg-white">
                   <SelectItem value="priority">Featured First</SelectItem>
                   <SelectItem value="newest">Newest First</SelectItem>
                   <SelectItem value="oldest">Oldest First</SelectItem>
@@ -263,7 +263,7 @@ export function DiscoverRecipesContent() {
               {hasActiveFilters && (
                 <button
                   onClick={clearAllFilters}
-                  className="text-xs text-content-tertiary hover:text-content-secondary underline"
+                  className="text-xs text-gray-500 hover:text-gray-700 underline"
                 >
                   Clear ({activeFilterCount})
                 </button>

@@ -75,7 +75,7 @@ export const AchievementsBadges = () => {
         <h2 className="text-xl font-extrabold">
           Achievements Unlocked!
         </h2>
-        <button className="text-sm font-medium text-content-secondary hover:text-content-primary">
+        <button className="text-sm font-medium text-gray-600 hover:text-gray-900">
           View All
         </button>
       </div>
@@ -111,7 +111,7 @@ export const AchievementsBadges = () => {
                   />
                 </div>
                 
-                <p className="text-xs font-semibold text-content-primary text-center max-w-[64px] line-clamp-2">
+                <p className="text-xs font-semibold text-gray-900 text-center max-w-[64px] line-clamp-2">
                   {achievement.title}
                 </p>
               </div>

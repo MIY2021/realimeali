@@ -22,7 +22,7 @@ export const MealPlanInfoDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-sm bg-surface">
+      <DialogContent className="max-w-sm bg-white">
         <DialogHeader>
           <DialogTitle className="text-center">Meal Plan Info</DialogTitle>
         </DialogHeader>

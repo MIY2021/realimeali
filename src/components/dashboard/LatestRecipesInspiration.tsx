@@ -76,7 +76,7 @@ export const LatestRecipesInspiration = () => {
       ) : recipes && recipes.length > 0 ? (
         <div className="space-y-4">
           {/* Featured Recipe */}
-          <div className="bg-surface rounded-3xl overflow-hidden shadow-sm">
+          <div className="bg-white rounded-3xl overflow-hidden shadow-sm">
             <div className="relative h-48 w-full">
               <img 
                 src={recipes[0].image || '/placeholder.svg'} 
@@ -85,10 +85,10 @@ export const LatestRecipesInspiration = () => {
               />
             </div>
             <div className="p-4 space-y-3">
-              <h3 className="text-xl font-bold text-content-primary">
+              <h3 className="text-xl font-bold text-gray-900">
                 {recipes[0].title}
               </h3>
-              <p className="text-sm text-content-secondary line-clamp-2">
+              <p className="text-sm text-gray-600 line-clamp-2">
                 {recipes[0].description || "A healthy and delicious recipe loaded with fresh ingredients."}
               </p>
               
@@ -107,7 +107,7 @@ export const LatestRecipesInspiration = () => {
               
               {/* CTA Button */}
               <Link to={`/discover-recipes/${recipes[0].id}`} className="block">
-                <button className="w-full bg-[#FFDD6B] hover:bg-[#FFDD6B]/90 text-content-primary font-semibold py-3 px-4 rounded-full transition-colors flex items-center justify-center gap-2">
+                <button className="w-full bg-[#FFDD6B] hover:bg-[#FFDD6B]/90 text-gray-900 font-semibold py-3 px-4 rounded-full transition-colors flex items-center justify-center gap-2">
                   👁 View Recipe
                 </button>
               </Link>
@@ -116,19 +116,19 @@ export const LatestRecipesInspiration = () => {
           
           {/* Discover More Button */}
           <Link to="/discover-recipes">
-            <button className="w-full bg-surface hover:bg-surface-elevated text-content-primary font-semibold py-3 px-4 rounded-full transition-colors border border-border-subtle">
+            <button className="w-full bg-white hover:bg-gray-50 text-gray-900 font-semibold py-3 px-4 rounded-full transition-colors border border-gray-200">
               Discover More Recipes
             </button>
           </Link>
         </div>
       ) : (
-        <div className="text-center py-12 bg-surface rounded-3xl shadow-sm">
-          <Sparkles className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <p className="text-content-secondary mb-4">
+        <div className="text-center py-12 bg-white rounded-3xl shadow-sm">
+          <Sparkles className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+          <p className="text-gray-600 mb-4">
             No recipes available at the moment.
           </p>
           <Link to="/discover-recipes">
-            <button className="px-6 py-2 bg-[#FFDD6B] text-content-primary rounded-full font-semibold hover:bg-[#FFDD6B]/90 transition-colors">
+            <button className="px-6 py-2 bg-[#FFDD6B] text-gray-900 rounded-full font-semibold hover:bg-[#FFDD6B]/90 transition-colors">
               Explore Recipes
             </button>
           </Link>

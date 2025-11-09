@@ -99,7 +99,7 @@ export default function About() {
               believe that good food brings people together. Whether you're cooking for two or ten, 
               we're here to make your kitchen adventures more enjoyable and less stressful.
             </p>
-            <div className="bg-surface p-6 rounded-lg border">
+            <div className="bg-white p-6 rounded-lg border">
               <h3 className="text-lg font-medium text-navy mb-3">Get Started Today</h3>
               <p className="text-muted-foreground mb-4">
                 Ready to transform your meal planning experience? Create your household and start 

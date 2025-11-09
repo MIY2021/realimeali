@@ -64,15 +64,15 @@ export const RecipeHeader = ({
                   variant="ghost"
                   size="icon"
                   onClick={onEdit}
-                  className="h-12 w-12 rounded-full bg-surface/80 hover:bg-surface shadow-md backdrop-blur-sm"
+                  className="h-12 w-12 rounded-full bg-white/80 hover:bg-white shadow-md backdrop-blur-sm"
                 >
-                  <Pencil className="h-5 w-5 text-content-primary" />
+                  <Pencil className="h-5 w-5 text-gray-800" />
                 </Button>
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={onDelete}
-                  className="h-12 w-12 rounded-full bg-surface/80 hover:bg-surface shadow-md backdrop-blur-sm"
+                  className="h-12 w-12 rounded-full bg-white/80 hover:bg-white shadow-md backdrop-blur-sm"
                 >
                   <Trash2 className="h-5 w-5 text-red-600" />
                 </Button>
@@ -82,16 +82,16 @@ export const RecipeHeader = ({
               variant="ghost"
               size="icon"
               onClick={onToggleFavorite}
-              className="h-12 w-12 rounded-full bg-surface/80 hover:bg-surface shadow-md backdrop-blur-sm"
+              className="h-12 w-12 rounded-full bg-white/80 hover:bg-white shadow-md backdrop-blur-sm"
             >
-              <Heart className={`h-5 w-5 ${isFavorite ? 'fill-red-500 text-red-500' : 'text-content-primary'}`} />
+              <Heart className={`h-5 w-5 ${isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-800'}`} />
             </Button>
             {onAddToMealPlan && (
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={onAddToMealPlan}
-                className="h-12 w-12 rounded-full bg-surface/80 hover:bg-surface shadow-md backdrop-blur-sm"
+                className="h-12 w-12 rounded-full bg-white/80 hover:bg-white shadow-md backdrop-blur-sm"
                 title="Add to Meal Plan"
               >
                 <Plus className="h-6 w-6 text-green-600" />
@@ -104,9 +104,9 @@ export const RecipeHeader = ({
             variant="ghost"
             size="icon"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="h-12 w-12 rounded-full bg-surface/80 hover:bg-surface shadow-md backdrop-blur-sm"
+            className="h-12 w-12 rounded-full bg-white/80 hover:bg-white shadow-md backdrop-blur-sm"
           >
-            <MoreHorizontal className="h-6 w-6 text-content-primary" strokeWidth={3} />
+            <MoreHorizontal className="h-6 w-6 text-gray-800" strokeWidth={3} />
           </Button>
         </div>
       </div>
@@ -114,7 +114,7 @@ export const RecipeHeader = ({
       {/* Title section - just below image */}
       <div className="bg-background px-6 sm:px-8 pt-6 pb-2 rounded-t-3xl -mt-6 relative z-10">
         <div className="flex items-start justify-between gap-4">
-          <h1 className="text-3xl sm:text-4xl font-bold text-content-primary flex-1">
+          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 flex-1">
             {recipe.title}
           </h1>
           <Badge 

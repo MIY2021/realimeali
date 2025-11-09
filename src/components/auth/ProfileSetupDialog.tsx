@@ -139,7 +139,7 @@ export function ProfileSetupDialog({ isOpen, onComplete }: ProfileSetupDialogPro
                     className={`h-12 w-12 rounded-lg border-2 flex items-center justify-center text-xl transition-colors ${
                       selectedFruit === fruit
                         ? 'border-terracotta bg-terracotta/10'
-                        : 'border-border-subtle hover:border-border-default'
+                        : 'border-gray-200 hover:border-gray-300'
                     }`}
                   >
                     {fruit}

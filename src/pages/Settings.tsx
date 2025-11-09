@@ -172,7 +172,7 @@ export default function Settings() {
                     className={`h-10 w-10 rounded-lg border-2 flex items-center justify-center text-lg transition-colors ${
                       selectedFruit === fruit
                         ? 'border-terracotta bg-terracotta/10'
-                        : 'border-border-subtle hover:border-border-default'
+                        : 'border-gray-200 hover:border-gray-300'
                     }`}
                   >
                     {fruit}

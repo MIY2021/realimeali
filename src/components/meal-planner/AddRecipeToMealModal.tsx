@@ -74,7 +74,7 @@ export function AddRecipeToMealModal({
   if (isLoading) {
     return (
       <Dialog open={open} onOpenChange={onClose}>
-        <DialogContent className="bg-surface border-border-subtle">
+        <DialogContent className="bg-white border-white">
           <DialogHeader>
             <DialogTitle>Add Recipe to {mealSlot.mealType}</DialogTitle>
             <DialogDescription>Loading recipes...</DialogDescription>
@@ -86,7 +86,7 @@ export function AddRecipeToMealModal({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[90%] sm:max-h-[90%] bg-surface border-border-subtle">
+      <DialogContent className="sm:max-w-[90%] sm:max-h-[90%] bg-white border-white">
         <DialogHeader>
           <DialogTitle>Add Recipe to {mealSlot.mealType}</DialogTitle>
           <DialogDescription>

@@ -107,7 +107,7 @@ export const ApprovalStatusDropdown = ({
           <ChevronDown className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-96 bg-surface z-50">
+      <DropdownMenuContent align="end" className="w-96 bg-white z-50">
         <DropdownMenuLabel className="text-base font-semibold">
           Week {request.week_number} Approval Status
         </DropdownMenuLabel>

@@ -47,8 +47,8 @@ export const RecipeMetaInfo = ({ recipe, onServingsChange, currentServings }: Re
       <div className="flex sm:hidden items-center justify-between gap-4">
         {/* Compact servings */}
         <div className="flex items-center gap-1">
-          <Users className="h-5 w-5 text-terracotta" />
-          <span className="text-sm text-content-secondary">Servings:</span>
+          <Users className="h-4 w-4 text-terracotta" />
+          <span className="text-sm text-gray-600">Servings:</span>
           <ServingsSelector
             currentServings={adjustedServings}
             onServingsChange={handleServingsChange}
@@ -60,7 +60,7 @@ export const RecipeMetaInfo = ({ recipe, onServingsChange, currentServings }: Re
               variant="ghost"
               size="sm"
               onClick={handleReset}
-              className="h-6 w-6 p-0 text-content-tertiary hover:text-content-secondary ml-1"
+              className="h-6 w-6 p-0 text-gray-500 hover:text-gray-700 ml-1"
               title="Reset to original servings"
             >
               <RotateCcw className="h-3 w-3" />
@@ -87,12 +87,12 @@ export const RecipeMetaInfo = ({ recipe, onServingsChange, currentServings }: Re
                 variant="ghost"
                 size="sm"
                 onClick={handleReset}
-                className="h-6 px-2 text-xs text-content-tertiary hover:text-content-secondary flex-shrink-0"
+                className="h-6 px-2 text-xs text-gray-500 hover:text-gray-700 flex-shrink-0"
                 title="Reset to original servings"
               >
                 <RotateCcw className="h-3 w-3" />
               </Button>
-              <span className="text-xs text-content-tertiary">
+              <span className="text-xs text-gray-500">
                 (Original: {recipe.servings} servings)
               </span>
             </>

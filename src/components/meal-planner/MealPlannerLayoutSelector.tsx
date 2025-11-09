@@ -21,11 +21,11 @@ export function MealPlannerLayoutSelector({ value, onChange }: MealPlannerLayout
               onClick={() => onChange("list")}
               className={`h-9 w-9 p-0 ${
                 value === "list" 
-                  ? "bg-surface shadow-sm"
+                  ? "bg-white shadow-sm" 
                   : ""
               }`}
             >
-              <LayoutList className="h-5 w-5 text-content-secondary" />
+              <LayoutList className="h-5 w-5 text-gray-600" />
             </Button>
           </TooltipTrigger>
           <TooltipContent>List View</TooltipContent>
@@ -39,11 +39,11 @@ export function MealPlannerLayoutSelector({ value, onChange }: MealPlannerLayout
               onClick={() => onChange("2")}
               className={`h-9 w-9 p-0 ${
                 isGridView 
-                  ? "bg-surface shadow-sm" 
+                  ? "bg-white shadow-sm" 
                   : ""
               }`}
             >
-              <Grid2X2 className="h-5 w-5 text-content-secondary" />
+              <Grid2X2 className="h-5 w-5 text-gray-600" />
             </Button>
           </TooltipTrigger>
           <TooltipContent>Grid View</TooltipContent>

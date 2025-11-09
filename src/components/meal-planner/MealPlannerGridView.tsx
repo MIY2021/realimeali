@@ -103,7 +103,7 @@ export const MealPlannerGridView = ({
             {isDataLoading ? (
               <MealSectionSkeleton count={3} />
             ) : meals.length === 0 ? (
-              <div className="border border-dashed border-border-subtle rounded-lg p-4 text-center text-grey-light">
+              <div className="border border-dashed border-gray-200 rounded-lg p-4 text-center text-grey-light">
                 <span className="text-sm">No {mealType} planned yet</span>
               </div>
             ) : (

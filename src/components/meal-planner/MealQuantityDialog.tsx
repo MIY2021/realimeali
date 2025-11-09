@@ -44,7 +44,7 @@ export function MealQuantityDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md bg-surface">
+      <DialogContent className="sm:max-w-md bg-white">
         <DialogHeader>
           <DialogTitle>Add {recipeName} to {MEAL_TYPE_LABELS[mealType]}</DialogTitle>
         </DialogHeader>

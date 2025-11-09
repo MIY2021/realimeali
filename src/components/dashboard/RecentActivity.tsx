@@ -46,11 +46,11 @@ export const RecentActivity = ({ isLoading: externalLoading }: RecentActivityPro
       case 'recipe-favorited':
         return <Star className="h-4 w-4 text-amber-500" />;
       case 'recipe-unfavorited':
-        return <X className="h-4 w-4 text-content-tertiary" />;
+        return <X className="h-4 w-4 text-gray-500" />;
       case 'recipe-cooked':
         return <Check className="h-4 w-4 text-orange-600" />;
       case 'recipe-uncooked':
-        return <Check className="h-4 w-4 text-content-tertiary" />;
+        return <Check className="h-4 w-4 text-gray-500" />;
       case 'meal-plan-added':
         return <CalendarDays className="h-4 w-4 text-sage" />;
       case 'custom-meal-added':
@@ -113,7 +113,7 @@ export const RecentActivity = ({ isLoading: externalLoading }: RecentActivityPro
         </div>
         <div className="space-y-2">
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="bg-surface rounded-3xl shadow-sm p-4">
+            <div key={i} className="bg-white rounded-3xl shadow-sm p-4">
               <div className="flex items-start gap-3">
                 <Skeleton className="h-10 w-10 rounded-full flex-shrink-0" />
                 <div className="flex-1">
@@ -138,7 +138,7 @@ export const RecentActivity = ({ isLoading: externalLoading }: RecentActivityPro
           Recent Activity
         </h2>
       </div>
-        <div className="bg-surface rounded-3xl shadow-sm p-8 text-center">
+        <div className="bg-white rounded-3xl shadow-sm p-8 text-center">
           <UtensilsCrossed className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
           <p className="text-muted-foreground">No recent activity</p>
           <p className="text-sm text-muted-foreground mt-1">
@@ -173,7 +173,7 @@ export const RecentActivity = ({ isLoading: externalLoading }: RecentActivityPro
           return (
             <div 
               key={activity.id} 
-              className="bg-surface rounded-3xl shadow-sm p-3"
+              className="bg-white rounded-3xl shadow-sm p-3"
             >
               <div className="flex items-start gap-3">
                 <Avatar className="h-10 w-10 flex-shrink-0">
@@ -184,11 +184,11 @@ export const RecentActivity = ({ isLoading: externalLoading }: RecentActivityPro
                 </Avatar>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm leading-relaxed">
-                    <span className="font-bold text-content-primary">
+                    <span className="font-bold text-gray-900">
                       {activity.user.split(' ')[0]}
                     </span>
                     {' '}
-                    <span className="text-content-secondary">
+                    <span className="text-gray-700">
                       {action}{' '}
                       {recipeId ? (
                         <Link 
@@ -198,7 +198,7 @@ export const RecentActivity = ({ isLoading: externalLoading }: RecentActivityPro
                           {recipeName}
                         </Link>
                       ) : (
-                        <span className="text-content-primary">{recipeName}</span>
+                        <span className="text-gray-900">{recipeName}</span>
                       )}
                     </span>
                   </p>
@@ -216,7 +216,7 @@ export const RecentActivity = ({ isLoading: externalLoading }: RecentActivityPro
         <div className="mt-3 text-center">
           <button 
             onClick={() => setShowMore(!showMore)}
-            className="text-sm font-medium text-content-secondary hover:text-content-primary transition-colors"
+            className="text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors"
           >
             {showMore ? 'View Less' : 'View More'}
           </button>

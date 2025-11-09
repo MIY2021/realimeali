@@ -22,7 +22,7 @@ export const ShoppingListInfoDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-sm bg-surface">
+      <DialogContent className="max-w-sm bg-white">
         <DialogHeader>
           <DialogTitle className="text-center">Shopping List Info</DialogTitle>
         </DialogHeader>

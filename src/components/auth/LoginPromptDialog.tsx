@@ -51,7 +51,7 @@ export function LoginPromptDialog({ isOpen, onClose, trigger = "timer" }: LoginP
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md rounded-xl border-0 shadow-2xl bg-surface max-w-[85vw]">
+      <DialogContent className="sm:max-w-md rounded-xl border-0 shadow-2xl bg-white max-w-[85vw]">
         <DialogHeader className="text-center space-y-2 sm:space-y-3 pt-2 px-2 sm:px-0">
           <DialogTitle className="text-xl sm:text-2xl font-bold text-navy leading-tight text-center">
             Welcome to RealiMeali
@@ -67,7 +67,7 @@ export function LoginPromptDialog({ isOpen, onClose, trigger = "timer" }: LoginP
             {benefits.map((benefit, index) => (
               <div key={index} className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm justify-center">
                 {benefit.icon}
-                <span className="text-content-secondary leading-tight">{benefit.text}</span>
+                <span className="text-gray-700 leading-tight">{benefit.text}</span>
               </div>
             ))}
           </div>
@@ -81,7 +81,7 @@ export function LoginPromptDialog({ isOpen, onClose, trigger = "timer" }: LoginP
                 <span className="w-full border-t" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-surface px-2 text-muted-foreground">Or</span>
+                <span className="bg-white px-2 text-muted-foreground">Or</span>
               </div>
             </div>
             

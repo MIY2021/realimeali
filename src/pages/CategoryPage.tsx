@@ -52,8 +52,8 @@ export default function CategoryPage() {
         </div>
         
         <div className="text-center py-12">
-          <h3 className="text-xl font-semibold text-content-primary mb-2">No recipes found</h3>
-          <p className="text-content-secondary mb-6">
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">No recipes found</h3>
+          <p className="text-gray-600 mb-6">
             You don't have any {decodedCategory.toLowerCase()} recipes yet.
           </p>
           <Button onClick={() => navigate("/my-recipes/new")}>

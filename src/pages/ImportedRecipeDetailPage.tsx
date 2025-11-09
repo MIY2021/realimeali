@@ -219,7 +219,7 @@ export default function ImportedRecipeDetailPage() {
         </div>
 
         {/* Recipe Title */}
-        <h1 className="text-3xl sm:text-4xl font-bold text-content-primary mb-4">
+        <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
           {recipe.title}
         </h1>
 
@@ -260,7 +260,7 @@ export default function ImportedRecipeDetailPage() {
 
         {/* Description */}
         {recipe.description && (
-          <p className="text-content-secondary leading-relaxed mb-6">
+          <p className="text-gray-600 leading-relaxed mb-6">
             {recipe.description}
           </p>
         )}
@@ -278,7 +278,7 @@ export default function ImportedRecipeDetailPage() {
                 </div>
                 <div className="flex-1">
                   <h3 className="font-semibold text-sage-800 mb-2">Top Tip</h3>
-                  <p className="text-content-secondary leading-relaxed">
+                  <p className="text-gray-700 leading-relaxed">
                     {recipe.top_tip}
                   </p>
                 </div>
@@ -291,7 +291,7 @@ export default function ImportedRecipeDetailPage() {
         <div className="mb-4">
           <div className="flex items-center gap-2">
             <Users className="h-5 w-5 text-terracotta" />
-            <span className="text-content-secondary font-medium">Servings:</span>
+            <span className="text-gray-700 font-medium">Servings:</span>
             <ServingsSelector
               currentServings={currentServings}
               onServingsChange={handleServingsChange}
@@ -303,7 +303,7 @@ export default function ImportedRecipeDetailPage() {
                 variant="ghost"
                 size="sm"
                 onClick={handleServingsReset}
-                className="h-6 px-2 text-xs text-content-tertiary hover:text-content-secondary flex-shrink-0"
+                className="h-6 px-2 text-xs text-gray-500 hover:text-gray-700 flex-shrink-0"
                 title="Reset to original servings"
               >
                 <RotateCcw className="h-3 w-3" />

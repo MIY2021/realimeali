@@ -143,7 +143,7 @@ export function MealPlannerRecipeCard({
         {/* Title */}
         <h3 
           className={`font-bold text-sm text-navy ${
-            mealPlan.is_completed ? 'line-through text-content-tertiary' : ''
+            mealPlan.is_completed ? 'line-through text-gray-400' : ''
           } ${recipe ? 'cursor-pointer hover:text-terracotta transition-colors' : ''}`}
           style={{
             display: '-webkit-box',
@@ -168,7 +168,7 @@ export function MealPlannerRecipeCard({
 
         {/* Servings Stepper */}
         <div className="flex items-center gap-2">
-          <span className="text-xs text-content-secondary">Servings:</span>
+          <span className="text-xs text-gray-600">Servings:</span>
           <div className="flex items-center gap-1">
             <Button
               variant="ghost"
@@ -224,7 +224,7 @@ export function MealPlannerRecipeCard({
             className={`h-7 w-7 p-0 focus:ring-2 focus:ring-[#7CC4A0] focus:ring-offset-2 ${
               mealPlan.is_completed 
                 ? 'bg-green-50 text-green-600 border-green-200 hover:bg-green-100' 
-                : 'bg-surface-elevated text-content-tertiary border-border-subtle hover:bg-surface-elevated/80'
+                : 'bg-gray-50 text-gray-400 border-gray-200 hover:bg-gray-100'
             }`}
             onClick={handleToggleCompletion}
             title={mealPlan.is_completed ? "Mark as incomplete" : "Mark as complete"}

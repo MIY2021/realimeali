@@ -36,7 +36,7 @@ export const StatsCard = ({
   return (
     <div 
       className={`
-        bg-surface
+        bg-white
         rounded-3xl p-4 shadow-sm
         transition-all duration-200
         ${onClick ? 'cursor-pointer hover:shadow-md active:scale-95' : ''}
@@ -45,7 +45,7 @@ export const StatsCard = ({
     >
       <div className="flex flex-col h-full">
         <div className="flex items-start justify-between mb-6">
-          <p className="text-xs font-extrabold text-content-tertiary uppercase tracking-wide">{title}</p>
+          <p className="text-xs font-extrabold text-gray-500 uppercase tracking-wide">{title}</p>
           <IconComponent className={`h-5 w-5 ${getIconColor()}`} />
         </div>
         <div className="relative h-9">
@@ -66,7 +66,7 @@ export const StatsCard = ({
           {/* Actual value - fades in when loaded */}
           <p 
             className={`
-              text-3xl font-bold text-content-primary
+              text-3xl font-bold text-gray-900
               transition-opacity duration-500 ease-out
               ${isLoading ? 'opacity-0' : 'opacity-100'}
             `}
