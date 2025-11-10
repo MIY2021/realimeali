@@ -11,6 +11,7 @@ export const BADGE_COLORS: Record<AchievementCategory, {
   shopping: { base: '#9B59B6', light: '#B07CC6', dark: '#8E44AD' },
   engagement: { base: '#FF69B4', light: '#FF8DC7', dark: '#E5539F' },
   sustainability: { base: '#20B2AA', light: '#4DC4BD', dark: '#1A9D96' },
+  community: { base: '#F59E0B', light: '#FBBF24', dark: '#D97706' },
 };
 
 export function getBadgeColor(category: AchievementCategory) {

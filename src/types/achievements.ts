@@ -4,7 +4,8 @@ export type AchievementCategory =
   | 'planning' 
   | 'shopping' 
   | 'engagement' 
-  | 'sustainability';
+  | 'sustainability'
+  | 'community';
 
 export interface Achievement {
   id: string;

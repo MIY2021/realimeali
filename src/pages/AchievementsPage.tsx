@@ -32,6 +32,7 @@ const AchievementsPage = () => {
     { key: 'shopping' as AchievementCategory, label: 'Shopping & Pantry', emoji: '🛒' },
     { key: 'engagement' as AchievementCategory, label: 'Everyday Engagement', emoji: '💡' },
     { key: 'sustainability' as AchievementCategory, label: 'Sustainability', emoji: '🌱' },
+    { key: 'community' as AchievementCategory, label: 'Community & Invitations', emoji: '🤝' },
   ];
 
   return (

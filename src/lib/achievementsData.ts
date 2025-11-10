@@ -430,4 +430,61 @@ export const ACHIEVEMENTS: Achievement[] = [
     isUnlocked: false,
     unlockedAt: null
   },
+  
+  // Community & Invitations (5)
+  {
+    id: '39',
+    name: "Dinner's Better Together",
+    category: 'community',
+    summary: "The first invite always tastes the sweetest — cooking's better when shared.",
+    topTip: 'Reward: Unlock bonus recipe credits or early access to premium recipes. Complexity: ⭐ (simple count check — when invites = 1)',
+    iconName: 'UserPlus',
+    sortOrder: 39,
+    isUnlocked: false,
+    unlockedAt: null
+  },
+  {
+    id: '40',
+    name: 'Sunday Roast Crew',
+    category: 'community',
+    summary: "Everyone's brought a dish to the table — your household is officially a culinary crew.",
+    topTip: 'Reward: Unlocks a custom household badge or theme colour. Complexity: ⭐⭐ (check that each invited user has recipes_added > 0)',
+    iconName: 'UsersRound',
+    sortOrder: 40,
+    isUnlocked: false,
+    unlockedAt: null
+  },
+  {
+    id: '41',
+    name: 'The Generous Host',
+    category: 'community',
+    summary: "You've opened your kitchen to the world. Sharing meals, sharing magic.",
+    topTip: 'Reward: Unlocks hidden "community gem" recipes. Complexity: ⭐ (count of successful external invites ≥ 5)',
+    iconName: 'Gift',
+    sortOrder: 41,
+    isUnlocked: false,
+    unlockedAt: null
+  },
+  {
+    id: '42',
+    name: 'Kitchen Connector',
+    category: 'community',
+    summary: "You started a ripple effect of recipes — a true culinary catalyst.",
+    topTip: 'Reward: XP multiplier for 7 days or an "Influencer Apron" badge. Complexity: ⭐⭐⭐ (requires second-level invite tracking)',
+    iconName: 'Network',
+    sortOrder: 42,
+    isUnlocked: false,
+    unlockedAt: null
+  },
+  {
+    id: '43',
+    name: 'Mealfluencer',
+    category: 'community',
+    summary: "Ten new cooks joined because of you — you're officially stirring up a movement.",
+    topTip: 'Reward: Featured recipe slot or "Verified Chef" badge. Complexity: ⭐ (count of successful invites ≥ 10)',
+    iconName: 'Megaphone',
+    sortOrder: 43,
+    isUnlocked: false,
+    unlockedAt: null
+  },
 ];
