@@ -62,12 +62,19 @@ export const useRecipeCreationHandlers = ({
     recipeFormHook.setShareWithCommunity(false);
     const result = await recipeProcessingHook.processImage(file);
     if (result) {
+      const { imageFile, ...recipeData } = result;
       const processedRecipe = {
-        ...result,
+        ...recipeData,
         source_url: null,
         import_method: 'image' as const
       };
       recipeFormHook.setNewRecipe((prev: any) => ({ ...prev, ...processedRecipe }));
+      
+      // Store the image file for upload during save
+      if (imageFile instanceof File) {
+        recipeFormHook.setUploadedImageFile(imageFile);
+      }
+      
       setActiveTab("manual");
     }
   };

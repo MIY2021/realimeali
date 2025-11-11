@@ -138,5 +138,6 @@ export function useRecipeForm(isEditing: boolean = false, existingRecipe?: Recip
     handleAddInstruction,
     handleRemoveInstruction,
     uploadedImageFile,
+    setUploadedImageFile,
   };
 }
