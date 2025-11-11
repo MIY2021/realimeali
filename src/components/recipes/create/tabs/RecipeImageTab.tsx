@@ -38,8 +38,12 @@ export function RecipeImageTab({
   };
 
   const handleProcess = () => {
+    console.log('🖼️ RecipeImageTab: Import Recipe button clicked', { hasFile: !!uploadedFile });
     if (uploadedFile) {
+      console.log('🖼️ RecipeImageTab: Calling onProcessImage with file:', uploadedFile.name);
       onProcessImage(uploadedFile);
+    } else {
+      console.error('🖼️ RecipeImageTab: No file uploaded!');
     }
   };
 

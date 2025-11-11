@@ -57,25 +57,54 @@ export const useRecipeCreationHandlers = ({
   };
   
   const wrappedProcessImage = async (file: File) => {
-    setRecipeOrigin('image');
-    setOriginalSourceUrl('');
-    recipeFormHook.setShareWithCommunity(false);
-    const result = await recipeProcessingHook.processImage(file);
-    if (result) {
-      const { imageFile, ...recipeData } = result;
-      const processedRecipe = {
-        ...recipeData,
-        source_url: null,
-        import_method: 'image' as const
-      };
-      recipeFormHook.setNewRecipe((prev: any) => ({ ...prev, ...processedRecipe }));
+    console.log('🔄 wrappedProcessImage called with file:', file.name);
+    
+    try {
+      setRecipeOrigin('image');
+      setOriginalSourceUrl('');
+      recipeFormHook.setShareWithCommunity(false);
       
-      // Store the image file for upload during save
-      if (imageFile instanceof File) {
-        recipeFormHook.setUploadedImageFile(imageFile);
+      console.log('🔄 Calling processImage...');
+      const result = await recipeProcessingHook.processImage(file);
+      console.log('🔄 processImage result:', result ? 'has data' : 'null/undefined');
+      
+      if (result) {
+        const { imageFile, ...recipeData } = result;
+        console.log('🔄 Extracted imageFile:', imageFile instanceof File ? 'is File' : 'not File');
+        
+        const processedRecipe = {
+          ...recipeData,
+          source_url: null,
+          import_method: 'image' as const
+        };
+        
+        recipeFormHook.setNewRecipe((prev: any) => ({ ...prev, ...processedRecipe }));
+        
+        // Store the image file for upload during save
+        if (imageFile instanceof File) {
+          console.log('🔄 Storing image file for upload');
+          recipeFormHook.setUploadedImageFile(imageFile);
+        } else {
+          console.warn('🔄 imageFile is not a File instance:', typeof imageFile);
+        }
+        
+        console.log('🔄 Switching to manual tab');
+        setActiveTab("manual");
+      } else {
+        console.error('🔄 processImage returned null/undefined');
+        toast({
+          title: "Processing Failed",
+          description: "Failed to extract recipe from image. Please try again.",
+          variant: "destructive",
+        });
       }
-      
-      setActiveTab("manual");
+    } catch (error) {
+      console.error('🔄 Error in wrappedProcessImage:', error);
+      toast({
+        title: "Processing Error",
+        description: error instanceof Error ? error.message : "An unexpected error occurred",
+        variant: "destructive",
+      });
     }
   };
   
