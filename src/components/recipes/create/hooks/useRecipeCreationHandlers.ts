@@ -43,7 +43,6 @@ export const useRecipeCreationHandlers = ({
   const wrappedProcessText = () => {
     setRecipeOrigin('text');
     setOriginalSourceUrl('');
-    recipeFormHook.setShareWithCommunity(false);
     return recipeProcessingHook.handleProcessText(
       (recipe: any) => recipeFormHook.setNewRecipe((prev: any) => ({ 
         ...prev, 
@@ -62,7 +61,6 @@ export const useRecipeCreationHandlers = ({
     try {
       setRecipeOrigin('image');
       setOriginalSourceUrl('');
-      recipeFormHook.setShareWithCommunity(false);
       
       console.log('🔄 Calling processImage...');
       const result = await recipeProcessingHook.processImage(file);
@@ -111,7 +109,6 @@ export const useRecipeCreationHandlers = ({
   const wrappedGenerateRecipe = async () => {
     setRecipeOrigin('generate');
     setOriginalSourceUrl('');
-    recipeFormHook.setShareWithCommunity(false);
     const result = await recipeProcessingHook.generateRecipe({});
     if (result) {
       recipeFormHook.setNewRecipe((prev: any) => ({ 
@@ -127,7 +124,6 @@ export const useRecipeCreationHandlers = ({
   const wrappedImportFromUrl = () => {
     setRecipeOrigin('url');
     setOriginalSourceUrl(recipeProcessingHook.recipeUrl);
-    recipeFormHook.setShareWithCommunity(true);
     return recipeProcessingHook.handleImportFromUrl(
       (recipe: any) => recipeFormHook.setNewRecipe((prev: any) => ({ 
         ...prev, 
@@ -136,8 +132,7 @@ export const useRecipeCreationHandlers = ({
         import_method: 'url' as const
       })), 
       recipeFormHook.newRecipe, 
-      setActiveTab,
-      recipeFormHook.setShareWithCommunity
+      setActiveTab
     );
   };
 
@@ -214,53 +209,13 @@ export const useRecipeCreationHandlers = ({
           }
         }
         
-        // Handle community sharing if enabled and is from URL import (only for new recipes)
-        const effectiveShareWithCommunity = !isEditMode && recipeOrigin === 'url' ? recipeFormHook.shareWithCommunity : false;
-        
-        if (effectiveShareWithCommunity) {
-          try {
-            const communityRecipeData = {
-              title: savedRecipe.title,
-              description: savedRecipe.description || `A delicious ${savedRecipe.meal_type || 'recipe'} recipe with ${savedRecipe.ingredients.length} ingredients.`,
-              source_url: originalSourceUrl || `${window.location.origin}/my-recipes/${savedRecipe.id}`,
-              image_url: savedRecipe.image,
-              prep_time: savedRecipe.prep_time,
-              cook_time: savedRecipe.cook_time,
-              servings: savedRecipe.servings,
-              category: savedRecipe.meal_type || null,
-              cuisine: savedRecipe.cuisine_region || null,
-              // difficulty_level mapping removed - complexity_level no longer exists
-              submitted_by: user.id,
-              submitted_by_name: user.email || 'Anonymous',
-              is_approved: false,
-              is_active: true,
-              moderation_status: 'pending'
-            };
-
-            // TODO: Re-enable community recipes when table is created
-            // await supabase
-            //   .from('community_recipes')
-            //   .insert(communityRecipeData);
-
-            toast({
-              title: "Recipe Saved & Shared! 🌟",
-              description: `${savedRecipe.title} has been saved and submitted to the community for moderation.`,
-            });
-          } catch (communityError) {
-            console.error("❌ Community submission failed:", communityError);
-            toast({
-              title: "Recipe Saved Successfully! 🎉",
-              description: `${savedRecipe.title} has been saved to your recipes. Community sharing failed but your recipe is safely saved.`,
-            });
-          }
-        } else {
-          const action = isEditMode ? "updated" : "added to your recipe collection";
-          const emoji = isEditMode ? "✏️" : "🎉";
-          toast({
-            title: `Recipe ${isEditMode ? "Updated" : "Saved"} Successfully! ${emoji}`,
-            description: `${savedRecipe.title} has been ${action}.`,
-          });
-        }
+        // Show success toast
+        const action = isEditMode ? "updated" : "added to your recipe collection";
+        const emoji = isEditMode ? "✏️" : "🎉";
+        toast({
+          title: `Recipe ${isEditMode ? "Updated" : "Saved"} Successfully! ${emoji}`,
+          description: `${savedRecipe.title} has been ${action}.`,
+        });
         
         if (isEditMode) {
           // Navigate back to recipe detail with potentially new slug

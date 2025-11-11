@@ -15,27 +15,22 @@ export function useRecipeSave() {
 
   const handleSave = async (
     newRecipe: Omit<Recipe, 'id' | 'created_at' | 'updated_at' | 'created_by'>, 
-    shareWithCommunity: boolean = false,
-    originalSourceUrl?: string,
     uploadedImageFile?: File | null
   ) => {
     console.log("🍳 Save recipe called with:", { 
       newRecipe, 
       user: user?.id, 
       household: currentHousehold?.id,
-      shareWithCommunity,
-      originalSourceUrl,
       recipeData: {
         title: newRecipe.title,
         ingredients: newRecipe.ingredients?.length || 0,
-        ingredientsList: newRecipe.ingredients, // Log the actual ingredients to see if headers are present
+        ingredientsList: newRecipe.ingredients,
         instructions: newRecipe.instructions?.length || 0,
         top_tip: newRecipe.top_tip,
         classification: {
           meal_type: newRecipe.meal_type,
           cuisine_region: newRecipe.cuisine_region,
           diet_lifestyle: newRecipe.diet_lifestyle,
-          // complexity_level removed from database
         }
       }
     });
@@ -103,7 +98,6 @@ export function useRecipeSave() {
     };
 
     console.log("✅ Validation passed, creating recipe with ALL ingredients preserved:", recipeToSave);
-    console.log("🌍 Share with community flag:", shareWithCommunity);
     
     try {
       console.log("🔄 Calling createRecipe function...");
@@ -141,62 +135,10 @@ export function useRecipeSave() {
           }
         }
         
-        // If user wants to share with community, submit it directly to community_recipes table
-        if (shareWithCommunity) {
-          console.log("🌍 Submitting recipe to community for moderation...");
-          
-          try {
-            const communityRecipeData = {
-              title: recipe.title,
-              description: recipe.description || `A delicious ${recipe.meal_type || 'recipe'} recipe with ${recipe.ingredients.length} ingredients.`,
-              source_url: originalSourceUrl || `${window.location.origin}/my-recipes/${recipe.id}`,
-              image_url: recipe.image,
-              prep_time: recipe.prep_time,
-              cook_time: recipe.cook_time,
-              servings: recipe.servings,
-              category: recipe.meal_type || null,
-              cuisine: recipe.cuisine_region || null,
-              // difficulty_level mapping removed - complexity_level no longer exists
-              submitted_by: user.id,
-              submitted_by_name: user.email || 'Anonymous',
-              is_approved: false, // Requires admin approval
-              is_active: true,
-              moderation_status: 'pending'
-            };
-
-            console.log("📝 Community recipe data to be submitted:", communityRecipeData);
-
-            // TODO: Re-enable community recipes when table is created
-            // const { data: communityRecipe, error: communityError } = await supabase
-            //   .from('community_recipes')
-            //   .insert(communityRecipeData)
-            //   .select()
-            //   .single();
-            const communityError = null; // Temporary fix
-
-            if (communityError) {
-              console.error("❌ Community submission error:", communityError);
-              toast.success("Recipe saved!", {
-                description: `${recipe.title} has been added to your recipes. Community sharing failed but recipe is saved.`,
-              });
-            } else {
-              console.log("✅ Recipe successfully submitted to community (temporarily disabled)");
-              toast.success("Recipe saved and submitted!", {
-                description: `${recipe.title} has been added to your recipes and submitted to the community for moderation.`,
-              });
-            }
-          } catch (communityError) {
-            console.error("❌ Community submission failed:", communityError);
-            toast.success("Recipe saved!", {
-              description: `${recipe.title} has been added to your recipes. Community sharing failed but recipe is saved.`,
-              });
-          }
-        } else {
-          console.log("🎉 Recipe created successfully, no community sharing requested");
-          toast.success("Recipe saved!", {
-            description: `${recipe.title} has been added to your recipes.`,
-          });
-        }
+        console.log("🎉 Recipe created successfully");
+        toast.success("Recipe saved!", {
+          description: `${recipe.title} has been added to your recipes.`,
+        });
         
         navigate("/my-recipes");
       } else {

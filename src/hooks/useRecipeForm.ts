@@ -6,7 +6,6 @@ export function useRecipeForm(isEditing: boolean = false, existingRecipe?: Recip
   const { toast } = useToast();
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [generationProgress, setGenerationProgress] = useState('');
-  const [shareWithCommunity, setShareWithCommunity] = useState(!isEditing);
   const [uploadedImageFile, setUploadedImageFile] = useState<File | null>(null);
   const [newRecipe, setNewRecipe] = useState<Recipe>(
     existingRecipe || {
@@ -129,8 +128,6 @@ export function useRecipeForm(isEditing: boolean = false, existingRecipe?: Recip
     setIsGeneratingImage,
     generationProgress,
     setGenerationProgress,
-    shareWithCommunity,
-    setShareWithCommunity,
     handleImageChange,
     setImageFromUrl,
     handleAddIngredient,

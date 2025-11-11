@@ -22,8 +22,7 @@ export const useUrlRecipeProcessing = () => {
   const handleImportFromUrl = useCallback(async (
     setNewRecipe: (recipe: Omit<Recipe, 'id' | 'created_at' | 'updated_at' | 'created_by'>) => void,
     newRecipe: Omit<Recipe, 'id' | 'created_at' | 'updated_at' | 'created_by'>,
-    setActiveTab: (tab: string) => void,
-    setShareWithCommunity?: (share: boolean) => void
+    setActiveTab: (tab: string) => void
   ) => {
     // Clear any existing debounce
     if (debounceTimeout) {
@@ -128,12 +127,6 @@ export const useUrlRecipeProcessing = () => {
 
       console.log('✅ Recipe imported successfully:', transformedRecipe.title);
       setNewRecipe(transformedRecipe);
-      
-      // Set community sharing to checked by default for imported recipes
-      if (setShareWithCommunity) {
-        setShareWithCommunity(true);
-        console.log('🌍 Community sharing enabled by default');
-      }
       
       setActiveTab("manual");
       

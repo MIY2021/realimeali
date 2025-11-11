@@ -152,19 +152,13 @@ export function CreateRecipeContainer({ editingRecipe, isEditMode = false, defau
     if (tab === 'manual' && activeTab !== 'manual') {
       if (recipeOrigin === 'manual' && activeTab !== 'manual') {
         setRecipeOrigin(activeTab as RecipeOrigin);
-        if (activeTab !== 'url') {
-          recipeFormHook.setShareWithCommunity(false);
-        }
       }
     } else if (tab !== 'manual') {
       if (activeTab === 'manual' && recipeOrigin === 'manual') {
         setRecipeOrigin('manual');
       }
       
-      if (tab === 'url') {
-        recipeFormHook.setShareWithCommunity(true);
-      } else {
-        recipeFormHook.setShareWithCommunity(false);
+      if (tab !== 'url') {
         setOriginalSourceUrl('');
       }
     }
