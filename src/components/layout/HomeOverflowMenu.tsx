@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import { MoreHorizontal, Settings, LayoutDashboard, ArrowRight, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
@@ -59,14 +60,13 @@ export const HomeOverflowMenu = () => {
     },
   ];
 
-  return (
+  return createPortal(
     <>
       <Button
         variant="ghost"
         size="icon"
         onClick={() => setIsOpen(true)}
         className="fixed top-6 right-6 z-[100] h-10 w-10 rounded-full hover:bg-[#F5B82E]/10"
-        style={{ position: 'fixed' }}
       >
         <MoreHorizontal className="h-6 w-6 text-[#2C3E50]" strokeWidth={3} />
         <span className="sr-only">Open menu</span>
@@ -122,6 +122,7 @@ export const HomeOverflowMenu = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </>
+    </>,
+    document.body
   );
 };
