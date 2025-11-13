@@ -21,25 +21,17 @@ interface RecipeImageProps {
 }
 
 export function RecipeImage({ recipe, useThumbnail = false, alt, className, imgClassName, iconSize = "h-8 w-8", onClick, clickable, width = 80, height = 80, fixedSize = false }: RecipeImageProps) {
-  const [thumbnailError, setThumbnailError] = useState(false);
-  const [fullImageError, setFullImageError] = useState(false);
+  const [imageError, setImageError] = useState(false);
   const [placeholderError, setPlaceholderError] = useState(false);
   const [imageLoading, setImageLoading] = useState(true);
   const imgRef = useRef<HTMLImageElement>(null);
 
   const imageAlt = alt || recipe?.title || "Recipe image";
   
-  // Determine which image to show with proper fallback chain
-  let imageUrl: string | undefined;
-  let isUsingThumbnail = false;
-  
-  if (useThumbnail && (recipe as any)?.image_thumbnail && !thumbnailError) {
-    imageUrl = (recipe as any).image_thumbnail;
-    isUsingThumbnail = true;
-  } else if (recipe?.image && !fullImageError) {
-    imageUrl = recipe.image;
-    isUsingThumbnail = false;
-  }
+  // Use thumbnail for list views, full image for detail views
+  const imageUrl = useThumbnail 
+    ? (recipe as any)?.image_thumbnail 
+    : recipe?.image;
 
   // Handle cached images - ensure fade-in is visible
   useEffect(() => {
@@ -59,11 +51,7 @@ export function RecipeImage({ recipe, useThumbnail = false, alt, className, imgC
 
   const handleImageError = () => {
     setImageLoading(false);
-    if (isUsingThumbnail) {
-      setThumbnailError(true);
-    } else {
-      setFullImageError(true);
-    }
+    setImageError(true);
   };
 
   const handlePlaceholderError = () => {
@@ -71,8 +59,8 @@ export function RecipeImage({ recipe, useThumbnail = false, alt, className, imgC
     setPlaceholderError(true);
   };
 
-  // Try to render recipe image
-  if (imageUrl) {
+  // Render recipe image if available and not errored
+  if (imageUrl && !imageError) {
     // For fixed size mode (meal planner lists), skip AspectRatio wrapper
     if (fixedSize) {
       return (
