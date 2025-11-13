@@ -11,10 +11,11 @@ import { useFeaturedRecipes } from "@/hooks/useFeaturedRecipes";
 import { useReturnFromExternalRecipe } from "@/hooks/useReturnFromExternalRecipe";
 import { useMobileLayout } from "@/hooks/useMobileLayout";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { Search } from "lucide-react";
+import { Search, Loader } from "lucide-react";
 import { toast } from "sonner";
 import {
   Select,
@@ -66,6 +67,7 @@ export function DiscoverRecipesContent() {
   const {
     recipes: featuredRecipes,
     isLoading,
+    isLoadingMore,
     hasMore,
     loadMore,
   } = useFeaturedRecipes({
@@ -77,6 +79,14 @@ export function DiscoverRecipesContent() {
       dietLifestyle: filters.dietLifestyle,
       cookingDurations: filters.cookingDurations,
     },
+  });
+
+  // Infinite scroll for featured recipes
+  const sentinelRef = useInfiniteScroll({
+    onLoadMore: loadMore,
+    hasMore,
+    isLoading: isLoadingMore,
+    threshold: 300
   });
 
   // Return from external recipe detection
@@ -394,10 +404,10 @@ export function DiscoverRecipesContent() {
               </div>
 
               {hasMore && (
-                <div className="flex justify-center mt-6">
-                  <Button onClick={loadMore} variant="outline">
-                    Load More
-                  </Button>
+                <div ref={sentinelRef} className="flex justify-center mt-6">
+                  {isLoadingMore && (
+                    <Loader className="w-6 h-6 animate-spin text-muted-foreground" />
+                  )}
                 </div>
               )}
             </>
