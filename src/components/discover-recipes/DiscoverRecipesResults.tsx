@@ -1,8 +1,8 @@
 import { DiscoverRecipeFilters } from "@/types/edamam";
 import { useEdamamApiPagination } from "@/hooks/useEdamamApiPagination";
+import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { ExternalRecipeCard } from "./ExternalRecipeCard";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
 import { AlertCircle, Loader } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
@@ -15,6 +15,14 @@ interface DiscoverRecipesResultsProps {
 
 export function DiscoverRecipesResults({ filters, mobileLayout, addedRecipeUrls, onRecipeAdded }: DiscoverRecipesResultsProps) {
   const { recipes, isLoading, isLoadingMore, hasMore, error, totalFetched, loadMore } = useEdamamApiPagination(filters);
+
+  // Infinite scroll
+  const sentinelRef = useInfiniteScroll({
+    onLoadMore: loadMore,
+    hasMore,
+    isLoading: isLoadingMore,
+    threshold: 300
+  });
 
   if (isLoading) {
     return (
@@ -73,25 +81,12 @@ export function DiscoverRecipesResults({ filters, mobileLayout, addedRecipeUrls,
         ))}
       </div>
       
-      {/* Load More Section */}
+      {/* Infinite scroll sentinel and loading state */}
       {hasMore && recipes.length > 0 && (
-        <div className="flex flex-col items-center space-y-4 pt-8">
-          <Button 
-            onClick={loadMore}
-            disabled={isLoadingMore}
-            variant="outline"
-            size="lg"
-            className="min-w-[140px]"
-          >
-            {isLoadingMore ? (
-              <>
-                <Loader className="w-4 h-4 mr-2 animate-spin" />
-                Loading...
-              </>
-            ) : (
-              'Load More Recipes'
-            )}
-          </Button>
+        <div ref={sentinelRef} className="flex justify-center pt-8">
+          {isLoadingMore && (
+            <Loader className="w-6 h-6 animate-spin text-muted-foreground" />
+          )}
         </div>
       )}
       

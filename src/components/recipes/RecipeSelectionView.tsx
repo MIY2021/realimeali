@@ -5,12 +5,13 @@ import { Switch } from "@/components/ui/switch";
 import { useRecipeList } from "@/hooks/useRecipeList";
 import { useMobileLayout } from "@/hooks/useMobileLayout";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { RecipeGrid } from "./RecipeGrid";
 import { SimpleRecipeFiltersComponent } from "./filters/SimpleRecipeFilters";
 import { MobileLayoutSelector } from "./MobileLayoutSelector";
 import { DropdownFilterSection } from "./filters/DropdownFilterSection";
 import { ViewToggleButtons } from "./ViewToggleButtons";
-import { Heart, X, Search, Plus } from "lucide-react";
+import { Heart, X, Search, Plus, Loader } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
@@ -103,6 +104,20 @@ export function RecipeSelectionView({
   
   // Use default layout if provided, otherwise use the stored layout
   const currentMobileLayout = defaultMobileLayout || mobileLayout;
+
+  // Infinite scroll
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const sentinelRef = useInfiniteScroll({
+    onLoadMore: () => {
+      setIsLoadingMore(true);
+      handleLoadMore();
+      // Reset loading state after a short delay to show the spinner
+      setTimeout(() => setIsLoadingMore(false), 300);
+    },
+    hasMore: hasMoreRecipes,
+    isLoading: isLoadingMore,
+    threshold: 300
+  });
 
   const handleRecipeClick = useCallback((recipe: Recipe) => {
     if (onSelectRecipe) {
@@ -370,11 +385,14 @@ export function RecipeSelectionView({
             onAddToMealPlan={showAddToMealPlan ? onAddToMealPlan : undefined}
           />
           
+          {/* Infinite scroll sentinel and loading state */}
           <div className="flex flex-col items-center gap-4 mt-6 px-4">
             {hasMoreRecipes && (
-              <Button onClick={handleLoadMore} variant="outline" className="w-full sm:w-auto">
-                Load More Recipes
-              </Button>
+              <div ref={sentinelRef} className="w-full flex justify-center py-4">
+                {isLoadingMore && (
+                  <Loader className="w-6 h-6 animate-spin text-muted-foreground" />
+                )}
+              </div>
             )}
             <p className="text-sm text-muted-foreground text-center">
               Showing {visibleRecipes.length} of {filteredAndSortedRecipes.length} recipes
