@@ -16,6 +16,7 @@ import { RealiChefProvider } from "@/contexts/RealiChefContext";
 import { useParallelDataLoader } from "@/hooks/useParallelDataLoader";
 import { Toaster } from "@/components/ui/toaster";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import { AchievementListener } from "@/components/achievements/AchievementListener";
 
 // Eager load: Home page (most visited)
 import Index from "@/pages/Index";
@@ -47,6 +48,7 @@ function AppContent() {
   useParallelDataLoader();
   return (
     <div className="App">
+      <AchievementListener />
       <Layout>
         <Suspense fallback={
           <div className="min-h-screen flex flex-col">

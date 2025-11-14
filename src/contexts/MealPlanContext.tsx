@@ -146,11 +146,21 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
           ? { ...plan, is_completed: isCompleted }
           : plan
       ));
+
+      // Check Perfect Planner achievement when marking as complete
+      if (isCompleted) {
+        const completedMeal = mealPlans.find(m => m.id === mealPlanId);
+        if (completedMeal) {
+          window.dispatchEvent(new CustomEvent('checkPerfectPlanner', {
+            detail: { weekNumber: completedMeal.week_number }
+          }));
+        }
+      }
     } catch (error) {
       console.error('Error updating meal plan completion:', error);
       throw error;
     }
-  }, [user?.id, currentHousehold?.id]);
+  }, [user?.id, currentHousehold?.id, mealPlans]);
 
   const addMealPlanWithLeftovers = useCallback(async (
     mealPlanData: Omit<MealPlan, 'id' | 'created_at' | 'updated_at'>, 
