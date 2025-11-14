@@ -218,6 +218,13 @@ export const RecipesProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
       toast.success(`Recipe marked as ${newCookingStatus ? 'cooked' : 'not cooked'}`);
 
+      // Check achievements after marking as cooked
+      if (newCookingStatus) {
+        window.dispatchEvent(new CustomEvent('checkCookingAchievements', { 
+          detail: { recipeId: id }
+        }));
+      }
+
       return updatedRecipe;
     } catch (error) {
       console.error('Error toggling cooking status:', error);

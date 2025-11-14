@@ -6,17 +6,19 @@ import { BadgeTile } from '@/components/achievements/BadgeTile';
 import { BadgeBottomSheet } from '@/components/achievements/BadgeBottomSheet';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { getBadgeColor } from '@/lib/badgeColors';
+import { useAchievements } from '@/hooks/useAchievements';
 
 const AchievementsPage = () => {
   useDocumentTitle('RealiMeali | Achievements');
   
   const [selectedAchievement, setSelectedAchievement] = useState<Achievement | null>(null);
+  const { achievements, isLoading } = useAchievements();
   
-  const unlockedCount = ACHIEVEMENTS.filter(a => a.isUnlocked).length;
-  const totalCount = ACHIEVEMENTS.length;
+  const unlockedCount = achievements.filter(a => a.isUnlocked).length;
+  const totalCount = achievements.length;
 
   // Group achievements by category
-  const groupedAchievements = ACHIEVEMENTS.reduce((acc, achievement) => {
+  const groupedAchievements = achievements.reduce((acc, achievement) => {
     if (!acc[achievement.category]) {
       acc[achievement.category] = [];
     }
