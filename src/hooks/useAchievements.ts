@@ -12,20 +12,17 @@ export function useAchievements() {
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchAchievements = useCallback(async () => {
-    if (!user?.id || !currentHousehold?.id) {
+    if (!user?.id) {
       setUserAchievements([]);
       setIsLoading(false);
       return;
     }
 
     setIsLoading(true);
-    const achievements = await achievementService.getUserAchievements(
-      user.id,
-      currentHousehold.id
-    );
+    const achievements = await achievementService.getUserAchievements(user.id);
     setUserAchievements(achievements);
     setIsLoading(false);
-  }, [user?.id, currentHousehold?.id]);
+  }, [user?.id]);
 
   useEffect(() => {
     fetchAchievements();

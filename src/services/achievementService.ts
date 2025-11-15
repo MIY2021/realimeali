@@ -17,12 +17,11 @@ export interface AchievementProgress {
 }
 
 class AchievementService {
-  async getUserAchievements(userId: string, householdId: string): Promise<UserAchievement[]> {
+  async getUserAchievements(userId: string): Promise<UserAchievement[]> {
     const { data, error } = await supabase
       .from('user_achievements')
       .select('*')
       .eq('user_id', userId)
-      .eq('household_id', householdId)
       .order('unlocked_at', { ascending: false });
 
     if (error) {
