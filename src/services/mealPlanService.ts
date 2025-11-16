@@ -114,21 +114,6 @@ export const mealPlanService = {
     }
 
     console.log("Successfully updated completion status:", data);
-
-    // When marking a meal as completed, also update cooking status if it has a recipe
-    if (isCompleted && data.recipe_id) {
-      console.log("Marking recipe as cooked:", data.recipe_id);
-      try {
-        await supabase.rpc('toggle_recipe_cooking_status', {
-          recipe_id_param: data.recipe_id,
-          household_id_param: householdId
-        });
-        console.log("Successfully marked recipe as cooked");
-      } catch (cookingError) {
-        console.error("Error updating cooking status:", cookingError);
-        // Don't throw - meal completion succeeded, cooking status is secondary
-      }
-    }
   },
 
   async updateMealPlanLeftoverAllocation(

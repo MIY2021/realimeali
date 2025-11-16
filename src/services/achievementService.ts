@@ -65,37 +65,45 @@ class AchievementService {
   }
 
   async getCookedRecipeCount(householdId: string): Promise<number> {
-    const { count, error } = await supabase
-      .from('household_recipe_cooking_status')
-      .select('*', { count: 'exact', head: true })
+    // Count distinct recipes that have been completed in meal plans
+    const { data, error } = await supabase
+      .from('household_meal_plans')
+      .select('recipe_id')
       .eq('household_id', householdId)
-      .eq('has_cooked', true);
+      .eq('is_completed', true)
+      .not('recipe_id', 'is', null);
 
     if (error) {
       console.error('Error getting cooked recipe count:', error);
       return 0;
     }
 
-    return count || 0;
+    // Get unique recipe IDs
+    const uniqueRecipeIds = new Set(data?.map(m => m.recipe_id) || []);
+    return uniqueRecipeIds.size;
   }
 
   async getCookedRecipesList(householdId: string): Promise<string[]> {
+    // Get distinct recipes that have been completed in meal plans
     const { data, error } = await supabase
-      .from('household_recipe_cooking_status')
+      .from('household_meal_plans')
       .select('recipe_id')
       .eq('household_id', householdId)
-      .eq('has_cooked', true);
+      .eq('is_completed', true)
+      .not('recipe_id', 'is', null);
 
     if (error) {
       console.error('Error getting cooked recipes list:', error);
       return [];
     }
 
-    return data?.map(r => r.recipe_id) || [];
+    // Get unique recipe IDs
+    const uniqueRecipeIds = [...new Set(data?.map(m => m.recipe_id) || [])];
+    return uniqueRecipeIds;
   }
 
   async getRecipeCookedCount(householdId: string, recipeId: string): Promise<number> {
-    // Count how many times this recipe has been marked in completed meal plans
+    // Count how many times this recipe has been completed in meal plans
     const { count, error } = await supabase
       .from('household_meal_plans')
       .select('*', { count: 'exact', head: true })
