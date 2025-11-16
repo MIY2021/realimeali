@@ -147,13 +147,21 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
           : plan
       ));
 
-      // Check Perfect Planner achievement when marking as complete
+      // Check achievements when marking as complete
       if (isCompleted) {
         const completedMeal = mealPlans.find(m => m.id === mealPlanId);
         if (completedMeal) {
+          // Check Perfect Planner achievement
           window.dispatchEvent(new CustomEvent('checkPerfectPlanner', {
             detail: { weekNumber: completedMeal.week_number }
           }));
+          
+          // Check cooking achievements if meal has a recipe
+          if (completedMeal.recipe_id) {
+            window.dispatchEvent(new CustomEvent('checkCookingAchievements', { 
+              detail: { recipeId: completedMeal.recipe_id }
+            }));
+          }
         }
       }
     } catch (error) {

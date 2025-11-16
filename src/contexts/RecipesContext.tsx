@@ -206,10 +206,18 @@ export const RecipesProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const toggleCookingStatus = useCallback(async (id: string): Promise<Recipe | null> => {
     const existingRecipe = getRecipeById(id);
-    if (!existingRecipe) return null;
+    if (!existingRecipe) {
+      toast.error("Recipe not found");
+      return null;
+    }
+
+    if (!currentHousehold?.id) {
+      toast.error("No household selected");
+      return null;
+    }
 
     try {
-      const newCookingStatus = await api.toggleCookingStatus(id);
+      const newCookingStatus = await api.toggleCookingStatus(id, currentHousehold.id);
       const updatedRecipe = { ...existingRecipe, has_cooked: newCookingStatus };
       
       setRecipes(prev => prev.map(recipe => 
@@ -231,7 +239,7 @@ export const RecipesProvider: React.FC<{ children: React.ReactNode }> = ({ child
       toast.error("Failed to update cooking status");
       return null;
     }
-  }, [api, getRecipeById]);
+  }, [api, getRecipeById, currentHousehold?.id]);
 
   const fetchRecipeById = useCallback(async (id: string): Promise<Recipe | null> => {
     try {
