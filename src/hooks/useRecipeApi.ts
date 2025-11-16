@@ -367,11 +367,12 @@ export const useRecipeApi = () => {
     }
   };
 
-  const toggleCookingStatus = async (recipeId: string): Promise<boolean> => {
+  const toggleCookingStatus = async (recipeId: string, householdId: string): Promise<boolean> => {
     try {
-      // Use a more generic RPC call with type assertion
-      const { data, error } = await (supabase as any).rpc('toggle_recipe_cooking_status_simple', {
-        recipe_id_param: recipeId
+      // Use toggle_recipe_cooking_status which populates household_recipe_cooking_status table
+      const { data, error } = await (supabase as any).rpc('toggle_recipe_cooking_status', {
+        recipe_id_param: recipeId,
+        household_id_param: householdId
       });
 
       if (error) throw error;
