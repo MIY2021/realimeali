@@ -11,6 +11,7 @@ export function useAchievements() {
   const { user } = useAuth();
   const { currentHousehold } = useHousehold();
   const [userAchievements, setUserAchievements] = useState<UserAchievement[]>([]);
+  const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchAchievements = useCallback(async () => {
@@ -30,25 +31,15 @@ export function useAchievements() {
     fetchAchievements();
   }, [fetchAchievements]);
 
-  // Merge static achievement data with unlocked status and calculate progress
-  const achievements: Achievement[] = ACHIEVEMENTS.map(achievement => {
-    const userAchievement = userAchievements.find(
-      ua => ua.achievement_id === achievement.id
-    );
-
-    return {
-      ...achievement,
-      isUnlocked: !!userAchievement,
-      unlockedAt: userAchievement?.unlocked_at || null
-    };
-  });
-
-  // Calculate progress for locked achievements
+  // Calculate achievements with progress in a single pass
   useEffect(() => {
-    if (!currentHousehold?.id || !user?.id) return;
+    if (!user?.id || !currentHousehold?.id) {
+      setAchievements([]);
+      return;
+    }
 
-    const calculateProgress = async () => {
-      // Get data for progress calculations
+    const calculateAchievementsWithProgress = async () => {
+      // Fetch all data needed for progress calculations
       const [cookedCount, hasChefInsight, recipeCount] = await Promise.all([
         achievementService.getCookedRecipeCount(currentHousehold.id),
         achievementService.hasOpenedChefInsight(user.id),
@@ -60,39 +51,54 @@ export function useAchievements() {
           .then(({ count }) => count || 0)
       ]);
 
-      // Update achievements with progress
-      achievements.forEach(achievement => {
-        if (achievement.isUnlocked) return;
+      // Create achievements with unlocked status AND progress in one pass
+      const achievementsWithProgress = ACHIEVEMENTS.map(achievement => {
+        const userAchievement = userAchievements.find(
+          ua => ua.achievement_id === achievement.id
+        );
 
-        const requirement = ACHIEVEMENT_REQUIREMENTS[achievement.id];
-        if (!requirement) return;
+        const baseAchievement = {
+          ...achievement,
+          isUnlocked: !!userAchievement,
+          unlockedAt: userAchievement?.unlocked_at || null
+        };
 
-        let current = 0;
+        // Only calculate progress for locked achievements
+        if (!baseAchievement.isUnlocked) {
+          const requirement = ACHIEVEMENT_REQUIREMENTS[achievement.id];
+          if (requirement) {
+            let current = 0;
 
-        switch (requirement.type) {
-          case 'cooked_count':
-            current = cookedCount;
-            break;
-          case 'chef_insight':
-            current = hasChefInsight ? 1 : 0;
-            break;
-          case 'recipe_count':
-            current = recipeCount;
-            break;
-          default:
-            return; // Skip achievements we can't track yet
+            switch (requirement.type) {
+              case 'cooked_count':
+                current = cookedCount;
+                break;
+              case 'chef_insight':
+                current = hasChefInsight ? 1 : 0;
+                break;
+              case 'recipe_count':
+                current = recipeCount;
+                break;
+              default:
+                return baseAchievement; // Skip achievements we can't track yet
+            }
+
+            const progress = achievementService.calculateProgress(current, requirement.required);
+            return {
+              ...baseAchievement,
+              progress
+            };
+          }
         }
 
-        const progress = achievementService.calculateProgress(current, requirement.required);
-        achievement.progress = progress;
+        return baseAchievement;
       });
 
-      // Trigger re-render
-      setUserAchievements([...userAchievements]);
+      setAchievements(achievementsWithProgress);
     };
 
-    calculateProgress();
-  }, [currentHousehold?.id, user?.id, userAchievements.length]);
+    calculateAchievementsWithProgress();
+  }, [user?.id, currentHousehold?.id, userAchievements]);
 
   return {
     achievements,
