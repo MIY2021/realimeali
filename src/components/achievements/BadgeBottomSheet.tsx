@@ -87,12 +87,31 @@ export const BadgeBottomSheet = ({ achievement, open, onClose }: BadgeBottomShee
             </div>
           </div>
           
-          {/* Unlock Status */}
-          <p className="text-xs text-muted-foreground">
-            {isUnlocked && unlockedAt
-              ? `Unlocked on ${format(new Date(unlockedAt), 'dd MMM yyyy')}`
-              : 'Not yet unlocked'}
-          </p>
+          {/* Unlock Status / Progress */}
+          {isUnlocked && unlockedAt ? (
+            <p className="text-xs text-muted-foreground">
+              Unlocked on {format(new Date(unlockedAt), 'dd MMM yyyy')}
+            </p>
+          ) : achievement.progress ? (
+            <div className="w-full space-y-2">
+              {/* Progress Bar */}
+              <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
+                <div 
+                  className="h-full transition-all duration-300"
+                  style={{ 
+                    width: `${achievement.progress.percentage}%`,
+                    backgroundColor: color.base 
+                  }}
+                />
+              </div>
+              {/* Progress Text */}
+              <p className="text-xs text-center text-muted-foreground">
+                {achievement.progress.current} / {achievement.progress.required} completed
+              </p>
+            </div>
+          ) : (
+            <p className="text-xs text-muted-foreground">Not yet unlocked</p>
+          )}
           
           {/* Actions */}
           <div className="flex gap-2 w-full mt-2">
