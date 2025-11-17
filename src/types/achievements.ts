@@ -17,4 +17,9 @@ export interface Achievement {
   sortOrder: number;
   isUnlocked: boolean;
   unlockedAt: string | null;
+  progress?: {
+    current: number;
+    required: number;
+    percentage: number;
+  };
 }
