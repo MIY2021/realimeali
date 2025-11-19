@@ -28,11 +28,27 @@ export function RecipeImage({ recipe, useThumbnail = false, alt, className, imgC
 
   const imageAlt = alt || recipe?.title || "Recipe image";
   
+  // Debug logging
+  if (recipe?.title?.includes('Jerk Chicken') || recipe?.title?.includes('Stifado')) {
+    console.log('🖼️ RecipeImage Debug:', {
+      title: recipe.title,
+      useThumbnail,
+      image: recipe?.image,
+      image_thumbnail: (recipe as any)?.image_thumbnail,
+      placeholderPath: '/lovable-uploads/ee0bb47d-e780-4d0c-bbcb-9406228849f4.png'
+    });
+  }
+  
   // Use thumbnail for list views, full image for detail views
   // FALLBACK: If thumbnail is missing, use full image
   const imageUrl = useThumbnail 
     ? ((recipe as any)?.image_thumbnail || recipe?.image)
     : recipe?.image;
+    
+  // Additional debug
+  if (recipe?.title?.includes('Jerk Chicken') || recipe?.title?.includes('Stifado')) {
+    console.log('🖼️ Final imageUrl:', imageUrl);
+  }
 
   // Handle cached images - ensure fade-in is visible
   useEffect(() => {
