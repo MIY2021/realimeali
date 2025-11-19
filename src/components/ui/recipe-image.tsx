@@ -29,8 +29,9 @@ export function RecipeImage({ recipe, useThumbnail = false, alt, className, imgC
   const imageAlt = alt || recipe?.title || "Recipe image";
   
   // Use thumbnail for list views, full image for detail views
+  // FALLBACK: If thumbnail is missing, use full image
   const imageUrl = useThumbnail 
-    ? (recipe as any)?.image_thumbnail 
+    ? ((recipe as any)?.image_thumbnail || recipe?.image)
     : recipe?.image;
 
   // Handle cached images - ensure fade-in is visible
