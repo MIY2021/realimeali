@@ -15,8 +15,8 @@ interface MealCardProps {
 export function MealCard({ recipe, onRemove }: MealCardProps) {
   return (
     <div className="flex items-center gap-3 p-4 border border-border rounded-lg bg-card hover:bg-accent/50 transition-colors shadow-sm">
-      <div className="w-12 h-12 rounded-md overflow-hidden bg-muted flex-shrink-0">
-        <RecipeImage recipe={recipe} useThumbnail={true} className="w-full h-full" iconSize="h-4 w-4" />
+      <div className="w-24 h-20 rounded-md overflow-hidden bg-muted flex-shrink-0">
+        <RecipeImage recipe={recipe} useThumbnail={true} fixedSize={true} iconSize="h-6 w-6" />
       </div>
       
       <div className="flex-1 min-w-0">
