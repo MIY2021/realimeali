@@ -66,14 +66,14 @@ export function EnhancedMealCard({
         <CardContent className="p-0">
         <div className="flex min-h-24 max-w-full overflow-hidden">
           {/* Custom meal image with placeholder */}
-          <div className="w-24 h-20 flex-shrink-0 ml-2 my-2 mr-0 relative">
+          <div className="w-24 h-20 flex-shrink-0 ml-2 my-2 mr-0 relative overflow-hidden rounded-md">
               <RecipeImage 
                 recipe={undefined}
                 alt={mealPlan.meal_name || 'Custom Meal'}
                 imgClassName={`${
                   mealPlan.is_completed ? 'grayscale brightness-75' : ''
                 }`}
-                iconSize="h-8 w-8"
+                iconSize="h-6 w-6"
                 fixedSize={true}
               />
               
@@ -296,7 +296,7 @@ export function EnhancedMealCard({
       <CardContent className="p-0">
         <div className="flex min-h-24 max-w-full overflow-hidden">
           {/* Recipe Image - Slightly smaller with padding */}
-          <div className="w-24 h-20 flex-shrink-0 ml-2 my-2 mr-0 relative">
+          <div className="w-24 h-20 flex-shrink-0 ml-2 my-2 mr-0 relative overflow-hidden rounded-md">
             <Link to={recipeUrl}>
               <RecipeImage 
                 recipe={recipe}
@@ -304,7 +304,7 @@ export function EnhancedMealCard({
                 imgClassName={`cursor-pointer hover:opacity-80 transition-opacity ${
                   mealPlan.is_completed ? 'grayscale brightness-75' : ''
                 }`}
-                iconSize="h-8 w-8"
+                iconSize="h-6 w-6"
                 fixedSize={true}
               />
             </Link>
