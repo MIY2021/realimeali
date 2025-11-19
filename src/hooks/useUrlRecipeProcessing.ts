@@ -6,6 +6,7 @@ import { Recipe } from "@/types";
 import { useProgressTracking } from "./useUrlRecipeProcessing/useProgressTracking";
 import { useImageHandling } from "./useUrlRecipeProcessing/useImageHandling";
 import { handleProcessingError } from "./useUrlRecipeProcessing/errorHandling";
+import { uploadRecipeImage } from "@/services/imageUploadService";
 
 let debounceTimeout: NodeJS.Timeout | null = null;
 
@@ -118,10 +119,40 @@ export const useUrlRecipeProcessing = () => {
         imageHandling.setWebsiteImages(data.websiteImages);
         imageHandling.setShowImageSelection(true);
         
-        // Auto-select the first image
-        const firstImage = data.websiteImages[0];
-        imageHandling.setSelectedImage(firstImage);
-        transformedRecipe.image = firstImage;
+      // Auto-select the first image and generate thumbnail
+      const firstImage = data.websiteImages[0];
+      imageHandling.setSelectedImage(firstImage);
+
+      // Download external image and generate thumbnail
+      try {
+        console.log('📥 Downloading and processing external image...');
+        
+        // Fetch the external image
+        const imageResponse = await fetch(firstImage);
+        if (!imageResponse.ok) {
+          throw new Error(`Failed to fetch image: ${imageResponse.status}`);
+        }
+        
+        const imageBlob = await imageResponse.blob();
+        const imageFile = new File([imageBlob], 'recipe-image.jpg', { type: 'image/jpeg' });
+        
+        // Upload and generate thumbnail using existing service
+        const uploadedImages = await uploadRecipeImage(
+          imageFile,
+          data.userId || 'temp', // Use userId from response or temporary ID
+          crypto.randomUUID() // Temporary recipe ID
+        );
+        
+        (transformedRecipe as any).image = uploadedImages.fullUrl;
+        (transformedRecipe as any).image_thumbnail = uploadedImages.thumbnailUrl;
+        
+        console.log('✅ Thumbnail generated:', uploadedImages.thumbnailUrl);
+      } catch (error) {
+        console.error('⚠️ Failed to generate thumbnail, using external URL:', error);
+        (transformedRecipe as any).image = firstImage;
+        // Set thumbnail to full image as fallback
+        (transformedRecipe as any).image_thumbnail = firstImage;
+      }
         console.log('🎯 Auto-selected first image:', firstImage);
       }
 

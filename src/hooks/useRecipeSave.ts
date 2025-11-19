@@ -99,6 +99,16 @@ export function useRecipeSave() {
 
     console.log("✅ Validation passed, creating recipe with ALL ingredients preserved:", recipeToSave);
     
+    // Validate image/thumbnail consistency
+    if ((recipeToSave as any).image && !(recipeToSave as any).image_thumbnail) {
+      console.warn('⚠️ Recipe has image but no thumbnail! This should not happen.');
+      console.warn('Recipe:', recipeToSave.title);
+      console.warn('Image:', (recipeToSave as any).image);
+      
+      // Use full image as fallback thumbnail
+      (recipeToSave as any).image_thumbnail = (recipeToSave as any).image;
+    }
+
     try {
       console.log("🔄 Calling createRecipe function...");
       const recipe = await createRecipe(recipeToSave, currentHousehold.id);
