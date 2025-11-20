@@ -14,13 +14,6 @@ interface RecipeTabContentProps {
 export const RecipeTabContent = React.memo(({ recipe, scaledIngredients, isScaled }: RecipeTabContentProps) => {
   const ingredientsToShow = scaledIngredients || recipe.ingredients;
   
-  // Track when Chef's Insight tab is opened
-  const handleTabChange = (value: string) => {
-    if (value === 'chef-insight') {
-      window.dispatchEvent(new CustomEvent('checkChefInsight'));
-    }
-  };
-  
   // Memoize expensive computations to prevent infinite loops
   const ingredientSections = useMemo(() => {
     return IngredientSectionParser.parseIngredients(ingredientsToShow);
@@ -41,7 +34,7 @@ export const RecipeTabContent = React.memo(({ recipe, scaledIngredients, isScale
   }
 
   return (
-    <Tabs defaultValue="ingredients" className="w-full" onValueChange={handleTabChange}>
+    <Tabs defaultValue="ingredients" className="w-full">
       <TabsList className="grid w-full grid-cols-3 gap-2 bg-transparent p-0 mb-6">
         <TabsTrigger 
           value="ingredients" 

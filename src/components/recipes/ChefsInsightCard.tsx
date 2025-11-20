@@ -60,6 +60,11 @@ export const ChefsInsightCard = ({ recipe, recipeId }: ChefsInsightCardProps) =>
   const handleToggleExpand = (open: boolean) => {
     setIsExpanded(open);
     localStorage.setItem(`chef-insight-expanded-${recipeId}`, open.toString());
+    
+    // Trigger achievement check when opening Chef's Insight
+    if (open) {
+      window.dispatchEvent(new CustomEvent('checkChefInsight'));
+    }
   };
 
   const handleToggle = (alcoholic: boolean) => {
