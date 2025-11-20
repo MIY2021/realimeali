@@ -1,6 +1,6 @@
 
 import { Link, useLocation } from "react-router-dom";
-import { Book, Search, CalendarDays, ShoppingCart, Home } from "lucide-react";
+import { Book, Bookmark, CalendarDays, ShoppingCart, Home } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
 
@@ -23,7 +23,7 @@ const BottomNavigation = () => {
     },
     { 
       to: "/discover-recipes", 
-      icon: Search, 
+      icon: Bookmark, 
       label: "Discover",
       activePattern: /^\/discover-recipes/
     },
