@@ -125,12 +125,22 @@ export const useRecipeCreationHandlers = ({
     setRecipeOrigin('url');
     setOriginalSourceUrl(recipeProcessingHook.recipeUrl);
     return recipeProcessingHook.handleImportFromUrl(
-      (recipe: any) => recipeFormHook.setNewRecipe((prev: any) => ({ 
-        ...prev, 
-        ...recipe,
-        source_url: recipeProcessingHook.recipeUrl,
-        import_method: 'url' as const
-      })), 
+      (recipe: any) => {
+        const { downloadedImageFile, ...recipeData } = recipe;
+        
+        recipeFormHook.setNewRecipe((prev: any) => ({ 
+          ...prev, 
+          ...recipeData,
+          source_url: recipeProcessingHook.recipeUrl,
+          import_method: 'url' as const
+        }));
+        
+        // Store the downloaded image file for upload during save
+        if (downloadedImageFile instanceof File) {
+          console.log('📥 Storing downloaded image file for upload');
+          recipeFormHook.setUploadedImageFile(downloadedImageFile);
+        }
+      }, 
       recipeFormHook.newRecipe, 
       setActiveTab
     );
