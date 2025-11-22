@@ -1,7 +1,5 @@
 import { useState } from "react";
-import { createPortal } from "react-dom";
-import { MoreHorizontal, Settings, LayoutDashboard, ArrowRight, Mail } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Settings, LayoutDashboard, ArrowRight, Mail } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAdminCheck } from "@/hooks/useAdminCheck";
@@ -23,14 +21,18 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-export const HomeOverflowMenu = () => {
-  const [isOpen, setIsOpen] = useState(false);
+interface HomeOverflowMenuProps {
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+export const HomeOverflowMenu = ({ isOpen, onOpenChange }: HomeOverflowMenuProps) => {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const { signOut } = useAuth();
   const { isAdmin } = useAdminCheck();
 
   const handleLogoutClick = () => {
-    setIsOpen(false);
+    onOpenChange(false);
     setShowLogoutConfirm(true);
   };
 
@@ -60,25 +62,9 @@ export const HomeOverflowMenu = () => {
     },
   ];
 
-  return createPortal(
+  return (
     <>
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={() => setIsOpen(true)}
-        className="fixed top-6 right-6 z-[100] h-10 w-10 rounded-full hover:bg-[#F5B82E]/10"
-        style={{ 
-          position: 'fixed',
-          top: '1.5rem',
-          right: '1.5rem',
-          zIndex: 9999
-        }}
-      >
-        <MoreHorizontal className="h-6 w-6 text-[#2C3E50]" strokeWidth={3} />
-        <span className="sr-only">Open menu</span>
-      </Button>
-
-      <Drawer open={isOpen} onOpenChange={setIsOpen}>
+      <Drawer open={isOpen} onOpenChange={onOpenChange}>
         <DrawerContent className="bg-[#FDF8F3] rounded-t-[20px] border-t border-[#E5E7EB]">
           <DrawerHeader className="text-left border-b border-[#E5E7EB] pb-4">
             <DrawerTitle className="text-[#2C3E50] font-semibold">Menu</DrawerTitle>
@@ -90,7 +76,7 @@ export const HomeOverflowMenu = () => {
                 <Link
                   key={item.to}
                   to={item.to}
-                  onClick={() => setIsOpen(false)}
+                  onClick={() => onOpenChange(false)}
                   className="flex items-center w-full px-4 py-3 rounded-lg hover:bg-[#F5B82E]/10 active:bg-[#F5B82E]/20 transition-colors"
                 >
                   <item.icon className="h-5 w-5 text-[#2C3E50] mr-3" />
@@ -128,7 +114,6 @@ export const HomeOverflowMenu = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </>,
-    document.body
+    </>
   );
 };

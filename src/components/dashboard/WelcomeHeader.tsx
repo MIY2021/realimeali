@@ -1,8 +1,14 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { MoreHorizontal } from "lucide-react";
 
-export const WelcomeHeader = () => {
+interface WelcomeHeaderProps {
+  onMenuClick: () => void;
+}
+
+export const WelcomeHeader = ({ onMenuClick }: WelcomeHeaderProps) => {
   const { user } = useAuth();
   
   // Calculate day of year (1-365)
@@ -54,11 +60,22 @@ export const WelcomeHeader = () => {
   };
 
   return (
-    <div className="rounded-3xl bg-gradient-to-br from-[#FFE5B4] to-[#FFDAB9] p-5 shadow-md h-28 flex flex-col justify-center">
-      <h1 className="text-2xl font-bold text-[#654321] mb-1 animate-[fade-in_1s_ease-out]">
+    <div className="relative rounded-3xl bg-gradient-to-br from-[#FFE5B4] to-[#FFDAB9] p-5 shadow-md h-28 flex flex-col justify-center">
+      {/* Three-dot menu button - absolutely positioned inside yellow rectangle */}
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={onMenuClick}
+        className="absolute top-4 right-4 h-10 w-10 rounded-full hover:bg-[#654321]/10"
+      >
+        <MoreHorizontal className="h-6 w-6 text-[#654321]" strokeWidth={3} />
+        <span className="sr-only">Open menu</span>
+      </Button>
+
+      <h1 className="text-2xl font-bold text-[#654321] mb-1 animate-[fade-in_1s_ease-out] pr-14">
         {getTimeBasedGreeting()}, {getDisplayName()}!
       </h1>
-      <p className="text-sm text-[#654321] leading-relaxed">
+      <p className="text-sm text-[#654321] leading-relaxed pr-14">
         {!isLoading && dailyTip && (
           <span className="animate-[fade-in_1.2s_ease-out] inline-block">
             <span className="font-semibold">Top Tip:</span> {dailyTip}
