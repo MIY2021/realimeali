@@ -1,8 +1,9 @@
-import React, { Suspense, lazy } from "react";
+import React, { Suspense, lazy, useEffect } from "react";
 import {
   BrowserRouter,
   Routes,
   Route,
+  useLocation,
 } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Layout from "@/components/layout/Layout";
@@ -46,6 +47,30 @@ const queryClient = new QueryClient();
 function AppContent() {
   // Coordinate parallel loading of recipes and meal plans
   useParallelDataLoader();
+  const location = useLocation();
+
+  // Track page visits for Kitchen Explorer achievement
+  useEffect(() => {
+    const requiredPages = ['/', '/my-recipes', '/meal-planner', '/shopping-list', '/discover-recipes'];
+    const currentPath = location.pathname;
+    
+    if (requiredPages.includes(currentPath)) {
+      const visitedPages = JSON.parse(localStorage.getItem('visited_pages') || '[]');
+      if (!visitedPages.includes(currentPath)) {
+        visitedPages.push(currentPath);
+        localStorage.setItem('visited_pages', JSON.stringify(visitedPages));
+        
+        // Check if all pages visited
+        const allVisited = requiredPages.every(page => visitedPages.includes(page));
+        if (allVisited) {
+          window.dispatchEvent(new CustomEvent('checkEngagementAchievements', {
+            detail: { activityType: 'page_visit' }
+          }));
+        }
+      }
+    }
+  }, [location.pathname]);
+
   return (
     <div className="App">
       <AchievementListener />

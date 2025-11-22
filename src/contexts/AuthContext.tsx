@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { ProfileSetupDialog } from "@/components/auth/ProfileSetupDialog";
 import { useProfileSetup } from "@/hooks/useProfileSetup";
+import { achievementService } from "@/services/achievementService";
 
 type AuthContextType = {
   user: User | null;
@@ -24,18 +25,32 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         setIsLoading(false);
+        
+        // Track login for achievements
+        if (event === 'SIGNED_IN' && session?.user) {
+          await achievementService.recordLogin(session.user.id);
+          // Dispatch engagement achievement check
+          window.dispatchEvent(new CustomEvent('checkEngagementAchievements', {
+            detail: { activityType: 'login' }
+          }));
+        }
       }
     );
 
     // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
       setIsLoading(false);
+      
+      // Track login if session exists
+      if (session?.user) {
+        await achievementService.recordLogin(session.user.id);
+      }
     });
 
     return () => subscription.unsubscribe();

@@ -196,6 +196,7 @@ export const RecipesProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
     try {
       const updatedRecipe = await updateRecipe(id, { is_favorite: isFavorite });
+      
       return updatedRecipe;
     } catch (error) {
       console.error('Error toggling favorite:', error);

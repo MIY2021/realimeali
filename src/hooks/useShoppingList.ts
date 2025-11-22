@@ -99,6 +99,13 @@ export const useShoppingList = (weekNumber: 1 | 2) => {
     // Update database
     const success = await ShoppingListService.toggleItemChecked(itemId, newCheckedState, currentHousehold.id);
     
+    // Dispatch achievement check when item is checked
+    if (newCheckedState) {
+      window.dispatchEvent(new CustomEvent('checkShoppingListAchievements', {
+        detail: { action: 'checked' }
+      }));
+    }
+    
     if (!success) {
       // Revert on error
       setShoppingList(prev => prev.map(i => 
@@ -121,6 +128,11 @@ export const useShoppingList = (weekNumber: 1 | 2) => {
     if (newItem) {
       // Add new items to the top of the list
       setShoppingList(prev => [newItem, ...prev]);
+
+      // Dispatch achievement check for custom item
+      window.dispatchEvent(new CustomEvent('checkShoppingListAchievements', {
+        detail: { action: 'custom' }
+      }));
 
       toast({
         title: "Item added",
@@ -171,6 +183,13 @@ export const useShoppingList = (weekNumber: 1 | 2) => {
     
     try {
       const success = await ShoppingListService.clearAll(currentHousehold.id, weekNumber);
+      
+      // Dispatch achievement check for clear all
+      if (success) {
+        window.dispatchEvent(new CustomEvent('checkShoppingListAchievements', {
+          detail: { action: 'cleared' }
+        }));
+      }
       
       if (!success) {
         // Reload on error to restore actual state

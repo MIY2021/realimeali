@@ -178,6 +178,10 @@ export function DiscoverRecipesContent() {
         .update({ add_count: (recipe.add_count || 0) + 1 })
         .eq('id', recipe.id);
 
+      // Dispatch achievement check events
+      window.dispatchEvent(new CustomEvent('checkEdamamAchievements'));
+      window.dispatchEvent(new CustomEvent('checkRecipeCreation'));
+
       toast.success("Recipe added to My Recipes!");
     } catch (error) {
       console.error('Error adding recipe:', error);
