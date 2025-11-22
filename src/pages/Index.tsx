@@ -17,6 +17,7 @@ import { QuickActions } from "@/components/dashboard/QuickActions";
 import { RecentActivity } from "@/components/dashboard/RecentActivity";
 import { LatestRecipesInspiration } from "@/components/dashboard/LatestRecipesInspiration";
 import { HomeOverflowMenu } from "@/components/layout/HomeOverflowMenu";
+import { useState } from "react";
 
 export default function Index() {
   useDocumentTitle("RealiMeali | Dashboard");
@@ -24,6 +25,7 @@ export default function Index() {
   const { user, isLoading: authLoading } = useAuth();
   const { stats, isLoading, hasData } = useUserStats();
   const navigate = useNavigate();
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const handleRecipesToCookClick = () => {
     navigate("/my-recipes?filter=not-cooked");
@@ -87,12 +89,12 @@ export default function Index() {
 
   return (
     <div className="min-h-screen">
-      {/* Overflow Menu - Only on Home page */}
-      <HomeOverflowMenu />
-      
       <div className="container max-w-2xl mx-auto px-4 py-4 space-y-5">
-        {/* Welcome Header with Daily Tip */}
-        <WelcomeHeader />
+        {/* Welcome Header with Daily Tip and Menu Button */}
+        <WelcomeHeader onMenuClick={() => setMenuOpen(true)} />
+        
+        {/* Overflow Menu Drawer - controlled from WelcomeHeader button */}
+        <HomeOverflowMenu isOpen={menuOpen} onOpenChange={setMenuOpen} />
         
         {/* Stats Cards Grid - 2x2 with white backgrounds */}
         <div className="grid grid-cols-2 gap-3">
