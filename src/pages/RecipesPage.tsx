@@ -39,9 +39,9 @@ export default function RecipesPage() {
 
   const getWelcomeText = () => {
     if (!currentHousehold) {
-      return "Cursor Curate your household's favourite meals — a private collection just for you.";
+      return "Curate your household's favourite meals — a private collection just for you.";
     }
-    return "Cursor Curate your household's favourite meals — a private collection just for you.";
+    return "Curate your household's favourite meals — a private collection just for you.";
   };
 
   // Update RealiChef with recipes context - memoize to prevent infinite loops
