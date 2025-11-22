@@ -22,12 +22,6 @@ const BottomNavigation = () => {
       activePattern: /^\/my-recipes/
     },
     { 
-      to: "/discover-recipes", 
-      icon: Bookmark, 
-      label: "Discover",
-      activePattern: /^\/discover-recipes/
-    },
-    { 
       to: "/meal-planner", 
       icon: CalendarDays, 
       label: "Meal Plan",
@@ -38,6 +32,12 @@ const BottomNavigation = () => {
       icon: ShoppingCart, 
       label: "Shopping",
       activePattern: /^\/shopping-list/
+    },
+    { 
+      to: "/discover-recipes", 
+      icon: Bookmark, 
+      label: "Discover",
+      activePattern: /^\/discover-recipes/
     },
   ];
 
