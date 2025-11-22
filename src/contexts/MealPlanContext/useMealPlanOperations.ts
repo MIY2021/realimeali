@@ -42,16 +42,6 @@ export const useMealPlanOperations = (
 
       setMealPlans((prev: MealPlan[]) => [...prev, newMealPlan]);
 
-      // Dispatch achievement check events
-      window.dispatchEvent(new CustomEvent('checkMealPlanningAchievements'));
-      if (mealPlanData.is_leftover) {
-        window.dispatchEvent(new CustomEvent('checkLeftoverAchievements'));
-        window.dispatchEvent(new CustomEvent('checkSustainabilityAchievements'));
-      }
-      if (mealPlanData.is_freetyped) {
-        // Freestyle meal achievement would go here if it existed
-      }
-
       if (!silentMode) {
         toast({
           title: "Meal Added",

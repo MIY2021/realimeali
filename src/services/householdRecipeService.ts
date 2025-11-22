@@ -82,10 +82,6 @@ export const addImportedRecipeToHousehold = async (
         console.error('Error incrementing add count:', error);
       });
 
-    // Dispatch achievement check events for Edamam imports
-    window.dispatchEvent(new CustomEvent('checkEdamamAchievements'));
-    window.dispatchEvent(new CustomEvent('checkRecipeCreation'));
-
     return {
       success: true,
       recipeId: data.id

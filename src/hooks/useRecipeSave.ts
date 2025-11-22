@@ -150,14 +150,6 @@ export function useRecipeSave() {
           description: `${recipe.title} has been added to your recipes.`,
         });
         
-        // Dispatch achievement check events
-        window.dispatchEvent(new CustomEvent('checkRecipeCreation'));
-        if (recipe.import_method) {
-          window.dispatchEvent(new CustomEvent('checkImportMethodAchievements', {
-            detail: { importMethod: recipe.import_method }
-          }));
-        }
-        
         navigate("/my-recipes");
       } else {
         console.error("❌ Recipe creation returned null/undefined");

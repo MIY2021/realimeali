@@ -94,11 +94,6 @@ export const useShoppingListGeneration = (
         await refreshList();
         
         if (result && result.length > 0) {
-          // Dispatch achievement check for shopping list generation
-          window.dispatchEvent(new CustomEvent('checkShoppingListAchievements', {
-            detail: { action: 'generated' }
-          }));
-          
           toast({
             title: "Shopping list generated!",
             description: `Week ${weekNumber} shopping list created with ${result.length} items in ${duration}ms`,
