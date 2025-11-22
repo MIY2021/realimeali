@@ -1,7 +1,12 @@
 import { useEffect } from 'react';
 import { useAchievementChecker } from '@/hooks/useAchievementChecker';
+import { useAuth } from '@/contexts/AuthContext';
+import { useHousehold } from '@/contexts/HouseholdContext';
+import { supabase } from '@/integrations/supabase/client';
 
 export function AchievementListener() {
+  const { user } = useAuth();
+  const { currentHousehold } = useHousehold();
   const { 
     checkCookingAchievements, 
     checkFamilyFavourite,
@@ -145,6 +150,80 @@ export function AchievementListener() {
     checkSustainabilityAchievements,
     checkCommunityAchievements
   ]);
+
+  // Retroactive achievement checking - runs once per session on mount
+  useEffect(() => {
+    // Only run retroactive check once when user and household are available
+    if (!user?.id || !currentHousehold?.id) return;
+
+    // Use a flag to ensure we only run this once per session
+    const retroactiveCheckKey = `retroactive_check_${user.id}_${currentHousehold.id}`;
+    const hasRun = sessionStorage.getItem(retroactiveCheckKey);
+    
+    if (hasRun) return; // Already checked this session
+
+    // Run all achievement checks retroactively after a short delay
+    // to ensure data is loaded
+    const timeoutId = setTimeout(async () => {
+      try {
+        // Check all achievement categories
+        await checkCookingAchievements();
+        await checkChefInsight();
+        await checkRecipeCreation();
+        await checkEdamamAchievements();
+        await checkLeftoverAchievements();
+        await checkMealPrepAchievements();
+        await checkMealPlanningAchievements();
+        
+        // Check shopping list achievements
+        await checkShoppingListAchievements('generated');
+        
+        // Check engagement achievements
+        await checkEngagementAchievements('login');
+        
+        // Check sustainability achievements
+        await checkSustainabilityAchievements();
+        
+        // Check community achievements
+        await checkCommunityAchievements('invite');
+        
+        // Check import methods by querying existing recipes
+        const { data: recipes } = await supabase
+          .from('recipes')
+          .select('import_method')
+          .eq('user_id', user.id)
+          .eq('household_id', currentHousehold.id)
+          .is('deleted_at', null)
+          .not('import_method', 'is', null);
+
+        if (recipes) {
+          const importMethods = new Set(recipes.map(r => r.import_method).filter(Boolean));
+          for (const method of importMethods) {
+            await checkImportMethodAchievements(method);
+          }
+        }
+        
+        // Mark as checked for this session
+        sessionStorage.setItem(retroactiveCheckKey, 'true');
+      } catch (error) {
+        console.error('Error running retroactive achievement checks:', error);
+      }
+    }, 3000); // Wait 3 seconds for data to load
+
+    return () => clearTimeout(timeoutId);
+  }, [user?.id, currentHousehold?.id, 
+      checkCookingAchievements, 
+      checkChefInsight, 
+      checkRecipeCreation,
+      checkImportMethodAchievements,
+      checkEdamamAchievements,
+      checkLeftoverAchievements,
+      checkMealPrepAchievements,
+      checkMealPlanningAchievements,
+      checkShoppingListAchievements,
+      checkEngagementAchievements,
+      checkSustainabilityAchievements,
+      checkCommunityAchievements]);
 
   return null;
 }
