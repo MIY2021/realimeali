@@ -1,32 +1,28 @@
 
 project_id = "bdjzefekuahfofwzxqxd"
 
-[functions.parse-recipe-ai]
-verify_jwt = false
+# AI Functions - JWT enabled to prevent API abuse and unbounded OpenAI costs
+# Users must be authenticated to use these features
 
-[functions.generate-recipe-image]
-verify_jwt = false
+# No verify_jwt = false means JWT is required (secure by default)
 
 [functions.generate-missing-thumbnails]
-verify_jwt = false
+# Maintenance function - requires authentication
 
 [functions.recipe-meta]
 verify_jwt = false
+# Public recipe sharing - must remain accessible without auth
 
 [functions.send-magic-link]
 verify_jwt = false
-
-[functions.realichef-chat]
-verify_jwt = false
+# Authentication flow - must remain public for login to work
 
 [functions.unsplash-search]
 verify_jwt = false
-
-[functions.estimate-fruit-veg-portions]
-verify_jwt = false
+# Image browsing - kept public for better UX
 
 [functions.migrate-base64-images]
-verify_jwt = false
+# Maintenance function - requires authentication
 
 # Handle all share routes at the function level
 [[functions.recipe-meta.routes]]
