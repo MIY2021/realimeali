@@ -121,19 +121,29 @@ export function useAchievementChecker() {
   }, [user?.id, currentHousehold?.id]);
 
   const checkRecipeCountAchievements = useCallback(async () => {
-    if (!user?.id || !currentHousehold?.id) return;
+    if (!user?.id || !currentHousehold?.id) {
+      console.log('🎯 Recipe count check skipped: missing user or household');
+      return;
+    }
 
+    console.log('🎯 Checking recipe count achievements...');
     const householdId = currentHousehold.id;
     const userId = user.id;
 
     // Get total recipe count for household
-    const { count } = await supabase
+    const { count, error } = await supabase
       .from('recipes')
       .select('id', { count: 'exact', head: true })
       .eq('household_id', householdId)
       .eq('is_deleted', false);
 
+    if (error) {
+      console.error('❌ Error fetching recipe count:', error);
+      return;
+    }
+
     const recipeCount = count || 0;
+    console.log(`📊 Current recipe count: ${recipeCount}`);
 
     // Define recipe count milestones
     const recipeMilestones = [
@@ -146,6 +156,7 @@ export function useAchievementChecker() {
     // Check each milestone
     for (const milestone of recipeMilestones) {
       if (recipeCount >= milestone.count) {
+        console.log(`✅ Qualified for ${milestone.name} (${milestone.count} recipes)`);
         const unlocked = await achievementService.unlockAchievement(
           userId,
           householdId,
@@ -154,10 +165,13 @@ export function useAchievementChecker() {
         );
 
         if (unlocked) {
+          console.log(`🎉 Unlocked ${milestone.name}!`);
           const achievement = ACHIEVEMENTS.find(a => a.id === milestone.id);
           if (achievement) {
             showAchievementToast(achievement);
           }
+        } else {
+          console.log(`ℹ️ ${milestone.name} already unlocked or error occurred`);
         }
       }
     }
