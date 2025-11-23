@@ -6,7 +6,8 @@ export function AchievementListener() {
     checkCookingAchievements, 
     checkFamilyFavourite,
     checkChefInsight,
-    checkPerfectPlanner 
+    checkPerfectPlanner,
+    checkRecipeCountAchievements
   } = useAchievementChecker();
 
   useEffect(() => {
@@ -32,16 +33,22 @@ export function AchievementListener() {
       }
     };
 
+    const handleRecipeCountAchievements = () => {
+      checkRecipeCountAchievements();
+    };
+
     window.addEventListener('checkCookingAchievements', handleCookingAchievements);
     window.addEventListener('checkChefInsight', handleChefInsight);
     window.addEventListener('checkPerfectPlanner', handlePerfectPlanner);
+    window.addEventListener('checkRecipeCountAchievements', handleRecipeCountAchievements);
 
     return () => {
       window.removeEventListener('checkCookingAchievements', handleCookingAchievements);
       window.removeEventListener('checkChefInsight', handleChefInsight);
       window.removeEventListener('checkPerfectPlanner', handlePerfectPlanner);
+      window.removeEventListener('checkRecipeCountAchievements', handleRecipeCountAchievements);
     };
-  }, [checkCookingAchievements, checkFamilyFavourite, checkChefInsight, checkPerfectPlanner]);
+  }, [checkCookingAchievements, checkFamilyFavourite, checkChefInsight, checkPerfectPlanner, checkRecipeCountAchievements]);
 
   return null;
 }

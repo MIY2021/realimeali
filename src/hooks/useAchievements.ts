@@ -29,6 +29,9 @@ export function useAchievements() {
 
   useEffect(() => {
     fetchAchievements();
+    
+    // Check recipe count achievements on page load for retroactive unlock
+    window.dispatchEvent(new CustomEvent('checkRecipeCountAchievements'));
   }, [fetchAchievements]);
 
   // Calculate achievements with progress in a single pass
