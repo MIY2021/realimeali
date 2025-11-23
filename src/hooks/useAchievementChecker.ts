@@ -4,6 +4,7 @@ import { useHousehold } from '@/contexts/HouseholdContext';
 import { achievementService } from '@/services/achievementService';
 import { ACHIEVEMENTS } from '@/lib/achievementsData';
 import { showAchievementToast } from '@/components/achievements/AchievementToast';
+import { supabase } from '@/integrations/supabase/client';
 
 export function useAchievementChecker() {
   const { user } = useAuth();
@@ -119,10 +120,54 @@ export function useAchievementChecker() {
     }
   }, [user?.id, currentHousehold?.id]);
 
+  const checkRecipeCountAchievements = useCallback(async () => {
+    if (!user?.id || !currentHousehold?.id) return;
+
+    const householdId = currentHousehold.id;
+    const userId = user.id;
+
+    // Get total recipe count for household
+    const { count } = await supabase
+      .from('recipes')
+      .select('id', { count: 'exact', head: true })
+      .eq('household_id', householdId)
+      .eq('is_deleted', false);
+
+    const recipeCount = count || 0;
+
+    // Define recipe count milestones
+    const recipeMilestones = [
+      { id: '8', count: 1, name: 'Recipe Creator' },
+      { id: '13', count: 10, name: 'Recipe Collector' },
+      { id: '14', count: 25, name: 'Recipe Master' },
+      { id: '15', count: 50, name: 'Recipe Legend' }
+    ];
+
+    // Check each milestone
+    for (const milestone of recipeMilestones) {
+      if (recipeCount >= milestone.count) {
+        const unlocked = await achievementService.unlockAchievement(
+          userId,
+          householdId,
+          milestone.id,
+          { recipeCount }
+        );
+
+        if (unlocked) {
+          const achievement = ACHIEVEMENTS.find(a => a.id === milestone.id);
+          if (achievement) {
+            showAchievementToast(achievement);
+          }
+        }
+      }
+    }
+  }, [user?.id, currentHousehold?.id]);
+
   return {
     checkCookingAchievements,
     checkFamilyFavourite,
     checkChefInsight,
-    checkPerfectPlanner
+    checkPerfectPlanner,
+    checkRecipeCountAchievements
   };
 }

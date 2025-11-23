@@ -150,6 +150,9 @@ export function useRecipeSave() {
           description: `${recipe.title} has been added to your recipes.`,
         });
         
+        // Check recipe count achievements
+        window.dispatchEvent(new CustomEvent('checkRecipeCountAchievements'));
+        
         navigate("/my-recipes");
       } else {
         console.error("❌ Recipe creation returned null/undefined");
