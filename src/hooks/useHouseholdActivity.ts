@@ -102,11 +102,42 @@ export const useHouseholdActivity = () => {
   }, [currentHousehold?.id, user]);
 
   const activities = useMemo(() => {
-    if (!householdMembers.length) return [];
+    if (!householdMembers.length) {
+      console.log('🏠 No household members loaded yet');
+      return [];
+    }
+
+    console.log('🏠 Computing activities with household members:', householdMembers.map(m => ({
+      user_id: m.user_id,
+      full_name: m.profile?.full_name,
+      email: m.profile?.email,
+      hasProfile: !!m.profile
+    })));
 
     const getUserName = (userId: string) => {
       const member = householdMembers.find(m => m.user_id === userId);
-      return member?.profile?.full_name || 'Unknown user';
+      
+      console.log(`👤 Looking up user ${userId}:`, {
+        found: !!member,
+        hasProfile: !!member?.profile,
+        full_name: member?.profile?.full_name,
+        email: member?.profile?.email
+      });
+      
+      if (!member?.profile) return 'Someone';
+      
+      // Try full_name first
+      if (member.profile.full_name) {
+        return member.profile.full_name;
+      }
+      
+      // Fallback to email username
+      if (member.profile.email) {
+        const emailUsername = member.profile.email.split('@')[0];
+        return emailUsername.charAt(0).toUpperCase() + emailUsername.slice(1);
+      }
+      
+      return 'Someone';
     };
 
     const allActivities: HouseholdActivity[] = [];
