@@ -40,9 +40,9 @@ export function useRecipeShuffle(recipes: Recipe[]) {
     setIsOpen(true);
     setPhase('shuffling');
 
-    // Phase transitions
+    // Phase transitions - adjusted for smoother flow
     setTimeout(() => setPhase('decelerating'), 2000);
-    setTimeout(() => setPhase('revealed'), 3500);
+    setTimeout(() => setPhase('revealed'), 3800);
   };
 
   const reset = () => {

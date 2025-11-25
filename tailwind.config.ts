@@ -132,25 +132,44 @@ export default {
           }
         },
         "shuffle-fast": {
-          "0%": { transform: "translateX(-100vw)", opacity: "0" },
-          "50%": { opacity: "0.8" },
-          "100%": { transform: "translateX(100vw)", opacity: "0" },
-        },
-        "shuffle-slow": {
-          "0%": { transform: "translateX(-50vw)", filter: "blur(3px)", opacity: "0.8" },
-          "100%": { transform: "translateX(50vw)", filter: "blur(2px)", opacity: "0.6" },
-        },
-        "hero-reveal": {
           "0%": { 
-            transform: "translateY(20px) scale(0.9)",
+            transform: "translate3d(-100vw, 0, 0)", 
             opacity: "0",
           },
           "50%": { 
-            transform: "translateY(-5px) scale(1.08)",
-            opacity: "0.5",
+            opacity: "0.85",
           },
           "100%": { 
-            transform: "translateY(0) scale(1.1)",
+            transform: "translate3d(100vw, 0, 0)", 
+            opacity: "0",
+          },
+        },
+        "shuffle-slow": {
+          "0%": { 
+            transform: "translate3d(-50vw, 0, 0)", 
+            filter: "blur(3px)", 
+            opacity: "0.85",
+          },
+          "100%": { 
+            transform: "translate3d(50vw, 0, 0)", 
+            filter: "blur(1.5px)", 
+            opacity: "0.5",
+          },
+        },
+        "hero-reveal": {
+          "0%": { 
+            transform: "translate3d(0, 30px, 0) scale(0.85)",
+            opacity: "0",
+          },
+          "40%": {
+            opacity: "0.3",
+          },
+          "70%": { 
+            transform: "translate3d(0, -8px, 0) scale(1.08)",
+            opacity: "0.8",
+          },
+          "100%": { 
+            transform: "translate3d(0, 0, 0) scale(1.05)",
             opacity: "1",
           },
         },
@@ -167,9 +186,9 @@ export default {
         "pulse-glow": "pulse-glow 2s ease-in-out infinite",
         "scale-in-slow": "scale-in-slow 0.5s ease-out",
         "slide-in-left": "slide-in-left 0.2s ease-out",
-        "shuffle-fast": "shuffle-fast 1.2s ease-out",
-        "shuffle-slow": "shuffle-slow 1.8s ease-out",
-        "hero-reveal": "hero-reveal 1s cubic-bezier(0.34, 1.56, 0.64, 1)",
+        "shuffle-fast": "shuffle-fast 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+        "shuffle-slow": "shuffle-slow 1.8s cubic-bezier(0.35, 0, 0.25, 1)",
+        "hero-reveal": "hero-reveal 1.2s cubic-bezier(0.16, 1, 0.3, 1)",
       },
     },
   },
