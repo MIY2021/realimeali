@@ -43,9 +43,9 @@ export function ShuffleCard({ recipe, phase, animationDelay }: ShuffleCardProps)
         transform: 'translate3d(0, 0, 0)',
       }}
     >
-      <div className={`bg-card rounded-2xl shadow-lg overflow-hidden w-80 transition-all duration-300 ${getBlurClass()}`}>
+      <div className={`bg-card rounded-2xl shadow-lg overflow-hidden w-52 transition-all duration-300 ${getBlurClass()}`}>
         {recipe.image ? (
-          <div className="relative aspect-[4/3] bg-muted">
+          <div className="relative aspect-[3/4] bg-muted">
             <img 
               src={recipe.image} 
               alt={recipe.title}
@@ -64,7 +64,7 @@ export function ShuffleCard({ recipe, phase, animationDelay }: ShuffleCardProps)
             </div>
           </div>
         ) : (
-          <div className="aspect-[4/3] bg-gradient-to-br from-sage to-terracotta flex items-center justify-center">
+          <div className="aspect-[3/4] bg-gradient-to-br from-sage to-terracotta flex items-center justify-center">
             <div className="text-center text-white p-4">
               <h3 className="font-semibold text-lg line-clamp-3">{recipe.title}</h3>
               {totalTime && (
