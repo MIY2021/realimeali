@@ -13,6 +13,9 @@ export function RecipeHeroCard({ recipe, onViewRecipe, onShuffleAgain }: RecipeH
     ? recipe.prep_time + recipe.cook_time 
     : null;
 
+  // Use image_thumbnail if available (from database), otherwise fallback to image
+  const recipeImage = (recipe as any).image_thumbnail || recipe.image;
+
   return (
     <div 
       className="animate-hero-reveal"
@@ -21,10 +24,10 @@ export function RecipeHeroCard({ recipe, onViewRecipe, onShuffleAgain }: RecipeH
       }}
     >
       <div className="bg-card rounded-2xl shadow-2xl overflow-hidden max-w-xs w-full mx-4">
-        {recipe.image ? (
+        {recipeImage ? (
           <div className="relative aspect-[3/4] bg-muted">
             <img 
-              src={recipe.image} 
+              src={recipeImage} 
               alt={recipe.title}
               className="w-full h-full object-cover"
               loading="eager"
