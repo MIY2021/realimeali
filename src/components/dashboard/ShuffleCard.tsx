@@ -33,6 +33,9 @@ export function ShuffleCard({ recipe, phase, animationDelay }: ShuffleCardProps)
     ? recipe.prep_time + recipe.cook_time 
     : null;
 
+  // Use image_thumbnail for performance during shuffle animation
+  const recipeImage = (recipe as any).image_thumbnail || recipe.image;
+
   return (
     <div
       className={`absolute inset-0 flex items-center justify-center pointer-events-none ${getAnimationClass()}`}
@@ -44,10 +47,10 @@ export function ShuffleCard({ recipe, phase, animationDelay }: ShuffleCardProps)
       }}
     >
       <div className={`bg-card rounded-2xl shadow-lg overflow-hidden w-52 transition-all duration-300 ${getBlurClass()}`}>
-        {recipe.image ? (
+        {recipeImage ? (
           <div className="relative aspect-[3/4] bg-muted">
             <img 
-              src={recipe.image} 
+              src={recipeImage} 
               alt={recipe.title}
               className="w-full h-full object-cover"
             />

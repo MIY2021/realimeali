@@ -41,8 +41,8 @@ export function useRecipeShuffle(recipes: Recipe[]) {
     setPhase('shuffling');
 
     // Phase transitions
-    setTimeout(() => setPhase('decelerating'), 1500);
-    setTimeout(() => setPhase('revealed'), 2500);
+    setTimeout(() => setPhase('decelerating'), 2000);
+    setTimeout(() => setPhase('revealed'), 3500);
   };
 
   const reset = () => {
