@@ -20,9 +20,9 @@ export function RecipeHeroCard({ recipe, onViewRecipe, onShuffleAgain }: RecipeH
         willChange: 'transform, opacity, filter',
       }}
     >
-      <div className="bg-card rounded-2xl shadow-2xl overflow-hidden max-w-md w-full mx-4">
+      <div className="bg-card rounded-2xl shadow-2xl overflow-hidden max-w-xs w-full mx-4">
         {recipe.image ? (
-          <div className="relative aspect-[4/3] bg-muted">
+          <div className="relative aspect-[3/4] bg-muted">
             <img 
               src={recipe.image} 
               alt={recipe.title}
@@ -31,7 +31,7 @@ export function RecipeHeroCard({ recipe, onViewRecipe, onShuffleAgain }: RecipeH
             />
           </div>
         ) : (
-          <div className="aspect-[4/3] bg-gradient-to-br from-sage to-terracotta flex items-center justify-center">
+          <div className="aspect-[3/4] bg-gradient-to-br from-sage to-terracotta flex items-center justify-center">
             <Star className="w-16 h-16 text-white" />
           </div>
         )}
