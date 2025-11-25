@@ -20,7 +20,10 @@ export function RecipeHeroCard({ recipe, onViewRecipe, onShuffleAgain }: RecipeH
     <div 
       className="animate-hero-reveal"
       style={{
-        willChange: 'transform, opacity, filter',
+        willChange: 'transform, opacity',
+        transform: 'translate3d(0, 0, 0)',
+        backfaceVisibility: 'hidden',
+        WebkitFontSmoothing: 'antialiased',
       }}
     >
       <div className="bg-card rounded-2xl shadow-2xl overflow-hidden max-w-xs w-full mx-4">

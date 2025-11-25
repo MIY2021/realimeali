@@ -41,9 +41,11 @@ export function ShuffleCard({ recipe, phase, animationDelay }: ShuffleCardProps)
       className={`absolute inset-0 flex items-center justify-center pointer-events-none ${getAnimationClass()}`}
       style={{
         animationDelay: `${animationDelay}ms`,
-        willChange: 'transform, filter',
+        willChange: 'transform, filter, opacity',
         backfaceVisibility: 'hidden',
         transform: 'translate3d(0, 0, 0)',
+        WebkitFontSmoothing: 'antialiased',
+        WebkitBackfaceVisibility: 'hidden',
       }}
     >
       <div className={`bg-card rounded-2xl shadow-lg overflow-hidden w-52 transition-all duration-300 ${getBlurClass()}`}>

@@ -41,7 +41,11 @@ export function RecipeShuffleDialog({
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent 
-        className="max-w-full h-full border-0 bg-black/90 p-0 flex items-center justify-center"
+        className="max-w-full h-full border-0 p-0 flex items-center justify-center [&>button]:opacity-100 [&>button]:bg-white/20 [&>button]:hover:bg-white/30 [&>button]:w-10 [&>button]:h-10 [&>button]:rounded-full [&>button]:backdrop-blur-sm [&>button]:transition-all"
+        style={{
+          background: 'linear-gradient(135deg, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.88) 100%)',
+          backdropFilter: 'blur(8px)',
+        }}
         aria-label="Recipe shuffle animation"
       >
         <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
