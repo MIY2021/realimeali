@@ -4,6 +4,7 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { ShuffleCard } from './ShuffleCard';
 import { RecipeHeroCard } from './RecipeHeroCard';
 import { ShufflePhase } from '@/hooks/useRecipeShuffle';
+import { X } from 'lucide-react';
 
 interface RecipeShuffleDialogProps {
   isOpen: boolean;
@@ -41,13 +42,27 @@ export function RecipeShuffleDialog({
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent 
-        className="max-w-full h-full border-0 p-0 flex items-center justify-center [&>button]:absolute [&>button]:top-6 [&>button]:right-6 [&>button]:z-50 [&>button]:bg-white/10 [&>button]:hover:bg-white/20 [&>button]:border [&>button]:border-white/20 [&>button]:hover:border-white/30 [&>button]:w-11 [&>button]:h-11 [&>button]:rounded-full [&>button]:backdrop-blur-md [&>button]:transition-all [&>button]:duration-200 [&>button>svg]:text-white [&>button>svg]:w-5 [&>button>svg]:h-5 [&>button]:hover:scale-105"
+        className="max-w-full h-full border-0 p-0 flex items-center justify-center [&>button]:hidden"
         style={{
           background: 'linear-gradient(135deg, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.88) 100%)',
           backdropFilter: 'blur(8px)',
         }}
         aria-label="Recipe shuffle animation"
       >
+        {/* Custom close button */}
+        <button
+          onClick={() => onOpenChange(false)}
+          className="absolute top-6 right-6 z-50 w-10 h-10 rounded-full 
+                     bg-white/10 hover:bg-white/20 
+                     border border-white/20 hover:border-white/30
+                     backdrop-blur-md
+                     flex items-center justify-center
+                     transition-all duration-200 hover:scale-105"
+          aria-label="Close"
+        >
+          <X className="w-5 h-5 text-white/80" />
+        </button>
+
         <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
           {/* Shuffling cards */}
           {(phase === 'shuffling' || phase === 'decelerating') && shuffleCards.map((recipe, index) => (
