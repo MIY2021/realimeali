@@ -41,7 +41,7 @@ export function RecipeShuffleDialog({
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent 
-        className="max-w-full h-full border-0 p-0 flex items-center justify-center [&>button]:z-50 [&>button]:bg-white [&>button]:hover:bg-white/90 [&>button]:w-12 [&>button]:h-12 [&>button]:rounded-full [&>button]:shadow-lg [&>button]:transition-all [&>button>svg]:text-black [&>button>svg]:w-5 [&>button>svg]:h-5"
+        className="max-w-full h-full border-0 p-0 flex items-center justify-center [&>button]:absolute [&>button]:top-6 [&>button]:right-6 [&>button]:z-50 [&>button]:bg-white/10 [&>button]:hover:bg-white/20 [&>button]:border [&>button]:border-white/20 [&>button]:hover:border-white/30 [&>button]:w-11 [&>button]:h-11 [&>button]:rounded-full [&>button]:backdrop-blur-md [&>button]:transition-all [&>button]:duration-200 [&>button>svg]:text-white [&>button>svg]:w-5 [&>button>svg]:h-5 [&>button]:hover:scale-105"
         style={{
           background: 'linear-gradient(135deg, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.88) 100%)',
           backdropFilter: 'blur(8px)',
