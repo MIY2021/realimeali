@@ -11,7 +11,8 @@ import { QuickActions } from "@/components/dashboard/QuickActions";
 import { RecentActivity } from "@/components/dashboard/RecentActivity";
 import { LatestRecipesInspiration } from "@/components/dashboard/LatestRecipesInspiration";
 import { HomeOverflowMenu } from "@/components/layout/HomeOverflowMenu";
-import { useState } from "react";
+import { WelcomeSlidesDialog } from "@/components/onboarding/WelcomeSlidesDialog";
+import { useState, useEffect } from "react";
 
 export default function Index() {
   useDocumentTitle("RealiMeali | Dashboard");
@@ -20,6 +21,23 @@ export default function Index() {
   const { stats, isLoading, hasData } = useUserStats();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [showWelcomeSlides, setShowWelcomeSlides] = useState(false);
+
+  // Auto-show welcome slides for first-time users
+  useEffect(() => {
+    if (user && !localStorage.getItem('hasSeenWelcome')) {
+      // Small delay to let the page load first
+      const timer = setTimeout(() => {
+        setShowWelcomeSlides(true);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [user]);
+
+  const handleWelcomeSlidesComplete = () => {
+    localStorage.setItem('hasSeenWelcome', 'true');
+    setShowWelcomeSlides(false);
+  };
 
   const handleRecipesToCookClick = () => {
     navigate("/my-recipes?filter=not-cooked");
@@ -82,7 +100,18 @@ export default function Index() {
         <WelcomeHeader onMenuClick={() => setMenuOpen(true)} />
 
         {/* Overflow Menu Drawer - controlled from WelcomeHeader button */}
-        <HomeOverflowMenu isOpen={menuOpen} onOpenChange={setMenuOpen} />
+        <HomeOverflowMenu 
+          isOpen={menuOpen} 
+          onOpenChange={setMenuOpen} 
+          onOpenWelcomeSlides={() => setShowWelcomeSlides(true)}
+        />
+
+        {/* Welcome Slides Dialog */}
+        <WelcomeSlidesDialog
+          open={showWelcomeSlides}
+          onOpenChange={setShowWelcomeSlides}
+          onComplete={handleWelcomeSlidesComplete}
+        />
 
         {/* Stats Cards Grid - 2x2 with white backgrounds */}
         <div className="grid grid-cols-2 gap-3">
