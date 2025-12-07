@@ -32,7 +32,7 @@ export function GoogleLoginButton() {
   return (
     <Button 
       onClick={handleGoogleLogin} 
-      className="w-full flex items-center justify-center gap-2 sm:gap-3 bg-white text-gray-800 hover:bg-gray-100 border py-2 sm:py-3 px-4 text-sm sm:text-base font-medium"
+      className="w-full flex items-center justify-center gap-2 sm:gap-3 bg-background text-black hover:bg-gray-50 border border-black py-2 sm:py-3 px-4 text-sm sm:text-base font-medium"
       disabled={isLoading}
     >
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0">
@@ -41,7 +41,7 @@ export function GoogleLoginButton() {
         <path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z" />
         <path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z" />
       </svg>
-      <span className="truncate">{isLoading ? "Signing in..." : "Sign in with Google"}</span>
+      <span className="truncate">{isLoading ? "Signing in..." : "Log in with Google"}</span>
     </Button>
   );
 }

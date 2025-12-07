@@ -39,6 +39,13 @@ export function RecipeShuffleDialog({
     }
   }, [isOpen, phase, onOpenChange]);
 
+  const handleBackgroundClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    // Close dialog if clicking on the background (not on the recipe card)
+    if (e.target === e.currentTarget) {
+      onOpenChange(false);
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent 
@@ -48,17 +55,21 @@ export function RecipeShuffleDialog({
           backdropFilter: 'blur(8px)',
         }}
         aria-label="Recipe shuffle animation"
+        onClick={handleBackgroundClick}
       >
         {/* Custom close button */}
         <button
           onClick={() => onOpenChange(false)}
-          className="custom-close-btn absolute top-6 right-6 z-50 p-2 transition-opacity hover:opacity-70"
+          className="custom-close-btn absolute top-6 right-6 z-50 bg-transparent border-0 p-0 m-0 transition-opacity hover:opacity-70 focus:outline-none"
           aria-label="Close"
         >
-          <X className="w-7 h-7 text-white" strokeWidth={2.5} />
+          <X className="w-5 h-5 text-white" strokeWidth={2.5} />
         </button>
 
-        <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
+        <div 
+          className="relative w-full h-full flex items-center justify-center overflow-hidden"
+          onClick={(e) => e.stopPropagation()}
+        >
           {/* Shuffling cards */}
           {(phase === 'shuffling' || phase === 'decelerating') && shuffleCards.map((recipe, index) => (
             <ShuffleCard

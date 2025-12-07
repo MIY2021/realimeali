@@ -72,10 +72,10 @@ export function EmailLoginButton({ onSuccess, className }: EmailLoginButtonProps
     return (
       <Button
         onClick={() => setShowForm(true)}
-        className={`w-full flex items-center justify-center gap-2 sm:gap-3 bg-navy text-white hover:bg-navy/90 py-2 sm:py-3 px-4 text-sm sm:text-base font-medium ${className}`}
+        className={`w-full flex items-center justify-center gap-2 sm:gap-3 bg-white text-black hover:bg-gray-50 border border-black py-2 sm:py-3 px-4 text-sm sm:text-base font-medium ${className}`}
       >
         <Mail className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0" />
-        <span>Sign in with Email</span>
+        <span>Log in with Email</span>
       </Button>
     );
   }

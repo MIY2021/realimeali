@@ -17,6 +17,7 @@ import { useParallelDataLoader } from "@/hooks/useParallelDataLoader";
 import { Toaster } from "@/components/ui/toaster";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { AchievementListener } from "@/components/achievements/AchievementListener";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 
 // Eager load: Home page (most visited)
 import Index from "@/pages/Index";
@@ -64,26 +65,26 @@ function AppContent() {
           </div>
         }>
           <Routes>
-            <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
-            <Route path="/settings" element={<Settings />} />
-            <Route path="/my-recipes" element={<RecipesPage />} />
-            <Route path="/my-recipes/new" element={<CreateRecipePage />} />
-            <Route path="/create-recipe" element={<CreateRecipePage />} />
-            <Route path="/my-recipes/:slug/edit" element={<EditRecipePage />} />
-            <Route path="/my-recipes/:slug" element={<RecipeDetail />} />
-            <Route path="/discover-recipes" element={<DiscoverRecipesPage />} />
-            <Route path="/discover-recipes/:id" element={<ImportedRecipeDetailPage />} />
-            <Route path="/meal-planner" element={<MealPlanner />} />
-            <Route path="/shopping-list" element={<ShoppingList />} />
-            <Route path="/achievements" element={<AchievementsPage />} />
-            <Route path="/admin" element={<AdminDashboard />} />
-            <Route path="/feedback" element={<Feedback />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/about" element={<About />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/terms-of-service" element={<TermsOfService />} />
-            <Route path="*" element={<NotFound />} />
+            <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+            <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+            <Route path="/my-recipes" element={<ProtectedRoute><RecipesPage /></ProtectedRoute>} />
+            <Route path="/my-recipes/new" element={<ProtectedRoute><CreateRecipePage /></ProtectedRoute>} />
+            <Route path="/create-recipe" element={<ProtectedRoute><CreateRecipePage /></ProtectedRoute>} />
+            <Route path="/my-recipes/:slug/edit" element={<ProtectedRoute><EditRecipePage /></ProtectedRoute>} />
+            <Route path="/my-recipes/:slug" element={<ProtectedRoute><RecipeDetail /></ProtectedRoute>} />
+            <Route path="/discover-recipes" element={<ProtectedRoute><DiscoverRecipesPage /></ProtectedRoute>} />
+            <Route path="/discover-recipes/:id" element={<ProtectedRoute><ImportedRecipeDetailPage /></ProtectedRoute>} />
+            <Route path="/meal-planner" element={<ProtectedRoute><MealPlanner /></ProtectedRoute>} />
+            <Route path="/shopping-list" element={<ProtectedRoute><ShoppingList /></ProtectedRoute>} />
+            <Route path="/achievements" element={<ProtectedRoute><AchievementsPage /></ProtectedRoute>} />
+            <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+            <Route path="/feedback" element={<ProtectedRoute><Feedback /></ProtectedRoute>} />
+            <Route path="/contact" element={<ProtectedRoute><Contact /></ProtectedRoute>} />
+            <Route path="/about" element={<ProtectedRoute><About /></ProtectedRoute>} />
+            <Route path="*" element={<ProtectedRoute><NotFound /></ProtectedRoute>} />
           </Routes>
         </Suspense>
       </Layout>

@@ -107,38 +107,113 @@ export const useHouseholdActivity = () => {
       return [];
     }
 
-    console.log('🏠 Computing activities with household members:', householdMembers.map(m => ({
-      user_id: m.user_id,
-      full_name: m.profile?.full_name,
-      email: m.profile?.email,
-      hasProfile: !!m.profile
-    })));
+    // Create a map of user_id -> profile for faster lookup
+    const userProfileMap = new Map<string, { full_name?: string | null; email?: string | null }>();
+    householdMembers.forEach(member => {
+      if (member.user_id) {
+        userProfileMap.set(member.user_id, {
+          full_name: member.profile?.full_name || null,
+          email: member.profile?.email || null
+        });
+      }
+    });
+
+    console.log('🏠 Computing activities with household members:', {
+      memberCount: householdMembers.length,
+      profileMapSize: userProfileMap.size,
+      members: householdMembers.map(m => ({
+        user_id: m.user_id,
+        full_name: m.profile?.full_name,
+        email: m.profile?.email,
+        hasProfile: !!m.profile
+      })),
+      userProfileMapEntries: Array.from(userProfileMap.entries()).map(([id, profile]) => ({
+        user_id: id,
+        full_name: profile.full_name,
+        email: profile.email
+      }))
+    });
 
     const getUserName = (userId: string) => {
-      const member = householdMembers.find(m => m.user_id === userId);
+      // Handle empty or invalid user IDs
+      if (!userId || typeof userId !== 'string' || userId.trim() === '') {
+        console.log(`👤 Empty or invalid userId provided:`, userId);
+        return 'Someone';
+      }
+
+      // Trim the userId for comparison
+      const trimmedUserId = userId.trim();
       
-      console.log(`👤 Looking up user ${userId}:`, {
-        found: !!member,
-        hasProfile: !!member?.profile,
-        full_name: member?.profile?.full_name,
-        email: member?.profile?.email
+      // Try to find member by exact match
+      let member = householdMembers.find(m => m.user_id === trimmedUserId);
+      
+      // Also check if it's in our profile map
+      const profileData = userProfileMap.get(trimmedUserId);
+      
+      console.log(`👤 Looking up user "${trimmedUserId}":`, {
+        memberFound: !!member,
+        profileInMap: !!profileData,
+        memberProfile: member?.profile ? {
+          full_name: member.profile.full_name,
+          email: member.profile.email
+        } : null,
+        mapProfile: profileData || null,
+        allMemberUserIds: householdMembers.map(m => m.user_id)
       });
       
-      if (!member?.profile) return 'Someone';
+      // Use member profile if found, otherwise use map data
+      const fullName = member?.profile?.full_name || profileData?.full_name;
+      const email = member?.profile?.email || profileData?.email;
       
-      // Try full_name first
-      if (member.profile.full_name) {
-        return member.profile.full_name;
+      // Try full_name first (check for null, undefined, and empty string)
+      if (fullName && typeof fullName === 'string' && fullName.trim() !== '') {
+        const name = fullName.trim();
+        console.log(`👤 ✅ Found name for user ${trimmedUserId}: "${name}"`);
+        return name;
       }
       
       // Fallback to email username
-      if (member.profile.email) {
-        const emailUsername = member.profile.email.split('@')[0];
-        return emailUsername.charAt(0).toUpperCase() + emailUsername.slice(1);
+      if (email && typeof email === 'string' && email.trim() !== '') {
+        const emailUsername = email.trim().split('@')[0];
+        const capitalized = emailUsername.charAt(0).toUpperCase() + emailUsername.slice(1);
+        console.log(`👤 ✅ Found email for user ${trimmedUserId}, using username: "${capitalized}"`);
+        return capitalized;
       }
       
+      // Last resort: return 'Someone'
+      console.warn(`👤 ❌ Could not find name or email for userId: "${trimmedUserId}"`, {
+        memberExists: !!member,
+        hasProfile: !!member?.profile,
+        profileData: profileData,
+        availableUserIds: Array.from(userProfileMap.keys())
+      });
       return 'Someone';
     };
+
+    // Collect all unique user IDs from recipes and activities for debugging
+    const recipeUserIds = new Set<string>();
+    recipes.forEach(recipe => {
+      if (recipe.created_by) recipeUserIds.add(recipe.created_by);
+      if (recipe.last_updated_by) recipeUserIds.add(recipe.last_updated_by);
+    });
+    mealPlans.forEach(plan => {
+      if (plan.created_by) recipeUserIds.add(plan.created_by);
+    });
+    cookingStatusActivities.forEach(status => {
+      if (status.recipes?.created_by) recipeUserIds.add(status.recipes.created_by);
+    });
+    recipeNotes.forEach(note => {
+      if (note.created_by) recipeUserIds.add(note.created_by);
+    });
+    memberActivities.forEach(member => {
+      if (member.user_id) recipeUserIds.add(member.user_id);
+    });
+
+    console.log('🔍 DEBUG: User ID comparison:', {
+      recipeUserIds: Array.from(recipeUserIds),
+      householdMemberUserIds: householdMembers.map(m => m.user_id),
+      missingUserIds: Array.from(recipeUserIds).filter(id => !householdMembers.some(m => m.user_id === id))
+    });
 
     const allActivities: HouseholdActivity[] = [];
 
