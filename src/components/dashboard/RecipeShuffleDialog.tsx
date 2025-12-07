@@ -42,7 +42,7 @@ export function RecipeShuffleDialog({
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent 
-        className="max-w-full h-full border-0 p-0 flex items-center justify-center [&>button]:hidden"
+        className="max-w-full h-full border-0 p-0 flex items-center justify-center [&>button:not(.custom-close-btn)]:hidden"
         style={{
           background: 'linear-gradient(135deg, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.88) 100%)',
           backdropFilter: 'blur(8px)',
@@ -52,7 +52,7 @@ export function RecipeShuffleDialog({
         {/* Custom close button */}
         <button
           onClick={() => onOpenChange(false)}
-          className="absolute top-6 right-6 z-50 p-2 transition-opacity hover:opacity-70"
+          className="custom-close-btn absolute top-6 right-6 z-50 p-2 transition-opacity hover:opacity-70"
           aria-label="Close"
         >
           <X className="w-7 h-7 text-white" strokeWidth={2.5} />
