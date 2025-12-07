@@ -98,7 +98,7 @@ export function LoginForm() {
   };
   
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background py-12 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-background pt-12 px-4">
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="flex items-center justify-center space-x-3 mb-8">
@@ -107,7 +107,7 @@ export function LoginForm() {
         </div>
 
         {/* Card */}
-        <div className="bg-background rounded-lg shadow-lg p-8 space-y-6">
+        <div className="bg-background rounded-lg border-2 border-gray-300 shadow-lg p-8 space-y-6">
           {/* Heading */}
           <h1 className="text-2xl font-bold text-foreground">Create an account</h1>
           
@@ -116,7 +116,7 @@ export function LoginForm() {
             <GoogleLoginButton />
             <Button
               type="button"
-              className="w-full flex items-center justify-center gap-2 sm:gap-3 bg-background text-black hover:bg-gray-50 border border-black py-2 sm:py-3 px-4 text-sm sm:text-base font-medium"
+              className="w-full flex items-center justify-center gap-2 sm:gap-3 bg-background text-black hover:bg-gray-50 border border-gray-400 py-2 sm:py-3 px-4 text-sm sm:text-base font-medium rounded-sm"
             >
               <Mail className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0" />
               <span>Log in with Email</span>
@@ -201,7 +201,7 @@ export function LoginForm() {
             {/* Create Account Button */}
             <Button
               type="submit"
-              className="w-full bg-sage hover:bg-sage/90 text-white py-3 text-base font-medium"
+              className="w-full bg-sage hover:bg-sage/90 text-white py-3 text-base font-medium rounded-sm"
               disabled={isCreatingAccount || !agreedToTerms}
             >
               {isCreatingAccount ? "Creating account..." : "Create account"}
