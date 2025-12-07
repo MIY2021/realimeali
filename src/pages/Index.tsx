@@ -1,10 +1,4 @@
-
-import { 
-  Book, 
-  UtensilsCrossed, 
-  Heart,
-  Star
-} from "lucide-react";
+import { Book, UtensilsCrossed, Heart, Star } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { LoginPromptDialog } from "@/components/auth/LoginPromptDialog";
@@ -62,14 +56,12 @@ export default function Index() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[80vh] text-center px-4">
         <div className="max-w-md mx-auto">
-          <h1 className="text-4xl font-bold text-foreground mb-4">
-            Welcome to RealiMeali
-          </h1>
+          <h1 className="text-4xl font-bold text-foreground mb-4">Welcome to RealiMeali</h1>
           <p className="text-muted-foreground text-lg mb-8">
             Your all-in-one meal planning and recipe management system
           </p>
           <div className="space-y-4">
-            <button 
+            <button
               onClick={() => triggerPromptOnFeatureClick()}
               className="w-full px-6 py-3 bg-primary text-primary-foreground rounded-lg font-semibold hover:bg-primary/90 transition-colors"
             >
@@ -77,12 +69,8 @@ export default function Index() {
             </button>
           </div>
         </div>
-        
-        <LoginPromptDialog 
-          isOpen={showPrompt}
-          onClose={closePrompt}
-          trigger={promptTrigger}
-        />
+
+        <LoginPromptDialog isOpen={showPrompt} onClose={closePrompt} trigger={promptTrigger} />
       </div>
     );
   }
@@ -92,10 +80,10 @@ export default function Index() {
       <div className="container max-w-2xl mx-auto px-4 py-4 space-y-5">
         {/* Welcome Header with Daily Tip and Menu Button */}
         <WelcomeHeader onMenuClick={() => setMenuOpen(true)} />
-        
+
         {/* Overflow Menu Drawer - controlled from WelcomeHeader button */}
         <HomeOverflowMenu isOpen={menuOpen} onOpenChange={setMenuOpen} />
-        
+
         {/* Stats Cards Grid - 2x2 with white backgrounds */}
         <div className="grid grid-cols-2 gap-3">
           <StatsCard
