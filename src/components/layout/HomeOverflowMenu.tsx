@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Settings, LayoutDashboard, ArrowRight, Mail } from "lucide-react";
+import { Settings, LayoutDashboard, ArrowRight, Mail, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAdminCheck } from "@/hooks/useAdminCheck";
@@ -24,9 +24,10 @@ import {
 interface HomeOverflowMenuProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
+  onOpenWelcomeSlides?: () => void;
 }
 
-export const HomeOverflowMenu = ({ isOpen, onOpenChange }: HomeOverflowMenuProps) => {
+export const HomeOverflowMenu = ({ isOpen, onOpenChange, onOpenWelcomeSlides }: HomeOverflowMenuProps) => {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const { signOut } = useAuth();
   const { isAdmin } = useAdminCheck();
@@ -41,7 +42,18 @@ export const HomeOverflowMenu = ({ isOpen, onOpenChange }: HomeOverflowMenuProps
     signOut();
   };
 
+  const handleWelcomeTourClick = () => {
+    onOpenChange(false);
+    onOpenWelcomeSlides?.();
+  };
+
   const menuItems = [
+    {
+      icon: Sparkles,
+      label: "Welcome Tour",
+      action: handleWelcomeTourClick,
+      show: true,
+    },
     {
       icon: Settings,
       label: "Settings",
@@ -71,17 +83,28 @@ export const HomeOverflowMenu = ({ isOpen, onOpenChange }: HomeOverflowMenuProps
           </DrawerHeader>
           
           <div className="flex flex-col p-4 space-y-2">
-            {menuItems.map((item) => 
+            {menuItems.map((item, index) => 
               item.show ? (
-                <Link
-                  key={item.to}
-                  to={item.to}
-                  onClick={() => onOpenChange(false)}
-                  className="flex items-center w-full px-4 py-3 rounded-lg hover:bg-[#F5B82E]/10 active:bg-[#F5B82E]/20 transition-colors"
-                >
-                  <item.icon className="h-5 w-5 text-[#2C3E50] mr-3" />
-                  <span className="text-[#2C3E50] font-medium">{item.label}</span>
-                </Link>
+                item.to ? (
+                  <Link
+                    key={item.to}
+                    to={item.to}
+                    onClick={() => onOpenChange(false)}
+                    className="flex items-center w-full px-4 py-3 rounded-lg hover:bg-[#F5B82E]/10 active:bg-[#F5B82E]/20 transition-colors"
+                  >
+                    <item.icon className="h-5 w-5 text-[#2C3E50] mr-3" />
+                    <span className="text-[#2C3E50] font-medium">{item.label}</span>
+                  </Link>
+                ) : (
+                  <button
+                    key={`action-${index}`}
+                    onClick={item.action}
+                    className="flex items-center w-full px-4 py-3 rounded-lg hover:bg-[#F5B82E]/10 active:bg-[#F5B82E]/20 transition-colors"
+                  >
+                    <item.icon className="h-5 w-5 text-[#2C3E50] mr-3" />
+                    <span className="text-[#2C3E50] font-medium">{item.label}</span>
+                  </button>
+                )
               ) : null
             )}
             
