@@ -40,7 +40,7 @@ export default function Index() {
   const handleWelcomeSlidesComplete = () => {
     if (user) {
       const hasSeenWelcomeKey = `hasSeenWelcome_${user.id}`;
-      localStorage.setItem(hasSeenWelcomeKey, 'true');
+      localStorage.setItem(hasSeenWelcomeKey, "true");
     }
     setShowWelcomeSlides(false);
   };
@@ -106,9 +106,9 @@ export default function Index() {
         <WelcomeHeader onMenuClick={() => setMenuOpen(true)} />
 
         {/* Overflow Menu Drawer - controlled from WelcomeHeader button */}
-        <HomeOverflowMenu 
-          isOpen={menuOpen} 
-          onOpenChange={setMenuOpen} 
+        <HomeOverflowMenu
+          isOpen={menuOpen}
+          onOpenChange={setMenuOpen}
           onOpenWelcomeSlides={() => setShowWelcomeSlides(true)}
         />
 
