@@ -25,17 +25,23 @@ export default function Index() {
 
   // Auto-show welcome slides for first-time users
   useEffect(() => {
-    if (user && !localStorage.getItem('hasSeenWelcome')) {
-      // Small delay to let the page load first
-      const timer = setTimeout(() => {
-        setShowWelcomeSlides(true);
-      }, 500);
-      return () => clearTimeout(timer);
+    if (user) {
+      const hasSeenWelcomeKey = `hasSeenWelcome_${user.id}`;
+      if (!localStorage.getItem(hasSeenWelcomeKey)) {
+        // Small delay to let the page load first
+        const timer = setTimeout(() => {
+          setShowWelcomeSlides(true);
+        }, 500);
+        return () => clearTimeout(timer);
+      }
     }
   }, [user]);
 
   const handleWelcomeSlidesComplete = () => {
-    localStorage.setItem('hasSeenWelcome', 'true');
+    if (user) {
+      const hasSeenWelcomeKey = `hasSeenWelcome_${user.id}`;
+      localStorage.setItem(hasSeenWelcomeKey, 'true');
+    }
     setShowWelcomeSlides(false);
   };
 
