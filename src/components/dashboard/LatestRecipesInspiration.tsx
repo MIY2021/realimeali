@@ -126,10 +126,18 @@ export const LatestRecipesInspiration = () => {
 
   return (
     <div className="w-full">
-      <div className="mb-4">
-        <h2 className="text-xl font-extrabold">
-          Recipe of the Day
-        </h2>
+      <div className="mb-5 flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-extrabold text-gray-900 mb-1">
+            Recipe of the Day
+          </h2>
+          <p className="text-sm text-gray-600">
+            Discover something new every day
+          </p>
+        </div>
+        <div className="h-10 w-10 rounded-full bg-gradient-to-br from-yellow-400 to-orange-400 flex items-center justify-center shadow-md">
+          <span className="text-xl">⭐</span>
+        </div>
       </div>
       
       {isLoading ? (

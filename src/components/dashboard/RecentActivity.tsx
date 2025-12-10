@@ -152,11 +152,11 @@ export const RecentActivity = ({ isLoading: externalLoading }: RecentActivityPro
   return (
     <div className="w-full">
       <div className="mb-4">
-        <h2 className="text-xl font-extrabold">
+        <h2 className="text-xl font-extrabold text-gray-900">
           Recent Activity
         </h2>
       </div>
-      <div className="space-y-2">
+      <div className="space-y-3">
         {displayActivities.map((activity) => {
           const avatarUrl = getUserAvatar(activity.metadata?.userId || '');
           const recipeId = activity.metadata?.recipeId;
@@ -173,12 +173,12 @@ export const RecentActivity = ({ isLoading: externalLoading }: RecentActivityPro
           return (
             <div 
               key={activity.id} 
-              className="bg-white rounded-3xl shadow-sm p-3"
+              className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 hover:shadow-md transition-all duration-200 hover:-translate-y-0.5"
             >
-              <div className="flex items-start gap-3">
-                <Avatar className="h-10 w-10 flex-shrink-0">
+              <div className="flex items-start gap-4">
+                <Avatar className="h-12 w-12 flex-shrink-0 ring-2 ring-white shadow-md">
                   {avatarUrl && <AvatarImage src={avatarUrl} alt={activity.user} />}
-                  <AvatarFallback className={getActivityBgColor(activity.type)}>
+                  <AvatarFallback className={`${getActivityBgColor(activity.type)} ring-2 ring-white`}>
                     {getActivityIcon(activity.type)}
                   </AvatarFallback>
                 </Avatar>
@@ -193,16 +193,16 @@ export const RecentActivity = ({ isLoading: externalLoading }: RecentActivityPro
                       {recipeId ? (
                         <Link 
                           to={`/my-recipes/${recipeSlug || recipeId}`}
-                          className="text-blue-600 hover:text-blue-700 hover:underline"
+                          className="text-blue-600 hover:text-blue-700 hover:underline font-medium"
                         >
                           {recipeName}
                         </Link>
                       ) : (
-                        <span className="text-gray-900">{recipeName}</span>
+                        <span className="text-gray-900 font-medium">{recipeName}</span>
                       )}
                     </span>
                   </p>
-                  <p className="text-xs text-muted-foreground mt-1">
+                  <p className="text-xs text-muted-foreground mt-1.5">
                     {format(new Date(activity.timestamp), 'd MMMM')}
                   </p>
                 </div>

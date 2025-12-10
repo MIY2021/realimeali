@@ -73,30 +73,35 @@ export const QuickActions = () => {
     <>
       <div className="w-full">
         <div className="mb-4">
-          <h2 className="text-xl font-extrabold">
+          <h2 className="text-xl font-extrabold text-gray-900">
             Quick Actions
           </h2>
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-4">
           {actions.map((action) => {
             const content = (
               <div
                 className="
                   bg-white
-                  rounded-3xl p-5
-                  flex flex-col items-center justify-center gap-3
-                  shadow-sm
-                  transition-all duration-200
-                  hover:shadow-md
-                  active:scale-95
+                  rounded-3xl p-6
+                  flex flex-col items-center justify-center gap-4
+                  shadow-md border border-gray-100
+                  transition-all duration-300
+                  hover:shadow-xl hover:-translate-y-1
+                  active:scale-[0.98]
                   cursor-pointer
-                  min-h-[100px]
+                  min-h-[120px]
+                  relative overflow-hidden
+                  group
                 "
               >
-                <div className={`${action.iconBg} rounded-full p-3 shadow-sm`}>
+                {/* Gradient overlay on hover */}
+                <div className={`absolute inset-0 bg-gradient-to-br ${action.iconBg.replace('bg-', 'from-')}/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
+                
+                <div className={`${action.iconBg} rounded-2xl p-4 shadow-lg group-hover:scale-110 transition-transform duration-300 relative z-10`}>
                   <action.icon className={`h-7 w-7 ${action.iconColor}`} />
                 </div>
-                <span className="text-sm font-semibold text-gray-900 text-center leading-tight">
+                <span className="text-sm font-bold text-gray-900 text-center leading-tight relative z-10">
                   {action.title}
                 </span>
               </div>

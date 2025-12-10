@@ -33,29 +33,50 @@ export const StatsCard = ({
     }
   };
 
+  const getGradientBg = () => {
+    switch (variant) {
+      case 'primary':
+        return 'bg-gradient-to-br from-blue-50 to-blue-100/50';
+      case 'secondary':
+        return 'bg-gradient-to-br from-emerald-50 to-emerald-100/50';
+      case 'accent':
+        return 'bg-gradient-to-br from-purple-50 to-purple-100/50';
+      case 'muted':
+        return 'bg-gradient-to-br from-red-50 to-red-100/50';
+      default:
+        return 'bg-gradient-to-br from-gray-50 to-gray-100/50';
+    }
+  };
+
   return (
     <div 
       className={`
-        bg-white
-        rounded-3xl p-4 shadow-sm
-        transition-all duration-200
-        ${onClick ? 'cursor-pointer hover:shadow-md active:scale-95' : ''}
+        ${getGradientBg()}
+        rounded-3xl p-5 shadow-md border border-white/50
+        transition-all duration-300
+        ${onClick ? 'cursor-pointer hover:shadow-xl hover:-translate-y-1 active:scale-[0.98]' : ''}
+        relative overflow-hidden
       `}
       onClick={onClick}
     >
-      <div className="flex flex-col h-full">
-        <div className="flex items-start justify-between mb-6">
-          <p className="text-xs font-extrabold text-gray-500 uppercase tracking-wide">{title}</p>
-          <IconComponent className={`h-5 w-5 ${getIconColor()}`} />
+      {/* Decorative gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-transparent pointer-events-none" />
+      
+      <div className="flex flex-col h-full relative z-10">
+        <div className="flex items-start justify-between mb-4">
+          <p className="text-xs font-extrabold text-gray-600 uppercase tracking-wider">{title}</p>
+          <div className={`${getIconColor()} bg-white/80 rounded-full p-2 shadow-sm`}>
+            <IconComponent className="h-5 w-5" />
+          </div>
         </div>
-        <div className="relative h-9">
+        <div className="relative h-10">
           {/* Loading state - subtle shimmer effect */}
           {isLoading && (
             <div className="absolute inset-0 flex items-center">
               <div 
-                className="h-8 w-20 rounded-md overflow-hidden"
+                className="h-9 w-24 rounded-lg overflow-hidden bg-white/50"
                 style={{
-                  background: 'linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.04) 50%, transparent 100%)',
+                  background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.6) 50%, transparent 100%)',
                   backgroundSize: '200% 100%',
                   animation: 'shimmer 1.5s ease-in-out infinite'
                 }}
@@ -66,7 +87,7 @@ export const StatsCard = ({
           {/* Actual value - fades in when loaded */}
           <p 
             className={`
-              text-3xl font-bold text-gray-900
+              text-3xl font-extrabold text-gray-900
               transition-opacity duration-500 ease-out
               ${isLoading ? 'opacity-0' : 'opacity-100'}
             `}

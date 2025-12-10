@@ -107,8 +107,8 @@ export default function Index() {
   }
 
   return (
-    <div className="min-h-screen">
-      <div className="container max-w-2xl mx-auto px-4 py-4 space-y-5">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+      <div className="container max-w-2xl mx-auto px-4 py-6 space-y-6">
         {/* Welcome Header with Daily Tip and Menu Button */}
         <WelcomeHeader onMenuClick={() => setMenuOpen(true)} />
 
@@ -126,8 +126,8 @@ export default function Index() {
           onComplete={handleWelcomeSlidesComplete}
         />
 
-        {/* Stats Cards Grid - 2x2 with white backgrounds */}
-        <div className="grid grid-cols-2 gap-3">
+        {/* Stats Cards Grid - Enhanced with gradients and better visuals */}
+        <div className="grid grid-cols-2 gap-4">
           <StatsCard
             title="My Recipes"
             value={stats.totalRecipes}
@@ -162,14 +162,14 @@ export default function Index() {
           />
         </div>
 
+        {/* Recipe of the Day - Prominent Section */}
+        <LatestRecipesInspiration />
+
         {/* Quick Actions */}
         <QuickActions />
 
         {/* Recent Activity */}
         <RecentActivity isLoading={isLoading} />
-
-        {/* Latest Recipes Inspiration */}
-        <LatestRecipesInspiration />
       </div>
     </div>
   );
