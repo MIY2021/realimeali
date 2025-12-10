@@ -17,8 +17,9 @@ import {
   ArrowRight,
   ChevronLeft,
   ChevronRight,
-  Compass,
-  Plus
+  Search,
+  Plus,
+  Check
 } from "lucide-react";
 import useEmblaCarousel from "embla-carousel-react";
 
@@ -34,7 +35,7 @@ export const WelcomeSlidesDialog = ({ open, onOpenChange, onComplete }: WelcomeS
   const [canScrollNext, setCanScrollNext] = useState(true);
   const [canScrollPrev, setCanScrollPrev] = useState(false);
 
-  const totalSlides = 6;
+  const totalSlides = 7;
 
   const onSelect = useCallback(() => {
     if (!emblaApi) return;
@@ -173,14 +174,14 @@ export const WelcomeSlidesDialog = ({ open, onOpenChange, onComplete }: WelcomeS
     {
       headline: "Discover ready-made recipes.",
       description: "Browse curated recipes and import them into your collection with one tap.",
-      icon: <Compass className="w-8 h-8 text-[#48A97D]" />,
+      icon: <Search className="w-8 h-8 text-[#48A97D]" />,
       mockup: (
         <div className="relative w-full h-48 sm:h-64 flex items-center justify-center">
           {/* Search/Discovery interface mockup */}
           <div className="mx-auto w-56 bg-white border border-[#E5E7EB] rounded-2xl p-4 shadow-lg">
             {/* Search bar */}
             <div className="flex items-center gap-2 mb-4 p-2 bg-[#F3F4F6] rounded-lg">
-              <Compass className="w-4 h-4 text-[#48A97D] animate-pulse" style={{ animationDelay: "0s" }} />
+              <Search className="w-4 h-4 text-[#48A97D] animate-pulse" style={{ animationDelay: "0s" }} />
               <div className="flex-1 h-2 bg-[#E5E7EB] rounded" />
             </div>
             
@@ -224,9 +225,9 @@ export const WelcomeSlidesDialog = ({ open, onOpenChange, onComplete }: WelcomeS
             </div>
           </div>
 
-          {/* Floating compass icon */}
+          {/* Floating search icon */}
           <div className="absolute -top-2 -right-4 p-2.5 bg-[#48A97D]/10 border border-[#48A97D]/20 rounded-xl shadow-sm animate-pulse" style={{ animationDelay: "1.4s" }}>
-            <Compass className="w-5 h-5 text-[#48A97D]" />
+            <Search className="w-5 h-5 text-[#48A97D]" />
           </div>
         </div>
       ),
@@ -319,6 +320,71 @@ export const WelcomeSlidesDialog = ({ open, onOpenChange, onComplete }: WelcomeS
                 <p className="text-xs text-[#374151]">Try my Easy Jerk Chicken or a classic Chicken Stir Fry! 🍗</p>
               </div>
             </div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      headline: "Everything you need to cook with confidence.",
+      description: "All your culinary tools in one place.",
+      icon: <ListChecks className="w-8 h-8 text-[#48A97D]" />,
+      mockup: (
+        <div className="relative w-full h-48 sm:h-64 flex items-center justify-center">
+          {/* Summary checklist card */}
+          <div className="mx-auto w-64 bg-white border border-[#E5E7EB] rounded-2xl p-5 shadow-lg">
+            <div className="space-y-3">
+              {/* Feature 1: Save recipes */}
+              <div className="flex items-center gap-3 animate-pulse" style={{ animationDelay: "0s" }}>
+                <div className="w-8 h-8 bg-[#48A97D]/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Book className="w-4 h-4 text-[#48A97D]" />
+                </div>
+                <span className="text-sm text-[#374151] font-medium flex-1">Save & organize recipes</span>
+                <div className="w-5 h-5 bg-[#48A97D] rounded-full flex items-center justify-center">
+                  <Check className="w-3 h-3 text-white" />
+                </div>
+              </div>
+              
+              {/* Feature 2: Plan meals */}
+              <div className="flex items-center gap-3 animate-pulse" style={{ animationDelay: "0.2s" }}>
+                <div className="w-8 h-8 bg-[#48A97D]/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <CalendarDays className="w-4 h-4 text-[#48A97D]" />
+                </div>
+                <span className="text-sm text-[#374151] font-medium flex-1">Plan weekly meals</span>
+                <div className="w-5 h-5 bg-[#48A97D] rounded-full flex items-center justify-center">
+                  <Check className="w-3 h-3 text-white" />
+                </div>
+              </div>
+              
+              {/* Feature 3: Shopping list */}
+              <div className="flex items-center gap-3 animate-pulse" style={{ animationDelay: "0.4s" }}>
+                <div className="w-8 h-8 bg-[#48A97D]/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <ShoppingCart className="w-4 h-4 text-[#48A97D]" />
+                </div>
+                <span className="text-sm text-[#374151] font-medium flex-1">Auto-generate shopping lists</span>
+                <div className="w-5 h-5 bg-[#48A97D] rounded-full flex items-center justify-center">
+                  <Check className="w-3 h-3 text-white" />
+                </div>
+              </div>
+              
+              {/* Feature 4: Discover recipes */}
+              <div className="flex items-center gap-3 animate-pulse" style={{ animationDelay: "0.6s" }}>
+                <div className="w-8 h-8 bg-[#48A97D]/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Search className="w-4 h-4 text-[#48A97D]" />
+                </div>
+                <span className="text-sm text-[#374151] font-medium flex-1">Discover new recipes</span>
+                <div className="w-5 h-5 bg-[#48A97D] rounded-full flex items-center justify-center">
+                  <Check className="w-3 h-3 text-white" />
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Decorative sparkles */}
+          <div className="absolute -top-1 -left-2">
+            <Sparkles className="w-4 h-4 text-[#FEEA97] animate-pulse" style={{ animationDelay: "0.8s" }} />
+          </div>
+          <div className="absolute -bottom-1 -right-2">
+            <Sparkles className="w-4 h-4 text-[#48A97D] animate-pulse" style={{ animationDelay: "1s" }} />
           </div>
         </div>
       ),
