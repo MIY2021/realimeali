@@ -19,7 +19,11 @@ import {
   ChevronRight,
   Search,
   Plus,
-  Check
+  Check,
+  Heart,
+  Circle,
+  Star,
+  Bookmark
 } from "lucide-react";
 import useEmblaCarousel from "embla-carousel-react";
 
@@ -279,8 +283,23 @@ export const WelcomeSlidesDialog = ({ open, onOpenChange, onComplete }: WelcomeS
       icon: <ShoppingCart className="w-8 h-8 text-[#48A97D]" />,
       mockup: (
         <div className="relative w-full">
-          {/* Floating checkmark */}
-          <div className="absolute -top-2 -right-2 p-2.5 bg-[#48A97D]/10 border border-[#48A97D]/20 rounded-xl shadow-sm animate-pulse" style={{ animationDelay: "0s" }}>
+          {/* Floating food icons around the graphic */}
+          <div className="absolute -top-4 -left-4 p-2 bg-[#E07A5F]/10 border border-[#E07A5F]/20 rounded-xl shadow-sm animate-pulse" style={{ animationDelay: "0s" }}>
+            <Heart className="w-5 h-5 text-[#E07A5F]" />
+          </div>
+          <div className="absolute -top-2 -right-4 p-2 bg-[#FEEA97]/30 border border-[#F5B82E]/20 rounded-xl shadow-sm animate-pulse" style={{ animationDelay: "0.3s" }}>
+            <Star className="w-5 h-5 text-[#D4A500]" />
+          </div>
+          <div className="absolute top-1/3 -left-6 p-2 bg-[#48A97D]/10 border border-[#48A97D]/20 rounded-xl shadow-sm animate-pulse" style={{ animationDelay: "0.6s" }}>
+            <Bookmark className="w-5 h-5 text-[#48A97D]" />
+          </div>
+          <div className="absolute top-1/2 -right-6 p-2 bg-[#9B59B6]/10 border border-[#9B59B6]/20 rounded-xl shadow-sm animate-pulse" style={{ animationDelay: "0.9s" }}>
+            <Circle className="w-5 h-5 text-[#9B59B6]" />
+          </div>
+          <div className="absolute -bottom-4 left-4 p-2 bg-[#E07A5F]/10 border border-[#E07A5F]/20 rounded-xl shadow-sm animate-pulse" style={{ animationDelay: "1.2s" }}>
+            <UtensilsCrossed className="w-5 h-5 text-[#E07A5F]" />
+          </div>
+          <div className="absolute -bottom-2 -right-2 p-2.5 bg-[#48A97D]/10 border border-[#48A97D]/20 rounded-xl shadow-sm animate-pulse" style={{ animationDelay: "1.5s" }}>
             <ListChecks className="w-5 h-5 text-[#48A97D]" />
           </div>
           
@@ -302,6 +321,23 @@ export const WelcomeSlidesDialog = ({ open, onOpenChange, onComplete }: WelcomeS
       icon: <Sparkles className="w-8 h-8 text-[#48A97D]" />,
       mockup: (
         <div className="relative w-full">
+          {/* Floating chat bubble icons */}
+          <div className="absolute -top-4 -left-4 p-2 bg-[#48A97D]/10 border border-[#48A97D]/20 rounded-xl shadow-sm animate-pulse" style={{ animationDelay: "0s" }}>
+            <Sparkles className="w-5 h-5 text-[#48A97D]" />
+          </div>
+          <div className="absolute -top-2 -right-6 p-2 bg-[#FEEA97]/30 border border-[#F5B82E]/20 rounded-xl shadow-sm animate-pulse" style={{ animationDelay: "0.3s" }}>
+            <Star className="w-4 h-4 text-[#D4A500]" />
+          </div>
+          <div className="absolute top-1/3 -right-4 p-2 bg-[#E07A5F]/10 border border-[#E07A5F]/20 rounded-xl shadow-sm animate-pulse" style={{ animationDelay: "0.6s" }}>
+            <Heart className="w-4 h-4 text-[#E07A5F]" />
+          </div>
+          <div className="absolute -bottom-4 left-2 p-2 bg-[#9B59B6]/10 border border-[#9B59B6]/20 rounded-xl shadow-sm animate-pulse" style={{ animationDelay: "0.9s" }}>
+            <Sparkles className="w-4 h-4 text-[#9B59B6]" />
+          </div>
+          <div className="absolute -bottom-2 -right-4 p-2 bg-[#48A97D]/10 border border-[#48A97D]/20 rounded-xl shadow-sm animate-pulse" style={{ animationDelay: "1.2s" }}>
+            <UtensilsCrossed className="w-5 h-5 text-[#48A97D]" />
+          </div>
+          
           {/* Chat mockup */}
           <div className="mx-auto w-56 bg-white border border-[#E5E7EB] rounded-2xl p-4 space-y-3 shadow-lg animate-pulse" style={{ animationDelay: "0s" }}>
             {/* User message */}
@@ -330,61 +366,47 @@ export const WelcomeSlidesDialog = ({ open, onOpenChange, onComplete }: WelcomeS
       icon: <ListChecks className="w-8 h-8 text-[#48A97D]" />,
       mockup: (
         <div className="relative w-full h-48 sm:h-64 flex items-center justify-center">
-          {/* Summary checklist card */}
-          <div className="mx-auto w-64 bg-white border border-[#E5E7EB] rounded-2xl p-5 shadow-lg">
-            <div className="space-y-3">
-              {/* Feature 1: Save recipes */}
-              <div className="flex items-center gap-3 animate-pulse" style={{ animationDelay: "0s" }}>
-                <div className="w-8 h-8 bg-[#48A97D]/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Book className="w-4 h-4 text-[#48A97D]" />
-                </div>
-                <span className="text-sm text-[#374151] font-medium flex-1">Save & organize recipes</span>
-                <div className="w-5 h-5 bg-[#48A97D] rounded-full flex items-center justify-center">
-                  <Check className="w-3 h-3 text-white" />
-                </div>
+          {/* Summary checklist - no border, big and bold */}
+          <div className="space-y-4">
+            {/* Feature 1: Save recipes */}
+            <div className="flex items-center gap-4 animate-pulse" style={{ animationDelay: "0s" }}>
+              <div className="w-10 h-10 bg-[#48A97D] rounded-xl flex items-center justify-center flex-shrink-0 shadow-md">
+                <Book className="w-5 h-5 text-white" />
               </div>
-              
-              {/* Feature 2: Plan meals */}
-              <div className="flex items-center gap-3 animate-pulse" style={{ animationDelay: "0.2s" }}>
-                <div className="w-8 h-8 bg-[#48A97D]/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <CalendarDays className="w-4 h-4 text-[#48A97D]" />
-                </div>
-                <span className="text-sm text-[#374151] font-medium flex-1">Plan weekly meals</span>
-                <div className="w-5 h-5 bg-[#48A97D] rounded-full flex items-center justify-center">
-                  <Check className="w-3 h-3 text-white" />
-                </div>
+              <span className="text-base sm:text-lg text-[#2C3E50] font-bold">Save & organize recipes</span>
+            </div>
+            
+            {/* Feature 2: Plan meals */}
+            <div className="flex items-center gap-4 animate-pulse" style={{ animationDelay: "0.15s" }}>
+              <div className="w-10 h-10 bg-[#48A97D] rounded-xl flex items-center justify-center flex-shrink-0 shadow-md">
+                <CalendarDays className="w-5 h-5 text-white" />
               </div>
-              
-              {/* Feature 3: Shopping list */}
-              <div className="flex items-center gap-3 animate-pulse" style={{ animationDelay: "0.4s" }}>
-                <div className="w-8 h-8 bg-[#48A97D]/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <ShoppingCart className="w-4 h-4 text-[#48A97D]" />
-                </div>
-                <span className="text-sm text-[#374151] font-medium flex-1">Auto-generate shopping lists</span>
-                <div className="w-5 h-5 bg-[#48A97D] rounded-full flex items-center justify-center">
-                  <Check className="w-3 h-3 text-white" />
-                </div>
+              <span className="text-base sm:text-lg text-[#2C3E50] font-bold">Plan weekly meals</span>
+            </div>
+            
+            {/* Feature 3: Shopping list */}
+            <div className="flex items-center gap-4 animate-pulse" style={{ animationDelay: "0.3s" }}>
+              <div className="w-10 h-10 bg-[#48A97D] rounded-xl flex items-center justify-center flex-shrink-0 shadow-md">
+                <ShoppingCart className="w-5 h-5 text-white" />
               </div>
-              
-              {/* Feature 4: Discover recipes */}
-              <div className="flex items-center gap-3 animate-pulse" style={{ animationDelay: "0.6s" }}>
-                <div className="w-8 h-8 bg-[#48A97D]/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Search className="w-4 h-4 text-[#48A97D]" />
-                </div>
-                <span className="text-sm text-[#374151] font-medium flex-1">Discover new recipes</span>
-                <div className="w-5 h-5 bg-[#48A97D] rounded-full flex items-center justify-center">
-                  <Check className="w-3 h-3 text-white" />
-                </div>
+              <span className="text-base sm:text-lg text-[#2C3E50] font-bold">Auto-generate shopping lists</span>
+            </div>
+            
+            {/* Feature 4: Discover recipes */}
+            <div className="flex items-center gap-4 animate-pulse" style={{ animationDelay: "0.45s" }}>
+              <div className="w-10 h-10 bg-[#48A97D] rounded-xl flex items-center justify-center flex-shrink-0 shadow-md">
+                <Search className="w-5 h-5 text-white" />
               </div>
+              <span className="text-base sm:text-lg text-[#2C3E50] font-bold">Discover new recipes</span>
             </div>
           </div>
           
           {/* Decorative sparkles */}
-          <div className="absolute -top-1 -left-2">
-            <Sparkles className="w-4 h-4 text-[#FEEA97] animate-pulse" style={{ animationDelay: "0.8s" }} />
+          <div className="absolute top-0 left-0">
+            <Sparkles className="w-5 h-5 text-[#FEEA97] animate-pulse" style={{ animationDelay: "0.6s" }} />
           </div>
-          <div className="absolute -bottom-1 -right-2">
-            <Sparkles className="w-4 h-4 text-[#48A97D] animate-pulse" style={{ animationDelay: "1s" }} />
+          <div className="absolute bottom-4 right-0">
+            <Sparkles className="w-5 h-5 text-[#48A97D] animate-pulse" style={{ animationDelay: "0.75s" }} />
           </div>
         </div>
       ),
