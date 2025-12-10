@@ -5,6 +5,7 @@ import { LoginPromptDialog } from "@/components/auth/LoginPromptDialog";
 import { useLoginPrompt } from "@/hooks/useLoginPrompt";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserStats } from "@/hooks/useUserStats";
+import { useAchievements } from "@/hooks/useAchievements";
 import { WelcomeHeader } from "@/components/dashboard/WelcomeHeader";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { QuickActions } from "@/components/dashboard/QuickActions";
@@ -19,9 +20,15 @@ export default function Index() {
   const { showPrompt, promptTrigger, triggerPromptOnFeatureClick, closePrompt } = useLoginPrompt();
   const { user, isLoading: authLoading } = useAuth();
   const { stats, isLoading, hasData } = useUserStats();
+  const { achievements, isLoading: achievementsLoading } = useAchievements();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [showWelcomeSlides, setShowWelcomeSlides] = useState(false);
+
+  // Calculate achievements count
+  const unlockedCount = achievements.filter(a => a.isUnlocked).length;
+  const totalCount = achievements.length;
+  const achievementsDisplay = totalCount > 0 ? `${unlockedCount}/${totalCount}` : "0/0";
 
   // Auto-show welcome slides for first-time users
   useEffect(() => {
@@ -147,9 +154,9 @@ export default function Index() {
           />
           <StatsCard
             title="Achievements"
-            value="0/45"
+            value={achievementsDisplay}
             icon={Star}
-            isLoading={false}
+            isLoading={achievementsLoading}
             variant="accent"
             onClick={handleAchievementsClick}
           />

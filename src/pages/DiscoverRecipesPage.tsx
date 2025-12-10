@@ -19,7 +19,7 @@ export default function DiscoverRecipesPage() {
           />
         }
         title="Discover Recipes"
-        description="Browse featured recipes and find inspiration from around the web."
+        description="Browse featured recipes and find inspiration from around the web. Use search and filters to discover millions more recipes."
       />
       <DiscoverRecipesContent />
     </div>

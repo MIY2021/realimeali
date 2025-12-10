@@ -1,5 +1,3 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -7,52 +5,120 @@ import { supabase } from "@/integrations/supabase/client";
 import { ImportedRecipeCard } from "@/components/discover-recipes/ImportedRecipeCard";
 import { ImportedRecipe } from "@/services/importedRecipeService";
 import { Skeleton } from "@/components/ui/skeleton";
-import { 
-  Carousel, 
-  CarouselContent, 
-  CarouselItem, 
-  CarouselNext, 
-  CarouselPrevious 
-} from "@/components/ui/carousel";
-import { useState, useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useHousehold } from "@/contexts/HouseholdContext";
+import { useToast } from "@/hooks/use-toast";
+import { useState, useMemo } from "react";
+import { AddToMealPlanDialog } from "@/components/recipes/AddToMealPlanDialog";
+import { Recipe } from "@/types";
 
 export const LatestRecipesInspiration = () => {
-  const [api, setApi] = useState<any>();
-  const [current, setCurrent] = useState(0);
-  const [count, setCount] = useState(0);
+  const { user } = useAuth();
+  const { currentHousehold } = useHousehold();
+  const { toast } = useToast();
+  const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
+  const [addToMealPlanOpen, setAddToMealPlanOpen] = useState(false);
 
-  // Fetch newest imported recipes
-  const { data: recipes, isLoading, error } = useQuery({
-    queryKey: ['newest-imported-recipes'],
+  // Fetch all featured recipes
+  const { data: allFeaturedRecipes, isLoading, error } = useQuery({
+    queryKey: ['featured-recipes-for-daily'],
     queryFn: async (): Promise<ImportedRecipe[]> => {
       const { data, error } = await supabase
         .from('imported_recipes')
         .select('*')
-        .order('created_at', { ascending: false })
-        .limit(5);
+        .eq('is_featured', true)
+        .order('priority_score', { ascending: false })
+        .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('Error fetching newest recipes:', error);
-        throw new Error(`Failed to fetch newest recipes: ${error.message}`);
+        console.error('Error fetching featured recipes:', error);
+        throw new Error(`Failed to fetch featured recipes: ${error.message}`);
       }
 
       return (data || []) as unknown as ImportedRecipe[];
     },
-    staleTime: 1000 * 60 * 15, // 15 minutes
-    gcTime: 1000 * 60 * 60, // 1 hour
+    staleTime: 1000 * 60 * 60, // 1 hour - featured recipes don't change often
+    gcTime: 1000 * 60 * 60 * 2, // 2 hours
     retry: 1,
   });
 
-  useEffect(() => {
-    if (!api) return;
+  // Select recipe of the day based on current date (same for all users)
+  const recipeOfTheDay = useMemo(() => {
+    if (!allFeaturedRecipes || allFeaturedRecipes.length === 0) return null;
 
-    setCount(api.scrollSnapList().length);
-    setCurrent(api.selectedScrollSnap() + 1);
+    // Get today's date as a number (days since epoch)
+    const today = new Date();
+    const daysSinceEpoch = Math.floor(today.getTime() / (1000 * 60 * 60 * 24));
+    
+    // Use date to deterministically pick a recipe (same for all users)
+    const recipeIndex = daysSinceEpoch % allFeaturedRecipes.length;
+    
+    return allFeaturedRecipes[recipeIndex];
+  }, [allFeaturedRecipes]);
 
-    api.on("select", () => {
-      setCurrent(api.selectedScrollSnap() + 1);
-    });
-  }, [api]);
+  const handleAddToMealPlan = async (recipe: ImportedRecipe) => {
+    if (!user || !currentHousehold) {
+      toast({
+        title: "Please log in",
+        description: "You need to be logged in to add recipes to your meal plan.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // First, add recipe to My Recipes if it doesn't exist
+    try {
+      const { data: existingRecipe } = await supabase
+        .from('recipes')
+        .select('*')
+        .eq('household_id', currentHousehold.id)
+        .eq('source_url', recipe.source_url)
+        .eq('is_deleted', false)
+        .single();
+
+      if (existingRecipe) {
+        // Recipe already exists, use it
+        setSelectedRecipe(existingRecipe as any);
+        setAddToMealPlanOpen(true);
+      } else {
+        // Insert recipe into household recipes
+        const { data: newRecipe, error: insertError } = await supabase
+          .from('recipes')
+          .insert({
+            title: recipe.title,
+            description: recipe.description || '',
+            ingredients: recipe.ingredients || [],
+            instructions: recipe.instructions || [],
+            prep_time: recipe.prep_time || 0,
+            cook_time: recipe.cook_time || 0,
+            servings: recipe.servings || 1,
+            image: recipe.image,
+            meal_types: recipe.meal_types || [],
+            cuisine_region: recipe.cuisine_region,
+            diet_lifestyle: recipe.diet_lifestyle,
+            source_url: recipe.source_url,
+            created_by: user.id,
+            household_id: currentHousehold.id,
+            import_method: 'featured',
+            is_favorite: false,
+          })
+          .select()
+          .single();
+
+        if (insertError) throw insertError;
+
+        setSelectedRecipe(newRecipe as any);
+        setAddToMealPlanOpen(true);
+      }
+    } catch (error) {
+      console.error('Error adding recipe:', error);
+      toast({
+        title: "Error",
+        description: "Failed to add recipe. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   if (error) {
     return null; // Silently fail if we can't fetch inspiration recipes
@@ -62,65 +128,28 @@ export const LatestRecipesInspiration = () => {
     <div className="w-full">
       <div className="mb-4">
         <h2 className="text-xl font-extrabold">
-          Discover Recipes
+          Recipe of the Day
         </h2>
       </div>
       
       {isLoading ? (
-        <div className="space-y-4">
-          <Skeleton className="h-48 w-full rounded-3xl" />
-          <Skeleton className="h-6 w-3/4" />
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-10 w-full rounded-full" />
-        </div>
-      ) : recipes && recipes.length > 0 ? (
-        <div className="space-y-4">
-          {/* Featured Recipe */}
-          <div className="bg-white rounded-3xl overflow-hidden shadow-sm">
-            <div className="relative h-48 w-full">
-              <img 
-                src={recipes[0].image || '/placeholder.svg'} 
-                alt={recipes[0].title}
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div className="p-4 space-y-3">
-              <h3 className="text-xl font-bold text-gray-900">
-                {recipes[0].title}
-              </h3>
-              <p className="text-sm text-gray-600 line-clamp-2">
-                {recipes[0].description || "A healthy and delicious recipe loaded with fresh ingredients."}
-              </p>
-              
-              {/* Meta info */}
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
-                  🍃 {recipes[0].meal_types?.[0] || 'Dinner'}
-                </span>
-                <span className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
-                  ⏰ {(recipes[0].prep_time + recipes[0].cook_time) || 25} min
-                </span>
-                <span className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
-                  👥 {recipes[0].servings || 4}
-                </span>
-              </div>
-              
-              {/* CTA Button */}
-              <Link to={`/discover-recipes/${recipes[0].id}`} className="block">
-                <button className="w-full bg-[#FFDD6B] hover:bg-[#FFDD6B]/90 text-gray-900 font-semibold py-3 px-4 rounded-full transition-colors flex items-center justify-center gap-2">
-                  👁 View Recipe
-                </button>
-              </Link>
-            </div>
-          </div>
-          
-          {/* Discover More Button */}
-          <Link to="/discover-recipes">
-            <button className="w-full bg-white hover:bg-gray-50 text-gray-900 font-semibold py-3 px-4 rounded-full transition-colors border border-gray-200">
-              Discover More Recipes
-            </button>
-          </Link>
-        </div>
+        <Skeleton className="h-[400px] w-full rounded-lg" />
+      ) : recipeOfTheDay ? (
+        <>
+          <ImportedRecipeCard
+            recipe={recipeOfTheDay}
+            mobileLayout="1"
+            onAddToMealPlan={handleAddToMealPlan}
+          />
+
+          {selectedRecipe && (
+            <AddToMealPlanDialog
+              recipe={selectedRecipe}
+              open={addToMealPlanOpen}
+              onOpenChange={setAddToMealPlanOpen}
+            />
+          )}
+        </>
       ) : (
         <div className="text-center py-12 bg-white rounded-3xl shadow-sm">
           <Sparkles className="h-12 w-12 text-gray-300 mx-auto mb-4" />

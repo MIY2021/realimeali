@@ -103,7 +103,6 @@ export const useHouseholdActivity = () => {
 
   const activities = useMemo(() => {
     if (!householdMembers.length) {
-      console.log('🏠 No household members loaded yet');
       return [];
     }
 
@@ -118,26 +117,18 @@ export const useHouseholdActivity = () => {
       }
     });
 
-    console.log('🏠 Computing activities with household members:', {
-      memberCount: householdMembers.length,
-      profileMapSize: userProfileMap.size,
-      members: householdMembers.map(m => ({
-        user_id: m.user_id,
-        full_name: m.profile?.full_name,
-        email: m.profile?.email,
-        hasProfile: !!m.profile
-      })),
-      userProfileMapEntries: Array.from(userProfileMap.entries()).map(([id, profile]) => ({
-        user_id: id,
-        full_name: profile.full_name,
-        email: profile.email
-      }))
-    });
+    // Cache for getUserName results to avoid repeated lookups
+    const userNameCache = new Map<string, string>();
 
     const getUserName = (userId: string) => {
+      // Check cache first
+      if (userNameCache.has(userId)) {
+        return userNameCache.get(userId)!;
+      }
+
       // Handle empty or invalid user IDs
       if (!userId || typeof userId !== 'string' || userId.trim() === '') {
-        console.log(`👤 Empty or invalid userId provided:`, userId);
+        userNameCache.set(userId, 'Someone');
         return 'Someone';
       }
 
@@ -150,17 +141,6 @@ export const useHouseholdActivity = () => {
       // Also check if it's in our profile map
       const profileData = userProfileMap.get(trimmedUserId);
       
-      console.log(`👤 Looking up user "${trimmedUserId}":`, {
-        memberFound: !!member,
-        profileInMap: !!profileData,
-        memberProfile: member?.profile ? {
-          full_name: member.profile.full_name,
-          email: member.profile.email
-        } : null,
-        mapProfile: profileData || null,
-        allMemberUserIds: householdMembers.map(m => m.user_id)
-      });
-      
       // Use member profile if found, otherwise use map data
       const fullName = member?.profile?.full_name || profileData?.full_name;
       const email = member?.profile?.email || profileData?.email;
@@ -168,7 +148,7 @@ export const useHouseholdActivity = () => {
       // Try full_name first (check for null, undefined, and empty string)
       if (fullName && typeof fullName === 'string' && fullName.trim() !== '') {
         const name = fullName.trim();
-        console.log(`👤 ✅ Found name for user ${trimmedUserId}: "${name}"`);
+        userNameCache.set(userId, name);
         return name;
       }
       
@@ -176,44 +156,14 @@ export const useHouseholdActivity = () => {
       if (email && typeof email === 'string' && email.trim() !== '') {
         const emailUsername = email.trim().split('@')[0];
         const capitalized = emailUsername.charAt(0).toUpperCase() + emailUsername.slice(1);
-        console.log(`👤 ✅ Found email for user ${trimmedUserId}, using username: "${capitalized}"`);
+        userNameCache.set(userId, capitalized);
         return capitalized;
       }
       
       // Last resort: return 'Someone'
-      console.warn(`👤 ❌ Could not find name or email for userId: "${trimmedUserId}"`, {
-        memberExists: !!member,
-        hasProfile: !!member?.profile,
-        profileData: profileData,
-        availableUserIds: Array.from(userProfileMap.keys())
-      });
+      userNameCache.set(userId, 'Someone');
       return 'Someone';
     };
-
-    // Collect all unique user IDs from recipes and activities for debugging
-    const recipeUserIds = new Set<string>();
-    recipes.forEach(recipe => {
-      if (recipe.created_by) recipeUserIds.add(recipe.created_by);
-      if (recipe.last_updated_by) recipeUserIds.add(recipe.last_updated_by);
-    });
-    mealPlans.forEach(plan => {
-      if (plan.created_by) recipeUserIds.add(plan.created_by);
-    });
-    cookingStatusActivities.forEach(status => {
-      if (status.recipes?.created_by) recipeUserIds.add(status.recipes.created_by);
-    });
-    recipeNotes.forEach(note => {
-      if (note.created_by) recipeUserIds.add(note.created_by);
-    });
-    memberActivities.forEach(member => {
-      if (member.user_id) recipeUserIds.add(member.user_id);
-    });
-
-    console.log('🔍 DEBUG: User ID comparison:', {
-      recipeUserIds: Array.from(recipeUserIds),
-      householdMemberUserIds: householdMembers.map(m => m.user_id),
-      missingUserIds: Array.from(recipeUserIds).filter(id => !householdMembers.some(m => m.user_id === id))
-    });
 
     const allActivities: HouseholdActivity[] = [];
 
