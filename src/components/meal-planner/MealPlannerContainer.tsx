@@ -93,14 +93,14 @@ export default function MealPlannerContainer() {
     sides: number;
     desserts: number;
     drinks: number;
-  }, weekNumber: 1 | 2) => {
+  }, weekKey: string) => {
     let totalAdded = 0;
     
     // Generate meals for each meal type based on quantities
     for (const [mealType, count] of Object.entries(quantities)) {
       if (count > 0) {
         try {
-          const added = await generateRandomMeals(weekNumber, mealType as any, count);
+          const added = await generateRandomMeals(weekKey, mealType as any, count);
           totalAdded += added;
         } catch (error) {
           console.error(`Error generating ${mealType} meals:`, error);
@@ -180,7 +180,7 @@ export default function MealPlannerContainer() {
         slot_index: 0,
         is_leftover: false,
         household_id: currentHousehold.id,
-        week_number: currentWeek,
+        week_key: currentWeek,
         original_servings: servings,
         planned_servings: servings,
         is_completed: false,
@@ -259,7 +259,7 @@ export default function MealPlannerContainer() {
         slot_index: 0,
         is_leftover: false,
         household_id: currentHousehold.id,
-        week_number: currentWeek,
+        week_key: currentWeek,
         original_servings: servings,
         planned_servings: servings,
         is_completed: false,
@@ -333,6 +333,7 @@ export default function MealPlannerContainer() {
         isLoading={isLoading}
         isDataLoading={isDataLoading}
         currentMealPlans={isDataLoading ? [] : currentMealPlans}
+        allMealPlans={isDataLoading ? [] : mealPlans}
         recipes={isDataLoading ? [] : recipes}
         mealLayout={mealLayout}
         onMealLayoutChange={handleMealLayoutChange}

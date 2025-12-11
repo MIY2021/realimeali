@@ -9,7 +9,7 @@ export function useRandomMealSelection() {
   const { currentHousehold } = useHousehold();
 
   const generateRandomMeals = async (
-    weekNumber: 1 | 2,
+    weekKey: string,
     mealType: MealType | "all",
     numMeals: number,
     onProgress?: (progress: number) => void
@@ -66,7 +66,7 @@ export function useRandomMealSelection() {
           slot_index: index,
           is_leftover: false,
           household_id: currentHousehold.id,
-          week_number: weekNumber,
+          week_key: weekKey,
           original_servings: recipe.servings || 4,
           planned_servings: recipe.servings || 4, // Add planned_servings field
           is_completed: false, // Add the required is_completed field
@@ -75,7 +75,7 @@ export function useRandomMealSelection() {
 
         await mealPlanService.addMealPlan(
           mealPlanData,
-          weekNumber,
+          weekKey,
           currentHousehold.id,
           user.id,
           true // Silent mode

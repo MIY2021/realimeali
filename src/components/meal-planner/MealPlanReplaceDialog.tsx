@@ -14,14 +14,12 @@ interface MealPlanReplaceDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onConfirm: () => void;
-  weekNumber: 1 | 2;
 }
 
 export const MealPlanReplaceDialog = ({
   open,
   onOpenChange,
   onConfirm,
-  weekNumber,
 }: MealPlanReplaceDialogProps) => {
   const handleConfirm = () => {
     onConfirm();
@@ -35,7 +33,7 @@ export const MealPlanReplaceDialog = ({
             Replace Existing Meal Plan?
           </AlertDialogTitle>
           <AlertDialogDescription className="text-muted-foreground">
-            Week {weekNumber} already has meals planned. Generating a new meal plan will 
+            This week already has meals planned. Generating a new meal plan will 
             replace all current meals with new randomly selected recipes from your collection.
             You'll be able to customize the number of meals for each category next.
           </AlertDialogDescription>

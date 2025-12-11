@@ -1,18 +1,22 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Share, Trash2, Sparkles, Loader } from "lucide-react";
-import { SegmentedControl } from "@/components/ui/segmented-control";
+import { WeekSelector } from "@/components/shared/WeekSelector";
+import { AllWeeksModal } from "@/components/shared/AllWeeksModal";
 import { HeaderControls } from "@/components/layout/HeaderControls";
 import { MealPlannerLayoutSelector } from "./MealPlannerLayoutSelector";
+import { MealPlan } from "@/types";
 
 interface MealPlannerActionsProps {
   onRandomize: () => void;
   onShare: () => void;
   onClearAll: () => void;
   isLoading: boolean;
-  currentWeek: 1 | 2;
-  setCurrentWeek: (week: 1 | 2) => void;
+  currentWeek: string; // ISO week key
+  setCurrentWeek: (week: string) => void;
   mealLayout: string;
   onMealLayoutChange: (value: string) => void;
+  allMealPlans?: MealPlan[]; // For AllWeeksModal
 }
 
 export const MealPlannerActions = ({ 
@@ -23,17 +27,22 @@ export const MealPlannerActions = ({
   currentWeek,
   setCurrentWeek,
   mealLayout,
-  onMealLayoutChange
+  onMealLayoutChange,
+  allMealPlans = []
 }: MealPlannerActionsProps) => {
+  const [allWeeksModalOpen, setAllWeeksModalOpen] = useState(false);
+
   return (
-    <HeaderControls
-      weekControl={
-        <SegmentedControl 
-          value={currentWeek} 
-          onChange={setCurrentWeek} 
-          disabled={isLoading}
-        />
-      }
+    <>
+      <HeaderControls
+        weekControl={
+          <WeekSelector 
+            currentWeek={currentWeek} 
+            onWeekChange={setCurrentWeek}
+            onWeekClick={() => setAllWeeksModalOpen(true)}
+            isLoading={isLoading}
+          />
+        }
       primaryAction={
         <Button 
           variant="primary" 
@@ -83,6 +92,14 @@ export const MealPlannerActions = ({
           onChange={onMealLayoutChange}
         />
       }
-    />
+      />
+      <AllWeeksModal
+        open={allWeeksModalOpen}
+        onOpenChange={setAllWeeksModalOpen}
+        currentWeek={currentWeek}
+        onWeekSelect={setCurrentWeek}
+        mealPlans={allMealPlans}
+      />
+    </>
   );
 };

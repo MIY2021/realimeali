@@ -100,11 +100,11 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [stableUserId, stableHouseholdId]);
 
-  const getMealPlansForWeek = useCallback((weekNumber: 1 | 2): MealPlan[] => {
+  const getMealPlansForWeek = useCallback((weekKey: string): MealPlan[] => {
     if (!stableUserId || !stableHouseholdId) return [];
     
-    const weekPlans = mealPlans.filter(plan => plan.week_number === weekNumber);
-    console.log(`DEBUG: Getting meal plans for week ${weekNumber}:`, weekPlans);
+    const weekPlans = mealPlans.filter(plan => plan.week_key === weekKey);
+    console.log(`DEBUG: Getting meal plans for week ${weekKey}:`, weekPlans);
     return weekPlans;
   }, [mealPlans, stableUserId, stableHouseholdId]);
 
@@ -153,7 +153,7 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
         if (completedMeal) {
           // Check Perfect Planner achievement
           window.dispatchEvent(new CustomEvent('checkPerfectPlanner', {
-            detail: { weekNumber: completedMeal.week_number }
+            detail: { weekKey: completedMeal.week_key }
           }));
           
           // Check cooking achievements if meal has a recipe
@@ -172,7 +172,7 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
 
   const addMealPlanWithLeftovers = useCallback(async (
     mealPlanData: Omit<MealPlan, 'id' | 'created_at' | 'updated_at'>, 
-    weekNumber: 1 | 2, 
+    weekKey: string, 
     leftoverServings?: number,
     silentMode = false
   ) => {
@@ -188,13 +188,13 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
         planned_servings: mealPlanData.planned_servings || recipe.servings, // Ensure planned_servings is set
         is_leftover: false,
         household_id: currentHousehold.id,
-        week_number: weekNumber,
+        week_key: weekKey,
         is_completed: false, // Add the required is_completed field
         is_freetyped: false, // Not a freetyped meal
-      }, weekNumber, silentMode);
+      }, weekKey, silentMode);
 
       if (leftoverServings && leftoverServings > 0) {
-        const currentPlans = getMealPlansForWeek(weekNumber);
+        const currentPlans = getMealPlansForWeek(weekKey);
         const justAddedPlan = currentPlans[currentPlans.length - 1];
         
         if (justAddedPlan) {
@@ -210,10 +210,10 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
             original_servings: recipe.servings,
             planned_servings: leftoverServings, // Add planned_servings for leftover
             household_id: currentHousehold.id,
-            week_number: weekNumber,
+            week_key: weekKey,
             is_completed: false, // Add the required is_completed field
             is_freetyped: false, // Not a freetyped meal
-          }, weekNumber, silentMode);
+          }, weekKey, silentMode);
 
           if (!silentMode) {
             toast({
@@ -230,14 +230,14 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
 
   const reorderMealPlans = useCallback(async (
     mealType: MealType, 
-    weekNumber: 1 | 2, 
+    weekKey: string, 
     sourceIndex: number, 
     destinationIndex: number
   ) => {
     if (!user || !currentHousehold) return;
 
     const mealPlansForType = mealPlans.filter(
-      plan => plan.meal_type === mealType && plan.week_number === weekNumber
+      plan => plan.meal_type === mealType && plan.week_key === weekKey
     );
 
     if (sourceIndex < 0 || destinationIndex < 0 || 
@@ -251,12 +251,12 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
     reorderedPlans.splice(destinationIndex, 0, movedPlan);
 
     try {
-      await mealPlanService.reorderMealPlans(mealType, weekNumber, currentHousehold.id, reorderedPlans);
+      await mealPlanService.reorderMealPlans(mealType, weekKey, currentHousehold.id, reorderedPlans);
 
       setMealPlans(prev => {
         const updated = [...prev];
         const filteredPlans = updated.filter(
-          plan => !(plan.meal_type === mealType && plan.week_number === weekNumber)
+          plan => !(plan.meal_type === mealType && plan.week_key === weekKey)
         );
         const updatedReorderedPlans = reorderedPlans.map((plan, index) => ({
           ...plan,

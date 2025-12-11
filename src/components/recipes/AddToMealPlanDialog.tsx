@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Recipe, MealType } from "@/types";
@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { getCurrentWeekKey, getNextWeek, formatWeekRange, parseISOWeekKey } from "@/utils/weekUtils";
 
 interface AddToMealPlanDialogProps {
   recipe: Recipe | null;
@@ -16,7 +17,9 @@ interface AddToMealPlanDialogProps {
 }
 
 export function AddToMealPlanDialog({ recipe, open, onOpenChange, adjustedServings }: AddToMealPlanDialogProps) {
-  const [selectedWeek, setSelectedWeek] = useState<1 | 2>(1);
+  const currentWeekKey = getCurrentWeekKey();
+  const nextWeekKey = getNextWeek(currentWeekKey);
+  const [selectedWeek, setSelectedWeek] = useState<string>(currentWeekKey);
   const [selectedMealType, setSelectedMealType] = useState<MealType>("dinner");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -45,7 +48,7 @@ export function AddToMealPlanDialog({ recipe, open, onOpenChange, adjustedServin
         slot_index: 0,
         is_leftover: false,
         household_id: currentHousehold.id,
-        week_number: selectedWeek,
+        week_key: selectedWeek,
         original_servings: recipe.servings,
         planned_servings: plannedServings,
         is_completed: false,
@@ -55,10 +58,13 @@ export function AddToMealPlanDialog({ recipe, open, onOpenChange, adjustedServin
       const servingsText = adjustedServings && adjustedServings !== recipe.servings 
         ? ` (${adjustedServings} servings)` 
         : '';
+      
+      const { year, week } = parseISOWeekKey(selectedWeek);
+      const weekRange = formatWeekRange(year, week);
 
       toast({
         title: "Added to Meal Plan",
-        description: `${recipe.title}${servingsText} has been added to Week ${selectedWeek}.`,
+        description: `${recipe.title}${servingsText} has been added to week of ${weekRange}.`,
       });
 
       // Flash the meal plan icon on mobile
@@ -110,26 +116,26 @@ export function AddToMealPlanDialog({ recipe, open, onOpenChange, adjustedServin
             <label className="text-base font-semibold text-gray-900 mb-4 block text-center">Select Week</label>
             <div className="grid grid-cols-2 gap-3">
               <Button
-                variant={selectedWeek === 1 ? "default" : "outline"}
-                onClick={() => setSelectedWeek(1)}
+                variant={selectedWeek === currentWeekKey ? "default" : "outline"}
+                onClick={() => setSelectedWeek(currentWeekKey)}
                 className={`h-14 text-base font-medium rounded-xl transition-all duration-200 ${
-                  selectedWeek === 1 
+                  selectedWeek === currentWeekKey 
                     ? 'bg-primary text-white shadow-lg scale-105' 
                     : 'border-gray-200 hover:border-primary hover:bg-gray-50'
                 }`}
               >
-                Week 1
+                Current Week
               </Button>
               <Button
-                variant={selectedWeek === 2 ? "default" : "outline"}
-                onClick={() => setSelectedWeek(2)}
+                variant={selectedWeek === nextWeekKey ? "default" : "outline"}
+                onClick={() => setSelectedWeek(nextWeekKey)}
                 className={`h-14 text-base font-medium rounded-xl transition-all duration-200 ${
-                  selectedWeek === 2 
+                  selectedWeek === nextWeekKey 
                     ? 'bg-primary text-white shadow-lg scale-105' 
                     : 'border-gray-200 hover:border-primary hover:bg-gray-50'
                 }`}
               >
-                Week 2
+                Next Week
               </Button>
             </div>
           </div>

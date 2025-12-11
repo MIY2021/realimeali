@@ -28,11 +28,11 @@ export class ShoppingListMutations {
     name: string, 
     householdId: string, 
     userId: string, 
-    weekNumber: number,
+    weekKey: string,
     recipeIds: string[] = []
   ): Promise<ShoppingListItem | null> {
     try {
-      console.log('Adding custom item:', { name, householdId, userId, weekNumber, recipeIds });
+      console.log('Adding custom item:', { name, householdId, userId, weekKey, recipeIds });
       
       const { data, error } = await supabase
         .from('household_shopping_lists')
@@ -40,7 +40,7 @@ export class ShoppingListMutations {
           household_id: householdId,
           created_by: userId,
           name: name.trim(),
-          week_number: weekNumber,
+          week_key: weekKey,
           is_custom: recipeIds.length === 0,
           is_checked: false,
           recipe_ids: recipeIds,
@@ -85,7 +85,7 @@ export class ShoppingListMutations {
     recipeIds: string[],
     householdId: string,
     userId: string,
-    weekNumber: number
+    weekKey: string
   ): Promise<ShoppingListItem | null> {
     try {
       console.log('Adding consolidated item:', {
@@ -96,7 +96,7 @@ export class ShoppingListMutations {
         recipeIds,
         householdId,
         userId,
-        weekNumber
+        weekKey
       });
       
       const { data, error } = await supabase
@@ -105,7 +105,7 @@ export class ShoppingListMutations {
           household_id: householdId,
           created_by: userId,
           name: name.trim(),
-          week_number: weekNumber,
+          week_key: weekKey,
           is_custom: false,
           is_checked: false,
           recipe_ids: recipeIds,

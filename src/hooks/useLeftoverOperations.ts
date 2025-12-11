@@ -6,7 +6,7 @@ import { mealPlanService } from "@/services/mealPlanService";
 interface UseLeftoverOperationsProps {
   user: any;
   currentHousehold: any;
-  currentWeek: 1 | 2;
+  currentWeek: string; // ISO week key
   addMealPlan: any;
   toast: any;
   refreshMealPlans?: () => void;
@@ -67,7 +67,7 @@ export const useLeftoverOperations = ({
         original_servings: recipe?.servings || mealPlan.planned_servings || 2,
         parent_meal_plan_id: mealPlan.id,
         household_id: currentHousehold.id,
-        week_number: currentWeek,
+        week_key: currentWeek,
         // For custom meals, include the meal name
         ...(mealPlan.is_freetyped && { 
           is_freetyped: true, 

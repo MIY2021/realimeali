@@ -38,7 +38,7 @@ export function ApprovalNotificationBanner({ request }: ApprovalNotificationBann
                 Meal Plan Approval Request
               </h3>
               <p className="text-sm text-orange-700">
-                Week {request.week_number} meal plan needs your approval
+                Meal plan approval requested
                 {request.message && (
                   <span className="block mt-1 italic">"{request.message}"</span>
                 )}

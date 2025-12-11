@@ -24,7 +24,7 @@ interface MealPlannerModalsContainerProps {
   setPendingMealType: (mealType: MealType | null) => void;
   pendingLeftoverData: { mealPlan: any; recipe?: any } | null;
   recipes: Recipe[];
-  currentWeek: 1 | 2;
+  currentWeek: string; // ISO week key
   onRandomizeWithQuantities: (quantities: any) => void;
   onSimpleMealSelect: (recipeId: string) => void;
   onAddFreetypeMeal: (mealName: string, servings: number) => void;
@@ -112,14 +112,12 @@ export const MealPlannerModalsContainer = ({
         open={warningDialog}
         onOpenChange={setWarningDialog}
         onConfirm={onWarningConfirm}
-        weekNumber={currentWeek}
       />
 
       <ClearAllMealsDialog
         open={clearAllDialog}
         onOpenChange={setClearAllDialog}
         onConfirm={onClearAllConfirm}
-        weekNumber={currentWeek}
       />
 
       {pendingMealType && (

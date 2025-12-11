@@ -80,7 +80,7 @@ export const ApprovalStatusDropdown = ({
         
         toast({
           title: "Notification Sent",
-          description: `Reminder sent to ${memberName} about Week ${request.week_number} approval.`,
+          description: `Reminder sent to ${memberName} about meal plan approval.`,
         });
       } else {
         toast({
@@ -109,7 +109,7 @@ export const ApprovalStatusDropdown = ({
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-96 bg-white z-50">
         <DropdownMenuLabel className="text-base font-semibold">
-          Week {request.week_number} Approval Status
+          Meal Plan Approval Status
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         

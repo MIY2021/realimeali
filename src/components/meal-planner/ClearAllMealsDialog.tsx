@@ -14,14 +14,12 @@ interface ClearAllMealsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onConfirm: () => void;
-  weekNumber: 1 | 2;
 }
 
 export const ClearAllMealsDialog = ({
   open,
   onOpenChange,
   onConfirm,
-  weekNumber,
 }: ClearAllMealsDialogProps) => {
   const handleConfirm = () => {
     onConfirm();
@@ -36,7 +34,7 @@ export const ClearAllMealsDialog = ({
             Clear All Meals?
           </AlertDialogTitle>
           <AlertDialogDescription className="text-muted-foreground">
-            Are you sure you want to clear all meals for Week {weekNumber}? 
+            Are you sure you want to clear all meals for this week? 
             This action cannot be undone.
           </AlertDialogDescription>
         </AlertDialogHeader>

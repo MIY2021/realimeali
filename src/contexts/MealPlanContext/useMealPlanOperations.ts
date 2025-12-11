@@ -14,7 +14,7 @@ export const useMealPlanOperations = (
 
   const addMealPlan = useCallback(async (
     mealPlanData: Omit<MealPlan, 'id' | 'created_at' | 'updated_at'>, 
-    weekNumber: 1 | 2,
+    weekKey: string,
     silentMode = false
   ) => {
     if (!user || !currentHousehold) {
@@ -34,7 +34,7 @@ export const useMealPlanOperations = (
 
       const newMealPlan = await mealPlanService.addMealPlan(
         dataWithServings,
-        weekNumber,
+        weekKey,
         currentHousehold.id,
         user.id,
         silentMode
@@ -80,17 +80,17 @@ export const useMealPlanOperations = (
     }
   }, [user?.id, currentHousehold?.id, setMealPlans, toast]);
 
-  const clearWeek = useCallback(async (weekNumber: 1 | 2) => {
+  const clearWeek = useCallback(async (weekKey: string) => {
     if (!user || !currentHousehold) {
       throw new Error('User must be logged in and have a household');
     }
 
     try {
-      await mealPlanService.clearWeek(weekNumber, currentHousehold.id);
-      setMealPlans((prev: MealPlan[]) => prev.filter(plan => plan.week_number !== weekNumber));
+      await mealPlanService.clearWeek(weekKey, currentHousehold.id);
+      setMealPlans((prev: MealPlan[]) => prev.filter(plan => plan.week_key !== weekKey));
       toast({
         title: "Week Cleared",
-        description: `Week ${weekNumber} meal plans cleared.`,
+        description: `Week meal plans cleared.`,
       });
     } catch (error) {
       console.error("Error clearing week:", error);

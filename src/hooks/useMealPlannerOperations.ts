@@ -9,12 +9,12 @@ interface UseMealPlannerOperationsProps {
   user: any;
   currentHousehold: any;
   recipes: any[];
-  currentWeek: 1 | 2;
+  currentWeek: string; // ISO week key
   addMealPlan: any;
   removeMealPlan: any;
   clearWeek: any;
   reorderMealPlans: any;
-  generateRandomMealPlan: (quantities: any, weekNumber: 1 | 2) => Promise<number>;
+  generateRandomMealPlan: (quantities: any, weekKey: string) => Promise<number>;
   setAddMealModal: any;
   setIsLoading: (loading: boolean) => void;
   toast: any;

@@ -24,7 +24,7 @@ export function useMealPlanOperations() {
 
   const addMealPlanOperation = async (
     mealPlanData: Omit<MealPlan, 'id' | 'created_at' | 'updated_at'>,
-    weekNumber: 1 | 2
+    weekKey: string
   ) => {
     if (!user || !currentHousehold) {
       throw new Error('User must be logged in and have a household');
@@ -32,7 +32,7 @@ export function useMealPlanOperations() {
 
     try {
       setLoading(true);
-      await addMealPlan(mealPlanData, weekNumber);
+      await addMealPlan(mealPlanData, weekKey);
       setLoading(false);
     } catch (error) {
       console.error('Error adding meal plan:', error);

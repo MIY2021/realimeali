@@ -11,17 +11,18 @@ import {
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useMealPlanApproval } from "@/contexts/MealPlanApprovalContext";
+import { getCurrentWeekKey } from "@/utils/weekUtils";
 
 interface ApprovalRequestDialogProps {
   open: boolean;
   onClose: () => void;
-  weekNumber: 1 | 2;
+  weekKey: string; // ISO week key
 }
 
 export function ApprovalRequestDialog({
   open,
   onClose,
-  weekNumber,
+  weekKey,
 }: ApprovalRequestDialogProps) {
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -30,6 +31,11 @@ export function ApprovalRequestDialog({
   const handleSubmit = async () => {
     setIsLoading(true);
     try {
+      // Convert week_key to week_number for database compatibility
+      // Current week = 1, next week = 2 (temporary mapping during migration)
+      const currentWeekKey = getCurrentWeekKey();
+      const weekNumber = weekKey === currentWeekKey ? 1 : 2;
+      
       await createApprovalRequest(weekNumber, message || undefined);
       setMessage("");
       onClose();
@@ -44,7 +50,7 @@ export function ApprovalRequestDialog({
         <DialogHeader>
           <DialogTitle>Request Meal Plan Approval</DialogTitle>
           <DialogDescription>
-            Send an approval request for Week {weekNumber} meal plan to all household members.
+            Send an approval request for this week's meal plan to all household members.
           </DialogDescription>
         </DialogHeader>
         

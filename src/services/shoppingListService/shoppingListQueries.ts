@@ -2,15 +2,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { ShoppingListItem } from "@/types/shoppingList";
 
 export class ShoppingListQueries {
-  static async loadExistingShoppingList(householdId: string, weekNumber: number): Promise<ShoppingListItem[]> {
+  static async loadExistingShoppingList(householdId: string, weekKey: string): Promise<ShoppingListItem[]> {
     try {
-      console.log('Loading shopping list:', { householdId, weekNumber });
+      console.log('Loading shopping list:', { householdId, weekKey });
       
       const { data, error } = await supabase
         .from('household_shopping_lists')
         .select('*')
         .eq('household_id', householdId)
-        .eq('week_number', weekNumber)
+        .eq('week_key', weekKey)
         .order('is_custom', { ascending: false })
         .order('created_at', { ascending: false });
 
@@ -41,13 +41,13 @@ export class ShoppingListQueries {
     }
   }
 
-  static async checkDatabaseForItems(householdId: string, weekNumber: number): Promise<boolean> {
+  static async checkDatabaseForItems(householdId: string, weekKey: string): Promise<boolean> {
     try {
       const { data, error } = await supabase
         .from('household_shopping_lists')
         .select('id')
         .eq('household_id', householdId)
-        .eq('week_number', weekNumber)
+        .eq('week_key', weekKey)
         .limit(1);
 
       if (error) throw error;
@@ -58,15 +58,15 @@ export class ShoppingListQueries {
     }
   }
 
-  static async clearAll(householdId: string, weekNumber: number): Promise<boolean> {
+  static async clearAll(householdId: string, weekKey: string): Promise<boolean> {
     try {
-      console.log('Clearing all items for:', { householdId, weekNumber });
+      console.log('Clearing all items for:', { householdId, weekKey });
       
       const { error } = await supabase
         .from('household_shopping_lists')
         .delete()
         .eq('household_id', householdId)
-        .eq('week_number', weekNumber);
+        .eq('week_key', weekKey);
 
       if (error) {
         console.error('Database error clearing shopping list:', error);

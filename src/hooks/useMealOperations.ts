@@ -6,7 +6,7 @@ interface UseMealOperationsProps {
   user: any;
   currentHousehold: any;
   recipes: any[];
-  currentWeek: 1 | 2;
+  currentWeek: string; // ISO week key
   addMealPlan: any;
   removeMealPlan: any;
   reorderMealPlans: any;
@@ -45,7 +45,7 @@ export const useMealOperations = ({
         slot_index: 0,
         is_leftover: false,
         household_id: currentHousehold.id,
-        week_number: currentWeek,
+        week_key: currentWeek,
         original_servings: recipe.servings,
       };
 

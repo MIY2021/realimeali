@@ -8,7 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useShoppingListGenerator } from "@/hooks/useShoppingListGenerator";
 
 export const useShoppingListGeneration = (
-  weekNumber: 1 | 2,
+  weekKey: string,
   clearAll: () => Promise<void>,
   refreshList: () => Promise<void>
 ) => {
@@ -27,7 +27,7 @@ export const useShoppingListGeneration = (
   });
   const [lastGenerated, setLastGenerated] = useState<Date | null>(null);
 
-  const mealPlans = getMealPlansForWeek(weekNumber);
+  const mealPlans = getMealPlansForWeek(weekKey);
   const hasMealPlans = mealPlans.length > 0;
 
   const handleGenerate = useCallback(async () => {
@@ -61,7 +61,7 @@ export const useShoppingListGeneration = (
     if (!hasMealPlans) {
       toast({
         title: "No meal plans",
-        description: `Please add some meal plans for week ${weekNumber} first`,
+        description: `Please add some meal plans for this week first`,
         variant: "destructive",
       });
       return;
@@ -79,7 +79,7 @@ export const useShoppingListGeneration = (
       setGenerationProgress({ step: 3, totalSteps: 5, currentAction: 'Consolidating similar ingredients...' });
       
       const startTime = performance.now();
-      const result = await generateAndSaveFromMealPlans(weekNumber);
+      const result = await generateAndSaveFromMealPlans(weekKey);
       const endTime = performance.now();
       const duration = Math.round(endTime - startTime);
       
@@ -96,7 +96,7 @@ export const useShoppingListGeneration = (
         if (result && result.length > 0) {
           toast({
             title: "Shopping list generated!",
-            description: `Week ${weekNumber} shopping list created with ${result.length} items in ${duration}ms`,
+            description: `Shopping list created with ${result.length} items in ${duration}ms`,
           });
         } else {
           toast({
@@ -120,7 +120,7 @@ export const useShoppingListGeneration = (
         setGenerationProgress({ step: 0, totalSteps: 5, currentAction: '' });
       }, 1000);
     }
-  }, [user, currentHousehold, recipesLoading, recipes, hasMealPlans, weekNumber, clearAll, generateAndSaveFromMealPlans, refreshList, toast]);
+  }, [user, currentHousehold, recipesLoading, recipes, hasMealPlans, weekKey, clearAll, generateAndSaveFromMealPlans, refreshList, toast]);
 
   return {
     isGenerating,

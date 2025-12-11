@@ -19,9 +19,9 @@ export const useShoppingListGenerator = () => {
   const { user } = useAuth();
   const { currentHousehold } = useHousehold();
 
-  const generateAndSaveFromMealPlans = useCallback(async (weekNumber: 1 | 2): Promise<ShoppingListItem[]> => {
+  const generateAndSaveFromMealPlans = useCallback(async (weekKey: string): Promise<ShoppingListItem[]> => {
     console.log('=== STARTING OPTIMIZED SHOPPING LIST GENERATION ===');
-    console.log('Week:', weekNumber);
+    console.log('Week:', weekKey);
     console.log('User:', !!user);
     console.log('Household:', !!currentHousehold);
     console.log('Recipes count:', recipes.length);
@@ -31,18 +31,18 @@ export const useShoppingListGenerator = () => {
       return [];
     }
 
-    const mealPlans = getMealPlansForWeek(weekNumber);
+    const mealPlans = getMealPlansForWeek(weekKey);
     console.log('Meal plans found:', mealPlans.length);
 
     if (!mealPlans.length) {
-      console.log('No meal plans for week', weekNumber);
+      console.log('No meal plans for week', weekKey);
       return [];
     }
 
     try {
       // Step 1: Clear existing items for this week
-      console.log('Clearing existing items for week', weekNumber);
-      await ShoppingListService.clearAll(currentHousehold.id, weekNumber);
+      console.log('Clearing existing items for week', weekKey);
+      await ShoppingListService.clearAll(currentHousehold.id, weekKey);
 
       // Step 2: Collect ingredients from meal plans with serving calculations
       const ingredientInputs: Array<{
@@ -158,7 +158,7 @@ export const useShoppingListGenerator = () => {
             item.recipeIds || [],
             currentHousehold.id,
             user.id,
-            weekNumber
+            weekKey
           );
           
           if (savedItem) {
@@ -169,7 +169,7 @@ export const useShoppingListGenerator = () => {
         }
       }
 
-      console.log('Successfully saved', savedItems.length, 'consolidated items for week', weekNumber);
+      console.log('Successfully saved', savedItems.length, 'consolidated items for week', weekKey);
       return savedItems;
       
     } catch (error) {

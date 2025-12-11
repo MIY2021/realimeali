@@ -4,14 +4,12 @@ import { PageHeader } from "@/components/layout/PageHeader";
 
 interface ShoppingListHeaderProps {
   onShare: () => void;
-  weekNumber: 1 | 2;
   onAddItem: (name: string) => Promise<void>;
   onInfoClick?: () => void;
 }
 
 export default function ShoppingListHeader({ 
   onShare, 
-  weekNumber,
   onAddItem,
   onInfoClick
 }: ShoppingListHeaderProps) {

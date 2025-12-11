@@ -62,7 +62,8 @@ export interface MealPlan {
   prep_time?: number;
   cook_time?: number;
   servings?: number;
-  week_number: 1 | 2;
+  week_key: string; // ISO week key format: "YYYY-Www" (e.g., "2025-W03")
+  week_number?: 1 | 2; // Legacy field - kept for migration compatibility
   parent_meal_plan_id?: string;
   created_by: string;
   is_completed: boolean; // Add completion status

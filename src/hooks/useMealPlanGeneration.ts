@@ -4,8 +4,8 @@ import { useCallback } from "react";
 interface UseMealPlanGenerationProps {
   user: any;
   currentHousehold: any;
-  currentWeek: 1 | 2;
-  generateRandomMealPlan: (quantities: any, weekNumber: 1 | 2) => Promise<number>;
+  currentWeek: string; // ISO week key
+  generateRandomMealPlan: (quantities: any, weekKey: string) => Promise<number>;
   clearWeek: any;
   setIsLoading: (loading: boolean) => void;
   setQuantitiesDialog: (open: boolean) => void;
@@ -124,7 +124,7 @@ export const useMealPlanGeneration = ({
       if (totalAdded > 0) {
         toast({
           title: "Meal Plan Generated",
-          description: `Added ${totalAdded} meals to week ${currentWeek}`,
+          description: `Added ${totalAdded} meals to meal plan`,
         });
       } else {
         console.log("⚠️ No meals were added during generation");

@@ -1,13 +1,14 @@
 
 import { useState, useEffect, useRef } from "react";
 import ShoppingListHeader from "@/components/shopping-list/ShoppingListHeader";
-import ShoppingListWeekSelector from "@/components/shopping-list/ShoppingListWeekSelector";
 import ShoppingListSkeleton from "@/components/shopping-list/ShoppingListSkeleton";
 import ShoppingListGenerationProgress from "@/components/shopping-list/ShoppingListGenerationProgress";
 import ShoppingListCreationInfo from "@/components/shopping-list/ShoppingListCreationInfo";
 import { ShoppingListInfoDialog } from "@/components/shopping-list/ShoppingListInfoDialog";
 import ShoppingListItems from "@/components/shopping-list/ShoppingListItems";
 import ShoppingListEmptyState from "@/components/shopping-list/ShoppingListEmptyState";
+import { WeekSelector } from "@/components/shared/WeekSelector";
+import { AllWeeksModal } from "@/components/shared/AllWeeksModal";
 import { useShoppingList } from "@/hooks/useShoppingList";
 import { useShoppingListGeneration } from "@/hooks/useShoppingListGeneration";
 import { useAuth } from "@/contexts/AuthContext";
@@ -20,8 +21,10 @@ import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { Share, Trash2, Plus } from "lucide-react";
+import { Share, Trash2, Plus, Sparkles, Loader } from "lucide-react";
 import { Link } from "react-router-dom";
+import { getCurrentWeekKey } from "@/utils/weekUtils";
+import { HeaderControls } from "@/components/layout/HeaderControls";
 
 export default function ShoppingList() {
   useDocumentTitle("Shopping List | RealiMeali");
@@ -29,14 +32,47 @@ export default function ShoppingList() {
   const { user } = useAuth();
   const { currentHousehold } = useHousehold();
   const { recipes, isLoading: recipesLoading } = useRecipes();
-  const { getMealPlansForWeek } = useMealPlan();
+  const { getMealPlansForWeek, mealPlans: allMealPlans } = useMealPlan();
   const { toast } = useToast();
   const isMobile = useIsMobile();
-  const [weekNumber, setWeekNumber] = useState<1 | 2>(1);
+  
+  // Use same localStorage key as meal planner for consistency
+  const WEEK_STORAGE_KEY = "meal-planner-current-week";
+  const [currentWeek, setCurrentWeek] = useState<string>(() => {
+    if (typeof window === 'undefined') {
+      return getCurrentWeekKey();
+    }
+    try {
+      const saved = localStorage.getItem(WEEK_STORAGE_KEY);
+      if (saved && /^\d{4}-W\d{1,2}$/.test(saved)) {
+        return saved;
+      }
+    } catch (e) {
+      // Ignore
+    }
+    return getCurrentWeekKey();
+  });
+  
+  const [allWeeksModalOpen, setAllWeeksModalOpen] = useState(false);
   const [copiedItemId, setCopiedItemId] = useState<string | null>(null);
   const [showOnlyUnchecked, setShowOnlyUnchecked] = useState(false);
   const [infoDialog, setInfoDialog] = useState(false);
   
+  // Sync week with localStorage
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === WEEK_STORAGE_KEY && e.newValue && /^\d{4}-W\d{1,2}$/.test(e.newValue)) {
+        setCurrentWeek(e.newValue);
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem(WEEK_STORAGE_KEY, currentWeek);
+  }, [currentWeek]);
+
   const {
     shoppingList,
     isLoading,
@@ -45,11 +81,7 @@ export default function ShoppingList() {
     updateItem,
     clearAll,
     refreshList,
-  } = useShoppingList(weekNumber);
-
-  // Get shopping lists for both weeks to determine most recent
-  const { shoppingList: week1List } = useShoppingList(1);
-  const { shoppingList: week2List } = useShoppingList(2);
+  } = useShoppingList(currentWeek);
 
   const {
     isGenerating,
@@ -57,7 +89,7 @@ export default function ShoppingList() {
     lastGenerated,
     setLastGenerated,
     handleGenerate
-  } = useShoppingListGeneration(weekNumber, clearAll, refreshList);
+  } = useShoppingListGeneration(currentWeek, clearAll, refreshList);
 
   // Load toggle state from localStorage on mount
   useEffect(() => {
@@ -89,26 +121,8 @@ export default function ShoppingList() {
     }
   }, [shoppingList, setLastGenerated]);
 
-  const mealPlans = getMealPlansForWeek(weekNumber);
+  const mealPlans = getMealPlansForWeek(currentWeek);
   const hasMealPlans = mealPlans.length > 0;
-
-  // Determine which week has the most recent shopping list items
-  const getMostRecentShoppingWeek = (): 1 | 2 | null => {
-    const week1Latest = week1List.length > 0 
-      ? Math.max(...week1List.map(item => new Date(item.createdAt || 0).getTime()))
-      : 0;
-    const week2Latest = week2List.length > 0 
-      ? Math.max(...week2List.map(item => new Date(item.createdAt || 0).getTime()))
-      : 0;
-
-    if (week1Latest === 0 && week2Latest === 0) return null;
-    if (week1Latest === 0) return 2;
-    if (week2Latest === 0) return 1;
-    
-    return week1Latest > week2Latest ? 1 : 2;
-  };
-
-  const mostRecentShoppingWeek = getMostRecentShoppingWeek();
 
   // Filter and sort shopping list - custom meals ("everything for") at top
   const filteredShoppingList = (showOnlyUnchecked 
@@ -141,7 +155,6 @@ export default function ShoppingList() {
         }
         
         // If not found as recipe, check if it's a custom meal (meal plan ID)
-        const mealPlans = getMealPlansForWeek(weekNumber);
         const customMeal = mealPlans.find(mp => mp.id === id && mp.is_freetyped && mp.meal_name);
         if (customMeal) {
           return 'Custom Entry';
@@ -173,7 +186,7 @@ export default function ShoppingList() {
 
     if (navigator.share) {
       navigator.share({
-        title: `Shopping List - Week ${weekNumber}`,
+        title: `Shopping List`,
         text: listText,
       });
     } else {
@@ -191,7 +204,6 @@ export default function ShoppingList() {
     <div className="container max-w-4xl py-4 px-4 sm:py-8 sm:px-6" data-scroll-content>
         <ShoppingListHeader 
           onShare={handleShare} 
-          weekNumber={weekNumber}
           onAddItem={addCustomItem}
           onInfoClick={() => setInfoDialog(true)}
         />
@@ -206,7 +218,6 @@ export default function ShoppingList() {
     <div className="container max-w-4xl py-4 px-4 sm:py-8 sm:px-6" data-scroll-content>
       <ShoppingListHeader
         onShare={handleShare} 
-        weekNumber={weekNumber}
         onAddItem={addCustomItem}
         onInfoClick={() => setInfoDialog(true)}
       />
@@ -231,13 +242,48 @@ export default function ShoppingList() {
         </div>
       ) : (
         <>
-          <ShoppingListWeekSelector 
-            selectedWeek={weekNumber} 
-            onWeekSelect={setWeekNumber}
-            onGenerate={handleGenerate}
-            isGenerating={isGenerating}
-            hasItems={shoppingList.length > 0}
-            mostRecentWeek={mostRecentShoppingWeek}
+          <div className="mb-4">
+            <HeaderControls
+              weekControl={
+                <WeekSelector 
+                  currentWeek={currentWeek} 
+                  onWeekChange={setCurrentWeek}
+                  onWeekClick={() => setAllWeeksModalOpen(true)}
+                  isLoading={isGenerating}
+                />
+              }
+              primaryAction={
+                <Button 
+                  variant="primary" 
+                  size="md" 
+                  onClick={handleGenerate} 
+                  disabled={isGenerating}
+                  aria-busy={isGenerating}
+                  className="w-full"
+                >
+                  {isGenerating ? (
+                    <>
+                      <Loader className="w-5 h-5 animate-spin" />
+                      <span className="hidden sm:inline">Generating...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-5 h-5" />
+                      <span className="hidden sm:inline">Generate Shopping List</span>
+                      <span className="sm:hidden">Generate</span>
+                    </>
+                  )}
+                </Button>
+              }
+            />
+          </div>
+          
+          <AllWeeksModal
+            open={allWeeksModalOpen}
+            onOpenChange={setAllWeeksModalOpen}
+            currentWeek={currentWeek}
+            onWeekSelect={setCurrentWeek}
+            mealPlans={allMealPlans}
           />
 
           {/* Action rows */}
@@ -310,7 +356,6 @@ export default function ShoppingList() {
             <div className={`transition-opacity duration-150 ${isLoading ? 'opacity-50' : 'opacity-100'}`}>
               {shoppingList.length === 0 ? (
                 <ShoppingListEmptyState
-                  weekNumber={weekNumber}
                   hasMealPlans={hasMealPlans}
                 />
               ) : (

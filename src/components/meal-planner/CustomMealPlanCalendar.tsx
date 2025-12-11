@@ -5,10 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MealPlan, Recipe, MealType } from "@/types";
 import { EnhancedMealCard } from "./EnhancedMealCard";
+import { getISOWeekKey, getPreviousWeek, getNextWeek } from "@/utils/weekUtils";
 
 interface CustomMealPlanCalendarProps {
-  currentWeek: 1 | 2;
-  onWeekChange: (week: 1 | 2) => void;
+  currentWeek: string; // ISO week key
+  onWeekChange: (week: string) => void;
   mealPlans: MealPlan[];
   recipes: Recipe[];
   onAddMeal: (date: string, mealType: MealType) => void;
@@ -65,20 +66,24 @@ export function CustomMealPlanCalendar({
     const prevWeek = new Date(currentDate);
     prevWeek.setDate(currentDate.getDate() - 7);
     setCurrentDate(prevWeek);
-    onWeekChange(1);
+    // Calculate previous week key
+    const prevWeekKey = getPreviousWeek(getISOWeekKey(currentDate));
+    onWeekChange(prevWeekKey);
   };
 
   const handleNextWeek = () => {
     const nextWeek = new Date(currentDate);
     nextWeek.setDate(currentDate.getDate() + 7);
     setCurrentDate(nextWeek);
-    onWeekChange(2);
+    // Calculate next week key
+    const nextWeekKey = getNextWeek(getISOWeekKey(currentDate));
+    onWeekChange(nextWeekKey);
   };
 
   const getMealPlansForDateAndType = (date: Date, mealType: MealType): MealPlan[] => {
     const dateString = date.toISOString().split("T")[0];
     return mealPlans.filter(
-      (plan) => plan.date === dateString && plan.meal_type === mealType && plan.week_number === currentWeek
+      (plan) => plan.date === dateString && plan.meal_type === mealType && plan.week_key === currentWeek
     );
   };
 

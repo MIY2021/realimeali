@@ -7,7 +7,7 @@ import { ShoppingListItem } from "@/types/shoppingList";
 import { ShoppingListService } from "@/services/shoppingListService";
 import { supabase } from "@/integrations/supabase/client";
 
-export const useShoppingList = (weekNumber: 1 | 2) => {
+export const useShoppingList = (weekKey: string) => {
   const { user } = useAuth();
   const { currentHousehold } = useHousehold();
   const { toast } = useToast();
@@ -29,7 +29,7 @@ export const useShoppingList = (weekNumber: 1 | 2) => {
 
     setIsLoading(true);
     try {
-      const items = await ShoppingListService.loadExistingShoppingList(currentHousehold.id, weekNumber);
+      const items = await ShoppingListService.loadExistingShoppingList(currentHousehold.id, weekKey);
       console.log('Loaded shopping list items:', items);
       setShoppingList(items);
     } catch (error) {
@@ -38,7 +38,7 @@ export const useShoppingList = (weekNumber: 1 | 2) => {
     } finally {
       setIsLoading(false);
     }
-  }, [user, currentHousehold, weekNumber]);
+  }, [user, currentHousehold, weekKey]);
 
   // Real-time subscription with immediate refresh
   useEffect(() => {
@@ -47,17 +47,17 @@ export const useShoppingList = (weekNumber: 1 | 2) => {
     let debounceTimer: NodeJS.Timeout;
 
     const channel = supabase
-      .channel(`shopping-list-changes-week-${weekNumber}`)
+      .channel(`shopping-list-changes-week-${weekKey}`)
       .on(
         'postgres_changes',
         {
           event: '*',
           schema: 'public',
           table: 'household_shopping_lists',
-          filter: `household_id=eq.${currentHousehold.id}.and.week_number=eq.${weekNumber}`
+          filter: `household_id=eq.${currentHousehold.id}.and.week_key=eq.${weekKey}`
         },
         (payload) => {
-          console.log('Shopping list changed for week', weekNumber, ':', payload);
+          console.log('Shopping list changed for week', weekKey, ':', payload);
           
           if (debounceTimer) {
             clearTimeout(debounceTimer);
@@ -77,7 +77,7 @@ export const useShoppingList = (weekNumber: 1 | 2) => {
       }
       supabase.removeChannel(channel);
     };
-  }, [currentHousehold, loadShoppingList, weekNumber]);
+  }, [currentHousehold, loadShoppingList, weekKey]);
 
   useEffect(() => {
     loadShoppingList();
@@ -116,7 +116,7 @@ export const useShoppingList = (weekNumber: 1 | 2) => {
   const addCustomItem = useCallback(async (name: string) => {
     if (!user || !currentHousehold || !name.trim()) return;
 
-    const newItem = await ShoppingListService.addCustomItem(name, currentHousehold.id, user.id, weekNumber);
+    const newItem = await ShoppingListService.addCustomItem(name, currentHousehold.id, user.id, weekKey);
     
     if (newItem) {
       // Add new items to the top of the list
@@ -133,7 +133,7 @@ export const useShoppingList = (weekNumber: 1 | 2) => {
         variant: "destructive",
       });
     }
-  }, [user, currentHousehold, toast, weekNumber]);
+  }, [user, currentHousehold, toast, weekKey]);
 
   const updateItem = useCallback(async (itemId: string, newName: string) => {
     if (!user || !currentHousehold || !newName.trim()) return;
@@ -170,7 +170,7 @@ export const useShoppingList = (weekNumber: 1 | 2) => {
     setShoppingList([]);
     
     try {
-      const success = await ShoppingListService.clearAll(currentHousehold.id, weekNumber);
+      const success = await ShoppingListService.clearAll(currentHousehold.id, weekKey);
       
       if (!success) {
         // Reload on error to restore actual state
@@ -191,7 +191,7 @@ export const useShoppingList = (weekNumber: 1 | 2) => {
         variant: "destructive",
       });
     }
-  }, [user, currentHousehold, weekNumber, loadShoppingList, toast]);
+  }, [user, currentHousehold, weekKey, loadShoppingList, toast]);
 
   return {
     shoppingList,

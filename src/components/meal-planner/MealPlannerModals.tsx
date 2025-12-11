@@ -19,7 +19,6 @@ interface MealPlannerModalsProps {
   setIsAddToMealModalOpen: (open: boolean) => void;
   isAddLeftoversModalOpen: boolean;
   setIsAddLeftoversModalOpen: (open: boolean) => void;
-  weekNumber: 1 | 2;
   onReplaceMealPlan: () => void;
   mealSlot:
     | { date: string; mealType: MealType; slotIndex: number }
@@ -35,7 +34,6 @@ export function MealPlannerModals({
   setIsAddToMealModalOpen,
   isAddLeftoversModalOpen,
   setIsAddLeftoversModalOpen,
-  weekNumber,
   onReplaceMealPlan,
   mealSlot,
   onAddRecipe,
@@ -50,7 +48,6 @@ export function MealPlannerModals({
         open={isReplaceDialogOpen}
         onOpenChange={setIsReplaceDialogOpen}
         onConfirm={onReplaceMealPlan}
-        weekNumber={weekNumber}
       />
 
       <AddRecipeToMealModal

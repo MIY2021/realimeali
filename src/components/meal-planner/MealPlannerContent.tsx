@@ -5,11 +5,12 @@ import MealListSection from "@/components/MealListSection";
 import { MealType, Recipe, MealPlan } from "@/types";
 
 interface MealPlannerContentProps {
-  currentWeek: 1 | 2;
-  setCurrentWeek: (week: 1 | 2) => void;
+  currentWeek: string; // ISO week key
+  setCurrentWeek: (week: string) => void;
   isLoading: boolean;
   isDataLoading?: boolean;
   currentMealPlans: MealPlan[];
+  allMealPlans?: MealPlan[]; // For AllWeeksModal
   recipes: Recipe[];
   mealLayout: string;
   onMealLayoutChange: (value: string) => void;
@@ -29,6 +30,7 @@ export const MealPlannerContent = ({
   isLoading,
   isDataLoading = false,
   currentMealPlans,
+  allMealPlans = [],
   recipes,
   mealLayout,
   onMealLayoutChange,
@@ -84,6 +86,7 @@ export const MealPlannerContent = ({
         setCurrentWeek={setCurrentWeek}
         mealLayout={mealLayout}
         onMealLayoutChange={onMealLayoutChange}
+        allMealPlans={allMealPlans}
       />
 
       {mealLayout === 'list' ? (

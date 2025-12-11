@@ -1,10 +1,11 @@
 import { useCallback } from "react";
 import { MealPlan, Recipe } from "@/types";
+import { parseISOWeekKey, formatWeekRange } from "@/utils/weekUtils";
 
 interface UseMealPlanSharingProps {
   user: any;
   currentHousehold: any;
-  currentWeek: 1 | 2;
+  currentWeek: string; // ISO week key
   clearWeek: any;
   setIsLoading: (loading: boolean) => void;
   setClearAllDialog?: (open: boolean) => void;
@@ -27,12 +28,12 @@ export const useMealPlanSharing = ({
 
   const formatMealPlanText = useCallback(() => {
     if (!mealPlans.length || !recipes.length) {
-      return `Week ${currentWeek} Meal Plan\n\nNo meals planned for this week.`;
+      return `Meal Plan\n\nNo meals planned for this week.`;
     }
 
     // Group meal plans by meal type
     const mealsByType: { [key: string]: MealPlan[] } = {};
-    const weekPlans = mealPlans.filter(plan => plan.week_number === currentWeek);
+    const weekPlans = mealPlans.filter(plan => plan.week_key === currentWeek);
     
     weekPlans.forEach(plan => {
       if (!mealsByType[plan.meal_type]) {
@@ -41,8 +42,10 @@ export const useMealPlanSharing = ({
       mealsByType[plan.meal_type].push(plan);
     });
 
-    // Format text
-    let text = `Week ${currentWeek} Meal Plan\n\n`;
+    // Format text with date range
+    const { year, week } = parseISOWeekKey(currentWeek);
+    const weekRange = formatWeekRange(year, week);
+    let text = `Meal Plan - Week of ${weekRange}\n\n`;
     
     // Match frontend order and add food emojis
     const mealTypeOrder = ['dinner', 'lunch', 'breakfast', 'snacks', 'sides', 'desserts', 'drinks'];
@@ -80,7 +83,9 @@ export const useMealPlanSharing = ({
 
   const handleShare = useCallback(async () => {
     const mealPlanText = formatMealPlanText();
-    const shareTitle = `Week ${currentWeek} Meal Plan`;
+    const { year, week } = parseISOWeekKey(currentWeek);
+    const weekRange = formatWeekRange(year, week);
+    const shareTitle = `Meal Plan - Week of ${weekRange}`;
     const shareUrl = `${window.location.origin}/meal-planner`;
     const textWithUrl = `${mealPlanText}\nView and edit this meal plan: ${shareUrl}`;
 
@@ -99,7 +104,7 @@ export const useMealPlanSharing = ({
         await navigator.clipboard.writeText(textWithUrl);
         toast({
           title: "Meal Plan Copied",
-          description: `Week ${currentWeek} meal plan copied to clipboard`,
+          description: `Meal plan copied to clipboard`,
         });
       } catch (err) {
         toast({
@@ -117,7 +122,7 @@ export const useMealPlanSharing = ({
     if (setClearAllDialog) {
       setClearAllDialog(true);
     } else {
-      const confirmed = window.confirm(`Are you sure you want to clear all meals for week ${currentWeek}?`);
+      const confirmed = window.confirm(`Are you sure you want to clear all meals for this week?`);
       if (confirmed) {
         performClearAll();
       }
@@ -132,7 +137,7 @@ export const useMealPlanSharing = ({
       await clearWeek(currentWeek);
       toast({
         title: "Week Cleared",
-        description: `All meals cleared for week ${currentWeek}`,
+        description: `All meals cleared for this week`,
       });
     } catch (err) {
       console.error("Error clearing week:", err);

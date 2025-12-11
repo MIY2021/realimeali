@@ -7,7 +7,8 @@ export interface HouseholdMealPlan {
   recipe_id?: string; // Optional for freetyped meals
   meal_type: string; // Legacy field - use meal_types instead
   meal_types?: MealType[]; // New field for multiple meal types
-  week_number: number;
+  week_key: string; // ISO week key format: "YYYY-Www"
+  week_number?: number; // Legacy field - kept for migration compatibility
   slot_index: number;
   notes?: string;
   date_scheduled: string;
@@ -26,13 +27,13 @@ export interface HouseholdMealPlan {
 
 export interface MealPlanContextType {
   mealPlans: MealPlan[];
-  getMealPlansForWeek: (weekNumber: 1 | 2) => MealPlan[];
+  getMealPlansForWeek: (weekKey: string) => MealPlan[];
   getRecipeForMealPlan: (mealPlan: MealPlan) => Recipe | undefined;
-  addMealPlan: (mealPlanData: Omit<MealPlan, 'id' | 'created_at' | 'updated_at'>, weekNumber: 1 | 2, silentMode?: boolean) => Promise<void>;
-  addMealPlanWithLeftovers: (mealPlanData: Omit<MealPlan, 'id' | 'created_at' | 'updated_at'>, weekNumber: 1 | 2, leftoverServings?: number, silentMode?: boolean) => Promise<void>;
+  addMealPlan: (mealPlanData: Omit<MealPlan, 'id' | 'created_at' | 'updated_at'>, weekKey: string, silentMode?: boolean) => Promise<void>;
+  addMealPlanWithLeftovers: (mealPlanData: Omit<MealPlan, 'id' | 'created_at' | 'updated_at'>, weekKey: string, leftoverServings?: number, silentMode?: boolean) => Promise<void>;
   removeMealPlan: (id: string) => Promise<void>;
-  clearWeek: (weekNumber: 1 | 2) => Promise<void>;
-  reorderMealPlans: (mealType: MealType, weekNumber: 1 | 2, sourceIndex: number, destinationIndex: number) => Promise<void>;
+  clearWeek: (weekKey: string) => Promise<void>;
+  reorderMealPlans: (mealType: MealType, weekKey: string, sourceIndex: number, destinationIndex: number) => Promise<void>;
   updateMealPlanServings: (mealPlanId: string, plannedServings: number) => Promise<void>;
   updateMealPlanCompletion: (mealPlanId: string, isCompleted: boolean) => Promise<void>; // Add completion function
   isLoading: boolean;
