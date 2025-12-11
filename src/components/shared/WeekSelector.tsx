@@ -66,7 +66,7 @@ export function WeekSelector({
         className={`flex-1 ${onWeekClick ? 'cursor-pointer hover:bg-gray-100' : ''}`}
         aria-label="Select week"
       >
-        <span className="font-medium">Week of {weekRange}</span>
+        <span className="font-medium">{weekRange}</span>
       </Button>
       
       <Button
