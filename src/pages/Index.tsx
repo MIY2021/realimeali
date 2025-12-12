@@ -32,84 +32,31 @@ export default function Index() {
   const totalCount = achievements.length;
   const achievementsDisplay = totalCount > 0 ? `${unlockedCount}/${totalCount}` : "0/0";
 
-  // Auto-show welcome slides for first-time users
+  // Auto-show welcome slides for first-time users (localStorage only)
   useEffect(() => {
-    const checkWelcomeStatus = async () => {
-      if (!user) {
-        setIsCheckingWelcome(false);
-        return;
-      }
+    if (!user) {
+      setIsCheckingWelcome(false);
+      return;
+    }
 
-      const storageKey = `hasSeenWelcome_${user.id}`;
-      const cachedValue = localStorage.getItem(storageKey);
+    const storageKey = `hasSeenWelcome_${user.id}`;
+    const hasSeenWelcome = localStorage.getItem(storageKey) === "true";
 
-      // Fast path: If localStorage says "seen", trust it (but verify in background)
-      if (cachedValue === "true") {
-        setIsCheckingWelcome(false);
-        
-        // Optional: Verify with database in background (non-blocking)
-        verifyWithDatabase(user.id, storageKey);
-        return;
-      }
+    if (!hasSeenWelcome) {
+      const timer = setTimeout(() => {
+        setShowWelcomeSlides(true);
+      }, 500);
+      setIsCheckingWelcome(false);
+      return () => clearTimeout(timer);
+    }
 
-      // Slow path: localStorage is empty (new device) - MUST check database
-      try {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('has_seen_welcome')
-          .eq('id', user.id)
-          .single();
-
-        if (error) {
-          console.error('Error checking welcome status:', error);
-          // If DB check fails, default to showing welcome (safe default)
-          setIsCheckingWelcome(false);
-          return;
-        }
-
-        const hasSeenWelcome = data?.has_seen_welcome ?? false;
-        
-        // Update localStorage cache based on database result
-        if (hasSeenWelcome) {
-          localStorage.setItem(storageKey, "true");
-        }
-
-        // Show welcome slides if user hasn't seen them
-        if (!hasSeenWelcome) {
-          const timer = setTimeout(() => {
-            setShowWelcomeSlides(true);
-          }, 500);
-          setIsCheckingWelcome(false);
-          return () => clearTimeout(timer);
-        }
-
-        setIsCheckingWelcome(false);
-      } catch (error) {
-        console.error('Error checking welcome status:', error);
-        setIsCheckingWelcome(false);
-      }
-    };
-
-    checkWelcomeStatus();
+    setIsCheckingWelcome(false);
   }, [user]);
 
-  const handleWelcomeSlidesComplete = async () => {
+  const handleWelcomeSlidesComplete = () => {
     if (user) {
       const storageKey = `hasSeenWelcome_${user.id}`;
-      
-      // Update localStorage immediately (optimistic update)
       localStorage.setItem(storageKey, "true");
-      
-      // Update database (critical for cross-device sync)
-      try {
-        await supabase
-          .from('profiles')
-          .update({ has_seen_welcome: true })
-          .eq('id', user.id);
-      } catch (error) {
-        console.error('Error updating welcome status:', error);
-        // Don't fail silently - maybe show a toast or retry?
-      }
     }
     setShowWelcomeSlides(false);
   };
@@ -235,26 +182,4 @@ export default function Index() {
       </div>
     </div>
   );
-}
-
-// Helper function to verify localStorage with database (non-blocking)
-async function verifyWithDatabase(userId: string, storageKey: string) {
-  try {
-    const { data } = await supabase
-      .from('profiles')
-      .select('has_seen_welcome')
-      .eq('id', userId)
-      .single();
-
-    // If database says not seen, but localStorage says seen, fix localStorage
-    if (data && !data.has_seen_welcome) {
-      localStorage.removeItem(storageKey);
-    }
-    // If database says seen, ensure localStorage is set (in case it was cleared)
-    else if (data?.has_seen_welcome) {
-      localStorage.setItem(storageKey, "true");
-    }
-  } catch (error) {
-    // Non-critical, don't log or throw
-  }
 }

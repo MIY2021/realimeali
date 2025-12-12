@@ -172,6 +172,7 @@ export type Database = {
           recipe_id: string | null
           slot_index: number
           updated_at: string
+          week_key: string | null
           week_number: number
         }
         Insert: {
@@ -194,6 +195,7 @@ export type Database = {
           recipe_id?: string | null
           slot_index?: number
           updated_at?: string
+          week_key?: string | null
           week_number: number
         }
         Update: {
@@ -216,6 +218,7 @@ export type Database = {
           recipe_id?: string | null
           slot_index?: number
           updated_at?: string
+          week_key?: string | null
           week_number?: number
         }
         Relationships: [
@@ -352,6 +355,7 @@ export type Database = {
           source_ingredients: string[] | null
           unit: string | null
           updated_at: string
+          week_key: string | null
           week_number: number
         }
         Insert: {
@@ -369,6 +373,7 @@ export type Database = {
           source_ingredients?: string[] | null
           unit?: string | null
           updated_at?: string
+          week_key?: string | null
           week_number?: number
         }
         Update: {
@@ -386,6 +391,7 @@ export type Database = {
           source_ingredients?: string[] | null
           unit?: string | null
           updated_at?: string
+          week_key?: string | null
           week_number?: number
         }
         Relationships: [
@@ -610,7 +616,6 @@ export type Database = {
           created_at: string
           email: string | null
           full_name: string | null
-          has_seen_welcome: boolean
           id: string
           profile_completed: boolean | null
           updated_at: string
@@ -623,7 +628,6 @@ export type Database = {
           created_at?: string
           email?: string | null
           full_name?: string | null
-          has_seen_welcome?: boolean
           id: string
           profile_completed?: boolean | null
           updated_at?: string
@@ -636,7 +640,6 @@ export type Database = {
           created_at?: string
           email?: string | null
           full_name?: string | null
-          has_seen_welcome?: boolean
           id?: string
           profile_completed?: boolean | null
           updated_at?: string
