@@ -85,7 +85,7 @@ export const WelcomeHeader = ({ onMenuClick }: WelcomeHeaderProps) => {
         <p className="text-sm sm:text-base text-[#654321]/90 leading-relaxed">
           {!isLoading && dailyTip && (
             <span className="animate-[fade-in_1.2s_ease-out] inline-block">
-              <span className="font-bold">💡 Top Tip:</span> {dailyTip}
+              <span className="font-bold">💡 Tip of the Day:</span> {dailyTip}
             </span>
           )}
         </p>
