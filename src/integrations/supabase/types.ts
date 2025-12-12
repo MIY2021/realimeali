@@ -610,6 +610,7 @@ export type Database = {
           created_at: string
           email: string | null
           full_name: string | null
+          has_seen_welcome: boolean
           id: string
           profile_completed: boolean | null
           updated_at: string
@@ -622,6 +623,7 @@ export type Database = {
           created_at?: string
           email?: string | null
           full_name?: string | null
+          has_seen_welcome?: boolean
           id: string
           profile_completed?: boolean | null
           updated_at?: string
@@ -634,6 +636,7 @@ export type Database = {
           created_at?: string
           email?: string | null
           full_name?: string | null
+          has_seen_welcome?: boolean
           id?: string
           profile_completed?: boolean | null
           updated_at?: string
