@@ -11,7 +11,7 @@ export const useUserStats = () => {
   const { currentHousehold, householdMembers } = useHousehold();
   const { recipes, isLoading: recipesLoading } = useRecipes();
   const { mealPlans, isLoading: mealPlansLoading } = useMealPlan();
-  const { shoppingList, isLoading: shoppingListLoading } = useShoppingList(1);
+  const { shoppingList, isLoading: shoppingListLoading } = useShoppingList("1");
 
   const stats = useMemo(() => {
     // Total recipes in household

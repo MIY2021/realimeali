@@ -86,7 +86,7 @@ export function EnhancedMealCard({
             </div>
 
           {/* Content Area */}
-          <div className="flex-1 pl-2 pr-3 py-2 flex flex-col justify-center min-w-0">
+          <div className="flex-1 pl-2 pr-3 py-2 flex flex-col justify-center min-w-0 overflow-hidden">
               {/* Header */}
               <div className="flex items-start justify-between mb-2">
                 <div className="flex-1 min-w-0">
@@ -123,8 +123,8 @@ export function EnhancedMealCard({
               </div>
 
               {/* Bottom Controls */}
-              <div className="flex items-center justify-between gap-0.5">
-                <div className="flex items-center gap-1">
+              <div className="flex items-center justify-between gap-0.5 w-full max-w-full overflow-hidden">
+                <div className="flex items-center gap-1 min-w-0 flex-1">
                   <span className="text-[10px] text-gray-600 leading-none whitespace-nowrap">Servings:</span>
                   <div className="flex items-center gap-0.5">
                     <Button
@@ -325,7 +325,7 @@ export function EnhancedMealCard({
           </div>
 
           {/* Content Area - Reduced left padding to minimize white space */}
-          <div className="flex-1 pl-2 pr-3 py-2 flex flex-col justify-center min-w-0">
+          <div className="flex-1 pl-2 pr-3 py-2 flex flex-col justify-center min-w-0 overflow-hidden">
             {/* Header */}
             <div className="flex items-start justify-between mb-1">
               <div className="flex-1 min-w-0">
@@ -352,8 +352,8 @@ export function EnhancedMealCard({
             </div>
 
             {/* Bottom Controls */}
-            <div className="flex items-center justify-between gap-0.5">
-              <div className="flex items-center gap-1">
+            <div className="flex items-center justify-between gap-0.5 w-full max-w-full overflow-hidden">
+              <div className="flex items-center gap-1 min-w-0 flex-1">
                 <span className="text-[10px] text-gray-600 leading-none whitespace-nowrap">Servings:</span>
                 <div className="flex items-center gap-0.5">
                   <Button

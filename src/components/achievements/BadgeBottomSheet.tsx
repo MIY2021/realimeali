@@ -4,7 +4,7 @@ import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import * as LucideIcons from 'lucide-react';
-import { Circle, Sparkles, Share2 } from 'lucide-react';
+import { Circle, Sparkles, Share } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface BadgeBottomSheetProps {
@@ -180,7 +180,7 @@ export const BadgeBottomSheet = ({ achievement, open, onClose }: BadgeBottomShee
                 border: 'none'
               }}
             >
-              <Share2 className="h-4 w-4" />
+              <Share className="h-4 w-4" />
               {isUnlocked ? 'Share Achievement' : 'Share Progress'}
             </Button>
           </div>

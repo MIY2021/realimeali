@@ -84,7 +84,7 @@ export const LatestRecipesInspiration = () => {
         // Insert recipe into household recipes
         const { data: newRecipe, error: insertError } = await supabase
           .from('recipes')
-          .insert({
+          .insert([{
             title: recipe.title,
             description: recipe.description || '',
             ingredients: recipe.ingredients || [],
@@ -94,14 +94,14 @@ export const LatestRecipesInspiration = () => {
             servings: recipe.servings || 1,
             image: recipe.image,
             meal_types: recipe.meal_types || [],
-            cuisine_region: recipe.cuisine_region,
-            diet_lifestyle: recipe.diet_lifestyle,
+            cuisine_region: recipe.cuisine_region as any,
+            diet_lifestyle: recipe.diet_lifestyle as any,
             source_url: recipe.source_url,
-            created_by: user.id,
+            user_id: user.id,
             household_id: currentHousehold.id,
             import_method: 'featured',
             is_favorite: false,
-          })
+          }])
           .select()
           .single();
 

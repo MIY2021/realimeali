@@ -8,7 +8,7 @@ export class ShoppingListQueries {
       
       const { data, error } = await supabase
         .from('household_shopping_lists')
-        .select('*')
+        .select('id, name, quantity, unit, consolidated_quantity, consolidated_unit, source_ingredients, is_checked, is_custom, recipe_ids, created_at, created_by')
         .eq('household_id', householdId)
         .eq('week_key', weekKey)
         .order('is_custom', { ascending: false })
