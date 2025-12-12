@@ -211,8 +211,17 @@ export function RecipeSelectionView({
               placeholder="Search recipes..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 h-11 bg-white border-gray-300 rounded-lg text-sm"
+              className={`w-full pl-10 h-11 bg-white border-gray-300 rounded-lg text-sm ${searchTerm ? 'pr-10' : ''}`}
             />
+            {searchTerm && (
+              <button
+                onClick={() => setSearchTerm("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 hover:text-gray-600 focus:outline-none"
+                aria-label="Clear search"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
           </div>
 
           {/* Row 2: Sort Dropdown + View Toggle */}
@@ -329,13 +338,22 @@ export function RecipeSelectionView({
         <div>
           {/* Search, Sort Controls */}
           <div className="flex gap-3 mb-6">
-            <div className="flex-1">
+            <div className="flex-1 relative">
               <Input
                 placeholder="Search recipes..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full"
+                className={`w-full ${searchTerm ? 'pr-10' : ''}`}
               />
+              {searchTerm && (
+                <button
+                  onClick={() => setSearchTerm("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 hover:text-gray-600 focus:outline-none"
+                  aria-label="Clear search"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
             </div>
             
             <div className="w-32 sm:w-48">

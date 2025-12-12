@@ -15,7 +15,7 @@ import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { Search, Loader } from "lucide-react";
+import { Search, Loader, X } from "lucide-react";
 import { toast } from "sonner";
 import {
   Select,
@@ -124,6 +124,9 @@ export function DiscoverRecipesContent() {
 
   const isSearchValid = keyword.trim().length >= 2 || hasActiveFilters;
 
+  // Hide Featured Recipes section when there are active search/filters and no recipes
+  const shouldHideFeaturedSection = (keyword.trim().length > 0 || hasActiveFilters) && featuredRecipes.length === 0;
+
   const handleSearchWeb = () => {
     if (!isSearchValid) {
       toast.error("Add a search term or choose a filter, then press Search.");
@@ -209,8 +212,17 @@ export function DiscoverRecipesContent() {
                 placeholder="Search recipes..."
                 value={keyword}
                 onChange={(e) => setKeyword(e.target.value)}
-                className="w-full pl-10 h-11 bg-white border-gray-300 rounded-lg text-sm"
+                className={`w-full pl-10 h-11 bg-white border-gray-300 rounded-lg text-sm ${keyword ? 'pr-10' : ''}`}
               />
+              {keyword && (
+                <button
+                  onClick={() => setKeyword("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 hover:text-gray-600 focus:outline-none"
+                  aria-label="Clear search"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
             </div>
 
             {/* Row 2: Sort Dropdown + View Toggle */}
@@ -295,13 +307,22 @@ export function DiscoverRecipesContent() {
           <div>
             {/* Search, Sort Controls */}
             <div className="flex gap-3 mb-6">
-              <div className="flex-1">
+              <div className="flex-1 relative">
                 <Input
                   placeholder="Search recipes..."
                   value={keyword}
                   onChange={(e) => setKeyword(e.target.value)}
-                  className="w-full"
+                  className={`w-full ${keyword ? 'pr-10' : ''}`}
                 />
+                {keyword && (
+                  <button
+                    onClick={() => setKeyword("")}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 hover:text-gray-600 focus:outline-none"
+                    aria-label="Clear search"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
               </div>
 
               <div className="w-48">
@@ -372,47 +393,49 @@ export function DiscoverRecipesContent() {
         )}
 
         {/* Featured Recipes Section */}
-        <div className="space-y-4">
-          <h2 className="text-lg font-semibold text-[#2C3E50]">Featured Recipes</h2>
+        {!shouldHideFeaturedSection && (
+          <div className="space-y-4">
+            <h2 className="text-lg font-semibold text-[#2C3E50]">Featured Recipes</h2>
 
-          {isLoading ? (
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              {Array(8).fill(0).map((_, i) => (
-                <Skeleton key={i} className="h-64 rounded-lg" />
-              ))}
-            </div>
-          ) : featuredRecipes.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">
-                No featured recipes available right now — try searching for pasta, curry, or chicken.
-              </p>
-            </div>
-          ) : (
-            <>
-              <div className={isMobile && mobileLayout === '1' ? 
-                'grid grid-cols-1 gap-4' : 
-                'grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4'
-              }>
-                {featuredRecipes.map((recipe) => (
-                  <ImportedRecipeCard
-                    key={recipe.id}
-                    recipe={recipe}
-                    mobileLayout={mobileLayout}
-                    onAddToMealPlan={handleAddFeaturedRecipe}
-                  />
+            {isLoading ? (
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                {Array(8).fill(0).map((_, i) => (
+                  <Skeleton key={i} className="h-64 rounded-lg" />
                 ))}
               </div>
-
-              {hasMore && (
-                <div ref={sentinelRef} className="flex justify-center mt-6">
-                  {isLoadingMore && (
-                    <Loader className="w-6 h-6 animate-spin text-muted-foreground" />
-                  )}
+            ) : featuredRecipes.length === 0 ? (
+              <div className="text-center py-12">
+                <p className="text-muted-foreground">
+                  No featured recipes available right now — try searching for pasta, curry, or chicken.
+                </p>
+              </div>
+            ) : (
+              <>
+                <div className={isMobile && mobileLayout === '1' ? 
+                  'grid grid-cols-1 gap-4' : 
+                  'grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4'
+                }>
+                  {featuredRecipes.map((recipe) => (
+                    <ImportedRecipeCard
+                      key={recipe.id}
+                      recipe={recipe}
+                      mobileLayout={mobileLayout}
+                      onAddToMealPlan={handleAddFeaturedRecipe}
+                    />
+                  ))}
                 </div>
-              )}
-            </>
-          )}
-        </div>
+
+                {hasMore && (
+                  <div ref={sentinelRef} className="flex justify-center mt-6">
+                    {isLoadingMore && (
+                      <Loader className="w-6 h-6 animate-spin text-muted-foreground" />
+                    )}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        )}
 
         {/* Helper text when no web results */}
         {!showWebResults && (

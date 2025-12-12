@@ -78,7 +78,7 @@ export const WelcomeHeader = ({ onMenuClick }: WelcomeHeaderProps) => {
         <span className="sr-only">Open menu</span>
       </Button>
 
-      <div className="relative z-10 pr-14">
+      <div className="relative z-10 pr-6">
         <h1 className="text-2xl sm:text-3xl font-extrabold text-[#654321] mb-2 animate-[fade-in_1s_ease-out]">
           {getTimeBasedGreeting()}, {getDisplayName()}! 👋
         </h1>
