@@ -39,12 +39,12 @@ export function useImageGeneration() {
         }
       }, 2500); // Much slower animation - changed from 1500ms to 2500ms
       
-      // Use simple title-based prompt without custom styling
-      const simplePrompt = `A high-quality, professional photo of ${title}`;
+      // Use consistent editorial food photography style
+      const styledPrompt = `A high-quality editorial food photograph of ${title}, a fresh, vibrant homemade meal served in a shallow ceramic bowl. The dish is the clear focal point, centred in the frame and filling most of the image. Ingredients are neatly arranged in defined sections, colourful but natural. Shot using soft natural daylight from the side, creating gentle highlights and subtle shadows. Clean white or very light stone background with no clutter or unnecessary props. Shallow depth of field, sharp focus on the food, slight background blur. Modern cookbook photography style, realistic textures, appetising but not over-styled. Ultra-realistic, high detail, professional food photography, suitable for a premium meal planning app.`;
       
       const { data, error } = await supabase.functions.invoke('generate-recipe-image', {
         body: { 
-          prompt: simplePrompt
+          prompt: styledPrompt
         },
       });
 
