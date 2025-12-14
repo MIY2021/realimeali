@@ -1,10 +1,30 @@
-
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { IMAGE_LOADING_MESSAGES } from "./useUrlRecipeProcessing/constants";
 
+const DEFAULT_PROMPT = `A high-quality editorial food photograph of {title}, a fresh, vibrant homemade meal served in a shallow ceramic bowl. The dish is the clear focal point, centred in the frame and filling most of the image. Ingredients are neatly arranged in defined sections, colourful but natural. Shot using soft natural daylight from the side, creating gentle highlights and subtle shadows. Clean white or very light stone background with no clutter or unnecessary props. Shallow depth of field, sharp focus on the food, slight background blur. Modern cookbook photography style, realistic textures, appetising but not over-styled. Ultra-realistic, high detail, professional food photography, suitable for a premium meal planning app.`;
+
 export function useImageGeneration() {
   const { toast } = useToast();
+
+  const fetchPromptTemplate = async (): Promise<string> => {
+    try {
+      const { data, error } = await supabase
+        .from("app_settings")
+        .select("value")
+        .eq("id", "image_generation_prompt")
+        .single();
+
+      if (error || !data?.value) {
+        console.warn("Could not fetch prompt template, using default:", error);
+        return DEFAULT_PROMPT;
+      }
+      return data.value;
+    } catch (error) {
+      console.warn("Error fetching prompt template:", error);
+      return DEFAULT_PROMPT;
+    }
+  };
 
   const handleGenerateImage = async (
     title: string,
@@ -37,10 +57,11 @@ export function useImageGeneration() {
           setGenerationProgress?.(shuffledMessages[messageIndex]);
           messageIndex++;
         }
-      }, 2500); // Much slower animation - changed from 1500ms to 2500ms
+      }, 2500);
       
-      // Use consistent editorial food photography style
-      const styledPrompt = `A high-quality editorial food photograph of ${title}, a fresh, vibrant homemade meal served in a shallow ceramic bowl. The dish is the clear focal point, centred in the frame and filling most of the image. Ingredients are neatly arranged in defined sections, colourful but natural. Shot using soft natural daylight from the side, creating gentle highlights and subtle shadows. Clean white or very light stone background with no clutter or unnecessary props. Shallow depth of field, sharp focus on the food, slight background blur. Modern cookbook photography style, realistic textures, appetising but not over-styled. Ultra-realistic, high detail, professional food photography, suitable for a premium meal planning app.`;
+      // Fetch the prompt template from database and replace {title}
+      const promptTemplate = await fetchPromptTemplate();
+      const styledPrompt = promptTemplate.replace(/{title}/g, title);
       
       const { data, error } = await supabase.functions.invoke('generate-recipe-image', {
         body: { 
@@ -52,12 +73,10 @@ export function useImageGeneration() {
         throw error;
       }
 
-      // Check for proper response structure
       if (!data?.imageUrl) {
         throw new Error('No image received from AI generation');
       }
 
-      // Clear the progress animation and complete
       clearInterval(progressInterval);
       setGenerationProgress?.("✨ Professional cookbook image generated!");
       
@@ -69,7 +88,6 @@ export function useImageGeneration() {
         description: `Professional cookbook-style image created using Gemini! (${data.fileSizeMB}MB WebP)`,
       });
 
-      // Reset progress after a delay
       setTimeout(() => {
         setGenerationProgress?.("");
       }, 2000);
