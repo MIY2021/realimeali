@@ -1,5 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
-import { compressImage, generateThumbnail } from '@/utils/imageCompression';
+import { compressImage, generateThumbnail, generateThumbnailFromUrl } from '@/utils/imageCompression';
 
 export interface UploadedImages {
   fullUrl: string;
@@ -59,6 +59,43 @@ export async function uploadRecipeImage(
     };
   } catch (error) {
     console.error('❌ Error uploading recipe image:', error);
+    throw error;
+  }
+}
+
+/**
+ * Generate and upload a thumbnail from an image URL
+ * Used when recipes have image URLs but no uploaded file
+ */
+export async function uploadThumbnailFromUrl(
+  imageUrl: string,
+  userId: string,
+  recipeId: string
+): Promise<string> {
+  try {
+    console.log(`📸 Generating thumbnail from URL: ${imageUrl}`);
+    const thumbnail = await generateThumbnailFromUrl(imageUrl);
+    console.log(`📸 Thumbnail size: ${(thumbnail.size / 1024).toFixed(2)}KB`);
+
+    const timestamp = Date.now();
+    const thumbnailPath = `${userId}/${recipeId}-${timestamp}-thumb.jpg`;
+    
+    const { error: thumbError } = await supabase.storage
+      .from('recipe-images')
+      .upload(thumbnailPath, thumbnail.file, {
+        contentType: 'image/jpeg',
+        upsert: true,
+      });
+
+    if (thumbError) throw thumbError;
+
+    const { data: thumbData } = supabase.storage
+      .from('recipe-images')
+      .getPublicUrl(thumbnailPath);
+
+    return thumbData.publicUrl;
+  } catch (error) {
+    console.error('❌ Error uploading thumbnail from URL:', error);
     throw error;
   }
 }

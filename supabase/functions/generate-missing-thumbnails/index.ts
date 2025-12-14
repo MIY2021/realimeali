@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.8';
+import { Image } from 'https://deno.land/x/imagescript@1.3.0/mod.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -12,6 +13,41 @@ interface ThumbnailResult {
   error?: string;
 }
 
+/**
+ * Resize image to thumbnail size using imagescript library (works in Deno edge functions)
+ */
+async function resizeImageToThumbnail(imageBlob: Blob, maxWidth: number = 400, maxHeight: number = 400): Promise<Blob> {
+  try {
+    const arrayBuffer = await imageBlob.arrayBuffer();
+    const uint8Array = new Uint8Array(arrayBuffer);
+    
+    // Decode image
+    const image = await Image.decode(uint8Array);
+    
+    // Calculate new dimensions
+    let width = image.width;
+    let height = image.height;
+    
+    if (width > maxWidth || height > maxHeight) {
+      const ratio = Math.min(maxWidth / width, maxHeight / height);
+      width = Math.round(width * ratio);
+      height = Math.round(height * ratio);
+    }
+    
+    // Resize
+    image.resize(width, height);
+    
+    // Encode as JPEG with quality 80
+    const resized = await image.encode(1); // 1 = JPEG format
+    
+    return new Blob([resized], { type: 'image/jpeg' });
+  } catch (error) {
+    console.warn('⚠️ Image resize failed, using original blob:', error);
+    // Fallback: return original blob (better than nothing)
+    return imageBlob;
+  }
+}
+
 async function generateThumbnailFromUrl(imageUrl: string): Promise<Blob> {
   console.log(`📥 Downloading image from: ${imageUrl}`);
   
@@ -23,9 +59,11 @@ async function generateThumbnailFromUrl(imageUrl: string): Promise<Blob> {
   const blob = await response.blob();
   console.log(`📦 Downloaded blob size: ${(blob.size / 1024).toFixed(2)}KB`);
   
-  // For edge functions, we'll create a smaller version by re-uploading with compression hints
-  // The actual compression happens during upload
-  return blob;
+  // Resize to thumbnail
+  const thumbnailBlob = await resizeImageToThumbnail(blob, 400, 400);
+  console.log(`📦 Thumbnail size: ${(thumbnailBlob.size / 1024).toFixed(2)}KB`);
+  
+  return thumbnailBlob;
 }
 
 Deno.serve(async (req) => {
@@ -77,33 +115,44 @@ Deno.serve(async (req) => {
         
         const timestamp = Date.now();
         
-        // Upload full image to Storage (for external URLs, this moves them to Storage)
-        const fullPath = `${recipe.user_id}/${recipe.id}-${timestamp}.jpg`;
-        console.log(`📤 Uploading full image to: ${fullPath}`);
+        // Check if image is already in Supabase storage
+        const isStorageUrl = recipe.image.includes('.supabase.co/storage/v1/object/public/recipe-images/');
+        let finalImageUrl = recipe.image;
         
-        const { error: fullUploadError } = await supabase.storage
-          .from('recipe-images')
-          .upload(fullPath, imageBlob, {
-            contentType: 'image/jpeg',
-            upsert: true,
-          });
+        // Only upload full image if it's not already in storage (external URL)
+        if (!isStorageUrl) {
+          const fullPath = `${recipe.user_id}/${recipe.id}-${timestamp}.jpg`;
+          console.log(`📤 Uploading full image to: ${fullPath}`);
+          
+          const { error: fullUploadError } = await supabase.storage
+            .from('recipe-images')
+            .upload(fullPath, imageBlob, {
+              contentType: 'image/jpeg',
+              upsert: true,
+            });
 
-        if (fullUploadError) {
-          throw fullUploadError;
+          if (fullUploadError) {
+            throw fullUploadError;
+          }
+
+          // Get public URL for full image
+          const { data: fullData } = supabase.storage
+            .from('recipe-images')
+            .getPublicUrl(fullPath);
+          
+          finalImageUrl = fullData.publicUrl;
+        } else {
+          console.log(`✓ Image already in storage, skipping full image upload`);
         }
 
-        // Get public URL for full image
-        const { data: fullData } = supabase.storage
-          .from('recipe-images')
-          .getPublicUrl(fullPath);
-
-        // Upload thumbnail (same blob for now - actual compression happens client-side)
+        // Resize and upload thumbnail
+        const thumbnailBlob = await resizeImageToThumbnail(imageBlob, 400, 400);
         const thumbnailPath = `${recipe.user_id}/${recipe.id}-${timestamp}-thumb.jpg`;
-        console.log(`📤 Uploading thumbnail to: ${thumbnailPath}`);
+        console.log(`📤 Uploading resized thumbnail (${(thumbnailBlob.size / 1024).toFixed(2)}KB) to: ${thumbnailPath}`);
         
         const { error: thumbError } = await supabase.storage
           .from('recipe-images')
-          .upload(thumbnailPath, imageBlob, {
+          .upload(thumbnailPath, thumbnailBlob, {
             contentType: 'image/jpeg',
             upsert: true,
           });
@@ -117,13 +166,18 @@ Deno.serve(async (req) => {
           .from('recipe-images')
           .getPublicUrl(thumbnailPath);
 
-        // Update recipe with both URLs
+        // Update recipe with thumbnail URL (and full image URL if it was external)
+        const updateData: any = { 
+          image_thumbnail: thumbData.publicUrl 
+        };
+        
+        if (!isStorageUrl) {
+          updateData.image = finalImageUrl;
+        }
+        
         const { error: updateError } = await supabase
           .from('recipes')
-          .update({ 
-            image: fullData.publicUrl,
-            image_thumbnail: thumbData.publicUrl 
-          })
+          .update(updateData)
           .eq('id', recipe.id);
 
         if (updateError) {

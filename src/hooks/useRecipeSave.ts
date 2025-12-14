@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Recipe } from "@/types";
-import { uploadRecipeImage } from "@/services/imageUploadService";
+import { uploadRecipeImage, uploadThumbnailFromUrl } from "@/services/imageUploadService";
 
 export function useRecipeSave() {
   const navigate = useNavigate();
@@ -98,16 +98,6 @@ export function useRecipeSave() {
     };
 
     console.log("✅ Validation passed, creating recipe with ALL ingredients preserved:", recipeToSave);
-    
-    // Validate image/thumbnail consistency
-    if ((recipeToSave as any).image && !(recipeToSave as any).image_thumbnail) {
-      console.warn('⚠️ Recipe has image but no thumbnail! This should not happen.');
-      console.warn('Recipe:', recipeToSave.title);
-      console.warn('Image:', (recipeToSave as any).image);
-      
-      // Use full image as fallback thumbnail
-      (recipeToSave as any).image_thumbnail = (recipeToSave as any).image;
-    }
 
     try {
       console.log("🔄 Calling createRecipe function...");
@@ -141,6 +131,33 @@ export function useRecipeSave() {
             }
           } catch (imageError) {
             console.error("❌ Failed to upload images:", imageError);
+            // Continue anyway - recipe is saved
+          }
+        } else if ((recipeToSave as any).image && user && !(recipeToSave as any).image_thumbnail) {
+          // Generate and upload thumbnail from image URL if no file was uploaded and no thumbnail exists
+          console.log("📸 Generating thumbnail from image URL...");
+          try {
+            const thumbnailUrl = await uploadThumbnailFromUrl(
+              (recipeToSave as any).image,
+              user.id,
+              recipe.id
+            );
+
+            console.log("📸 Thumbnail generated, updating recipe...");
+            const { error: updateError } = await supabase
+              .from('recipes')
+              .update({
+                image_thumbnail: thumbnailUrl,
+              })
+              .eq('id', recipe.id);
+
+            if (updateError) {
+              console.error("❌ Failed to update recipe with thumbnail URL:", updateError);
+            } else {
+              console.log("✅ Recipe updated with thumbnail");
+            }
+          } catch (thumbnailError) {
+            console.error("❌ Failed to generate thumbnail from URL:", thumbnailError);
             // Continue anyway - recipe is saved
           }
         }

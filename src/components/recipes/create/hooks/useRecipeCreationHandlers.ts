@@ -6,7 +6,7 @@ import { useRecipes } from "@/contexts/RecipesContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useRecipeValidation } from "./useRecipeValidation";
-import { uploadRecipeImage } from "@/services/imageUploadService";
+import { uploadRecipeImage, uploadThumbnailFromUrl } from "@/services/imageUploadService";
 
 export type RecipeOrigin = 'url' | 'image' | 'generate' | 'text' | 'manual' | 'whatcanImake';
 
@@ -215,6 +215,34 @@ export const useRecipeCreationHandlers = ({
             }
           } catch (imageError) {
             console.error('❌ Failed to upload images:', imageError);
+            // Continue anyway - recipe is saved
+          }
+        } else if (recipeToSave.image && user && !(recipeToSave as any).image_thumbnail) {
+          // Generate and upload thumbnail from image URL if no file was uploaded and no thumbnail exists
+          console.log('📸 Generating thumbnail from image URL...');
+          try {
+            const thumbnailUrl = await uploadThumbnailFromUrl(
+              recipeToSave.image,
+              user.id,
+              savedRecipe.id
+            );
+
+            console.log('📸 Thumbnail generated, updating recipe...');
+            const { error: updateError } = await supabase
+              .from('recipes')
+              .update({
+                image_thumbnail: thumbnailUrl,
+              })
+              .eq('id', savedRecipe.id);
+
+            if (updateError) {
+              console.error('❌ Failed to update recipe with thumbnail URL:', updateError);
+            } else {
+              console.log('✅ Recipe updated with thumbnail');
+              savedRecipe.image_thumbnail = thumbnailUrl;
+            }
+          } catch (thumbnailError) {
+            console.error('❌ Failed to generate thumbnail from URL:', thumbnailError);
             // Continue anyway - recipe is saved
           }
         }

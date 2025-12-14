@@ -65,3 +65,29 @@ export async function generateThumbnail(
 ): Promise<CompressedImage> {
   return compressImage(file, maxWidth, maxHeight, 0.8);
 }
+
+/**
+ * Generate a thumbnail from an image URL
+ * Fetches the image, converts it to a File, then generates thumbnail
+ */
+export async function generateThumbnailFromUrl(imageUrl: string): Promise<CompressedImage> {
+  try {
+    // Fetch the image
+    const response = await fetch(imageUrl);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch image: ${response.status}`);
+    }
+    
+    const blob = await response.blob();
+    const file = new File([blob], 'image.jpg', { 
+      type: blob.type || 'image/jpeg',
+      lastModified: Date.now()
+    });
+    
+    // Use existing generateThumbnail function
+    return await generateThumbnail(file);
+  } catch (error) {
+    console.error('Error generating thumbnail from URL:', error);
+    throw error;
+  }
+}

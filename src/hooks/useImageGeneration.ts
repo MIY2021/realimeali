@@ -2,7 +2,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { IMAGE_LOADING_MESSAGES } from "./useUrlRecipeProcessing/constants";
 
-const DEFAULT_PROMPT = `A high-quality editorial food photograph of {title}, a fresh, vibrant homemade meal served in a shallow ceramic bowl. The dish is the clear focal point, centred in the frame and filling most of the image. Ingredients are neatly arranged in defined sections, colourful but natural. Shot using soft natural daylight from the side, creating gentle highlights and subtle shadows. Clean white or very light stone background with no clutter or unnecessary props. Shallow depth of field, sharp focus on the food, slight background blur. Modern cookbook photography style, realistic textures, appetising but not over-styled. Ultra-realistic, high detail, professional food photography, suitable for a premium meal planning app.`;
+const DEFAULT_PROMPT = `A high-quality editorial food photograph of {title}. The food is the centre of the image. Shot using soft natural daylight from the side. Shallow depth of field, sharp focus on the food, slight background blur. Modern cookbook photography style, realistic textures, appetising but not over-styled. Ultra-realistic, high detail, professional food photography, suitable for a premium meal planning app. Should reference ingredients within the recipe and incorporate it where possible while keeping image natural.`;
 
 export function useImageGeneration() {
   const { toast } = useToast();

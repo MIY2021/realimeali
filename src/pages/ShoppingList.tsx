@@ -72,7 +72,7 @@ export default function ShoppingList() {
   useEffect(() => {
     localStorage.setItem(WEEK_STORAGE_KEY, currentWeek);
   }, [currentWeek]);
-
+  
   const {
     shoppingList,
     isLoading,

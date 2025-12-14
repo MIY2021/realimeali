@@ -12,6 +12,7 @@ import { RecipeExportPanel } from "@/components/admin/RecipeExportPanel";
 import { RecipeImportPanel } from "@/components/admin/RecipeImportPanel";
 import { ImportedRecipeManagementPanel } from "@/components/admin/ImportedRecipeManagementPanel";
 import { ImagePromptSettingsPanel } from "@/components/admin/ImagePromptSettingsPanel";
+import { ThumbnailGenerationPanel } from "@/components/admin/ThumbnailGenerationPanel";
 import { User, AlertCircle } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -148,6 +149,7 @@ const AdminDashboard = () => {
 
         <TabsContent value="settings" className="space-y-6">
           <ImagePromptSettingsPanel />
+          <ThumbnailGenerationPanel />
         </TabsContent>
 
         <TabsContent value="users" className="space-y-6">

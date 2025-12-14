@@ -34,15 +34,15 @@ export const MealPlannerActions = ({
 
   return (
     <>
-      <HeaderControls
-        weekControl={
+    <HeaderControls
+      weekControl={
           <WeekSelector 
             currentWeek={currentWeek} 
             onWeekChange={setCurrentWeek}
             onWeekClick={() => setAllWeeksModalOpen(true)}
             isLoading={isLoading}
-          />
-        }
+        />
+      }
       primaryAction={
         <Button 
           variant="primary" 
@@ -92,7 +92,7 @@ export const MealPlannerActions = ({
           onChange={onMealLayoutChange}
         />
       }
-      />
+    />
       <AllWeeksModal
         open={allWeeksModalOpen}
         onOpenChange={setAllWeeksModalOpen}
