@@ -7,7 +7,8 @@ project_id = "bdjzefekuahfofwzxqxd"
 # No verify_jwt = false means JWT is required (secure by default)
 
 [functions.generate-missing-thumbnails]
-# Maintenance function - requires authentication
+verify_jwt = false
+# Maintenance function - temporarily public for backfill
 
 [functions.recipe-meta]
 verify_jwt = false
