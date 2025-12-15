@@ -3,8 +3,8 @@ import { Recipe } from "@/types";
 import { RecipeImage } from "@/components/ui/recipe-image";
 import { ImageLightbox } from "@/components/ui/image-lightbox";
 import { Button } from "@/components/ui/button";
-import { Heart, Pencil, Trash2, Plus, MoreHorizontal } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Heart, Pencil, Trash2, Plus, MoreHorizontal, Check } from "lucide-react";
+
 
 interface RecipeHeaderProps {
   recipe: Recipe;
@@ -58,26 +58,38 @@ export const RecipeHeader = ({
           <div className={`flex gap-2 transition-all duration-300 ${
             isMenuOpen ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-4 pointer-events-none'
           }`}>
+            {/* Order: Bin / Edit / Cooked / Favourite / Add to Plan */}
             {isOwner && (
-              <>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={onEdit}
-                  className="h-12 w-12 rounded-full bg-white/80 hover:bg-white shadow-md backdrop-blur-sm"
-                >
-                  <Pencil className="h-5 w-5 text-gray-800" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={onDelete}
-                  className="h-12 w-12 rounded-full bg-white/80 hover:bg-white shadow-md backdrop-blur-sm"
-                >
-                  <Trash2 className="h-5 w-5 text-red-600" />
-                </Button>
-              </>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onDelete}
+                className="h-12 w-12 rounded-full bg-white/80 hover:bg-white shadow-md backdrop-blur-sm"
+              >
+                <Trash2 className="h-5 w-5 text-red-600" />
+              </Button>
             )}
+            {isOwner && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onEdit}
+                className="h-12 w-12 rounded-full bg-white/80 hover:bg-white shadow-md backdrop-blur-sm"
+              >
+                <Pencil className="h-5 w-5 text-gray-800" />
+              </Button>
+            )}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onToggleCooked}
+              className={`h-12 w-12 rounded-full shadow-md backdrop-blur-sm ${
+                isCooked ? 'bg-sage hover:bg-sage/90' : 'bg-white/80 hover:bg-white'
+              }`}
+              title={isCooked ? 'Mark as not cooked' : 'Mark as cooked'}
+            >
+              <Check className={`h-5 w-5 ${isCooked ? 'text-white' : 'text-gray-800'}`} />
+            </Button>
             <Button
               variant="ghost"
               size="icon"
@@ -113,19 +125,9 @@ export const RecipeHeader = ({
       
       {/* Title section - just below image */}
       <div className="bg-background px-6 sm:px-8 pt-6 pb-2 rounded-t-3xl -mt-6 relative z-10">
-        <div className="flex items-start justify-between gap-4">
-          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 flex-1">
-            {recipe.title}
-          </h1>
-          <Badge 
-            className={`text-white text-sm px-3 py-1 flex-shrink-0 cursor-pointer ${
-              isCooked ? 'bg-sage hover:bg-sage/90' : 'bg-gray-400 hover:bg-gray-500'
-            }`}
-            onClick={onToggleCooked}
-          >
-            {isCooked ? 'Cooked' : 'Not Cooked'}
-          </Badge>
-        </div>
+        <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">
+          {recipe.title}
+        </h1>
       </div>
       </div>
 
