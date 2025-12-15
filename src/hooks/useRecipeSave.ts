@@ -135,7 +135,8 @@ export function useRecipeSave() {
           }
         } else if ((recipeToSave as any).image && user && !(recipeToSave as any).image_thumbnail) {
           // Generate and upload thumbnail from image URL if no file was uploaded and no thumbnail exists
-          console.log("📸 Generating thumbnail from image URL...");
+          // This handles: new recipes with URL images, recipes where thumbnail generation failed previously
+          console.log("📸 Generating thumbnail from image URL (no thumbnail exists)...");
           try {
             const thumbnailUrl = await uploadThumbnailFromUrl(
               (recipeToSave as any).image,

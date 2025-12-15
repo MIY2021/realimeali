@@ -186,6 +186,10 @@ export const useRecipeCreationHandlers = ({
       if (savedRecipe) {
         console.log('✅ Recipe saved successfully:', savedRecipe.id);
         
+        // Check if image has changed (for edit mode)
+        const imageHasChanged = isEditMode && editingRecipe && 
+          recipeToSave.image !== editingRecipe.image;
+        
         // Upload image if a file was provided
         if (recipeFormHook.uploadedImageFile && user) {
           console.log('📸 Uploading image to storage...');
@@ -217,9 +221,14 @@ export const useRecipeCreationHandlers = ({
             console.error('❌ Failed to upload images:', imageError);
             // Continue anyway - recipe is saved
           }
-        } else if (recipeToSave.image && user && !(recipeToSave as any).image_thumbnail) {
-          // Generate and upload thumbnail from image URL if no file was uploaded and no thumbnail exists
-          console.log('📸 Generating thumbnail from image URL...');
+        } else if (recipeToSave.image && user && (
+          // Generate thumbnail if: no thumbnail exists OR image has changed
+          !recipeToSave.image_thumbnail || imageHasChanged
+        )) {
+          console.log('📸 Generating thumbnail from image URL...', { 
+            hasExistingThumbnail: !!recipeToSave.image_thumbnail,
+            imageHasChanged 
+          });
           try {
             const thumbnailUrl = await uploadThumbnailFromUrl(
               recipeToSave.image,
