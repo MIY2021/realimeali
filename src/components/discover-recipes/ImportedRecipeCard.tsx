@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Clock, Users, Plus, Eye } from 'lucide-react';
 import { ImportedRecipe } from '@/services/importedRecipeService';
 import { useNavigate } from 'react-router-dom';
@@ -37,10 +36,6 @@ export function ImportedRecipeCard({
 
   const handleRecipeClick = () => {
     navigate(`/discover-recipes/${recipe.id}`);
-  };
-
-  const capitalizeFirst = (str: string) => {
-    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
   };
 
   const totalTime = (recipe.prep_time || 0) + (recipe.cook_time || 0);
@@ -106,16 +101,6 @@ export function ImportedRecipeCard({
           </div>
         </div>
 
-        <div className={`flex items-center gap-1 mb-3 ${isCompactLayout ? 'flex-wrap' : ''}`}>
-          {recipe.meal_types && recipe.meal_types.length > 0 && (
-            <Badge 
-              variant="secondary"
-              className={isCompactLayout ? 'text-xs px-2 py-0.5 h-5' : ''}
-            >
-              {capitalizeFirst(recipe.meal_types[0])}
-            </Badge>
-          )}
-        </div>
 
         {/* Action buttons row */}
         <div className={`mt-auto ${shouldStackButtons ? 'flex flex-col gap-2' : 'flex gap-2'}`}>

@@ -5,7 +5,7 @@ import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Image, CheckCircle, XCircle, Loader2, AlertCircle } from "lucide-react";
+import { Camera, Check, X, Loader, AlertCircle } from "lucide-react";
 
 interface ThumbnailResult {
   recipeId: string;
@@ -135,7 +135,7 @@ export function ThumbnailGenerationPanel() {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Image className="h-5 w-5" />
+          <Camera className="h-5 w-5" />
           Generate Missing Thumbnails
         </CardTitle>
         <CardDescription>
@@ -157,7 +157,7 @@ export function ThumbnailGenerationPanel() {
 
         {error && (
           <Alert variant="destructive">
-            <XCircle className="h-4 w-4" />
+            <X className="h-4 w-4" />
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
@@ -171,11 +171,11 @@ export function ThumbnailGenerationPanel() {
             <Progress value={progress} className="h-2" />
             <div className="flex items-center gap-4 text-sm text-muted-foreground">
               <span className="flex items-center gap-1">
-                <CheckCircle className="h-4 w-4 text-green-500" />
+                <Check className="h-4 w-4 text-green-500" />
                 {totalSuccessful} successful
               </span>
               <span className="flex items-center gap-1">
-                <XCircle className="h-4 w-4 text-red-500" />
+                <X className="h-4 w-4 text-red-500" />
                 {totalFailed} failed
               </span>
             </div>
@@ -184,7 +184,7 @@ export function ThumbnailGenerationPanel() {
 
         {isComplete && (
           <Alert>
-            <CheckCircle className="h-4 w-4" />
+            <Check className="h-4 w-4" />
             <AlertDescription>
               Processing complete! {totalSuccessful} thumbnails generated successfully.
               {totalFailed > 0 && ` ${totalFailed} failed.`}
@@ -199,12 +199,12 @@ export function ThumbnailGenerationPanel() {
         >
           {isProcessing ? (
             <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <Loader className="mr-2 h-4 w-4 animate-spin" />
               Processing...
             </>
           ) : (
             <>
-              <Image className="mr-2 h-4 w-4" />
+              <Camera className="mr-2 h-4 w-4" />
               Generate All Missing Thumbnails
             </>
           )}

@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Heart, Eye, Plus, User, Clock, Users } from "lucide-react";
+import { Heart, Eye, Plus, Clock, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Recipe } from "@/types";
 import { useRecipes } from "@/contexts/RecipesContext";
@@ -20,9 +19,8 @@ interface RecipeCardProps {
 }
 
 export function RecipeCard({ recipe, onAddToMealPlan, onRecipeClick, showActions = true, mobileLayout }: RecipeCardProps) {
-  const { toggleFavorite, toggleCookingStatus } = useRecipes();
+  const { toggleFavorite } = useRecipes();
   const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
-  const [isTogglingCooked, setIsTogglingCooked] = useState(false);
   const isMobile = useIsMobile();
   const navigate = useNavigate();
   const location = useLocation();
@@ -54,20 +52,6 @@ export function RecipeCard({ recipe, onAddToMealPlan, onRecipeClick, showActions
     }
   };
 
-  const handleToggleCooked = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    setIsTogglingCooked(true);
-    try {
-      await toggleCookingStatus(recipe.id);
-    } catch (error) {
-      console.error('Failed to toggle cooking status:', error);
-    } finally {
-      setIsTogglingCooked(false);
-    }
-  };
-
   const handleAddToMealPlan = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -94,10 +78,6 @@ export function RecipeCard({ recipe, onAddToMealPlan, onRecipeClick, showActions
 
   const getRecipeUrl = () => {
     return createRecipeUrl(recipe);
-  };
-
-  const capitalizeFirst = (str: string) => {
-    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
   };
 
   // Determine if buttons should be stacked (mobile two-column layout)
@@ -159,29 +139,6 @@ export function RecipeCard({ recipe, onAddToMealPlan, onRecipeClick, showActions
           </div>
         </div>
 
-        <div className={`flex items-center gap-1 mb-3 ${isCompactLayout ? 'flex-wrap' : ''}`}>
-          {recipe.meal_type && (
-            <Badge 
-              variant="secondary"
-              className={isCompactLayout ? 'text-xs px-2 py-0.5 h-5' : ''}
-            >
-              {capitalizeFirst(recipe.meal_type)}
-            </Badge>
-          )}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleToggleCooked}
-            disabled={isTogglingCooked}
-            className={`${isCompactLayout ? 'h-5 px-2 text-xs' : 'h-6 px-2 text-xs'} ${recipe.has_cooked 
-              ? 'bg-green-100 text-green-700 hover:bg-green-200' 
-              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-            }`}
-          >
-            {!isCompactLayout && <User className="h-3 w-3 mr-1" />}
-            {recipe.has_cooked ? 'Cooked' : (isCompactLayout ? 'Not Cooked' : 'Not Cooked')}
-          </Button>
-        </div>
 
         {/* Action buttons row */}
         <div className={`mt-auto ${shouldStackButtons ? 'flex flex-col gap-2' : 'flex gap-2'}`}>
