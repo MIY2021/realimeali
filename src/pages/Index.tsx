@@ -30,16 +30,7 @@ export default function Index() {
   // Calculate achievements count
   const unlockedCount = achievements.filter(a => a.isUnlocked).length;
   const totalCount = achievements.length;
-  const achievementsValue = (
-    <div className="flex items-baseline gap-1">
-      <span className="text-3xl font-extrabold text-gray-900">
-        {unlockedCount}
-      </span>
-      <span className="text-xs font-medium text-gray-400">
-        / {totalCount || 0}
-      </span>
-    </div>
-  );
+  const achievementsDisplay = totalCount > 0 ? `${unlockedCount}/${totalCount}` : "0/0";
 
   // Auto-show welcome slides for first-time users (localStorage only)
   useEffect(() => {
@@ -172,7 +163,7 @@ export default function Index() {
           />
           <StatsCard
             title="Achievements"
-            value={achievementsValue}
+            value={achievementsDisplay}
             icon={Star}
             isLoading={achievementsLoading}
             variant="accent"
