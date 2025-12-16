@@ -83,7 +83,7 @@ export default function MealListSection({
               collapsed ? 'text-blue-500' : 'text-gray-400 group-hover:text-gray-600'
             } cursor-grab active:cursor-grabbing transition-all duration-200 hover:scale-110 active:scale-95`} />
           </div>
-          <h3 className={`${isMobile ? 'text-base' : 'text-lg'} font-semibold capitalize ${
+          <h3 className={`${isMobile ? 'text-2xl' : 'text-3xl'} font-semibold capitalize ${
             collapsed ? 'text-blue-700' : 'text-navy'
           } transition-colors`}>
             {mealType}
