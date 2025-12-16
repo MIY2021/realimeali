@@ -6,7 +6,9 @@ import {
   getPreviousWeek, 
   getNextWeek,
   getCurrentWeekKey,
-  isCurrentWeek
+  isCurrentWeek,
+  getWeekStartDate,
+  getWeekEndDate
 } from "@/utils/weekUtils";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -54,6 +56,12 @@ export function WeekSelector({
   const weekRange = formatWeekRangeWithoutYear(year, week);
   const isCurrentlyOnCurrentWeek = isCurrentWeek(currentWeek);
   
+  // Get start (Monday) and end (Sunday) dates for day names
+  const weekStartDate = getWeekStartDate(year, week);
+  const weekEndDate = getWeekEndDate(year, week);
+  const startDayName = weekStartDate.toLocaleDateString('en-US', { weekday: 'short' }); // e.g., "Mon"
+  const endDayName = weekEndDate.toLocaleDateString('en-US', { weekday: 'short' }); // e.g., "Sun"
+  
   return (
     <div className="flex items-center gap-2">
       <Button
@@ -84,10 +92,13 @@ export function WeekSelector({
         size="md"
         onClick={handleWeekClick}
         disabled={isLoading || !onWeekClick}
-        className={`w-[130px] ${onWeekClick ? 'cursor-pointer hover:bg-gray-100' : ''}`}
+        className={`min-w-[180px] ${onWeekClick ? 'cursor-pointer hover:bg-gray-100' : ''}`}
         aria-label="Select week"
       >
-        <span className="font-medium">{weekRange}</span>
+        <span className="font-medium text-sm whitespace-nowrap">
+          {weekRange}
+          <span className="text-gray-500 font-normal ml-1.5">{startDayName} → {endDayName}</span>
+        </span>
       </Button>
       
       <Button

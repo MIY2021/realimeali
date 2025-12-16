@@ -8,7 +8,7 @@ import { ShoppingListInfoDialog } from "@/components/shopping-list/ShoppingListI
 import ShoppingListItems from "@/components/shopping-list/ShoppingListItems";
 import ShoppingListEmptyState from "@/components/shopping-list/ShoppingListEmptyState";
 import { WeekSelector } from "@/components/shared/WeekSelector";
-import { AllWeeksModal } from "@/components/shared/AllWeeksModal";
+import { CalendarMonthModal } from "@/components/shared/CalendarMonthModal";
 import { useShoppingList } from "@/hooks/useShoppingList";
 import { useShoppingListGeneration } from "@/hooks/useShoppingListGeneration";
 import { useAuth } from "@/contexts/AuthContext";
@@ -21,7 +21,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { Share, Trash2, Plus, Sparkles, Loader } from "lucide-react";
+import { Send, Trash2, Plus, Sparkles, Loader } from "lucide-react";
 import { Link } from "react-router-dom";
 import { getCurrentWeekKey } from "@/utils/weekUtils";
 import { HeaderControls } from "@/components/layout/HeaderControls";
@@ -32,7 +32,7 @@ export default function ShoppingList() {
   const { user } = useAuth();
   const { currentHousehold } = useHousehold();
   const { recipes, isLoading: recipesLoading } = useRecipes();
-  const { getMealPlansForWeek, mealPlans: allMealPlans } = useMealPlan();
+  const { getMealPlansForWeek, mealPlans: allMealPlans, copyWeek } = useMealPlan();
   const { toast } = useToast();
   const isMobile = useIsMobile();
   
@@ -215,7 +215,7 @@ export default function ShoppingList() {
   }
 
   return (
-    <div className="container max-w-4xl py-4 px-4 sm:py-8 sm:px-6" data-scroll-content>
+    <div className="container max-w-4xl py-4 px-4 sm:py-8 sm:px-6 space-y-3" data-scroll-content>
       <ShoppingListHeader
         onShare={handleShare} 
         onAddItem={addCustomItem}
@@ -242,77 +242,62 @@ export default function ShoppingList() {
         </div>
       ) : (
         <>
-          <div className="mb-4">
-            <HeaderControls
-              weekControl={
-                <WeekSelector 
-                  currentWeek={currentWeek} 
-                  onWeekChange={setCurrentWeek}
-                  onWeekClick={() => setAllWeeksModalOpen(true)}
-                  isLoading={isGenerating}
-                />
-              }
-              primaryAction={
+          <HeaderControls
+            weekControl={
+              <WeekSelector 
+                currentWeek={currentWeek} 
+                onWeekChange={setCurrentWeek}
+                onWeekClick={() => setAllWeeksModalOpen(true)}
+                isLoading={isGenerating}
+              />
+            }
+            utilityActions={
+              <>
                 <Button 
                   variant="primary" 
-                  size="md" 
+                  size="sm" 
                   onClick={handleGenerate} 
                   disabled={isGenerating}
                   aria-busy={isGenerating}
-                  className="w-full"
+                  className="h-9 px-3"
+                  title="Generate Shopping List"
                 >
                   {isGenerating ? (
                     <>
-                      <Loader className="w-5 h-5 animate-spin" />
-                      <span className="hidden sm:inline">Generating...</span>
+                      <Loader className="w-4 h-4 animate-spin" />
+                      <span className="ml-2">Generate</span>
                     </>
                   ) : (
                     <>
-                      <Sparkles className="w-5 h-5" />
-                      <span className="hidden sm:inline">Generate Shopping List</span>
-                      <span className="sm:hidden">Generate</span>
+                      <Sparkles className="w-4 h-4" />
+                      <span className="ml-2">Generate</span>
                     </>
                   )}
                 </Button>
-              }
-            />
-          </div>
-          
-          <AllWeeksModal
-            open={allWeeksModalOpen}
-            onOpenChange={setAllWeeksModalOpen}
-            currentWeek={currentWeek}
-            onWeekSelect={setCurrentWeek}
-            mealPlans={allMealPlans}
-          />
-
-          {/* Action rows */}
-          {user && currentHousehold && (
-            <div className="space-y-2 mb-4">
-              {/* Row 1: Share, Clear All, and Hide Checked */}
-              <div className="flex items-center justify-between gap-2">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={handleShare}
+                  className="h-9 w-9 p-0"
+                  title="Share"
+                >
+                  <Send className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={clearAll}
+                  className="h-9 w-9 p-0"
+                  title="Clear All"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </>
+            }
+            rightActions={
+              user && currentHousehold ? (
                 <div className="flex items-center gap-2">
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={handleShare}
-                  >
-                    <Share className="w-4 h-4" />
-                    Share
-                  </Button>
-                  
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={clearAll}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                    Clear All
-                  </Button>
-                </div>
-                
-                <div className="flex items-center gap-2">
-                  <label htmlFor="show-unchecked" className="text-xs font-medium whitespace-nowrap text-[#1A1A1A]">
+                  <label htmlFor="show-unchecked" className="text-xs font-medium whitespace-nowrap text-muted-foreground">
                     Hide Checked
                   </label>
                   <Switch
@@ -321,9 +306,23 @@ export default function ShoppingList() {
                     onCheckedChange={setShowOnlyUnchecked}
                   />
                 </div>
-              </div>
-              
-              {/* Row 2: Item count on left, Add button on right */}
+              ) : null
+            }
+          />
+          
+          <CalendarMonthModal
+            open={allWeeksModalOpen}
+            onOpenChange={setAllWeeksModalOpen}
+            currentWeek={currentWeek}
+            onWeekSelect={setCurrentWeek}
+            mealPlans={allMealPlans}
+            onCopyWeek={copyWeek}
+          />
+
+          {/* Action rows */}
+          {user && currentHousehold && (
+            <div className="space-y-2 mb-4">
+              {/* Row 1: Item count on left, Add button on right */}
               <div className="flex items-center justify-between gap-2 min-h-[24px]">
                 {shoppingList.length > 0 ? (
                   <p className="text-sm animate-in fade-in-0 duration-300" style={{ color: 'hsl(var(--shopping-grey))' }}>
