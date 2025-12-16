@@ -29,7 +29,7 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
   const stableUserId = user?.id || null;
   const stableHouseholdId = currentHousehold?.id || null;
 
-  const { addMealPlan, removeMealPlan, clearWeek, copyWeek } = useMealPlanOperations(
+  const { addMealPlan, removeMealPlan, clearWeek } = useMealPlanOperations(
     user, 
     currentHousehold, 
     recipes, 
@@ -281,7 +281,6 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
     addMealPlanWithLeftovers,
     removeMealPlan,
     clearWeek,
-    copyWeek,
     reorderMealPlans,
     updateMealPlanServings,
     updateMealPlanCompletion, // Add completion function

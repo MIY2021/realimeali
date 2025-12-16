@@ -30,8 +30,7 @@ export default function MealPlannerContainer() {
     getMealPlansForWeek, 
     addMealPlan, 
     removeMealPlan, 
-    clearWeek,
-    copyWeek,
+    clearWeek, 
     reorderMealPlans,
     fetchMealPlans,
     isLoading: mealPlansLoading
@@ -346,7 +345,6 @@ export default function MealPlannerContainer() {
         onRemoveMeal={handleRemoveMeal}
         onCreateLeftover={handleCreateLeftoverWithDialog}
         onReorderMeals={handleReorderMeals}
-        copyWeek={copyWeek}
       />
 
       <MealPlannerModalsContainer

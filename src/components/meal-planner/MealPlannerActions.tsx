@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Share, Trash2, Sparkles, Loader } from "lucide-react";
 import { WeekSelector } from "@/components/shared/WeekSelector";
-import { CalendarMonthModal } from "@/components/shared/CalendarMonthModal";
+import { AllWeeksModal } from "@/components/shared/AllWeeksModal";
 import { HeaderControls } from "@/components/layout/HeaderControls";
 import { MealPlannerLayoutSelector } from "./MealPlannerLayoutSelector";
 import { MealPlan } from "@/types";
@@ -16,8 +16,7 @@ interface MealPlannerActionsProps {
   setCurrentWeek: (week: string) => void;
   mealLayout: string;
   onMealLayoutChange: (value: string) => void;
-  allMealPlans?: MealPlan[]; // For CalendarMonthModal
-  copyWeek?: (sourceWeekKey: string, targetWeekKey: string) => Promise<void>;
+  allMealPlans?: MealPlan[]; // For AllWeeksModal
 }
 
 export const MealPlannerActions = ({ 
@@ -29,8 +28,7 @@ export const MealPlannerActions = ({
   setCurrentWeek,
   mealLayout,
   onMealLayoutChange,
-  allMealPlans = [],
-  copyWeek
+  allMealPlans = []
 }: MealPlannerActionsProps) => {
   const [allWeeksModalOpen, setAllWeeksModalOpen] = useState(false);
 
@@ -45,46 +43,46 @@ export const MealPlannerActions = ({
             isLoading={isLoading}
         />
       }
+      primaryAction={
+        <Button 
+          variant="primary" 
+          size="md" 
+          onClick={onRandomize} 
+          disabled={isLoading}
+          aria-busy={isLoading}
+          className="w-full"
+        >
+          {isLoading ? (
+            <>
+              <Loader className="w-5 h-5 animate-spin" />
+              <span className="hidden sm:inline">Generating...</span>
+            </>
+          ) : (
+            <>
+              <Sparkles className="w-5 h-5" />
+              <span className="hidden sm:inline">Generate Meal Plan</span>
+              <span className="sm:hidden">Generate</span>
+            </>
+          )}
+        </Button>
+      }
       utilityActions={
         <>
-          <Button 
-            variant="primary" 
-            size="sm" 
-            onClick={onRandomize} 
-            disabled={isLoading}
-            aria-busy={isLoading}
-            className="h-9 px-3"
-            title="Generate Meal Plan"
-          >
-            {isLoading ? (
-              <>
-                <Loader className="w-4 h-4 animate-spin" />
-                <span className="ml-2">Generate</span>
-              </>
-            ) : (
-              <>
-                <Sparkles className="w-4 h-4" />
-                <span className="ml-2">Generate</span>
-              </>
-            )}
-          </Button>
           <Button 
             variant="secondary" 
             size="sm" 
             onClick={onShare}
-            className="h-9 w-9 p-0"
-            title="Share"
           >
             <Share className="w-4 h-4" />
+            Share
           </Button>
           <Button 
             variant="destructive" 
             size="sm" 
             onClick={onClearAll}
-            className="h-9 w-9 p-0"
-            title="Clear All"
           >
             <Trash2 className="w-4 h-4" />
+            Clear All
           </Button>
         </>
       }
@@ -95,13 +93,12 @@ export const MealPlannerActions = ({
         />
       }
     />
-      <CalendarMonthModal
+      <AllWeeksModal
         open={allWeeksModalOpen}
         onOpenChange={setAllWeeksModalOpen}
         currentWeek={currentWeek}
         onWeekSelect={setCurrentWeek}
         mealPlans={allMealPlans}
-        onCopyWeek={copyWeek}
       />
     </>
   );

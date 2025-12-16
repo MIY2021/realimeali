@@ -33,7 +33,6 @@ export interface MealPlanContextType {
   addMealPlanWithLeftovers: (mealPlanData: Omit<MealPlan, 'id' | 'created_at' | 'updated_at'>, weekKey: string, leftoverServings?: number, silentMode?: boolean) => Promise<void>;
   removeMealPlan: (id: string) => Promise<void>;
   clearWeek: (weekKey: string) => Promise<void>;
-  copyWeek: (sourceWeekKey: string, targetWeekKey: string) => Promise<void>;
   reorderMealPlans: (mealType: MealType, weekKey: string, sourceIndex: number, destinationIndex: number) => Promise<void>;
   updateMealPlanServings: (mealPlanId: string, plannedServings: number) => Promise<void>;
   updateMealPlanCompletion: (mealPlanId: string, isCompleted: boolean) => Promise<void>; // Add completion function

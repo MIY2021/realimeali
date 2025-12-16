@@ -10,7 +10,7 @@ interface MealPlannerContentProps {
   isLoading: boolean;
   isDataLoading?: boolean;
   currentMealPlans: MealPlan[];
-  allMealPlans?: MealPlan[]; // For CalendarMonthModal
+  allMealPlans?: MealPlan[]; // For AllWeeksModal
   recipes: Recipe[];
   mealLayout: string;
   onMealLayoutChange: (value: string) => void;
@@ -22,7 +22,6 @@ interface MealPlannerContentProps {
   onRemoveMeal: (planId: string) => void;
   onCreateLeftover: (mealPlan: MealPlan, recipe: Recipe) => void;
   onReorderMeals: (mealType: MealType, sourceIndex: number, destinationIndex: number) => Promise<void>;
-  copyWeek?: (sourceWeekKey: string, targetWeekKey: string) => Promise<void>;
 }
 
 export const MealPlannerContent = ({
@@ -43,7 +42,6 @@ export const MealPlannerContent = ({
   onRemoveMeal,
   onCreateLeftover,
   onReorderMeals,
-  copyWeek,
 }: MealPlannerContentProps) => {
   const mealTypes: MealType[] = ["dinner", "lunch", "breakfast", "snacks", "sides", "desserts", "drinks"];
 
@@ -89,7 +87,6 @@ export const MealPlannerContent = ({
         mealLayout={mealLayout}
         onMealLayoutChange={onMealLayoutChange}
         allMealPlans={allMealPlans}
-        copyWeek={copyWeek}
       />
 
       {mealLayout === 'list' ? (
