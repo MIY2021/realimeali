@@ -67,22 +67,22 @@ export const WelcomeHeader = ({ onMenuClick }: WelcomeHeaderProps) => {
         <div className="absolute bottom-0 left-0 w-24 h-24 bg-[#654321] rounded-full blur-2xl" />
       </div>
       
-      {/* Three-dot menu button - absolutely positioned */}
+      {/* Three-dot menu button - absolutely positioned with larger touch target */}
       <Button
         variant="ghost"
         size="icon"
         onClick={onMenuClick}
-        className="absolute top-4 right-4 h-10 w-10 rounded-full hover:bg-[#654321]/10 backdrop-blur-sm transition-all z-10"
+        className="absolute top-3 right-3 h-12 w-12 sm:h-14 sm:w-14 rounded-full hover:bg-[#654321]/20 active:bg-[#654321]/30 backdrop-blur-sm transition-all z-20 touch-manipulation"
+        aria-label="Open menu"
       >
-        <MoreHorizontal className="h-6 w-6 text-[#654321]" strokeWidth={3} />
-        <span className="sr-only">Open menu</span>
+        <MoreHorizontal className="h-7 w-7 sm:h-8 sm:w-8 text-[#654321]" strokeWidth={2.5} />
       </Button>
 
-      <div className="relative z-10 pr-6">
+      <div className="relative z-10 pr-14 sm:pr-16">
         <h1 className="text-2xl sm:text-3xl font-extrabold text-[#654321] mb-2 animate-[fade-in_1s_ease-out]">
           {getTimeBasedGreeting()}, {getDisplayName()}! 👋
         </h1>
-        <p className="text-sm sm:text-base text-[#654321]/90 leading-relaxed">
+        <p className="text-sm sm:text-base text-[#654321]/90 leading-relaxed max-w-[92%] sm:max-w-[90%]">
           {!isLoading && dailyTip && (
             <span className="animate-[fade-in_1.2s_ease-out] inline-block">
               <span className="font-bold">💡 Tip of the Day:</span> {dailyTip}

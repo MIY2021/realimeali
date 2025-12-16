@@ -1,10 +1,12 @@
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Calendar } from "lucide-react";
 import { 
   parseISOWeekKey, 
-  formatWeekRange, 
+  formatWeekRangeWithoutYear, 
   getPreviousWeek, 
-  getNextWeek 
+  getNextWeek,
+  getCurrentWeekKey,
+  isCurrentWeek
 } from "@/utils/weekUtils";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -41,12 +43,31 @@ export function WeekSelector({
     }
   };
   
+  const handleCurrentWeek = () => {
+    if (isLoading) return;
+    const currentWeekKey = getCurrentWeekKey();
+    onWeekChange(currentWeekKey);
+  };
+  
   // Parse week key to get year and week for formatting
   const { year, week } = parseISOWeekKey(currentWeek);
-  const weekRange = formatWeekRange(year, week);
+  const weekRange = formatWeekRangeWithoutYear(year, week);
+  const isCurrentlyOnCurrentWeek = isCurrentWeek(currentWeek);
   
   return (
     <div className="flex items-center gap-2">
+      <Button
+        variant="secondary"
+        size="md"
+        onClick={handleCurrentWeek}
+        disabled={isLoading || isCurrentlyOnCurrentWeek}
+        className="px-3"
+        aria-label="Go to current week"
+        title="Go to current week"
+      >
+        <Calendar className="h-4 w-4" />
+      </Button>
+      
       <Button
         variant="secondary"
         size="md"
@@ -63,7 +84,7 @@ export function WeekSelector({
         size="md"
         onClick={handleWeekClick}
         disabled={isLoading || !onWeekClick}
-        className={`flex-1 ${onWeekClick ? 'cursor-pointer hover:bg-gray-100' : ''}`}
+        className={`w-[130px] ${onWeekClick ? 'cursor-pointer hover:bg-gray-100' : ''}`}
         aria-label="Select week"
       >
         <span className="font-medium">{weekRange}</span>

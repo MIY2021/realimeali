@@ -111,6 +111,25 @@ export function formatWeekRange(year: number, week: number): string {
 }
 
 /**
+ * Format week range without year as "Jan 6-12" or "Dec 30 - Jan 5"
+ */
+export function formatWeekRangeWithoutYear(year: number, week: number): string {
+  const start = getWeekStartDate(year, week);
+  const end = getWeekEndDate(year, week);
+  
+  const startMonth = start.toLocaleDateString('en-US', { month: 'short' });
+  const startDay = start.getDate();
+  const endMonth = end.toLocaleDateString('en-US', { month: 'short' });
+  const endDay = end.getDate();
+  
+  if (startMonth === endMonth) {
+    return `${startMonth} ${startDay}-${endDay}`;
+  } else {
+    return `${startMonth} ${startDay} - ${endMonth} ${endDay}`;
+  }
+}
+
+/**
  * Get the previous week key
  */
 export function getPreviousWeek(weekKey: string): string {
