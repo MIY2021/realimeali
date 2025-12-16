@@ -92,7 +92,16 @@ export const StatsCard = ({
               ${isLoading ? 'opacity-0' : 'opacity-100'}
             `}
           >
-            {value}
+            {typeof value === 'string' && value.includes('/') ? (
+              <>
+                {value.split('/')[0]}
+                <span className="text-xl font-normal text-gray-500">
+                  /{value.split('/')[1]}
+                </span>
+              </>
+            ) : (
+              value
+            )}
           </p>
         </div>
       </div>
