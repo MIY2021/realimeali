@@ -20,7 +20,7 @@ interface RecipeDetailProps {
   onDelete?: () => Promise<void>;
   isOwner?: boolean;
   onAddToMealPlan?: (adjustedServings?: number) => void;
-  onImageUpdate?: (imageUrl: string) => void;
+  onImageUpdate?: (imageUrl: string, thumbnailUrl?: string) => void;
 }
 
 export const RecipeDetail = ({ 
@@ -75,8 +75,8 @@ export const RecipeDetail = ({
     onAddToMealPlan?.(currentServings);
   };
 
-  const handleImageUpdate = (imageUrl: string) => {
-    onImageUpdate?.(imageUrl);
+  const handleImageUpdate = (imageUrl: string, thumbnailUrl?: string) => {
+    onImageUpdate?.(imageUrl, thumbnailUrl);
     setShowImageEditor(false);
   };
 

@@ -12,7 +12,7 @@ export const useRecipeApi = () => {
       
       const { data, error } = await supabase
         .from('recipes')
-        .select('id, title, image_thumbnail, servings, meal_type, meal_types, is_deleted, is_favorite, has_cooked, user_id, household_id, prep_time, cook_time, description, ingredients, created_at')
+        .select('id, title, image, image_thumbnail, servings, meal_type, meal_types, is_deleted, is_favorite, has_cooked, user_id, household_id, prep_time, cook_time, description, ingredients, created_at')
         .eq('household_id', householdId)
         .eq('is_deleted', false)
         .order('created_at', { ascending: false });
@@ -26,6 +26,7 @@ export const useRecipeApi = () => {
       return (data || []).map(recipe => ({
         id: recipe.id,
         title: recipe.title,
+        image: (recipe as any).image,
         image_thumbnail: (recipe as any).image_thumbnail,
         servings: recipe.servings,
         prep_time: recipe.prep_time,
@@ -229,6 +230,7 @@ export const useRecipeApi = () => {
         cook_time: recipe.cook_time,
         servings: recipe.servings,
         image: recipe.image,
+        image_thumbnail: (recipe as any).image_thumbnail, // Include thumbnail in updates
         is_favorite: recipe.is_favorite,
         has_cooked: recipe.has_cooked, // Include the cooking status
         meal_type: recipe.meal_type,

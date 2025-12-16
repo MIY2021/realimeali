@@ -12,6 +12,7 @@ import { AddToMealPlanDialog } from "@/components/recipes/AddToMealPlanDialog";
 import { Recipe } from "@/types";
 import { generateSlug } from "@/utils/slugUtils";
 import { useRealiChefContext } from "@/hooks/useRealiChefContext";
+import { uploadThumbnailFromUrl } from "@/services/imageUploadService";
 
 export default function RecipeDetail() {
   const { slug } = useParams<{ slug: string }>();
@@ -133,11 +134,32 @@ export default function RecipeDetail() {
   };
 
 
-  const handleImageUpdate = async (imageUrl: string) => {
-    if (!recipe) return;
+  const handleImageUpdate = async (imageUrl: string, thumbnailUrl?: string) => {
+    if (!recipe || !user) return;
     
     try {
-      const updatedRecipe = { ...recipe, image: imageUrl };
+      // If thumbnail is provided, use it; otherwise generate one
+      let finalThumbnailUrl = thumbnailUrl;
+      
+      if (!finalThumbnailUrl && imageUrl) {
+        console.log('📸 Generating thumbnail for updated image...');
+        try {
+          finalThumbnailUrl = await uploadThumbnailFromUrl(
+            imageUrl,
+            user.id,
+            recipe.id
+          );
+        } catch (thumbnailError) {
+          console.error('❌ Failed to generate thumbnail:', thumbnailError);
+          // Continue without thumbnail - recipe will still be updated
+        }
+      }
+      
+      const updatedRecipe = { 
+        ...recipe, 
+        image: imageUrl,
+        ...(finalThumbnailUrl && { image_thumbnail: finalThumbnailUrl })
+      } as any;
       await updateRecipe(recipe.id, updatedRecipe);
     } catch (error) {
       console.error('Error updating recipe image:', error);

@@ -99,3 +99,35 @@ export async function uploadThumbnailFromUrl(
     throw error;
   }
 }
+
+/**
+ * Regenerate thumbnail for a recipe that has an image but missing or incorrect thumbnail
+ * This is useful for fixing existing recipes with mismatched thumbnails
+ */
+export async function regenerateRecipeThumbnail(
+  recipeId: string,
+  imageUrl: string,
+  userId: string
+): Promise<string | null> {
+  try {
+    console.log(`🔄 Regenerating thumbnail for recipe ${recipeId}...`);
+    const thumbnailUrl = await uploadThumbnailFromUrl(imageUrl, userId, recipeId);
+    
+    // Update the recipe with the new thumbnail
+    const { error: updateError } = await supabase
+      .from('recipes')
+      .update({ image_thumbnail: thumbnailUrl })
+      .eq('id', recipeId);
+    
+    if (updateError) {
+      console.error('❌ Failed to update recipe with regenerated thumbnail:', updateError);
+      return null;
+    }
+    
+    console.log(`✅ Successfully regenerated thumbnail for recipe ${recipeId}`);
+    return thumbnailUrl;
+  } catch (error) {
+    console.error('❌ Error regenerating thumbnail:', error);
+    return null;
+  }
+}

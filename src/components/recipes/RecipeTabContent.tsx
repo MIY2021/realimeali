@@ -1,5 +1,5 @@
 
-import React, { useMemo } from "react";
+import React, { useMemo, useRef, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Recipe } from "@/types";
 import { IngredientSectionParser } from "@/utils/ingredientSectionParser";
@@ -13,6 +13,9 @@ interface RecipeTabContentProps {
 
 export const RecipeTabContent = React.memo(({ recipe, scaledIngredients, isScaled }: RecipeTabContentProps) => {
   const ingredientsToShow = scaledIngredients || recipe.ingredients;
+  const ingredientsRef = useRef<HTMLDivElement>(null);
+  const equipmentRef = useRef<HTMLDivElement>(null);
+  const instructionsRef = useRef<HTMLDivElement>(null);
   
   // Memoize expensive computations to prevent infinite loops
   const ingredientSections = useMemo(() => {
@@ -33,18 +36,45 @@ export const RecipeTabContent = React.memo(({ recipe, scaledIngredients, isScale
     });
   }
 
+  const handleTabChange = (value: string) => {
+    // Scroll to the relevant tab content so user can see all information
+    setTimeout(() => {
+      let targetRef: React.RefObject<HTMLDivElement> | null = null;
+      
+      switch (value) {
+        case 'ingredients':
+          targetRef = ingredientsRef;
+          break;
+        case 'equipment':
+          targetRef = equipmentRef;
+          break;
+        case 'instructions':
+          targetRef = instructionsRef;
+          break;
+      }
+      
+      if (targetRef?.current) {
+        targetRef.current.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'start',
+          inline: 'nearest'
+        });
+      }
+    }, 100); // Small delay to ensure tab content is rendered
+  };
+
   return (
-    <Tabs defaultValue="ingredients" className="w-full">
+    <Tabs defaultValue="ingredients" className="w-full" onValueChange={handleTabChange}>
       <TabsList className="grid w-full grid-cols-3 gap-2 bg-transparent p-0 mb-6">
         <TabsTrigger 
           value="ingredients" 
-          className="data-[state=inactive]:bg-white data-[state=inactive]:text-gray-600 data-[state=inactive]:border data-[state=inactive]:border-gray-200 data-[state=active]:bg-gradient-to-br data-[state=active]:from-sage data-[state=active]:to-sage/90 data-[state=active]:text-white data-[state=active]:shadow-md font-medium rounded-xl py-3 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+          className="data-[state=inactive]:bg-white data-[state=inactive]:text-gray-600 data-[state=inactive]:border data-[state=inactive]:border-gray-200 data-[state=active]:bg-gradient-to-br data-[state=active]:from-terracotta data-[state=active]:to-terracotta/90 data-[state=active]:text-white data-[state=active]:shadow-md font-medium rounded-xl py-3 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
         >
           Ingredients
         </TabsTrigger>
         <TabsTrigger 
           value="equipment" 
-          className="data-[state=inactive]:bg-white data-[state=inactive]:text-gray-600 data-[state=inactive]:border data-[state=inactive]:border-gray-200 data-[state=active]:bg-gradient-to-br data-[state=active]:from-butter data-[state=active]:to-butter/90 data-[state=active]:text-white data-[state=active]:shadow-md font-medium rounded-xl py-3 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+          className="data-[state=inactive]:bg-white data-[state=inactive]:text-gray-600 data-[state=inactive]:border data-[state=inactive]:border-gray-200 data-[state=active]:bg-gradient-to-br data-[state=active]:from-terracotta data-[state=active]:to-terracotta/90 data-[state=active]:text-white data-[state=active]:shadow-md font-medium rounded-xl py-3 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
         >
           Equipment
         </TabsTrigger>
@@ -57,7 +87,7 @@ export const RecipeTabContent = React.memo(({ recipe, scaledIngredients, isScale
       </TabsList>
 
       <TabsContent value="ingredients" className="mt-0">
-        <div className="space-y-2">
+        <div ref={ingredientsRef} className="space-y-2">
           <h2 className="font-bold text-navy text-lg mb-2">
             Ingredients
           </h2>
@@ -100,7 +130,7 @@ export const RecipeTabContent = React.memo(({ recipe, scaledIngredients, isScale
       </TabsContent>
 
       <TabsContent value="equipment" className="mt-0">
-        <div className="space-y-2">
+        <div ref={equipmentRef} className="space-y-2">
           <h2 className="font-bold text-navy text-lg mb-2">Equipment</h2>
           
           {equipment.length > 0 ? (
@@ -120,7 +150,7 @@ export const RecipeTabContent = React.memo(({ recipe, scaledIngredients, isScale
       </TabsContent>
 
       <TabsContent value="instructions" className="mt-0">
-        <div className="space-y-2">
+        <div ref={instructionsRef} className="space-y-2">
           <h2 className="font-bold text-navy text-lg mb-2">Instructions</h2>
           {recipe.instructions.map((step, index) => (
             <div key={index} className="flex gap-2 p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">

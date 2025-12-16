@@ -12,6 +12,7 @@ import { UnsplashService } from "@/services/unsplashService";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Recipe } from "@/types";
+import { uploadThumbnailFromUrl } from "@/services/imageUploadService";
 
 interface UnsplashPhoto {
   id: string;
@@ -37,7 +38,7 @@ interface RecipeImageEditorProps {
   recipe: Recipe;
   isOpen: boolean;
   onClose: () => void;
-  onImageUpdate: (imageUrl: string) => void;
+  onImageUpdate: (imageUrl: string, thumbnailUrl?: string) => void;
 }
 
 export function RecipeImageEditor({ recipe, isOpen, onClose, onImageUpdate }: RecipeImageEditorProps) {
@@ -133,7 +134,21 @@ Lighting: natural daylight style or softbox imitation — bright but soft shadow
       setAiProgress("✅ Image generated successfully!");
       setProgressValue(100);
       
-      onImageUpdate(data.imageUrl);
+      // Generate thumbnail for AI-generated image
+      let thumbnailUrl: string | undefined;
+      try {
+        console.log('📸 Generating thumbnail for AI image...');
+        thumbnailUrl = await uploadThumbnailFromUrl(
+          data.imageUrl,
+          recipe.created_by,
+          recipe.id
+        );
+      } catch (thumbnailError) {
+        console.error('❌ Failed to generate thumbnail for AI image:', thumbnailError);
+        // Continue without thumbnail
+      }
+      
+      onImageUpdate(data.imageUrl, thumbnailUrl);
       
       toast({
         title: "Image Generated!",
@@ -189,9 +204,23 @@ Lighting: natural daylight style or softbox imitation — bright but soft shadow
     setShowPreview(true);
   };
 
-  const handleConfirmUnsplash = () => {
+  const handleConfirmUnsplash = async () => {
     if (selectedPhoto) {
-      onImageUpdate(selectedPhoto.urls.regular);
+      // Generate thumbnail for Unsplash image
+      let thumbnailUrl: string | undefined;
+      try {
+        console.log('📸 Generating thumbnail for Unsplash image...');
+        thumbnailUrl = await uploadThumbnailFromUrl(
+          selectedPhoto.urls.regular,
+          recipe.created_by,
+          recipe.id
+        );
+      } catch (thumbnailError) {
+        console.error('❌ Failed to generate thumbnail for Unsplash image:', thumbnailError);
+        // Continue without thumbnail
+      }
+      
+      onImageUpdate(selectedPhoto.urls.regular, thumbnailUrl);
       toast({
         title: "Image Updated!",
         description: `Image by ${selectedPhoto.user.name} from Unsplash applied to your recipe.`,
@@ -224,8 +253,8 @@ Lighting: natural daylight style or softbox imitation — bright but soft shadow
       // Upload to Supabase Storage
       const uploadedImages = await uploadRecipeImage(selectedFile, userId, recipe.id);
       
-      // Update recipe with storage URL instead of base64
-      onImageUpdate(uploadedImages.fullUrl);
+      // Update recipe with both full image and thumbnail URLs
+      onImageUpdate(uploadedImages.fullUrl, uploadedImages.thumbnailUrl);
       
       toast({
         title: "Image Uploaded!",

@@ -192,23 +192,106 @@ export function ThumbnailGenerationPanel() {
           </Alert>
         )}
 
-        <Button
-          onClick={handleGenerateAllThumbnails}
-          disabled={isProcessing || (remainingCount !== null && remainingCount === 0)}
-          className="w-full"
-        >
-          {isProcessing ? (
-            <>
-              <Loader className="mr-2 h-4 w-4 animate-spin" />
-              Processing...
-            </>
-          ) : (
-            <>
-              <Camera className="mr-2 h-4 w-4" />
-              Generate All Missing Thumbnails
-            </>
-          )}
-        </Button>
+        <div className="space-y-2">
+          <Button
+            onClick={handleGenerateAllThumbnails}
+            disabled={isProcessing || (remainingCount !== null && remainingCount === 0)}
+            className="w-full"
+          >
+            {isProcessing ? (
+              <>
+                <Loader className="mr-2 h-4 w-4 animate-spin" />
+                Processing...
+              </>
+            ) : (
+              <>
+                <Camera className="mr-2 h-4 w-4" />
+                Generate All Missing Thumbnails
+              </>
+            )}
+          </Button>
+          
+          <Button
+            onClick={async () => {
+              setIsProcessing(true);
+              setError(null);
+              setTotalProcessed(0);
+              setTotalSuccessful(0);
+              setTotalFailed(0);
+              setCurrentBatch(0);
+              setIsComplete(false);
+              
+              try {
+                // Get all recipes with images
+                const { data: recipes, error: fetchError } = await supabase
+                  .from('recipes')
+                  .select('id, title, image, user_id, image_thumbnail')
+                  .not('image', 'is', null)
+                  .eq('is_deleted', false);
+                
+                if (fetchError) throw fetchError;
+                if (!recipes || recipes.length === 0) {
+                  toast({
+                    title: "No recipes found",
+                    description: "No recipes with images to process.",
+                  });
+                  setIsProcessing(false);
+                  return;
+                }
+                
+                const { regenerateRecipeThumbnail } = await import('@/services/imageUploadService');
+                let successCount = 0;
+                let failCount = 0;
+                
+                for (const recipe of recipes) {
+                  try {
+                    const thumbnailUrl = await regenerateRecipeThumbnail(
+                      recipe.id,
+                      recipe.image!,
+                      recipe.user_id
+                    );
+                    if (thumbnailUrl) {
+                      successCount++;
+                    } else {
+                      failCount++;
+                    }
+                    setTotalProcessed(prev => prev + 1);
+                    setTotalSuccessful(successCount);
+                    setTotalFailed(failCount);
+                  } catch (error) {
+                    failCount++;
+                    setTotalProcessed(prev => prev + 1);
+                    setTotalFailed(failCount);
+                    console.error(`Failed to regenerate thumbnail for ${recipe.title}:`, error);
+                  }
+                }
+                
+                setIsComplete(true);
+                toast({
+                  title: "Thumbnail Regeneration Complete",
+                  description: `Successfully regenerated ${successCount} thumbnails. ${failCount > 0 ? `${failCount} failed.` : ''}`,
+                });
+              } catch (err: any) {
+                const errorMessage = err.message || 'An error occurred while regenerating thumbnails';
+                setError(errorMessage);
+                toast({
+                  title: "Error",
+                  description: errorMessage,
+                  variant: "destructive",
+                });
+              } finally {
+                setIsProcessing(false);
+                checkRemainingCount();
+              }
+            }}
+            disabled={isProcessing}
+            variant="outline"
+            className="w-full"
+          >
+            <Camera className="mr-2 h-4 w-4" />
+            Force Regenerate All Thumbnails
+          </Button>
+        </div>
 
         {remainingCount !== null && remainingCount > 0 && !isProcessing && (
           <p className="text-sm text-muted-foreground text-center">
