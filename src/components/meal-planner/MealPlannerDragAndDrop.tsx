@@ -75,7 +75,7 @@ export const MealPlannerDragAndDrop = ({
                       onAddMeal={() => onAddMeal(mealType)}
                       onCreateLeftover={onCreateLeftover}
                       onReorderMeals={onReorderMeals}
-                      dragHandleProps={provided.dragHandleProps}
+                      dragHandleProps={provided.dragHandleProps as unknown as Record<string, unknown>}
                       collapsed={isDraggingCategory && draggedCategoryId !== `category-${mealType}`}
                     />
                   </div>

@@ -8,6 +8,7 @@ export interface Recipe {
   cook_time: number;
   servings: number;
   image?: string;
+  image_thumbnail?: string; // Optimized thumbnail image
   is_favorite: boolean;
   created_at: string;
   updated_at: string;
