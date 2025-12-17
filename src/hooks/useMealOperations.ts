@@ -1,7 +1,6 @@
 
 import { useCallback } from "react";
 import { MealType } from "@/types";
-import { parseISOWeekKey, getWeekStartDate } from "@/utils/weekUtils";
 
 interface UseMealOperationsProps {
   user: any;
@@ -38,15 +37,10 @@ export const useMealOperations = ({
     if (!recipe) return;
 
     try {
-      // Calculate a date within the target week (Monday of that week)
-      const { year, week } = parseISOWeekKey(currentWeek);
-      const weekStartDate = getWeekStartDate(year, week);
-      const dateStr = weekStartDate.toISOString().split('T')[0];
-
       const mealPlanData = {
         recipe_id: recipe_id,
         meal_type: mealType,
-        date: dateStr,
+        date: new Date().toISOString().split('T')[0],
         created_by: user.id,
         slot_index: 0,
         is_leftover: false,
@@ -96,9 +90,9 @@ export const useMealOperations = ({
     }
   }, [removeMealPlan, toast]);
 
-  const handleReorderMeals = useCallback(async (mealType: MealType, reorderedIds: string[]) => {
+  const handleReorderMeals = useCallback(async (mealType: MealType, sourceIndex: number, destinationIndex: number) => {
     try {
-      await reorderMealPlans(mealType, currentWeek, reorderedIds);
+      await reorderMealPlans(mealType, currentWeek, sourceIndex, destinationIndex);
     } catch (err) {
       console.error("Error reordering meals:", err);
       toast({

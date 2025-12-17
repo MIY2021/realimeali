@@ -32,7 +32,24 @@ export const mealPlanService = {
     userId: string,
     silentMode = false
   ): Promise<MealPlan> {
-    // week_number is now nullable - we use date_scheduled and week_key for week identification
+    // Calculate week_number for backward compatibility during migration
+    // Week 1 = current week, Week 2 = next week (legacy mapping)
+    const mealDate = new Date(mealPlanData.date);
+    const currentWeekKey = getISOWeekKey(new Date());
+    let weekNumber: number | undefined = undefined;
+    
+    // Only set week_number if migrating from old system
+    // This is temporary during migration
+    if (weekKey === currentWeekKey) {
+      weekNumber = 1;
+    } else {
+      // Check if it's next week
+      const nextWeekKey = getISOWeekKey(new Date(mealDate.getTime() + 7 * 24 * 60 * 60 * 1000));
+      if (weekKey === nextWeekKey) {
+        weekNumber = 2;
+      }
+    }
+    
     const insertData: any = {
       household_id: householdId,
       recipe_id: mealPlanData.recipe_id || null,
@@ -49,6 +66,11 @@ export const mealPlanService = {
       is_freetyped: mealPlanData.is_freetyped || false,
       meal_name: mealPlanData.meal_name || null,
     };
+    
+    // Add week_number if determined (for migration compatibility)
+    if (weekNumber !== undefined) {
+      insertData.week_number = weekNumber;
+    }
 
     if (!silentMode) {
       console.log("Insert data:", insertData);

@@ -7,7 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { getCurrentWeekKey, getNextWeek, formatWeekRange, parseISOWeekKey, getWeekStartDate } from "@/utils/weekUtils";
+import { getCurrentWeekKey, getNextWeek, formatWeekRange, parseISOWeekKey } from "@/utils/weekUtils";
 
 interface AddToMealPlanDialogProps {
   recipe: Recipe | null;
@@ -34,16 +34,14 @@ export function AddToMealPlanDialog({ recipe, open, onOpenChange, adjustedServin
 
     setIsLoading(true);
     try {
-      // Calculate a date within the target week (Monday of that week)
-      const { year, week } = parseISOWeekKey(selectedWeek);
-      const weekStartDate = getWeekStartDate(year, week);
-      const dateStr = weekStartDate.toISOString().split('T')[0];
+      // Use current date as default
+      const currentDate = new Date().toISOString().split('T')[0];
       
       // Use adjusted servings if provided, otherwise use recipe servings
       const plannedServings = adjustedServings || recipe.servings;
       
       await addMealPlan({
-        date: dateStr,
+        date: currentDate,
         meal_type: selectedMealType,
         recipe_id: recipe.id,
         created_by: user.id,
@@ -61,6 +59,7 @@ export function AddToMealPlanDialog({ recipe, open, onOpenChange, adjustedServin
         ? ` (${adjustedServings} servings)` 
         : '';
       
+      const { year, week } = parseISOWeekKey(selectedWeek);
       const weekRange = formatWeekRange(year, week);
 
       toast({

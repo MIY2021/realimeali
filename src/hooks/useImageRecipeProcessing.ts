@@ -84,8 +84,6 @@ export function useImageRecipeProcessing() {
         diet_lifestyle: data.parsedRecipe.dietLifestyle || [],
         // complexity_level removed
         top_tip: data.parsedRecipe.topTip || "Enjoy cooking this delicious recipe!",
-        alcoholic_pairing: data.parsedRecipe.alcoholicPairing || null,
-        non_alcoholic_pairing: data.parsedRecipe.nonAlcoholicPairing || null,
         image: undefined, // Image will be uploaded separately via uploadRecipeImage
         imageFile: file, // Pass the original file for upload
         is_favorite: false,

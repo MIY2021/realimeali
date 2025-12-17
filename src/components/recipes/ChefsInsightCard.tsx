@@ -81,17 +81,9 @@ export const ChefsInsightCard = ({ recipe, recipeId }: ChefsInsightCardProps) =>
     recipe.top_tip !== "No top tip available for this recipe." &&
     recipe.top_tip.trim() !== "";
 
-  // Check if recipe is a drink - hide Perfect Pairing for drink recipes
-  const isDrinkRecipe = recipe.meal_type === 'drinks' || 
-    recipe.meal_types?.includes('drinks');
-
-  // Use AI-generated pairings if available, otherwise show defaults
-  const defaultAlcoholicPairing = "Pairs beautifully with a crisp Sauvignon Blanc or light craft beer.";
-  const defaultNonAlcoholicPairing = "Try sparkling water with fresh lemon or a fruit-infused iced tea.";
-  
   const drinkSuggestion = isAlcoholic
-    ? (recipe.alcoholic_pairing || defaultAlcoholicPairing)
-    : (recipe.non_alcoholic_pairing || defaultNonAlcoholicPairing);
+    ? "Pairs beautifully with a crisp Sauvignon Blanc or light craft beer."
+    : "Try sparkling water with fresh lemon or a fruit-infused iced tea.";
 
   return (
     <Collapsible
@@ -162,44 +154,42 @@ export const ChefsInsightCard = ({ recipe, recipeId }: ChefsInsightCardProps) =>
             </div>
           )}
 
-          {/* Perfect Pairing Section - Hidden for drink recipes */}
-          {!isDrinkRecipe && (
-            <div className="space-y-3 mt-6">
-              <div className="flex items-center gap-2">
-                <Sparkles className="h-4 w-4 text-gray-500" />
-                <h3 className="text-sm font-medium text-gray-600">Perfect Pairing</h3>
-              </div>
-
-              {/* Toggle Pills */}
-              <div className="flex gap-2">
-                <button
-                  onClick={() => handleToggle(true)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-250 ease-out ${
-                    isAlcoholic
-                      ? "bg-[#E07A5F]/90 text-white shadow-sm"
-                      : "bg-gray-100 text-gray-600 border border-gray-200 hover:border-gray-300 hover:bg-gray-50"
-                  }`}
-                >
-                  Alcoholic
-                </button>
-                <button
-                  onClick={() => handleToggle(false)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-250 ease-out ${
-                    !isAlcoholic
-                      ? "bg-[#48A97D]/90 text-white shadow-sm"
-                      : "bg-gray-100 text-gray-600 border border-gray-200 hover:border-gray-300 hover:bg-gray-50"
-                  }`}
-                >
-                  Non-Alcoholic
-                </button>
-              </div>
-
-              {/* Suggestion Text with fade animation */}
-              <div key={isAlcoholic ? "alcoholic" : "non-alcoholic"} className="animate-fade-in">
-                <p className="text-[15px] text-gray-600 leading-relaxed mt-3">{drinkSuggestion}</p>
-              </div>
+          {/* Perfect Pairing Section - MORE SPACING */}
+          <div className="space-y-3 mt-6">
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-gray-500" />
+              <h3 className="text-sm font-medium text-gray-600">Perfect Pairing</h3>
             </div>
-          )}
+
+            {/* Toggle Pills */}
+            <div className="flex gap-2">
+              <button
+                onClick={() => handleToggle(true)}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-250 ease-out ${
+                  isAlcoholic
+                    ? "bg-[#E07A5F]/90 text-white shadow-sm"
+                    : "bg-gray-100 text-gray-600 border border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                }`}
+              >
+                Alcoholic
+              </button>
+              <button
+                onClick={() => handleToggle(false)}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-250 ease-out ${
+                  !isAlcoholic
+                    ? "bg-[#48A97D]/90 text-white shadow-sm"
+                    : "bg-gray-100 text-gray-600 border border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                }`}
+              >
+                Non-Alcoholic
+              </button>
+            </div>
+
+            {/* Suggestion Text with fade animation */}
+            <div key={isAlcoholic ? "alcoholic" : "non-alcoholic"} className="animate-fade-in">
+              <p className="text-[15px] text-gray-600 leading-relaxed mt-3">{drinkSuggestion}</p>
+            </div>
+          </div>
 
           {/* Recipe Info Metadata Row - Enhanced with import method */}
           <div className="space-y-3 pt-4">

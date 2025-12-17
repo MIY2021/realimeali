@@ -72,8 +72,6 @@ export function useAiRecipeGeneration() {
         cook_time: recipe.cookTime || 30,
         servings: recipe.servings || 4,
         top_tip: recipe.topTip || 'Enjoy your AI-generated recipe!',
-        alcoholic_pairing: recipe.alcoholicPairing || null,
-        non_alcoholic_pairing: recipe.nonAlcoholicPairing || null,
         meal_type: recipe.mealType,
         cuisine_region: recipe.cuisineRegion,
         diet_lifestyle: recipe.dietLifestyle || [],

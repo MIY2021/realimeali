@@ -10,10 +10,6 @@ project_id = "bdjzefekuahfofwzxqxd"
 verify_jwt = false
 # Maintenance function - temporarily public for backfill
 
-[functions.backfill-drink-pairings]
-verify_jwt = false
-# Maintenance function - temporarily public for backfill
-
 [functions.recipe-meta]
 verify_jwt = false
 # Public recipe sharing - must remain accessible without auth

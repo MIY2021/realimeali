@@ -17,19 +17,19 @@ const MEAL_TYPE_OPTIONS = [
 ];
 
 const CUISINE_TYPE_OPTIONS = [
-  { value: "british", label: "British", icon: "🇬🇧" },
-  { value: "american", label: "American", icon: "🇺🇸" },
-  { value: "italian", label: "Italian", icon: "🇮🇹" },
-  { value: "french", label: "French", icon: "🇫🇷" },
-  { value: "mexican", label: "Mexican", icon: "🇲🇽" },
-  { value: "indian", label: "Indian", icon: "🇮🇳" },
-  { value: "chinese", label: "Chinese", icon: "🇨🇳" },
-  { value: "japanese", label: "Japanese", icon: "🇯🇵" },
-  { value: "asian", label: "Thai", icon: "🇹🇭" },
+  { value: "british", label: "British", icon: "🫖" },
+  { value: "american", label: "American", icon: "🍔" },
+  { value: "italian", label: "Italian", icon: "🍝" },
+  { value: "french", label: "French", icon: "🥖" },
+  { value: "mexican", label: "Mexican", icon: "🌮" },
+  { value: "indian", label: "Indian", icon: "🍛" },
+  { value: "chinese", label: "Chinese", icon: "🥡" },
+  { value: "japanese", label: "Japanese", icon: "🍣" },
+  { value: "asian", label: "Thai", icon: "🍜" },
   { value: "mediterranean", label: "Mediterranean", icon: "🫒" },
   { value: "middle eastern", label: "Middle Eastern", icon: "🥙" },
-  { value: "caribbean", label: "Caribbean", icon: "🇯🇲" },
-  { value: "korean", label: "Korean", icon: "🇰🇷" },
+  { value: "caribbean", label: "Caribbean", icon: "🏝️" },
+  { value: "korean", label: "Korean", icon: "🍲" },
 ];
 
 const COOKING_DURATION_OPTIONS = [
@@ -44,11 +44,11 @@ const DIET_LIFESTYLE_OPTIONS = [
   { value: "high-fiber", label: "High Fiber", icon: "🌾" },
   { value: "high-protein", label: "High Protein", icon: "💪" },
   { value: "low-carb", label: "Low Carb", icon: "🥩" },
-  { value: "low-fat", label: "Low Fat", icon: "🥬" },
+  { value: "low-fat", label: "Low Fat", icon: "🥗" },
   { value: "vegan", label: "Vegan", icon: "🌱" },
   { value: "vegetarian", label: "Vegetarian", icon: "🥕" },
-  { value: "paleo", label: "Paleo", icon: "🦴" },
-  { value: "dairy-free", label: "Dairy Free", icon: "🥛" },
+  { value: "paleo", label: "Paleo", icon: "🦣" },
+  { value: "dairy-free", label: "Dairy Free", icon: "🚫" },
   { value: "gluten-free", label: "Gluten Free", icon: "🌾" },
 ];
 
@@ -150,14 +150,14 @@ export function DiscoverRecipesFilters({
             />
 
             <DropdownFilterSection
-              title="🍴 Cuisine"
+              title="🌍 Cuisine"
               options={CUISINE_TYPE_OPTIONS}
               selectedValues={filters.cuisineTypes}
               onToggle={(value) => toggleArrayFilter('cuisineTypes', value)}
             />
 
             <DropdownFilterSection
-              title="🌿 Diet"
+              title="🥗 Diet"
               options={DIET_LIFESTYLE_OPTIONS}
               selectedValues={filters.dietLifestyle}
               onToggle={(value) => toggleArrayFilter('dietLifestyle', value)}
@@ -239,14 +239,14 @@ export function DiscoverRecipesFilters({
             />
 
             <DropdownFilterSection
-              title="🍴 Cuisine"
+              title="🌍 Cuisine"
               options={CUISINE_TYPE_OPTIONS}
               selectedValues={filters.cuisineTypes}
               onToggle={(value) => toggleArrayFilter('cuisineTypes', value)}
             />
 
             <DropdownFilterSection
-              title="🌿 Diet & Lifestyle"
+              title="🥗 Diet & Lifestyle"
               options={DIET_LIFESTYLE_OPTIONS}
               selectedValues={filters.dietLifestyle}
               onToggle={(value) => toggleArrayFilter('dietLifestyle', value)}

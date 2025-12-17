@@ -197,7 +197,7 @@ export type Database = {
           slot_index: number
           updated_at: string
           week_key: string | null
-          week_number: number | null
+          week_number: number
         }
         Insert: {
           created_at?: string
@@ -220,7 +220,7 @@ export type Database = {
           slot_index?: number
           updated_at?: string
           week_key?: string | null
-          week_number?: number | null
+          week_number: number
         }
         Update: {
           created_at?: string
@@ -243,7 +243,7 @@ export type Database = {
           slot_index?: number
           updated_at?: string
           week_key?: string | null
-          week_number?: number | null
+          week_number?: number
         }
         Relationships: [
           {
@@ -672,7 +672,6 @@ export type Database = {
       }
       public_recipe_shares: {
         Row: {
-          alcoholic_pairing: string | null
           categories: Database["public"]["Enums"]["recipe_category"][] | null
           cook_time: number | null
           created_at: string
@@ -684,7 +683,6 @@ export type Database = {
           instructions: string[]
           is_active: boolean
           meal_types: string[]
-          non_alcoholic_pairing: string | null
           original_household_id: string
           original_recipe_id: string
           prep_time: number | null
@@ -698,7 +696,6 @@ export type Database = {
           view_count: number | null
         }
         Insert: {
-          alcoholic_pairing?: string | null
           categories?: Database["public"]["Enums"]["recipe_category"][] | null
           cook_time?: number | null
           created_at?: string
@@ -710,7 +707,6 @@ export type Database = {
           instructions?: string[]
           is_active?: boolean
           meal_types?: string[]
-          non_alcoholic_pairing?: string | null
           original_household_id: string
           original_recipe_id: string
           prep_time?: number | null
@@ -724,7 +720,6 @@ export type Database = {
           view_count?: number | null
         }
         Update: {
-          alcoholic_pairing?: string | null
           categories?: Database["public"]["Enums"]["recipe_category"][] | null
           cook_time?: number | null
           created_at?: string
@@ -736,7 +731,6 @@ export type Database = {
           instructions?: string[]
           is_active?: boolean
           meal_types?: string[]
-          non_alcoholic_pairing?: string | null
           original_household_id?: string
           original_recipe_id?: string
           prep_time?: number | null
@@ -861,7 +855,6 @@ export type Database = {
       }
       recipes: {
         Row: {
-          alcoholic_pairing: string | null
           cook_time: number | null
           cooking_method: Database["public"]["Enums"]["cooking_method"] | null
           created_at: string | null
@@ -888,7 +881,6 @@ export type Database = {
           meal_plan_count: number
           meal_type: Database["public"]["Enums"]["meal_type"] | null
           meal_types: string[]
-          non_alcoholic_pairing: string | null
           prep_time: number | null
           servings: number | null
           source_url: string | null
@@ -898,7 +890,6 @@ export type Database = {
           user_id: string
         }
         Insert: {
-          alcoholic_pairing?: string | null
           cook_time?: number | null
           cooking_method?: Database["public"]["Enums"]["cooking_method"] | null
           created_at?: string | null
@@ -927,7 +918,6 @@ export type Database = {
           meal_plan_count?: number
           meal_type?: Database["public"]["Enums"]["meal_type"] | null
           meal_types?: string[]
-          non_alcoholic_pairing?: string | null
           prep_time?: number | null
           servings?: number | null
           source_url?: string | null
@@ -937,7 +927,6 @@ export type Database = {
           user_id: string
         }
         Update: {
-          alcoholic_pairing?: string | null
           cook_time?: number | null
           cooking_method?: Database["public"]["Enums"]["cooking_method"] | null
           created_at?: string | null
@@ -966,7 +955,6 @@ export type Database = {
           meal_plan_count?: number
           meal_type?: Database["public"]["Enums"]["meal_type"] | null
           meal_types?: string[]
-          non_alcoholic_pairing?: string | null
           prep_time?: number | null
           servings?: number | null
           source_url?: string | null
