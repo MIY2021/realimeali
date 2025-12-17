@@ -197,7 +197,7 @@ export type Database = {
           slot_index: number
           updated_at: string
           week_key: string | null
-          week_number: number
+          week_number: number | null
         }
         Insert: {
           created_at?: string
@@ -220,7 +220,7 @@ export type Database = {
           slot_index?: number
           updated_at?: string
           week_key?: string | null
-          week_number: number
+          week_number?: number | null
         }
         Update: {
           created_at?: string
@@ -243,7 +243,7 @@ export type Database = {
           slot_index?: number
           updated_at?: string
           week_key?: string | null
-          week_number?: number
+          week_number?: number | null
         }
         Relationships: [
           {
