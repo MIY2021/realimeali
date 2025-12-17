@@ -260,7 +260,7 @@ export const useHouseholdActivity = () => {
             user: getUserName(plan.created_by),
             timestamp: plan.created_at || '',
             description: `planned "${recipe.title}" for ${mealTypeDisplay}${dateDisplay ? ` on ${dateDisplay}` : ''}`,
-            metadata: { userId: plan.created_by, recipeId: recipe.id }
+            metadata: { userId: plan.created_by, recipeId: recipe.id, plannedDate: plan.date }
           });
         }
       }

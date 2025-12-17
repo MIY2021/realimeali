@@ -18,6 +18,7 @@ import { useMealPlannerState } from "@/hooks/useMealPlannerState";
 import { useMealPlannerLayout } from "@/hooks/useMealPlannerLayout";
 import { MealType, Recipe, MealPlan } from "@/types";
 import { useToast } from "@/hooks/use-toast";
+import { parseISOWeekKey, getWeekStartDate } from "@/utils/weekUtils";
 
 export default function MealPlannerContainer() {
   useDocumentTitle("Meal Planner | RealiMeali");
@@ -174,8 +175,13 @@ export default function MealPlannerContainer() {
     if (!pendingMealType || !user || !currentHousehold) return;
 
     try {
+      // Calculate a date within the target week (Monday of that week)
+      const { year, week } = parseISOWeekKey(currentWeek);
+      const weekStartDate = getWeekStartDate(year, week);
+      const dateStr = weekStartDate.toISOString().split('T')[0];
+
       const mealPlanData = {
-        date: new Date().toISOString().split('T')[0],
+        date: dateStr,
         meal_type: pendingMealType,
         created_by: user.id,
         slot_index: 0,
@@ -253,8 +259,13 @@ export default function MealPlannerContainer() {
     if (!customMealType || !user || !currentHousehold) return;
 
     try {
+      // Calculate a date within the target week (Monday of that week)
+      const { year, week } = parseISOWeekKey(currentWeek);
+      const weekStartDate = getWeekStartDate(year, week);
+      const dateStr = weekStartDate.toISOString().split('T')[0];
+
       const mealPlanData = {
-        date: new Date().toISOString().split('T')[0],
+        date: dateStr,
         meal_type: customMealType,
         created_by: user.id,
         slot_index: 0,

@@ -27,6 +27,8 @@ export interface RecipeExportData {
   source_url: string;
   import_method: string;
   top_tip: string;
+  alcoholic_pairing: string;
+  non_alcoholic_pairing: string;
   
   // Analytics
   meal_plan_count: number;
@@ -80,6 +82,8 @@ export const convertRecipesToExportFormat = (recipes: Recipe[]): RecipeExportDat
     source_url: recipe.source_url || '',
     import_method: recipe.import_method || 'manual',
     top_tip: recipe.top_tip || '',
+    alcoholic_pairing: recipe.alcoholic_pairing || '',
+    non_alcoholic_pairing: recipe.non_alcoholic_pairing || '',
     
     meal_plan_count: (recipe as any).meal_plan_count || 0,
     is_favorite: recipe.is_favorite || false,
@@ -114,6 +118,8 @@ export const generateCSV = (exportData: RecipeExportData[]): string => {
       'source_url',
       'import_method',
       'top_tip',
+      'alcoholic_pairing',
+      'non_alcoholic_pairing',
       'meal_plan_count',
       'is_favorite',
       'has_cooked',

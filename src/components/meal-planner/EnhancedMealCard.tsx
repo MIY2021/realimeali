@@ -7,11 +7,13 @@ import { RecipeImage } from "@/components/ui/recipe-image";
 import { useToast } from "@/hooks/use-toast";
 
 import { MealPlan, Recipe, MealType } from "@/types";
-import { DraggableProvidedDragHandleProps } from "react-beautiful-dnd";
 import { useMealPlan } from "@/contexts/MealPlanContext";
 import { Link } from "react-router-dom";
 import { generateSlug } from "@/utils/slugUtils";
 
+
+// Generic drag handle props that work with both react-beautiful-dnd and dnd-kit
+type DragHandleProps = Record<string, unknown> | null | undefined;
 
 interface EnhancedMealCardProps {
   mealPlan: MealPlan;
@@ -19,7 +21,7 @@ interface EnhancedMealCardProps {
   parentRecipe?: Recipe;
   onRemove: (planId: string) => void;
   onCreateLeftover: (mealPlan: MealPlan, recipe?: Recipe) => void;
-  dragHandleProps?: DraggableProvidedDragHandleProps | null;
+  dragHandleProps?: DragHandleProps;
   leftoverMap: Map<string, MealPlan>; // Performance: Pre-computed leftover relationships
 }
 
@@ -115,9 +117,12 @@ export function EnhancedMealCard({
                   <p className="text-xs text-green-600 mt-1">Custom meal</p>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
-                  {/* Drag Handle */}
-                  <div {...dragHandleProps} className="touch-none cursor-grab active:cursor-grabbing">
-                    <GripVertical className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+                  {/* Drag Handle - Large touch target for mobile */}
+                  <div 
+                    {...(dragHandleProps as React.HTMLAttributes<HTMLDivElement>)} 
+                    className="touch-none cursor-grab active:cursor-grabbing p-2 -m-2 rounded-md hover:bg-gray-100 active:bg-gray-200 transition-colors"
+                  >
+                    <GripVertical className="h-5 w-5 text-gray-400 hover:text-gray-600" />
                   </div>
                 </div>
               </div>
@@ -344,9 +349,12 @@ export function EnhancedMealCard({
                 )}
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
-                {/* Drag Handle - Moved to right side */}
-                <div {...dragHandleProps} className="touch-none cursor-grab active:cursor-grabbing">
-                  <GripVertical className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+                {/* Drag Handle - Large touch target for mobile */}
+                <div 
+                  {...(dragHandleProps as React.HTMLAttributes<HTMLDivElement>)} 
+                  className="touch-none cursor-grab active:cursor-grabbing p-2 -m-2 rounded-md hover:bg-gray-100 active:bg-gray-200 transition-colors"
+                >
+                  <GripVertical className="h-5 w-5 text-gray-400 hover:text-gray-600" />
                 </div>
               </div>
             </div>

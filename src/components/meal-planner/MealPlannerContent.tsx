@@ -21,7 +21,7 @@ interface MealPlannerContentProps {
   onAddCustomMeal: (mealType: MealType) => void;
   onRemoveMeal: (planId: string) => void;
   onCreateLeftover: (mealPlan: MealPlan, recipe: Recipe) => void;
-  onReorderMeals: (mealType: MealType, sourceIndex: number, destinationIndex: number) => Promise<void>;
+  onReorderMeals: (mealType: MealType, reorderedIds: string[]) => Promise<void>;
   copyWeek?: (sourceWeekKey: string, targetWeekKey: string) => Promise<void>;
 }
 
@@ -62,7 +62,14 @@ export const MealPlannerContent = ({
   const getMealPlansForType = useCallback((mealType: MealType): MealPlan[] => {
     return currentMealPlans
       .filter(plan => plan.meal_type === mealType)
-      .sort((a, b) => (a.slot_index || 0) - (b.slot_index || 0));
+      .sort((a, b) => {
+        // Sort completed meals to the bottom
+        if (a.is_completed !== b.is_completed) {
+          return a.is_completed ? 1 : -1;
+        }
+        // Then sort by slot_index
+        return (a.slot_index || 0) - (b.slot_index || 0);
+      });
   }, [currentMealPlans]);
 
   // Performance: Memoize recipe lookup map for O(1) access instead of O(n)

@@ -30,6 +30,8 @@ export const addImportedRecipeToHousehold = async (
       source_url: importedRecipe.source_url || `imported-recipe-${importedRecipe.id}`,
       import_method: 'imported_from_curated',
       top_tip: importedRecipe.top_tip,
+      alcoholic_pairing: (importedRecipe as any).alcoholic_pairing,
+      non_alcoholic_pairing: (importedRecipe as any).non_alcoholic_pairing,
       fruit_veg_portions: importedRecipe.fruit_veg_portions,
       fruit_veg_breakdown: importedRecipe.fruit_veg_breakdown,
       fruit_veg_total_grams: importedRecipe.fruit_veg_total_grams,
