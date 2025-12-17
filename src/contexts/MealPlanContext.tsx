@@ -231,43 +231,57 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
   const reorderMealPlans = useCallback(async (
     mealType: MealType, 
     weekKey: string, 
-    sourceIndex: number, 
-    destinationIndex: number
+    reorderedIds: string[]
   ) => {
     if (!user || !currentHousehold) return;
 
+    // Get all meal plans for this type and week
     const mealPlansForType = mealPlans.filter(
       plan => plan.meal_type === mealType && plan.week_key === weekKey
     );
 
-    if (sourceIndex < 0 || destinationIndex < 0 || 
-        sourceIndex >= mealPlansForType.length || 
-        destinationIndex >= mealPlansForType.length) {
+    // Create a map for quick lookup
+    const planMap = new Map(mealPlansForType.map(plan => [plan.id, plan]));
+
+    // Build the reordered array based on the provided IDs
+    const reorderedPlans: MealPlan[] = [];
+    for (const id of reorderedIds) {
+      const plan = planMap.get(id);
+      if (plan) {
+        reorderedPlans.push(plan);
+      }
+    }
+
+    // Validate we have the same number of plans
+    if (reorderedPlans.length !== mealPlansForType.length) {
+      console.warn("Reorder mismatch: expected", mealPlansForType.length, "got", reorderedPlans.length);
       return;
     }
 
-    const reorderedPlans = [...mealPlansForType];
-    const [movedPlan] = reorderedPlans.splice(sourceIndex, 1);
-    reorderedPlans.splice(destinationIndex, 0, movedPlan);
+    // Optimistic update - update UI immediately
+    const updatedReorderedPlans = reorderedPlans.map((plan, index) => ({
+      ...plan,
+      slot_index: index
+    }));
+
+    setMealPlans(prev => {
+      const filteredPlans = prev.filter(
+        plan => !(plan.meal_type === mealType && plan.week_key === weekKey)
+      );
+      return [...filteredPlans, ...updatedReorderedPlans];
+    });
 
     try {
       await mealPlanService.reorderMealPlans(mealType, weekKey, currentHousehold.id, reorderedPlans);
-
-      setMealPlans(prev => {
-        const updated = [...prev];
-        const filteredPlans = updated.filter(
-          plan => !(plan.meal_type === mealType && plan.week_key === weekKey)
-        );
-        const updatedReorderedPlans = reorderedPlans.map((plan, index) => ({
-          ...plan,
-          slot_index: index
-        }));
-        
-        return [...filteredPlans, ...updatedReorderedPlans];
-      });
-
     } catch (err) {
       console.error("Error reordering meal plans:", err);
+      // Revert on error
+      setMealPlans(prev => {
+        const filteredPlans = prev.filter(
+          plan => !(plan.meal_type === mealType && plan.week_key === weekKey)
+        );
+        return [...filteredPlans, ...mealPlansForType];
+      });
       throw err;
     }
   }, [user?.id, currentHousehold?.id, mealPlans]);

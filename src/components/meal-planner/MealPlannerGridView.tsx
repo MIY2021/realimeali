@@ -15,7 +15,7 @@ interface MealPlannerGridViewProps {
   onAddCustomMeal: (mealType: MealType) => void;
   onRemoveMeal: (planId: string) => void;
   onCreateLeftover: (mealPlan: MealPlan, recipe: Recipe) => void;
-  onReorderMeals: (mealType: MealType, sourceIndex: number, destinationIndex: number) => Promise<void>;
+  onReorderMeals: (mealType: MealType, reorderedIds: string[]) => Promise<void>;
 }
 
 export const MealPlannerGridView = ({
@@ -35,7 +35,14 @@ export const MealPlannerGridView = ({
   const getMealPlansForType = useCallback((mealType: MealType): MealPlan[] => {
     return currentMealPlans
       .filter(plan => plan.meal_type === mealType)
-      .sort((a, b) => (a.slot_index || 0) - (b.slot_index || 0));
+      .sort((a, b) => {
+        // Sort completed meals to the bottom
+        if (a.is_completed !== b.is_completed) {
+          return a.is_completed ? 1 : -1;
+        }
+        // Then sort by slot_index
+        return (a.slot_index || 0) - (b.slot_index || 0);
+      });
   }, [currentMealPlans]);
 
   const getRecipeById = useCallback((id: string): Recipe | undefined => {
@@ -80,7 +87,7 @@ export const MealPlannerGridView = ({
             {/* Section Header */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <h3 className="text-2xl font-semibold capitalize text-navy">
+                <h3 className="text-xl font-semibold capitalize text-navy">
                   {mealType}
                 </h3>
                 <span className="text-sm text-grey-light">

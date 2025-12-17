@@ -102,6 +102,8 @@ export const useUrlRecipeProcessing = () => {
         cook_time: recipeData.cookTime || 0,
         servings: recipeData.servings || 1,
         top_tip: recipeData.topTip || "",
+        alcoholic_pairing: recipeData.alcoholicPairing || null,
+        non_alcoholic_pairing: recipeData.nonAlcoholicPairing || null,
         meal_type: recipeData.mealType || newRecipe.meal_type,
         cuisine_region: recipeData.cuisineRegion || newRecipe.cuisine_region,
         diet_lifestyle: recipeData.dietLifestyle || newRecipe.diet_lifestyle || [],

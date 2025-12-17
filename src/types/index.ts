@@ -33,6 +33,8 @@ export interface Recipe {
   fruit_veg_ingredient_breakdown?: any; // Detailed per-ingredient analysis (JSON)
   fruit_veg_recommendations?: any; // Suggestions to boost score (JSON)
   fruit_veg_total_grams?: number; // Total grams of fruit/veg per serving
+  alcoholic_pairing?: string; // AI-generated wine/beer/cocktail pairing
+  non_alcoholic_pairing?: string; // AI-generated non-alcoholic beverage pairing
 }
 
 export interface RecipeNote {
@@ -123,6 +125,8 @@ export interface PublicRecipeShare {
   meal_type?: string;
   original_household_id: string;
   view_count: number;
+  alcoholic_pairing?: string;
+  non_alcoholic_pairing?: string;
 }
 
 export interface UserProfile {

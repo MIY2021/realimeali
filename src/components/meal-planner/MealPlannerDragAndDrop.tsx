@@ -14,7 +14,7 @@ interface MealPlannerDragAndDropProps {
   onRemoveMeal: (planId: string) => void;
   onAddMeal: (mealType: MealType) => void;
   onCreateLeftover: (mealPlan: any, recipe: any) => void;
-  onReorderMeals: (mealType: MealType, sourceIndex: number, destinationIndex: number) => Promise<void>;
+  onReorderMeals: (mealType: MealType, reorderedIds: string[]) => Promise<void>;
   leftoverMap: Map<string, MealPlan>; // Performance: Pre-computed leftover relationships
 }
 

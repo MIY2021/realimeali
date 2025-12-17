@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Share, Trash2, Sparkles, Loader } from "lucide-react";
+import { Send, Trash2, Sparkles, Loader } from "lucide-react";
 import { WeekSelector } from "@/components/shared/WeekSelector";
 import { CalendarMonthModal } from "@/components/shared/CalendarMonthModal";
 import { HeaderControls } from "@/components/layout/HeaderControls";
@@ -75,7 +75,7 @@ export const MealPlannerActions = ({
             className="h-9 w-9 p-0"
             title="Share"
           >
-            <Share className="w-4 h-4" />
+            <Send className="w-4 h-4" />
           </Button>
           <Button 
             variant="destructive" 

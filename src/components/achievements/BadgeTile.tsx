@@ -81,7 +81,7 @@ export const BadgeTile = ({ achievement, onClick, index }: BadgeTileProps) => {
       </div>
       
       <p className={cn(
-        "text-sm font-semibold text-center truncate max-w-[92px] sm:max-w-[108px]",
+        "text-xs font-semibold text-center leading-tight",
         isUnlocked ? "text-foreground" : "text-muted-foreground"
       )}>
         {name}

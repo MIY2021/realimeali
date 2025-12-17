@@ -4,6 +4,10 @@ export type AchievementRequirementType =
   | 'family_favourite' 
   | 'perfect_week'
   | 'recipe_count'
+  | 'meal_plan_copy'
+  | 'meal_plan_count'
+  | 'meal_plan_streak'
+  | 'recipe_reunion'
   | 'other';
 
 export interface AchievementRequirement {
@@ -66,4 +70,16 @@ export const ACHIEVEMENT_REQUIREMENTS: Record<string, AchievementRequirement> = 
   '41': { type: 'other', required: 5 },           // The Generous Host
   '42': { type: 'other', required: 1 },           // Kitchen Connector
   '43': { type: 'other', required: 10 },          // Mealfluencer
+  
+  // Meal plan creation achievements
+  '44': { type: 'meal_plan_copy', required: 1 },  // Copy Cat
+  '45': { type: 'meal_plan_count', required: 5 }, // Plan Starter
+  '46': { type: 'meal_plan_count', required: 10 },// Plan Builder
+  '47': { type: 'meal_plan_count', required: 25 },// Plan Master
+  '48': { type: 'meal_plan_count', required: 50 },// Plan Legend
+  
+  // Engagement & retention achievements
+  '49': { type: 'other', required: 1 },           // Serving Sizer
+  '50': { type: 'meal_plan_streak', required: 3 },// Streak Starter
+  '51': { type: 'recipe_reunion', required: 1 },  // Recipe Reunion
 };

@@ -5,23 +5,101 @@ import { Plus, GripVertical } from "lucide-react";
 import { EnhancedMealCard } from "@/components/meal-planner/EnhancedMealCard";
 import { MealSectionSkeleton } from "@/components/meal-planner/MealSectionSkeleton";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { DragDropContext, Droppable, Draggable, DropResult, DraggableProvidedDragHandleProps } from "react-beautiful-dnd";
-import { useEffect } from "react";
+
+// dnd-kit imports
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+  DragStartEvent,
+  DragOverlay,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+
+// Section-level drag handle props (for reordering meal type sections)
+type SectionDragHandleProps = Record<string, unknown> | null | undefined;
 
 interface MealListSectionProps {
   mealType: MealType;
   mealPlans: MealPlan[];
-  leftoverMap: Map<string, MealPlan>; // Performance: Pre-computed leftover relationships
+  leftoverMap: Map<string, MealPlan>;
   getRecipeById: (id: string) => Recipe | undefined;
   isDataLoading?: boolean;
   onAddMeal: (mealType: MealType) => void;
   onAddCustomMeal?: (mealType: MealType) => void;
   onRemoveMeal: (planId: string) => void;
   onCreateLeftover?: (mealPlan: MealPlan, recipe: Recipe) => void;
-  onReorderMeals?: (mealType: MealType, sourceIndex: number, destinationIndex: number) => void;
-  dragHandleProps?: DraggableProvidedDragHandleProps | null;
-  collapsed?: boolean;
+  onReorderMeals?: (mealType: MealType, reorderedIds: string[]) => void;
+  dragHandleProps?: SectionDragHandleProps; // For section-level dragging
+  collapsed?: boolean; // When section is being dragged
   sectionIndex?: number;
+}
+
+// Sortable wrapper for meal cards
+interface SortableMealCardProps {
+  mealPlan: MealPlan;
+  recipe: Recipe | undefined;
+  parentRecipe: Recipe | undefined;
+  leftoverMap: Map<string, MealPlan>;
+  onRemoveMeal: (planId: string) => void;
+  onCreateLeftover?: (mealPlan: MealPlan, recipe: Recipe) => void;
+}
+
+function SortableMealCard({
+  mealPlan,
+  recipe,
+  parentRecipe,
+  leftoverMap,
+  onRemoveMeal,
+  onCreateLeftover,
+}: SortableMealCardProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: mealPlan.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 50 : undefined,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`transition-shadow duration-200 ${
+        isDragging ? 'shadow-2xl ring-2 ring-blue-300 rounded-lg' : ''
+      }`}
+    >
+      <EnhancedMealCard
+        mealPlan={mealPlan}
+        recipe={recipe}
+        onRemove={onRemoveMeal}
+        onCreateLeftover={onCreateLeftover}
+        parentRecipe={parentRecipe}
+        dragHandleProps={{ ...attributes, ...listeners }}
+        leftoverMap={leftoverMap}
+      />
+    </div>
+  );
 }
 
 export default function MealListSection({
@@ -40,26 +118,56 @@ export default function MealListSection({
   sectionIndex = 0,
 }: MealListSectionProps) {
   const isMobile = useIsMobile();
+  const [activeId, setActiveId] = useState<string | null>(null);
 
-  const handleDragEnd = (result: DropResult) => {
-    if (!result.destination || !onReorderMeals) {
-      return;
-    }
+  // Configure sensors for both mouse and touch with activation constraints
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8, // 8px movement required before drag starts
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 200, // 200ms delay before drag starts on touch
+        tolerance: 5, // 5px movement tolerance during delay
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
-    const sourceIndex = result.source.index;
-    const destinationIndex = result.destination.index;
-
-    // Only proceed if the item was actually moved to a different position
-    if (sourceIndex !== destinationIndex) {
-      onReorderMeals(mealType, sourceIndex, destinationIndex);
-    }
-  };
-
-  const handleDragStart = () => {
-    // Add haptic feedback on mobile
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(event.active.id as string);
+    // Haptic feedback on mobile
     if (isMobile && navigator.vibrate) {
       navigator.vibrate(50);
     }
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    setActiveId(null);
+
+    if (!over || active.id === over.id || !onReorderMeals) {
+      return;
+    }
+
+    // Find positions in the current array
+    const oldIndex = mealPlans.findIndex(plan => plan.id === active.id);
+    const newIndex = mealPlans.findIndex(plan => plan.id === over.id);
+
+    if (oldIndex === -1 || newIndex === -1) {
+      return;
+    }
+
+    // Create the new order and extract IDs
+    const reorderedPlans = arrayMove(mealPlans, oldIndex, newIndex);
+    const reorderedIds = reorderedPlans.map(plan => plan.id);
+
+    // Call the reorder handler with the new order of IDs
+    onReorderMeals(mealType, reorderedIds);
   };
 
   const handleAddMeal = () => {
@@ -67,10 +175,9 @@ export default function MealListSection({
     onAddMeal(mealType);
   };
 
-  const handleAddCustomMeal = () => {
-    console.log("🍽️ Direct add custom meal for:", mealType);
-    onAddCustomMeal?.(mealType);
-  };
+  // Get the active meal plan for the drag overlay
+  const activeMealPlan = activeId ? mealPlans.find(plan => plan.id === activeId) : null;
+  const activeRecipe = activeMealPlan ? getRecipeById(activeMealPlan.recipe_id) : undefined;
 
   return (
     <div className={`mb-${isMobile ? '2' : '3'} ${collapsed ? 'opacity-70 scale-98' : ''}`}>
@@ -78,11 +185,17 @@ export default function MealListSection({
         collapsed ? 'bg-blue-50 rounded-lg px-3 py-2 border border-blue-200' : ''
       }`}>
         <div className="flex items-center gap-3">
-          <div {...dragHandleProps} className="touch-none group">
-            <GripVertical className={`${isMobile ? 'h-4 w-4' : 'h-5 w-5'} ${
-              collapsed ? 'text-blue-500' : 'text-gray-400 group-hover:text-gray-600'
-            } cursor-grab active:cursor-grabbing transition-all duration-200 hover:scale-110 active:scale-95`} />
-          </div>
+          {/* Section-level drag handle (for reordering meal type sections) */}
+          {dragHandleProps && (
+            <div 
+              {...(dragHandleProps as React.HTMLAttributes<HTMLDivElement>)} 
+              className="touch-none cursor-grab active:cursor-grabbing"
+            >
+              <GripVertical className={`${isMobile ? 'h-4 w-4' : 'h-5 w-5'} ${
+                collapsed ? 'text-blue-500' : 'text-gray-400 hover:text-gray-600'
+              } transition-all duration-200 hover:scale-110 active:scale-95`} />
+            </div>
+          )}
           <h3 className={`${isMobile ? 'text-2xl' : 'text-3xl'} font-semibold capitalize ${
             collapsed ? 'text-blue-700' : 'text-navy'
           } transition-colors`}>
@@ -95,7 +208,6 @@ export default function MealListSection({
           </span>
         </div>
         {!collapsed && (
-          /* Override min-height/min-width with !important to allow h-6 w-6 (24px) sizing */
           <Button
             variant="ghost"
             onClick={handleAddMeal}
@@ -117,66 +229,56 @@ export default function MealListSection({
               <span className={`${isMobile ? 'text-sm' : ''}`}>No {mealType} planned yet</span>
             </div>
           ) : (
-            <DragDropContext onDragEnd={handleDragEnd} onDragStart={handleDragStart}>
-              <Droppable droppableId={`${mealType}-meals`} type="MEAL">
-                {(provided, snapshot) => (
-                  <div
-                    {...provided.droppableProps}
-                    ref={provided.innerRef}
-                    className={`space-y-${isMobile ? '1.5' : '2'} transition-all duration-300 ease-out ${
-                      snapshot.isDraggingOver ? 'bg-blue-50/50 rounded-lg p-2 scale-[1.01] border-2 border-dashed border-blue-300' : ''
-                    }`}
-                  >
-                    {mealPlans.map((plan, index) => {
-                      const recipe = getRecipeById(plan.recipe_id);
-                      
-                      const parentRecipe = plan.is_leftover && plan.parent_meal_plan_id 
-                        ? getRecipeById(plan.recipe_id) 
-                        : undefined;
+            <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={mealPlans.map(plan => plan.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              <div className={`space-y-${isMobile ? '1.5' : '2'}`}>
+                {mealPlans.map((plan) => {
+                  const recipe = getRecipeById(plan.recipe_id);
+                  const parentRecipe = plan.is_leftover && plan.parent_meal_plan_id
+                    ? getRecipeById(plan.recipe_id)
+                    : undefined;
 
-                      return (
-                        <Draggable key={plan.id} draggableId={plan.id} index={index}>
-                          {(provided, snapshot) => (
-                            <div
-                              ref={provided.innerRef}
-                              {...provided.draggableProps}
-                              className={`transition-all duration-300 ease-out transform-gpu select-none ${
-                                snapshot.isDragging ? 
-                                  'z-50 rotate-1 scale-[1.02] shadow-2xl ring-2 ring-blue-300 bg-white rounded-lg' : 
-                                  'hover:shadow-md'
-                              }`}
-                              style={{
-                                ...provided.draggableProps.style,
-                                willChange: 'transform',
-                                ...(snapshot.isDragging && {
-                                  filter: 'drop-shadow(0 20px 25px rgb(0 0 0 / 0.15))',
-                                  transform: `${provided.draggableProps.style?.transform} rotate(1deg)`,
-                                }),
-                              }}
-                            >
-                              <EnhancedMealCard
-                                mealPlan={plan}
-                                recipe={recipe}
-                                onRemove={onRemoveMeal}
-                                onCreateLeftover={onCreateLeftover}
-                                parentRecipe={parentRecipe}
-                                dragHandleProps={provided.dragHandleProps}
-                                leftoverMap={leftoverMap}
-                              />
-                            </div>
-                          )}
-                        </Draggable>
-                      );
-                    })}
-                    {provided.placeholder}
-                  </div>
-                )}
-              </Droppable>
-            </DragDropContext>
+                  return (
+                    <SortableMealCard
+                      key={plan.id}
+                      mealPlan={plan}
+                      recipe={recipe}
+                      parentRecipe={parentRecipe}
+                      leftoverMap={leftoverMap}
+                      onRemoveMeal={onRemoveMeal}
+                      onCreateLeftover={onCreateLeftover}
+                    />
+                  );
+                })}
+              </div>
+            </SortableContext>
+
+            {/* Drag overlay for smooth visual feedback */}
+            <DragOverlay>
+              {activeMealPlan ? (
+                <div className="shadow-2xl ring-2 ring-blue-400 rounded-lg rotate-2 scale-105">
+                  <EnhancedMealCard
+                    mealPlan={activeMealPlan}
+                    recipe={activeRecipe}
+                    onRemove={() => {}}
+                    onCreateLeftover={() => {}}
+                    leftoverMap={leftoverMap}
+                  />
+                </div>
+              ) : null}
+            </DragOverlay>
+          </DndContext>
           )}
         </div>
       )}
-
     </div>
   );
 }

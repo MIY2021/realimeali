@@ -19,6 +19,8 @@ export interface ImportedRecipe {
   source_url?: string;
   import_method: string;
   top_tip?: string;
+  alcoholic_pairing?: string;
+  non_alcoholic_pairing?: string;
   fruit_veg_portions?: number;
   fruit_veg_breakdown?: string;
   fruit_veg_total_grams?: number;
