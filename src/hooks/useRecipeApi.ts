@@ -184,7 +184,7 @@ export const useRecipeApi = () => {
 
       if (error) throw error;
       
-      return {
+      const savedRecipe = {
         ...data,
         created_by: data.user_id, // Map user_id to created_by
         has_cooked: false, // New recipes haven't been cooked yet
@@ -200,6 +200,18 @@ export const useRecipeApi = () => {
               ? [data.meal_type as MealType] 
               : []),
       } as Recipe;
+
+      // Trigger ingredient categorization asynchronously (don't block recipe save)
+      if (recipeData.ingredients && recipeData.ingredients.length > 0) {
+        import('@/services/ingredientCategorizationService').then(({ categorizeIngredients }) => {
+          categorizeIngredients(recipeData.ingredients).catch(err => {
+            console.error('Error categorizing ingredients for new recipe:', err);
+            // Don't throw - categorization failure shouldn't block recipe save
+          });
+        });
+      }
+
+      return savedRecipe;
     } catch (error) {
       console.error('Error creating recipe:', error);
       throw error;
@@ -259,7 +271,7 @@ export const useRecipeApi = () => {
       // Use type assertion for the response data
       const responseData = data as any;
       
-      return {
+      const updatedRecipe = {
         ...data,
         created_by: data.user_id, // Map user_id to created_by
         has_cooked: Boolean(responseData.has_cooked || false), // Use the direct column
@@ -275,6 +287,18 @@ export const useRecipeApi = () => {
               ? [data.meal_type as MealType] 
               : []),
       } as Recipe;
+
+      // Trigger ingredient categorization asynchronously if ingredients changed
+      if (ingredientsChanged && recipe.ingredients && recipe.ingredients.length > 0) {
+        import('@/services/ingredientCategorizationService').then(({ categorizeIngredients }) => {
+          categorizeIngredients(recipe.ingredients).catch(err => {
+            console.error('Error categorizing ingredients for updated recipe:', err);
+            // Don't throw - categorization failure shouldn't block recipe update
+          });
+        });
+      }
+
+      return updatedRecipe;
     } catch (error) {
       console.error('Error updating recipe:', error);
       throw error;

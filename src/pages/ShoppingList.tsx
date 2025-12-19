@@ -25,6 +25,8 @@ import { Share, Trash2, Plus, Sparkles, Loader } from "lucide-react";
 import { Link } from "react-router-dom";
 import { getCurrentWeekKey } from "@/utils/weekUtils";
 import { HeaderControls } from "@/components/layout/HeaderControls";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { SortOption, groupShoppingListItems } from "@/utils/shoppingListSorting";
 
 export default function ShoppingList() {
   useDocumentTitle("Shopping List | RealiMeali");
@@ -57,6 +59,7 @@ export default function ShoppingList() {
   const [copiedItemId, setCopiedItemId] = useState<string | null>(null);
   const [showOnlyUnchecked, setShowOnlyUnchecked] = useState(false);
   const [infoDialog, setInfoDialog] = useState(false);
+  const [sortOption, setSortOption] = useState<SortOption>("none");
   
   // Sync week with localStorage
   useEffect(() => {
@@ -97,12 +100,21 @@ export default function ShoppingList() {
     if (saved) {
       setShowOnlyUnchecked(JSON.parse(saved));
     }
+    const savedSort = localStorage.getItem('realiMeali_shoppingListSort');
+    if (savedSort && (savedSort === "none" || savedSort === "category" || savedSort === "recipe")) {
+      setSortOption(savedSort as SortOption);
+    }
   }, []);
 
   // Save toggle state to localStorage when it changes
   useEffect(() => {
     localStorage.setItem('realiMeali_showOnlyUnchecked', JSON.stringify(showOnlyUnchecked));
   }, [showOnlyUnchecked]);
+
+  // Save sort option to localStorage when it changes
+  useEffect(() => {
+    localStorage.setItem('realiMeali_shoppingListSort', sortOption);
+  }, [sortOption]);
 
 
   // Check for existing shopping list creation time on load
@@ -123,22 +135,6 @@ export default function ShoppingList() {
 
   const mealPlans = getMealPlansForWeek(currentWeek);
   const hasMealPlans = mealPlans.length > 0;
-
-  // Filter and sort shopping list - custom meals ("everything for") at top
-  const filteredShoppingList = (showOnlyUnchecked 
-    ? shoppingList.filter(item => !item.isChecked)
-    : shoppingList)
-    .sort((a, b) => {
-      // Prioritize custom meal items ("Everything for") at the top
-      const aIsCustom = a.name.toLowerCase().startsWith('everything for');
-      const bIsCustom = b.name.toLowerCase().startsWith('everything for');
-      
-      if (aIsCustom && !bIsCustom) return -1;
-      if (!aIsCustom && bIsCustom) return 1;
-      
-      // Keep original order for items of the same type
-      return 0;
-    });
 
   // Calculate item counts
   const totalItems = shoppingList.length;
@@ -166,6 +162,18 @@ export default function ShoppingList() {
     
     return recipeNames.length > 0 ? recipeNames.join(', ') : 'Unknown Recipe';
   };
+
+  // Filter shopping list
+  const filteredShoppingList = showOnlyUnchecked 
+    ? shoppingList.filter(item => !item.isChecked)
+    : shoppingList;
+
+  // Group items based on sort option
+  const groupedItems = groupShoppingListItems(
+    filteredShoppingList,
+    sortOption,
+    getRecipeNames
+  );
 
   const handleCopyItem = (itemId: string) => {
     setCopiedItemId(itemId);
@@ -296,15 +304,32 @@ export default function ShoppingList() {
             }
             rightActions={
               user && currentHousehold ? (
-                <div className="flex items-center gap-2">
-                  <label htmlFor="show-unchecked" className="text-xs font-medium whitespace-nowrap text-muted-foreground">
-                    Hide Checked
-                  </label>
-                  <Switch
-                    id="show-unchecked"
-                    checked={showOnlyUnchecked}
-                    onCheckedChange={setShowOnlyUnchecked}
-                  />
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2">
+                    <label htmlFor="sort-option" className="text-xs font-medium whitespace-nowrap text-muted-foreground">
+                      Sort by:
+                    </label>
+                    <Select value={sortOption} onValueChange={(value) => setSortOption(value as SortOption)}>
+                      <SelectTrigger id="sort-option" className="h-8 w-[120px] text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">None</SelectItem>
+                        <SelectItem value="category">Category</SelectItem>
+                        <SelectItem value="recipe">Recipe</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <label htmlFor="show-unchecked" className="text-xs font-medium whitespace-nowrap text-muted-foreground">
+                      Hide Checked
+                    </label>
+                    <Switch
+                      id="show-unchecked"
+                      checked={showOnlyUnchecked}
+                      onCheckedChange={setShowOnlyUnchecked}
+                    />
+                  </div>
                 </div>
               ) : null
             }
@@ -360,12 +385,13 @@ export default function ShoppingList() {
               ) : (
                 <>
                   <ShoppingListItems
-                    shoppingList={filteredShoppingList}
+                    shoppingList={groupedItems}
                     copiedItemId={copiedItemId}
                     onToggleItem={toggleItemChecked}
                     onCopyItem={handleCopyItem}
                     onUpdateItem={updateItem}
                     getRecipeNames={getRecipeNames}
+                    sortOption={sortOption}
                   />
                 </>
               )}

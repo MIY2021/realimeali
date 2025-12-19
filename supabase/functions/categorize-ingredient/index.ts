@@ -34,25 +34,33 @@ serve(async (req) => {
             role: 'system',
             content: `You are a grocery categorization expert. Given an ingredient name, categorize it into ONE of these exact categories:
 
-- Fresh & Chilled Food
-- Food Cupboard
+- Fruit & Vegetables
+- Meat & Fish
+- Chilled Food
 - Bakery
 - Frozen Food
-- Dietary, Lifestyle & World Foods
-- Soft Drinks, Tea & Coffee
-- Beer, Wine & Spirits
+- Food Cupboard
+- Snacks & Treats
+- World & Dietary
+- Drinks
+- Alcohol
+- Other
 
 Rules:
 - Return ONLY the category name, nothing else
-- Fresh & Chilled Food: Fresh produce, meat, dairy, eggs, fresh herbs
-- Food Cupboard: Pantry staples, dry goods, canned items, spices, oils, pasta, rice
-- Bakery: Bread, rolls, pastries, fresh baked goods
-- Frozen Food: Any frozen items including vegetables, ready meals, ice cream
-- Dietary, Lifestyle & World Foods: Specialty diet foods, international cuisine items, organic/health foods
-- Soft Drinks, Tea & Coffee: Non-alcoholic beverages, tea, coffee
-- Beer, Wine & Spirits: Alcoholic beverages
+- Fruit & Vegetables: Fresh fruits, vegetables, salad items, fresh herbs
+- Meat & Fish: Fresh meat, poultry, fish, seafood
+- Chilled Food: Dairy products, chilled ready meals, deli items, cheese, yogurt
+- Bakery: Bread, rolls, pastries, fresh baked goods, cakes
+- Frozen Food: Any frozen items including vegetables, ready meals, ice cream, frozen meat
+- Food Cupboard: Pantry staples, dry goods, canned items, spices, oils, pasta, rice, flour, sugar, baking ingredients
+- Snacks & Treats: Chips, crackers, cookies, sweets, chocolate, nuts
+- World & Dietary: Specialty diet foods, international cuisine items, organic/health foods, gluten-free, vegan specialty items
+- Drinks: Non-alcoholic beverages, tea, coffee, juice, soft drinks, water
+- Alcohol: Beer, wine, spirits, liqueurs, alcoholic beverages
+- Other: Anything that doesn't fit the above categories
 
-If unsure, default to "Food Cupboard".`
+If unsure, default to "Other".`
           },
           {
             role: 'user',
@@ -76,7 +84,7 @@ If unsure, default to "Food Cupboard".`
     console.error('Error in categorize-ingredient function:', error);
     return new Response(JSON.stringify({ 
       error: error.message,
-      category: 'Food Cupboard' // Fallback category
+      category: 'Other' // Fallback category
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

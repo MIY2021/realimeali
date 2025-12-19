@@ -8,7 +8,7 @@ export class ShoppingListQueries {
       
       const { data, error } = await supabase
         .from('household_shopping_lists')
-        .select('id, name, quantity, unit, consolidated_quantity, consolidated_unit, source_ingredients, is_checked, is_custom, recipe_ids, created_at, created_by')
+        .select('id, name, quantity, unit, consolidated_quantity, consolidated_unit, source_ingredients, is_checked, is_custom, recipe_ids, created_at, created_by, category')
         .eq('household_id', householdId)
         .eq('week_key', weekKey)
         .order('is_custom', { ascending: false })
@@ -33,7 +33,8 @@ export class ShoppingListQueries {
         isCustom: item.is_custom,
         recipeIds: item.recipe_ids || [],
         createdAt: item.created_at,
-        createdBy: item.created_by
+        createdBy: item.created_by,
+        category: item.category
       }));
     } catch (error) {
       console.error("Error loading shopping list:", error);

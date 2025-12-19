@@ -7,6 +7,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { ShoppingListService } from "@/services/shoppingListService";
 import { IngredientConsolidationService } from "@/services/ingredientConsolidation";
+import { getCategoryForIngredient, normalizeIngredientName } from "@/services/ingredientCategorizationService";
+import { DEFAULT_INGREDIENT_CATEGORY } from "@/types/ingredientCategories";
 
 // Helper function to detect ingredient group headers (same as EnhancedIngredientManager)
 const isHeader = (ingredient: string) => {
@@ -143,12 +145,33 @@ export const useShoppingListGenerator = () => {
 
       console.log('Valid items after filtering:', validConsolidatedIngredients.length);
 
-      // Step 5: Batch save all valid items to database
+      // Step 5: Look up categories for all ingredients
+      console.log('Looking up categories for', validConsolidatedIngredients.length, 'ingredients...');
+      const categoryLookups = await Promise.allSettled(
+        validConsolidatedIngredients.map(async (item) => {
+          const normalizedName = normalizeIngredientName(item.name);
+          const category = await getCategoryForIngredient(item.name);
+          return { item, category };
+        })
+      );
+
+      // Step 6: Batch save all valid items to database with categories
       const savedItems: ShoppingListItem[] = [];
       
       console.log('Batch saving', validConsolidatedIngredients.length, 'items...');
       
-      for (const item of validConsolidatedIngredients) {
+      for (let i = 0; i < validConsolidatedIngredients.length; i++) {
+        const item = validConsolidatedIngredients[i];
+        const categoryResult = categoryLookups[i];
+        
+        // Get category from lookup result, default to "Other" if lookup failed
+        let category = DEFAULT_INGREDIENT_CATEGORY;
+        if (categoryResult.status === 'fulfilled') {
+          category = categoryResult.value.category;
+        } else {
+          console.warn('Failed to get category for ingredient:', item.name, categoryResult.reason);
+        }
+
         try {
           const savedItem = await ShoppingListService.addConsolidatedItem(
             item.name,
@@ -158,7 +181,8 @@ export const useShoppingListGenerator = () => {
             item.recipeIds || [],
             currentHousehold.id,
             user.id,
-            weekKey
+            weekKey,
+            category
           );
           
           if (savedItem) {

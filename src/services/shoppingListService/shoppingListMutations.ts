@@ -69,7 +69,8 @@ export class ShoppingListMutations {
         isChecked: data.is_checked,
         isCustom: data.is_custom,
         recipeIds: data.recipe_ids || [],
-        createdAt: data.created_at
+        createdAt: data.created_at,
+        category: data.category
       };
     } catch (error) {
       console.error("Error adding item:", error);
@@ -85,7 +86,8 @@ export class ShoppingListMutations {
     recipeIds: string[],
     householdId: string,
     userId: string,
-    weekKey: string
+    weekKey: string,
+    category?: string
   ): Promise<ShoppingListItem | null> {
     try {
       console.log('Adding consolidated item:', {
@@ -111,7 +113,8 @@ export class ShoppingListMutations {
           recipe_ids: recipeIds,
           consolidated_quantity: consolidatedQuantity,
           consolidated_unit: consolidatedUnit,
-          source_ingredients: sourceIngredients
+          source_ingredients: sourceIngredients,
+          category: category || null
         })
         .select()
         .single();

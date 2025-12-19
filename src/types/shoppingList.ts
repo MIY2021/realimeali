@@ -12,6 +12,7 @@ export interface ShoppingListItem {
   recipeIds: string[];
   createdAt?: string;
   createdBy?: string;
+  category?: string;
 }
 
 export interface ConsolidatedShoppingList {
