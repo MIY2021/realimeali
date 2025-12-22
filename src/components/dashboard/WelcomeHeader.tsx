@@ -72,17 +72,17 @@ export const WelcomeHeader = ({ onMenuClick }: WelcomeHeaderProps) => {
         variant="ghost"
         size="icon"
         onClick={onMenuClick}
-        className="absolute top-3 right-3 h-12 w-12 sm:h-14 sm:w-14 rounded-full hover:bg-[#654321]/20 active:bg-[#654321]/30 backdrop-blur-sm transition-all z-20 touch-manipulation"
+        className="absolute top-3 right-3 h-10 w-10 sm:h-12 sm:w-12 rounded-full hover:bg-[#654321]/20 active:bg-[#654321]/30 backdrop-blur-sm transition-all z-20 touch-manipulation"
         aria-label="Open menu"
       >
-        <MoreHorizontal className="h-7 w-7 sm:h-8 sm:w-8 text-[#654321]" strokeWidth={2.5} />
+        <MoreHorizontal className="h-6 w-6 sm:h-7 sm:w-7 text-[#654321]" strokeWidth={2.5} />
       </Button>
 
-      <div className="relative z-10 pr-14 sm:pr-16">
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-[#654321] mb-2 animate-[fade-in_1s_ease-out]">
+      <div className="relative z-10">
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-[#654321] mb-2 animate-[fade-in_1s_ease-out] whitespace-nowrap overflow-hidden text-ellipsis pr-12 sm:pr-14">
           {getTimeBasedGreeting()}, {getDisplayName()}! 👋
         </h1>
-        <p className="text-sm sm:text-base text-[#654321]/90 leading-relaxed max-w-[92%] sm:max-w-[90%]">
+        <p className="text-sm sm:text-base text-[#654321]/90 leading-relaxed pr-8 sm:pr-10">
           {!isLoading && dailyTip && (
             <span className="animate-[fade-in_1.2s_ease-out] inline-block">
               <span className="font-bold">💡 Tip of the Day:</span> {dailyTip}
