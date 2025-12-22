@@ -266,7 +266,7 @@ export function RecipeSelectionView({
 
             <DropdownFilterSection
               title="Cuisine"
-              icon="globe"
+              icon="cuisine"
               options={CUISINE_REGION_OPTIONS}
               selectedValues={filters.cuisineRegions}
               onToggle={(value) => toggleArrayFilter('cuisineRegions', value)}
@@ -274,7 +274,7 @@ export function RecipeSelectionView({
 
             <DropdownFilterSection
               title="Diet"
-              icon="salad"
+              icon="diet"
               options={DIET_LIFESTYLE_OPTIONS}
               selectedValues={filters.dietLifestyle}
               onToggle={(value) => toggleArrayFilter('dietLifestyle', value)}

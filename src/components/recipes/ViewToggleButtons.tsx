@@ -1,10 +1,29 @@
-import { LayoutGrid, LayoutList } from "lucide-react";
+import { LayoutGrid } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ViewToggleButtonsProps {
   value: string;
   onChange: (value: string) => void;
 }
+
+// Custom icon: one square with lines underneath
+const SingleColumnIcon = ({ className }: { className?: string }) => (
+  <svg
+    viewBox="0 0 16 16"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    {/* Square/Rectangle */}
+    <rect x="2" y="2" width="12" height="8" />
+    {/* Lines underneath */}
+    <line x1="4" y1="12" x2="12" y2="12" />
+    <line x1="4" y1="14" x2="12" y2="14" />
+  </svg>
+);
 
 export function ViewToggleButtons({ value, onChange }: ViewToggleButtonsProps) {
   return (
@@ -19,7 +38,7 @@ export function ViewToggleButtons({ value, onChange }: ViewToggleButtonsProps) {
         )}
         aria-label="Single column view"
       >
-        <LayoutList className="h-4 w-4" />
+        <SingleColumnIcon className="h-4 w-4" />
       </button>
       <button
         onClick={() => onChange('2')}

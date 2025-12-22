@@ -7,7 +7,7 @@ import {
   DropdownMenuCheckboxItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ChevronDown, UtensilsCrossed, Globe, Circle, Clock } from "lucide-react";
+import { ChevronDown, UtensilsCrossed, ChefHat, Leaf, Clock } from "lucide-react";
 
 interface DropdownFilterSectionProps {
   title: string;
@@ -35,8 +35,8 @@ export function DropdownFilterSection({
   const hasActiveFilters = selectedValues.length > 0;
 
   const IconComponent = icon === 'utensils' ? UtensilsCrossed :
-                       icon === 'globe' ? Globe :
-                       icon === 'salad' ? Circle :
+                       icon === 'cuisine' ? ChefHat :
+                       icon === 'diet' ? Leaf :
                        icon === 'clock' ? Clock : null;
 
   return (

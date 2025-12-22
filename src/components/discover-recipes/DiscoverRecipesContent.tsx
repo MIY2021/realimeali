@@ -256,7 +256,7 @@ export function DiscoverRecipesContent() {
 
               <DropdownFilterSection
                 title="Cuisine"
-                icon="globe"
+                icon="cuisine"
                 options={CUISINE_REGION_OPTIONS}
                 selectedValues={filters.cuisineTypes}
                 onToggle={(value) => toggleArrayFilter('cuisineTypes', value)}
@@ -264,7 +264,7 @@ export function DiscoverRecipesContent() {
 
               <DropdownFilterSection
                 title="Diet"
-                icon="salad"
+                icon="diet"
                 options={DIET_LIFESTYLE_OPTIONS}
                 selectedValues={filters.dietLifestyle}
                 onToggle={(value) => toggleArrayFilter('dietLifestyle', value)}
@@ -351,7 +351,7 @@ export function DiscoverRecipesContent() {
 
               <DropdownFilterSection
                 title="Cuisine"
-                icon="globe"
+                icon="cuisine"
                 options={CUISINE_REGION_OPTIONS}
                 selectedValues={filters.cuisineTypes}
                 onToggle={(value) => toggleArrayFilter('cuisineTypes', value)}
@@ -359,7 +359,7 @@ export function DiscoverRecipesContent() {
 
               <DropdownFilterSection
                 title="Diet"
-                icon="salad"
+                icon="diet"
                 options={DIET_LIFESTYLE_OPTIONS}
                 selectedValues={filters.dietLifestyle}
                 onToggle={(value) => toggleArrayFilter('dietLifestyle', value)}
