@@ -14,6 +14,9 @@ import { ImportedRecipeManagementPanel } from "@/components/admin/ImportedRecipe
 import { ImagePromptSettingsPanel } from "@/components/admin/ImagePromptSettingsPanel";
 import { ThumbnailGenerationPanel } from "@/components/admin/ThumbnailGenerationPanel";
 import { IngredientCategoryBackfillPanel } from "@/components/admin/IngredientCategoryBackfillPanel";
+import { IngredientParsingPanel } from "@/components/admin/IngredientParsingPanel";
+import { ProcessAllRecipesPanel } from "@/components/admin/ProcessAllRecipesPanel";
+import { CleanedNamesBackfillPanel } from "@/components/admin/CleanedNamesBackfillPanel";
 import { User, AlertCircle } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -151,7 +154,10 @@ const AdminDashboard = () => {
         <TabsContent value="settings" className="space-y-6">
           <ImagePromptSettingsPanel />
           <ThumbnailGenerationPanel />
+          <IngredientParsingPanel />
+          <ProcessAllRecipesPanel />
           <IngredientCategoryBackfillPanel />
+          <CleanedNamesBackfillPanel />
         </TabsContent>
 
         <TabsContent value="users" className="space-y-6">

@@ -32,8 +32,11 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `You are a grocery categorization expert. Given an ingredient name, categorize it into ONE of these exact categories:
+            content: `You are a grocery categorization and ingredient formatting expert. Given an ingredient name, you need to:
+1. Categorize it into ONE of these exact categories
+2. Create a clean, shopping list-ready version of the ingredient name
 
+CATEGORIES (return ONLY one):
 - Fruit & Vegetables
 - Meat & Fish
 - Chilled Food
@@ -46,45 +49,51 @@ serve(async (req) => {
 - Alcohol
 - Other
 
-Rules:
-- Return ONLY the category name, nothing else
-- Fruit & Vegetables: Fresh fruits, vegetables, salad items, fresh herbs
-- Meat & Fish: Fresh meat, poultry, fish, seafood
-- Chilled Food: Dairy products, chilled ready meals, deli items, cheese, yogurt
-- Bakery: Bread, rolls, pastries, fresh baked goods, cakes
-- Frozen Food: Any frozen items including vegetables, ready meals, ice cream, frozen meat
-- Food Cupboard: Pantry staples, dry goods, canned items, spices, oils, pasta, rice, flour, sugar, baking ingredients
-- Snacks & Treats: Chips, crackers, cookies, sweets, chocolate, nuts
-- World & Dietary: Specialty diet foods, international cuisine items, organic/health foods, gluten-free, vegan specialty items
-- Drinks: Non-alcoholic beverages, tea, coffee, juice, soft drinks, water
-- Alcohol: Beer, wine, spirits, liqueurs, alcoholic beverages
-- Other: Anything that doesn't fit the above categories
+CLEANED INGREDIENT NAME RULES:
+- Keep quantities and measurements exactly as written (e.g., "4", "2–3 tbsp", "1/2 cup")
+- Remove descriptive text after commas (e.g., "thinly sliced, green and white parts separated" → remove)
+- Remove parenthetical notes (e.g., "(add more/less depending on how spicy you like it)" → remove)
+- Capitalize each word properly (Title Case)
+- Fix spelling mistakes
+- Keep units and measurements with proper formatting (e.g., "tbsp", "cup", "g", "kg")
+- NEVER change the ingredient itself (e.g., "cheese" must stay "cheese", never change to "duck" or anything else)
+- Preserve the core ingredient name exactly as it is, just clean up formatting and remove extra descriptions
 
-If unsure, default to "Other".`
+Examples:
+- "4 salad onions, thinly sliced, green and white parts separated" → cleanedName: "4 Salad Onions"
+- "2–3 tbsp good quality jerk seasoning (add more/less depending on how spicy you like it)" → cleanedName: "2–3 tbsp Good Quality Jerk Seasoning"
+- "G cheddar cheese, grated" → cleanedName: "G Cheddar Cheese"
+- "1 cup all-purpose flour" → cleanedName: "1 Cup All-Purpose Flour"
+
+Return a JSON object with both "category" and "cleanedName" fields.`
           },
           {
             role: 'user',
-            content: `Categorize this ingredient: ${ingredient}`
+            content: `Categorize and clean this ingredient: ${ingredient}`
           }
         ],
         temperature: 0.1,
-        max_tokens: 50
+        max_tokens: 150,
+        response_format: { type: "json_object" }
       }),
     });
 
     const data = await response.json();
-    const category = data.choices[0].message.content.trim();
+    const content = JSON.parse(data.choices[0].message.content);
+    const category = content.category?.trim();
+    const cleanedName = content.cleanedName?.trim() || ingredient; // Fallback to original if missing
     
-    console.log(`Categorized "${ingredient}" as "${category}"`);
+    console.log(`Categorized "${ingredient}" as "${category}" with cleaned name "${cleanedName}"`);
 
-    return new Response(JSON.stringify({ category }), {
+    return new Response(JSON.stringify({ category, cleanedName }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
     console.error('Error in categorize-ingredient function:', error);
     return new Response(JSON.stringify({ 
       error: error.message,
-      category: 'Other' // Fallback category
+      category: 'Other', // Fallback category
+      cleanedName: ingredient // Fallback to original ingredient
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

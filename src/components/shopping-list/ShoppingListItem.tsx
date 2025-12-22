@@ -9,6 +9,7 @@ import { Link } from "react-router-dom";
 import { useShoppingListInteractions } from "./ShoppingListInteractions";
 import { useToast } from "@/hooks/use-toast";
 import { extractIngredientName, formatQuantity } from "@/utils/shoppingListUtils";
+import { SortOption } from "@/utils/shoppingListSorting";
 
 interface ShoppingListItemProps {
   id: string;
@@ -22,6 +23,7 @@ interface ShoppingListItemProps {
   onCopy: () => void;
   onUpdate?: (id: string, newName: string) => void;
   getRecipeNames: (recipeIds: string[]) => string;
+  sortOption?: SortOption;
 }
 
 export function ShoppingListItem({
@@ -35,7 +37,8 @@ export function ShoppingListItem({
   onCheck,
   onCopy,
   onUpdate,
-  getRecipeNames
+  getRecipeNames,
+  sortOption = "none"
 }: ShoppingListItemProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(name);
@@ -168,12 +171,11 @@ export function ShoppingListItem({
                   {formatQuantity(quantity)} {unit}
                 </span>
               )}
-              <span className="font-bold">{name.charAt(0).toUpperCase() + name.slice(1).toLowerCase()}</span>
+              <span className="font-medium">{name.charAt(0).toUpperCase() + name.slice(1).toLowerCase()}</span>
             </div>
             
-            {recipeIds.length > 0 && (
+            {recipeIds.length > 0 && sortOption !== "recipe" && (
               <div className="mt-0.5 text-xs truncate" style={{ color: 'hsl(var(--shopping-action-green))' }}>
-                from{' '}
                 {recipeData.map((recipe, index) => (
                   <span key={`${recipe.id}-${recipe.name}`}>
                     {recipe.name.trim()}

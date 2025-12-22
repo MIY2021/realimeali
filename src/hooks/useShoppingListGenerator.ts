@@ -6,8 +6,7 @@ import { useMealPlan } from "@/contexts/MealPlanContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { ShoppingListService } from "@/services/shoppingListService";
-import { IngredientConsolidationService } from "@/services/ingredientConsolidation";
-import { getCategoryForIngredient, normalizeIngredientName } from "@/services/ingredientCategorizationService";
+import { getCategoryForIngredient } from "@/services/ingredientCategorizationService";
 import { DEFAULT_INGREDIENT_CATEGORY } from "@/types/ingredientCategories";
 
 // Helper function to detect ingredient group headers (same as EnhancedIngredientManager)
@@ -22,7 +21,7 @@ export const useShoppingListGenerator = () => {
   const { currentHousehold } = useHousehold();
 
   const generateAndSaveFromMealPlans = useCallback(async (weekKey: string): Promise<ShoppingListItem[]> => {
-    console.log('=== STARTING OPTIMIZED SHOPPING LIST GENERATION ===');
+    console.log('=== STARTING SHOPPING LIST GENERATION (NO CONSOLIDATION) ===');
     console.log('Week:', weekKey);
     console.log('User:', !!user);
     console.log('Household:', !!currentHousehold);
@@ -46,12 +45,11 @@ export const useShoppingListGenerator = () => {
       console.log('Clearing existing items for week', weekKey);
       await ShoppingListService.clearAll(currentHousehold.id, weekKey);
 
-      // Step 2: Collect ingredients from meal plans with serving calculations
-      const ingredientInputs: Array<{
+      // Step 2: Collect all ingredients from meal plans (no consolidation)
+      const ingredientItems: Array<{
         name: string;
         recipeId: string;
         recipeTitle: string;
-        servingMultiplier: number; // New field for serving calculation
       }> = [];
 
       mealPlans.forEach(mealPlan => {
@@ -63,11 +61,10 @@ export const useShoppingListGenerator = () => {
         // Handle freetyped meals
         if (mealPlan.is_freetyped && mealPlan.meal_name) {
           console.log('Processing freetyped meal:', mealPlan.meal_name);
-          ingredientInputs.push({
+          ingredientItems.push({
             name: `Everything for ${mealPlan.meal_name}`,
-            recipeId: mealPlan.id, // Use meal plan id for freetyped meals
-            recipeTitle: mealPlan.meal_name,
-            servingMultiplier: 1 // No multiplier needed for freetyped meals
+            recipeId: mealPlan.id,
+            recipeTitle: mealPlan.meal_name
           });
           return;
         }
@@ -78,12 +75,7 @@ export const useShoppingListGenerator = () => {
           return;
         }
 
-        // Calculate serving multiplier based on planned vs recipe servings
-        const plannedServings = mealPlan.planned_servings || recipe.servings;
-        const servingMultiplier = plannedServings / recipe.servings;
-
-        console.log('Processing recipe:', recipe.title, 'with', recipe.ingredients.length, 'ingredients', 
-                   `(${plannedServings} planned vs ${recipe.servings} recipe servings, multiplier: ${servingMultiplier})`);
+        console.log('Processing recipe:', recipe.title, 'with', recipe.ingredients.length, 'ingredients');
 
         recipe.ingredients.forEach(ingredient => {
           // Filter out empty, invalid ingredients, and section headers
@@ -91,94 +83,60 @@ export const useShoppingListGenerator = () => {
           if (trimmed && 
               trimmed.length > 0 && 
               trimmed !== 'undefined' && 
-              trimmed !== 'null' &&
-              !isHeader(trimmed)) { // Filter out section headers
-            ingredientInputs.push({
-              name: trimmed,
+              trimmed !== 'null' && 
+              !isHeader(trimmed)) {
+            ingredientItems.push({
+              name: trimmed, // Use ingredient text exactly as-is
               recipeId: recipe.id,
-              recipeTitle: recipe.title,
-              servingMultiplier: servingMultiplier
+              recipeTitle: recipe.title
             });
           }
         });
       });
 
-      console.log('Total valid ingredients collected:', ingredientInputs.length);
+      console.log('Total ingredients to save:', ingredientItems.length);
 
-      if (ingredientInputs.length === 0) {
-        console.log('No valid ingredients found to consolidate');
+      if (ingredientItems.length === 0) {
+        console.log('No valid ingredients found');
         return [];
       }
 
-      // Step 3: Use fast local consolidation with serving multipliers
-      console.log('Starting fast local consolidation with serving calculations...');
-      const startTime = performance.now();
-      
-      // Convert to the format expected by the consolidation service
-      const consolidationInputs = ingredientInputs.map(item => ({
-        name: item.name,
-        recipeId: item.recipeId,
-        recipeTitle: item.recipeTitle,
-        servingMultiplier: item.servingMultiplier
-      }));
-      
-      const consolidatedIngredients = IngredientConsolidationService.consolidateIngredientsWithServings(consolidationInputs);
-      
-      const endTime = performance.now();
-      console.log(`Consolidation completed in ${Math.round(endTime - startTime)}ms`);
-      console.log('Consolidated ingredients:', consolidatedIngredients.length);
-
-      // Step 4: Filter out invalid consolidated items
-      const validConsolidatedIngredients = consolidatedIngredients.filter(item => {
-        const isValid = item.name && 
-                       item.name.trim().length > 0 && 
-                       item.name !== 'undefined' && 
-                       item.name !== 'null' &&
-                       item.consolidatedQuantity > 0;
-        
-        if (!isValid) {
-          console.log('Filtering out invalid item:', item);
-        }
-        
-        return isValid;
-      });
-
-      console.log('Valid items after filtering:', validConsolidatedIngredients.length);
-
-      // Step 5: Look up categories for all ingredients
-      console.log('Looking up categories for', validConsolidatedIngredients.length, 'ingredients...');
+      // Step 3: Look up categories and cleaned names for all ingredients
+      console.log('Looking up categories and cleaned names for', ingredientItems.length, 'ingredients...');
       const categoryLookups = await Promise.allSettled(
-        validConsolidatedIngredients.map(async (item) => {
-          const normalizedName = normalizeIngredientName(item.name);
-          const category = await getCategoryForIngredient(item.name);
-          return { item, category };
+        ingredientItems.map(async (item) => {
+          const result = await getCategoryForIngredient(item.name);
+          return { item, category: result.category, cleanedName: result.cleanedName };
         })
       );
 
-      // Step 6: Batch save all valid items to database with categories
+      // Step 4: Save all items directly (no consolidation)
       const savedItems: ShoppingListItem[] = [];
       
-      console.log('Batch saving', validConsolidatedIngredients.length, 'items...');
+      console.log('Saving', ingredientItems.length, 'items directly...');
       
-      for (let i = 0; i < validConsolidatedIngredients.length; i++) {
-        const item = validConsolidatedIngredients[i];
+      for (let i = 0; i < ingredientItems.length; i++) {
+        const item = ingredientItems[i];
         const categoryResult = categoryLookups[i];
         
-        // Get category from lookup result, default to "Other" if lookup failed
+        // Get category and cleaned name from lookup result, default to "Other" if lookup failed
         let category = DEFAULT_INGREDIENT_CATEGORY;
+        let cleanedName = item.name; // Default to original name if lookup failed
         if (categoryResult.status === 'fulfilled') {
           category = categoryResult.value.category;
+          cleanedName = categoryResult.value.cleanedName || item.name;
         } else {
           console.warn('Failed to get category for ingredient:', item.name, categoryResult.reason);
         }
 
         try {
+          // Save item with cleaned name (shopping list-ready format)
           const savedItem = await ShoppingListService.addConsolidatedItem(
-            item.name,
-            item.consolidatedQuantity || 1,
-            item.consolidatedUnit || '',
-            item.sourceIngredients || [item.name],
-            item.recipeIds || [],
+            cleanedName, // Use cleaned name for shopping list display
+            1, // Default quantity (not used for display)
+            '', // No unit (not used for display)
+            [item.name], // Source ingredients keeps the original text
+            [item.recipeId], // Single recipe ID
             currentHousehold.id,
             user.id,
             weekKey,
@@ -193,11 +151,11 @@ export const useShoppingListGenerator = () => {
         }
       }
 
-      console.log('Successfully saved', savedItems.length, 'consolidated items for week', weekKey);
+      console.log('Successfully saved', savedItems.length, 'items for week', weekKey);
       return savedItems;
       
     } catch (error) {
-      console.error('Error in consolidation process:', error);
+      console.error('Error in shopping list generation:', error);
       return [];
     }
   }, [recipes, getMealPlansForWeek, user, currentHousehold]);

@@ -63,6 +63,7 @@ export default function ShoppingListItems({
                       onCopy={() => onCopyItem(item.id)}
                       onUpdate={onUpdateItem}
                       getRecipeNames={getRecipeNames}
+                      sortOption={sortOption}
                     />
                   </CardContent>
                 </Card>
@@ -97,6 +98,7 @@ export default function ShoppingListItems({
               onCopy={() => onCopyItem(item.id)}
               onUpdate={onUpdateItem}
               getRecipeNames={getRecipeNames}
+              sortOption={sortOption}
             />
           </CardContent>
         </Card>

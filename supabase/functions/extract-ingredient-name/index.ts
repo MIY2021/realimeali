@@ -35,14 +35,15 @@ serve(async (req) => {
             content: `You are an expert at extracting clean ingredient names from recipe text. Given an ingredient line from a recipe, extract just the core ingredient name without quantities, units, preparation methods, or descriptive terms.
 
 Rules:
-- Remove all quantities (numbers, fractions, measurements)
-- Remove all units (g, kg, ml, cups, tbsp, etc.)
-- Remove preparation methods (chopped, diced, cooked, etc.)
-- Remove cooking states (fresh, dried, canned, frozen, etc.)
-- Remove descriptive terms (large, small, extra virgin, etc.)
+- Remove all quantities (numbers, fractions, measurements like "1 1/2", "about", etc.)
+- Remove all units (g, kg, ml, cups, tbsp, tsp, pounds, ounces, etc.)
+- Remove preparation methods (chopped, diced, cooked, sliced, minced, grated, etc.)
+- Remove cooking states (fresh, dried, canned, frozen, raw, etc.)
+- Remove descriptive terms (large, small, extra virgin, thinly, thickly, etc.)
 - Remove parenthetical content entirely
-- Remove anything after commas that describes preparation
-- Keep only the essential food item name
+- Remove anything after commas that describes preparation or additional info
+- Keep only the essential food item name (the actual ingredient)
+- For meat cuts, keep the full cut name (e.g., "New York Strip Steaks" → "New York Strip Steaks" or "Steak")
 - Capitalize properly (first letter of each word)
 
 Examples:
@@ -50,7 +51,10 @@ Examples:
 "g black or green olives, pitted and halved" → "Black Or Green Olives"
 "2 tbsp extra virgin olive oil" → "Olive Oil"
 "1 large onion, chopped" → "Onion"
-"200ml fresh cream" → "Cream"`
+"200ml fresh cream" → "Cream"
+"2 thinly sliced New York Strip Steaks, about 1 1/2 pounds" → "New York Strip Steaks"
+"3 cups all-purpose flour, sifted" → "All Purpose Flour"
+"1 lb ground beef, 80/20" → "Ground Beef"`
           },
           {
             role: 'user',

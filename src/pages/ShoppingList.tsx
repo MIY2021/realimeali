@@ -320,15 +320,15 @@ export default function ShoppingList() {
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <label htmlFor="show-unchecked" className="text-xs font-medium whitespace-nowrap text-muted-foreground">
-                      Hide Checked
-                    </label>
-                    <Switch
-                      id="show-unchecked"
-                      checked={showOnlyUnchecked}
-                      onCheckedChange={setShowOnlyUnchecked}
-                    />
+                <div className="flex items-center gap-2">
+                  <label htmlFor="show-unchecked" className="text-xs font-medium whitespace-nowrap text-muted-foreground">
+                    Hide Checked
+                  </label>
+                  <Switch
+                    id="show-unchecked"
+                    checked={showOnlyUnchecked}
+                    onCheckedChange={setShowOnlyUnchecked}
+                  />
                   </div>
                 </div>
               ) : null

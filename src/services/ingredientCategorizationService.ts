@@ -1,28 +1,20 @@
 import { supabase } from "@/integrations/supabase/client";
-import { extractIngredientNameFallback } from "@/utils/shoppingListUtils";
 import { IngredientCategory, DEFAULT_INGREDIENT_CATEGORY } from "@/types/ingredientCategories";
 import { getCategoryFromGuide } from "@/utils/ingredientCategoryGuide";
 
 /**
- * Normalizes an ingredient name by extracting the base ingredient name
- * (removing quantities, units, and descriptive text)
+ * Gets the category and cleaned name for an ingredient from the database
+ * Uses exact match (case-insensitive) - no normalization
  */
-export function normalizeIngredientName(ingredient: string): string {
-  // Use the fallback extraction which is synchronous and doesn't require AI
-  const normalized = extractIngredientNameFallback(ingredient);
-  // Convert to lowercase for consistent storage and lookup
-  return normalized.toLowerCase().trim();
-}
-
-/**
- * Gets the category for an ingredient from the database
- */
-async function getCategoryFromDatabase(ingredientName: string): Promise<IngredientCategory | null> {
+async function getCategoryFromDatabase(ingredientText: string): Promise<{
+  category: IngredientCategory;
+  cleanedName: string;
+} | null> {
   try {
     const { data, error } = await supabase
       .from('ingredient_categories')
-      .select('category')
-      .eq('ingredient_name', ingredientName.toLowerCase())
+      .select('category, cleaned_name')
+      .eq('ingredient_name', ingredientText.toLowerCase().trim())
       .single();
 
     if (error) {
@@ -34,7 +26,12 @@ async function getCategoryFromDatabase(ingredientName: string): Promise<Ingredie
       return null;
     }
 
-    return data?.category as IngredientCategory || null;
+    if (!data) return null;
+
+    return {
+      category: data.category as IngredientCategory,
+      cleanedName: data.cleaned_name || ingredientText
+    };
   } catch (error) {
     console.error('Error in getCategoryFromDatabase:', error);
     return null;
@@ -44,12 +41,19 @@ async function getCategoryFromDatabase(ingredientName: string): Promise<Ingredie
 /**
  * Categorizes an ingredient using OpenAI via the Supabase function
  * Falls back to guide list if OpenAI is unavailable
+ * Returns both category and cleaned name
  */
-async function categorizeWithOpenAI(ingredient: string): Promise<IngredientCategory> {
+async function categorizeWithOpenAI(ingredient: string): Promise<{
+  category: IngredientCategory;
+  cleanedName: string;
+}> {
   // First check the guide as a quick fallback
   const guideCategory = getCategoryFromGuide(ingredient);
   if (guideCategory) {
-    return guideCategory;
+    return {
+      category: guideCategory,
+      cleanedName: ingredient // No cleaning if using guide
+    };
   }
 
   try {
@@ -61,10 +65,14 @@ async function categorizeWithOpenAI(ingredient: string): Promise<IngredientCateg
       console.error('Error calling categorize-ingredient function:', error);
       // Try guide as fallback
       const fallbackCategory = getCategoryFromGuide(ingredient);
-      return fallbackCategory || DEFAULT_INGREDIENT_CATEGORY;
+      return {
+        category: fallbackCategory || DEFAULT_INGREDIENT_CATEGORY,
+        cleanedName: ingredient
+      };
     }
 
     const category = data?.category as IngredientCategory;
+    const cleanedName = data?.cleanedName as string || ingredient;
     
     // Validate the category is one of our valid categories
     const validCategories: IngredientCategory[] = [
@@ -82,36 +90,44 @@ async function categorizeWithOpenAI(ingredient: string): Promise<IngredientCateg
     ];
 
     if (category && validCategories.includes(category)) {
-      return category;
+      return { category, cleanedName };
     }
 
     console.warn(`Invalid category returned from OpenAI: ${category}, using default`);
     // Try guide as fallback
     const fallbackCategory = getCategoryFromGuide(ingredient);
-    return fallbackCategory || DEFAULT_INGREDIENT_CATEGORY;
+    return {
+      category: fallbackCategory || DEFAULT_INGREDIENT_CATEGORY,
+      cleanedName: ingredient
+    };
   } catch (error) {
     console.error('Error categorizing ingredient with OpenAI:', error);
     // Try guide as fallback
     const fallbackCategory = getCategoryFromGuide(ingredient);
-    return fallbackCategory || DEFAULT_INGREDIENT_CATEGORY;
+    return {
+      category: fallbackCategory || DEFAULT_INGREDIENT_CATEGORY,
+      cleanedName: ingredient
+    };
   }
 }
 
 /**
- * Saves an ingredient category to the database
+ * Saves an ingredient category and cleaned name to the database
+ * Stores the ingredient exactly as provided (lowercased for consistency)
+ * No normalization - exact match lookup
  */
 async function saveIngredientCategory(
   ingredientName: string,
-  category: IngredientCategory
+  category: IngredientCategory,
+  cleanedName?: string
 ): Promise<void> {
   try {
-    const normalizedName = ingredientName.toLowerCase().trim();
-    
     const { error } = await supabase
       .from('ingredient_categories')
       .upsert({
-        ingredient_name: normalizedName,
+        ingredient_name: ingredientName.toLowerCase().trim(),
         category: category,
+        cleaned_name: cleanedName || ingredientName, // Store cleaned name if provided
         updated_at: new Date().toISOString()
       }, {
         onConflict: 'ingredient_name'
@@ -119,45 +135,66 @@ async function saveIngredientCategory(
 
     if (error) {
       console.error('Error saving ingredient category:', error);
-      // Don't throw - this is not critical
+      throw error; // Throw so caller knows it failed
     }
   } catch (error) {
     console.error('Error in saveIngredientCategory:', error);
-    // Don't throw - this is not critical
+    throw error; // Re-throw so caller can handle
   }
 }
 
 /**
- * Gets the category for an ingredient, checking database first, then using OpenAI
+ * Gets the category and cleaned name for an ingredient, checking database first, then using OpenAI
+ * Passes the ingredient text exactly as-is to OpenAI (no normalization)
+ * Always saves categorized ingredients to the database to reduce AI usage
+ * Returns both category and cleaned shopping list name
  */
-export async function getCategoryForIngredient(ingredient: string): Promise<IngredientCategory> {
-  const normalizedName = normalizeIngredientName(ingredient);
-  
+export async function getCategoryForIngredient(ingredient: string): Promise<{
+  category: IngredientCategory;
+  cleanedName: string;
+}> {
   // Skip empty or invalid ingredient names
-  if (!normalizedName || normalizedName.length === 0) {
-    return DEFAULT_INGREDIENT_CATEGORY;
+  if (!ingredient || ingredient.trim().length === 0) {
+    return {
+      category: DEFAULT_INGREDIENT_CATEGORY,
+      cleanedName: ingredient
+    };
   }
 
-  // Check database first
-  const dbCategory = await getCategoryFromDatabase(normalizedName);
-  if (dbCategory) {
-    return dbCategory;
+  const ingredientKey = ingredient.toLowerCase().trim();
+
+  // Check database first using exact match (no normalization)
+  const dbResult = await getCategoryFromDatabase(ingredient);
+  if (dbResult) {
+    console.log(`✅ Found category in database for "${ingredient}": ${dbResult.category}`);
+    return {
+      category: dbResult.category,
+      cleanedName: dbResult.cleanedName
+    };
   }
 
-  // If not in database, use OpenAI to categorize
-  const category = await categorizeWithOpenAI(ingredient);
+  // If not in database, use OpenAI to categorize (passing original text exactly as-is)
+  console.log(`🤖 Using AI to categorize "${ingredient}" (not found in database)`);
+  const result = await categorizeWithOpenAI(ingredient);
   
-  // Save to database for future use (async, don't wait)
-  saveIngredientCategory(normalizedName, category).catch(err => {
-    console.error('Failed to save category to database:', err);
-  });
+  // Save to database for future use to reduce AI calls
+  // Store using the original ingredient text (lowercased) as the key
+  try {
+    await saveIngredientCategory(ingredientKey, result.category, result.cleanedName);
+    console.log(`💾 Saved category to database for "${ingredient}": ${result.category}, cleaned name: "${result.cleanedName}"`);
+  } catch (err) {
+    console.error(`❌ Failed to save category to database for "${ingredient}":`, err);
+    // Don't throw - categorization still succeeded, just logging failed
+  }
 
-  return category;
+  return result;
 }
 
 /**
  * Batch categorizes multiple ingredients
- * Returns a map of normalized ingredient names to categories
+ * Returns a map of ingredient names (lowercased) to categories
+ * No normalization - passes ingredients exactly as-is to OpenAI
+ * All categorized ingredients are saved to the database to reduce future AI usage
  */
 export async function categorizeIngredients(
   ingredients: string[]
@@ -174,24 +211,27 @@ export async function categorizeIngredients(
            !trimmed.endsWith(':'); // Filter out section headers
   });
 
+  console.log(`📦 Categorizing ${validIngredients.length} ingredients (checking database first, then AI if needed)...`);
+
   // Process ingredients in parallel (with some rate limiting consideration)
   const categoryPromises = validIngredients.map(async (ingredient) => {
-    const normalizedName = normalizeIngredientName(ingredient);
-    if (!normalizedName || normalizedName.length === 0) {
+    if (!ingredient || ingredient.trim().length === 0) {
       return null;
     }
     
-    const category = await getCategoryForIngredient(ingredient);
-    return { normalizedName, category };
+    const result = await getCategoryForIngredient(ingredient);
+    // Use lowercased ingredient as key for the map
+    return { ingredientKey: ingredient.toLowerCase().trim(), category: result.category };
   });
 
   const results = await Promise.allSettled(categoryPromises);
   
   results.forEach((result) => {
     if (result.status === 'fulfilled' && result.value) {
-      categoryMap.set(result.value.normalizedName, result.value.category);
+      categoryMap.set(result.value.ingredientKey, result.value.category);
     }
   });
 
+  console.log(`✅ Completed categorization for ${categoryMap.size} ingredients`);
   return categoryMap;
 }
