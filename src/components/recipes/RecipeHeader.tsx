@@ -99,7 +99,10 @@ export const RecipeHeader = ({
                 </span>
               </DropdownMenuItem>
               <DropdownMenuItem
-                onClick={onToggleCooked}
+                onSelect={(e) => {
+                  e.preventDefault();
+                  onToggleCooked();
+                }}
                 className={`flex items-center gap-3 px-3 py-2.5 cursor-pointer rounded-lg transition-colors duration-200 ${
                   isCooked 
                     ? 'bg-sage/10 hover:bg-sage/20 focus:bg-sage/20' 
@@ -108,7 +111,7 @@ export const RecipeHeader = ({
               >
                 <Check className={`h-4 w-4 ${isCooked ? 'text-sage' : 'text-gray-600'}`} />
                 <span className={`text-sm font-medium ${isCooked ? 'text-sage' : 'text-gray-700'}`}>
-                  {isCooked ? 'Mark as not cooked' : 'Mark as cooked'}
+                  {isCooked ? 'Meal Cooked' : 'Mark as cooked'}
                 </span>
               </DropdownMenuItem>
               {isOwner && onEdit && (

@@ -41,9 +41,14 @@ export default function ShoppingListItems({
           <div key={group.groupKey} className="space-y-2">
             {/* Section Header */}
             <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b-2 border-border/60 pb-2.5 pt-3 mb-2">
-              <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider">
-                {group.groupLabel}
-              </h3>
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider">
+                  {group.groupLabel}
+                </h3>
+                <span className="text-xs text-muted-foreground font-normal">
+                  {group.items.length} {group.items.length === 1 ? 'item' : 'items'}
+                </span>
+              </div>
             </div>
             
             {/* Group Items */}

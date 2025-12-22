@@ -21,7 +21,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { Share, Trash2, Plus, Sparkles, Loader } from "lucide-react";
+import { Share, Trash2, Plus, Sparkles, Loader, ArrowUpDown } from "lucide-react";
 import { Link } from "react-router-dom";
 import { getCurrentWeekKey } from "@/utils/weekUtils";
 import { HeaderControls } from "@/components/layout/HeaderControls";
@@ -59,7 +59,7 @@ export default function ShoppingList() {
   const [copiedItemId, setCopiedItemId] = useState<string | null>(null);
   const [showOnlyUnchecked, setShowOnlyUnchecked] = useState(false);
   const [infoDialog, setInfoDialog] = useState(false);
-  const [sortOption, setSortOption] = useState<SortOption>("none");
+  const [sortOption, setSortOption] = useState<SortOption>("category");
   
   // Sync week with localStorage
   useEffect(() => {
@@ -101,8 +101,12 @@ export default function ShoppingList() {
       setShowOnlyUnchecked(JSON.parse(saved));
     }
     const savedSort = localStorage.getItem('realiMeali_shoppingListSort');
-    if (savedSort && (savedSort === "none" || savedSort === "category" || savedSort === "recipe")) {
+    if (savedSort && (savedSort === "category" || savedSort === "recipe")) {
       setSortOption(savedSort as SortOption);
+    } else {
+      // Default to category (treat "none" as no preference and migrate to category)
+      setSortOption("category");
+      localStorage.setItem('realiMeali_shoppingListSort', "category");
     }
   }, []);
 
@@ -305,31 +309,17 @@ export default function ShoppingList() {
             rightActions={
               user && currentHousehold ? (
                 <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-2">
-                    <label htmlFor="sort-option" className="text-xs font-medium whitespace-nowrap text-muted-foreground">
-                      Sort by:
-                    </label>
-                    <Select value={sortOption} onValueChange={(value) => setSortOption(value as SortOption)}>
-                      <SelectTrigger id="sort-option" className="h-8 w-[120px] text-xs">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">None</SelectItem>
-                        <SelectItem value="category">Category</SelectItem>
-                        <SelectItem value="recipe">Recipe</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                <div className="flex items-center gap-2">
-                  <label htmlFor="show-unchecked" className="text-xs font-medium whitespace-nowrap text-muted-foreground">
-                    Hide Checked
-                  </label>
-                  <Switch
-                    id="show-unchecked"
-                    checked={showOnlyUnchecked}
-                    onCheckedChange={setShowOnlyUnchecked}
-                  />
-                  </div>
+                  <Select value={sortOption} onValueChange={(value) => setSortOption(value as SortOption)}>
+                    <SelectTrigger id="sort-option" className="h-8 w-auto min-w-[100px] text-xs px-2 focus:ring-0 focus-visible:ring-0">
+                      <ArrowUpDown className="h-4 w-4 mr-2 flex-shrink-0" />
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">None</SelectItem>
+                      <SelectItem value="category">Category</SelectItem>
+                      <SelectItem value="recipe">Recipe</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               ) : null
             }
@@ -347,15 +337,18 @@ export default function ShoppingList() {
           {/* Action rows */}
           {user && currentHousehold && (
             <div className="space-y-2 mb-4">
-              {/* Row 1: Item count on left, Add button on right */}
+              {/* Row 1: Hide checked toggle on left, Add button on right */}
               <div className="flex items-center justify-between gap-2 min-h-[24px]">
-                {shoppingList.length > 0 ? (
-                  <p className="text-sm animate-in fade-in-0 duration-300" style={{ color: 'hsl(var(--shopping-grey))' }}>
-                    {completedItems} of {totalItems} items completed
-                  </p>
-                ) : (
-                  <div className="h-5 w-32 bg-muted/30 rounded animate-pulse" />
-                )}
+                <div className="flex items-center gap-2">
+                  <label htmlFor="show-unchecked" className="text-xs font-medium whitespace-nowrap text-muted-foreground">
+                    Hide Checked
+                  </label>
+                  <Switch
+                    id="show-unchecked"
+                    checked={showOnlyUnchecked}
+                    onCheckedChange={setShowOnlyUnchecked}
+                  />
+                </div>
                 
                 {/* Override min-height/min-width with !important to allow h-6 w-6 (24px) sizing */}
                 <Button

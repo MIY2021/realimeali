@@ -238,14 +238,18 @@ export default function ImportedRecipeDetailPage() {
         <div className="mb-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <Clock className="h-4 w-4 text-terracotta" />
-                <span className="text-navy font-medium text-sm">Prep: <span className="font-normal">{recipe.prep_time || 'N/A'} min</span></span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Clock className="h-4 w-4 text-terracotta" />
-                <span className="text-navy font-medium text-sm">Cook: <span className="font-normal">{recipe.cook_time || 'N/A'} min</span></span>
-              </div>
+              {(recipe.prep_time ?? 0) > 0 && (
+                <div className="flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-terracotta" />
+                  <span className="text-navy font-medium text-sm">Prep: <span className="font-normal">{recipe.prep_time} min</span></span>
+                </div>
+              )}
+              {(recipe.cook_time ?? 0) > 0 && (
+                <div className="flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-terracotta" />
+                  <span className="text-navy font-medium text-sm">Cook: <span className="font-normal">{recipe.cook_time} min</span></span>
+                </div>
+              )}
             </div>
             <Button
               variant="ghost"
