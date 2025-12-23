@@ -1,4 +1,3 @@
-
 project_id = "bdjzefekuahfofwzxqxd"
 
 # AI Functions - JWT enabled to prevent API abuse and unbounded OpenAI costs
@@ -28,14 +27,3 @@ verify_jwt = false
 
 [functions.migrate-base64-images]
 # Maintenance function - requires authentication
-
-# Handle all share routes at the function level
-[[functions.recipe-meta.routes]]
-path = "/share/*"
-
-# Also handle legacy routes
-[[functions.recipe-meta.routes]]
-path = "/recipe/*/share"
-
-[[functions.recipe-meta.routes]]
-path = "/recipe-meta/*"

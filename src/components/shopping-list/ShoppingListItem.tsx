@@ -171,7 +171,7 @@ export function ShoppingListItem({
                   {formatQuantity(quantity)} {unit}
                 </span>
               )}
-              <span className="font-medium">{name.charAt(0).toUpperCase() + name.slice(1).toLowerCase()}</span>
+              <span className="font-medium">{name}</span>
             </div>
             
             {recipeIds.length > 0 && sortOption !== "recipe" && (

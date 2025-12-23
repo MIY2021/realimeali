@@ -46,9 +46,14 @@ export function CleanedNamesBackfillPanel() {
           variant: "destructive",
         });
       } else if (data.message) {
+        const successMessage = dryRun 
+          ? `Dry run completed: Would process ${data.total || 0} ingredients`
+          : `Backfill completed: ${data.updated || 0} ingredients updated successfully`;
+        
         toast({
           title: dryRun ? "Dry run completed" : "Backfill completed",
-          description: `Processed ${data.processed || 0} ingredients. ${data.updated || 0} updated, ${data.errors || 0} errors.`,
+          description: successMessage,
+          variant: data.errors > 0 ? "default" : "default",
         });
       }
     } catch (error: any) {
@@ -137,14 +142,43 @@ export function CleanedNamesBackfillPanel() {
             </div>
             
             {result.error ? (
-              <p className="text-sm text-red-500">{result.error}</p>
+              <div className="space-y-2">
+                <p className="text-sm text-red-500">{result.error}</p>
+                {result.migrationRequired && (
+                  <div className="mt-2 p-2 bg-muted rounded text-xs">
+                    <p className="font-semibold mb-1">Migration Required:</p>
+                    <code className="block bg-background p-2 rounded mt-1 break-all">
+                      {result.migrationSQL || 'ALTER TABLE public.ingredient_categories ADD COLUMN IF NOT EXISTS cleaned_name TEXT;'}
+                    </code>
+                  </div>
+                )}
+              </div>
             ) : (
               <div className="space-y-1 text-sm">
                 <p><strong>Message:</strong> {result.message}</p>
-                <p><strong>Total Found:</strong> {result.total || 0}</p>
-                <p><strong>Processed:</strong> {result.processed || 0}</p>
-                <p><strong>Updated:</strong> {result.updated || 0}</p>
-                <p><strong>Errors:</strong> {result.errors || 0}</p>
+                <div className="grid grid-cols-2 gap-2 mt-2">
+                  <div>
+                    <p className="text-muted-foreground">Total Found:</p>
+                    <p className="font-semibold">{result.total || 0}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Processed:</p>
+                    <p className="font-semibold">{result.processed || 0}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Updated:</p>
+                    <p className="font-semibold text-green-600">{result.updated || 0}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Errors:</p>
+                    <p className={`font-semibold ${result.errors > 0 ? 'text-red-600' : ''}`}>{result.errors || 0}</p>
+                  </div>
+                </div>
+                {result.total > result.processed && (
+                  <p className="text-xs text-muted-foreground mt-2">
+                    ⚠️ Not all ingredients were processed. Run again to process remaining items.
+                  </p>
+                )}
                 {result.dryRun && (
                   <p className="text-xs text-muted-foreground mt-2">
                     This was a dry run. No changes were saved to the database.

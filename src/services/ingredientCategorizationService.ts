@@ -122,12 +122,18 @@ async function saveIngredientCategory(
   cleanedName?: string
 ): Promise<void> {
   try {
+    // Always ensure cleaned_name is set - never allow NULL
+    // If cleanedName is not provided, use ingredientName as fallback
+    const cleanedNameToSave = cleanedName && cleanedName.trim() !== '' 
+      ? cleanedName.trim() 
+      : ingredientName.trim();
+
     const { error } = await supabase
       .from('ingredient_categories')
       .upsert({
         ingredient_name: ingredientName.toLowerCase().trim(),
         category: category,
-        cleaned_name: cleanedName || ingredientName, // Store cleaned name if provided
+        cleaned_name: cleanedNameToSave, // Always set a non-null value
         updated_at: new Date().toISOString()
       }, {
         onConflict: 'ingredient_name'
@@ -166,7 +172,31 @@ export async function getCategoryForIngredient(ingredient: string): Promise<{
   // Check database first using exact match (no normalization)
   const dbResult = await getCategoryFromDatabase(ingredient);
   if (dbResult) {
-    console.log(`✅ Found category in database for "${ingredient}": ${dbResult.category}`);
+    // If cleaned_name is missing or equals ingredient_name (fallback), we need to get it from AI
+    const needsCleaning = !dbResult.cleanedName || 
+                         dbResult.cleanedName.trim() === '' ||
+                         dbResult.cleanedName.toLowerCase().trim() === ingredient.toLowerCase().trim();
+    
+    if (needsCleaning) {
+      console.log(`⚠️ Found category in database but cleaned_name needs updating for "${ingredient}", getting cleaned name from AI...`);
+      // Get cleaned name from AI and update the database
+      const aiResult = await categorizeWithOpenAI(ingredient);
+      
+      // Update the database with the cleaned name
+      try {
+        await saveIngredientCategory(ingredientKey, dbResult.category, aiResult.cleanedName);
+        console.log(`💾 Updated cleaned_name in database for "${ingredient}": "${aiResult.cleanedName}"`);
+      } catch (err) {
+        console.error(`❌ Failed to update cleaned_name in database for "${ingredient}":`, err);
+      }
+      
+      return {
+        category: dbResult.category,
+        cleanedName: aiResult.cleanedName
+      };
+    }
+    
+    console.log(`✅ Found category and cleaned_name in database for "${ingredient}": ${dbResult.category}`);
     return {
       category: dbResult.category,
       cleanedName: dbResult.cleanedName

@@ -1,11 +1,11 @@
 
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 
 const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
-const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
-const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
+const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -22,50 +22,65 @@ serve(async (req) => {
       throw new Error('OpenAI API key not configured');
     }
 
-    if (!supabaseUrl || !supabaseServiceKey) {
-      throw new Error('Missing Supabase configuration');
-    }
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Parse request body for optional parameters
-    let body = {};
-    try {
-      const bodyText = await req.text();
-      if (bodyText) {
-        body = JSON.parse(bodyText);
-      }
-    } catch (e) {
-      // Body is optional, use defaults
-    }
-
+    const body = await req.json().catch(() => ({}));
     const dryRun = body.dryRun || false;
-    const batchSize = body.batchSize || 10;
+    const batchSize = Math.min(Math.max(body.batchSize || 10, 1), 50); // Clamp between 1-50
 
     console.log(`Starting cleaned names backfill (batchSize: ${batchSize}, dryRun: ${dryRun})`);
 
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
-    // Get all ingredients that need cleaned_name backfilled
-    // This includes:
-    // 1. Ingredients where cleaned_name is null or empty
-    // 2. Ingredients where cleaned_name equals ingredient_name (fallback from migration)
-    const { data: allIngredients, error: fetchError } = await supabase
+    // Use RPC function or direct query to find ingredients that need cleaning
+    // Query for NULL cleaned_name first (most efficient)
+    const { data: nullIngredients, error: nullError } = await supabase
       .from('ingredient_categories')
       .select('ingredient_name, category, cleaned_name')
-      .limit(10000); // Get all to filter properly
+      .is('cleaned_name', null)
+      .limit(10000);
 
-    if (fetchError) {
-      throw new Error(`Failed to fetch ingredients: ${fetchError.message}`);
+    if (nullError) {
+      throw new Error(`Failed to fetch ingredients with NULL cleaned_name: ${nullError.message}`);
     }
 
-    // Filter to only those that need cleaning:
-    // - cleaned_name is null/empty, OR
-    // - cleaned_name equals ingredient_name (meaning it was set by migration fallback)
-    const ingredients = (allIngredients || []).filter(ing => {
-      const hasCleanedName = ing.cleaned_name && ing.cleaned_name.trim() !== '';
-      const cleanedEqualsOriginal = hasCleanedName && 
-        ing.cleaned_name.toLowerCase().trim() === ing.ingredient_name.toLowerCase().trim();
-      return !hasCleanedName || cleanedEqualsOriginal;
+    // Query for empty string cleaned_name
+    const { data: emptyIngredients, error: emptyError } = await supabase
+      .from('ingredient_categories')
+      .select('ingredient_name, category, cleaned_name')
+      .eq('cleaned_name', '')
+      .limit(10000);
+
+    if (emptyError) {
+      throw new Error(`Failed to fetch ingredients with empty cleaned_name: ${emptyError.message}`);
+    }
+
+    // Get all ingredients to check for fallback cases (where cleaned_name = ingredient_name)
+    // We'll filter this in memory since Supabase doesn't support comparing two columns easily
+    const { data: allIngredients, error: allError } = await supabase
+      .from('ingredient_categories')
+      .select('ingredient_name, category, cleaned_name')
+      .not('cleaned_name', 'is', null)
+      .neq('cleaned_name', '')
+      .limit(10000);
+
+    if (allError) {
+      throw new Error(`Failed to fetch ingredients: ${allError.message}`);
+    }
+
+    // Filter for fallback cases where cleaned_name equals ingredient_name
+    const fallbackIngredients = (allIngredients || []).filter(ing => {
+      if (!ing.cleaned_name) return false;
+      return ing.cleaned_name.toLowerCase().trim() === ing.ingredient_name.toLowerCase().trim();
     });
+
+    // Combine all ingredients that need cleaning, removing duplicates
+    const ingredientMap = new Map();
+    
+    [...(nullIngredients || []), ...(emptyIngredients || []), ...fallbackIngredients].forEach(ing => {
+      ingredientMap.set(ing.ingredient_name, ing);
+    });
+
+    const ingredients = Array.from(ingredientMap.values());
 
     if (!ingredients || ingredients.length === 0) {
       return new Response(JSON.stringify({ 
@@ -76,11 +91,25 @@ serve(async (req) => {
       });
     }
 
-    console.log(`Found ${ingredients.length} ingredients to backfill`);
+    const totalIngredients = (nullIngredients?.length || 0) + (emptyIngredients?.length || 0) + (allIngredients?.length || 0);
+    console.log(`Found ${ingredients.length} ingredients to backfill:`);
+    console.log(`  - NULL cleaned_name: ${nullIngredients?.length || 0}`);
+    console.log(`  - Empty cleaned_name: ${emptyIngredients?.length || 0}`);
+    console.log(`  - Fallback (equals ingredient_name): ${fallbackIngredients.length}`);
+    console.log(`  - Total ingredients in database: ${totalIngredients}`);
+    
+    // Log some examples of what we found
+    if (ingredients.length > 0) {
+      console.log(`Sample ingredients to process:`, ingredients.slice(0, 10).map(i => ({
+        name: i.ingredient_name,
+        currentCleaned: i.cleaned_name === null ? 'NULL' : (i.cleaned_name || 'EMPTY')
+      })));
+    }
 
     let processed = 0;
     let updated = 0;
     let errors = 0;
+    let skipped = 0;
 
     // Process in batches to avoid rate limits
     for (let i = 0; i < ingredients.length; i += batchSize) {
@@ -89,6 +118,26 @@ serve(async (req) => {
 
       const batchPromises = batch.map(async (ingredient) => {
         try {
+          // Double-check this ingredient still needs cleaning (might have been updated by another process)
+          const { data: currentIngredient } = await supabase
+            .from('ingredient_categories')
+            .select('cleaned_name')
+            .eq('ingredient_name', ingredient.ingredient_name)
+            .single();
+
+          if (currentIngredient) {
+            const currentCleaned = currentIngredient.cleaned_name;
+            const hasValidCleanedName = currentCleaned && 
+                                       currentCleaned.trim() !== '' && 
+                                       currentCleaned.toLowerCase().trim() !== ingredient.ingredient_name.toLowerCase().trim();
+            
+            if (hasValidCleanedName) {
+              console.log(`Skipping ${ingredient.ingredient_name} - already has cleaned name: ${currentCleaned}`);
+              skipped++;
+              return { success: true, ingredient: ingredient.ingredient_name, cleanedName: currentCleaned, skipped: true };
+            }
+          }
+
           // Call OpenAI to get cleaned name
           const response = await fetch('https://api.openai.com/v1/chat/completions', {
             method: 'POST',
@@ -142,27 +191,56 @@ Return ONLY the cleaned ingredient name, nothing else.`
             throw new Error('Invalid response from OpenAI API');
           }
           
-          const cleanedName = data.choices[0].message.content.trim();
+          let cleanedName = data.choices[0].message.content.trim();
+          
+          // Remove any quotes that might wrap the response
+          cleanedName = cleanedName.replace(/^["']|["']$/g, '').trim();
           
           if (!cleanedName || cleanedName.length === 0) {
             throw new Error('Empty cleaned name returned from OpenAI');
           }
 
+          // Validate the cleaned name is reasonable (not just whitespace or too short)
+          if (cleanedName.length < 1) {
+            throw new Error('Cleaned name too short');
+          }
+
           if (!dryRun) {
-            // Update the database
-            const { error: updateError } = await supabase
+            // Update the database - ensure we're setting a non-null value
+            // Use update with explicit cleaned_name to ensure it's never NULL
+            const { data: updateData, error: updateError } = await supabase
               .from('ingredient_categories')
               .update({ 
-                cleaned_name: cleanedName,
+                cleaned_name: cleanedName.trim(), // Explicitly set the value (non-null, trimmed)
                 updated_at: new Date().toISOString()
               })
-              .eq('ingredient_name', ingredient.ingredient_name);
+              .eq('ingredient_name', ingredient.ingredient_name)
+              .select('cleaned_name, ingredient_name')
+              .single();
 
             if (updateError) {
               console.error(`Error updating ${ingredient.ingredient_name}:`, updateError);
               return { success: false, ingredient: ingredient.ingredient_name, error: updateError.message };
             }
 
+            // Verify the update worked - check that cleaned_name is not null and matches
+            if (!updateData) {
+              console.error(`Update returned no data for ${ingredient.ingredient_name}`);
+              return { success: false, ingredient: ingredient.ingredient_name, error: 'Update returned no data' };
+            }
+
+            if (!updateData.cleaned_name || updateData.cleaned_name === null) {
+              console.error(`Update verification failed for ${ingredient.ingredient_name}. cleaned_name is still NULL`);
+              return { success: false, ingredient: ingredient.ingredient_name, error: 'Update verification failed - cleaned_name is still NULL' };
+            }
+
+            if (updateData.cleaned_name.trim() !== cleanedName.trim()) {
+              console.warn(`Update verification: cleaned_name mismatch for ${ingredient.ingredient_name}. Expected: "${cleanedName}", Got: "${updateData.cleaned_name}"`);
+              // Still consider it success if it's not NULL
+              return { success: true, ingredient: ingredient.ingredient_name, cleanedName: updateData.cleaned_name };
+            }
+
+            console.log(`✅ Successfully updated: ${ingredient.ingredient_name} → ${cleanedName}`);
             return { success: true, ingredient: ingredient.ingredient_name, cleanedName };
           } else {
             return { success: true, ingredient: ingredient.ingredient_name, cleanedName, dryRun: true };
@@ -179,11 +257,13 @@ Return ONLY the cleaned ingredient name, nothing else.`
         processed++;
         if (result.status === 'fulfilled') {
           if (result.value.success) {
-            updated++;
-            if (!dryRun) {
-              console.log(`✅ Updated: ${result.value.ingredient} → ${result.value.cleanedName}`);
-            } else {
-              console.log(`[DRY RUN] Would update: ${result.value.ingredient} → ${result.value.cleanedName}`);
+            if (!result.value.skipped) {
+              updated++;
+              if (!dryRun) {
+                console.log(`✅ Updated: ${result.value.ingredient} → ${result.value.cleanedName}`);
+              } else {
+                console.log(`[DRY RUN] Would update: ${result.value.ingredient} → ${result.value.cleanedName}`);
+              }
             }
           } else {
             errors++;
@@ -206,6 +286,7 @@ Return ONLY the cleaned ingredient name, nothing else.`
       total: ingredients.length,
       processed,
       updated,
+      skipped,
       errors,
       dryRun
     }), {

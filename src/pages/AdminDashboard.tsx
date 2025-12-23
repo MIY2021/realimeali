@@ -13,7 +13,6 @@ import { RecipeImportPanel } from "@/components/admin/RecipeImportPanel";
 import { ImportedRecipeManagementPanel } from "@/components/admin/ImportedRecipeManagementPanel";
 import { ImagePromptSettingsPanel } from "@/components/admin/ImagePromptSettingsPanel";
 import { ThumbnailGenerationPanel } from "@/components/admin/ThumbnailGenerationPanel";
-import { IngredientCategoryBackfillPanel } from "@/components/admin/IngredientCategoryBackfillPanel";
 import { IngredientParsingPanel } from "@/components/admin/IngredientParsingPanel";
 import { ProcessAllRecipesPanel } from "@/components/admin/ProcessAllRecipesPanel";
 import { CleanedNamesBackfillPanel } from "@/components/admin/CleanedNamesBackfillPanel";
@@ -84,7 +83,7 @@ const AdminDashboard = () => {
             {isMobile ? 'Export' : 'Export'}
           </TabsTrigger>
           <TabsTrigger value="settings" className={`${isMobile ? 'text-xs px-1' : ''}`}>
-            {isMobile ? 'Settings' : 'Settings'}
+            {isMobile ? 'Tools' : 'Tools'}
           </TabsTrigger>
           {isMobile && (
             <>
@@ -156,7 +155,6 @@ const AdminDashboard = () => {
           <ThumbnailGenerationPanel />
           <IngredientParsingPanel />
           <ProcessAllRecipesPanel />
-          <IngredientCategoryBackfillPanel />
           <CleanedNamesBackfillPanel />
         </TabsContent>
 
