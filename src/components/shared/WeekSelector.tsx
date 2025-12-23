@@ -63,53 +63,53 @@ export function WeekSelector({
   const endDayName = weekEndDate.toLocaleDateString('en-US', { weekday: 'short' }); // e.g., "Sun"
   
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-1.5">
       <Button
-        variant="secondary"
-        size="md"
+        variant="ghost"
+        size="sm"
         onClick={handleCurrentWeek}
         disabled={isLoading || isCurrentlyOnCurrentWeek}
-        className="px-3"
+        className="h-9 w-9 p-0 hover:bg-gray-100 disabled:opacity-40"
         aria-label="Go to current week"
         title="Go to current week"
       >
-        <Calendar className="h-4 w-4" />
+        <Calendar className="h-4 w-4 text-gray-600" />
       </Button>
       
       <Button
-        variant="secondary"
-        size="md"
+        variant="ghost"
+        size="sm"
         onClick={handlePrevious}
         disabled={isLoading}
-        className="px-3"
+        className="h-9 w-9 p-0 hover:bg-gray-100"
         aria-label="Previous week"
       >
-        <ChevronLeft className="h-4 w-4" />
+        <ChevronLeft className="h-4 w-4 text-gray-600" />
       </Button>
       
       <Button
-        variant="secondary"
-        size="md"
+        variant="ghost"
+        size="sm"
         onClick={handleWeekClick}
         disabled={isLoading || !onWeekClick}
-        className={`min-w-[180px] ${onWeekClick ? 'cursor-pointer hover:bg-gray-100' : ''}`}
+        className={`h-9 px-4 min-w-[160px] font-medium text-sm hover:bg-gray-100 ${onWeekClick ? 'cursor-pointer' : ''}`}
         aria-label="Select week"
       >
-        <span className="font-medium text-sm whitespace-nowrap">
+        <span className="whitespace-nowrap text-gray-900">
           {weekRange}
           <span className="text-gray-500 font-normal ml-1.5">{startDayName} → {endDayName}</span>
         </span>
       </Button>
       
       <Button
-        variant="secondary"
-        size="md"
+        variant="ghost"
+        size="sm"
         onClick={handleNext}
         disabled={isLoading}
-        className="px-3"
+        className="h-9 w-9 p-0 hover:bg-gray-100"
         aria-label="Next week"
       >
-        <ChevronRight className="h-4 w-4" />
+        <ChevronRight className="h-4 w-4 text-gray-600" />
       </Button>
     </div>
   );

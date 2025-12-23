@@ -16,34 +16,35 @@ export function HeaderControls({
   rightActions
 }: HeaderControlsProps) {
   return (
-    <div className="space-y-3">
-      {/* Row 1: Week selector and primary action on same row */}
-      <div className="flex gap-2 items-center">
+    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 bg-white rounded-xl border border-gray-200 shadow-sm">
+      {/* Left side: Week selector */}
+      <div className="flex items-center flex-shrink-0">
         {weekControl}
+      </div>
+
+      {/* Right side: Actions grouped together */}
+      <div className="flex items-center gap-2 flex-wrap">
         {primaryAction && (
-          <div className="flex-1">
+          <div className="flex-shrink-0">
             {primaryAction}
           </div>
         )}
-      </div>
-
-      {/* Row 2: Utility actions and layout toggle */}
-      {(utilityActions || layoutToggle || rightActions) && (
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide">
-          <div className="flex items-center gap-2 flex-shrink-0">
+        {utilityActions && (
+          <div className="flex items-center gap-1.5 flex-shrink-0">
             {utilityActions}
           </div>
-          {(layoutToggle || rightActions) ? (
-            <>
-              <div className="flex-1" />
-              {layoutToggle}
-              {rightActions}
-            </>
-          ) : (
-            <div className="flex-1" />
-          )}
-        </div>
-      )}
+        )}
+        {layoutToggle && (
+          <div className="flex-shrink-0 ml-1">
+            {layoutToggle}
+          </div>
+        )}
+        {rightActions && (
+          <div className="flex-shrink-0">
+            {rightActions}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

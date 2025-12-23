@@ -85,23 +85,10 @@ export const MealPlannerContent = ({
   }, [recipeMap]);
 
   return (
-    <div className="space-y-1">
-      <MealPlannerActions
-        onRandomize={onRandomize}
-        onShare={onShare}
-        onClearAll={onClearAll}
-        isLoading={isLoading || isDataLoading}
-        currentWeek={currentWeek}
-        setCurrentWeek={setCurrentWeek}
-        mealLayout={mealLayout}
-        onMealLayoutChange={onMealLayoutChange}
-        allMealPlans={allMealPlans}
-        copyWeek={copyWeek}
-      />
-
-      {mealLayout === 'list' ? (
-        <div className="space-y-3">
-          {mealTypes.map((mealType, index) => (
+    <div className="space-y-3">
+        {mealLayout === 'list' ? (
+          <div className="space-y-3">
+            {mealTypes.map((mealType, index) => (
           <MealListSection
             key={mealType}
             mealType={mealType}
@@ -133,6 +120,6 @@ export const MealPlannerContent = ({
           onReorderMeals={onReorderMeals}
         />
       )}
-    </div>
+    </>
   );
 };

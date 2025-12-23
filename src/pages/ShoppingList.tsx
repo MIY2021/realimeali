@@ -22,7 +22,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { Share, Trash2, Plus, Sparkles, Loader, ArrowUpDown } from "lucide-react";
+import { Share, Trash2, Plus, Sparkles, Loader, ArrowUpDown, Send } from "lucide-react";
 import { Link } from "react-router-dom";
 import { getCurrentWeekKey } from "@/utils/weekUtils";
 import { HeaderControls } from "@/components/layout/HeaderControls";
@@ -294,7 +294,7 @@ export default function ShoppingList() {
                   className="h-9 w-9 p-0"
                   title="Share"
                 >
-                  <Share className="w-4 h-4" />
+                  <Send className="w-4 h-4" />
                 </Button>
                 <Button
                   variant="destructive"

@@ -18,7 +18,6 @@ import { useMealPlannerState } from "@/hooks/useMealPlannerState";
 import { useMealPlannerLayout } from "@/hooks/useMealPlannerLayout";
 import { MealType, Recipe, MealPlan } from "@/types";
 import { useToast } from "@/hooks/use-toast";
-import { parseISOWeekKey, getWeekStartDate } from "@/utils/weekUtils";
 
 export default function MealPlannerContainer() {
   useDocumentTitle("Meal Planner | RealiMeali");
@@ -175,13 +174,8 @@ export default function MealPlannerContainer() {
     if (!pendingMealType || !user || !currentHousehold) return;
 
     try {
-      // Calculate a date within the target week (Monday of that week)
-      const { year, week } = parseISOWeekKey(currentWeek);
-      const weekStartDate = getWeekStartDate(year, week);
-      const dateStr = weekStartDate.toISOString().split('T')[0];
-
       const mealPlanData = {
-        date: dateStr,
+        date: new Date().toISOString().split('T')[0],
         meal_type: pendingMealType,
         created_by: user.id,
         slot_index: 0,
@@ -259,13 +253,8 @@ export default function MealPlannerContainer() {
     if (!customMealType || !user || !currentHousehold) return;
 
     try {
-      // Calculate a date within the target week (Monday of that week)
-      const { year, week } = parseISOWeekKey(currentWeek);
-      const weekStartDate = getWeekStartDate(year, week);
-      const dateStr = weekStartDate.toISOString().split('T')[0];
-
       const mealPlanData = {
-        date: dateStr,
+        date: new Date().toISOString().split('T')[0],
         meal_type: customMealType,
         created_by: user.id,
         slot_index: 0,
@@ -332,11 +321,24 @@ export default function MealPlannerContainer() {
   }
 
   return (
-    <div className="container max-w-4xl py-4 px-4 sm:py-6 sm:px-6 space-y-3 min-h-screen" style={{ scrollbarGutter: 'stable' }}>
+    <div className="container max-w-4xl py-4 px-4 sm:py-8 sm:px-6 space-y-3 min-h-screen" style={{ scrollbarGutter: 'stable' }}>
       <MealPlannerHeader
         user={user}
         currentHousehold={currentHousehold}
         onInfoClick={() => setInfoDialog(true)}
+      />
+
+      <MealPlannerActions
+        onRandomize={handleRandomizeClick}
+        onShare={handleShare}
+        onClearAll={handleClearAll}
+        isLoading={isLoading || isDataLoading}
+        currentWeek={currentWeek}
+        setCurrentWeek={setCurrentWeek}
+        mealLayout={mealLayout}
+        onMealLayoutChange={handleMealLayoutChange}
+        allMealPlans={isDataLoading ? [] : mealPlans}
+        copyWeek={copyWeek}
       />
 
       <MealPlannerContent

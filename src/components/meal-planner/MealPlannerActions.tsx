@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Share, Trash2, Sparkles, Loader } from "lucide-react";
+import { Share, Trash2, Sparkles, Loader, Send } from "lucide-react";
 import { WeekSelector } from "@/components/shared/WeekSelector";
 import { CalendarMonthModal } from "@/components/shared/CalendarMonthModal";
 import { HeaderControls } from "@/components/layout/HeaderControls";
@@ -68,18 +68,18 @@ export const MealPlannerActions = ({
               </>
             )}
           </Button>
-          <Button 
-            variant="secondary" 
-            size="sm" 
+          <Button
+            variant="secondary"
+            size="sm"
             onClick={onShare}
             className="h-9 w-9 p-0"
             title="Share"
           >
-            <Share className="w-4 h-4" />
+            <Send className="w-4 h-4" />
           </Button>
-          <Button 
-            variant="destructive" 
-            size="sm" 
+          <Button
+            variant="destructive"
+            size="sm"
             onClick={onClearAll}
             className="h-9 w-9 p-0"
             title="Clear All"
@@ -88,7 +88,7 @@ export const MealPlannerActions = ({
           </Button>
         </>
       }
-      layoutToggle={
+      rightActions={
         <MealPlannerLayoutSelector
           value={mealLayout}
           onChange={onMealLayoutChange}
