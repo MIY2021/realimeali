@@ -7,7 +7,7 @@ import {
   DropdownMenuCheckboxItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ChevronDown, UtensilsCrossed, ChefHat, Leaf, Clock } from "lucide-react";
+import { ChevronDown, UtensilsCrossed, Utensils, Leaf, Clock, ChefHat } from "lucide-react";
 
 interface DropdownFilterSectionProps {
   title: string;

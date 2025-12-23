@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Play, CheckCircle2, XCircle, AlertCircle } from "lucide-react";
+import { Loader, Play, CheckCircle, XCircle, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { getCategoryForIngredient } from "@/services/ingredientCategorizationService";
 import { IngredientCategory } from "@/types/ingredientCategories";
@@ -166,7 +166,7 @@ export function IngredientParsingPanel() {
         >
           {isProcessing ? (
             <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <Loader className="mr-2 h-4 w-4 animate-spin" />
               Parsing...
             </>
           ) : (
@@ -217,7 +217,7 @@ export function IngredientParsingPanel() {
                           </div>
                         ) : ingredient.category ? (
                           <div className="flex items-center gap-1 text-green-600">
-                            <CheckCircle2 className="h-4 w-4" />
+                            <CheckCircle className="h-4 w-4" />
                             <span className="text-xs font-medium">{ingredient.category}</span>
                           </div>
                         ) : (

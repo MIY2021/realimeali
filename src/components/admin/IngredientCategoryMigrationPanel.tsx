@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Play, CheckCircle2, XCircle, AlertCircle } from "lucide-react";
+import { Loader, Play, CheckCircle, XCircle, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const MIGRATION_1_SQL = `-- Create ingredient_categories table to store normalized ingredient names and their categories
@@ -231,7 +231,7 @@ export function IngredientCategoryMigrationPanel() {
             {results.migration1 && (
               <div className={`text-xs p-2 rounded ${results.migration1.success ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
                 {results.migration1.success ? (
-                  <CheckCircle2 className="h-4 w-4 inline mr-1" />
+                  <CheckCircle className="h-4 w-4 inline mr-1" />
                 ) : (
                   <XCircle className="h-4 w-4 inline mr-1" />
                 )}
@@ -257,7 +257,7 @@ export function IngredientCategoryMigrationPanel() {
             {results.migration2 && (
               <div className={`text-xs p-2 rounded ${results.migration2.success ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
                 {results.migration2.success ? (
-                  <CheckCircle2 className="h-4 w-4 inline mr-1" />
+                  <CheckCircle className="h-4 w-4 inline mr-1" />
                 ) : (
                   <XCircle className="h-4 w-4 inline mr-1" />
                 )}
@@ -275,7 +275,7 @@ export function IngredientCategoryMigrationPanel() {
           >
             {isRunning ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader className="mr-2 h-4 w-4 animate-spin" />
                 Running...
               </>
             ) : (

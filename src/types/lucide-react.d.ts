@@ -52,7 +52,7 @@ declare module 'lucide-react' {
   export const Coins: LucideIcon;
   export const Star: LucideIcon;
   
-  // Grid and layout icons - adding these to prevent future import issues
+  // Grid and layout icons
   export const LayoutGrid: LucideIcon;
   export const Grid3X3: LucideIcon;
   export const Grid2X2: LucideIcon;
@@ -61,7 +61,7 @@ declare module 'lucide-react' {
   export const LayoutList: LucideIcon;
   export const LayoutDashboard: LucideIcon;
   
-  // Additional commonly used icons to prevent future import issues
+  // Additional commonly used icons
   export const Save: LucideIcon;
   export const Download: LucideIcon;
   export const Bookmark: LucideIcon;
@@ -84,4 +84,17 @@ declare module 'lucide-react' {
   export const Warning: LucideIcon;
   export const Success: LucideIcon;
   export const Error: LucideIcon;
+  
+  // Admin panel icons
+  export const Play: LucideIcon;
+  export const CheckCircle: LucideIcon;
+  export const XCircle: LucideIcon;
+  
+  // Filter icons
+  export const Utensils: LucideIcon;
+  export const Leaf: LucideIcon;
+  export const ChefHat: LucideIcon;
+  export const ArrowUpDown: LucideIcon;
+  export const Send: LucideIcon;
+  export const ChevronsUpDown: LucideIcon;
 }

@@ -7,6 +7,7 @@ import { useMealPlan } from "@/contexts/MealPlanContext";
 import { MealPlannerHeader } from "@/components/meal-planner/MealPlannerHeader";
 import { MealPlannerContent } from "@/components/meal-planner/MealPlannerContent";
 import { MealPlannerModalsContainer } from "@/components/meal-planner/MealPlannerModalsContainer";
+import { MealPlannerActions } from "@/components/meal-planner/MealPlannerActions";
 import { CustomMealDialog } from "@/components/meal-planner/CustomMealDialog";
 import { MealPlanInfoDialog } from "@/components/meal-planner/MealPlanInfoDialog";
 import MealPlannerSkeleton from "@/components/meal-planner/MealPlannerSkeleton";
