@@ -365,6 +365,7 @@ export type Database = {
       }
       household_shopping_lists: {
         Row: {
+          category: string | null
           consolidated_quantity: number | null
           consolidated_unit: string | null
           created_at: string
@@ -383,6 +384,7 @@ export type Database = {
           week_number: number
         }
         Insert: {
+          category?: string | null
           consolidated_quantity?: number | null
           consolidated_unit?: string | null
           created_at?: string
@@ -401,6 +403,7 @@ export type Database = {
           week_number?: number
         }
         Update: {
+          category?: string | null
           consolidated_quantity?: number | null
           consolidated_unit?: string | null
           created_at?: string
@@ -549,6 +552,33 @@ export type Database = {
           top_tip?: string | null
           updated_at?: string
           view_count?: number
+        }
+        Relationships: []
+      }
+      ingredient_categories: {
+        Row: {
+          category: string
+          cleaned_name: string | null
+          created_at: string
+          id: string
+          ingredient_name: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          cleaned_name?: string | null
+          created_at?: string
+          id?: string
+          ingredient_name: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          cleaned_name?: string | null
+          created_at?: string
+          id?: string
+          ingredient_name?: string
+          updated_at?: string
         }
         Relationships: []
       }

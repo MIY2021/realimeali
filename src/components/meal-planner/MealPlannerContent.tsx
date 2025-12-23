@@ -120,6 +120,6 @@ export const MealPlannerContent = ({
           onReorderMeals={onReorderMeals}
         />
       )}
-    </>
+    </div>
   );
 };

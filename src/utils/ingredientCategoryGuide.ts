@@ -32,7 +32,7 @@ export const INGREDIENT_CATEGORY_GUIDE: Record<string, IngredientCategory> = {
   "garlic": "Fruit & Vegetables",
   "potato": "Fruit & Vegetables",
   "potatoes": "Fruit & Vegetables",
-  "pepper": "Fruit & Vegetables",
+  "bell pepper": "Fruit & Vegetables",
   "peppers": "Fruit & Vegetables",
   "cucumber": "Fruit & Vegetables",
   "cucumbers": "Fruit & Vegetables",
@@ -206,7 +206,7 @@ export const INGREDIENT_CATEGORY_GUIDE: Record<string, IngredientCategory> = {
   "sweets": "Snacks & Treats",
   "candy": "Snacks & Treats",
   "popcorn": "Snacks & Treats",
-  "nuts": "Snacks & Treats",
+  "mixed nuts": "Snacks & Treats",
   "peanuts": "Snacks & Treats",
   "cashews": "Snacks & Treats",
 

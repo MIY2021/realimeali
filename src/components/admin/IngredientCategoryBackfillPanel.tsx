@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Play, CheckCircle2, XCircle, AlertCircle } from "lucide-react";
+import { Loader, Play, CheckCircle, XCircle, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export function IngredientCategoryBackfillPanel() {
@@ -102,7 +102,7 @@ export function IngredientCategoryBackfillPanel() {
         >
           {isRunning ? (
             <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <Loader className="mr-2 h-4 w-4 animate-spin" />
               Running...
             </>
           ) : (
@@ -117,7 +117,7 @@ export function IngredientCategoryBackfillPanel() {
           <div className="mt-4 p-4 rounded-lg border bg-muted/50">
             <div className="flex items-center gap-2 mb-2">
               {result.success ? (
-                <CheckCircle2 className="h-5 w-5 text-green-500" />
+                <CheckCircle className="h-5 w-5 text-green-500" />
               ) : (
                 <XCircle className="h-5 w-5 text-red-500" />
               )}
