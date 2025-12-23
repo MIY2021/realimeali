@@ -22,7 +22,7 @@ export const useShoppingListGeneration = (
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationProgress, setGenerationProgress] = useState({
     step: 0,
-    totalSteps: 5,
+    totalSteps: 4,
     currentAction: ''
   });
   const [lastGenerated, setLastGenerated] = useState<Date | null>(null);
@@ -68,29 +68,27 @@ export const useShoppingListGeneration = (
     }
 
     setIsGenerating(true);
-    setGenerationProgress({ step: 1, totalSteps: 5, currentAction: 'Clearing old shopping list...' });
+    setGenerationProgress({ step: 1, totalSteps: 4, currentAction: 'Getting ready...' });
 
     try {
       // Clear the UI immediately for better user experience
       await clearAll();
       
-      setGenerationProgress({ step: 2, totalSteps: 5, currentAction: 'Collecting ingredients from meal plans...' });
-      
-      setGenerationProgress({ step: 3, totalSteps: 5, currentAction: 'Consolidating similar ingredients...' });
+      setGenerationProgress({ step: 2, totalSteps: 4, currentAction: 'Looking through your meal plan...' });
       
       const startTime = performance.now();
       const result = await generateAndSaveFromMealPlans(weekKey);
       const endTime = performance.now();
       const duration = Math.round(endTime - startTime);
       
-      setGenerationProgress({ step: 4, totalSteps: 5, currentAction: 'Saving to database...' });
+      setGenerationProgress({ step: 3, totalSteps: 4, currentAction: 'Organizing your shopping list...' });
       
       // Set the generation time
       setLastGenerated(new Date());
       
       // Force refresh the list after generation
       setTimeout(async () => {
-        setGenerationProgress({ step: 5, totalSteps: 5, currentAction: 'Complete!' });
+        setGenerationProgress({ step: 4, totalSteps: 4, currentAction: 'Almost done!' });
         await refreshList();
         
         if (result && result.length > 0) {
@@ -117,7 +115,7 @@ export const useShoppingListGeneration = (
     } finally {
       setTimeout(() => {
         setIsGenerating(false);
-        setGenerationProgress({ step: 0, totalSteps: 5, currentAction: '' });
+        setGenerationProgress({ step: 0, totalSteps: 4, currentAction: '' });
       }, 1000);
     }
   }, [user, currentHousehold, recipesLoading, recipes, hasMealPlans, weekKey, clearAll, generateAndSaveFromMealPlans, refreshList, toast]);

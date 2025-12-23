@@ -85,6 +85,21 @@ export const useShoppingListGenerator = () => {
               trimmed !== 'undefined' && 
               trimmed !== 'null' && 
               !isHeader(trimmed)) {
+            
+            // Filter out "water" - it's a given people will use tap water
+            const lowerTrimmed = trimmed.toLowerCase();
+            if (lowerTrimmed === 'water' || 
+                lowerTrimmed === 'water,' ||
+                lowerTrimmed.startsWith('water ') ||
+                lowerTrimmed === 'cold water' ||
+                lowerTrimmed === 'hot water' ||
+                lowerTrimmed === 'warm water' ||
+                lowerTrimmed === 'boiling water' ||
+                lowerTrimmed === 'room temperature water') {
+              console.log('Skipping water:', trimmed);
+              return;
+            }
+            
             ingredientItems.push({
               name: trimmed, // Use ingredient text exactly as-is
               recipeId: recipe.id,
@@ -127,6 +142,18 @@ export const useShoppingListGenerator = () => {
           cleanedName = categoryResult.value.cleanedName || item.name;
         } else {
           console.warn('Failed to get category for ingredient:', item.name, categoryResult.reason);
+        }
+
+        // Filter out water even after cleaning (in case cleaned name is "Water")
+        const lowerCleanedName = cleanedName.toLowerCase().trim();
+        if (lowerCleanedName === 'water' || 
+            lowerCleanedName === 'cold water' ||
+            lowerCleanedName === 'hot water' ||
+            lowerCleanedName === 'warm water' ||
+            lowerCleanedName === 'boiling water' ||
+            lowerCleanedName === 'room temperature water') {
+          console.log('Skipping water (after cleaning):', cleanedName);
+          continue;
         }
 
         try {

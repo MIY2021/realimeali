@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Plus, GripVertical } from "lucide-react";
 import { EnhancedMealCard } from "@/components/meal-planner/EnhancedMealCard";
 import { MealSectionSkeleton } from "@/components/meal-planner/MealSectionSkeleton";
+import { MealGenerationLoading } from "@/components/meal-planner/MealGenerationLoading";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 // dnd-kit imports
@@ -37,6 +38,7 @@ interface MealListSectionProps {
   leftoverMap: Map<string, MealPlan>;
   getRecipeById: (id: string) => Recipe | undefined;
   isDataLoading?: boolean;
+  isGenerating?: boolean;
   onAddMeal: (mealType: MealType) => void;
   onAddCustomMeal?: (mealType: MealType) => void;
   onRemoveMeal: (planId: string) => void;
@@ -108,6 +110,7 @@ export default function MealListSection({
   leftoverMap,
   getRecipeById,
   isDataLoading = false,
+  isGenerating = false,
   onAddMeal,
   onAddCustomMeal,
   onRemoveMeal,
@@ -225,9 +228,13 @@ export default function MealListSection({
           {isDataLoading ? (
             <MealSectionSkeleton count={3} />
           ) : mealPlans.length === 0 ? (
-            <div className={`border border-dashed border-gray-300 rounded-md ${isMobile ? 'p-3' : 'p-4'} text-center text-muted-foreground`}>
-              <span className={`${isMobile ? 'text-sm' : ''}`}>No {mealType} planned yet</span>
-            </div>
+            isGenerating ? (
+              <MealGenerationLoading mealType={mealType} />
+            ) : (
+              <div className={`border border-dashed border-gray-300 rounded-md ${isMobile ? 'p-3' : 'p-4'} text-center text-muted-foreground`}>
+                <span className={`${isMobile ? 'text-sm' : ''}`}>No {mealType} planned yet</span>
+              </div>
+            )
           ) : (
             <DndContext
             sensors={sensors}

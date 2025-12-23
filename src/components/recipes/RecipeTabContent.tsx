@@ -119,7 +119,7 @@ export const RecipeTabContent = React.memo(({ recipe, scaledIngredients, isScale
                         ? 'bg-blue-50 border border-blue-200 hover:bg-blue-100' 
                         : 'bg-gray-50 hover:bg-gray-100'
                     }`}>
-                      <p className="text-gray-700 text-sm leading-snug">{ingredient}</p>
+                      <p className="text-gray-700 text-base leading-snug">{ingredient}</p>
                     </div>
                   ))
                 )}
@@ -137,7 +137,7 @@ export const RecipeTabContent = React.memo(({ recipe, scaledIngredients, isScale
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
               {equipment.map((item, index) => (
                 <div key={index} className="p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                  <p className="text-gray-700 text-sm leading-snug">{item}</p>
+                  <p className="text-gray-700 text-base leading-snug">{item}</p>
                 </div>
               ))}
             </div>
@@ -157,7 +157,7 @@ export const RecipeTabContent = React.memo(({ recipe, scaledIngredients, isScale
               <div className="flex-shrink-0 w-6 h-6 bg-terracotta text-white rounded-full flex items-center justify-center text-xs font-bold">
                 {index + 1}
               </div>
-              <p className="text-gray-700 flex-1 text-sm leading-snug">{step}</p>
+              <p className="text-gray-700 flex-1 text-base leading-snug">{step}</p>
             </div>
           ))}
         </div>

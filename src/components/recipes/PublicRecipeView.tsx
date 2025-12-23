@@ -75,7 +75,7 @@ export const PublicRecipeView = ({ recipe }: PublicRecipeViewProps) => {
                 {recipe.ingredients.map((ingredient, index) => (
                   <li key={index} className="flex items-start gap-2">
                     <span className="text-terracotta mt-1">•</span>
-                    <span>{ingredient}</span>
+                    <span className="text-base">{ingredient}</span>
                   </li>
                 ))}
               </ul>
@@ -89,7 +89,7 @@ export const PublicRecipeView = ({ recipe }: PublicRecipeViewProps) => {
                     <span className="flex-shrink-0 w-6 h-6 bg-terracotta text-white rounded-full flex items-center justify-center text-sm font-medium">
                       {index + 1}
                     </span>
-                    <span>{step}</span>
+                    <span className="text-base">{step}</span>
                   </li>
                 ))}
               </ol>

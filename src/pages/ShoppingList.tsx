@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import ShoppingListHeader from "@/components/shopping-list/ShoppingListHeader";
 import ShoppingListSkeleton from "@/components/shopping-list/ShoppingListSkeleton";
 import ShoppingListGenerationProgress from "@/components/shopping-list/ShoppingListGenerationProgress";
+import ShoppingListGenerationAnimation from "@/components/shopping-list/ShoppingListGenerationAnimation";
 import ShoppingListCreationInfo from "@/components/shopping-list/ShoppingListCreationInfo";
 import { ShoppingListInfoDialog } from "@/components/shopping-list/ShoppingListInfoDialog";
 import ShoppingListItems from "@/components/shopping-list/ShoppingListItems";
@@ -372,9 +373,18 @@ export default function ShoppingList() {
           ) : (
             <div className={`transition-opacity duration-150 ${isLoading ? 'opacity-50' : 'opacity-100'}`}>
               {shoppingList.length === 0 ? (
-                <ShoppingListEmptyState
-                  hasMealPlans={hasMealPlans}
-                />
+                isGenerating ? (
+                  <div className="bg-gray-50 rounded-lg p-6">
+                    <ShoppingListGenerationAnimation
+                      isGenerating={isGenerating}
+                      generationProgress={generationProgress}
+                    />
+                  </div>
+                ) : (
+                  <ShoppingListEmptyState
+                    hasMealPlans={hasMealPlans}
+                  />
+                )
               ) : (
                 <>
                   <ShoppingListItems

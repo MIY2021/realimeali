@@ -2,6 +2,7 @@ import { useCallback } from "react";
 import { MealType, Recipe, MealPlan } from "@/types";
 import { MealPlannerRecipeCard } from "@/components/meal-planner/MealPlannerRecipeCard";
 import { MealSectionSkeleton } from "@/components/meal-planner/MealSectionSkeleton";
+import { MealGenerationLoading } from "@/components/meal-planner/MealGenerationLoading";
 import { Button } from "@/components/ui/button";
 import { Plus, Clock, Book, UtensilsCrossed, Search, Check, User } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -11,6 +12,7 @@ interface MealPlannerGridViewProps {
   recipes: Recipe[];
   mealLayout: string;
   isDataLoading?: boolean;
+  isGenerating?: boolean;
   onAddMeal: (mealType: MealType) => void;
   onAddCustomMeal: (mealType: MealType) => void;
   onRemoveMeal: (planId: string) => void;
@@ -23,6 +25,7 @@ export const MealPlannerGridView = ({
   recipes,
   mealLayout,
   isDataLoading = false,
+  isGenerating = false,
   onAddMeal,
   onAddCustomMeal,
   onRemoveMeal,
@@ -110,9 +113,13 @@ export const MealPlannerGridView = ({
             {isDataLoading ? (
               <MealSectionSkeleton count={3} />
             ) : meals.length === 0 ? (
-              <div className="border border-dashed border-gray-200 rounded-lg p-4 text-center text-grey-light">
-                <span className="text-sm">No {mealType} planned yet</span>
-              </div>
+              isGenerating ? (
+                <MealGenerationLoading mealType={mealType} />
+              ) : (
+                <div className="border border-dashed border-gray-200 rounded-lg p-4 text-center text-grey-light">
+                  <span className="text-sm">No {mealType} planned yet</span>
+                </div>
+              )
             ) : (
               <div className={getMealCardGridClasses()}>
                 {meals.map((meal, index) => (

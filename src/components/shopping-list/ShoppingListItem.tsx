@@ -4,8 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Pencil, Copy, X, Check } from "lucide-react";
-import { generateSlug } from "@/utils/slugUtils";
-import { Link } from "react-router-dom";
+import { createRecipeUrl } from "@/utils/slugUtils";
+import { Link, useNavigate } from "react-router-dom";
+import { useRecipes } from "@/contexts/RecipesContext";
+import { useMealPlan } from "@/contexts/MealPlanContext";
 import { useShoppingListInteractions } from "./ShoppingListInteractions";
 import { useToast } from "@/hooks/use-toast";
 import { extractIngredientName, formatQuantity } from "@/utils/shoppingListUtils";
@@ -43,6 +45,9 @@ export function ShoppingListItem({
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(name);
   const { toast } = useToast();
+  const { recipes } = useRecipes();
+  const { mealPlans: allMealPlans } = useMealPlan();
+  const navigate = useNavigate();
 
   const handleCopyName = async () => {
     try {
@@ -105,32 +110,73 @@ export function ShoppingListItem({
     // Get unique recipe IDs
     const uniqueRecipeIds = [...new Set(recipeIds)];
     
-    // Get the full recipe names string and split by commas
-    const recipeNamesString = getRecipeNames(uniqueRecipeIds);
-    const recipeNames = recipeNamesString.split(', ');
+    // If only one recipe, return it directly without splitting
+    if (uniqueRecipeIds.length === 1) {
+      const recipeName = getRecipeNames(uniqueRecipeIds);
+      return [{
+        id: uniqueRecipeIds[0],
+        name: recipeName
+      }];
+    }
     
-    // Map each recipe name to its corresponding ID
-    return uniqueRecipeIds.map((recipeId, index) => ({
-      id: recipeId,
-      name: recipeNames[index] || `Recipe ${recipeId.substring(0, 8)}`
-    }));
+    // For multiple recipes, we need to get each recipe name individually
+    // to avoid splitting recipe titles that contain commas
+    return uniqueRecipeIds.map((recipeId) => {
+      const recipe = recipes.find(r => r.id === recipeId);
+      if (recipe) {
+        return {
+          id: recipeId,
+          name: recipe.title
+        };
+      }
+      
+      // Check if it's a custom meal
+      const customMeal = allMealPlans?.find(mp => mp.id === recipeId && mp.is_freetyped && mp.meal_name);
+      if (customMeal) {
+        return {
+          id: recipeId,
+          name: 'Custom Entry'
+        };
+      }
+      
+      return {
+        id: recipeId,
+        name: `Recipe ${recipeId.substring(0, 8)}`
+      };
+    });
   };
 
   const recipeData = getRecipeNamesWithIds(recipeIds);
 
-  const handleRecipeLinkClick = (e: React.MouseEvent | React.TouchEvent) => {
+  const getRecipeUrl = (recipeId: string, recipeName: string): string | null => {
+    // Don't link custom entries
+    if (recipeName === 'Custom Entry' || recipeName.toLowerCase().includes('custom')) {
+      return null;
+    }
+    
+    // Find the recipe by ID
+    const recipe = recipes.find(r => r.id === recipeId);
+    if (recipe) {
+      return createRecipeUrl(recipe);
+    }
+    
+    // If recipe not found, try to create URL from name
+    if (recipeName && !recipeName.startsWith('Recipe ')) {
+      return createRecipeUrl({ title: recipeName });
+    }
+    
+    return null;
+  };
+
+  const handleRecipeClick = (e: React.MouseEvent, recipeId: string, recipeName: string) => {
     e.stopPropagation();
     e.preventDefault();
     
-    // Store scroll position restore flag
-    sessionStorage.setItem('restoreShoppingListScroll', 'true');
-    
-    // Navigate programmatically to ensure proper routing
-    const target = e.currentTarget as HTMLElement;
-    const href = target.getAttribute('href');
-    if (href) {
-      // Use window.location for more reliable navigation
-      window.location.href = href;
+    const url = getRecipeUrl(recipeId, recipeName);
+    if (url) {
+      // Store scroll position restore flag
+      sessionStorage.setItem('restoreShoppingListScroll', 'true');
+      navigate(url);
     }
   };
 
@@ -176,12 +222,33 @@ export function ShoppingListItem({
             
             {recipeIds.length > 0 && sortOption !== "recipe" && (
               <div className="mt-0.5 text-xs truncate" style={{ color: 'hsl(var(--shopping-action-green))' }}>
-                {recipeData.map((recipe, index) => (
-                  <span key={`${recipe.id}-${recipe.name}`}>
-                    {recipe.name.trim()}
-                    {index < recipeData.length - 1 && ', '}
-                  </span>
-                ))}
+                {recipeData.map((recipe, index) => {
+                  const recipeUrl = getRecipeUrl(recipe.id, recipe.name);
+                  const recipeName = recipe.name.trim();
+                  
+                  if (recipeUrl) {
+                    return (
+                      <span key={`${recipe.id}-${recipe.name}`}>
+                        <Link
+                          to={recipeUrl}
+                          onClick={(e) => handleRecipeClick(e, recipe.id, recipe.name)}
+                          className="hover:underline cursor-pointer"
+                          style={{ color: 'hsl(var(--shopping-action-green))' }}
+                        >
+                          {recipeName}
+                        </Link>
+                        {index < recipeData.length - 1 && ', '}
+                      </span>
+                    );
+                  } else {
+                    return (
+                      <span key={`${recipe.id}-${recipe.name}`}>
+                        {recipeName}
+                        {index < recipeData.length - 1 && ', '}
+                      </span>
+                    );
+                  }
+                })}
               </div>
             )}
             
