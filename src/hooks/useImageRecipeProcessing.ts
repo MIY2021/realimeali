@@ -23,78 +23,131 @@ export function useImageRecipeProcessing() {
 
     setIsProcessing(true);
     setImportProgress("Reading image...");
-    setProgressValue(10);
+    setProgressValue(0);
 
     try {
+      // Gradually increase progress while reading the file (0% to 15%)
+      let currentProgress = 0;
+      const progressInterval = setInterval(() => {
+        currentProgress += 0.5;
+        if (currentProgress >= 15) {
+          clearInterval(progressInterval);
+          setProgressValue(15);
+        } else {
+          setProgressValue(Math.floor(currentProgress));
+        }
+      }, 30); // Update every 30ms for smooth animation
+
       // Convert file to base64
       const base64 = await new Promise<string>((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = () => {
+          clearInterval(progressInterval);
           const result = reader.result as string;
-          resolve(result);
+          // Remove the data URL prefix (e.g., "data:image/jpeg;base64,")
+          const base64Data = result.split(',')[1];
+          resolve(base64Data);
         };
-        reader.onerror = reject;
+        reader.onerror = () => {
+          clearInterval(progressInterval);
+          reject(reader.error);
+        };
         reader.readAsDataURL(file);
       });
 
+      setProgressValue(20);
       setImportProgress("Processing image with AI...");
-      setProgressValue(30);
+
+      // Gradually increase progress during AI processing (20% to 70%)
+      let aiProgress = 20;
+      const aiProgressInterval = setInterval(() => {
+        aiProgress += 0.8;
+        if (aiProgress >= 70) {
+          clearInterval(aiProgressInterval);
+          setProgressValue(70);
+        } else {
+          setProgressValue(Math.floor(aiProgress));
+        }
+      }, 80); // Update every 80ms
 
       console.log('Processing image with AI...');
       
+      // Get the MIME type from the file
+      const mimeType = file.type || 'image/jpeg';
+      
       const { data, error } = await supabase.functions.invoke('parse-recipe-ai', {
         body: { 
-          imageData: base64,
-          extractRecipe: true
+          image: base64,  // Changed from imageData to image
+          mimeType: mimeType  // Added mimeType parameter
         }
       });
+
+      clearInterval(aiProgressInterval);
 
       if (error) {
         console.error('Error calling parse-recipe-ai function:', error);
         throw new Error(error.message || 'Failed to process recipe image');
       }
 
+      setProgressValue(75);
       setImportProgress("Extracting recipe data...");
-      setProgressValue(70);
 
-      if (!data?.parsedRecipe) {
+      // Handle the response format - image processing returns { recipe: ... } not { parsedRecipe: ... }
+      const parsedRecipe = data?.recipe || data?.parsedRecipe;
+      
+      if (!parsedRecipe) {
         throw new Error('No recipe data could be extracted from this image');
       }
 
-      console.log('Received processed recipe from image:', data.parsedRecipe);
+      console.log('Received processed recipe from image:', parsedRecipe);
       
+      setProgressValue(85);
       setImportProgress("Finalizing recipe...");
-      setProgressValue(90);
 
       // Sanitize the recipe data
-      const sanitizedRecipe = sanitizeRecipeData(data.parsedRecipe);
+      const sanitizedRecipe = sanitizeRecipeData(parsedRecipe);
       
       // Create the recipe data structure
       const recipeData = { 
         title: sanitizedRecipe.title || "Recipe from Image",
         description: sanitizedRecipe.description || "",
-        ingredients: data.parsedRecipe.ingredients || sanitizedRecipe.ingredients || [],
-        instructions: data.parsedRecipe.instructions || sanitizedRecipe.instructions || [],
-        prep_time: data.parsedRecipe.prepTime || sanitizedRecipe.prep_time || 15,
-        cook_time: data.parsedRecipe.cookTime || sanitizedRecipe.cook_time || 30,
-        servings: data.parsedRecipe.servings || sanitizedRecipe.servings || 4,
+        ingredients: parsedRecipe.ingredients || sanitizedRecipe.ingredients || [],
+        instructions: parsedRecipe.instructions || sanitizedRecipe.instructions || [],
+        prep_time: parsedRecipe.prepTime || sanitizedRecipe.prep_time || 15,
+        cook_time: parsedRecipe.cookTime || sanitizedRecipe.cook_time || 30,
+        servings: parsedRecipe.servings || sanitizedRecipe.servings || 4,
         // Apply AI classification
-        meal_type: data.parsedRecipe.mealType || undefined,
-        cuisine_region: data.parsedRecipe.cuisineRegion || undefined,
-        diet_lifestyle: data.parsedRecipe.dietLifestyle || [],
+        meal_type: parsedRecipe.mealType || undefined,
+        cuisine_region: parsedRecipe.cuisineRegion || undefined,
+        diet_lifestyle: parsedRecipe.dietLifestyle || [],
         // complexity_level removed
-        top_tip: data.parsedRecipe.topTip || "Enjoy cooking this delicious recipe!",
-        alcoholic_pairing: data.parsedRecipe.alcoholicPairing || null,
-        non_alcoholic_pairing: data.parsedRecipe.nonAlcoholicPairing || null,
-        image: undefined, // Image will be uploaded separately via uploadRecipeImage
-        imageFile: file, // Pass the original file for upload
+        top_tip: parsedRecipe.topTip || "Enjoy cooking this delicious recipe!",
+        alcoholic_pairing: parsedRecipe.alcoholicPairing || null,
+        non_alcoholic_pairing: parsedRecipe.nonAlcoholicPairing || null,
+        image: undefined, // Don't use the uploaded image - copyright concerns
         is_favorite: false,
         has_cooked: false,
         household_id: '',
       };
 
-      setImportProgress("Complete!");
+      // Gradually increase to 100%
+      let finalProgress = 85;
+      const finalProgressInterval = setInterval(() => {
+        finalProgress += 2;
+        if (finalProgress >= 100) {
+          clearInterval(finalProgressInterval);
+          setProgressValue(100);
+          setImportProgress("Complete!");
+        } else {
+          setProgressValue(Math.floor(finalProgress));
+        }
+      }, 60); // Update every 60ms
+      
+      // Wait for progress to reach 100%
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      clearInterval(finalProgressInterval);
       setProgressValue(100);
+      setImportProgress("Complete!");
       
       toast({
         title: "Image Processed! 📷",

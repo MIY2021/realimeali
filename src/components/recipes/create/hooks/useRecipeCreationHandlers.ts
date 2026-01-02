@@ -67,24 +67,18 @@ export const useRecipeCreationHandlers = ({
       console.log('🔄 processImage result:', result ? 'has data' : 'null/undefined');
       
       if (result) {
-        const { imageFile, ...recipeData } = result;
-        console.log('🔄 Extracted imageFile:', imageFile instanceof File ? 'is File' : 'not File');
-        
+        // Don't extract imageFile - we don't want to use the uploaded image as recipe image
         const processedRecipe = {
-          ...recipeData,
+          ...result,
           source_url: null,
-          import_method: 'image' as const
+          import_method: 'image' as const,
+          image: undefined, // Ensure no image is set from the uploaded file
         };
         
         recipeFormHook.setNewRecipe((prev: any) => ({ ...prev, ...processedRecipe }));
         
-        // Store the image file for upload during save
-        if (imageFile instanceof File) {
-          console.log('🔄 Storing image file for upload');
-          recipeFormHook.setUploadedImageFile(imageFile);
-        } else {
-          console.warn('🔄 imageFile is not a File instance:', typeof imageFile);
-        }
+        // Don't store the image file - copyright concerns
+        // User can add their own image if they want
         
         console.log('🔄 Switching to manual tab');
         setActiveTab("manual");

@@ -29,7 +29,7 @@ export const ChefsInsightCard = ({ recipe, recipeId }: ChefsInsightCardProps) =>
       case 'url':
         return { icon: '🌐', text: 'Imported from web' };
       case 'image':
-        return { icon: '📸', text: 'Created from image' };
+        return { icon: '📸', text: 'Uploaded via image' };
       case 'text':
         return { icon: '📝', text: 'Created from text' };
       case 'manual':
