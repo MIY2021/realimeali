@@ -42,9 +42,19 @@ export function SimpleCategorySelector({ recipe, onRecipeChange }: SimpleCategor
     setConfirmedSuggestions(prev => new Set([...prev, `${category}:${value}`]));
     setInteractedItems(prev => new Set([...prev, `${category}:${value}`]));
     
-    // If this is a cuisine suggestion and not yet selected, auto-select it
-    if (category === 'cuisine' && recipe.cuisine_region !== value) {
+    // Select the value when confirmed
+    if (category === 'cuisine') {
       updateRecipeField('cuisine_region', value);
+    } else if (category === 'meal_types') {
+      const currentTypes = recipe.meal_types || [];
+      if (!currentTypes.includes(value)) {
+        updateRecipeField('meal_types', [...currentTypes, value]);
+      }
+    } else if (category === 'diet_lifestyle') {
+      const current = recipe.diet_lifestyle || [];
+      if (!current.includes(value)) {
+        updateRecipeField('diet_lifestyle', [...current, value]);
+      }
     }
     
     // Remove from suggestedTags if all suggestions are confirmed
@@ -311,6 +321,9 @@ export function SimpleCategorySelector({ recipe, onRecipeChange }: SimpleCategor
               return sortedCuisines.map((option) => {
                 const isSelected = recipe.cuisine_region === option.value;
                 const isSuggested = cuisineSuggestions.includes(option.value);
+                const isSuggestionConfirmed = confirmedSuggestions.has(`cuisine:${option.value}`);
+                const showSuggestionButtons = isSuggested && !isSuggestionConfirmed;
+                
                 return (
                   <CategoryButton
                     key={option.value}
@@ -318,7 +331,17 @@ export function SimpleCategorySelector({ recipe, onRecipeChange }: SimpleCategor
                     isSelected={isSelected}
                     isSuggested={isSuggested}
                     category="cuisine"
-                    onClick={() => updateRecipeField('cuisine_region', option.value)}
+                    onClick={() => {
+                      // Only allow manual selection if not a suggested item (or if already confirmed)
+                      if (!isSuggested || isSuggestionConfirmed) {
+                        // Toggle: if already selected, deselect it; otherwise select it
+                        if (isSelected) {
+                          updateRecipeField('cuisine_region', undefined);
+                        } else {
+                          updateRecipeField('cuisine_region', option.value);
+                        }
+                      }
+                    }}
                   />
                 );
               });

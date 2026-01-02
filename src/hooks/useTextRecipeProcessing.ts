@@ -4,6 +4,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Recipe } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 import { sanitizeRecipeData } from "@/utils/contentSanitizer";
+import { normalizeCuisineRegion } from "@/utils/recipeClassification";
 
 export function useTextRecipeProcessing() {
   const { toast } = useToast();
@@ -68,9 +69,13 @@ export function useTextRecipeProcessing() {
         ...sanitizedRecipe,
         // Preserve original ingredient strings with quantities
         ingredients: data.parsedRecipe.ingredients || sanitizedRecipe.ingredients || [],
+        // Store group indices from AI parsing
+        ingredient_group_indices: Array.isArray(data.parsedRecipe.ingredientGroupIndices) 
+          ? data.parsedRecipe.ingredientGroupIndices 
+          : undefined,
         // Apply AI classification
         meal_type: data.parsedRecipe.mealType || currentRecipe.meal_type,
-        cuisine_region: data.parsedRecipe.cuisineRegion || currentRecipe.cuisine_region,
+        cuisine_region: normalizeCuisineRegion(data.parsedRecipe.cuisineRegion) || currentRecipe.cuisine_region,
         diet_lifestyle: data.parsedRecipe.dietLifestyle || currentRecipe.diet_lifestyle || [],
         // complexity_level removed
         top_tip: data.parsedRecipe.topTip || "Enjoy cooking this delicious recipe!",

@@ -52,11 +52,7 @@ export const useRecipeValidation = () => {
       errors.push("Servings must be greater than 0");
     }
     
-    if (!newRecipe.cuisine_region) {
-      errors.push("Cuisine is required");
-    } {
-      errors.push("Servings must be greater than 0");
-    }
+    // Cuisine is optional - no validation needed
     
     // Validate meal types - require at least one
     if (!newRecipe.meal_types || newRecipe.meal_types.length === 0) {

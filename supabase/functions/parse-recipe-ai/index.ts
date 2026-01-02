@@ -429,38 +429,14 @@ serve(async (req) => {
 
 CRITICAL: You MUST carefully examine ingredients for meat content. If ANY meat (beef, pork, lamb, chicken, turkey, fish, seafood, etc.) is present, the recipe CANNOT be classified as "vegetarian" or "vegan". Be extremely careful about this classification.
 
-CRITICAL: When parsing ingredients, you MUST distinguish between:
-
-1. **Ingredient groups/headers** - Text that describes a COMPONENT or SECTION containing multiple ingredients
-   - Examples: "SESAME-GINGER DRESSING" (a component made from multiple ingredients), "For the sauce:" (introduces sauce ingredients), "Marinade:" (describes a component), "Cream Cheese Frosting" (describes a component, not a single ingredient)
-   - Semantic indicators: Words like dressing, sauce, marinade, topping, garnish, filling, crust, batter, glaze, rub, spice mix, seasoning, paste, puree, reduction
-   - Context: Usually appears before a list of ingredients that belong to that component
-   - Format: Should end with colon when included in ingredients array
-
-2. **Individual ingredients** - Specific items with quantities needed for the recipe
-   - Examples: "2 tbsp soy sauce" (specific item with quantity), "1 clove garlic" (specific item), "SESAME OIL" (specific ingredient, even if ALL CAPS), "Ginger Root" (specific ingredient), "Cream Cheese" (specific ingredient, not a component)
-   - These are things you can buy or measure directly
-
-SEMANTIC UNDERSTANDING RULES:
-- If text describes something that CONTAINS or IS MADE FROM multiple ingredients → it's a group header
-- If text is a specific item you can buy/measure → it's an individual ingredient
-- Groups often introduce sections: "For the [component]:", "[Component]:" followed by ingredients
-- Component names (dressing, sauce, marinade, etc.) indicate groups, not individual ingredients
-
-IMPORTANT EXAMPLES:
-- "SESAME-GINGER DRESSING" describes a component (group), even without colon - add colon when including
-- "SESAME OIL" is a specific ingredient (not a group), even if ALL CAPS
-- "Cream Cheese Frosting" describes a component (group), not a single ingredient
-- "Cream Cheese" is a specific ingredient (not a group)
-- Context matters: read what follows to understand if it's introducing a section
-
-Before finalizing ingredients, review each entry semantically: Does it describe a component/collection, or a specific item? If component, ensure it ends with colon.
+CRITICAL: When parsing ingredients, distinguish between ingredient group headers (sections that contain multiple ingredients) and individual ingredients. Use your semantic understanding to identify groups based on context and meaning.
 
 Return a JSON object with this EXACT structure:
 {
   "title": "Recipe name",
   "description": "Brief description (1-2 sentences)",
   "ingredients": ["For the duck ragú:", "2 duck breasts, trimmed", "1 tbsp olive oil", "For the garnish:", "6 slices pancetta"],
+  "ingredientGroupIndices": [0, 3],
   "instructions": ["step 1", "step 2"],
   "topTip": "One helpful cooking tip",
   "alcoholicPairing": "A specific wine, beer, or cocktail that pairs well with this dish",
@@ -477,6 +453,8 @@ Return a JSON object with this EXACT structure:
     "mainIngredient": "pasta"
   }
 }
+
+IMPORTANT: ingredientGroupIndices must be an array of zero-based indices indicating which positions in the ingredients array are group headers. For example, if "For the duck ragú:" is at index 0 and "For the garnish:" is at index 3, then ingredientGroupIndices should be [0, 3]. If there are no group headers, use an empty array [].
 
 Classification rules:
 - mealType: breakfast, lunch, dinner, snacks, sides, desserts, drinks, sauces_dips, soups_stews, salads, baking_breads
@@ -506,38 +484,14 @@ Return ONLY valid JSON. No explanations.`;
 
 CRITICAL: You MUST carefully examine ingredients for meat content. If ANY meat (beef, pork, lamb, chicken, turkey, fish, seafood, etc.) is present, the recipe CANNOT be classified as "vegetarian" or "vegan". Be extremely careful about this classification.
 
-CRITICAL: When parsing ingredients, you MUST distinguish between:
-
-1. **Ingredient groups/headers** - Text that describes a COMPONENT or SECTION containing multiple ingredients
-   - Examples: "SESAME-GINGER DRESSING" (a component made from multiple ingredients), "For the sauce:" (introduces sauce ingredients), "Marinade:" (describes a component), "Cream Cheese Frosting" (describes a component, not a single ingredient)
-   - Semantic indicators: Words like dressing, sauce, marinade, topping, garnish, filling, crust, batter, glaze, rub, spice mix, seasoning, paste, puree, reduction
-   - Context: Usually appears before a list of ingredients that belong to that component
-   - Format: Should end with colon when included in ingredients array
-
-2. **Individual ingredients** - Specific items with quantities needed for the recipe
-   - Examples: "2 tbsp soy sauce" (specific item with quantity), "1 clove garlic" (specific item), "SESAME OIL" (specific ingredient, even if ALL CAPS), "Ginger Root" (specific ingredient), "Cream Cheese" (specific ingredient, not a component)
-   - These are things you can buy or measure directly
-
-SEMANTIC UNDERSTANDING RULES:
-- If text describes something that CONTAINS or IS MADE FROM multiple ingredients → it's a group header
-- If text is a specific item you can buy/measure → it's an individual ingredient
-- Groups often introduce sections: "For the [component]:", "[Component]:" followed by ingredients
-- Component names (dressing, sauce, marinade, etc.) indicate groups, not individual ingredients
-
-IMPORTANT EXAMPLES:
-- "SESAME-GINGER DRESSING" describes a component (group), even without colon - add colon when including
-- "SESAME OIL" is a specific ingredient (not a group), even if ALL CAPS
-- "Cream Cheese Frosting" describes a component (group), not a single ingredient
-- "Cream Cheese" is a specific ingredient (not a group)
-- Context matters: read what follows to understand if it's introducing a section
-
-Before finalizing ingredients, review each entry semantically: Does it describe a component/collection, or a specific item? If component, ensure it ends with colon.
+CRITICAL: When parsing ingredients, distinguish between ingredient group headers (sections that contain multiple ingredients) and individual ingredients. Use your semantic understanding to identify groups based on context and meaning.
 
 Return a JSON object with this EXACT structure:
 {
   "title": "Recipe name",
   "description": "Brief description (1-2 sentences)",
   "ingredients": ["For the duck ragú:", "2 duck breasts, trimmed", "1 tbsp olive oil", "For the garnish:", "6 slices pancetta"],
+  "ingredientGroupIndices": [0, 3],
   "instructions": ["step 1", "step 2"],
   "topTip": "One helpful cooking tip",
   "alcoholicPairing": "A specific wine, beer, or cocktail that pairs well with this dish",
@@ -554,6 +508,8 @@ Return a JSON object with this EXACT structure:
     "mainIngredient": "pasta"
   }
 }
+
+IMPORTANT: ingredientGroupIndices must be an array of zero-based indices indicating which positions in the ingredients array are group headers. For example, if "For the duck ragú:" is at index 0 and "For the garnish:" is at index 3, then ingredientGroupIndices should be [0, 3]. If there are no group headers, use an empty array [].
 
 Classification rules:
 - mealType: breakfast, lunch, dinner, snacks, sides, desserts, drinks, sauces_dips, soups_stews, salads, baking_breads
@@ -586,38 +542,14 @@ Return ONLY valid JSON. No explanations.`;
 
 CRITICAL: You MUST carefully examine ingredients for meat content. If ANY meat (beef, pork, lamb, chicken, turkey, fish, seafood, etc.) is present, the recipe CANNOT be classified as "vegetarian" or "vegan". Be extremely careful about this classification.
 
-CRITICAL: When parsing ingredients, you MUST distinguish between:
-
-1. **Ingredient groups/headers** - Text that describes a COMPONENT or SECTION containing multiple ingredients
-   - Examples: "SESAME-GINGER DRESSING" (a component made from multiple ingredients), "For the sauce:" (introduces sauce ingredients), "Marinade:" (describes a component), "Cream Cheese Frosting" (describes a component, not a single ingredient)
-   - Semantic indicators: Words like dressing, sauce, marinade, topping, garnish, filling, crust, batter, glaze, rub, spice mix, seasoning, paste, puree, reduction
-   - Context: Usually appears before a list of ingredients that belong to that component
-   - Format: Should end with colon when included in ingredients array
-
-2. **Individual ingredients** - Specific items with quantities needed for the recipe
-   - Examples: "2 tbsp soy sauce" (specific item with quantity), "1 clove garlic" (specific item), "SESAME OIL" (specific ingredient, even if ALL CAPS), "Ginger Root" (specific ingredient), "Cream Cheese" (specific ingredient, not a component)
-   - These are things you can buy or measure directly
-
-SEMANTIC UNDERSTANDING RULES:
-- If text describes something that CONTAINS or IS MADE FROM multiple ingredients → it's a group header
-- If text is a specific item you can buy/measure → it's an individual ingredient
-- Groups often introduce sections: "For the [component]:", "[Component]:" followed by ingredients
-- Component names (dressing, sauce, marinade, etc.) indicate groups, not individual ingredients
-
-IMPORTANT EXAMPLES:
-- "SESAME-GINGER DRESSING" describes a component (group), even without colon - add colon when including
-- "SESAME OIL" is a specific ingredient (not a group), even if ALL CAPS
-- "Cream Cheese Frosting" describes a component (group), not a single ingredient
-- "Cream Cheese" is a specific ingredient (not a group)
-- Context matters: read what follows to understand if it's introducing a section
-
-Before finalizing ingredients, review each entry semantically: Does it describe a component/collection, or a specific item? If component, ensure it ends with colon.
+CRITICAL: When parsing ingredients, distinguish between ingredient group headers (sections that contain multiple ingredients) and individual ingredients. Use your semantic understanding to identify groups based on context and meaning.
 
 Return a JSON object with this EXACT structure:
 {
   "title": "Recipe name",
   "description": "Brief description (1-2 sentences)",
   "ingredients": ["For the duck ragú:", "2 duck breasts, trimmed", "1 tbsp olive oil", "For the garnish:", "6 slices pancetta"],
+  "ingredientGroupIndices": [0, 3],
   "instructions": ["step 1", "step 2"],
   "topTip": "One helpful cooking tip",
   "alcoholicPairing": "A specific wine, beer, or cocktail that pairs well with this dish",
@@ -634,6 +566,8 @@ Return a JSON object with this EXACT structure:
     "mainIngredient": "pasta"
   }
 }
+
+IMPORTANT: ingredientGroupIndices must be an array of zero-based indices indicating which positions in the ingredients array are group headers. For example, if "For the duck ragú:" is at index 0 and "For the garnish:" is at index 3, then ingredientGroupIndices should be [0, 3]. If there are no group headers, use an empty array [].
 
 Classification rules:
 - mealType: breakfast, lunch, dinner, snacks, sides, desserts, drinks, sauces_dips, soups_stews, salads, baking_breads
@@ -697,7 +631,8 @@ Return a JSON object with this EXACT structure:
 {
   "title": "Recipe name",
   "description": "Brief description (1-2 sentences)", 
-  "ingredients": ["ingredient 1", "ingredient 2"],
+  "ingredients": ["For the marinade:", "ingredient 1", "ingredient 2", "For the sauce:", "ingredient 3"],
+  "ingredientGroupIndices": [0, 3],
   "instructions": ["step 1", "step 2"],
   "topTip": "One helpful cooking tip",
   "alcoholicPairing": "A specific wine, beer, or cocktail that pairs well with this dish",
@@ -714,6 +649,8 @@ Return a JSON object with this EXACT structure:
     "mainIngredient": "pasta"
   }
 }
+
+IMPORTANT: ingredientGroupIndices must be an array of zero-based indices indicating which positions in the ingredients array are group headers. For example, if "For the marinade:" is at index 0 and "For the sauce:" is at index 3, then ingredientGroupIndices should be [0, 3]. If there are no group headers, use an empty array [].
 
 Classification rules:
 - mealType: breakfast, lunch, dinner, snacks, sides, desserts, drinks, sauces_dips, soups_stews, salads, baking_breads
@@ -787,36 +724,16 @@ Create realistic recipes with proper ingredient amounts and detailed cooking ste
       // Validate and clean the response
       const rawIngredients = Array.isArray(parsedRecipe.ingredients) ? parsedRecipe.ingredients : [];
       
-      // Optional: Log potential missed ingredient groups for monitoring
-      // (Conservative check - only flags obvious cases with group keywords)
-      const groupKeywords = ['dressing', 'sauce', 'marinade', 'topping', 'garnish', 'filling', 'crust', 'batter', 'glaze', 'rub', 'spice mix', 'seasoning', 'paste', 'puree', 'reduction', 'frosting', 'icing'];
-      const measurementWords = ['cup', 'cups', 'tbsp', 'tablespoon', 'tsp', 'teaspoon', 'oz', 'ounce', 'lb', 'pound', 'g', 'gram', 'ml', 'milliliter'];
-      
-      const potentialMissedGroups: string[] = [];
-      for (let i = 0; i < rawIngredients.length; i++) {
-        const ing = String(rawIngredients[i] || '').trim();
-        if (!ing || ing.endsWith(':')) continue; // Skip empty or already-formatted groups
-        
-        const lowerIng = ing.toLowerCase();
-        const hasGroupKeyword = groupKeywords.some(kw => lowerIng.includes(kw));
-        const hasQuantity = /\d/.test(ing) || measurementWords.some(mw => lowerIng.includes(mw));
-        const hasFollowingIngredients = i < rawIngredients.length - 1 && rawIngredients.slice(i + 1, i + 3).length >= 2;
-        const startsWithFor = /^for\s+(the\s+)?/i.test(ing);
-        
-        // Very conservative: only log if has keyword, no quantity, and (has context OR starts with "For")
-        if (hasGroupKeyword && !hasQuantity && (hasFollowingIngredients || startsWithFor)) {
-          potentialMissedGroups.push(ing);
-        }
-      }
-      
-      if (potentialMissedGroups.length > 0) {
-        console.log(`[IngredientGroupDetector] Potential missed group headers (for review):`, potentialMissedGroups);
-      }
+      // Use the group indices directly from AI response (much simpler!)
+      const groupIndices = Array.isArray(parsedRecipe.ingredientGroupIndices) 
+        ? parsedRecipe.ingredientGroupIndices.filter((idx: number) => typeof idx === 'number' && idx >= 0 && idx < rawIngredients.length)
+        : [];
       
       const cleanedRecipe = {
         title: cleanMarkdownFormatting(parsedRecipe.title) || 'Untitled Recipe',
         description: parsedRecipe.description || '',
         ingredients: rawIngredients,
+        ingredientGroupIndices: groupIndices.length > 0 ? groupIndices : undefined,
         instructions: Array.isArray(parsedRecipe.instructions) ? parsedRecipe.instructions : [],
         topTip: parsedRecipe.topTip || 'Enjoy cooking this delicious recipe!',
         alcoholicPairing: parsedRecipe.alcoholicPairing || null,

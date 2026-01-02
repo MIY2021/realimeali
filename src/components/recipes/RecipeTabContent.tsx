@@ -19,8 +19,10 @@ export const RecipeTabContent = React.memo(({ recipe, scaledIngredients, isScale
   
   // Memoize expensive computations to prevent infinite loops
   const ingredientSections = useMemo(() => {
-    return IngredientSectionParser.parseIngredients(ingredientsToShow);
-  }, [JSON.stringify(ingredientsToShow)]); // Use JSON.stringify for deep comparison
+    // Use group indices from recipe (AI-identified groups)
+    // Note: If ingredients are scaled, group indices should still work as they're based on position
+    return IngredientSectionParser.parseIngredients(ingredientsToShow, recipe.ingredient_group_indices);
+  }, [JSON.stringify(ingredientsToShow), JSON.stringify(recipe.ingredient_group_indices)]); // Use JSON.stringify for deep comparison
   
   const equipment = useMemo(() => {
     return EquipmentExtractor.formatEquipmentList(

@@ -33,6 +33,68 @@ export const CUISINE_REGION_OPTIONS = [
   { value: "greek" as CuisineRegion, label: "Greek", icon: "🧄" },
 ];
 
+/**
+ * Maps AI-returned cuisine values to valid database enum values
+ * Handles cases where AI returns generic terms like "asian" that aren't in the enum
+ */
+export function normalizeCuisineRegion(cuisine: string | string[] | undefined | null): CuisineRegion | undefined {
+  if (!cuisine) return undefined;
+  
+  // Handle arrays - take first valid value
+  if (Array.isArray(cuisine)) {
+    for (const c of cuisine) {
+      const normalized = normalizeCuisineRegion(c);
+      if (normalized) return normalized;
+    }
+    return undefined;
+  }
+  
+  const lower = cuisine.toLowerCase().trim();
+  
+  // Direct mapping for valid enum values
+  const validCuisines: CuisineRegion[] = [
+    "british", "american", "italian", "french", "mexican", "indian",
+    "chinese", "japanese", "thai", "mediterranean", "middle_eastern",
+    "african", "korean", "caribbean", "nordic", "eastern_european",
+    "greek", "spanish"
+  ];
+  
+  if (validCuisines.includes(lower as CuisineRegion)) {
+    return lower as CuisineRegion;
+  }
+  
+  // Map generic/invalid values to specific cuisines
+  const cuisineMap: Record<string, CuisineRegion> = {
+    "asian": "chinese", // Default to chinese for generic "asian"
+    "south asian": "indian",
+    "southeast asian": "thai",
+    "east asian": "chinese",
+    "middle eastern": "middle_eastern",
+    "middle east": "middle_eastern",
+    "eastern european": "eastern_european",
+    "eastern europe": "eastern_european",
+  };
+  
+  if (cuisineMap[lower]) {
+    return cuisineMap[lower];
+  }
+  
+  // Try partial matching
+  if (lower.includes("chinese")) return "chinese";
+  if (lower.includes("japanese")) return "japanese";
+  if (lower.includes("thai")) return "thai";
+  if (lower.includes("korean")) return "korean";
+  if (lower.includes("indian")) return "indian";
+  if (lower.includes("mediterranean")) return "mediterranean";
+  if (lower.includes("middle east")) return "middle_eastern";
+  if (lower.includes("greek")) return "greek";
+  if (lower.includes("spanish")) return "spanish";
+  
+  // Default fallback
+  console.warn(`⚠️ Unknown cuisine "${cuisine}", defaulting to "british"`);
+  return "british";
+}
+
 export const DIET_LIFESTYLE_OPTIONS = [
   { value: "vegetarian" as DietLifestyle, label: "Vegetarian", icon: "🥬" },
   { value: "vegan" as DietLifestyle, label: "Vegan", icon: "🌱" },

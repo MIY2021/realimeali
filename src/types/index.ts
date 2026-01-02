@@ -3,6 +3,7 @@ export interface Recipe {
   title: string;
   description: string;
   ingredients: string[];
+  ingredient_group_indices?: number[]; // Indices of ingredients that are group headers (as identified by AI or user)
   instructions: string[];
   prep_time: number;
   cook_time: number;

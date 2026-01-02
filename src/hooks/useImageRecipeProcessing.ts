@@ -4,6 +4,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Recipe } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 import { sanitizeRecipeData } from "@/utils/contentSanitizer";
+import { normalizeCuisineRegion } from "@/utils/recipeClassification";
 
 export function useImageRecipeProcessing() {
   const { toast } = useToast();
@@ -112,13 +113,16 @@ export function useImageRecipeProcessing() {
         title: sanitizedRecipe.title || "Recipe from Image",
         description: sanitizedRecipe.description || "",
         ingredients: parsedRecipe.ingredients || sanitizedRecipe.ingredients || [],
+        ingredient_group_indices: Array.isArray(parsedRecipe.ingredientGroupIndices) 
+          ? parsedRecipe.ingredientGroupIndices 
+          : undefined,
         instructions: parsedRecipe.instructions || sanitizedRecipe.instructions || [],
         prep_time: parsedRecipe.prepTime || sanitizedRecipe.prep_time || 15,
         cook_time: parsedRecipe.cookTime || sanitizedRecipe.cook_time || 30,
         servings: parsedRecipe.servings || sanitizedRecipe.servings || 4,
         // Apply AI classification
         meal_type: parsedRecipe.mealType || undefined,
-        cuisine_region: parsedRecipe.cuisineRegion || undefined,
+        cuisine_region: normalizeCuisineRegion(parsedRecipe.cuisineRegion) || undefined,
         diet_lifestyle: parsedRecipe.dietLifestyle || [],
         // complexity_level removed
         top_tip: parsedRecipe.topTip || "Enjoy cooking this delicious recipe!",

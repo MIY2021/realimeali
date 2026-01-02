@@ -121,6 +121,9 @@ export const useRecipeApi = () => {
           ...recipe,
           created_by: recipe.user_id, // Map user_id to created_by
           has_cooked: Boolean(recipeWithCookingStatus.has_cooked || false), // Use the direct column
+          ingredient_group_indices: Array.isArray(recipeWithCookingStatus.ingredient_group_indices) 
+            ? recipeWithCookingStatus.ingredient_group_indices 
+            : undefined,
           // Filter meal_type to only valid values, cast as MealType
           meal_type: VALID_MEAL_TYPES.includes(recipe.meal_type as MealType) 
             ? recipe.meal_type as MealType 
@@ -151,7 +154,7 @@ export const useRecipeApi = () => {
       if (!user) throw new Error('User not authenticated');
 
       // Map the data to match database schema
-      const insertData = {
+      const insertData: any = {
         user_id: user.id,
         household_id: householdId,
         title: recipeData.title,
@@ -175,6 +178,17 @@ export const useRecipeApi = () => {
         source_url: recipeData.source_url,
         import_method: recipeData.import_method || 'manual',
       };
+      
+      // Only include ingredient_group_indices if it's defined and not empty (column may not exist in older databases)
+      if (recipeData.ingredient_group_indices !== undefined && recipeData.ingredient_group_indices !== null) {
+        insertData.ingredient_group_indices = recipeData.ingredient_group_indices;
+      }
+
+      console.log('📤 Inserting recipe with data:', {
+        ...insertData,
+        ingredients: insertData.ingredients?.length || 0,
+        instructions: insertData.instructions?.length || 0,
+      });
 
       const { data, error } = await supabase
         .from('recipes')
@@ -182,12 +196,66 @@ export const useRecipeApi = () => {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Database error on insert:', {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code,
+        });
+        
+        // If error is about missing column, try again without it
+        if (error.message?.includes('ingredient_group_indices') || error.message?.includes('column') || error.message?.includes('does not exist')) {
+          console.warn('⚠️ ingredient_group_indices column may not exist, retrying without it');
+          delete insertData.ingredient_group_indices;
+          const { data: retryData, error: retryError } = await supabase
+            .from('recipes')
+            .insert(insertData)
+            .select()
+            .single();
+          if (retryError) {
+            console.error('❌ Retry also failed:', retryError);
+            throw retryError;
+          }
+          // Use retryData instead of data for the rest of the function
+          const savedRecipe = {
+            ...retryData,
+            created_by: retryData.user_id,
+            has_cooked: false,
+            ingredient_group_indices: undefined, // Column doesn't exist
+            meal_type: VALID_MEAL_TYPES.includes(retryData.meal_type as MealType) 
+              ? retryData.meal_type as MealType 
+              : undefined,
+            meal_types: Array.isArray((retryData as any).meal_types) 
+              ? (retryData as any).meal_types.filter((type: string) => 
+                  VALID_MEAL_TYPES.includes(type as MealType)
+                ) as MealType[]
+              : (retryData.meal_type && VALID_MEAL_TYPES.includes(retryData.meal_type as MealType) 
+                  ? [retryData.meal_type as MealType] 
+                  : []),
+          } as Recipe;
+          
+          // Trigger ingredient categorization asynchronously
+          if (recipeData.ingredients && recipeData.ingredients.length > 0) {
+            import('@/services/ingredientCategorizationService').then(({ categorizeIngredients }) => {
+              categorizeIngredients(recipeData.ingredients).catch(err => {
+                console.error('Error categorizing ingredients for new recipe:', err);
+              });
+            });
+          }
+
+          return savedRecipe;
+        }
+        throw error;
+      }
       
       const savedRecipe = {
         ...data,
         created_by: data.user_id, // Map user_id to created_by
         has_cooked: false, // New recipes haven't been cooked yet
+        ingredient_group_indices: Array.isArray((data as any).ingredient_group_indices) 
+          ? (data as any).ingredient_group_indices 
+          : undefined,
         meal_type: VALID_MEAL_TYPES.includes(data.meal_type as MealType) 
           ? data.meal_type as MealType 
           : undefined,
@@ -213,7 +281,11 @@ export const useRecipeApi = () => {
 
       return savedRecipe;
     } catch (error) {
-      console.error('Error creating recipe:', error);
+      console.error('❌ Error creating recipe:', {
+        error,
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      });
       throw error;
     }
   };
@@ -257,6 +329,11 @@ export const useRecipeApi = () => {
         source_url: recipe.source_url,
         import_method: recipe.import_method,
       };
+      
+      // Only include ingredient_group_indices if it's defined (column may not exist in older databases)
+      if (recipe.ingredient_group_indices !== undefined) {
+        updateData.ingredient_group_indices = recipe.ingredient_group_indices;
+      }
 
 
       const { data, error } = await supabase
@@ -266,7 +343,41 @@ export const useRecipeApi = () => {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        // If error is about missing column, try again without it
+        if (error.message?.includes('ingredient_group_indices') || error.message?.includes('column') || error.message?.includes('does not exist')) {
+          console.warn('⚠️ ingredient_group_indices column may not exist, retrying without it');
+          delete updateData.ingredient_group_indices;
+          const { data: retryData, error: retryError } = await supabase
+            .from('recipes')
+            .update(updateData)
+            .eq('id', id)
+            .select()
+            .single();
+          if (retryError) throw retryError;
+          // Use retryData instead of data for the rest of the function
+          const responseData = retryData as any;
+          const updatedRecipe = {
+            ...retryData,
+            created_by: retryData.user_id,
+            has_cooked: Boolean(responseData.has_cooked || false),
+            ingredient_group_indices: undefined, // Column doesn't exist
+            meal_type: VALID_MEAL_TYPES.includes(retryData.meal_type as MealType) 
+              ? retryData.meal_type as MealType 
+              : undefined,
+            meal_types: Array.isArray(responseData.meal_types) 
+              ? responseData.meal_types.filter((type: string) => 
+                  VALID_MEAL_TYPES.includes(type as MealType)
+                ) as MealType[]
+              : (retryData.meal_type && VALID_MEAL_TYPES.includes(retryData.meal_type as MealType) 
+                  ? [retryData.meal_type as MealType] 
+                  : []),
+          } as Recipe;
+          
+          return updatedRecipe;
+        }
+        throw error;
+      }
       
       // Use type assertion for the response data
       const responseData = data as any;
@@ -275,6 +386,9 @@ export const useRecipeApi = () => {
         ...data,
         created_by: data.user_id, // Map user_id to created_by
         has_cooked: Boolean(responseData.has_cooked || false), // Use the direct column
+        ingredient_group_indices: Array.isArray(responseData.ingredient_group_indices) 
+          ? responseData.ingredient_group_indices 
+          : undefined,
         meal_type: VALID_MEAL_TYPES.includes(data.meal_type as MealType) 
           ? data.meal_type as MealType 
           : undefined,

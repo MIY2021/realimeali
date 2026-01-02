@@ -6,6 +6,7 @@ import { Recipe } from "@/types";
 import { useProgressTracking } from "./useUrlRecipeProcessing/useProgressTracking";
 import { useImageHandling } from "./useUrlRecipeProcessing/useImageHandling";
 import { handleProcessingError } from "./useUrlRecipeProcessing/errorHandling";
+import { normalizeCuisineRegion } from "@/utils/recipeClassification";
 
 let debounceTimeout: NodeJS.Timeout | null = null;
 
@@ -97,6 +98,7 @@ export const useUrlRecipeProcessing = () => {
         title: recipeData.title || "",
         description: recipeData.description || "",
         ingredients: Array.isArray(recipeData.ingredients) ? recipeData.ingredients : [],
+        ingredient_group_indices: Array.isArray(recipeData.ingredientGroupIndices) ? recipeData.ingredientGroupIndices : undefined,
         instructions: Array.isArray(recipeData.instructions) ? recipeData.instructions : [],
         prep_time: recipeData.prepTime || 0,
         cook_time: recipeData.cookTime || 0,
@@ -106,18 +108,8 @@ export const useUrlRecipeProcessing = () => {
         non_alcoholic_pairing: recipeData.nonAlcoholicPairing || null,
         // Convert mealType (string) to meal_types (array)
         meal_types: recipeData.mealType ? [recipeData.mealType] : (newRecipe.meal_types || []),
-        // Set cuisine_region - always auto-select the first suggestion if available
-        cuisine_region: (() => {
-          const cuisine = Array.isArray(recipeData.cuisineRegion) 
-            ? recipeData.cuisineRegion[0] 
-            : recipeData.cuisineRegion;
-          // Always set cuisine if provided by AI, otherwise keep existing
-          if (cuisine) {
-            console.log('✅ Auto-selecting cuisine:', cuisine);
-            return cuisine;
-          }
-          return newRecipe.cuisine_region;
-        })(),
+        // Don't auto-select cuisine - let user confirm/reject via autotag buttons
+        cuisine_region: newRecipe.cuisine_region,
         diet_lifestyle: Array.isArray(recipeData.dietLifestyle) ? recipeData.dietLifestyle : (newRecipe.diet_lifestyle || []),
         // Store suggested tags for confirmation (support multiple cuisines)
         suggestedTags: {
@@ -125,12 +117,18 @@ export const useUrlRecipeProcessing = () => {
           cuisine_region: (() => {
             const cuisine = recipeData.cuisineRegion;
             if (Array.isArray(cuisine)) {
-              console.log('✅ Storing cuisine suggestions (array):', cuisine);
-              return cuisine;
+              // Normalize all cuisine suggestions
+              const normalized = cuisine.map(c => normalizeCuisineRegion(c)).filter(Boolean);
+              console.log('✅ Storing cuisine suggestions (array):', normalized);
+              return normalized;
             }
             if (cuisine) {
-              console.log('✅ Storing cuisine suggestion (single):', cuisine);
-              return [cuisine];
+              // Normalize single cuisine suggestion
+              const normalized = normalizeCuisineRegion(cuisine);
+              if (normalized) {
+                console.log('✅ Storing cuisine suggestion (single):', normalized, '(normalized from:', cuisine, ')');
+                return [normalized];
+              }
             }
             console.warn('⚠️ No cuisine suggestion from AI');
             return [];

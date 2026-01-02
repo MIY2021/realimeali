@@ -165,24 +165,31 @@ export const useRecipeCreationHandlers = ({
       return;
     }
 
-    if (!recipeFormHook.newRecipe.cuisine_region) {
-      toast({
-        title: "Cuisine Required",
-        description: "Please select a cuisine for this recipe.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setIsSaving(true);
     
     try {
+      // Extract group indices from ingredients that end with colon (for backward compatibility with edit interface)
+      const ingredients = recipeFormHook.newRecipe.ingredients?.filter((ing: string) => ing && ing.trim().length > 0) || [];
+      const groupIndices: number[] = [];
+      for (let i = 0; i < ingredients.length; i++) {
+        const ing = ingredients[i].trim();
+        // If ingredient ends with colon (and isn't a ratio), it's a group header
+        if (ing.endsWith(':') && !/\d+.*:/.test(ing)) {
+          groupIndices.push(i);
+        }
+      }
+      
+      // Use existing group indices from AI parsing if available, otherwise use extracted indices
+      const finalGroupIndices = recipeFormHook.newRecipe.ingredient_group_indices || 
+        (groupIndices.length > 0 ? groupIndices : undefined);
+
       const recipeToSave = {
         ...recipeFormHook.newRecipe,
         title: recipeFormHook.newRecipe.title?.trim() || '',
         description: recipeFormHook.newRecipe.description?.trim() || '',
         top_tip: recipeFormHook.newRecipe.top_tip?.trim() || "Enjoy cooking this delicious recipe!",
-        ingredients: recipeFormHook.newRecipe.ingredients?.filter((ing: string) => ing && ing.trim().length > 0) || [],
+        ingredients: ingredients,
+        ingredient_group_indices: finalGroupIndices,
         instructions: recipeFormHook.newRecipe.instructions?.filter((inst: string) => inst?.trim()) || [],
         diet_lifestyle: recipeFormHook.newRecipe.diet_lifestyle || [],
         prep_time: Math.max(0, recipeFormHook.newRecipe.prep_time || 0),
@@ -197,12 +204,25 @@ export const useRecipeCreationHandlers = ({
       // Use downloadedImageFile if available, otherwise fall back to uploadedImageFile
       const imageFileToUpload = downloadedImageFile || recipeFormHook.uploadedImageFile;
 
+      console.log('📋 Recipe data to save:', {
+        ...recipeData,
+        ingredients: recipeData.ingredients?.length || 0,
+        instructions: recipeData.instructions?.length || 0,
+        meal_types: recipeData.meal_types,
+        cuisine_region: recipeData.cuisine_region,
+        ingredient_group_indices: recipeData.ingredient_group_indices,
+      });
+
       let savedRecipe;
       if (isEditMode && editingRecipe) {
+        console.log('✏️ Updating recipe:', editingRecipe.id);
         savedRecipe = await updateRecipe(editingRecipe.id, recipeData);
       } else {
+        console.log('➕ Creating new recipe');
         savedRecipe = await createRecipe(recipeData, currentHousehold.id);
       }
+      
+      console.log('💾 Save result:', savedRecipe ? { id: savedRecipe.id, title: savedRecipe.title } : 'null');
       
       if (savedRecipe) {
         console.log('✅ Recipe saved successfully:', savedRecipe.id);
@@ -303,13 +323,34 @@ export const useRecipeCreationHandlers = ({
       let errorMessage = "Failed to save recipe. Please try again.";
       
       if (error instanceof Error) {
-        if (error.message.includes('Network')) {
+        console.error("❌ Error details:", {
+          message: error.message,
+          name: error.name,
+          stack: error.stack,
+          // Log the full error object for debugging
+          fullError: JSON.stringify(error, Object.getOwnPropertyNames(error)),
+        });
+        
+        // Show the actual error message to help debug
+        const actualMessage = error.message || String(error);
+        
+        if (actualMessage.includes('Network') || actualMessage.includes('network')) {
           errorMessage = "Network error. Please check your connection and try again.";
-        } else if (error.message.includes('duplicate')) {
+        } else if (actualMessage.includes('duplicate') || actualMessage.includes('unique')) {
           errorMessage = "A recipe with this title already exists. Please use a different title.";
-        } else if (error.message.includes('unauthorized')) {
+        } else if (actualMessage.includes('unauthorized') || actualMessage.includes('permission') || actualMessage.includes('403')) {
           errorMessage = "You don't have permission to save recipes. Please check your household membership.";
+        } else if (actualMessage.includes('ingredient_group_indices') || actualMessage.includes('column') || actualMessage.includes('does not exist')) {
+          // If the column doesn't exist, try saving without it
+          console.warn("⚠️ ingredient_group_indices column may not exist, error:", actualMessage);
+          errorMessage = `Database error: ${actualMessage}. Please run the migration to add ingredient_group_indices column.`;
+        } else {
+          // Show the actual error message for debugging
+          errorMessage = `Error: ${actualMessage}`;
         }
+      } else {
+        console.error("❌ Non-Error object thrown:", error);
+        errorMessage = `Unexpected error: ${JSON.stringify(error)}`;
       }
       
       toast({

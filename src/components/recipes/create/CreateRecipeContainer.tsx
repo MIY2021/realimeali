@@ -236,6 +236,7 @@ export function CreateRecipeContainer({ editingRecipe, isEditMode = false, defau
         isEditMode={isEditMode}
         isFromAI={isFromAI}
         onSelectWhatCanIMakeRecipe={handleSelectWhatCanIMakeRecipe}
+        isSaving={handlers.isSaving}
       />
     </div>
   );
