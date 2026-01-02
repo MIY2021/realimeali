@@ -551,14 +551,21 @@ serve(async (req) => {
 
 CRITICAL: You MUST carefully examine ingredients for meat content. If ANY meat (beef, pork, lamb, chicken, turkey, fish, seafood, etc.) is present, the recipe CANNOT be classified as "vegetarian" or "vegan". Be extremely careful about this classification.
 
-CRITICAL: When parsing ingredients, distinguish between ingredient group headers (sections that contain multiple ingredients) and individual ingredients. Use your semantic understanding to identify groups based on context and meaning.
+CRITICAL: When parsing ingredients, distinguish between ingredient group headers (sections that contain multiple ingredients) and individual ingredients. Group headers can appear in various formats:
+- ALL CAPS: "MARINADE", "FLATBREADS", "SAUCE", "GARNISH", "TOPPING"
+- Title Case: "Marinade", "Flatbreads", "For the Sauce"
+- With colons: "For the marinade:", "MARINADE:", "Sauce:"
+- Without colons: "MARINADE", "Flatbreads"
+- Common patterns: "For the [name]:", "[NAME]", "[Name]"
+
+Look for words that represent recipe sections or components (marinade, sauce, dressing, crust, filling, topping, garnish, flatbreads, etc.) rather than actual ingredients. Use your semantic understanding to identify these section headers based on context - they typically appear before a group of related ingredients and represent a component of the recipe.
 
 Return a JSON object with this EXACT structure:
 {
   "title": "Recipe name",
   "description": "Brief description (1-2 sentences)",
-  "ingredients": ["For the duck ragú:", "2 duck breasts, trimmed", "1 tbsp olive oil", "For the garnish:", "6 slices pancetta"],
-  "ingredientGroupIndices": [0, 3],
+  "ingredients": ["MARINADE", "2 tbsp yogurt", "1 tsp spices", "FLATBREADS", "200g flour", "For the garnish:", "6 slices pancetta"],
+  "ingredientGroupIndices": [0, 3, 6],
   "instructions": ["step 1", "step 2"],
   "topTip": "One helpful cooking tip",
   "alcoholicPairing": "A specific wine, beer, or cocktail that pairs well with this dish",
@@ -576,7 +583,7 @@ Return a JSON object with this EXACT structure:
   }
 }
 
-IMPORTANT: ingredientGroupIndices must be an array of zero-based indices indicating which positions in the ingredients array are group headers. For example, if "For the duck ragú:" is at index 0 and "For the garnish:" is at index 3, then ingredientGroupIndices should be [0, 3]. If there are no group headers, use an empty array [].
+IMPORTANT: ingredientGroupIndices must be an array of zero-based indices indicating which positions in the ingredients array are group headers. For example, if "MARINADE" is at index 0, "FLATBREADS" is at index 3, and "For the garnish:" is at index 6, then ingredientGroupIndices should be [0, 3, 6]. Always include ALL section headers regardless of their format (ALL CAPS, title case, with/without colons). If there are no group headers, use an empty array [].
 
 Classification rules:
 - mealType: breakfast, lunch, dinner, snacks, sides, desserts, drinks, sauces_dips, soups_stews, salads, baking_breads
@@ -606,14 +613,21 @@ Return ONLY valid JSON. No explanations.`;
 
 CRITICAL: You MUST carefully examine ingredients for meat content. If ANY meat (beef, pork, lamb, chicken, turkey, fish, seafood, etc.) is present, the recipe CANNOT be classified as "vegetarian" or "vegan". Be extremely careful about this classification.
 
-CRITICAL: When parsing ingredients, distinguish between ingredient group headers (sections that contain multiple ingredients) and individual ingredients. Use your semantic understanding to identify groups based on context and meaning.
+CRITICAL: When parsing ingredients, distinguish between ingredient group headers (sections that contain multiple ingredients) and individual ingredients. Group headers can appear in various formats:
+- ALL CAPS: "MARINADE", "FLATBREADS", "SAUCE", "GARNISH", "TOPPING"
+- Title Case: "Marinade", "Flatbreads", "For the Sauce"
+- With colons: "For the marinade:", "MARINADE:", "Sauce:"
+- Without colons: "MARINADE", "Flatbreads"
+- Common patterns: "For the [name]:", "[NAME]", "[Name]"
+
+Look for words that represent recipe sections or components (marinade, sauce, dressing, crust, filling, topping, garnish, flatbreads, etc.) rather than actual ingredients. Use your semantic understanding to identify these section headers based on context - they typically appear before a group of related ingredients and represent a component of the recipe.
 
 Return a JSON object with this EXACT structure:
 {
   "title": "Recipe name",
   "description": "Brief description (1-2 sentences)",
-  "ingredients": ["For the duck ragú:", "2 duck breasts, trimmed", "1 tbsp olive oil", "For the garnish:", "6 slices pancetta"],
-  "ingredientGroupIndices": [0, 3],
+  "ingredients": ["MARINADE", "2 tbsp yogurt", "1 tsp spices", "FLATBREADS", "200g flour", "For the garnish:", "6 slices pancetta"],
+  "ingredientGroupIndices": [0, 3, 6],
   "instructions": ["step 1", "step 2"],
   "topTip": "One helpful cooking tip",
   "alcoholicPairing": "A specific wine, beer, or cocktail that pairs well with this dish",
@@ -631,7 +645,7 @@ Return a JSON object with this EXACT structure:
   }
 }
 
-IMPORTANT: ingredientGroupIndices must be an array of zero-based indices indicating which positions in the ingredients array are group headers. For example, if "For the duck ragú:" is at index 0 and "For the garnish:" is at index 3, then ingredientGroupIndices should be [0, 3]. If there are no group headers, use an empty array [].
+IMPORTANT: ingredientGroupIndices must be an array of zero-based indices indicating which positions in the ingredients array are group headers. For example, if "MARINADE" is at index 0, "FLATBREADS" is at index 3, and "For the garnish:" is at index 6, then ingredientGroupIndices should be [0, 3, 6]. Always include ALL section headers regardless of their format (ALL CAPS, title case, with/without colons). If there are no group headers, use an empty array [].
 
 Classification rules:
 - mealType: breakfast, lunch, dinner, snacks, sides, desserts, drinks, sauces_dips, soups_stews, salads, baking_breads
@@ -664,14 +678,21 @@ Return ONLY valid JSON. No explanations.`;
 
 CRITICAL: You MUST carefully examine ingredients for meat content. If ANY meat (beef, pork, lamb, chicken, turkey, fish, seafood, etc.) is present, the recipe CANNOT be classified as "vegetarian" or "vegan". Be extremely careful about this classification.
 
-CRITICAL: When parsing ingredients, distinguish between ingredient group headers (sections that contain multiple ingredients) and individual ingredients. Use your semantic understanding to identify groups based on context and meaning.
+CRITICAL: When parsing ingredients, distinguish between ingredient group headers (sections that contain multiple ingredients) and individual ingredients. Group headers can appear in various formats:
+- ALL CAPS: "MARINADE", "FLATBREADS", "SAUCE", "GARNISH", "TOPPING"
+- Title Case: "Marinade", "Flatbreads", "For the Sauce"
+- With colons: "For the marinade:", "MARINADE:", "Sauce:"
+- Without colons: "MARINADE", "Flatbreads"
+- Common patterns: "For the [name]:", "[NAME]", "[Name]"
+
+Look for words that represent recipe sections or components (marinade, sauce, dressing, crust, filling, topping, garnish, flatbreads, etc.) rather than actual ingredients. Use your semantic understanding to identify these section headers based on context - they typically appear before a group of related ingredients and represent a component of the recipe.
 
 Return a JSON object with this EXACT structure:
 {
   "title": "Recipe name",
   "description": "Brief description (1-2 sentences)",
-  "ingredients": ["For the duck ragú:", "2 duck breasts, trimmed", "1 tbsp olive oil", "For the garnish:", "6 slices pancetta"],
-  "ingredientGroupIndices": [0, 3],
+  "ingredients": ["MARINADE", "2 tbsp yogurt", "1 tsp spices", "FLATBREADS", "200g flour", "For the garnish:", "6 slices pancetta"],
+  "ingredientGroupIndices": [0, 3, 6],
   "instructions": ["step 1", "step 2"],
   "topTip": "One helpful cooking tip",
   "alcoholicPairing": "A specific wine, beer, or cocktail that pairs well with this dish",
@@ -689,7 +710,7 @@ Return a JSON object with this EXACT structure:
   }
 }
 
-IMPORTANT: ingredientGroupIndices must be an array of zero-based indices indicating which positions in the ingredients array are group headers. For example, if "For the duck ragú:" is at index 0 and "For the garnish:" is at index 3, then ingredientGroupIndices should be [0, 3]. If there are no group headers, use an empty array [].
+IMPORTANT: ingredientGroupIndices must be an array of zero-based indices indicating which positions in the ingredients array are group headers. For example, if "MARINADE" is at index 0, "FLATBREADS" is at index 3, and "For the garnish:" is at index 6, then ingredientGroupIndices should be [0, 3, 6]. Always include ALL section headers regardless of their format (ALL CAPS, title case, with/without colons). If there are no group headers, use an empty array [].
 
 Classification rules:
 - mealType: breakfast, lunch, dinner, snacks, sides, desserts, drinks, sauces_dips, soups_stews, salads, baking_breads

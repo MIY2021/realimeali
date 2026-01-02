@@ -172,6 +172,12 @@ export function CreateRecipeContainer({ editingRecipe, isEditMode = false, defau
   // Check if this recipe is from AI
   const isFromAI = editingRecipe?.import_method === 'ai';
 
+  // Check if recipe has been parsed/processed (has title or ingredients)
+  const hasRecipeBeenParsed = !isEditMode && (
+    (recipeFormHook.newRecipe.title && recipeFormHook.newRecipe.title.trim().length > 0) ||
+    (recipeFormHook.newRecipe.ingredients && recipeFormHook.newRecipe.ingredients.length > 0)
+  );
+
   // Auto-import from URL if importUrl or url param is present
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -210,12 +216,14 @@ export function CreateRecipeContainer({ editingRecipe, isEditMode = false, defau
               </Button>
             )}
           </div>
-          <p className="text-sm text-[#6B6B6B] max-w-3xl">
-            {isEditMode 
-              ? "Update your recipe with any changes. All your existing data is preserved and ready for editing."
-              : "Turn your culinary imagination into reality! Whether you're recreating a family favourite or experimenting with new flavours, every great meal starts with the perfect recipe."
-            }
-          </p>
+          {!hasRecipeBeenParsed && (
+            <p className="text-sm text-[#6B6B6B] max-w-3xl">
+              {isEditMode 
+                ? "Update your recipe with any changes. All your existing data is preserved and ready for editing."
+                : "Add a new recipe to your library. Import from a website, paste text, upload an image, or create it manually."
+              }
+            </p>
+          )}
         </div>
       </div>
       

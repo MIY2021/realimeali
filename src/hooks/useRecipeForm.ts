@@ -62,10 +62,16 @@ export function useRecipeForm(isEditing: boolean = false, existingRecipe?: Recip
   // Function to set image from URL or generation
   const setImageFromUrl = (imageUrl: string) => {
     console.log('🌐 Setting image from URL:', imageUrl ? 'has URL' : 'clearing');
-    setNewRecipe(prev => ({
-      ...prev,
-      image: imageUrl || undefined
-    }));
+    // Clear uploaded image file when setting from URL (e.g., AI generation)
+    // This ensures the AI-generated image URL is used instead of any previously downloaded website image
+    setUploadedImageFile(null);
+    setNewRecipe(prev => {
+      const { downloadedImageFile, ...rest } = prev as any;
+      return {
+        ...rest,
+        image: imageUrl || undefined
+      };
+    });
   };
 
   const handleAddIngredient = () => {
