@@ -57,6 +57,7 @@ async function retryWithBackoff<T>(
 }
 
 // Helper function to extract recipe data from JSON-LD structured data
+// Returns structured content only if BOTH ingredients AND instructions are present
 function extractRecipeFromStructuredData(jsonLdData: any): string | null {
   try {
     // Handle arrays (many sites wrap structured data in arrays)
@@ -75,36 +76,44 @@ function extractRecipeFromStructuredData(jsonLdData: any): string | null {
           const title = data.name || data.headline || '';
           const description = data.description || '';
           
-          // Extract ingredients
+          // Extract ingredients - REQUIRED
           let ingredientsText = '';
+          let hasIngredients = false;
           if (data.recipeIngredient) {
             const ingredients = Array.isArray(data.recipeIngredient) 
               ? data.recipeIngredient 
               : [data.recipeIngredient];
-            ingredientsText = 'Ingredients:\n' + ingredients.map((ing: string) => `- ${ing}`).join('\n');
+            if (ingredients.length > 0 && ingredients.some((ing: any) => ing && ing.trim && ing.trim().length > 0)) {
+              ingredientsText = 'Ingredients:\n' + ingredients.map((ing: string) => `- ${ing}`).join('\n');
+              hasIngredients = true;
+            }
           }
           
-          // Extract instructions
+          // Extract instructions - REQUIRED
           let instructionsText = '';
+          let hasInstructions = false;
           if (data.recipeInstructions) {
             const instructions = Array.isArray(data.recipeInstructions) 
               ? data.recipeInstructions 
               : [data.recipeInstructions];
             
-            instructionsText = '\n\nInstructions:\n';
             let stepIndex = 1;
+            let instructionSteps: string[] = [];
             
             const extractInstructionStep = (step: any): void => {
-              if (typeof step === 'string') {
-                instructionsText += `${stepIndex}. ${step}\n`;
+              if (typeof step === 'string' && step.trim().length > 0) {
+                instructionSteps.push(`${stepIndex}. ${step}`);
                 stepIndex++;
               } else if (step.text || step.name) {
-                instructionsText += `${stepIndex}. ${step.text || step.name}\n`;
-                stepIndex++;
+                const stepText = (step.text || step.name).trim();
+                if (stepText.length > 0) {
+                  instructionSteps.push(`${stepIndex}. ${stepText}`);
+                  stepIndex++;
+                }
               } else if (step['@type'] === 'HowToStep') {
-                const stepText = step.text || step.name || '';
-                if (stepText) {
-                  instructionsText += `${stepIndex}. ${stepText}\n`;
+                const stepText = (step.text || step.name || '').trim();
+                if (stepText.length > 0) {
+                  instructionSteps.push(`${stepIndex}. ${stepText}`);
                   stepIndex++;
                 }
               } else if (step['@type'] === 'HowToSection') {
@@ -113,16 +122,32 @@ function extractRecipeFromStructuredData(jsonLdData: any): string | null {
                   step.itemListElement.forEach((item: any) => extractInstructionStep(item));
                 }
               } else if (step.position) {
-                // Handle numbered steps with position
-                instructionsText += `${step.position}. ${step.text || step.name || ''}\n`;
-                stepIndex++;
+                const stepText = (step.text || step.name || '').trim();
+                if (stepText.length > 0) {
+                  instructionSteps.push(`${step.position}. ${stepText}`);
+                  stepIndex++;
+                }
               }
             };
             
             instructions.forEach(extractInstructionStep);
+            
+            if (instructionSteps.length > 0) {
+              instructionsText = '\n\nInstructions:\n' + instructionSteps.join('\n');
+              hasInstructions = true;
+            }
           }
           
-          // Extract additional metadata
+          // Only return content if BOTH ingredients AND instructions are present
+          if (!hasIngredients || !hasInstructions) {
+            console.log('Structured data incomplete - missing ingredients or instructions', {
+              hasIngredients,
+              hasInstructions
+            });
+            return null;
+          }
+          
+          // Extract additional metadata (optional)
           let metadataText = '';
           if (data.prepTime) metadataText += `Prep Time: ${data.prepTime}\n`;
           if (data.cookTime) metadataText += `Cook Time: ${data.cookTime}\n`;
@@ -138,7 +163,7 @@ function extractRecipeFromStructuredData(jsonLdData: any): string | null {
           ].filter(Boolean).join('\n\n');
           
           if (structuredContent.trim().length > 0) {
-            console.log('Successfully extracted recipe from structured data');
+            console.log('Successfully extracted complete recipe from structured data');
             return structuredContent;
           }
         }
@@ -178,6 +203,14 @@ async function extractWebsiteContent(url: string, extractImages: boolean = false
 
     if (!response.ok) {
       console.error(`HTTP ${response.status}: ${response.statusText}`);
+      
+      // Check for paywall/access issues
+      if (response.status === 403 || response.status === 402) {
+        throw new Error('This website requires authentication or a subscription. We cannot extract recipes from paywalled content.');
+      } else if (response.status === 401) {
+        throw new Error('This website requires authentication. We cannot extract recipes from protected content.');
+      }
+      
       throw new Error(`Failed to fetch website: ${response.status} ${response.statusText}`);
     }
 
@@ -382,46 +415,15 @@ async function extractWebsiteContent(url: string, extractImages: boolean = false
       console.log(`Extracted ${extractedImages.length} prioritized images`);
     }
     
-    // If we found structured recipe data, use it (it's more reliable)
+    // Only use structured recipe data - no HTML text extraction fallback
     if (structuredRecipeContent) {
       console.log('Using structured recipe data from JSON-LD');
       return { content: structuredRecipeContent, images: extractedImages };
     }
     
-    // Otherwise, fall back to text extraction from HTML
-    console.log('Structured data not found, falling back to HTML text extraction');
-    let content = html;
-    
-    // Remove script and style tags
-    content = content.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
-    content = content.replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '');
-    
-    // Remove comments
-    content = content.replace(/<!--[\s\S]*?-->/g, '');
-    
-    // Extract text from HTML tags
-    content = content.replace(/<[^>]*>/g, ' ');
-    content = content.replace(/\s+/g, ' ').trim();
-    
-    // Look for recipe-specific content with better filtering
-    const recipeKeywords = ['ingredients', 'instructions', 'directions', 'recipe', 'cook', 'prep', 'method', 'steps'];
-    const lines = content.split(/[.\n\r]/).filter(line => line.trim().length > 0);
-    
-    // Filter for relevant content
-    const relevantLines = lines.filter(line => {
-      const cleanLine = line.trim().toLowerCase();
-      return cleanLine.length > 20 && (
-        recipeKeywords.some(keyword => cleanLine.includes(keyword)) ||
-        cleanLine.length > 50 // Include longer descriptive lines
-      );
-    });
-    
-    const extractedContent = relevantLines.join('\n').substring(0, 12000); // Increase content limit
-    
-    console.log('Extracted content length:', extractedContent.length);
-    console.log('Number of relevant lines:', relevantLines.length);
-    
-    return { content: extractedContent, images: extractedImages };
+    // No structured data found - return error
+    console.log('No complete recipe structured data found in JSON-LD');
+    throw new Error('This recipe website does not provide structured recipe data in a format we can reliably extract. We only extract recipes from sites that provide complete structured data (JSON-LD Schema.org Recipe format) to ensure accuracy.');
     
   } catch (error) {
     console.error('Error extracting website content:', error);
