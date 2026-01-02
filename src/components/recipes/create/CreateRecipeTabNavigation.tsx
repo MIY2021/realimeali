@@ -111,12 +111,15 @@ export function CreateRecipeTabNavigation({
   
   // Hide tab navigation after recipe is imported (when on manual tab with a non-manual origin)
   const hideTabsAfterImport = activeTab === "manual" && recipeOrigin !== "manual" && !isEditMode;
+  
+  // Hide tab navigation entirely in edit mode
+  const hideTabsInEditMode = isEditMode;
 
   return (
     <div className="w-full">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         {/* Mobile Dropdown */}
-        {!hideTabsAfterImport && isMobile ? (
+        {!hideTabsAfterImport && !hideTabsInEditMode && isMobile ? (
           <div className="mb-6">
             <Select value={activeTab} onValueChange={setActiveTab}>
               <SelectTrigger className="w-full h-12 rounded-[12px] border border-[#E3E3E3] bg-white shadow-sm">
@@ -141,7 +144,7 @@ export function CreateRecipeTabNavigation({
               </SelectContent>
             </Select>
           </div>
-        ) : !hideTabsAfterImport ? (
+        ) : !hideTabsAfterImport && !hideTabsInEditMode ? (
           /* Desktop Tabs */
           <div className="mb-6">
             <TabsList className={`grid w-full ${isEditMode ? 'grid-cols-1' : 'grid-cols-6'} mb-4 bg-white/50 p-1 rounded-[12px] border border-[#E3E3E3]`}>
