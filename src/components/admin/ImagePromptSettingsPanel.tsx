@@ -7,7 +7,23 @@ import { supabase } from "@/integrations/supabase/client";
 import { Loader, Save, RotateCcw } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-const DEFAULT_PROMPT = `A high-quality editorial food photograph of {title}, a fresh, vibrant homemade meal served in a shallow ceramic bowl. The dish is the clear focal point, centred in the frame and filling most of the image. Ingredients are neatly arranged in defined sections, colourful but natural. Shot using soft natural daylight from the side, creating gentle highlights and subtle shadows. Clean white or very light stone background with no clutter or unnecessary props. Shallow depth of field, sharp focus on the food, slight background blur. Modern cookbook photography style, realistic textures, appetising but not over-styled. Ultra-realistic, high detail, professional food photography, suitable for a premium meal planning app.`;
+const DEFAULT_PROMPT = `A high-quality editorial food photograph of {title}.
+
+Composition: Randomly choose one of the following two compositions:
+• Top-down (overhead) shot with the dish perfectly centred in the frame
+• Side-on (45–90° angle) shot with the dish centred and clearly framed
+
+In all cases, the food must be the absolute centre of attention, positioned in the middle of the image with no cropping of the main dish - and more or less fill the image.
+
+Modern cookbook photography style. Realistic textures, natural colours, appetising but not over-styled. Professional food photography suitable for a premium meal planning app. Ensure you read and understand the full recipe before generating image:
+
+{description}
+
+{ingredients}
+
+{instructions}
+
+The image must accurately represent the finished dish based on the recipe details above. The dish should appear exactly as it would when prepared according to the instructions provided. Include visible ingredients from the recipe where appropriate, and ensure the styling, presentation, and appearance match how the dish would look when following the recipe instructions.`;
 
 export function ImagePromptSettingsPanel() {
   const [prompt, setPrompt] = useState("");
@@ -102,7 +118,7 @@ export function ImagePromptSettingsPanel() {
       <CardHeader className={isMobile ? "px-4 py-4" : ""}>
         <CardTitle className={isMobile ? "text-lg" : ""}>Image Generation Prompt</CardTitle>
         <CardDescription className={isMobile ? "text-xs" : ""}>
-          Configure the AI prompt used to generate recipe images. Use <code className="bg-muted px-1 rounded">{"{title}"}</code> as a placeholder for the recipe title.
+          Configure the AI prompt used to generate recipe images. Available placeholders: <code className="bg-muted px-1 rounded">{"{title}"}</code>, <code className="bg-muted px-1 rounded">{"{description}"}</code>, <code className="bg-muted px-1 rounded">{"{ingredients}"}</code>, and <code className="bg-muted px-1 rounded">{"{instructions}"}</code>. The AI will automatically include the full recipe context when generating images.
         </CardDescription>
       </CardHeader>
       <CardContent className={isMobile ? "px-4 pb-4" : ""}>

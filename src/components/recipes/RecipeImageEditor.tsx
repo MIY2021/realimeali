@@ -60,7 +60,12 @@ export function RecipeImageEditor({ recipe, isOpen, onClose, onImageUpdate }: Re
 
   const { toast } = useToast();
 
-  const generateDetailedPrompt = (recipeName: string, recipeDescription?: string) => {
+  const generateDetailedPrompt = (
+    recipeName: string, 
+    recipeDescription?: string,
+    ingredients?: string[],
+    instructions?: string[]
+  ) => {
     const basePrompt = `A photorealistic, professionally styled cookbook photo of ${recipeName}. The dish is the clear focal point, beautifully plated and shot in a natural home or studio kitchen setting with soft, diffused lighting. The background is clean and minimal, such as wood, marble, linen or slate — subtle and textured but not distracting.
 
 Adjust styling based on the food type:
@@ -87,11 +92,26 @@ Image composition:
 
 Lighting: natural daylight style or softbox imitation — bright but soft shadows. Colors are natural, slightly warm, never oversaturated.`;
 
-    if (recipeDescription) {
-      return `${basePrompt}\n\nAdditional context: ${recipeDescription}`;
+    // Build recipe context sections
+    let recipeContext = '';
+    
+    if (recipeDescription && recipeDescription.trim()) {
+      recipeContext += `\n\nRecipe Description: ${recipeDescription.trim()}`;
     }
     
-    return basePrompt;
+    if (ingredients && ingredients.length > 0) {
+      recipeContext += `\n\nIngredients:\n${ingredients.map(ing => `- ${ing}`).join('\n')}`;
+    }
+    
+    if (instructions && instructions.length > 0) {
+      recipeContext += `\n\nInstructions:\n${instructions.map((inst, idx) => `${idx + 1}. ${inst}`).join('\n')}`;
+    }
+    
+    if (recipeContext) {
+      recipeContext += `\n\nThe image must accurately represent the finished dish based on the recipe details above. The dish should appear exactly as it would when prepared according to the instructions provided. Include visible ingredients from the recipe where appropriate, and ensure the styling, presentation, and appearance match how the dish would look when following the recipe instructions.`;
+    }
+    
+    return `${basePrompt}${recipeContext}`;
   };
 
   const handleAIGeneration = async () => {
@@ -117,7 +137,12 @@ Lighting: natural daylight style or softbox imitation — bright but soft shadow
         }
       }, 800);
 
-      const prompt = generateDetailedPrompt(recipe.title, recipe.description);
+      const prompt = generateDetailedPrompt(
+        recipe.title, 
+        recipe.description,
+        recipe.ingredients,
+        recipe.instructions
+      );
       
       const { data, error } = await supabase.functions.invoke('generate-recipe-image', {
         body: { 

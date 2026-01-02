@@ -2,7 +2,23 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { IMAGE_LOADING_MESSAGES } from "./useUrlRecipeProcessing/constants";
 
-const DEFAULT_PROMPT = `A high-quality editorial food photograph of {title}. The food is the centre of the image. Shot using soft natural daylight from the side. Shallow depth of field, sharp focus on the food, slight background blur. Modern cookbook photography style, realistic textures, appetising but not over-styled. Ultra-realistic, high detail, professional food photography, suitable for a premium meal planning app. Should reference ingredients within the recipe and incorporate it where possible while keeping image natural.`;
+const DEFAULT_PROMPT = `A high-quality editorial food photograph of {title}.
+
+Composition: Randomly choose one of the following two compositions:
+• Top-down (overhead) shot with the dish perfectly centred in the frame
+• Side-on (45–90° angle) shot with the dish centred and clearly framed
+
+In all cases, the food must be the absolute centre of attention, positioned in the middle of the image with no cropping of the main dish - and more or less fill the image.
+
+Modern cookbook photography style. Realistic textures, natural colours, appetising but not over-styled. Professional food photography suitable for a premium meal planning app. Ensure you read and understand the full recipe before generating image:
+
+{description}
+
+{ingredients}
+
+{instructions}
+
+The image must accurately represent the finished dish based on the recipe details above. The dish should appear exactly as it would when prepared according to the instructions provided. Include visible ingredients from the recipe where appropriate, and ensure the styling, presentation, and appearance match how the dish would look when following the recipe instructions.`;
 
 export function useImageGeneration() {
   const { toast } = useToast();
@@ -59,9 +75,31 @@ export function useImageGeneration() {
         }
       }, 2500);
       
-      // Fetch the prompt template from database and replace {title}
+      // Fetch the prompt template from database and build comprehensive prompt
       const promptTemplate = await fetchPromptTemplate();
-      const styledPrompt = promptTemplate.replace(/{title}/g, title);
+      
+      // Build recipe context sections
+      const descriptionSection = description && description.trim() 
+        ? `\n\nRecipe Description: ${description.trim()}`
+        : '';
+      
+      const ingredientsSection = ingredients && ingredients.length > 0
+        ? `\n\nIngredients:\n${ingredients.map(ing => `- ${ing}`).join('\n')}`
+        : '';
+      
+      const instructionsSection = instructions && instructions.length > 0
+        ? `\n\nInstructions:\n${instructions.map((inst, idx) => `${idx + 1}. ${inst}`).join('\n')}`
+        : '';
+      
+      // Replace placeholders in template
+      let styledPrompt = promptTemplate
+        .replace(/{title}/g, title)
+        .replace(/{description}/g, descriptionSection)
+        .replace(/{ingredients}/g, ingredientsSection)
+        .replace(/{instructions}/g, instructionsSection);
+      
+      // Clean up any extra newlines
+      styledPrompt = styledPrompt.replace(/\n{3,}/g, '\n\n').trim();
       
       const { data, error } = await supabase.functions.invoke('generate-recipe-image', {
         body: { 
