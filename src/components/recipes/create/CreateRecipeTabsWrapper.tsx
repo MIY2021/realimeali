@@ -68,6 +68,7 @@ export function CreateRecipeTabsWrapper({
             onGenerateRecipe={onGenerateRecipe}
             onGenerateImage={onGenerateImage}
             onSelectWhatCanIMakeRecipe={onSelectWhatCanIMakeRecipe}
+            recipeOrigin={recipeOrigin}
           />
         </CreateRecipeTabNavigation>
       </div>

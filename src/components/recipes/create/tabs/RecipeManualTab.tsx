@@ -8,6 +8,7 @@ import { SimpleCategorySelector } from "../SimpleCategorySelector";
 import { EnhancedIngredientManager } from "../EnhancedIngredientManager";
 import { EnhancedInstructionManager } from "../EnhancedInstructionManager";
 import { Recipe } from "@/types";
+import { RecipeOrigin } from "../hooks/useRecipeCreationHandlers";
 
 interface StoredImage {
   originalUrl: string;
@@ -38,6 +39,7 @@ interface RecipeManualTabProps {
   onImageSelect?: (url: string) => void;
   onDownloadImages?: () => void;
   isDownloadingImages?: boolean;
+  recipeOrigin?: RecipeOrigin;
 }
 
 export function RecipeManualTab({
@@ -63,6 +65,7 @@ export function RecipeManualTab({
   onImageSelect,
   onDownloadImages,
   isDownloadingImages = false,
+  recipeOrigin = 'manual',
 }: RecipeManualTabProps) {
 
   const handleIngredientsChange = (ingredients: string[]) => {
@@ -120,30 +123,38 @@ export function RecipeManualTab({
     }
   };
 
+  // Determine if recipe was imported (not manually entered)
+  const isImported = recipeOrigin !== 'manual';
+
+  // Recipe Image Card component (reusable)
+  const RecipeImageCard = () => (
+    <Card className="rounded-[12px] border border-[#E3E3E3] shadow-sm bg-white">
+      <CardHeader className="pb-2 px-4 sm:px-6">
+        <CardTitle className="text-base font-semibold text-[#1A1A1A]">Recipe Image</CardTitle>
+      </CardHeader>
+      <CardContent className="px-4 sm:px-6">
+        <EnhancedImageUpload
+          imagePreview={imagePreview}
+          isGenerating={isGeneratingImage}
+          generationProgress={generationProgress}
+          onImageChange={onImageChange}
+          onGenerateImage={onGenerateImage}
+          onImageSelect={handleUrlImageSelect}
+          recipeTitle={newRecipe.title}
+          websiteImages={websiteImages}
+          storedImages={storedImages}
+          selectedImage={selectedImage}
+          onDownloadImages={onDownloadImages}
+          isDownloadingImages={isDownloadingImages}
+        />
+      </CardContent>
+    </Card>
+  );
+
   return (
     <div className="space-y-3">
-      {/* Recipe Image - Moved to top */}
-      <Card className="rounded-[12px] border border-[#E3E3E3] shadow-sm bg-white">
-        <CardHeader className="pb-2 px-4 sm:px-6">
-          <CardTitle className="text-base font-semibold text-[#1A1A1A]">Recipe Image</CardTitle>
-        </CardHeader>
-        <CardContent className="px-4 sm:px-6">
-          <EnhancedImageUpload
-            imagePreview={imagePreview}
-            isGenerating={isGeneratingImage}
-            generationProgress={generationProgress}
-            onImageChange={onImageChange}
-            onGenerateImage={onGenerateImage}
-            onImageSelect={handleUrlImageSelect}
-            recipeTitle={newRecipe.title}
-            websiteImages={websiteImages}
-            storedImages={storedImages}
-            selectedImage={selectedImage}
-            onDownloadImages={onDownloadImages}
-            isDownloadingImages={isDownloadingImages}
-          />
-        </CardContent>
-      </Card>
+      {/* Recipe Image - Show at top if manually entered, below summary if imported */}
+      {!isImported && <RecipeImageCard />}
 
       {/* Basic Information */}
       <Card className="rounded-[12px] border border-[#E3E3E3] shadow-sm bg-white">
@@ -223,6 +234,9 @@ export function RecipeManualTab({
             </div>
           </CardContent>
         </Card>
+
+      {/* Recipe Image - Show below summary if imported */}
+      {isImported && <RecipeImageCard />}
 
       {/* Recipe Classification */}
       <SimpleCategorySelector

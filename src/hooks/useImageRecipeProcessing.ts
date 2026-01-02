@@ -3,7 +3,6 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Recipe } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
-import { sanitizeRecipeData } from "@/utils/contentSanitizer";
 import { normalizeCuisineRegion } from "@/utils/recipeClassification";
 
 export function useImageRecipeProcessing() {
@@ -105,29 +104,48 @@ export function useImageRecipeProcessing() {
       setProgressValue(85);
       setImportProgress("Finalizing recipe...");
 
-      // Sanitize the recipe data
-      const sanitizedRecipe = sanitizeRecipeData(parsedRecipe);
-      
-      // Create the recipe data structure
-      const recipeData = { 
-        title: sanitizedRecipe.title || "Recipe from Image",
-        description: sanitizedRecipe.description || "",
-        ingredients: parsedRecipe.ingredients || sanitizedRecipe.ingredients || [],
-        ingredient_group_indices: Array.isArray(parsedRecipe.ingredientGroupIndices) 
-          ? parsedRecipe.ingredientGroupIndices 
-          : undefined,
-        instructions: parsedRecipe.instructions || sanitizedRecipe.instructions || [],
-        prep_time: parsedRecipe.prepTime || sanitizedRecipe.prep_time || 15,
-        cook_time: parsedRecipe.cookTime || sanitizedRecipe.cook_time || 30,
-        servings: parsedRecipe.servings || sanitizedRecipe.servings || 4,
-        // Apply AI classification
-        meal_type: parsedRecipe.mealType || undefined,
-        cuisine_region: normalizeCuisineRegion(parsedRecipe.cuisineRegion) || undefined,
-        diet_lifestyle: parsedRecipe.dietLifestyle || [],
-        // complexity_level removed
-        top_tip: parsedRecipe.topTip || "Enjoy cooking this delicious recipe!",
+      // Transform the data to match our Recipe interface (same as URL import)
+      const transformedRecipe = {
+        title: parsedRecipe.title || "Recipe from Image",
+        description: parsedRecipe.description || "",
+        ingredients: Array.isArray(parsedRecipe.ingredients) ? parsedRecipe.ingredients : [],
+        ingredient_group_indices: Array.isArray(parsedRecipe.ingredientGroupIndices) ? parsedRecipe.ingredientGroupIndices : undefined,
+        instructions: Array.isArray(parsedRecipe.instructions) ? parsedRecipe.instructions : [],
+        prep_time: parsedRecipe.prepTime || 0,
+        cook_time: parsedRecipe.cookTime || 0,
+        servings: parsedRecipe.servings || 1,
+        top_tip: parsedRecipe.topTip || "",
         alcoholic_pairing: parsedRecipe.alcoholicPairing || null,
         non_alcoholic_pairing: parsedRecipe.nonAlcoholicPairing || null,
+        // Convert mealType (string) to meal_types (array)
+        meal_types: parsedRecipe.mealType ? [parsedRecipe.mealType] : [],
+        // Don't auto-select cuisine - let user confirm/reject via autotag buttons
+        cuisine_region: undefined,
+        diet_lifestyle: Array.isArray(parsedRecipe.dietLifestyle) ? parsedRecipe.dietLifestyle : [],
+        // Store suggested tags for confirmation (support multiple cuisines)
+        suggestedTags: {
+          meal_types: parsedRecipe.mealType ? [parsedRecipe.mealType] : [],
+          cuisine_region: (() => {
+            const cuisine = parsedRecipe.cuisineRegion;
+            if (Array.isArray(cuisine)) {
+              // Normalize all cuisine suggestions
+              const normalized = cuisine.map(c => normalizeCuisineRegion(c)).filter(Boolean);
+              console.log('✅ Storing cuisine suggestions (array):', normalized);
+              return normalized;
+            }
+            if (cuisine) {
+              // Normalize single cuisine suggestion
+              const normalized = normalizeCuisineRegion(cuisine);
+              if (normalized) {
+                console.log('✅ Storing cuisine suggestion (single):', normalized, '(normalized from:', cuisine, ')');
+                return [normalized];
+              }
+            }
+            console.warn('⚠️ No cuisine suggestion from AI');
+            return [];
+          })(),
+          diet_lifestyle: Array.isArray(parsedRecipe.dietLifestyle) ? parsedRecipe.dietLifestyle : [],
+        },
         image: undefined, // Don't use the uploaded image - copyright concerns
         is_favorite: false,
         has_cooked: false,
@@ -155,10 +173,10 @@ export function useImageRecipeProcessing() {
       
       toast({
         title: "Image Processed! 📷",
-        description: `Successfully extracted "${recipeData.title}" from the image.`,
+        description: `Successfully extracted "${transformedRecipe.title}" from the image.`,
       });
 
-      return recipeData;
+      return transformedRecipe;
       
     } catch (error) {
       console.error('Error processing recipe image:', error);

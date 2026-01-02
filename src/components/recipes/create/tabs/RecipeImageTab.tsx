@@ -114,11 +114,11 @@ export function RecipeImageTab({
           {uploadedFile && (
             <div className="space-y-3">
               <p className="text-sm text-green-600 font-medium">📷 Photo uploaded successfully!</p>
-              <div className="w-full max-w-md mx-auto">
+              <div className="flex justify-center">
                 <img 
                   src={URL.createObjectURL(uploadedFile)} 
                   alt="Uploaded recipe" 
-                  className="w-full h-auto max-h-64 object-contain rounded-[12px] border border-[#E3E3E3] bg-[#FAF9F6]"
+                  className="w-20 h-20 object-cover rounded-[8px] border border-[#E3E3E3] bg-[#FAF9F6]"
                 />
               </div>
             </div>

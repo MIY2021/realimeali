@@ -3,7 +3,6 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Recipe } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
-import { sanitizeRecipeData } from "@/utils/contentSanitizer";
 import { normalizeCuisineRegion } from "@/utils/recipeClassification";
 
 export function useTextRecipeProcessing() {
@@ -60,30 +59,58 @@ export function useTextRecipeProcessing() {
 
       console.log('Received processed recipe:', data.parsedRecipe);
       
-      // Sanitize the recipe data while preserving original ingredient formatting
-      const sanitizedRecipe = sanitizeRecipeData(data.parsedRecipe);
+      const recipeData = data.parsedRecipe;
       
-      // Ensure ingredients maintain their original quantities and formatting
-      const recipeData = { 
-        ...currentRecipe, 
-        ...sanitizedRecipe,
-        // Preserve original ingredient strings with quantities
-        ingredients: data.parsedRecipe.ingredients || sanitizedRecipe.ingredients || [],
-        // Store group indices from AI parsing
-        ingredient_group_indices: Array.isArray(data.parsedRecipe.ingredientGroupIndices) 
-          ? data.parsedRecipe.ingredientGroupIndices 
-          : undefined,
-        // Apply AI classification
-        meal_type: data.parsedRecipe.mealType || currentRecipe.meal_type,
-        cuisine_region: normalizeCuisineRegion(data.parsedRecipe.cuisineRegion) || currentRecipe.cuisine_region,
-        diet_lifestyle: data.parsedRecipe.dietLifestyle || currentRecipe.diet_lifestyle || [],
-        // complexity_level removed
-        top_tip: data.parsedRecipe.topTip || "Enjoy cooking this delicious recipe!",
-        alcoholic_pairing: data.parsedRecipe.alcoholicPairing || null,
-        non_alcoholic_pairing: data.parsedRecipe.nonAlcoholicPairing || null,
+      // Transform the data to match our Recipe interface (same as URL import)
+      const transformedRecipe = {
+        ...currentRecipe,
+        title: recipeData.title || "",
+        description: recipeData.description || "",
+        ingredients: Array.isArray(recipeData.ingredients) ? recipeData.ingredients : [],
+        ingredient_group_indices: Array.isArray(recipeData.ingredientGroupIndices) ? recipeData.ingredientGroupIndices : undefined,
+        instructions: Array.isArray(recipeData.instructions) ? recipeData.instructions : [],
+        prep_time: recipeData.prepTime || 0,
+        cook_time: recipeData.cookTime || 0,
+        servings: recipeData.servings || 1,
+        top_tip: recipeData.topTip || "",
+        alcoholic_pairing: recipeData.alcoholicPairing || null,
+        non_alcoholic_pairing: recipeData.nonAlcoholicPairing || null,
+        // Convert mealType (string) to meal_types (array)
+        meal_types: recipeData.mealType ? [recipeData.mealType] : (currentRecipe.meal_types || []),
+        // Don't auto-select cuisine - let user confirm/reject via autotag buttons
+        cuisine_region: currentRecipe.cuisine_region,
+        diet_lifestyle: Array.isArray(recipeData.dietLifestyle) ? recipeData.dietLifestyle : (currentRecipe.diet_lifestyle || []),
+        // Store suggested tags for confirmation (support multiple cuisines)
+        suggestedTags: {
+          meal_types: recipeData.mealType ? [recipeData.mealType] : [],
+          cuisine_region: (() => {
+            const cuisine = recipeData.cuisineRegion;
+            if (Array.isArray(cuisine)) {
+              // Normalize all cuisine suggestions
+              const normalized = cuisine.map(c => normalizeCuisineRegion(c)).filter(Boolean);
+              console.log('✅ Storing cuisine suggestions (array):', normalized);
+              return normalized;
+            }
+            if (cuisine) {
+              // Normalize single cuisine suggestion
+              const normalized = normalizeCuisineRegion(cuisine);
+              if (normalized) {
+                console.log('✅ Storing cuisine suggestion (single):', normalized, '(normalized from:', cuisine, ')');
+                return [normalized];
+              }
+            }
+            console.warn('⚠️ No cuisine suggestion from AI');
+            return [];
+          })(),
+          diet_lifestyle: Array.isArray(recipeData.dietLifestyle) ? recipeData.dietLifestyle : [],
+        },
+        household_id: currentRecipe.household_id,
+        is_favorite: currentRecipe.is_favorite,
+        has_cooked: currentRecipe.has_cooked,
+        image: undefined, // Start with no image so user can select
       };
       
-      setNewRecipe(recipeData);
+      setNewRecipe(transformedRecipe);
       setActiveTab("manual");
       
       toast({

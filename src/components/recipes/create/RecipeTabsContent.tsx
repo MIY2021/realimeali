@@ -6,6 +6,7 @@ import { RecipeImageTab } from "./tabs/RecipeImageTab";
 import { RecipeGenerateTab } from "./tabs/RecipeGenerateTab";
 import { RecipeManualTab } from "./tabs/RecipeManualTab";
 import { RecipeWhatCanIMakeTab } from "./tabs/RecipeWhatCanIMakeTab";
+import { RecipeOrigin } from "./hooks/useRecipeCreationHandlers";
 
 interface RecipeTabsContentProps {
   isMobile: boolean;
@@ -17,6 +18,7 @@ interface RecipeTabsContentProps {
   onGenerateRecipe: () => void;
   onGenerateImage: () => void;
   onSelectWhatCanIMakeRecipe?: (recipe: any) => void;
+  recipeOrigin?: RecipeOrigin;
 }
 
 export function RecipeTabsContent({
@@ -29,6 +31,7 @@ export function RecipeTabsContent({
   onGenerateRecipe,
   onGenerateImage,
   onSelectWhatCanIMakeRecipe,
+  recipeOrigin = 'manual',
 }: RecipeTabsContentProps) {
   return (
     <div className="pt-0">
@@ -114,6 +117,7 @@ export function RecipeTabsContent({
           onImageSelect={recipeProcessingHook.handleImageSelect}
           onDownloadImages={recipeProcessingHook.handleDownloadImages}
           isDownloadingImages={recipeProcessingHook.isDownloadingImages}
+          recipeOrigin={recipeOrigin}
         />
       </TabsContent>
     </div>

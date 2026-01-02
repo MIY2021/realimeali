@@ -42,18 +42,21 @@ export function SimpleCategorySelector({ recipe, onRecipeChange }: SimpleCategor
     setConfirmedSuggestions(prev => new Set([...prev, `${category}:${value}`]));
     setInteractedItems(prev => new Set([...prev, `${category}:${value}`]));
     
+    // Prepare recipe field updates
+    let updatedRecipe: any = { ...recipe };
+    
     // Select the value when confirmed
     if (category === 'cuisine') {
-      updateRecipeField('cuisine_region', value);
+      updatedRecipe.cuisine_region = value;
     } else if (category === 'meal_types') {
       const currentTypes = recipe.meal_types || [];
       if (!currentTypes.includes(value)) {
-        updateRecipeField('meal_types', [...currentTypes, value]);
+        updatedRecipe.meal_types = [...currentTypes, value];
       }
     } else if (category === 'diet_lifestyle') {
       const current = recipe.diet_lifestyle || [];
       if (!current.includes(value)) {
-        updateRecipeField('diet_lifestyle', [...current, value]);
+        updatedRecipe.diet_lifestyle = [...current, value];
       }
     }
     
@@ -75,11 +78,12 @@ export function SimpleCategorySelector({ recipe, onRecipeChange }: SimpleCategor
       (Array.isArray(updatedSuggestedTags.cuisine_region) ? updatedSuggestedTags.cuisine_region.length > 0 : updatedSuggestedTags.cuisine_region) ||
       (updatedSuggestedTags.diet_lifestyle?.length > 0);
     
+    // Combine all updates into a single call
     if (!hasRemainingSuggestions) {
-      const { suggestedTags, ...rest } = recipe as any;
+      const { suggestedTags, ...rest } = updatedRecipe;
       onRecipeChange(rest);
     } else {
-      onRecipeChange({ ...recipe, suggestedTags: updatedSuggestedTags });
+      onRecipeChange({ ...updatedRecipe, suggestedTags: updatedSuggestedTags });
     }
   };
 
@@ -87,15 +91,18 @@ export function SimpleCategorySelector({ recipe, onRecipeChange }: SimpleCategor
     setConfirmedSuggestions(prev => new Set([...prev, `${category}:${value}`]));
     setInteractedItems(prev => new Set([...prev, `${category}:${value}`]));
     
+    // Prepare recipe field updates
+    let updatedRecipe: any = { ...recipe };
+    
     // Remove from selected if it was auto-selected
     if (category === 'meal_types') {
       const currentTypes = recipe.meal_types || [];
-      updateRecipeField('meal_types', currentTypes.filter((t: string) => t !== value));
+      updatedRecipe.meal_types = currentTypes.filter((t: string) => t !== value);
     } else if (category === 'cuisine' && recipe.cuisine_region === value) {
-      updateRecipeField('cuisine_region', undefined);
+      updatedRecipe.cuisine_region = undefined;
     } else if (category === 'diet_lifestyle') {
       const current = recipe.diet_lifestyle || [];
-      updateRecipeField('diet_lifestyle', current.filter((d: string) => d !== value));
+      updatedRecipe.diet_lifestyle = current.filter((d: string) => d !== value);
     }
     
     // Remove from suggestedTags
@@ -116,11 +123,12 @@ export function SimpleCategorySelector({ recipe, onRecipeChange }: SimpleCategor
       (Array.isArray(updatedSuggestedTags.cuisine_region) ? updatedSuggestedTags.cuisine_region.length > 0 : updatedSuggestedTags.cuisine_region) ||
       (updatedSuggestedTags.diet_lifestyle?.length > 0);
     
+    // Combine all updates into a single call
     if (!hasRemainingSuggestions) {
-      const { suggestedTags, ...rest } = recipe as any;
+      const { suggestedTags, ...rest } = updatedRecipe;
       onRecipeChange(rest);
     } else {
-      onRecipeChange({ ...recipe, suggestedTags: updatedSuggestedTags });
+      onRecipeChange({ ...updatedRecipe, suggestedTags: updatedSuggestedTags });
     }
   };
 

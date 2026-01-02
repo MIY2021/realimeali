@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useProgressTracking } from './useUrlRecipeProcessing/useProgressTracking';
+import { normalizeCuisineRegion } from '@/utils/recipeClassification';
 
 export function useAiRecipeGeneration() {
   const [isGenerating, setIsGenerating] = useState(false);
@@ -62,28 +63,55 @@ export function useAiRecipeGeneration() {
       // Reset progress after delay
       progressTracking.resetProgress();
 
-      // Transform the AI response to match our Recipe interface
-      return {
+      // Transform the AI response to match our Recipe interface (same as URL import)
+      const transformedRecipe = {
         title: recipe.title || 'AI Generated Recipe',
         description: recipe.description || '',
-        ingredients: recipe.ingredients || [],
-        instructions: recipe.instructions || [],
-        prep_time: recipe.prepTime || 15,
-        cook_time: recipe.cookTime || 30,
-        servings: recipe.servings || 4,
-        top_tip: recipe.topTip || 'Enjoy your AI-generated recipe!',
+        ingredients: Array.isArray(recipe.ingredients) ? recipe.ingredients : [],
+        ingredient_group_indices: Array.isArray(recipe.ingredientGroupIndices) ? recipe.ingredientGroupIndices : undefined,
+        instructions: Array.isArray(recipe.instructions) ? recipe.instructions : [],
+        prep_time: recipe.prepTime || 0,
+        cook_time: recipe.cookTime || 0,
+        servings: recipe.servings || 1,
+        top_tip: recipe.topTip || '',
         alcoholic_pairing: recipe.alcoholicPairing || null,
         non_alcoholic_pairing: recipe.nonAlcoholicPairing || null,
-        meal_type: recipe.mealType,
-        cuisine_region: recipe.cuisineRegion,
-        diet_lifestyle: recipe.dietLifestyle || [],
-        // complexity_level removed
-        main_ingredient: recipe.mainIngredient,
+        // Convert mealType (string) to meal_types (array)
+        meal_types: recipe.mealType ? [recipe.mealType] : [],
+        // Don't auto-select cuisine - let user confirm/reject via autotag buttons
+        cuisine_region: undefined,
+        diet_lifestyle: Array.isArray(recipe.dietLifestyle) ? recipe.dietLifestyle : [],
+        // Store suggested tags for confirmation (support multiple cuisines)
+        suggestedTags: {
+          meal_types: recipe.mealType ? [recipe.mealType] : [],
+          cuisine_region: (() => {
+            const cuisine = recipe.cuisineRegion;
+            if (Array.isArray(cuisine)) {
+              // Normalize all cuisine suggestions
+              const normalized = cuisine.map(c => normalizeCuisineRegion(c)).filter(Boolean);
+              console.log('✅ Storing cuisine suggestions (array):', normalized);
+              return normalized;
+            }
+            if (cuisine) {
+              // Normalize single cuisine suggestion
+              const normalized = normalizeCuisineRegion(cuisine);
+              if (normalized) {
+                console.log('✅ Storing cuisine suggestion (single):', normalized, '(normalized from:', cuisine, ')');
+                return [normalized];
+              }
+            }
+            console.warn('⚠️ No cuisine suggestion from AI');
+            return [];
+          })(),
+          diet_lifestyle: Array.isArray(recipe.dietLifestyle) ? recipe.dietLifestyle : [],
+        },
         image: undefined,
         is_favorite: false,
         has_cooked: false,
         household_id: '',
       };
+
+      return transformedRecipe;
 
     } catch (error) {
       console.error('❌ Error generating recipe:', error);
