@@ -155,6 +155,25 @@ export const useRecipeCreationHandlers = ({
       return;
     }
 
+    // Validate required fields
+    if (!recipeFormHook.newRecipe.meal_types || recipeFormHook.newRecipe.meal_types.length === 0) {
+      toast({
+        title: "Meal Type Required",
+        description: "Please select at least one meal type for this recipe.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!recipeFormHook.newRecipe.cuisine_region) {
+      toast({
+        title: "Cuisine Required",
+        description: "Please select a cuisine for this recipe.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSaving(true);
     
     try {
@@ -172,8 +191,8 @@ export const useRecipeCreationHandlers = ({
         household_id: currentHousehold.id,
       };
 
-      // Extract downloadedImageFile if it exists (from URL import with user-selected image)
-      const { downloadedImageFile, ...recipeData } = recipeToSave as any;
+      // Extract downloadedImageFile and suggestedTags if they exist (from URL import)
+      const { downloadedImageFile, suggestedTags, ...recipeData } = recipeToSave as any;
       
       // Use downloadedImageFile if available, otherwise fall back to uploadedImageFile
       const imageFileToUpload = downloadedImageFile || recipeFormHook.uploadedImageFile;

@@ -82,7 +82,7 @@ export const useUrlRecipeProcessing = () => {
 
       if (!data?.parsedRecipe) {
         console.error('❌ No recipe data in response:', data);
-        throw new Error('No recipe data could be extracted from this website. This might happen if:\n• The page doesn\'t contain a recipe\n• The website blocks automated access\n• The recipe format isn\'t recognized\n\nTry copying the recipe text and using the "Paste Recipe Text" tab instead.');
+        throw new Error('No recipe data could be extracted from this website.');
       }
 
       const recipeData = data.parsedRecipe;
@@ -104,9 +104,39 @@ export const useUrlRecipeProcessing = () => {
         top_tip: recipeData.topTip || "",
         alcoholic_pairing: recipeData.alcoholicPairing || null,
         non_alcoholic_pairing: recipeData.nonAlcoholicPairing || null,
-        meal_type: recipeData.mealType || newRecipe.meal_type,
-        cuisine_region: recipeData.cuisineRegion || newRecipe.cuisine_region,
-        diet_lifestyle: recipeData.dietLifestyle || newRecipe.diet_lifestyle || [],
+        // Convert mealType (string) to meal_types (array)
+        meal_types: recipeData.mealType ? [recipeData.mealType] : (newRecipe.meal_types || []),
+        // Set cuisine_region - always auto-select the first suggestion if available
+        cuisine_region: (() => {
+          const cuisine = Array.isArray(recipeData.cuisineRegion) 
+            ? recipeData.cuisineRegion[0] 
+            : recipeData.cuisineRegion;
+          // Always set cuisine if provided by AI, otherwise keep existing
+          if (cuisine) {
+            console.log('✅ Auto-selecting cuisine:', cuisine);
+            return cuisine;
+          }
+          return newRecipe.cuisine_region;
+        })(),
+        diet_lifestyle: Array.isArray(recipeData.dietLifestyle) ? recipeData.dietLifestyle : (newRecipe.diet_lifestyle || []),
+        // Store suggested tags for confirmation (support multiple cuisines)
+        suggestedTags: {
+          meal_types: recipeData.mealType ? [recipeData.mealType] : [],
+          cuisine_region: (() => {
+            const cuisine = recipeData.cuisineRegion;
+            if (Array.isArray(cuisine)) {
+              console.log('✅ Storing cuisine suggestions (array):', cuisine);
+              return cuisine;
+            }
+            if (cuisine) {
+              console.log('✅ Storing cuisine suggestion (single):', cuisine);
+              return [cuisine];
+            }
+            console.warn('⚠️ No cuisine suggestion from AI');
+            return [];
+          })(),
+          diet_lifestyle: Array.isArray(recipeData.dietLifestyle) ? recipeData.dietLifestyle : [],
+        },
         // complexity_level removed
         household_id: newRecipe.household_id,
         is_favorite: newRecipe.is_favorite,

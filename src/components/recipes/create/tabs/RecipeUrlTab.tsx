@@ -93,13 +93,6 @@ export function RecipeUrlTab({
             </div>
             <Progress value={progressValue} className="w-full" />
             <p className="text-sm text-sage font-medium">{importProgress}</p>
-            
-            <Alert className="bg-blue-50 border-blue-200">
-              <AlertCircle className="h-4 w-4 text-blue-600" />
-              <AlertDescription className="text-sm text-blue-800">
-                If this is taking too long, you can cancel and try copying the recipe text instead using the "Paste Recipe Text" tab.
-              </AlertDescription>
-            </Alert>
           </div>
         )}
 

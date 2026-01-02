@@ -429,10 +429,32 @@ serve(async (req) => {
 
 CRITICAL: You MUST carefully examine ingredients for meat content. If ANY meat (beef, pork, lamb, chicken, turkey, fish, seafood, etc.) is present, the recipe CANNOT be classified as "vegetarian" or "vegan". Be extremely careful about this classification.
 
-IMPORTANT: When parsing ingredients, preserve section headers by including them as separate entries in the ingredients array. For example:
-- If you see "For the sauce:" followed by ingredients, include "For the sauce:" as its own entry
-- If you see "For the garnish:" followed by ingredients, include "For the garnish:" as its own entry
-- Section headers should end with a colon and be included exactly as they appear
+CRITICAL: When parsing ingredients, you MUST distinguish between:
+
+1. **Ingredient groups/headers** - Text that describes a COMPONENT or SECTION containing multiple ingredients
+   - Examples: "SESAME-GINGER DRESSING" (a component made from multiple ingredients), "For the sauce:" (introduces sauce ingredients), "Marinade:" (describes a component), "Cream Cheese Frosting" (describes a component, not a single ingredient)
+   - Semantic indicators: Words like dressing, sauce, marinade, topping, garnish, filling, crust, batter, glaze, rub, spice mix, seasoning, paste, puree, reduction
+   - Context: Usually appears before a list of ingredients that belong to that component
+   - Format: Should end with colon when included in ingredients array
+
+2. **Individual ingredients** - Specific items with quantities needed for the recipe
+   - Examples: "2 tbsp soy sauce" (specific item with quantity), "1 clove garlic" (specific item), "SESAME OIL" (specific ingredient, even if ALL CAPS), "Ginger Root" (specific ingredient), "Cream Cheese" (specific ingredient, not a component)
+   - These are things you can buy or measure directly
+
+SEMANTIC UNDERSTANDING RULES:
+- If text describes something that CONTAINS or IS MADE FROM multiple ingredients → it's a group header
+- If text is a specific item you can buy/measure → it's an individual ingredient
+- Groups often introduce sections: "For the [component]:", "[Component]:" followed by ingredients
+- Component names (dressing, sauce, marinade, etc.) indicate groups, not individual ingredients
+
+IMPORTANT EXAMPLES:
+- "SESAME-GINGER DRESSING" describes a component (group), even without colon - add colon when including
+- "SESAME OIL" is a specific ingredient (not a group), even if ALL CAPS
+- "Cream Cheese Frosting" describes a component (group), not a single ingredient
+- "Cream Cheese" is a specific ingredient (not a group)
+- Context matters: read what follows to understand if it's introducing a section
+
+Before finalizing ingredients, review each entry semantically: Does it describe a component/collection, or a specific item? If component, ensure it ends with colon.
 
 Return a JSON object with this EXACT structure:
 {
@@ -448,7 +470,7 @@ Return a JSON object with this EXACT structure:
   "servings": 4,
   "classification": {
     "mealType": "dinner",
-    "cuisineRegion": "italian", 
+    "cuisineRegion": "italian" or ["italian", "mediterranean"] if multiple cuisines apply, 
     "cookingMethod": "oven_baked",
     "dietLifestyle": [],
     "complexityLevel": "standard",
@@ -458,7 +480,7 @@ Return a JSON object with this EXACT structure:
 
 Classification rules:
 - mealType: breakfast, lunch, dinner, snacks, sides, desserts, drinks, sauces_dips, soups_stews, salads, baking_breads
-- cuisineRegion: british, american, italian, french, mexican, indian, chinese, japanese, thai, mediterranean, middle_eastern, african, korean, caribbean, nordic, eastern_european  
+- cuisineRegion: british, american, italian, french, mexican, indian, chinese, japanese, thai, mediterranean, middle_eastern, african, korean, caribbean, nordic, eastern_european (can be a single string or array of strings if multiple cuisines apply - REQUIRED: always suggest at least one cuisine based on ingredients, cooking methods, and recipe name)  
 - cookingMethod: one_pot, oven_baked, air_fryer, slow_cooker, pressure_cooker, bbq_grilled, stir_fried, roasted, raw_no_cook
 - dietLifestyle: ONLY include if 100% certain - check ALL ingredients carefully for meat/dairy/gluten: vegetarian, vegan, pescatarian, gluten_free, dairy_free, low_carb_keto, high_protein, paleo, diabetic_friendly, budget_meals, kid_friendly, pregnancy_safe
 - complexityLevel: quick_easy, standard, complex
@@ -484,10 +506,32 @@ Return ONLY valid JSON. No explanations.`;
 
 CRITICAL: You MUST carefully examine ingredients for meat content. If ANY meat (beef, pork, lamb, chicken, turkey, fish, seafood, etc.) is present, the recipe CANNOT be classified as "vegetarian" or "vegan". Be extremely careful about this classification.
 
-IMPORTANT: When parsing ingredients, preserve section headers by including them as separate entries in the ingredients array. For example:
-- If you see "For the sauce:" followed by ingredients, include "For the sauce:" as its own entry
-- If you see "For the garnish:" followed by ingredients, include "For the garnish:" as its own entry
-- Section headers should end with a colon and be included exactly as they appear
+CRITICAL: When parsing ingredients, you MUST distinguish between:
+
+1. **Ingredient groups/headers** - Text that describes a COMPONENT or SECTION containing multiple ingredients
+   - Examples: "SESAME-GINGER DRESSING" (a component made from multiple ingredients), "For the sauce:" (introduces sauce ingredients), "Marinade:" (describes a component), "Cream Cheese Frosting" (describes a component, not a single ingredient)
+   - Semantic indicators: Words like dressing, sauce, marinade, topping, garnish, filling, crust, batter, glaze, rub, spice mix, seasoning, paste, puree, reduction
+   - Context: Usually appears before a list of ingredients that belong to that component
+   - Format: Should end with colon when included in ingredients array
+
+2. **Individual ingredients** - Specific items with quantities needed for the recipe
+   - Examples: "2 tbsp soy sauce" (specific item with quantity), "1 clove garlic" (specific item), "SESAME OIL" (specific ingredient, even if ALL CAPS), "Ginger Root" (specific ingredient), "Cream Cheese" (specific ingredient, not a component)
+   - These are things you can buy or measure directly
+
+SEMANTIC UNDERSTANDING RULES:
+- If text describes something that CONTAINS or IS MADE FROM multiple ingredients → it's a group header
+- If text is a specific item you can buy/measure → it's an individual ingredient
+- Groups often introduce sections: "For the [component]:", "[Component]:" followed by ingredients
+- Component names (dressing, sauce, marinade, etc.) indicate groups, not individual ingredients
+
+IMPORTANT EXAMPLES:
+- "SESAME-GINGER DRESSING" describes a component (group), even without colon - add colon when including
+- "SESAME OIL" is a specific ingredient (not a group), even if ALL CAPS
+- "Cream Cheese Frosting" describes a component (group), not a single ingredient
+- "Cream Cheese" is a specific ingredient (not a group)
+- Context matters: read what follows to understand if it's introducing a section
+
+Before finalizing ingredients, review each entry semantically: Does it describe a component/collection, or a specific item? If component, ensure it ends with colon.
 
 Return a JSON object with this EXACT structure:
 {
@@ -503,7 +547,7 @@ Return a JSON object with this EXACT structure:
   "servings": 4,
   "classification": {
     "mealType": "dinner",
-    "cuisineRegion": "italian", 
+    "cuisineRegion": "italian" or ["italian", "mediterranean"] if multiple cuisines apply, 
     "cookingMethod": "oven_baked",
     "dietLifestyle": [],
     "complexityLevel": "standard",
@@ -513,7 +557,7 @@ Return a JSON object with this EXACT structure:
 
 Classification rules:
 - mealType: breakfast, lunch, dinner, snacks, sides, desserts, drinks, sauces_dips, soups_stews, salads, baking_breads
-- cuisineRegion: british, american, italian, french, mexican, indian, chinese, japanese, thai, mediterranean, middle_eastern, african, korean, caribbean, nordic, eastern_european  
+- cuisineRegion: british, american, italian, french, mexican, indian, chinese, japanese, thai, mediterranean, middle_eastern, african, korean, caribbean, nordic, eastern_european (can be a single string or array of strings if multiple cuisines apply - REQUIRED: always suggest at least one cuisine based on ingredients, cooking methods, and recipe name)  
 - cookingMethod: one_pot, oven_baked, air_fryer, slow_cooker, pressure_cooker, bbq_grilled, stir_fried, roasted, raw_no_cook
 - dietLifestyle: ONLY include if 100% certain - check ALL ingredients carefully for meat/dairy/gluten: vegetarian, vegan, pescatarian, gluten_free, dairy_free, low_carb_keto, high_protein, paleo, diabetic_friendly, budget_meals, kid_friendly, pregnancy_safe
 - complexityLevel: quick_easy, standard, complex
@@ -542,10 +586,32 @@ Return ONLY valid JSON. No explanations.`;
 
 CRITICAL: You MUST carefully examine ingredients for meat content. If ANY meat (beef, pork, lamb, chicken, turkey, fish, seafood, etc.) is present, the recipe CANNOT be classified as "vegetarian" or "vegan". Be extremely careful about this classification.
 
-IMPORTANT: When parsing ingredients, preserve section headers by including them as separate entries in the ingredients array. For example:
-- If you see "For the sauce:" followed by ingredients, include "For the sauce:" as its own entry
-- If you see "For the garnish:" followed by ingredients, include "For the garnish:" as its own entry
-- Section headers should end with a colon and be included exactly as they appear
+CRITICAL: When parsing ingredients, you MUST distinguish between:
+
+1. **Ingredient groups/headers** - Text that describes a COMPONENT or SECTION containing multiple ingredients
+   - Examples: "SESAME-GINGER DRESSING" (a component made from multiple ingredients), "For the sauce:" (introduces sauce ingredients), "Marinade:" (describes a component), "Cream Cheese Frosting" (describes a component, not a single ingredient)
+   - Semantic indicators: Words like dressing, sauce, marinade, topping, garnish, filling, crust, batter, glaze, rub, spice mix, seasoning, paste, puree, reduction
+   - Context: Usually appears before a list of ingredients that belong to that component
+   - Format: Should end with colon when included in ingredients array
+
+2. **Individual ingredients** - Specific items with quantities needed for the recipe
+   - Examples: "2 tbsp soy sauce" (specific item with quantity), "1 clove garlic" (specific item), "SESAME OIL" (specific ingredient, even if ALL CAPS), "Ginger Root" (specific ingredient), "Cream Cheese" (specific ingredient, not a component)
+   - These are things you can buy or measure directly
+
+SEMANTIC UNDERSTANDING RULES:
+- If text describes something that CONTAINS or IS MADE FROM multiple ingredients → it's a group header
+- If text is a specific item you can buy/measure → it's an individual ingredient
+- Groups often introduce sections: "For the [component]:", "[Component]:" followed by ingredients
+- Component names (dressing, sauce, marinade, etc.) indicate groups, not individual ingredients
+
+IMPORTANT EXAMPLES:
+- "SESAME-GINGER DRESSING" describes a component (group), even without colon - add colon when including
+- "SESAME OIL" is a specific ingredient (not a group), even if ALL CAPS
+- "Cream Cheese Frosting" describes a component (group), not a single ingredient
+- "Cream Cheese" is a specific ingredient (not a group)
+- Context matters: read what follows to understand if it's introducing a section
+
+Before finalizing ingredients, review each entry semantically: Does it describe a component/collection, or a specific item? If component, ensure it ends with colon.
 
 Return a JSON object with this EXACT structure:
 {
@@ -561,7 +627,7 @@ Return a JSON object with this EXACT structure:
   "servings": 4,
   "classification": {
     "mealType": "dinner",
-    "cuisineRegion": "italian", 
+    "cuisineRegion": "italian" or ["italian", "mediterranean"] if multiple cuisines apply, 
     "cookingMethod": "oven_baked",
     "dietLifestyle": [],
     "complexityLevel": "standard",
@@ -571,7 +637,7 @@ Return a JSON object with this EXACT structure:
 
 Classification rules:
 - mealType: breakfast, lunch, dinner, snacks, sides, desserts, drinks, sauces_dips, soups_stews, salads, baking_breads
-- cuisineRegion: british, american, italian, french, mexican, indian, chinese, japanese, thai, mediterranean, middle_eastern, african, korean, caribbean, nordic, eastern_european  
+- cuisineRegion: british, american, italian, french, mexican, indian, chinese, japanese, thai, mediterranean, middle_eastern, african, korean, caribbean, nordic, eastern_european (can be a single string or array of strings if multiple cuisines apply - REQUIRED: always suggest at least one cuisine based on ingredients, cooking methods, and recipe name)  
 - cookingMethod: one_pot, oven_baked, air_fryer, slow_cooker, pressure_cooker, bbq_grilled, stir_fried, roasted, raw_no_cook
 - dietLifestyle: ONLY include if if 100% certain - check ALL ingredients carefully for meat/dairy/gluten: vegetarian, vegan, pescatarian, gluten_free, dairy_free, low_carb_keto, high_protein, paleo, diabetic_friendly, budget_meals, kid_friendly, pregnancy_safe
 - complexityLevel: quick_easy, standard, complex
@@ -641,7 +707,7 @@ Return a JSON object with this EXACT structure:
   "servings": 4,
   "classification": {
     "mealType": "dinner",
-    "cuisineRegion": "italian",
+    "cuisineRegion": "italian" or ["italian", "mediterranean"] if multiple cuisines apply,
     "cookingMethod": "oven_baked", 
     "dietLifestyle": [],
     "complexityLevel": "standard",
@@ -651,7 +717,7 @@ Return a JSON object with this EXACT structure:
 
 Classification rules:
 - mealType: breakfast, lunch, dinner, snacks, sides, desserts, drinks, sauces_dips, soups_stews, salads, baking_breads
-- cuisineRegion: british, american, italian, french, mexican, indian, chinese, japanese, thai, mediterranean, middle_eastern, african, korean, caribbean, nordic, eastern_european
+- cuisineRegion: british, american, italian, french, mexican, indian, chinese, japanese, thai, mediterranean, middle_eastern, african, korean, caribbean, nordic, eastern_european (can be a single string or array of strings if multiple cuisines apply - REQUIRED: always suggest at least one cuisine based on ingredients, cooking methods, and recipe name)
 - cookingMethod: one_pot, oven_baked, air_fryer, slow_cooker, pressure_cooker, bbq_grilled, stir_fried, roasted, raw_no_cook  
 - dietLifestyle: ONLY include if if 100% certain - check ALL ingredients carefully for meat/dairy/gluten: vegetarian, vegan, pescatarian, gluten_free, dairy_free, low_carb_keto, high_protein, paleo, diabetic_friendly, budget_meals, kid_friendly, pregnancy_safe
 - complexityLevel: quick_easy, standard, complex
@@ -719,10 +785,38 @@ Create realistic recipes with proper ingredient amounts and detailed cooking ste
       const parsedRecipe = JSON.parse(cleanedContent);
       
       // Validate and clean the response
+      const rawIngredients = Array.isArray(parsedRecipe.ingredients) ? parsedRecipe.ingredients : [];
+      
+      // Optional: Log potential missed ingredient groups for monitoring
+      // (Conservative check - only flags obvious cases with group keywords)
+      const groupKeywords = ['dressing', 'sauce', 'marinade', 'topping', 'garnish', 'filling', 'crust', 'batter', 'glaze', 'rub', 'spice mix', 'seasoning', 'paste', 'puree', 'reduction', 'frosting', 'icing'];
+      const measurementWords = ['cup', 'cups', 'tbsp', 'tablespoon', 'tsp', 'teaspoon', 'oz', 'ounce', 'lb', 'pound', 'g', 'gram', 'ml', 'milliliter'];
+      
+      const potentialMissedGroups: string[] = [];
+      for (let i = 0; i < rawIngredients.length; i++) {
+        const ing = String(rawIngredients[i] || '').trim();
+        if (!ing || ing.endsWith(':')) continue; // Skip empty or already-formatted groups
+        
+        const lowerIng = ing.toLowerCase();
+        const hasGroupKeyword = groupKeywords.some(kw => lowerIng.includes(kw));
+        const hasQuantity = /\d/.test(ing) || measurementWords.some(mw => lowerIng.includes(mw));
+        const hasFollowingIngredients = i < rawIngredients.length - 1 && rawIngredients.slice(i + 1, i + 3).length >= 2;
+        const startsWithFor = /^for\s+(the\s+)?/i.test(ing);
+        
+        // Very conservative: only log if has keyword, no quantity, and (has context OR starts with "For")
+        if (hasGroupKeyword && !hasQuantity && (hasFollowingIngredients || startsWithFor)) {
+          potentialMissedGroups.push(ing);
+        }
+      }
+      
+      if (potentialMissedGroups.length > 0) {
+        console.log(`[IngredientGroupDetector] Potential missed group headers (for review):`, potentialMissedGroups);
+      }
+      
       const cleanedRecipe = {
         title: cleanMarkdownFormatting(parsedRecipe.title) || 'Untitled Recipe',
         description: parsedRecipe.description || '',
-        ingredients: Array.isArray(parsedRecipe.ingredients) ? parsedRecipe.ingredients : [],
+        ingredients: rawIngredients,
         instructions: Array.isArray(parsedRecipe.instructions) ? parsedRecipe.instructions : [],
         topTip: parsedRecipe.topTip || 'Enjoy cooking this delicious recipe!',
         alcoholicPairing: parsedRecipe.alcoholicPairing || null,
@@ -732,7 +826,7 @@ Create realistic recipes with proper ingredient amounts and detailed cooking ste
         servings: Math.max(1, parseInt(parsedRecipe.servings) || 1),
         // Include classification
         mealType: parsedRecipe.classification?.mealType,
-        cuisineRegion: parsedRecipe.classification?.cuisineRegion,
+        cuisineRegion: parsedRecipe.classification?.cuisineRegion || 'british', // Can be string or array, default to british if not provided
         cookingMethod: parsedRecipe.classification?.cookingMethod,
         dietLifestyle: Array.isArray(parsedRecipe.classification?.dietLifestyle) 
           ? parsedRecipe.classification.dietLifestyle 

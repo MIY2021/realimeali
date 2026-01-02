@@ -52,18 +52,6 @@ export function EnhancedImageSelection({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <Label className="text-sm font-medium">Select an image for this recipe:</Label>
-        {storedImages.length === 0 && images.length > 0 && onDownloadImages && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onDownloadImages}
-            disabled={isDownloading}
-            className="flex items-center gap-2"
-          >
-            <ArrowRight className="h-4 w-4" />
-            {isDownloading ? 'Downloading...' : 'Download Images'}
-          </Button>
-        )}
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">

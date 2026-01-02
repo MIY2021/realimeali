@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import { X, Plus, GripVertical, Edit, LayoutGrid } from "lucide-react";
 import { DragDropContext, Droppable, Draggable, DropResult } from "react-beautiful-dnd";
 
@@ -17,6 +19,7 @@ export function EnhancedIngredientManager({ ingredients, onIngredientsChange }: 
   const [newGroup, setNewGroup] = useState("");
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editValue, setEditValue] = useState("");
+  const [editIsGroup, setEditIsGroup] = useState(false);
   const [isAddingGroup, setIsAddingGroup] = useState(false);
 
   const addIngredient = () => {
@@ -41,22 +44,31 @@ export function EnhancedIngredientManager({ ingredients, onIngredientsChange }: 
 
   const startEditing = (index: number) => {
     setEditingIndex(index);
-    setEditValue(ingredients[index]);
+    const currentValue = ingredients[index];
+    setEditValue(currentValue);
+    setEditIsGroup(isHeader(currentValue));
   };
 
   const saveEdit = () => {
     if (editingIndex !== null && editValue.trim()) {
       const newIngredients = [...ingredients];
-      newIngredients[editingIndex] = editValue.trim();
+      let finalValue = editValue.trim();
+      // If marked as group, ensure it ends with colon
+      if (editIsGroup && !finalValue.endsWith(':')) {
+        finalValue = `${finalValue}:`;
+      }
+      newIngredients[editingIndex] = finalValue;
       onIngredientsChange(newIngredients);
     }
     setEditingIndex(null);
     setEditValue("");
+    setEditIsGroup(false);
   };
 
   const cancelEdit = () => {
     setEditingIndex(null);
     setEditValue("");
+    setEditIsGroup(false);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent, action: () => void) => {
@@ -147,15 +159,29 @@ export function EnhancedIngredientManager({ ingredients, onIngredientsChange }: 
                           )}
                           
                           {editingIndex === index ? (
-                            <div className="flex-1 flex flex-col gap-1">
+                            <div className="flex-1 flex flex-col gap-1.5">
                               <Input
                                 value={editValue}
                                 onChange={(e) => setEditValue(e.target.value)}
                                 onKeyPress={(e) => handleKeyPress(e, saveEdit)}
                                 className="flex-1 text-sm h-8 rounded-[8px] border-[#E3E3E3] focus:border-sage focus:ring-sage"
                                 autoFocus
-                                placeholder={ingredientIsHeader ? "Group name (e.g., For the sauce)" : "Ingredient (e.g., 2 cups flour)"}
+                                placeholder={editIsGroup ? "Group name (e.g., For the sauce)" : "Ingredient (e.g., 2 cups flour)"}
                               />
+                              <div className="flex items-center gap-2">
+                                <Checkbox
+                                  id={`group-checkbox-${index}`}
+                                  checked={editIsGroup}
+                                  onCheckedChange={(checked) => setEditIsGroup(checked === true)}
+                                  className="h-4 w-4"
+                                />
+                                <Label 
+                                  htmlFor={`group-checkbox-${index}`}
+                                  className="text-xs text-[#6B6B6B] cursor-pointer"
+                                >
+                                  This is a group
+                                </Label>
+                              </div>
                               <div className="flex gap-1">
                                 <Button size="sm" onClick={saveEdit} className="px-2 text-xs h-7 bg-[#CFE6D6] hover:bg-[#B8D9C5] text-[#1A1A1A]">
                                   Save

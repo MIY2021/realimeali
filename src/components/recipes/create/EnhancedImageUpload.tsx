@@ -120,7 +120,6 @@ export function EnhancedImageUpload({
         {/* Show website images only if available and not from upload */}
         {hasWebsiteImages && (
           <div className="space-y-3">
-            <h4 className="text-sm font-medium">Or choose from imported images:</h4>
             <WebsiteImageSelection
               websiteImages={websiteImages}
               storedImages={storedImages}
@@ -156,7 +155,7 @@ export function EnhancedImageUpload({
             ) : (
               <>
                 <Camera className="h-4 w-4 mr-2" />
-                Generate with AI
+                Generate recipe image with AI
               </>
             )}
           </Button>

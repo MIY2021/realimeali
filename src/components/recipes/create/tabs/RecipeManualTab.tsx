@@ -122,12 +122,33 @@ export function RecipeManualTab({
 
   return (
     <div className="space-y-3">
-      {/* Basic Information + Image - Two column layout on desktop */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
-        {/* Basic Information - Takes up 2 columns */}
-        <Card className="lg:col-span-2 rounded-[12px] border border-[#E3E3E3] shadow-sm bg-white">
+      {/* Recipe Image - Moved to top */}
+      <Card className="rounded-[12px] border border-[#E3E3E3] shadow-sm bg-white">
+        <CardHeader className="pb-2 px-4 sm:px-6">
+          <CardTitle className="text-base font-semibold text-[#1A1A1A]">Recipe Image</CardTitle>
+        </CardHeader>
+        <CardContent className="px-4 sm:px-6">
+          <EnhancedImageUpload
+            imagePreview={imagePreview}
+            isGenerating={isGeneratingImage}
+            generationProgress={generationProgress}
+            onImageChange={onImageChange}
+            onGenerateImage={onGenerateImage}
+            onImageSelect={handleUrlImageSelect}
+            recipeTitle={newRecipe.title}
+            websiteImages={websiteImages}
+            storedImages={storedImages}
+            selectedImage={selectedImage}
+            onDownloadImages={onDownloadImages}
+            isDownloadingImages={isDownloadingImages}
+          />
+        </CardContent>
+      </Card>
+
+      {/* Basic Information */}
+      <Card className="rounded-[12px] border border-[#E3E3E3] shadow-sm bg-white">
           <CardHeader className="pb-2 px-4 sm:px-6">
-            <CardTitle className="text-base font-semibold text-[#1A1A1A]">Basic Information</CardTitle>
+            <CardTitle className="text-base font-semibold text-[#1A1A1A]">Recipe Summary</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 px-4 sm:px-6">
             <div>
@@ -202,30 +223,6 @@ export function RecipeManualTab({
             </div>
           </CardContent>
         </Card>
-
-        {/* Image Upload - Takes up 1 column */}
-        <Card className="lg:col-span-1 rounded-[12px] border border-[#E3E3E3] shadow-sm bg-white">
-          <CardHeader className="pb-2 px-4 sm:px-6">
-            <CardTitle className="text-base font-semibold text-[#1A1A1A]">Recipe Image</CardTitle>
-          </CardHeader>
-          <CardContent className="px-4 sm:px-6">
-            <EnhancedImageUpload
-              imagePreview={imagePreview}
-              isGenerating={isGeneratingImage}
-              generationProgress={generationProgress}
-              onImageChange={onImageChange}
-              onGenerateImage={onGenerateImage}
-              onImageSelect={handleUrlImageSelect}
-              recipeTitle={newRecipe.title}
-              websiteImages={websiteImages}
-              storedImages={storedImages}
-              selectedImage={selectedImage}
-              onDownloadImages={onDownloadImages}
-              isDownloadingImages={isDownloadingImages}
-            />
-          </CardContent>
-        </Card>
-      </div>
 
       {/* Recipe Classification */}
       <SimpleCategorySelector
