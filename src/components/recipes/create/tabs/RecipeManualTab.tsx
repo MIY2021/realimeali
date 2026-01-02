@@ -73,13 +73,50 @@ export function RecipeManualTab({
     setNewRecipe({ ...newRecipe, instructions });
   };
 
-  const handleUrlImageSelect = (url: string) => {
+  const handleUrlImageSelect = async (url: string) => {
     console.log('🖼️ URL image selected in manual tab:', url);
     // Update the recipe image directly
     setNewRecipe({ ...newRecipe, image: url });
     // Also call the external handler if provided
     if (onImageSelect) {
       onImageSelect(url);
+    }
+    
+    // Download the newly selected image and store it for upload during save
+    if (url) {
+      try {
+        console.log('📥 Downloading newly selected image for upload...');
+        const imageResponse = await fetch(url);
+        if (!imageResponse.ok) {
+          throw new Error(`Failed to fetch image: ${imageResponse.status}`);
+        }
+        
+        const imageBlob = await imageResponse.blob();
+        const imageFile = new File([imageBlob], 'recipe-image.jpg', { type: 'image/jpeg' });
+        
+        // Store the file in the recipe object so it can be used during save
+        setNewRecipe(prev => ({ 
+          ...prev, 
+          image: url,
+          downloadedImageFile: imageFile 
+        }));
+        
+        console.log('✅ Newly selected image downloaded and ready for upload');
+      } catch (error) {
+        console.error('⚠️ Failed to download newly selected image:', error);
+        // Continue with just the URL - the save handler will generate thumbnail from URL
+        // Clear any existing downloadedImageFile
+        setNewRecipe(prev => {
+          const { downloadedImageFile, ...rest } = prev as any;
+          return { ...rest, image: url };
+        });
+      }
+    } else {
+      // Clear the downloaded file if image is cleared
+      setNewRecipe(prev => {
+        const { downloadedImageFile, ...rest } = prev as any;
+        return rest;
+      });
     }
   };
 
