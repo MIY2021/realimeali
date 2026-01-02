@@ -22,7 +22,7 @@ const humorousMessages = [
   "Finding the perfect avocados...",
   "Calculating cheese requirements...",
   "Searching for that one spice...",
-  "Organizing by grocery store aisles...",
+  "Organising by grocery store aisles...",
   "Making sure we don't forget bread...",
   "Getting my reading glasses on...",
   "Squinting at tiny recipe text...",
@@ -42,12 +42,12 @@ const humorousMessages = [
   "Adding items we'll forget to buy...",
   "Estimating how much milk we need...",
   "Planning for midnight snack attacks...",
-  "Organizing ingredients by urgency...",
+  "Organising ingredients by urgency...",
   "Adding backup dinner options...",
   "Checking if we need more coffee...",
   "Preparing for cooking adventures...",
   "Mapping out the perfect shop...",
-  "Adding treats for good behavior...",
+  "Adding treats for good behaviour...",
   "Planning meals that won't fail..."
 ];
 

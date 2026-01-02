@@ -56,6 +56,101 @@ async function retryWithBackoff<T>(
   throw new Error('Max retries exceeded');
 }
 
+// Helper function to extract recipe data from JSON-LD structured data
+function extractRecipeFromStructuredData(jsonLdData: any): string | null {
+  try {
+    // Handle arrays (many sites wrap structured data in arrays)
+    const dataArray = Array.isArray(jsonLdData) ? jsonLdData : [jsonLdData];
+    
+    for (const item of dataArray) {
+      // Handle @graph arrays (used by some sites)
+      const itemsToCheck = item['@graph'] || [item];
+      
+      for (const data of itemsToCheck) {
+        // Check if this is a Recipe schema
+        const type = data['@type'] || data.type;
+        if (type === 'Recipe' || (Array.isArray(type) && type.includes('Recipe'))) {
+          console.log('Found Recipe structured data');
+          
+          const title = data.name || data.headline || '';
+          const description = data.description || '';
+          
+          // Extract ingredients
+          let ingredientsText = '';
+          if (data.recipeIngredient) {
+            const ingredients = Array.isArray(data.recipeIngredient) 
+              ? data.recipeIngredient 
+              : [data.recipeIngredient];
+            ingredientsText = 'Ingredients:\n' + ingredients.map((ing: string) => `- ${ing}`).join('\n');
+          }
+          
+          // Extract instructions
+          let instructionsText = '';
+          if (data.recipeInstructions) {
+            const instructions = Array.isArray(data.recipeInstructions) 
+              ? data.recipeInstructions 
+              : [data.recipeInstructions];
+            
+            instructionsText = '\n\nInstructions:\n';
+            let stepIndex = 1;
+            
+            const extractInstructionStep = (step: any): void => {
+              if (typeof step === 'string') {
+                instructionsText += `${stepIndex}. ${step}\n`;
+                stepIndex++;
+              } else if (step.text || step.name) {
+                instructionsText += `${stepIndex}. ${step.text || step.name}\n`;
+                stepIndex++;
+              } else if (step['@type'] === 'HowToStep') {
+                const stepText = step.text || step.name || '';
+                if (stepText) {
+                  instructionsText += `${stepIndex}. ${stepText}\n`;
+                  stepIndex++;
+                }
+              } else if (step['@type'] === 'HowToSection') {
+                // Handle sections that contain multiple steps
+                if (step.itemListElement && Array.isArray(step.itemListElement)) {
+                  step.itemListElement.forEach((item: any) => extractInstructionStep(item));
+                }
+              } else if (step.position) {
+                // Handle numbered steps with position
+                instructionsText += `${step.position}. ${step.text || step.name || ''}\n`;
+                stepIndex++;
+              }
+            };
+            
+            instructions.forEach(extractInstructionStep);
+          }
+          
+          // Extract additional metadata
+          let metadataText = '';
+          if (data.prepTime) metadataText += `Prep Time: ${data.prepTime}\n`;
+          if (data.cookTime) metadataText += `Cook Time: ${data.cookTime}\n`;
+          if (data.totalTime) metadataText += `Total Time: ${data.totalTime}\n`;
+          if (data.recipeYield) metadataText += `Servings: ${data.recipeYield}\n`;
+          
+          const structuredContent = [
+            title ? `Recipe: ${title}` : '',
+            description,
+            metadataText,
+            ingredientsText,
+            instructionsText
+          ].filter(Boolean).join('\n\n');
+          
+          if (structuredContent.trim().length > 0) {
+            console.log('Successfully extracted recipe from structured data');
+            return structuredContent;
+          }
+        }
+      }
+    }
+  } catch (error) {
+    console.log('Error extracting recipe from structured data:', error);
+  }
+  
+  return null;
+}
+
 // Enhanced website content extraction with better redirect handling
 async function extractWebsiteContent(url: string, extractImages: boolean = false) {
   try {
@@ -90,6 +185,26 @@ async function extractWebsiteContent(url: string, extractImages: boolean = false
     console.log(`Successfully fetched ${html.length} characters from ${response.url}`);
     
     let extractedImages: string[] = [];
+    let structuredRecipeContent: string | null = null;
+    
+    // First, try to extract recipe content from JSON-LD structured data (always do this)
+    const jsonLdMatches = html.match(/<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi);
+    if (jsonLdMatches) {
+      console.log('Found JSON-LD structured data blocks:', jsonLdMatches.length);
+      jsonLdMatches.forEach(match => {
+        try {
+          const jsonContent = match.replace(/<script[^>]*>/i, '').replace(/<\/script>/i, '');
+          const data = JSON.parse(jsonContent);
+          
+          // Try to extract recipe content from structured data (only once)
+          if (!structuredRecipeContent) {
+            structuredRecipeContent = extractRecipeFromStructuredData(data);
+          }
+        } catch (e) {
+          console.log('Failed to parse JSON-LD block:', e);
+        }
+      });
+    }
     
     // Extract images if requested
     if (extractImages) {
@@ -98,39 +213,37 @@ async function extractWebsiteContent(url: string, extractImages: boolean = false
       const imageUrls = new Set<string>();
       const finalUrl = response.url; // Use the final URL after redirects
       
-      // 1. Extract from JSON-LD structured data (common on recipe sites)
-      const jsonLdMatches = html.match(/<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi);
+      // Extract from JSON-LD structured data for images (if not already parsed)
       if (jsonLdMatches) {
-        console.log('Found JSON-LD structured data blocks:', jsonLdMatches.length);
         jsonLdMatches.forEach(match => {
           try {
             const jsonContent = match.replace(/<script[^>]*>/i, '').replace(/<\/script>/i, '');
             const data = JSON.parse(jsonContent);
             
             // Extract images from structured data
-            const extractFromStructuredData = (obj: any) => {
+            const extractImagesFromStructuredData = (obj: any) => {
               if (!obj) return;
               
               if (typeof obj === 'string' && obj.match(/\.(jpg|jpeg|png|webp)$/i)) {
                 imageUrls.add(obj);
               } else if (Array.isArray(obj)) {
-                obj.forEach(extractFromStructuredData);
+                obj.forEach(extractImagesFromStructuredData);
               } else if (typeof obj === 'object') {
                 // Look for common image properties
                 ['image', 'photo', 'thumbnail', 'url'].forEach(prop => {
                   if (obj[prop]) {
-                    extractFromStructuredData(obj[prop]);
+                    extractImagesFromStructuredData(obj[prop]);
                   }
                 });
                 
                 // Recursively check other properties
-                Object.values(obj).forEach(extractFromStructuredData);
+                Object.values(obj).forEach(extractImagesFromStructuredData);
               }
             };
             
-            extractFromStructuredData(data);
+            extractImagesFromStructuredData(data);
           } catch (e) {
-            console.log('Failed to parse JSON-LD block:', e);
+            console.log('Failed to parse JSON-LD block for images:', e);
           }
         });
       }
@@ -269,7 +382,14 @@ async function extractWebsiteContent(url: string, extractImages: boolean = false
       console.log(`Extracted ${extractedImages.length} prioritized images`);
     }
     
-    // Extract text content with better cleaning
+    // If we found structured recipe data, use it (it's more reliable)
+    if (structuredRecipeContent) {
+      console.log('Using structured recipe data from JSON-LD');
+      return { content: structuredRecipeContent, images: extractedImages };
+    }
+    
+    // Otherwise, fall back to text extraction from HTML
+    console.log('Structured data not found, falling back to HTML text extraction');
     let content = html;
     
     // Remove script and style tags

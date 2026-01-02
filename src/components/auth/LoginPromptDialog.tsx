@@ -33,7 +33,7 @@ export function LoginPromptDialog({ isOpen, onClose, trigger = "timer" }: LoginP
   const benefits = [
     {
       icon: <Heart className="h-4 w-4 sm:h-5 sm:w-5 text-terracotta flex-shrink-0" />,
-      text: "Save your favorite recipes"
+      text: "Save your favourite recipes"
     },
     {
       icon: <Users className="h-4 w-4 sm:h-5 sm:w-5 text-sage flex-shrink-0" />,

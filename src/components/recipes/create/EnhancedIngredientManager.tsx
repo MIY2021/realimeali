@@ -302,7 +302,7 @@ export function EnhancedIngredientManager({ ingredients, onIngredientsChange }: 
         {/* Helper text */}
         <p className="text-[10px] sm:text-xs text-[#6B6B6B] leading-tight flex items-start gap-1.5">
           <span className="text-sm">💡</span>
-          <span>Tip: Use groups to organize ingredients by sections (e.g., "For the sauce:", "For the topping:")</span>
+          <span>Tip: Use groups to organise ingredients by sections (e.g., "For the sauce:", "For the topping:")</span>
         </p>
       </div>
     </Card>

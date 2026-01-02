@@ -213,7 +213,7 @@ export function CreateRecipeContainer({ editingRecipe, isEditMode = false, defau
           <p className="text-sm text-[#6B6B6B] max-w-3xl">
             {isEditMode 
               ? "Update your recipe with any changes. All your existing data is preserved and ready for editing."
-              : "Turn your culinary imagination into reality! Whether you're recreating a family favorite or experimenting with new flavors, every great meal starts with the perfect recipe."
+              : "Turn your culinary imagination into reality! Whether you're recreating a family favourite or experimenting with new flavours, every great meal starts with the perfect recipe."
             }
           </p>
         </div>

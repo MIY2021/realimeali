@@ -43,17 +43,17 @@ export const RecipeActionButtons = ({
       
       // Show sonner notification
       if (newFavoriteStatus) {
-        toast.success("Added to favorites", {
-          description: `${recipe.title} has been added to your favorites`
+        toast.success("Added to favourites", {
+          description: `${recipe.title} has been added to your favourites`
         });
       } else {
-        toast.success("Removed from favorites", {
-          description: `${recipe.title} has been removed from your favorites`
+        toast.success("Removed from favourites", {
+          description: `${recipe.title} has been removed from your favourites`
         });
       }
     } catch (error) {
       console.error('Failed to toggle favorite:', error);
-      toast.error("Failed to update favorite status");
+      toast.error("Failed to update favourite status");
     }
   };
 

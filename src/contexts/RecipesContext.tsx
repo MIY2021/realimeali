@@ -236,7 +236,7 @@ export const RecipesProvider: React.FC<{ children: React.ReactNode }> = ({ child
       return updatedRecipe;
     } catch (error) {
       console.error('Error toggling favorite:', error);
-      toast.error("Failed to update favorite status");
+      toast.error("Failed to update favourite status");
       return null;
     }
   }, [updateRecipe, getRecipeById]);

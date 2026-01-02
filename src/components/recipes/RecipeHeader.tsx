@@ -95,7 +95,7 @@ export const RecipeHeader = ({
               >
                 <Heart className={`h-4 w-4 ${isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-600'}`} />
                 <span className={`text-sm font-medium ${isFavorite ? 'text-red-500' : 'text-gray-700'}`}>
-                  {isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+                  {isFavorite ? 'Remove from favourites' : 'Add to favourites'}
                 </span>
               </DropdownMenuItem>
               <DropdownMenuItem

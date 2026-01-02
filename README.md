@@ -64,7 +64,7 @@ This project is built with:
 
 ### UK Spelling Requirement
 
-**This project uses UK English spelling everywhere.** All code, comments, documentation, and user-facing text must use UK spelling conventions.
+**This project uses UK English spelling everywhere for user-facing text.** All user-facing strings, labels, messages, and UI text must use UK spelling conventions.
 
 Common examples:
 - `colour` not `color`
@@ -77,6 +77,27 @@ Common examples:
 - `defence` not `defense`
 - `travelled` not `traveled`
 - `cancelled` not `canceled`
+- `flavour` not `flavor`
+
+#### Automatic UK Spelling Conversion
+
+For automatic conversion of US to UK spellings in user-facing text, use the `UKText` component or `useUKText` hook:
+
+```tsx
+import { UKText, useUKText } from "@/components/shared/UKText";
+
+// Component approach
+<UKText>This is my favorite color</UKText>
+// Renders: "This is my favourite colour"
+
+// Hook approach (for dynamic strings)
+const message = useUKText("Organize your recipes by color");
+// Returns: "Organise your recipes by colour"
+```
+
+The conversion utility (`src/utils/ukSpelling.ts`) automatically handles all common US→UK spelling conversions.
+
+#### Spell Checking
 
 Spell checking is enforced via `cspell` configured for UK English. Run spell checks with:
 ```sh
