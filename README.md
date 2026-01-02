@@ -60,6 +60,34 @@ This project is built with:
 - shadcn-ui
 - Tailwind CSS
 
+## Code Standards
+
+### UK Spelling Requirement
+
+**This project uses UK English spelling everywhere.** All code, comments, documentation, and user-facing text must use UK spelling conventions.
+
+Common examples:
+- `colour` not `color`
+- `organise` not `organize`
+- `centre` not `center`
+- `favourite` not `favorite`
+- `recognise` not `recognize`
+- `behaviour` not `behavior`
+- `licence` (noun) / `license` (verb) - note the distinction
+- `defence` not `defense`
+- `travelled` not `traveled`
+- `cancelled` not `canceled`
+
+Spell checking is enforced via `cspell` configured for UK English. Run spell checks with:
+```sh
+npm run lint:spell
+```
+
+Or run all linting (including spell check):
+```sh
+npm run lint:all
+```
+
 ## How can I deploy this project?
 
 Simply open [Lovable](https://lovable.dev/projects/54a3de06-762f-4195-8b16-59a97d0921c3) and click on Share -> Publish.

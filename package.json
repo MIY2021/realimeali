@@ -8,6 +8,8 @@
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
+    "lint:spell": "cspell \"**/*.{ts,tsx,js,jsx,json,md,html,css,sql}\" --no-progress",
+    "lint:all": "npm run lint && npm run lint:spell",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -78,6 +80,7 @@
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react-swc": "^3.5.0",
     "autoprefixer": "^10.4.20",
+    "cspell": "^9.4.0",
     "eslint": "^9.9.0",
     "eslint-plugin-react-hooks": "^5.1.0-rc.0",
     "eslint-plugin-react-refresh": "^0.4.9",
