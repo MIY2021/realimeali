@@ -1,4 +1,4 @@
-import { Book, UtensilsCrossed, Heart, Star } from "lucide-react";
+import { Book, Calendar, Heart, Star } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { LoginPromptDialog } from "@/components/auth/LoginPromptDialog";
@@ -6,6 +6,8 @@ import { useLoginPrompt } from "@/hooks/useLoginPrompt";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserStats } from "@/hooks/useUserStats";
 import { useAchievements } from "@/hooks/useAchievements";
+import { useMealPlan } from "@/contexts/MealPlanContext";
+import { getCurrentWeekKey } from "@/utils/weekUtils";
 import { WelcomeHeader } from "@/components/dashboard/WelcomeHeader";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { QuickActions } from "@/components/dashboard/QuickActions";
@@ -13,7 +15,7 @@ import { RecentActivity } from "@/components/dashboard/RecentActivity";
 import { LatestRecipesInspiration } from "@/components/dashboard/LatestRecipesInspiration";
 import { HomeOverflowMenu } from "@/components/layout/HomeOverflowMenu";
 import { WelcomeSlidesDialog } from "@/components/onboarding/WelcomeSlidesDialog";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 export default function Index() {
@@ -22,6 +24,7 @@ export default function Index() {
   const { user, isLoading: authLoading } = useAuth();
   const { stats, isLoading, hasData } = useUserStats();
   const { achievements, isLoading: achievementsLoading } = useAchievements();
+  const { getMealPlansForWeek, isLoading: mealPlansLoading } = useMealPlan();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [showWelcomeSlides, setShowWelcomeSlides] = useState(false);
@@ -31,6 +34,13 @@ export default function Index() {
   const unlockedCount = achievements.filter(a => a.isUnlocked).length;
   const totalCount = achievements.length;
   const achievementsDisplay = totalCount > 0 ? `${unlockedCount}/${totalCount}` : "0/0";
+
+  // Get current week's meal plan count
+  const currentWeekKey = useMemo(() => getCurrentWeekKey(), []);
+  const currentWeekMealPlans = useMemo(() => {
+    return getMealPlansForWeek(currentWeekKey);
+  }, [getMealPlansForWeek, currentWeekKey]);
+  const currentWeekMealCount = currentWeekMealPlans.length;
 
   // Auto-show welcome slides for first-time users (localStorage only)
   useEffect(() => {
@@ -61,12 +71,14 @@ export default function Index() {
     setShowWelcomeSlides(false);
   };
 
-  const handleRecipesToCookClick = () => {
-    navigate("/my-recipes?filter=not-cooked");
-  };
-
   const handleMyRecipesClick = () => {
     navigate("/my-recipes");
+  };
+
+  const handleThisWeekMealPlanClick = () => {
+    // Set the current week in localStorage so meal planner opens to this week
+    localStorage.setItem("meal-planner-current-week", currentWeekKey);
+    navigate("/meal-planner");
   };
 
   const handleFavouritesClick = () => {
@@ -146,12 +158,12 @@ export default function Index() {
             onClick={handleMyRecipesClick}
           />
           <StatsCard
-            title="Not Cooked"
-            value={stats.recipesToCook}
-            icon={UtensilsCrossed}
-            isLoading={isLoading}
+            title="This Week"
+            value={`${currentWeekMealCount}|meals planned`}
+            icon={Calendar}
+            isLoading={mealPlansLoading}
             variant="secondary"
-            onClick={handleRecipesToCookClick}
+            onClick={handleThisWeekMealPlanClick}
           />
           <StatsCard
             title="Favourites"

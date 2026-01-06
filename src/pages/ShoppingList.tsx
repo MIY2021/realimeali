@@ -12,6 +12,7 @@ import { WeekSelector } from "@/components/shared/WeekSelector";
 import { CalendarMonthModal } from "@/components/shared/CalendarMonthModal";
 import { useShoppingList } from "@/hooks/useShoppingList";
 import { useShoppingListGeneration } from "@/hooks/useShoppingListGeneration";
+import { useAutoShoppingListGeneration } from "@/hooks/useAutoShoppingListGeneration";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { useRecipes } from "@/contexts/RecipesContext";
@@ -22,7 +23,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { Share, Trash2, Plus, Sparkles, Loader, ArrowUpDown, Send } from "lucide-react";
+import { Share, Trash2, Plus, ArrowUpDown, Send } from "lucide-react";
 import { Link } from "react-router-dom";
 import { getCurrentWeekKey } from "@/utils/weekUtils";
 import { HeaderControls } from "@/components/layout/HeaderControls";
@@ -77,6 +78,9 @@ export default function ShoppingList() {
     localStorage.setItem(WEEK_STORAGE_KEY, currentWeek);
   }, [currentWeek]);
   
+  // Enable automatic shopping list generation
+  const { isGenerating: isAutoGenerating } = useAutoShoppingListGeneration();
+  
   const {
     shoppingList,
     isLoading,
@@ -88,12 +92,21 @@ export default function ShoppingList() {
   } = useShoppingList(currentWeek);
 
   const {
-    isGenerating,
+    isGenerating: isManualGenerating,
     generationProgress,
     lastGenerated,
     setLastGenerated,
     handleGenerate
   } = useShoppingListGeneration(currentWeek, clearAll, refreshList);
+
+  // Combine auto and manual generation states
+  const isAutoGen = isAutoGenerating(currentWeek);
+  const isGenerating = isAutoGen || isManualGenerating;
+  
+  // Provide default progress for auto-generation
+  const effectiveGenerationProgress = isAutoGen && !isManualGenerating
+    ? { step: 2, totalSteps: 4, currentAction: 'Generating your shopping list...' }
+    : generationProgress;
 
   // Load toggle state from localStorage on mount
   useEffect(() => {
@@ -266,27 +279,7 @@ export default function ShoppingList() {
             }
             utilityActions={
               <>
-                <Button 
-                  variant="primary" 
-                  size="sm" 
-                  onClick={handleGenerate} 
-                  disabled={isGenerating}
-                  aria-busy={isGenerating}
-                  className="h-9 px-3"
-                  title="Generate Shopping List"
-                >
-                  {isGenerating ? (
-                    <>
-                      <Loader className="w-4 h-4 animate-spin" />
-                      <span className="ml-2">Generate</span>
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="w-4 h-4" />
-                      <span className="ml-2">Generate</span>
-                    </>
-                  )}
-                </Button>
+                {/* Manual generate button removed - shopping lists now generate automatically */}
                 <Button
                   variant="secondary"
                   size="sm"
@@ -374,13 +367,18 @@ export default function ShoppingList() {
             <div className={`transition-opacity duration-150 ${isLoading ? 'opacity-50' : 'opacity-100'}`}>
               {shoppingList.length === 0 ? (
                 isGenerating ? (
+                  // Show generation animation when actually generating
                   <div className="bg-gray-50 rounded-lg p-6">
                     <ShoppingListGenerationAnimation
                       isGenerating={isGenerating}
-                      generationProgress={generationProgress}
+                      generationProgress={effectiveGenerationProgress}
                     />
                   </div>
+                ) : hasMealPlans ? (
+                  // If meal plans exist but not generating yet, show skeleton to prevent flash
+                  <ShoppingListSkeleton />
                 ) : (
+                  // Only show empty state if there are no meal plans
                   <ShoppingListEmptyState
                     hasMealPlans={hasMealPlans}
                   />

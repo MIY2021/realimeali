@@ -105,14 +105,11 @@ export default function ShoppingListGenerationAnimation({
       </div>
 
       {/* Title */}
-      <div className="text-center space-y-2">
+      <div className="text-center">
         <h3 className="text-xl font-semibold text-sage-800 flex items-center justify-center gap-2">
           <Sparkles className="w-5 h-5 text-terracotta-500 animate-spin" style={{ animationDuration: '2s' }} />
           Generating Shopping List
         </h3>
-        <p className="text-sm text-sage-600">
-          {generationProgress.currentAction}
-        </p>
       </div>
 
       {/* Progress Bar */}

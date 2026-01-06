@@ -95,8 +95,15 @@ export const StatsCard = ({
             {typeof value === 'string' && value.includes('/') ? (
               <>
                 {value.split('/')[0]}
-                <span className="text-xl font-normal text-gray-500">
+                <span className="text-sm font-normal text-gray-500">
                   /{value.split('/')[1]}
+                </span>
+              </>
+            ) : typeof value === 'string' && value.includes('|') ? (
+              <>
+                {value.split('|')[0]}
+                <span className="text-sm font-normal text-gray-500 ml-1">
+                  {value.split('|')[1]}
                 </span>
               </>
             ) : (

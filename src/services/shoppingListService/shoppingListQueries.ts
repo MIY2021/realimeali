@@ -81,4 +81,32 @@ export class ShoppingListQueries {
       return false;
     }
   }
+
+  static async getAllWeekKeysWithShoppingLists(householdId: string): Promise<string[]> {
+    try {
+      const { data, error } = await supabase
+        .from('household_shopping_lists')
+        .select('week_key')
+        .eq('household_id', householdId)
+        .not('week_key', 'is', null);
+
+      if (error) {
+        console.error('Database error getting week keys:', error);
+        throw error;
+      }
+
+      // Get unique week keys
+      const weekKeys = new Set<string>();
+      (data || []).forEach((item: any) => {
+        if (item.week_key) {
+          weekKeys.add(item.week_key);
+        }
+      });
+
+      return Array.from(weekKeys);
+    } catch (error) {
+      console.error("Error getting week keys with shopping lists:", error);
+      return [];
+    }
+  }
 }
