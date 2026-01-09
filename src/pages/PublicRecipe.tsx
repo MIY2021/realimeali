@@ -74,7 +74,7 @@ export default function PublicRecipe() {
     return (
       <div className="container max-w-4xl py-8 px-6">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-red-600 mb-4">Error</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-red-600 mb-4">Error</h1>
           <p className="text-muted-foreground">{error}</p>
         </div>
       </div>

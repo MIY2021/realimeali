@@ -117,7 +117,7 @@ export const RecentActivity = ({ isLoading: externalLoading }: RecentActivityPro
     return (
       <div className="w-full">
         <div className="mb-4">
-          <h2 className="text-xl font-extrabold">
+          <h2 className="text-xl font-bold">
             Recent Activity
           </h2>
         </div>
@@ -162,7 +162,7 @@ export const RecentActivity = ({ isLoading: externalLoading }: RecentActivityPro
   return (
     <div className="w-full">
       <div className="mb-4">
-        <h2 className="text-xl font-extrabold text-gray-900">
+        <h2 className="text-xl font-bold text-gray-900">
           Recent Activity
         </h2>
       </div>

@@ -12,7 +12,7 @@ export default function TermsOfService() {
   return (
     <div className="container max-w-4xl py-8 px-4">
       <div className="prose prose-lg max-w-none">
-        <h1 className="text-3xl font-bold text-navy mb-6">Terms of Service</h1>
+        <h1 className="text-3xl sm:text-4xl font-bold text-navy mb-6">Terms of Service</h1>
         
         <div className="space-y-8">
           <div className="bg-blue-50 p-4 rounded-lg border">
@@ -25,7 +25,7 @@ export default function TermsOfService() {
           </div>
           
           <section>
-            <h2 className="text-2xl font-semibold text-navy mb-4">Acceptance of Terms</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold text-navy mb-4">Acceptance of Terms</h2>
             <p className="text-muted-foreground mb-4">
               By accessing and using RealiMeali, you accept and agree to be bound by the terms 
               and provisions of this agreement. These terms apply to all users of the service, 
@@ -37,7 +37,7 @@ export default function TermsOfService() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold text-navy mb-4">Description of Service</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold text-navy mb-4">Description of Service</h2>
             <p className="text-muted-foreground mb-4">
               RealiMeali is a household meal planning and recipe management platform that provides:
             </p>
@@ -69,7 +69,7 @@ export default function TermsOfService() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold text-navy mb-4">User Accounts and Registration</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold text-navy mb-4">User Accounts and Registration</h2>
             <p className="text-muted-foreground mb-4">
               To access certain features of RealiMeali, you must register for an account. When you register:
             </p>
@@ -97,7 +97,7 @@ export default function TermsOfService() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold text-navy mb-4">Acceptable Use</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold text-navy mb-4">Acceptable Use</h2>
             <p className="text-muted-foreground mb-4">
               You agree to use RealiMeali only for lawful purposes and in accordance with these terms. 
               You agree NOT to use the service:
@@ -131,20 +131,20 @@ export default function TermsOfService() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold text-navy mb-4">Content and Intellectual Property</h2>
-            <h3 className="text-xl font-medium text-navy mb-3">Your Content</h3>
+            <h2 className="text-2xl sm:text-3xl font-bold text-navy mb-4">Content and Intellectual Property</h2>
+            <h3 className="text-xl sm:text-2xl font-semibold text-navy mb-3">Your Content</h3>
             <p className="text-muted-foreground mb-4">
               You retain ownership of the recipes and content you create. By using our service, 
               you grant us a license to use, store, and display your content as necessary to provide our services.
             </p>
             
-            <h3 className="text-xl font-medium text-navy mb-3">Our Content</h3>
+            <h3 className="text-xl sm:text-2xl font-semibold text-navy mb-3">Our Content</h3>
             <p className="text-muted-foreground mb-4">
               The RealiMeali platform, including its design, features, and original content, 
               is protected by copyright and other intellectual property laws.
             </p>
             
-            <h3 className="text-xl font-medium text-navy mb-3">Community Content</h3>
+            <h3 className="text-xl sm:text-2xl font-semibold text-navy mb-3">Community Content</h3>
             <p className="text-muted-foreground">
               When you share recipes with the community, you represent that you have the right to do so 
               and that the content does not infringe on others' rights.
@@ -152,7 +152,7 @@ export default function TermsOfService() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold text-navy mb-4">Privacy</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold text-navy mb-4">Privacy</h2>
             <p className="text-muted-foreground">
               Your privacy is important to us. Please review our 
               <a href="/privacy-policy" className="text-terracotta hover:underline ml-1">Privacy Policy</a>, 
@@ -161,7 +161,7 @@ export default function TermsOfService() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold text-navy mb-4">Limitation of Liability</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold text-navy mb-4">Limitation of Liability</h2>
             <p className="text-muted-foreground mb-4">
               RealiMeali is provided "as is" without warranties of any kind. We are not liable for:
             </p>
@@ -186,7 +186,7 @@ export default function TermsOfService() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold text-navy mb-4">Termination</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold text-navy mb-4">Termination</h2>
             <p className="text-muted-foreground">
               Either party may terminate this agreement at any time. Upon termination, your right to 
               use the service ceases immediately. We may retain certain information as required by law 
@@ -195,7 +195,7 @@ export default function TermsOfService() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold text-navy mb-4">Changes to Terms</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold text-navy mb-4">Changes to Terms</h2>
             <p className="text-muted-foreground">
               We reserve the right to modify these terms at any time. We will notify users of material 
               changes by posting the updated terms on this page. Your continued use of the service 
@@ -204,7 +204,7 @@ export default function TermsOfService() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold text-navy mb-4">Contact Information</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold text-navy mb-4">Contact Information</h2>
             <p className="text-muted-foreground">
               Questions about these Terms of Service should be sent to us through our 
               <a href="/contact" className="text-terracotta hover:underline ml-1">contact page</a> 

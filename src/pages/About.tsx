@@ -12,11 +12,11 @@ export default function About() {
   return (
     <div className="container max-w-4xl py-8 px-4">
       <div className="prose prose-lg max-w-none">
-        <h1 className="text-3xl font-bold text-navy mb-6">About RealiMeali</h1>
+        <h1 className="text-3xl sm:text-4xl font-bold text-navy mb-6">About RealiMeali</h1>
         
         <div className="space-y-8">
           <section>
-            <h2 className="text-2xl font-semibold text-navy mb-4">Our Story</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold text-navy mb-4">Our Story</h2>
             <p className="text-muted-foreground mb-4">
               RealiMeali was born from the everyday struggle of meal planning and cooking for busy households. 
               We understand that deciding "what's for dinner?" shouldn't be a daily stress, and that cooking 
@@ -29,31 +29,31 @@ export default function About() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold text-navy mb-4">What Makes Us Different</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold text-navy mb-4">What Makes Us Different</h2>
             <div className="grid md:grid-cols-2 gap-6">
               <div>
-                <h3 className="text-lg font-medium text-navy mb-2">Household-Centered</h3>
+                <h3 className="text-lg sm:text-xl font-semibold text-navy mb-2">Household-Centered</h3>
                 <p className="text-muted-foreground text-sm">
                   Unlike individual recipe apps, RealiMeali is built for households. Share recipes, 
                   plan meals together, and coordinate cooking responsibilities with your family.
                 </p>
               </div>
               <div>
-                <h3 className="text-lg font-medium text-navy mb-2">Smart Meal Planning</h3>
+                <h3 className="text-lg sm:text-xl font-semibold text-navy mb-2">Smart Meal Planning</h3>
                 <p className="text-muted-foreground text-sm">
                   Our intelligent meal planner considers your household's preferences, dietary needs, 
                   and schedule to suggest the perfect meals for each day.
                 </p>
               </div>
               <div>
-                <h3 className="text-lg font-medium text-navy mb-2">Automated Shopping Lists</h3>
+                <h3 className="text-lg sm:text-xl font-semibold text-navy mb-2">Automated Shopping Lists</h3>
                 <p className="text-muted-foreground text-sm">
                   Generate comprehensive shopping lists from your meal plans, with smart ingredient 
                   consolidation and categorization to make grocery shopping efficient.
                 </p>
               </div>
               <div>
-                <h3 className="text-lg font-medium text-navy mb-2">AI-Powered Assistant</h3>
+                <h3 className="text-lg sm:text-xl font-semibold text-navy mb-2">AI-Powered Assistant</h3>
                 <p className="text-muted-foreground text-sm">
                   RealiChef, our AI cooking assistant, helps you with recipe suggestions, cooking tips, 
                   ingredient substitutions, and answers all your culinary questions.
@@ -63,7 +63,7 @@ export default function About() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold text-navy mb-4">Our Features</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold text-navy mb-4">Our Features</h2>
             <ul className="space-y-3 text-muted-foreground">
               <li className="flex items-start">
                 <span className="text-terracotta mr-2">•</span>
@@ -93,14 +93,14 @@ export default function About() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold text-navy mb-4">Join Our Community</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold text-navy mb-4">Join Our Community</h2>
             <p className="text-muted-foreground mb-4">
               RealiMeali is more than just a meal planning app – it's a community of home cooks who 
               believe that good food brings people together. Whether you're cooking for two or ten, 
               we're here to make your kitchen adventures more enjoyable and less stressful.
             </p>
             <div className="bg-white p-6 rounded-lg border">
-              <h3 className="text-lg font-medium text-navy mb-3">Get Started Today</h3>
+              <h3 className="text-lg sm:text-xl font-semibold text-navy mb-3">Get Started Today</h3>
               <p className="text-muted-foreground mb-4">
                 Ready to transform your meal planning experience? Create your household and start 
                 building your recipe collection today.

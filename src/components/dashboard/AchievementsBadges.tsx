@@ -28,7 +28,7 @@ export const AchievementsBadges = () => {
   return (
     <div className="w-full">
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-xl font-extrabold">
+        <h2 className="text-xl font-bold">
           Achievements {totalUnlocked > 0 && `(${totalUnlocked})`}
         </h2>
         <Link 

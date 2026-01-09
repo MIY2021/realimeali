@@ -79,7 +79,7 @@ export const WelcomeHeader = ({ onMenuClick }: WelcomeHeaderProps) => {
       </Button>
 
       <div className="relative z-10">
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-[#654321] mb-2 animate-[fade-in_1s_ease-out] whitespace-nowrap overflow-hidden text-ellipsis pr-12 sm:pr-14">
+        <h1 className="text-2xl sm:text-3xl font-bold text-[#654321] mb-2 animate-[fade-in_1s_ease-out] whitespace-nowrap overflow-hidden text-ellipsis pr-12 sm:pr-14">
           {getTimeBasedGreeting()}, {getDisplayName()}! 👋
         </h1>
         <p className="text-sm sm:text-base text-[#654321]/90 leading-relaxed pr-8 sm:pr-10">

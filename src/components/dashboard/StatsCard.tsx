@@ -64,7 +64,7 @@ export const StatsCard = ({
       
       <div className="flex flex-col h-full relative z-10">
         <div className="flex items-start justify-between mb-4">
-          <p className="text-xs font-extrabold text-gray-600 uppercase tracking-wider">{title}</p>
+          <p className="text-xs font-bold text-gray-600 uppercase tracking-wider">{title}</p>
           <div className={`${getIconColor()} bg-white/80 rounded-full p-2 shadow-sm`}>
             <IconComponent className="h-5 w-5" />
           </div>
@@ -87,7 +87,7 @@ export const StatsCard = ({
           {/* Actual value - fades in when loaded */}
           <p 
             className={`
-              text-3xl font-extrabold text-gray-900
+              text-3xl font-bold text-gray-900
               transition-opacity duration-500 ease-out
               ${isLoading ? 'opacity-0' : 'opacity-100'}
             `}

@@ -117,7 +117,7 @@ export default function Settings() {
       <div className="mb-8 text-center">
         <div className="flex items-center justify-center gap-2 mb-4">
           <SettingsIcon className="h-8 w-8 text-terracotta" />
-          <h1 className="text-3xl font-bold text-navy">Settings</h1>
+          <h1 className="text-3xl sm:text-4xl font-bold text-navy">Settings</h1>
         </div>
         <p className="text-muted-foreground max-w-2xl mx-auto">
           Manage your account preferences and application settings.

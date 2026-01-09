@@ -193,7 +193,7 @@ export default function ImportedRecipeDetailPage() {
     return (
       <div className="container max-w-4xl py-4 sm:py-6 px-4 sm:px-6">
         <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Recipe Not Found</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold mb-4">Recipe Not Found</h1>
           <p className="text-muted-foreground mb-6">The recipe you're looking for doesn't exist.</p>
           <Button onClick={() => navigate('/discover-recipes')}>
             Back to Discover Recipes

@@ -114,7 +114,7 @@ export default function Index() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[80vh] text-center px-4">
         <div className="max-w-md mx-auto">
-          <h1 className="text-4xl font-bold text-foreground mb-4">Welcome to RealiMeali</h1>
+          <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">Welcome to RealiMeali</h1>
           <p className="text-muted-foreground text-lg mb-8">
             Your all-in-one meal planning and recipe management system
           </p>

@@ -73,7 +73,7 @@ export const QuickActions = () => {
     <>
       <div className="w-full">
         <div className="mb-4">
-          <h2 className="text-xl font-extrabold text-gray-900">
+          <h2 className="text-xl font-bold text-gray-900">
             Quick Actions
           </h2>
         </div>

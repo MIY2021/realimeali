@@ -250,7 +250,7 @@ export default function ShoppingList() {
       ) : !currentHousehold ? (
         <div className="py-10 text-center">
           <div className="max-w-md mx-auto">
-            <h2 className="text-xl font-semibold text-navy mb-2">No Household Selected</h2>
+            <h2 className="text-xl sm:text-2xl font-semibold text-navy mb-2">No Household Selected</h2>
             <p className="text-muted-foreground mb-6">
               You need to create or join a household to manage shopping lists.
             </p>

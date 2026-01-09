@@ -62,7 +62,7 @@ const AdminDashboard = () => {
           <CardContent className="pt-6">
             <div className="text-center">
               <AlertCircle className="h-12 w-12 text-amber-500 mx-auto mb-4" />
-              <h2 className="text-xl font-semibold mb-2">Access Denied</h2>
+              <h2 className="text-xl sm:text-2xl font-semibold mb-2">Access Denied</h2>
               <p className="text-muted-foreground">
                 You don't have permission to access the admin dashboard.
               </p>
@@ -82,7 +82,7 @@ const AdminDashboard = () => {
             <User className="h-6 w-6 text-terracotta" />
           </div>
           <div>
-            <h1 className={`${isMobile ? 'text-2xl' : 'text-3xl'} font-bold text-navy`}>Admin Dashboard</h1>
+            <h1 className="text-3xl sm:text-4xl font-bold text-navy">Admin Dashboard</h1>
             <p className="text-sm text-muted-foreground mt-0.5">
               Manage recipes, users, feedback, and platform content
             </p>
