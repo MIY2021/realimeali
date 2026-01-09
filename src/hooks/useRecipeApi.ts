@@ -177,6 +177,9 @@ export const useRecipeApi = () => {
         top_tip: recipeData.top_tip,
         source_url: recipeData.source_url,
         import_method: recipeData.import_method || 'manual',
+        // Add drink pairings if available
+        alcoholic_pairing: recipeData.alcoholic_pairing || null,
+        non_alcoholic_pairing: recipeData.non_alcoholic_pairing || null,
       };
       
       // Only include ingredient_group_indices if it's defined and not empty (column may not exist in older databases)
@@ -233,6 +236,9 @@ export const useRecipeApi = () => {
               : (retryData.meal_type && VALID_MEAL_TYPES.includes(retryData.meal_type as MealType) 
                   ? [retryData.meal_type as MealType] 
                   : []),
+            // Include drink pairings
+            alcoholic_pairing: (retryData as any).alcoholic_pairing || undefined,
+            non_alcoholic_pairing: (retryData as any).non_alcoholic_pairing || undefined,
           } as Recipe;
           
           // Trigger ingredient categorization asynchronously
@@ -267,6 +273,9 @@ export const useRecipeApi = () => {
           : (data.meal_type && VALID_MEAL_TYPES.includes(data.meal_type as MealType) 
               ? [data.meal_type as MealType] 
               : []),
+        // Include drink pairings
+        alcoholic_pairing: (data as any).alcoholic_pairing || undefined,
+        non_alcoholic_pairing: (data as any).non_alcoholic_pairing || undefined,
       } as Recipe;
 
       // Trigger ingredient categorization asynchronously (don't block recipe save)
@@ -328,6 +337,9 @@ export const useRecipeApi = () => {
         top_tip: recipe.top_tip,
         source_url: recipe.source_url,
         import_method: recipe.import_method,
+        // Include drink pairings
+        alcoholic_pairing: recipe.alcoholic_pairing || null,
+        non_alcoholic_pairing: recipe.non_alcoholic_pairing || null,
       };
       
       // Only include ingredient_group_indices if it's defined (column may not exist in older databases)
@@ -372,6 +384,9 @@ export const useRecipeApi = () => {
               : (retryData.meal_type && VALID_MEAL_TYPES.includes(retryData.meal_type as MealType) 
                   ? [retryData.meal_type as MealType] 
                   : []),
+            // Include drink pairings
+            alcoholic_pairing: responseData.alcoholic_pairing || undefined,
+            non_alcoholic_pairing: responseData.non_alcoholic_pairing || undefined,
           } as Recipe;
           
           return updatedRecipe;
@@ -400,6 +415,9 @@ export const useRecipeApi = () => {
           : (data.meal_type && VALID_MEAL_TYPES.includes(data.meal_type as MealType) 
               ? [data.meal_type as MealType] 
               : []),
+        // Include drink pairings
+        alcoholic_pairing: responseData.alcoholic_pairing || undefined,
+        non_alcoholic_pairing: responseData.non_alcoholic_pairing || undefined,
       } as Recipe;
 
       // Trigger ingredient categorization asynchronously if ingredients changed

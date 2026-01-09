@@ -16,13 +16,23 @@ import { ThumbnailGenerationPanel } from "@/components/admin/ThumbnailGeneration
 import { IngredientParsingPanel } from "@/components/admin/IngredientParsingPanel";
 import { ProcessAllRecipesPanel } from "@/components/admin/ProcessAllRecipesPanel";
 import { CleanedNamesBackfillPanel } from "@/components/admin/CleanedNamesBackfillPanel";
-import { User, AlertCircle } from "lucide-react";
+import { 
+  User, 
+  AlertCircle, 
+  BarChart3, 
+  MessageSquare, 
+  Download, 
+  Settings, 
+  Users,
+  Bookmark,
+  Wrench
+} from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 const AdminDashboard = () => {
   useDocumentTitle("Admin Dashboard");
   const { isAdmin, isLoading } = useAdminCheck();
-  const [activeTab, setActiveTab] = useState("moderation");
+  const [activeTab, setActiveTab] = useState("stats");
   const isMobile = useIsMobile();
 
   if (isLoading) {
@@ -57,119 +67,182 @@ const AdminDashboard = () => {
   }
 
   return (
-    <div className={`container mx-auto ${isMobile ? 'px-2 py-4' : 'px-4 py-8'}`}>
-      <div className={`mb-${isMobile ? '6' : '8'}`}>
-        <div className="flex items-center gap-2 mb-2">
-          <User className="h-6 w-6 text-terracotta" />
-          <h1 className={`${isMobile ? 'text-2xl' : 'text-3xl'} font-bold text-navy`}>Admin Dashboard</h1>
+    <div className={`container max-w-7xl mx-auto ${isMobile ? 'px-2 py-4' : 'px-4 py-8'}`}>
+      {/* Header */}
+      <div className="mb-6">
+        <div className="flex items-center gap-3 mb-2">
+          <div className="p-2 rounded-lg bg-terracotta/10">
+            <User className="h-6 w-6 text-terracotta" />
+          </div>
+          <div>
+            <h1 className={`${isMobile ? 'text-2xl' : 'text-3xl'} font-bold text-navy`}>Admin Dashboard</h1>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              Manage recipes, users, feedback, and platform content
+            </p>
+          </div>
         </div>
-        <p className={`text-muted-foreground ${isMobile ? 'text-sm' : ''}`}>
-          Manage recipes, users, feedback, and platform content
-        </p>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className={`grid w-full ${isMobile ? 'grid-cols-5' : 'grid-cols-7'}`}>
-          <TabsTrigger value="feedback" className={`${isMobile ? 'text-xs px-1' : ''}`}>
-            {isMobile ? 'Feedback' : 'Feedback & Suggestions'}
-          </TabsTrigger>
-          <TabsTrigger value="import" className={`${isMobile ? 'text-xs px-1' : ''}`}>
-            {isMobile ? 'Import' : 'Import'}
-          </TabsTrigger>
-          <TabsTrigger value="manage" className={`${isMobile ? 'text-xs px-1' : ''}`}>
-            {isMobile ? 'Manage' : 'Manage Recipes'}
-          </TabsTrigger>
-          <TabsTrigger value="export" className={`${isMobile ? 'text-xs px-1' : ''}`}>
-            {isMobile ? 'Export' : 'Export'}
-          </TabsTrigger>
-          <TabsTrigger value="settings" className={`${isMobile ? 'text-xs px-1' : ''}`}>
-            {isMobile ? 'Tools' : 'Tools'}
-          </TabsTrigger>
-          {isMobile && (
-            <>
-              <TabsTrigger value="stats" className="text-xs px-1">Stats</TabsTrigger>
-              <TabsTrigger value="users" className="text-xs px-1">Users</TabsTrigger>
-            </>
-          )}
-          {!isMobile && (
-            <>
-              <TabsTrigger value="stats">Statistics</TabsTrigger>
-              <TabsTrigger value="users">User Management</TabsTrigger>
-            </>
-          )}
-        </TabsList>
+        {/* Improved Tab Navigation */}
+        <div className="border-b border-gray-200">
+          <TabsList className={`w-full ${isMobile ? 'h-auto p-1' : 'h-12'} bg-transparent border-0 justify-start gap-1 overflow-x-auto`}>
+            <TabsTrigger 
+              value="stats" 
+              className={`flex items-center gap-2 ${isMobile ? 'text-xs px-2 py-1.5' : 'px-4 py-2'} data-[state=active]:bg-terracotta/10 data-[state=active]:text-terracotta data-[state=active]:border-b-2 data-[state=active]:border-terracotta rounded-t-lg border-b-2 border-transparent transition-all`}
+            >
+              <BarChart3 className="h-4 w-4 flex-shrink-0" />
+              <span className={isMobile ? 'hidden sm:inline' : ''}>Stats</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="feedback" 
+              className={`flex items-center gap-2 ${isMobile ? 'text-xs px-2 py-1.5' : 'px-4 py-2'} data-[state=active]:bg-terracotta/10 data-[state=active]:text-terracotta data-[state=active]:border-b-2 data-[state=active]:border-terracotta rounded-t-lg border-b-2 border-transparent transition-all`}
+            >
+              <MessageSquare className="h-4 w-4 flex-shrink-0" />
+              <span className={isMobile ? 'hidden sm:inline' : ''}>Feedback</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="users" 
+              className={`flex items-center gap-2 ${isMobile ? 'text-xs px-2 py-1.5' : 'px-4 py-2'} data-[state=active]:bg-terracotta/10 data-[state=active]:text-terracotta data-[state=active]:border-b-2 data-[state=active]:border-terracotta rounded-t-lg border-b-2 border-transparent transition-all`}
+            >
+              <Users className="h-4 w-4 flex-shrink-0" />
+              <span className={isMobile ? 'hidden sm:inline' : ''}>Users</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="discover-recipes" 
+              className={`flex items-center gap-2 ${isMobile ? 'text-xs px-2 py-1.5' : 'px-4 py-2'} data-[state=active]:bg-terracotta/10 data-[state=active]:text-terracotta data-[state=active]:border-b-2 data-[state=active]:border-terracotta rounded-t-lg border-b-2 border-transparent transition-all`}
+            >
+              <Bookmark className="h-4 w-4 flex-shrink-0" />
+              <span className={isMobile ? 'hidden sm:inline' : ''}>Discover Recipes</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="export" 
+              className={`flex items-center gap-2 ${isMobile ? 'text-xs px-2 py-1.5' : 'px-4 py-2'} data-[state=active]:bg-terracotta/10 data-[state=active]:text-terracotta data-[state=active]:border-b-2 data-[state=active]:border-terracotta rounded-t-lg border-b-2 border-transparent transition-all`}
+            >
+              <Download className="h-4 w-4 flex-shrink-0" />
+              <span className={isMobile ? 'hidden sm:inline' : ''}>Export</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="tools" 
+              className={`flex items-center gap-2 ${isMobile ? 'text-xs px-2 py-1.5' : 'px-4 py-2'} data-[state=active]:bg-terracotta/10 data-[state=active]:text-terracotta data-[state=active]:border-b-2 data-[state=active]:border-terracotta rounded-t-lg border-b-2 border-transparent transition-all`}
+            >
+              <Wrench className="h-4 w-4 flex-shrink-0" />
+              <span className={isMobile ? 'hidden sm:inline' : ''}>Tools</span>
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
 
-        <TabsContent value="feedback" className="space-y-6">
-          <Card>
-            <CardHeader className={`${isMobile ? 'px-4 py-4' : ''}`}>
-              <CardTitle className={`${isMobile ? 'text-lg' : ''}`}>Feedback & Suggestions</CardTitle>
-              <CardDescription className={`${isMobile ? 'text-xs' : ''}`}>
+        {/* Stats Tab - Overview */}
+        <TabsContent value="stats" className="space-y-6 mt-6">
+          <AdminStats />
+        </TabsContent>
+
+        {/* Feedback Tab */}
+        <TabsContent value="feedback" className="space-y-6 mt-6">
+          <Card className="shadow-sm">
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <MessageSquare className="h-5 w-5 text-terracotta" />
+                <CardTitle>Feedback & Suggestions</CardTitle>
+              </div>
+              <CardDescription>
                 Manage user feedback, bug reports, and feature requests
               </CardDescription>
             </CardHeader>
-            <CardContent className={`${isMobile ? 'px-4 pb-4' : ''}`}>
+            <CardContent>
               <FeedbackModerationPanel />
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="stats" className="space-y-6">
-          <AdminStats />
-        </TabsContent>
-
-        <TabsContent value="import" className="space-y-6">
-          <Card>
-            <CardHeader className={`${isMobile ? 'px-4 py-4' : ''}`}>
-              <CardTitle className={`${isMobile ? 'text-lg' : ''}`}>Recipe Import</CardTitle>
-              <CardDescription className={`${isMobile ? 'text-xs' : ''}`}>
-                Import high-quality recipes to the curated collection
+        {/* Users Tab */}
+        <TabsContent value="users" className="space-y-6 mt-6">
+          <Card className="shadow-sm">
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <Users className="h-5 w-5 text-terracotta" />
+                <CardTitle>User Management</CardTitle>
+              </div>
+              <CardDescription>
+                Manage user accounts and permissions
               </CardDescription>
             </CardHeader>
-            <CardContent className={`${isMobile ? 'px-4 pb-4' : ''}`}>
-              <RecipeImportPanel />
+            <CardContent>
+              <UserManagement />
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="manage" className="space-y-6">
-          <ImportedRecipeManagementPanel />
+        {/* Discover Recipes Tab - Merged Manage and Import */}
+        <TabsContent value="discover-recipes" className="space-y-6 mt-6">
+          <Card className="shadow-sm">
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <Bookmark className="h-5 w-5 text-terracotta" />
+                <CardTitle>Discover Recipes</CardTitle>
+              </div>
+              <CardDescription>
+                Import and manage recipes in the curated collection
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div>
+                <h3 className="text-lg font-semibold text-navy mb-4">Import Recipes</h3>
+                <RecipeImportPanel />
+              </div>
+              <div className="border-t pt-6">
+                <h3 className="text-lg font-semibold text-navy mb-4">Manage Recipes</h3>
+                <ImportedRecipeManagementPanel />
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
 
-        <TabsContent value="export" className="space-y-6">
-          <Card>
-            <CardHeader className={`${isMobile ? 'px-4 py-4' : ''}`}>
-              <CardTitle className={`${isMobile ? 'text-lg' : ''}`}>Recipe Export</CardTitle>
-              <CardDescription className={`${isMobile ? 'text-xs' : ''}`}>
+        {/* Export Tab */}
+        <TabsContent value="export" className="space-y-6 mt-6">
+          <Card className="shadow-sm">
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <Download className="h-5 w-5 text-terracotta" />
+                <CardTitle>Recipe Export</CardTitle>
+              </div>
+              <CardDescription>
                 Export recipe data from your accessible households
               </CardDescription>
             </CardHeader>
-            <CardContent className={`${isMobile ? 'px-4 pb-4' : ''}`}>
+            <CardContent>
               <RecipeExportPanel />
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="settings" className="space-y-6">
-          <ImagePromptSettingsPanel />
-          <ThumbnailGenerationPanel />
-          <IngredientParsingPanel />
-          <ProcessAllRecipesPanel />
-          <CleanedNamesBackfillPanel />
-        </TabsContent>
-
-        <TabsContent value="users" className="space-y-6">
-          <Card>
-            <CardHeader className={`${isMobile ? 'px-4 py-4' : ''}`}>
-              <CardTitle className={`${isMobile ? 'text-lg' : ''}`}>User Management</CardTitle>
-              <CardDescription className={`${isMobile ? 'text-xs' : ''}`}>
-                Manage user accounts and permissions
-              </CardDescription>
-            </CardHeader>
-            <CardContent className={`${isMobile ? 'px-4 pb-4' : ''}`}>
-              <UserManagement />
-            </CardContent>
-          </Card>
+        {/* Tools Tab - Organized with sections */}
+        <TabsContent value="tools" className="space-y-6 mt-6">
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-lg font-semibold text-navy mb-4 flex items-center gap-2">
+                <Settings className="h-5 w-5 text-terracotta" />
+                Image & Media Tools
+              </h3>
+              <div className="space-y-4">
+                <ImagePromptSettingsPanel />
+                <ThumbnailGenerationPanel />
+              </div>
+            </div>
+            
+            <div className="border-t pt-4">
+              <h3 className="text-lg font-semibold text-navy mb-4 flex items-center gap-2">
+                <Wrench className="h-5 w-5 text-terracotta" />
+                Recipe Processing Tools
+              </h3>
+              <div className="space-y-4">
+                <IngredientParsingPanel />
+                <ProcessAllRecipesPanel />
+                <CleanedNamesBackfillPanel />
+              </div>
+            </div>
+          </div>
         </TabsContent>
       </Tabs>
     </div>

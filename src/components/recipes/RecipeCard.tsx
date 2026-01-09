@@ -80,8 +80,6 @@ export function RecipeCard({ recipe, onAddToMealPlan, onRecipeClick, showActions
     return createRecipeUrl(recipe);
   };
 
-  // Determine if buttons should be stacked (mobile two-column layout)
-  const shouldStackButtons = isMobile && mobileLayout === '2';
   // Determine if we should use compact layout (mobile two-column layout)
   const isCompactLayout = isMobile && mobileLayout === '2';
 
@@ -128,7 +126,7 @@ export function RecipeCard({ recipe, onAddToMealPlan, onRecipeClick, showActions
         </p>
         
         {/* Recipe Details */}
-          <div className="flex items-center gap-4 text-sm text-muted-foreground mb-2">
+          <div className="flex items-center gap-4 text-sm text-muted-foreground mb-3">
           <div className="flex items-center gap-1">
             <Clock className="h-4 w-4 text-terracotta" />
             <span>{recipe.prep_time + recipe.cook_time} min</span>
@@ -139,31 +137,24 @@ export function RecipeCard({ recipe, onAddToMealPlan, onRecipeClick, showActions
           </div>
         </div>
 
-
         {/* Action buttons row */}
-        <div className={`mt-auto ${shouldStackButtons ? 'flex flex-col gap-2' : 'flex gap-2'}`}>
-          <Button
-            variant="outline"
-            size="sm"
-            className={`text-xs px-2 ${shouldStackButtons ? 'w-full' : 'flex-1'}`}
+        <div className="mt-auto flex gap-2 -mx-1">
+          <button
             onClick={handleRecipeClick}
+            className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 hover:border-gray-300 text-gray-700 hover:text-gray-900 transition-all duration-150 text-xs font-medium ${isCompactLayout ? 'px-2 py-1.5' : ''}`}
           >
-            <Eye className="h-3 w-3 mr-1" />
-            <span className="hidden xl:inline">View Recipe</span>
-            <span className="xl:hidden">View</span>
-          </Button>
+            <Eye className="h-3.5 w-3.5" />
+            <span>View</span>
+          </button>
           
           {showActions && onAddToMealPlan && (
-            <Button
-              variant="default"
-              size="sm"
-              className={`text-xs px-2 ${shouldStackButtons ? 'w-full' : 'flex-1'}`}
+            <button
               onClick={handleAddToMealPlan}
+              className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-terracotta hover:bg-terracotta/90 text-white transition-all duration-150 text-xs font-medium shadow-sm hover:shadow ${isCompactLayout ? 'px-2 py-1.5' : ''}`}
             >
-              <Plus className="h-3 w-3 mr-1" />
-              <span className="hidden xl:inline">Add to Meal Plan</span>
-              <span className="xl:hidden">Add</span>
-            </Button>
+              <Plus className="h-3.5 w-3.5" />
+              <span>Add</span>
+            </button>
           )}
         </div>
       </CardContent>

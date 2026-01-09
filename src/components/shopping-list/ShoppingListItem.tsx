@@ -1,9 +1,6 @@
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
-import { Pencil, Copy, X, Check } from "lucide-react";
+import { ClipboardCopy, CheckCircle2 } from "lucide-react";
 import { createRecipeUrl } from "@/utils/slugUtils";
 import { Link, useNavigate } from "react-router-dom";
 import { useRecipes } from "@/contexts/RecipesContext";
@@ -23,7 +20,6 @@ interface ShoppingListItemProps {
   copiedItemId: string | null;
   onCheck: (checked: boolean) => void;
   onCopy: () => void;
-  onUpdate?: (id: string, newName: string) => void;
   getRecipeNames: (recipeIds: string[]) => string;
   sortOption?: SortOption;
 }
@@ -38,12 +34,9 @@ export function ShoppingListItem({
   copiedItemId,
   onCheck,
   onCopy,
-  onUpdate,
   getRecipeNames,
   sortOption = "none"
 }: ShoppingListItemProps) {
-  const [isEditing, setIsEditing] = useState(false);
-  const [editText, setEditText] = useState(name);
   const { toast } = useToast();
   const { recipes } = useRecipes();
   const { mealPlans: allMealPlans } = useMealPlan();
@@ -79,18 +72,6 @@ export function ShoppingListItem({
     handleMouseUp,
     handleMouseLeave
   } = useShoppingListInteractions(isChecked, onCheck, handleCopyName);
-
-  const handleSaveEdit = () => {
-    if (onUpdate && editText.trim() !== name) {
-      onUpdate(id, editText.trim());
-    }
-    setIsEditing(false);
-  };
-
-  const handleCancelEdit = () => {
-    setEditText(name);
-    setIsEditing(false);
-  };
 
   const handleToggleCheck = () => {
     onCheck(!isChecked);
@@ -185,12 +166,12 @@ export function ShoppingListItem({
       className={`flex items-center transition-all duration-200 ${
         isChecked ? 'opacity-60' : ''
       } ${copiedItemId === id ? 'bg-green-50 rounded-md p-1 -m-1' : ''}`}
-      onTouchStart={!isEditing ? handleTouchStart : undefined}
-      onTouchEnd={!isEditing ? handleTouchEnd : undefined}
-      onTouchMove={!isEditing ? handleTouchMove : undefined}
-      onMouseDown={!isEditing ? handleMouseDown : undefined}
-      onMouseUp={!isEditing ? handleMouseUp : undefined}
-      onMouseLeave={!isEditing ? handleMouseLeave : undefined}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      onTouchMove={handleTouchMove}
+      onMouseDown={handleMouseDown}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseLeave}
     >
       {/* Triangle icon on the left */}
       <div className="flex items-center mr-2">
@@ -199,18 +180,7 @@ export function ShoppingListItem({
 
       {/* Main content - limited width to make room for buttons */}
       <div className="flex-1 min-w-0 max-w-[65%]">
-        {isEditing ? (
-          <div className="flex-1">
-            <Input
-              value={editText}
-              onChange={(e) => setEditText(e.target.value)}
-              placeholder="Edit item name"
-              className="h-8 text-sm w-full"
-              autoFocus
-            />
-          </div>
-        ) : (
-          <div>
+        <div>
             <div className={`text-sm ${isChecked ? 'line-through' : ''}`} style={{ color: isChecked ? 'hsl(var(--shopping-grey))' : 'hsl(var(--shopping-navy))' }}>
               {quantity && unit && recipeIds.length > 0 && !getRecipeNames(recipeIds).includes('Custom Entry') && (
                 <span className="text-sm mr-1" style={{ color: 'hsl(var(--shopping-grey))' }}>
@@ -258,56 +228,32 @@ export function ShoppingListItem({
               </div>
             )}
           </div>
-        )}
       </div>
 
-      {/* Actions and checkbox on the right - evenly distributed */}
-      <div className="flex items-center justify-between ml-4 min-w-[35%]">
-        {!isEditing ? (
-          <>
-            <Button 
-              size="sm" 
-              variant="ghost" 
-              onClick={() => setIsEditing(true)}
-              className="h-10 w-10 p-0 hover:bg-muted touch-manipulation"
-              disabled={!onUpdate}
-            >
-              <Pencil className="h-4 w-4" />
-            </Button>
-            <Button 
-              size="sm" 
-              variant="ghost" 
-              onClick={handleCopyName}
-              className="h-10 w-10 p-0 hover:bg-muted touch-manipulation"
-            >
-              <Copy className="h-4 w-4" />
-            </Button>
-            <Checkbox
-              checked={isChecked}
-              onCheckedChange={handleToggleCheck}
-              className="h-5 w-5"
-            />
-          </>
-        ) : (
-          <div className="flex gap-1 ml-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleSaveEdit}
-              className="h-8 w-8 p-0"
-            >
-              <Check className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleCancelEdit}
-              className="h-8 w-8 p-0"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-        )}
+      {/* Actions and checkbox on the right - closer together with more padding */}
+      <div className="flex items-center gap-2 ml-4 -mr-4">
+        <Button 
+          size="sm" 
+          variant="ghost" 
+          onClick={handleCopyName}
+          className="h-10 w-10 p-0 hover:bg-muted touch-manipulation"
+          title="Copy item name"
+        >
+          <ClipboardCopy className="h-4 w-4" />
+        </Button>
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={handleToggleCheck}
+          className={`h-10 w-10 p-0 touch-manipulation ${
+            isChecked 
+              ? 'bg-green-50 text-green-600 hover:bg-green-100' 
+              : 'hover:bg-muted text-gray-400'
+          }`}
+          title={isChecked ? "Mark as incomplete" : "Mark as complete"}
+        >
+          <CheckCircle2 className={`h-5 w-5 ${isChecked ? 'fill-current' : ''}`} />
+        </Button>
       </div>
     </div>
   );

@@ -4,13 +4,12 @@ import { PageHeader } from "@/components/layout/PageHeader";
 
 interface ShoppingListHeaderProps {
   onShare: () => void;
-  onAddItem: (name: string) => Promise<void>;
+  onAddItem?: (name: string) => Promise<void>;
   onInfoClick?: () => void;
 }
 
 export default function ShoppingListHeader({ 
   onShare, 
-  onAddItem,
   onInfoClick
 }: ShoppingListHeaderProps) {
   const { currentHousehold } = useHousehold();

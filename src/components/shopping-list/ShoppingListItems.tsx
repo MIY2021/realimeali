@@ -10,7 +10,6 @@ interface ShoppingListItemsProps {
   copiedItemId: string | null;
   onToggleItem: (itemId: string) => void;
   onCopyItem: (itemId: string) => void;
-  onUpdateItem?: (itemId: string, newName: string) => void;
   getRecipeNames: (recipeIds: string[]) => string;
   sortOption: SortOption;
 }
@@ -20,7 +19,6 @@ export default function ShoppingListItems({
   copiedItemId,
   onToggleItem,
   onCopyItem,
-  onUpdateItem,
   getRecipeNames,
   sortOption
 }: ShoppingListItemsProps) {
@@ -66,7 +64,6 @@ export default function ShoppingListItems({
                       copiedItemId={copiedItemId}
                       onCheck={(checked) => onToggleItem(item.id)}
                       onCopy={() => onCopyItem(item.id)}
-                      onUpdate={onUpdateItem}
                       getRecipeNames={getRecipeNames}
                       sortOption={sortOption}
                     />

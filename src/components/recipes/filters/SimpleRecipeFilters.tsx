@@ -142,7 +142,6 @@ export function SimpleRecipeFiltersComponent({
           {!isMobile && (
             <>
               <div className="flex items-center gap-2 px-3 py-2 border rounded-md bg-background min-w-[120px]">
-                <Heart className={`h-4 w-4 ${filters.showFavoritesOnly ? "fill-red-500 text-red-500" : "text-gray-500"}`} />
                 <span className="text-sm">Favourites</span>
                 <Switch
                   checked={filters.showFavoritesOnly}
@@ -150,7 +149,6 @@ export function SimpleRecipeFiltersComponent({
                 />
               </div>
               <div className="flex items-center gap-2 px-3 py-2 border rounded-md bg-background min-w-[115px]">
-                <User className={`h-4 w-4 ${filters.showNotCookedOnly ? "text-orange-500" : "text-gray-500"}`} />
                 <span className="text-sm">Not Cooked</span>
                 <Switch
                   checked={filters.showNotCookedOnly}
@@ -228,7 +226,6 @@ export function SimpleRecipeFiltersComponent({
           />
 
           <div className="flex items-center gap-2 px-3 py-2 border rounded-md bg-background min-w-[120px]">
-            <Heart className={`h-4 w-4 ${filters.showFavoritesOnly ? "fill-red-500 text-red-500" : "text-gray-500"}`} />
             <span className="text-sm">Favourites</span>
             <Switch
               checked={filters.showFavoritesOnly}
@@ -237,7 +234,6 @@ export function SimpleRecipeFiltersComponent({
           </div>
 
           <div className="flex items-center gap-2 px-3 py-2 border rounded-md bg-background min-w-[115px]">
-            <User className={`h-4 w-4 ${filters.showNotCookedOnly ? "text-orange-500" : "text-gray-500"}`} />
             <span className="text-sm">Not Cooked</span>
             <Switch
               checked={filters.showNotCookedOnly}

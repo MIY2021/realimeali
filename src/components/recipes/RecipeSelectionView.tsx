@@ -293,7 +293,6 @@ export function RecipeSelectionView({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
-                <Heart className={`h-4 w-4 ${filters.showFavoritesOnly ? 'fill-[#F5B82E] text-[#F5B82E]' : 'text-gray-400'}`} />
                 <span className="text-sm text-gray-700">Favourites</span>
                 <Switch
                   checked={filters.showFavoritesOnly}
@@ -302,7 +301,6 @@ export function RecipeSelectionView({
                 />
               </div>
               <div className="flex items-center gap-2">
-                <X className={`h-4 w-4 ${filters.showNotCookedOnly ? 'text-[#F5B82E]' : 'text-gray-400'}`} />
                 <span className="text-sm text-gray-700">Not Cooked</span>
                 <Switch
                   checked={filters.showNotCookedOnly}

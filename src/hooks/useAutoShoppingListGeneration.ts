@@ -91,6 +91,24 @@ export const useAutoShoppingListGeneration = () => {
       return;
     }
 
+    // Check if shopping list already exists in database
+    // If it exists and we don't have a hash, initialize the hash from current state
+    // This prevents regeneration on every page load
+    if (!lastHash && currentHash !== '') {
+      const hasExistingItems = await ShoppingListQueries.checkDatabaseForItems(currentHousehold.id, weekKey);
+      if (hasExistingItems) {
+        // Shopping list exists - assume it's up to date and set the hash
+        // This prevents regeneration on every page load
+        lastMealPlanHashRef.current.set(weekKey, currentHash);
+        setGeneratingWeeks(prev => {
+          const next = new Set(prev);
+          next.delete(weekKey);
+          return next;
+        });
+        return;
+      }
+    }
+
     // Mark as pending to prevent duplicate generations
     if (pendingGenerationsRef.current.has(weekKey)) {
       return;

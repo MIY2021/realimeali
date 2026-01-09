@@ -35,12 +35,18 @@ export default function Index() {
   const totalCount = achievements.length;
   const achievementsDisplay = totalCount > 0 ? `${unlockedCount}/${totalCount}` : "0/0";
 
-  // Get current week's meal plan count
+  // Get current week's meal plan count (only breakfast, lunch, and dinner)
   const currentWeekKey = useMemo(() => getCurrentWeekKey(), []);
   const currentWeekMealPlans = useMemo(() => {
     return getMealPlansForWeek(currentWeekKey);
   }, [getMealPlansForWeek, currentWeekKey]);
-  const currentWeekMealCount = currentWeekMealPlans.length;
+  const currentWeekMealCount = useMemo(() => {
+    return currentWeekMealPlans.filter(
+      plan => plan.meal_type === "breakfast" || 
+              plan.meal_type === "lunch" || 
+              plan.meal_type === "dinner"
+    ).length;
+  }, [currentWeekMealPlans]);
 
   // Auto-show welcome slides for first-time users (localStorage only)
   useEffect(() => {
@@ -159,7 +165,7 @@ export default function Index() {
           />
           <StatsCard
             title="This Week"
-            value={`${currentWeekMealCount}|meals planned`}
+            value={`${currentWeekMealCount}|meals`}
             icon={Calendar}
             isLoading={mealPlansLoading}
             variant="secondary"

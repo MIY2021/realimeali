@@ -23,7 +23,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { Share, Trash2, Plus, ArrowUpDown, Send } from "lucide-react";
+import { Send, ArrowUpDown } from "lucide-react";
 import { Link } from "react-router-dom";
 import { getCurrentWeekKey } from "@/utils/weekUtils";
 import { HeaderControls } from "@/components/layout/HeaderControls";
@@ -85,9 +85,6 @@ export default function ShoppingList() {
     shoppingList,
     isLoading,
     toggleItemChecked,
-    addCustomItem,
-    updateItem,
-    clearAll,
     refreshList,
   } = useShoppingList(currentWeek);
 
@@ -97,7 +94,7 @@ export default function ShoppingList() {
     lastGenerated,
     setLastGenerated,
     handleGenerate
-  } = useShoppingListGeneration(currentWeek, clearAll, refreshList);
+  } = useShoppingListGeneration(currentWeek, async () => {}, refreshList);
 
   // Combine auto and manual generation states
   const isAutoGen = isAutoGenerating(currentWeek);
@@ -118,7 +115,7 @@ export default function ShoppingList() {
     if (savedSort && (savedSort === "category" || savedSort === "recipe")) {
       setSortOption(savedSort as SortOption);
     } else {
-      // Default to category (treat "none" as no preference and migrate to category)
+      // Default to category, or migrate "none" to "category"
       setSortOption("category");
       localStorage.setItem('realiMeali_shoppingListSort', "category");
     }
@@ -230,7 +227,6 @@ export default function ShoppingList() {
     <div className="container max-w-4xl py-4 px-4 sm:py-8 sm:px-6" data-scroll-content>
         <ShoppingListHeader 
           onShare={handleShare} 
-          onAddItem={addCustomItem}
           onInfoClick={() => setInfoDialog(true)}
         />
         <div className="py-10 text-center">
@@ -244,7 +240,6 @@ export default function ShoppingList() {
     <div className="container max-w-4xl py-4 px-4 sm:py-8 sm:px-6 space-y-3" data-scroll-content>
       <ShoppingListHeader
         onShare={handleShare} 
-        onAddItem={addCustomItem}
         onInfoClick={() => setInfoDialog(true)}
       />
 
@@ -289,27 +284,28 @@ export default function ShoppingList() {
                 >
                   <Send className="w-4 h-4" />
                 </Button>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={clearAll}
-                  className="h-9 w-9 p-0"
-                  title="Clear All"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
               </>
             }
             rightActions={
               user && currentHousehold ? (
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 ml-auto">
+                  <div className="flex items-center gap-2 bg-gray-100 rounded-lg px-3 py-1.5 border border-gray-200">
+                    <label htmlFor="show-unchecked" className="text-xs font-medium whitespace-nowrap text-gray-700 cursor-pointer">
+                      Hide Checked
+                    </label>
+                    <Switch
+                      id="show-unchecked"
+                      checked={showOnlyUnchecked}
+                      onCheckedChange={setShowOnlyUnchecked}
+                      className="data-[state=checked]:bg-[#F5B82E]"
+                    />
+                  </div>
                   <Select value={sortOption} onValueChange={(value) => setSortOption(value as SortOption)}>
                     <SelectTrigger id="sort-option" className="h-8 w-auto min-w-[100px] text-xs px-2 focus:ring-0 focus-visible:ring-0">
                       <ArrowUpDown className="h-4 w-4 mr-2 flex-shrink-0" />
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="none">None</SelectItem>
                       <SelectItem value="category">Category</SelectItem>
                       <SelectItem value="recipe">Recipe</SelectItem>
                     </SelectContent>
@@ -327,38 +323,6 @@ export default function ShoppingList() {
             mealPlans={allMealPlans}
             onCopyWeek={copyWeek}
           />
-
-          {/* Action rows */}
-          {user && currentHousehold && (
-            <div className="space-y-2 mb-4">
-              {/* Row 1: Hide checked toggle on left, Add button on right */}
-              <div className="flex items-center justify-between gap-2 min-h-[24px]">
-                <div className="flex items-center gap-2">
-                  <label htmlFor="show-unchecked" className="text-xs font-medium whitespace-nowrap text-muted-foreground">
-                    Hide Checked
-                  </label>
-                  <Switch
-                    id="show-unchecked"
-                    checked={showOnlyUnchecked}
-                    onCheckedChange={setShowOnlyUnchecked}
-                  />
-                </div>
-                
-                {/* Override min-height/min-width with !important to allow h-6 w-6 (24px) sizing */}
-                <Button
-                  onClick={() => {
-                    const itemName = prompt("Enter item name:");
-                    if (itemName?.trim()) {
-                      addCustomItem(itemName.trim());
-                    }
-                  }}
-                  className="h-6 w-6 !min-h-0 !min-w-0 rounded-full bg-[#F5B82E]/50 hover:bg-[#F5B82E]/70 text-white p-0 border-0"
-                >
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          )}
 
           {/* Only show skeleton if we're loading AND we don't have data */}
           {isLoading && shoppingList.length === 0 ? (
@@ -390,7 +354,6 @@ export default function ShoppingList() {
                     copiedItemId={copiedItemId}
                     onToggleItem={toggleItemChecked}
                     onCopyItem={handleCopyItem}
-                    onUpdateItem={updateItem}
                     getRecipeNames={getRecipeNames}
                     sortOption={sortOption}
                   />
