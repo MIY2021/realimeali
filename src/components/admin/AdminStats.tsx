@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { Users, Book, Calendar, Home, Mail } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface AdminStatsData {
   totalUsers: number;
@@ -13,6 +14,7 @@ interface AdminStatsData {
 }
 
 export function AdminStats() {
+  const isMobile = useIsMobile();
   const [stats, setStats] = useState<AdminStatsData>({
     totalUsers: 0,
     totalRecipes: 0,
@@ -57,55 +59,63 @@ export function AdminStats() {
     fetchStats();
   }, []);
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-terracotta"></div>
+      </div>
+    );
+  }
+
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-          <Users className="h-4 w-4 text-muted-foreground" />
+    <div className={`grid gap-3 ${isMobile ? 'grid-cols-2' : 'md:grid-cols-2 lg:grid-cols-3'}`}>
+      <Card className={isMobile ? "shadow-sm" : ""}>
+        <CardHeader className={`flex flex-row items-center justify-between space-y-0 ${isMobile ? "pb-2 px-3 pt-3" : "pb-2"}`}>
+          <CardTitle className={`font-medium ${isMobile ? "text-xs" : "text-sm"}`}>Total Users</CardTitle>
+          <Users className={`text-muted-foreground ${isMobile ? "h-3.5 w-3.5" : "h-4 w-4"}`} />
         </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{stats.totalUsers}</div>
+        <CardContent className={isMobile ? "px-3 pb-3" : ""}>
+          <div className={`font-bold ${isMobile ? "text-xl" : "text-2xl"}`}>{stats.totalUsers.toLocaleString()}</div>
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Total Recipes</CardTitle>
-          <Book className="h-4 w-4 text-muted-foreground" />
+      <Card className={isMobile ? "shadow-sm" : ""}>
+        <CardHeader className={`flex flex-row items-center justify-between space-y-0 ${isMobile ? "pb-2 px-3 pt-3" : "pb-2"}`}>
+          <CardTitle className={`font-medium ${isMobile ? "text-xs" : "text-sm"}`}>Total Recipes</CardTitle>
+          <Book className={`text-muted-foreground ${isMobile ? "h-3.5 w-3.5" : "h-4 w-4"}`} />
         </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{stats.totalRecipes}</div>
+        <CardContent className={isMobile ? "px-3 pb-3" : ""}>
+          <div className={`font-bold ${isMobile ? "text-xl" : "text-2xl"}`}>{stats.totalRecipes.toLocaleString()}</div>
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Total Meal Plans</CardTitle>
-          <Calendar className="h-4 w-4 text-muted-foreground" />
+      <Card className={isMobile ? "shadow-sm" : ""}>
+        <CardHeader className={`flex flex-row items-center justify-between space-y-0 ${isMobile ? "pb-2 px-3 pt-3" : "pb-2"}`}>
+          <CardTitle className={`font-medium ${isMobile ? "text-xs" : "text-sm"}`}>Total Meal Plans</CardTitle>
+          <Calendar className={`text-muted-foreground ${isMobile ? "h-3.5 w-3.5" : "h-4 w-4"}`} />
         </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{stats.totalMealPlans}</div>
+        <CardContent className={isMobile ? "px-3 pb-3" : ""}>
+          <div className={`font-bold ${isMobile ? "text-xl" : "text-2xl"}`}>{stats.totalMealPlans.toLocaleString()}</div>
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Total Households</CardTitle>
-          <Home className="h-4 w-4 text-muted-foreground" />
+      <Card className={isMobile ? "shadow-sm" : ""}>
+        <CardHeader className={`flex flex-row items-center justify-between space-y-0 ${isMobile ? "pb-2 px-3 pt-3" : "pb-2"}`}>
+          <CardTitle className={`font-medium ${isMobile ? "text-xs" : "text-sm"}`}>Total Households</CardTitle>
+          <Home className={`text-muted-foreground ${isMobile ? "h-3.5 w-3.5" : "h-4 w-4"}`} />
         </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{stats.totalHouseholds}</div>
+        <CardContent className={isMobile ? "px-3 pb-3" : ""}>
+          <div className={`font-bold ${isMobile ? "text-xl" : "text-2xl"}`}>{stats.totalHouseholds.toLocaleString()}</div>
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Total Feedback</CardTitle>
-          <Mail className="h-4 w-4 text-muted-foreground" />
+      <Card className={isMobile ? "shadow-sm" : ""}>
+        <CardHeader className={`flex flex-row items-center justify-between space-y-0 ${isMobile ? "pb-2 px-3 pt-3" : "pb-2"}`}>
+          <CardTitle className={`font-medium ${isMobile ? "text-xs" : "text-sm"}`}>Total Feedback</CardTitle>
+          <Mail className={`text-muted-foreground ${isMobile ? "h-3.5 w-3.5" : "h-4 w-4"}`} />
         </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{stats.totalFeedback}</div>
+        <CardContent className={isMobile ? "px-3 pb-3" : ""}>
+          <div className={`font-bold ${isMobile ? "text-xl" : "text-2xl"}`}>{stats.totalFeedback.toLocaleString()}</div>
         </CardContent>
       </Card>
     </div>

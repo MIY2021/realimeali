@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Users, Mail, Calendar } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface UserProfile {
   id: string;
@@ -17,6 +18,7 @@ interface UserProfile {
 }
 
 export function UserManagement() {
+  const isMobile = useIsMobile();
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -42,39 +44,41 @@ export function UserManagement() {
   }, []);
 
   const UserCard = ({ user }: { user: UserProfile }) => (
-    <Card className="mb-4">
-      <CardContent className="pt-6">
-        <div className="flex items-center space-x-4">
-          <Avatar className="h-12 w-12">
+    <Card className={isMobile ? "mb-2 shadow-sm" : "mb-4"}>
+      <CardContent className={isMobile ? "pt-3 pb-3 px-3" : "pt-6"}>
+        <div className={`flex items-center ${isMobile ? "gap-2" : "space-x-4"}`}>
+          <Avatar className={isMobile ? "h-10 w-10 flex-shrink-0" : "h-12 w-12"}>
             <AvatarImage src={user.avatar_url || undefined} alt={user.full_name || 'User'} />
-            <AvatarFallback>
+            <AvatarFallback className={isMobile ? "text-xs" : ""}>
               {user.full_name?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || 'U'}
             </AvatarFallback>
           </Avatar>
           
-          <div className="flex-1 space-y-1">
-            <div className="flex items-center gap-2">
-              <h4 className="text-sm font-medium">
+          <div className="flex-1 min-w-0">
+            <div className={`flex items-center gap-2 ${isMobile ? "flex-wrap" : ""}`}>
+              <h4 className={`font-medium truncate ${isMobile ? "text-xs" : "text-sm"}`}>
                 {user.full_name || 'Unnamed User'}
               </h4>
-              {user.profile_completed && (
-                <Badge variant="secondary" className="text-xs">Verified</Badge>
-              )}
-              {user.auth_provider && (
-                <Badge variant="outline" className="text-xs">
-                  {user.auth_provider}
-                </Badge>
-              )}
+              <div className={`flex gap-1 flex-shrink-0 ${isMobile ? "flex-wrap" : ""}`}>
+                {user.profile_completed && (
+                  <Badge variant="secondary" className={isMobile ? "text-[10px] px-1.5 py-0" : "text-xs"}>Verified</Badge>
+                )}
+                {user.auth_provider && (
+                  <Badge variant="outline" className={isMobile ? "text-[10px] px-1.5 py-0" : "text-xs"}>
+                    {user.auth_provider}
+                  </Badge>
+                )}
+              </div>
             </div>
             
-            <div className="flex items-center gap-4 text-xs text-muted-foreground">
-              <div className="flex items-center gap-1">
-                <Mail className="h-3 w-3" />
-                <span>{user.email || 'No email'}</span>
+            <div className={`flex items-center text-muted-foreground mt-1 ${isMobile ? "flex-col items-start gap-1 text-[10px]" : "gap-4 text-xs"}`}>
+              <div className="flex items-center gap-1 truncate max-w-full">
+                <Mail className={isMobile ? "h-2.5 w-2.5 flex-shrink-0" : "h-3 w-3"} />
+                <span className="truncate">{user.email || 'No email'}</span>
               </div>
               <div className="flex items-center gap-1">
-                <Calendar className="h-3 w-3" />
-                <span>Joined {new Date(user.created_at).toLocaleDateString()}</span>
+                <Calendar className={isMobile ? "h-2.5 w-2.5" : "h-3 w-3"} />
+                <span>Joined {new Date(user.created_at).toLocaleDateString(isMobile ? 'en-US' : undefined, isMobile ? { month: 'short', day: 'numeric', year: 'numeric' } : undefined)}</span>
               </div>
             </div>
           </div>
@@ -92,19 +96,21 @@ export function UserManagement() {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-2 mb-4">
-        <Users className="h-5 w-5 text-terracotta" />
-        <h3 className="text-lg font-medium">Recent Users ({users.length})</h3>
+    <div className={`space-y-4 ${isMobile ? "space-y-3" : ""}`}>
+      <div className={`flex items-center gap-2 ${isMobile ? "mb-3" : "mb-4"}`}>
+        <Users className={`text-terracotta ${isMobile ? "h-4 w-4" : "h-5 w-5"}`} />
+        <h3 className={`font-medium ${isMobile ? "text-base" : "text-lg"}`}>
+          Recent Users ({users.length})
+        </h3>
       </div>
       
       {users.length === 0 ? (
-        <div className="text-center py-8">
-          <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <p className="text-muted-foreground">No users found</p>
+        <div className={`text-center ${isMobile ? "py-6" : "py-8"}`}>
+          <Users className={`text-muted-foreground mx-auto mb-4 ${isMobile ? "h-8 w-8" : "h-12 w-12"}`} />
+          <p className={`text-muted-foreground ${isMobile ? "text-sm" : ""}`}>No users found</p>
         </div>
       ) : (
-        <div className="space-y-2 max-h-96 overflow-y-auto">
+        <div className={`overflow-y-auto ${isMobile ? "space-y-1 max-h-[60vh]" : "space-y-2 max-h-96"}`}>
           {users.map((user) => (
             <UserCard key={user.id} user={user} />
           ))}

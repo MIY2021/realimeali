@@ -15,7 +15,7 @@ import { ImagePromptSettingsPanel } from "@/components/admin/ImagePromptSettings
 import { ThumbnailGenerationPanel } from "@/components/admin/ThumbnailGenerationPanel";
 import { IngredientParsingPanel } from "@/components/admin/IngredientParsingPanel";
 import { ProcessAllRecipesPanel } from "@/components/admin/ProcessAllRecipesPanel";
-import { CleanedNamesBackfillPanel } from "@/components/admin/CleanedNamesBackfillPanel";
+import { DrinkPairingBackfillPanel } from "@/components/admin/DrinkPairingBackfillPanel";
 import { 
   User, 
   AlertCircle, 
@@ -25,8 +25,15 @@ import {
   Settings, 
   Users,
   Bookmark,
-  Wrench
+  Wrench,
+  Image,
+  FileImage,
+  RefreshCw,
+  Database,
+  Wine,
+  Sparkles
 } from "lucide-react";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 const AdminDashboard = () => {
@@ -134,23 +141,23 @@ const AdminDashboard = () => {
 
 
         {/* Stats Tab - Overview */}
-        <TabsContent value="stats" className="space-y-6 mt-6">
+        <TabsContent value="stats" className={`space-y-6 mt-6 ${isMobile ? "space-y-3" : ""}`}>
           <AdminStats />
         </TabsContent>
 
         {/* Feedback Tab */}
         <TabsContent value="feedback" className="space-y-6 mt-6">
           <Card className="shadow-sm">
-            <CardHeader>
+            <CardHeader className={isMobile ? "px-4 py-4" : ""}>
               <div className="flex items-center gap-2">
                 <MessageSquare className="h-5 w-5 text-terracotta" />
-                <CardTitle>Feedback & Suggestions</CardTitle>
+                <CardTitle className={isMobile ? "text-lg" : ""}>Feedback & Suggestions</CardTitle>
               </div>
-              <CardDescription>
+              <CardDescription className={isMobile ? "text-xs" : ""}>
                 Manage user feedback, bug reports, and feature requests
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className={isMobile ? "px-4 pb-4" : ""}>
               <FeedbackModerationPanel />
             </CardContent>
           </Card>
@@ -159,16 +166,16 @@ const AdminDashboard = () => {
         {/* Users Tab */}
         <TabsContent value="users" className="space-y-6 mt-6">
           <Card className="shadow-sm">
-            <CardHeader>
+            <CardHeader className={isMobile ? "px-4 py-4" : ""}>
               <div className="flex items-center gap-2">
                 <Users className="h-5 w-5 text-terracotta" />
-                <CardTitle>User Management</CardTitle>
+                <CardTitle className={isMobile ? "text-lg" : ""}>User Management</CardTitle>
               </div>
-              <CardDescription>
+              <CardDescription className={isMobile ? "text-xs" : ""}>
                 Manage user accounts and permissions
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className={isMobile ? "px-4 pb-4" : ""}>
               <UserManagement />
             </CardContent>
           </Card>
@@ -177,22 +184,22 @@ const AdminDashboard = () => {
         {/* Discover Recipes Tab - Merged Manage and Import */}
         <TabsContent value="discover-recipes" className="space-y-6 mt-6">
           <Card className="shadow-sm">
-            <CardHeader>
+            <CardHeader className={isMobile ? "px-4 py-4" : ""}>
               <div className="flex items-center gap-2">
                 <Bookmark className="h-5 w-5 text-terracotta" />
-                <CardTitle>Discover Recipes</CardTitle>
+                <CardTitle className={isMobile ? "text-lg" : ""}>Discover Recipes</CardTitle>
               </div>
-              <CardDescription>
+              <CardDescription className={isMobile ? "text-xs" : ""}>
                 Import and manage recipes in the curated collection
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className={`space-y-6 ${isMobile ? "px-4 pb-4" : ""}`}>
               <div>
-                <h3 className="text-lg font-semibold text-navy mb-4">Import Recipes</h3>
+                <h3 className={`font-semibold text-navy mb-4 ${isMobile ? "text-base" : "text-lg"}`}>Import Recipes</h3>
                 <RecipeImportPanel />
               </div>
               <div className="border-t pt-6">
-                <h3 className="text-lg font-semibold text-navy mb-4">Manage Recipes</h3>
+                <h3 className={`font-semibold text-navy mb-4 ${isMobile ? "text-base" : "text-lg"}`}>Manage Recipes</h3>
                 <ImportedRecipeManagementPanel />
               </div>
             </CardContent>
@@ -217,32 +224,122 @@ const AdminDashboard = () => {
           </Card>
         </TabsContent>
 
-        {/* Tools Tab - Organized with sections */}
+        {/* Tools Tab - Organized with collapsible sections */}
         <TabsContent value="tools" className="space-y-6 mt-6">
-          <div className="space-y-4">
-            <div>
-              <h3 className="text-lg font-semibold text-navy mb-4 flex items-center gap-2">
-                <Settings className="h-5 w-5 text-terracotta" />
-                Image & Media Tools
-              </h3>
-              <div className="space-y-4">
-                <ImagePromptSettingsPanel />
-                <ThumbnailGenerationPanel />
-              </div>
-            </div>
-            
-            <div className="border-t pt-4">
-              <h3 className="text-lg font-semibold text-navy mb-4 flex items-center gap-2">
+          <Card className="shadow-sm">
+            <CardHeader>
+              <div className="flex items-center gap-2">
                 <Wrench className="h-5 w-5 text-terracotta" />
-                Recipe Processing Tools
-              </h3>
-              <div className="space-y-4">
-                <IngredientParsingPanel />
-                <ProcessAllRecipesPanel />
-                <CleanedNamesBackfillPanel />
+                <CardTitle>Admin Tools</CardTitle>
               </div>
-            </div>
-          </div>
+              <CardDescription>
+                Manage images, process recipes, and perform batch operations
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Accordion type="single" collapsible className="w-full">
+                {/* Image Generation Prompt */}
+                <AccordionItem value="image-prompt">
+                  <AccordionTrigger className="hover:no-underline">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-blue-100">
+                        <Image className="h-5 w-5 text-blue-600" />
+                      </div>
+                      <div className="text-left">
+                        <div className="font-semibold">Image Generation Prompt</div>
+                        <div className="text-sm text-muted-foreground font-normal">
+                          Configure AI prompt for recipe image generation
+                        </div>
+                      </div>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <ImagePromptSettingsPanel />
+                  </AccordionContent>
+                </AccordionItem>
+
+                {/* Thumbnail Generation */}
+                <AccordionItem value="thumbnail-generation">
+                  <AccordionTrigger className="hover:no-underline">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-purple-100">
+                        <FileImage className="h-5 w-5 text-purple-600" />
+                      </div>
+                      <div className="text-left">
+                        <div className="font-semibold">Thumbnail Generation</div>
+                        <div className="text-sm text-muted-foreground font-normal">
+                          Generate optimized thumbnails for recipes
+                        </div>
+                      </div>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <ThumbnailGenerationPanel />
+                  </AccordionContent>
+                </AccordionItem>
+
+                {/* Ingredient Parsing */}
+                <AccordionItem value="ingredient-parsing">
+                  <AccordionTrigger className="hover:no-underline">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-green-100">
+                        <Sparkles className="h-5 w-5 text-green-600" />
+                      </div>
+                      <div className="text-left">
+                        <div className="font-semibold">Ingredient Parsing</div>
+                        <div className="text-sm text-muted-foreground font-normal">
+                          Parse and categorize recipe ingredients using AI
+                        </div>
+                      </div>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <IngredientParsingPanel />
+                  </AccordionContent>
+                </AccordionItem>
+
+                {/* Process All Recipes */}
+                <AccordionItem value="process-recipes">
+                  <AccordionTrigger className="hover:no-underline">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-orange-100">
+                        <RefreshCw className="h-5 w-5 text-orange-600" />
+                      </div>
+                      <div className="text-left">
+                        <div className="font-semibold">Process All Recipes</div>
+                        <div className="text-sm text-muted-foreground font-normal">
+                          Batch process recipes for categorization and analysis
+                        </div>
+                      </div>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <ProcessAllRecipesPanel />
+                  </AccordionContent>
+                </AccordionItem>
+
+                {/* Drink Pairing Backfill */}
+                <AccordionItem value="drink-pairing-backfill">
+                  <AccordionTrigger className="hover:no-underline">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-rose-100">
+                        <Wine className="h-5 w-5 text-rose-600" />
+                      </div>
+                      <div className="text-left">
+                        <div className="font-semibold">Drink Pairing Backfill</div>
+                        <div className="text-sm text-muted-foreground font-normal">
+                          Generate Perfect Pairing suggestions for recipes missing drink pairings
+                        </div>
+                      </div>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <DrinkPairingBackfillPanel />
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>

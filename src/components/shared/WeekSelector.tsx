@@ -92,7 +92,7 @@ export function WeekSelector({
         size="sm"
         onClick={handleWeekClick}
         disabled={isLoading || !onWeekClick}
-        className={`h-9 px-4 min-w-[160px] font-medium text-sm hover:bg-gray-100 ${onWeekClick ? 'cursor-pointer' : ''}`}
+        className={`h-9 px-4 w-[220px] font-medium text-sm hover:bg-gray-100 ${onWeekClick ? 'cursor-pointer' : ''}`}
         aria-label="Select week"
       >
         <span className="whitespace-nowrap text-gray-900">

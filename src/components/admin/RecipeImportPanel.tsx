@@ -9,6 +9,7 @@ import { Upload, FileText, Check, X, AlertCircle, Download, Clock } from 'lucide
 import { importRecipesFromCSV, fetchImportLogs, ImportResult } from '@/services/recipeImportService';
 import { AuthContext } from '@/contexts/AuthContext';
 import { useContext } from 'react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface ImportLog {
   id: string;
@@ -23,6 +24,7 @@ interface ImportLog {
 export function RecipeImportPanel() {
   const { user } = useContext(AuthContext);
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
@@ -175,37 +177,41 @@ export function RecipeImportPanel() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 sm:space-y-6">
+      <div className={`flex flex-col ${isMobile ? 'gap-3' : 'items-center justify-between gap-4'} ${!isMobile && 'flex-row'}`}>
         <div>
-          <h2 className="text-2xl font-bold">Recipe Import</h2>
-          <p className="text-muted-foreground">Import recipes from CSV files to the curated collection</p>
+          <h2 className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl'}`}>Recipe Import</h2>
+          <p className={`text-muted-foreground ${isMobile ? 'text-xs mt-1' : 'mt-0'}`}>
+            Import recipes from CSV files to the curated collection
+          </p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={downloadSampleCSV}>
+        <div className={`flex gap-2 ${isMobile ? 'flex-col' : 'flex-row'}`}>
+          <Button variant="outline" onClick={downloadSampleCSV} size={isMobile ? "sm" : "default"} className={isMobile ? "w-full" : ""}>
             <Download className="w-4 h-4 mr-2" />
-            Download Sample CSV
+            {isMobile ? "Sample CSV" : "Download Sample CSV"}
           </Button>
-          <Button variant="outline" onClick={() => { setShowLogs(!showLogs); if (!showLogs) loadImportLogs(); }}>
+          <Button variant="outline" onClick={() => { setShowLogs(!showLogs); if (!showLogs) loadImportLogs(); }} size={isMobile ? "sm" : "default"} className={isMobile ? "w-full" : ""}>
             <Clock className="w-4 h-4 mr-2" />
-            {showLogs ? 'Hide' : 'Show'} Import History
+            {showLogs ? 'Hide' : 'Show'} History
           </Button>
         </div>
       </div>
 
       {/* Import Area */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+        <CardHeader className={isMobile ? "px-4 py-4" : ""}>
+          <CardTitle className={`flex items-center gap-2 ${isMobile ? "text-base" : ""}`}>
             <Upload className="w-5 h-5" />
             Import CSV File
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className={`space-y-4 ${isMobile ? "px-4 pb-4" : ""}`}>
           {!isImporting && !importResult && (
             <>
               <div
-                className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+                className={`border-2 border-dashed rounded-lg text-center transition-colors ${
+                  isMobile ? 'p-4' : 'p-8'
+                } ${
                   isDragOver 
                     ? 'border-primary bg-primary/5' 
                     : 'border-muted-foreground/25 hover:border-primary/50'
@@ -214,16 +220,18 @@ export function RecipeImportPanel() {
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
               >
-                <FileText className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                <p className="text-lg font-medium mb-2">
+                <FileText className={`mx-auto mb-4 text-muted-foreground ${isMobile ? 'w-8 h-8' : 'w-12 h-12'}`} />
+                <p className={`font-medium mb-2 ${isMobile ? 'text-sm' : 'text-lg'}`}>
                   {isDragOver ? 'Drop your CSV file here' : 'Drag and drop your CSV file here'}
                 </p>
-                <p className="text-muted-foreground mb-4">
+                <p className={`text-muted-foreground mb-4 ${isMobile ? 'text-xs' : ''}`}>
                   or click to browse files (max 10MB)
                 </p>
                 <Button 
                   onClick={() => fileInputRef.current?.click()}
                   disabled={isImporting}
+                  size={isMobile ? "sm" : "default"}
+                  className={isMobile ? "w-full" : ""}
                 >
                   Select CSV File
                 </Button>
@@ -275,18 +283,18 @@ export function RecipeImportPanel() {
                 </span>
               </div>
               
-              <div className="grid grid-cols-3 gap-4">
+              <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-3'}`}>
                 <div className="text-center">
-                  <div className="text-2xl font-bold">{importResult.totalRecords}</div>
-                  <div className="text-sm text-muted-foreground">Total Records</div>
+                  <div className={`font-bold ${isMobile ? 'text-xl' : 'text-2xl'}`}>{importResult.totalRecords}</div>
+                  <div className={`text-muted-foreground ${isMobile ? 'text-xs' : 'text-sm'}`}>Total Records</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-green-600">{importResult.successfulImports}</div>
-                  <div className="text-sm text-muted-foreground">Successful</div>
+                  <div className={`font-bold text-green-600 ${isMobile ? 'text-xl' : 'text-2xl'}`}>{importResult.successfulImports}</div>
+                  <div className={`text-muted-foreground ${isMobile ? 'text-xs' : 'text-sm'}`}>Successful</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-red-600">{importResult.failedImports}</div>
-                  <div className="text-sm text-muted-foreground">Failed</div>
+                  <div className={`font-bold text-red-600 ${isMobile ? 'text-xl' : 'text-2xl'}`}>{importResult.failedImports}</div>
+                  <div className={`text-muted-foreground ${isMobile ? 'text-xs' : 'text-sm'}`}>Failed</div>
                 </div>
               </div>
 
@@ -318,32 +326,32 @@ export function RecipeImportPanel() {
       {/* Import History */}
       {showLogs && (
         <Card>
-          <CardHeader>
-            <CardTitle>Import History</CardTitle>
+          <CardHeader className={isMobile ? "px-4 py-4" : ""}>
+            <CardTitle className={isMobile ? "text-base" : ""}>Import History</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className={isMobile ? "px-4 pb-4" : ""}>
             {importLogs.length === 0 ? (
-              <p className="text-muted-foreground text-center py-4">No import history found.</p>
+              <p className={`text-muted-foreground text-center py-4 ${isMobile ? 'text-xs' : ''}`}>No import history found.</p>
             ) : (
               <div className="space-y-4">
                 {importLogs.map((log) => (
-                  <div key={log.id} className="border rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="font-medium">{log.filename}</span>
-                      <Badge variant={log.failed_imports === 0 ? "default" : "destructive"}>
+                  <div key={log.id} className={`border rounded-lg ${isMobile ? 'p-3' : 'p-4'}`}>
+                    <div className={`flex items-center justify-between mb-2 ${isMobile ? 'flex-col gap-2 items-start' : ''}`}>
+                      <span className={`font-medium ${isMobile ? 'text-sm' : ''} truncate flex-1`}>{log.filename}</span>
+                      <Badge variant={log.failed_imports === 0 ? "default" : "destructive"} className={isMobile ? "text-xs" : ""}>
                         {log.failed_imports === 0 ? "Success" : "Partial Success"}
                       </Badge>
                     </div>
-                    <div className="grid grid-cols-3 gap-4 text-sm">
+                    <div className={`grid gap-2 ${isMobile ? 'grid-cols-1 text-xs' : 'grid-cols-3 text-sm'}`}>
                       <div>Total: {log.total_records}</div>
                       <div className="text-green-600">Success: {log.successful_imports}</div>
                       <div className="text-red-600">Failed: {log.failed_imports}</div>
                     </div>
-                    <div className="text-xs text-muted-foreground mt-2">
+                    <div className={`text-muted-foreground mt-2 ${isMobile ? 'text-xs' : 'text-xs'}`}>
                       {new Date(log.created_at).toLocaleString()}
                     </div>
                     {log.import_notes && (
-                      <div className="text-xs text-muted-foreground mt-1 truncate">
+                      <div className={`text-muted-foreground mt-1 truncate ${isMobile ? 'text-xs' : 'text-xs'}`}>
                         {log.import_notes}
                       </div>
                     )}
