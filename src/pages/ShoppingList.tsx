@@ -1,17 +1,11 @@
 
 import { useState, useEffect, useRef } from "react";
 import ShoppingListHeader from "@/components/shopping-list/ShoppingListHeader";
-import ShoppingListSkeleton from "@/components/shopping-list/ShoppingListSkeleton";
-import ShoppingListGenerationProgress from "@/components/shopping-list/ShoppingListGenerationProgress";
-import ShoppingListGenerationAnimation from "@/components/shopping-list/ShoppingListGenerationAnimation";
-import ShoppingListCreationInfo from "@/components/shopping-list/ShoppingListCreationInfo";
-import { ShoppingListInfoDialog } from "@/components/shopping-list/ShoppingListInfoDialog";
 import ShoppingListItems from "@/components/shopping-list/ShoppingListItems";
 import ShoppingListEmptyState from "@/components/shopping-list/ShoppingListEmptyState";
 import { WeekSelector } from "@/components/shared/WeekSelector";
 import { CalendarMonthModal } from "@/components/shared/CalendarMonthModal";
 import { useShoppingList } from "@/hooks/useShoppingList";
-import { useShoppingListGeneration } from "@/hooks/useShoppingListGeneration";
 import { useAutoShoppingListGeneration } from "@/hooks/useAutoShoppingListGeneration";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
@@ -35,7 +29,7 @@ export default function ShoppingList() {
   
   const { user } = useAuth();
   const { currentHousehold } = useHousehold();
-  const { recipes, isLoading: recipesLoading } = useRecipes();
+  const { recipes } = useRecipes();
   const { getMealPlansForWeek, mealPlans: allMealPlans, copyWeek } = useMealPlan();
   const { toast } = useToast();
   const isMobile = useIsMobile();
@@ -78,32 +72,14 @@ export default function ShoppingList() {
     localStorage.setItem(WEEK_STORAGE_KEY, currentWeek);
   }, [currentWeek]);
   
-  // Enable automatic shopping list generation
-  const { isGenerating: isAutoGenerating } = useAutoShoppingListGeneration();
+  // Enable automatic shopping list generation (silent - no UI indication)
+  useAutoShoppingListGeneration();
   
   const {
     shoppingList,
-    isLoading,
     toggleItemChecked,
     refreshList,
   } = useShoppingList(currentWeek);
-
-  const {
-    isGenerating: isManualGenerating,
-    generationProgress,
-    lastGenerated,
-    setLastGenerated,
-    handleGenerate
-  } = useShoppingListGeneration(currentWeek, async () => {}, refreshList);
-
-  // Combine auto and manual generation states
-  const isAutoGen = isAutoGenerating(currentWeek);
-  const isGenerating = isAutoGen || isManualGenerating;
-  
-  // Provide default progress for auto-generation
-  const effectiveGenerationProgress = isAutoGen && !isManualGenerating
-    ? { step: 2, totalSteps: 4, currentAction: 'Generating your shopping list...' }
-    : generationProgress;
 
   // Load toggle state from localStorage on mount
   useEffect(() => {
@@ -132,21 +108,7 @@ export default function ShoppingList() {
   }, [sortOption]);
 
 
-  // Check for existing shopping list creation time on load
-  useEffect(() => {
-    if (shoppingList.length > 0) {
-      // Get the oldest item's creation time as the list creation time
-      const oldestItem = shoppingList.reduce((oldest, current) => {
-        const currentTime = new Date(current.createdAt || '').getTime();
-        const oldestTime = new Date(oldest.createdAt || '').getTime();
-        return currentTime < oldestTime ? current : oldest;
-      });
-      
-      if (oldestItem.createdAt) {
-        setLastGenerated(new Date(oldestItem.createdAt));
-      }
-    }
-  }, [shoppingList, setLastGenerated]);
+  // Remove lastGenerated tracking - not needed without generation UI
 
   const mealPlans = getMealPlansForWeek(currentWeek);
   const hasMealPlans = mealPlans.length > 0;
@@ -221,20 +183,7 @@ export default function ShoppingList() {
     }
   };
 
-  // Show loading state while recipes are loading
-  if (recipesLoading && shoppingList.length === 0) {
-  return (
-    <div className="container max-w-4xl py-4 px-4 sm:py-8 sm:px-6" data-scroll-content>
-        <ShoppingListHeader 
-          onShare={handleShare} 
-          onInfoClick={() => setInfoDialog(true)}
-        />
-        <div className="py-10 text-center">
-          <p className="text-muted-foreground mb-4">Loading recipes...</p>
-        </div>
-      </div>
-    );
-  }
+  // Remove loading state check - show UI immediately
 
   return (
     <div className="container max-w-4xl py-4 px-4 sm:py-8 sm:px-6 space-y-3" data-scroll-content>
@@ -269,7 +218,6 @@ export default function ShoppingList() {
                 currentWeek={currentWeek} 
                 onWeekChange={setCurrentWeek}
                 onWeekClick={() => setAllWeeksModalOpen(true)}
-                isLoading={isGenerating}
               />
             }
             utilityActions={
@@ -324,50 +272,23 @@ export default function ShoppingList() {
             onCopyWeek={copyWeek}
           />
 
-          {/* Only show skeleton if we're loading AND we don't have data */}
-          {isLoading && shoppingList.length === 0 ? (
-            <ShoppingListSkeleton />
+          {/* No loading states - just show data or empty state immediately */}
+          {shoppingList.length === 0 ? (
+            <ShoppingListEmptyState
+              hasMealPlans={hasMealPlans}
+            />
           ) : (
-            <div className={`transition-opacity duration-150 ${isLoading ? 'opacity-50' : 'opacity-100'}`}>
-              {shoppingList.length === 0 ? (
-                isGenerating ? (
-                  // Show generation animation when actually generating
-                  <div className="bg-gray-50 rounded-lg p-6">
-                    <ShoppingListGenerationAnimation
-                      isGenerating={isGenerating}
-                      generationProgress={effectiveGenerationProgress}
-                    />
-                  </div>
-                ) : hasMealPlans ? (
-                  // If meal plans exist but not generating yet, show skeleton to prevent flash
-                  <ShoppingListSkeleton />
-                ) : (
-                  // Only show empty state if there are no meal plans
-                  <ShoppingListEmptyState
-                    hasMealPlans={hasMealPlans}
-                  />
-                )
-              ) : (
-                <>
-                  <ShoppingListItems
-                    shoppingList={groupedItems}
-                    copiedItemId={copiedItemId}
-                    onToggleItem={toggleItemChecked}
-                    onCopyItem={handleCopyItem}
-                    getRecipeNames={getRecipeNames}
-                    sortOption={sortOption}
-                  />
-                </>
-              )}
-            </div>
+            <ShoppingListItems
+              shoppingList={groupedItems}
+              copiedItemId={copiedItemId}
+              onToggleItem={toggleItemChecked}
+              onCopyItem={handleCopyItem}
+              getRecipeNames={getRecipeNames}
+              sortOption={sortOption}
+            />
           )}
 
-          <ShoppingListInfoDialog
-            open={infoDialog}
-            onOpenChange={setInfoDialog}
-            lastGenerated={lastGenerated}
-            createdByUserId={shoppingList.length > 0 ? shoppingList[0].createdBy : undefined}
-          />
+          {/* Remove info dialog - not needed without generation UI */}
         </>
       )}
     </div>

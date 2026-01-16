@@ -221,6 +221,54 @@ export async function getCategoryForIngredient(ingredient: string): Promise<{
 }
 
 /**
+ * Batch lookup categories from database (fast - no AI calls)
+ * Returns a map of ingredient names (lowercased) to category and cleaned name
+ * This is used during shopping list generation for instant lookup
+ */
+export async function batchGetCategoriesFromDatabase(
+  ingredients: string[]
+): Promise<Map<string, { category: IngredientCategory; cleanedName: string }>> {
+  const resultMap = new Map<string, { category: IngredientCategory; cleanedName: string }>();
+  
+  if (ingredients.length === 0) return resultMap;
+  
+  // Normalize all ingredient names to lowercase for lookup
+  const normalizedIngredients = ingredients
+    .map(ing => ing.toLowerCase().trim())
+    .filter(Boolean)
+    .filter((ing, index, self) => self.indexOf(ing) === index); // Remove duplicates
+  
+  if (normalizedIngredients.length === 0) return resultMap;
+  
+  try {
+    // Single batch query instead of N individual queries
+    const { data, error } = await supabase
+      .from('ingredient_categories')
+      .select('ingredient_name, category, cleaned_name')
+      .in('ingredient_name', normalizedIngredients);
+    
+    if (error) {
+      console.error('Error batch fetching categories:', error);
+      return resultMap;
+    }
+    
+    // Map results by normalized ingredient name
+    if (data) {
+      data.forEach(item => {
+        resultMap.set(item.ingredient_name, {
+          category: item.category as IngredientCategory,
+          cleanedName: item.cleaned_name || item.ingredient_name
+        });
+      });
+    }
+  } catch (error) {
+    console.error('Error in batchGetCategoriesFromDatabase:', error);
+  }
+  
+  return resultMap;
+}
+
+/**
  * Batch categorizes multiple ingredients
  * Returns a map of ingredient names (lowercased) to categories
  * No normalization - passes ingredients exactly as-is to OpenAI

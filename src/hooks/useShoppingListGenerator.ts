@@ -6,8 +6,9 @@ import { useMealPlan } from "@/contexts/MealPlanContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { ShoppingListService } from "@/services/shoppingListService";
-import { getCategoryForIngredient } from "@/services/ingredientCategorizationService";
+import { batchGetCategoriesFromDatabase } from "@/services/ingredientCategorizationService";
 import { DEFAULT_INGREDIENT_CATEGORY } from "@/types/ingredientCategories";
+import { supabase } from "@/integrations/supabase/client";
 
 // Helper function to detect ingredient group headers (same as EnhancedIngredientManager)
 const isHeader = (ingredient: string) => {
@@ -116,67 +117,89 @@ export const useShoppingListGenerator = () => {
         return [];
       }
 
-      // Step 3: Look up categories and cleaned names for all ingredients
-      console.log('Looking up categories and cleaned names for', ingredientItems.length, 'ingredients...');
-      const categoryLookups = await Promise.allSettled(
-        ingredientItems.map(async (item) => {
-          const result = await getCategoryForIngredient(item.name);
-          return { item, category: result.category, cleanedName: result.cleanedName };
+      // Step 3: Batch lookup categories from database (instant - no AI calls)
+      console.log('Batch looking up categories for', ingredientItems.length, 'ingredients...');
+      const uniqueIngredientNames = [...new Set(ingredientItems.map(item => item.name))];
+      const categoryMap = await batchGetCategoriesFromDatabase(uniqueIngredientNames);
+
+      // Step 4: Prepare items for batch insert
+      const itemsToInsert = ingredientItems
+        .filter(item => {
+          // Filter out water
+          const lowerTrimmed = item.name.toLowerCase().trim();
+          return !(lowerTrimmed === 'water' || 
+                   lowerTrimmed === 'water,' ||
+                   lowerTrimmed.startsWith('water ') ||
+                   lowerTrimmed === 'cold water' ||
+                   lowerTrimmed === 'hot water' ||
+                   lowerTrimmed === 'warm water' ||
+                   lowerTrimmed === 'boiling water' ||
+                   lowerTrimmed === 'room temperature water');
         })
-      );
-
-      // Step 4: Save all items directly (no consolidation)
-      const savedItems: ShoppingListItem[] = [];
-      
-      console.log('Saving', ingredientItems.length, 'items directly...');
-      
-      for (let i = 0; i < ingredientItems.length; i++) {
-        const item = ingredientItems[i];
-        const categoryResult = categoryLookups[i];
-        
-        // Get category and cleaned name from lookup result, default to "Other" if lookup failed
-        let category = DEFAULT_INGREDIENT_CATEGORY;
-        let cleanedName = item.name; // Default to original name if lookup failed
-        if (categoryResult.status === 'fulfilled') {
-          category = categoryResult.value.category;
-          cleanedName = categoryResult.value.cleanedName || item.name;
-        } else {
-          console.warn('Failed to get category for ingredient:', item.name, categoryResult.reason);
-        }
-
-        // Filter out water even after cleaning (in case cleaned name is "Water")
-        const lowerCleanedName = cleanedName.toLowerCase().trim();
-        if (lowerCleanedName === 'water' || 
-            lowerCleanedName === 'cold water' ||
-            lowerCleanedName === 'hot water' ||
-            lowerCleanedName === 'warm water' ||
-            lowerCleanedName === 'boiling water' ||
-            lowerCleanedName === 'room temperature water') {
-          console.log('Skipping water (after cleaning):', cleanedName);
-          continue;
-        }
-
-        try {
-          // Save item with cleaned name (shopping list-ready format)
-          const savedItem = await ShoppingListService.addConsolidatedItem(
-            cleanedName, // Use cleaned name for shopping list display
-            1, // Default quantity (not used for display)
-            '', // No unit (not used for display)
-            [item.name], // Source ingredients keeps the original text
-            [item.recipeId], // Single recipe ID
-            currentHousehold.id,
-            user.id,
-            weekKey,
-            category
-          );
+        .map(item => {
+          const normalizedKey = item.name.toLowerCase().trim();
+          const categoryData = categoryMap.get(normalizedKey);
           
-          if (savedItem) {
-            savedItems.push(savedItem);
+          // Filter out water even after cleaning (in case cleaned name is "Water")
+          const cleanedName = categoryData?.cleanedName || item.name.trim();
+          const lowerCleanedName = cleanedName.toLowerCase().trim();
+          if (lowerCleanedName === 'water' || 
+              lowerCleanedName === 'cold water' ||
+              lowerCleanedName === 'hot water' ||
+              lowerCleanedName === 'warm water' ||
+              lowerCleanedName === 'boiling water' ||
+              lowerCleanedName === 'room temperature water') {
+            return null; // Will be filtered out
           }
-        } catch (itemError) {
-          console.error('Error saving individual item:', item, itemError);
-        }
+          
+          return {
+            household_id: currentHousehold.id,
+            created_by: user.id,
+            name: cleanedName, // Use cleaned name if available, otherwise original
+            week_key: weekKey,
+            is_custom: false,
+            is_checked: false,
+            recipe_ids: [item.recipeId],
+            consolidated_quantity: 1,
+            consolidated_unit: '',
+            source_ingredients: [item.name],
+            category: categoryData?.category || DEFAULT_INGREDIENT_CATEGORY
+          };
+        })
+        .filter((item): item is NonNullable<typeof item> => item !== null);
+
+      // Step 5: Single batch insert instead of individual inserts
+      if (itemsToInsert.length === 0) {
+        console.log('No items to insert after filtering');
+        return [];
       }
+
+      console.log('Batch inserting', itemsToInsert.length, 'items...');
+      const { data, error } = await supabase
+        .from('household_shopping_lists')
+        .insert(itemsToInsert)
+        .select('id, name, quantity, unit, consolidated_quantity, consolidated_unit, source_ingredients, is_checked, is_custom, recipe_ids, created_at, created_by, category');
+
+      if (error) {
+        console.error('Error batch inserting shopping list items:', error);
+        throw error;
+      }
+
+      const savedItems: ShoppingListItem[] = (data || []).map((item: any) => ({
+        id: item.id,
+        name: item.name,
+        quantity: item.quantity,
+        unit: item.unit,
+        consolidatedQuantity: item.consolidated_quantity,
+        consolidatedUnit: item.consolidated_unit,
+        sourceIngredients: item.source_ingredients || [],
+        isChecked: item.is_checked,
+        isCustom: item.is_custom,
+        recipeIds: item.recipe_ids || [],
+        createdAt: item.created_at,
+        createdBy: item.created_by,
+        category: item.category
+      }));
 
       console.log('Successfully saved', savedItems.length, 'items for week', weekKey);
       return savedItems;

@@ -82,32 +82,12 @@ export const useAutoShoppingListGeneration = () => {
     
     if (currentHash === lastHash && currentHash !== '') {
       // No changes detected, skip generation
-      // Clear generating state since we're not actually generating
-      setGeneratingWeeks(prev => {
-        const next = new Set(prev);
-        next.delete(weekKey);
-        return next;
-      });
       return;
     }
 
-    // Check if shopping list already exists in database
-    // If it exists and we don't have a hash, initialize the hash from current state
-    // This prevents regeneration on every page load
-    if (!lastHash && currentHash !== '') {
-      const hasExistingItems = await ShoppingListQueries.checkDatabaseForItems(currentHousehold.id, weekKey);
-      if (hasExistingItems) {
-        // Shopping list exists - assume it's up to date and set the hash
-        // This prevents regeneration on every page load
-        lastMealPlanHashRef.current.set(weekKey, currentHash);
-        setGeneratingWeeks(prev => {
-          const next = new Set(prev);
-          next.delete(weekKey);
-          return next;
-        });
-        return;
-      }
-    }
+    // REMOVED: The check that assumes existing lists are up-to-date
+    // This was preventing regeneration when meal plans changed
+    // Now we always check hash and regenerate if different
 
     // Mark as pending to prevent duplicate generations
     if (pendingGenerationsRef.current.has(weekKey)) {
@@ -115,8 +95,7 @@ export const useAutoShoppingListGeneration = () => {
     }
 
     pendingGenerationsRef.current.add(weekKey);
-    // Note: generatingWeeks is already set by scheduleGeneration, but ensure it's set here too
-    setGeneratingWeeks(prev => new Set(prev).add(weekKey));
+    // Don't set generating state - generation is silent
 
     try {
       console.log(`[Auto-Generate] Generating shopping list for ${weekKey}`);
@@ -130,39 +109,15 @@ export const useAutoShoppingListGeneration = () => {
       
       console.log(`[Auto-Generate] Generated ${result.length} items for ${weekKey}`);
       
-      // Mark as recently generated to keep animation showing while items load
-      setRecentlyGeneratedWeeks(prev => new Set(prev).add(weekKey));
-      
-      // Dispatch custom event to trigger refresh in shopping list components
-      // This ensures the UI updates even if real-time subscription is delayed
+      // Dispatch event - real-time subscription will update UI instantly
       window.dispatchEvent(new CustomEvent('shopping-list-auto-generated', {
         detail: { weekKey, itemCount: result.length }
       }));
-      
-      // Clear generating state, but keep "recently generated" state for a bit longer
-      setGeneratingWeeks(prev => {
-        const next = new Set(prev);
-        next.delete(weekKey);
-        return next;
-      });
-      
-      // Clear "recently generated" state after 2 seconds to allow items to load
-      setTimeout(() => {
-        setRecentlyGeneratedWeeks(prev => {
-          const next = new Set(prev);
-          next.delete(weekKey);
-          return next;
-        });
-      }, 2000);
     } catch (error) {
       console.error(`[Auto-Generate] Error generating shopping list for ${weekKey}:`, error);
     } finally {
       pendingGenerationsRef.current.delete(weekKey);
-      setGeneratingWeeks(prev => {
-        const next = new Set(prev);
-        next.delete(weekKey);
-        return next;
-      });
+      // Don't set generating states - generation is silent
     }
   }, [user, currentHousehold, recipesLoading, recipes, mealPlans, generateAndSaveFromMealPlans, getMealPlanHash, clearShoppingListForWeek]);
 
@@ -174,11 +129,8 @@ export const useAutoShoppingListGeneration = () => {
       clearTimeout(existingTimer);
     }
 
-    // Show generation animation immediately
-    setGeneratingWeeks(prev => new Set(prev).add(weekKey));
-
+    // Don't set generating state - generation is silent
     // Start generation immediately - no delay, speed is key!
-    // React will batch the state update and the async call
     autoGenerateForWeek(weekKey);
   }, [autoGenerateForWeek]);
 
