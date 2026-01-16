@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { ClipboardCopy, CheckCircle2 } from "lucide-react";
+import { ClipboardCopy, CheckCircle2, Check } from "lucide-react";
 import { createRecipeUrl } from "@/utils/slugUtils";
 import { Link, useNavigate } from "react-router-dom";
 import { useRecipes } from "@/contexts/RecipesContext";
@@ -245,14 +245,21 @@ export function ShoppingListItem({
           size="sm"
           variant="ghost"
           onClick={handleToggleCheck}
-          className={`h-10 w-10 p-0 touch-manipulation ${
+          className={`h-10 w-10 p-0 touch-manipulation relative ${
             isChecked 
               ? 'bg-green-50 text-green-600 hover:bg-green-100' 
               : 'hover:bg-muted text-gray-400'
           }`}
           title={isChecked ? "Mark as incomplete" : "Mark as complete"}
         >
-          <CheckCircle2 className={`h-5 w-5 ${isChecked ? 'fill-current' : ''}`} />
+          {isChecked ? (
+            <div className="relative">
+              <CheckCircle2 className="h-5 w-5 fill-current" />
+              <Check className="h-3 w-3 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white stroke-[3]" />
+            </div>
+          ) : (
+            <CheckCircle2 className="h-5 w-5" />
+          )}
         </Button>
       </div>
     </div>

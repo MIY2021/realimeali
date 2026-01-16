@@ -15,13 +15,20 @@ const isHeader = (ingredient: string) => {
   return ingredient.trim().endsWith(':') && !ingredient.match(/\d+.*:/);
 };
 
+const buildCheckedKey = (name: string, recipeId: string) => {
+  return `${name.toLowerCase().trim()}::${recipeId}`;
+};
+
 export const useShoppingListGenerator = () => {
   const { recipes } = useRecipes();
   const { getMealPlansForWeek } = useMealPlan();
   const { user } = useAuth();
   const { currentHousehold } = useHousehold();
 
-  const generateAndSaveFromMealPlans = useCallback(async (weekKey: string): Promise<ShoppingListItem[]> => {
+  const generateAndSaveFromMealPlans = useCallback(async (
+    weekKey: string,
+    checkedMap?: Map<string, boolean>
+  ): Promise<ShoppingListItem[]> => {
     console.log('=== STARTING SHOPPING LIST GENERATION (NO CONSOLIDATION) ===');
     console.log('Week:', weekKey);
     console.log('User:', !!user);
@@ -152,13 +159,16 @@ export const useShoppingListGenerator = () => {
             return null; // Will be filtered out
           }
           
+          const checkedKey = buildCheckedKey(cleanedName, item.recipeId);
+          const isChecked = checkedMap?.get(checkedKey) ?? false;
+
           return {
             household_id: currentHousehold.id,
             created_by: user.id,
             name: cleanedName, // Use cleaned name if available, otherwise original
             week_key: weekKey,
             is_custom: false,
-            is_checked: false,
+            is_checked: isChecked,
             recipe_ids: [item.recipeId],
             consolidated_quantity: 1,
             consolidated_unit: '',

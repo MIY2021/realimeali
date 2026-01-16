@@ -42,7 +42,7 @@ export const useShoppingList = (weekKey: string) => {
   useEffect(() => {
     if (!currentHousehold) return;
 
-    let debounceTimer: NodeJS.Timeout;
+    let debounceTimer: NodeJS.Timeout | null = null;
 
     const channel = supabase
       .channel(`shopping-list-changes-week-${weekKey}`)
@@ -60,11 +60,9 @@ export const useShoppingList = (weekKey: string) => {
           if (debounceTimer) {
             clearTimeout(debounceTimer);
           }
-          
-          // Update immediately - very short debounce for batch operations
-          debounceTimer = setTimeout(() => {
-            loadShoppingList();
-          }, 100);
+
+          // Update immediately
+          loadShoppingList();
         }
       )
       .subscribe();

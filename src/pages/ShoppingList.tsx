@@ -272,12 +272,8 @@ export default function ShoppingList() {
             onCopyWeek={copyWeek}
           />
 
-          {/* No loading states - just show data or empty state immediately */}
-          {shoppingList.length === 0 ? (
-            <ShoppingListEmptyState
-              hasMealPlans={hasMealPlans}
-            />
-          ) : (
+          {/* Show list if it exists, otherwise only show empty state if no meal plans */}
+          {shoppingList.length > 0 ? (
             <ShoppingListItems
               shoppingList={groupedItems}
               copiedItemId={copiedItemId}
@@ -285,6 +281,10 @@ export default function ShoppingList() {
               onCopyItem={handleCopyItem}
               getRecipeNames={getRecipeNames}
               sortOption={sortOption}
+            />
+          ) : (
+            <ShoppingListEmptyState
+              hasMealPlans={hasMealPlans}
             />
           )}
 

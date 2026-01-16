@@ -7,6 +7,7 @@ export class ShoppingListService {
   static loadExistingShoppingList = ShoppingListQueries.loadExistingShoppingList;
   static checkDatabaseForItems = ShoppingListQueries.checkDatabaseForItems;
   static clearAll = ShoppingListQueries.clearAll;
+  static getAllWeekKeysWithShoppingLists = ShoppingListQueries.getAllWeekKeysWithShoppingLists;
 
   // Mutation methods
   static toggleItemChecked = ShoppingListMutations.toggleItemChecked;
