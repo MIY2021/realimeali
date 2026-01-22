@@ -224,100 +224,105 @@ export const useRecipeCreationHandlers = ({
       
       console.log('💾 Save result:', savedRecipe ? { id: savedRecipe.id, title: savedRecipe.title } : 'null');
       
-      if (savedRecipe) {
-        console.log('✅ Recipe saved successfully:', savedRecipe.id);
-        
-        // Check if image has changed (for edit mode)
-        const imageHasChanged = isEditMode && editingRecipe && 
-          recipeData.image !== editingRecipe.image;
-        
-        // Upload image if a file was provided
-        if (imageFileToUpload && user) {
-          console.log('📸 Uploading image to storage...');
-          try {
-            const { fullUrl, thumbnailUrl } = await uploadRecipeImage(
-              imageFileToUpload,
-              user.id,
-              savedRecipe.id
-            );
-
-            console.log('📸 Images uploaded, updating recipe with URLs...');
-            const { error: updateError } = await supabase
-              .from('recipes')
-              .update({
-                image: fullUrl,
-                image_thumbnail: thumbnailUrl,
-              })
-              .eq('id', savedRecipe.id);
-
-            if (updateError) {
-              console.error('❌ Failed to update recipe with image URLs:', updateError);
-            } else {
-              console.log('✅ Recipe updated with image URLs');
-              // Update the savedRecipe object with the new URLs for navigation
-              savedRecipe.image = fullUrl;
-              savedRecipe.image_thumbnail = thumbnailUrl;
-            }
-          } catch (imageError) {
-            console.error('❌ Failed to upload images:', imageError);
-            // Continue anyway - recipe is saved
-          }
-        } else if (recipeData.image && user && (
-          // Generate thumbnail if: no thumbnail exists OR image has changed
-          !recipeData.image_thumbnail || imageHasChanged
-        )) {
-          console.log('📸 Generating thumbnail from image URL...', { 
-            hasExistingThumbnail: !!recipeData.image_thumbnail,
-            imageHasChanged 
-          });
-          try {
-            const thumbnailUrl = await uploadThumbnailFromUrl(
-              recipeData.image,
-              user.id,
-              savedRecipe.id
-            );
-
-            console.log('📸 Thumbnail generated, updating recipe...');
-            const { error: updateError } = await supabase
-              .from('recipes')
-              .update({
-                image_thumbnail: thumbnailUrl,
-              })
-              .eq('id', savedRecipe.id);
-
-            if (updateError) {
-              console.error('❌ Failed to update recipe with thumbnail URL:', updateError);
-            } else {
-              console.log('✅ Recipe updated with thumbnail');
-              savedRecipe.image_thumbnail = thumbnailUrl;
-            }
-          } catch (thumbnailError) {
-            console.error('❌ Failed to generate thumbnail from URL:', thumbnailError);
-            // Continue anyway - recipe is saved
-          }
-        }
-        
-        // Show success toast
-        const action = isEditMode ? "updated" : "added to your recipe collection";
-        const emoji = isEditMode ? "✏️" : "🎉";
-        toast({
-          title: `Recipe ${isEditMode ? "Updated" : "Saved"} Successfully! ${emoji}`,
-          description: `${savedRecipe.title} has been ${action}.`,
-        });
-        
-        if (isEditMode) {
-          // Navigate back to recipe detail with potentially new slug
-          const newSlug = savedRecipe.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-          navigate(`/my-recipes/${newSlug}`);
-        } else {
-          navigate("/my-recipes");
-        }
-        setTimeout(() => {
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        }, 100);
-      } else {
-        throw new Error('Recipe creation returned null');
+      // HALT IMMEDIATELY if recipe save failed
+      if (!savedRecipe) {
+        throw new Error('Recipe creation/update returned null. The recipe was not saved.');
       }
+      
+      console.log('✅ Recipe saved successfully:', savedRecipe.id);
+      
+      // Check if image has changed (for edit mode)
+      const imageHasChanged = isEditMode && editingRecipe && 
+        recipeData.image !== editingRecipe.image;
+      
+      // Upload image if a file was provided
+      if (imageFileToUpload && user) {
+        console.log('📸 Uploading image to storage...');
+        try {
+          const { fullUrl, thumbnailUrl } = await uploadRecipeImage(
+            imageFileToUpload,
+            user.id,
+            savedRecipe.id
+          );
+
+          console.log('📸 Images uploaded, updating recipe with URLs...');
+          const { error: updateError } = await supabase
+            .from('recipes')
+            .update({
+              image: fullUrl,
+              image_thumbnail: thumbnailUrl,
+            })
+            .eq('id', savedRecipe.id);
+
+          if (updateError) {
+            // HALT on image update error - don't continue
+            throw new Error(`Failed to update recipe with image URLs: ${updateError.message}`);
+          } else {
+            console.log('✅ Recipe updated with image URLs');
+            // Update the savedRecipe object with the new URLs for navigation
+            savedRecipe.image = fullUrl;
+            savedRecipe.image_thumbnail = thumbnailUrl;
+          }
+        } catch (imageError) {
+          // HALT on image upload error
+          console.error('❌ Failed to upload images:', imageError);
+          throw new Error(`Failed to upload recipe image: ${imageError instanceof Error ? imageError.message : 'Unknown error'}`);
+        }
+      } else if (recipeData.image && user && (
+        // Generate thumbnail if: no thumbnail exists OR image has changed
+        !recipeData.image_thumbnail || imageHasChanged
+      )) {
+        console.log('📸 Generating thumbnail from image URL...', { 
+          hasExistingThumbnail: !!recipeData.image_thumbnail,
+          imageHasChanged 
+        });
+        try {
+          const thumbnailUrl = await uploadThumbnailFromUrl(
+            recipeData.image,
+            user.id,
+            savedRecipe.id
+          );
+
+          console.log('📸 Thumbnail generated, updating recipe...');
+          const { error: updateError } = await supabase
+            .from('recipes')
+            .update({
+              image_thumbnail: thumbnailUrl,
+            })
+            .eq('id', savedRecipe.id);
+
+          if (updateError) {
+            // HALT on thumbnail update error
+            throw new Error(`Failed to update recipe with thumbnail URL: ${updateError.message}`);
+          } else {
+            console.log('✅ Recipe updated with thumbnail');
+            savedRecipe.image_thumbnail = thumbnailUrl;
+          }
+        } catch (thumbnailError) {
+          // HALT on thumbnail generation error
+          console.error('❌ Failed to generate thumbnail from URL:', thumbnailError);
+          throw new Error(`Failed to generate recipe thumbnail: ${thumbnailError instanceof Error ? thumbnailError.message : 'Unknown error'}`);
+        }
+      }
+      
+      // Only show success and navigate if we got here without errors
+      const action = isEditMode ? "updated" : "added to your recipe collection";
+      const emoji = isEditMode ? "✏️" : "🎉";
+      toast({
+        title: `Recipe ${isEditMode ? "Updated" : "Saved"} Successfully! ${emoji}`,
+        description: `${savedRecipe.title} has been ${action}.`,
+      });
+      
+      if (isEditMode) {
+        // Navigate back to recipe detail with potentially new slug
+        const newSlug = savedRecipe.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+        navigate(`/my-recipes/${newSlug}`);
+      } else {
+        navigate("/my-recipes");
+      }
+      setTimeout(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }, 100);
     } catch (error) {
       console.error("❌ Error saving recipe:", error);
       let errorMessage = "Failed to save recipe. Please try again.";
@@ -358,6 +363,7 @@ export const useRecipeCreationHandlers = ({
         description: errorMessage,
         variant: "destructive",
       });
+      // DO NOT navigate - halt all progress
     } finally {
       setIsSaving(false);
     }

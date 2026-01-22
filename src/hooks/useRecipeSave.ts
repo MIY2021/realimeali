@@ -104,85 +104,100 @@ export function useRecipeSave() {
       const recipe = await createRecipe(recipeToSave, currentHousehold.id);
       console.log("✅ Recipe creation response:", recipe);
       
-      if (recipe) {
-        // Upload compressed images if a file was uploaded
-        if (uploadedImageFile && user) {
-          console.log("📸 Uploading compressed images to storage...");
-          try {
-            const { fullUrl, thumbnailUrl } = await uploadRecipeImage(
-              uploadedImageFile,
-              user.id,
-              recipe.id
-            );
-
-            console.log("📸 Images uploaded successfully, updating recipe...");
-            const { error: updateError } = await supabase
-              .from('recipes')
-              .update({
-                image: fullUrl,
-                image_thumbnail: thumbnailUrl,
-              })
-              .eq('id', recipe.id);
-
-            if (updateError) {
-              console.error("❌ Failed to update recipe with image URLs:", updateError);
-            } else {
-              console.log("✅ Recipe updated with optimized images");
-            }
-          } catch (imageError) {
-            console.error("❌ Failed to upload images:", imageError);
-            // Continue anyway - recipe is saved
-          }
-        } else if ((recipeToSave as any).image && user && !(recipeToSave as any).image_thumbnail) {
-          // Generate and upload thumbnail from image URL if no file was uploaded and no thumbnail exists
-          // This handles: new recipes with URL images, recipes where thumbnail generation failed previously
-          console.log("📸 Generating thumbnail from image URL (no thumbnail exists)...");
-          try {
-            const thumbnailUrl = await uploadThumbnailFromUrl(
-              (recipeToSave as any).image,
-              user.id,
-              recipe.id
-            );
-
-            console.log("📸 Thumbnail generated, updating recipe...");
-            const { error: updateError } = await supabase
-              .from('recipes')
-              .update({
-                image_thumbnail: thumbnailUrl,
-              })
-              .eq('id', recipe.id);
-
-            if (updateError) {
-              console.error("❌ Failed to update recipe with thumbnail URL:", updateError);
-            } else {
-              console.log("✅ Recipe updated with thumbnail");
-            }
-          } catch (thumbnailError) {
-            console.error("❌ Failed to generate thumbnail from URL:", thumbnailError);
-            // Continue anyway - recipe is saved
-          }
-        }
-        
-        console.log("🎉 Recipe created successfully");
-        toast.success("Recipe saved!", {
-          description: `${recipe.title} has been added to your recipes.`,
-        });
-        
-        // Check recipe count achievements
-        window.dispatchEvent(new CustomEvent('checkRecipeCountAchievements'));
-        
-        navigate("/my-recipes");
-      } else {
-        console.error("❌ Recipe creation returned null/undefined");
-        toast.error("Error", {
-          description: "Failed to save recipe. Please try again.",
-        });
+      // HALT IMMEDIATELY if recipe creation failed
+      if (!recipe) {
+        throw new Error('Recipe creation returned null. The recipe was not saved.');
       }
+      
+      // Upload compressed images if a file was uploaded
+      if (uploadedImageFile && user) {
+        console.log("📸 Uploading compressed images to storage...");
+        try {
+          const { fullUrl, thumbnailUrl } = await uploadRecipeImage(
+            uploadedImageFile,
+            user.id,
+            recipe.id
+          );
+
+          console.log("📸 Images uploaded successfully, updating recipe...");
+          const { error: updateError } = await supabase
+            .from('recipes')
+            .update({
+              image: fullUrl,
+              image_thumbnail: thumbnailUrl,
+            })
+            .eq('id', recipe.id);
+
+          if (updateError) {
+            // HALT on image update error
+            throw new Error(`Failed to update recipe with image URLs: ${updateError.message}`);
+          } else {
+            console.log("✅ Recipe updated with optimized images");
+          }
+        } catch (imageError) {
+          // HALT on image upload error
+          console.error("❌ Failed to upload images:", imageError);
+          throw new Error(`Failed to upload recipe image: ${imageError instanceof Error ? imageError.message : 'Unknown error'}`);
+        }
+      } else if ((recipeToSave as any).image && user && !(recipeToSave as any).image_thumbnail) {
+        // Generate and upload thumbnail from image URL if no file was uploaded and no thumbnail exists
+        // This handles: new recipes with URL images, recipes where thumbnail generation failed previously
+        console.log("📸 Generating thumbnail from image URL (no thumbnail exists)...");
+        try {
+          const thumbnailUrl = await uploadThumbnailFromUrl(
+            (recipeToSave as any).image,
+            user.id,
+            recipe.id
+          );
+
+          console.log("📸 Thumbnail generated, updating recipe...");
+          const { error: updateError } = await supabase
+            .from('recipes')
+            .update({
+              image_thumbnail: thumbnailUrl,
+            })
+            .eq('id', recipe.id);
+
+          if (updateError) {
+            // HALT on thumbnail update error
+            throw new Error(`Failed to update recipe with thumbnail URL: ${updateError.message}`);
+          } else {
+            console.log("✅ Recipe updated with thumbnail");
+          }
+        } catch (thumbnailError) {
+          // HALT on thumbnail generation error
+          console.error("❌ Failed to generate thumbnail from URL:", thumbnailError);
+          throw new Error(`Failed to generate recipe thumbnail: ${thumbnailError instanceof Error ? thumbnailError.message : 'Unknown error'}`);
+        }
+      }
+      
+      // Only show success and navigate if we got here without errors
+      console.log("🎉 Recipe created successfully");
+      toast.success("Recipe saved!", {
+        description: `${recipe.title} has been added to your recipes.`,
+      });
+      
+      // Check recipe count achievements
+      window.dispatchEvent(new CustomEvent('checkRecipeCountAchievements'));
+      
+      navigate("/my-recipes");
     } catch (error) {
       console.error("❌ Error creating recipe:", error);
+      let errorMessage = "Failed to save recipe. Please check your input and try again.";
+      
+      if (error instanceof Error) {
+        const actualMessage = error.message || String(error);
+        if (actualMessage.includes('Network') || actualMessage.includes('network')) {
+          errorMessage = "Network error. Please check your connection and try again.";
+        } else {
+          errorMessage = actualMessage;
+        }
+      }
+      
       toast.error("Error", {
-        description: "Failed to save recipe. Please check your input and try again.",
+        description: errorMessage,
       });
+      // DO NOT navigate - halt all progress
     }
   };
 
