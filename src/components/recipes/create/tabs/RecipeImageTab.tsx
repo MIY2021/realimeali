@@ -1,9 +1,8 @@
-
 import { useState, useRef } from "react";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Camera, FileText, Upload, Sparkles } from "lucide-react";
+import { Camera, Image as ImageIcon } from "lucide-react";
 
 interface RecipeImageTabProps {
   isProcessing: boolean;
@@ -50,19 +49,8 @@ export function RecipeImageTab({
   return (
     <div className="max-w-2xl mx-auto">
       <div className="bg-white rounded-[12px] border border-[#E3E3E3] shadow-sm p-6 sm:p-8 space-y-6">
-        <div className="text-center space-y-3">
-          <div className="flex justify-center items-center gap-2 mb-2">
-            <Upload className="h-10 w-10 text-sage" />
-            <Sparkles className="h-7 w-7 text-yellow-500" />
-          </div>
-          <h2 className="text-2xl sm:text-3xl font-semibold text-[#1A1A1A]">From Photo</h2>
-          <p className="text-sm text-[#6B6B6B] leading-relaxed max-w-md mx-auto">
-            Take a photo of a recipe card or cookbook page to extract the recipe
-          </p>
-        </div>
-      
-        <div className="space-y-4">
-          <Label className="text-base font-medium text-[#1A1A1A]">Upload Recipe Photo</Label>
+        <div>
+          <Label className="text-base font-medium text-[#1A1A1A] block text-center">Upload Recipe Photo</Label>
           
           {/* Hidden file inputs */}
           <input
@@ -84,42 +72,47 @@ export function RecipeImageTab({
             disabled={isProcessing}
           />
           
-          {/* Two separate buttons with more padding */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Button
+          {/* Modern upload buttons */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
+            <button
               type="button"
               onClick={handleTakePhoto}
               disabled={isProcessing}
-              variant="outline"
-              className="h-28 p-6 border-2 border-dashed border-[#E3E3E3] hover:border-sage hover:bg-[#CFE6D6]/20 transition-colors flex flex-col items-center justify-center gap-3 text-[#6B6B6B] hover:text-sage rounded-[12px]"
+              className="group relative h-32 border-2 border-[#E3E3E3] rounded-[12px] hover:border-sage hover:bg-[#CFE6D6]/10 transition-all duration-200 flex flex-col items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <Camera className="h-8 w-8" />
-              <span className="font-medium text-base">Take Photo</span>
-              <span className="text-sm text-muted-foreground">Use Camera</span>
-            </Button>
+              <div className="w-12 h-12 rounded-full bg-[#CFE6D6]/30 group-hover:bg-[#CFE6D6]/50 flex items-center justify-center transition-colors">
+                <Camera className="h-6 w-6 text-sage" />
+              </div>
+              <span className="font-medium text-sm text-[#1A1A1A]">Take Photo</span>
+            </button>
             
-            <Button
+            <button
               type="button"
               onClick={handleChooseFromGallery}
               disabled={isProcessing}
-              variant="outline"
-              className="h-28 p-6 border-2 border-dashed border-[#E3E3E3] hover:border-sage hover:bg-[#CFE6D6]/20 transition-colors flex flex-col items-center justify-center gap-3 text-[#6B6B6B] hover:text-sage rounded-[12px]"
+              className="group relative h-32 border-2 border-[#E3E3E3] rounded-[12px] hover:border-sage hover:bg-[#CFE6D6]/10 transition-all duration-200 flex flex-col items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <FileText className="h-8 w-8" />
-              <span className="font-medium text-base">Choose Photo</span>
-              <span className="text-sm text-muted-foreground">From Gallery</span>
-            </Button>
+              <div className="w-12 h-12 rounded-full bg-[#CFE6D6]/30 group-hover:bg-[#CFE6D6]/50 flex items-center justify-center transition-colors">
+                <ImageIcon className="h-6 w-6 text-sage" />
+              </div>
+              <span className="font-medium text-sm text-[#1A1A1A]">Choose Photo</span>
+            </button>
           </div>
           
           {uploadedFile && (
-            <div className="space-y-3">
-              <p className="text-sm text-green-600 font-medium">📷 Photo uploaded successfully!</p>
-              <div className="flex justify-center">
-                <img 
-                  src={URL.createObjectURL(uploadedFile)} 
-                  alt="Uploaded recipe" 
-                  className="w-20 h-20 object-cover rounded-[8px] border border-[#E3E3E3] bg-[#FAF9F6]"
-                />
+            <div className="mt-4 p-4 bg-[#CFE6D6]/10 border border-sage/30 rounded-[12px]">
+              <div className="flex items-center gap-3">
+                <div className="flex-shrink-0">
+                  <img 
+                    src={URL.createObjectURL(uploadedFile)} 
+                    alt="Uploaded recipe" 
+                    className="w-16 h-16 object-cover rounded-[8px] border border-[#E3E3E3]"
+                  />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-[#1A1A1A] truncate">{uploadedFile.name}</p>
+                  <p className="text-xs text-[#6B6B6B]">Ready to import</p>
+                </div>
               </div>
             </div>
           )}
@@ -127,7 +120,7 @@ export function RecipeImageTab({
 
         {/* Progress display */}
         {isProcessing && (
-          <div className="space-y-3">
+          <div className="space-y-2">
             <div className="flex items-center justify-between text-sm">
               <span className="text-[#6B6B6B]">Processing image...</span>
               <span className="text-[#6B6B6B]">{Math.round(progressValue)}%</span>
@@ -141,7 +134,7 @@ export function RecipeImageTab({
           </div>
         )}
         
-        <div className="flex justify-end pt-2">
+        <div className="flex justify-center pt-2">
           <Button
             onClick={handleProcess}
             disabled={!uploadedFile || isProcessing}

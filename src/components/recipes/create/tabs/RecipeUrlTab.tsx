@@ -58,20 +58,9 @@ export function RecipeUrlTab({
   return (
     <div className="max-w-2xl mx-auto">
       <div className="bg-white rounded-[12px] border border-[#E3E3E3] shadow-sm p-6 sm:p-8 space-y-6">
-        <div className="text-center space-y-3">
-          <div className="flex justify-center items-center gap-2 mb-2">
-            <Globe className="h-10 w-10 text-sage" />
-            <Sparkles className="h-7 w-7 text-yellow-500" />
-          </div>
-          <h2 className="text-2xl sm:text-3xl font-semibold text-[#1A1A1A]">From Website</h2>
-          <p className="text-sm text-[#6B6B6B] leading-relaxed max-w-md mx-auto">
-            Import recipes directly from cooking websites with one click
-          </p>
-        </div>
-        
-        <div className="space-y-4">
-          <Label htmlFor="website-url" className="text-base font-medium text-[#1A1A1A]">Recipe Website URL</Label>
-          <div className="relative">
+        <div>
+          <Label htmlFor="website-url" className="text-base font-medium text-[#1A1A1A] block text-center">Recipe Website URL</Label>
+          <div className="relative mt-2">
             <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-[#6B6B6B]" />
             <Input
               id="website-url"
@@ -79,14 +68,14 @@ export function RecipeUrlTab({
               value={recipeUrl}
               onChange={(e) => setRecipeUrl(e.target.value)}
               placeholder="https://example-recipe-website.com/recipe/your-recipe"
-              className="text-base pl-11 pr-4 h-12 rounded-[12px] border-[#E3E3E3] focus:border-sage focus:ring-sage"
+              className="text-sm pl-11 pr-4 h-12 rounded-[12px] border-[#E3E3E3] focus:border-sage focus:ring-sage placeholder:text-sm"
               disabled={isProcessing}
             />
           </div>
         </div>
       
         {isProcessing && importProgress && (
-          <div className="space-y-3">
+          <div className="space-y-2">
             <div className="flex justify-between items-center">
               <span className="text-sm font-medium">Processing website...</span>
               <span className="text-sm text-[#6B6B6B]">{Math.round(progressValue)}%</span>
@@ -121,7 +110,7 @@ export function RecipeUrlTab({
           </div>
         )}
         
-        <div className="flex justify-end pt-2">
+        <div className="flex justify-center pt-2">
           <Button
             onClick={onImportWithImages}
             disabled={!recipeUrl.trim() || isProcessing}

@@ -138,148 +138,137 @@ Generate a full recipe with ingredients list, step-by-step instructions, cooking
   };
 
   return (
-    <div className="space-y-6 p-4 sm:p-6">
-      <div className="text-center space-y-2">
-        <div className="flex justify-center items-center gap-2 mb-2">
-          <UtensilsCrossed className="h-8 w-8 text-sage" />
-          <Sparkles className="h-6 w-6 text-yellow-500" />
-        </div>
-        <h2 className="text-2xl font-bold text-navy">What Can I Make?</h2>
-        <p className="text-muted-foreground">
-          Tell us what ingredients you have, and we'll suggest delicious recipes you can make right now!
-        </p>
-      </div>
-
-      {quickIdeas.length === 0 && (
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="ingredients">What ingredients do you have?</Label>
-            <Textarea
-              id="ingredients"
-              placeholder="e.g. chicken, courgette, rice, garlic, onion"
-              value={ingredients}
-              onChange={(e) => setIngredients(e.target.value)}
-              className="min-h-[80px]"
-            />
-            <p className="text-sm text-muted-foreground">
-              List the main ingredients you have available (comma-separated or free text)
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className="max-w-2xl mx-auto">
+      <div className="bg-white rounded-[12px] border border-[#E3E3E3] shadow-sm p-6 sm:p-8 space-y-6">
+        {quickIdeas.length === 0 && (
+          <>
             <div className="space-y-2">
-              <Label>What are you cooking?</Label>
-              <Select value={mealType} onValueChange={setMealType}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select meal type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Breakfast">🌅 Breakfast</SelectItem>
-                  <SelectItem value="Lunch">☀️ Lunch</SelectItem>
-                  <SelectItem value="Dinner">🌙 Dinner</SelectItem>
-                  <SelectItem value="Snack">🍿 Snack</SelectItem>
-                </SelectContent>
-              </Select>
+              <Label htmlFor="ingredients" className="text-base font-medium text-[#1A1A1A] block text-center">What ingredients do you have?</Label>
+              <Textarea
+                id="ingredients"
+                placeholder="e.g. chicken, courgette, rice, garlic, onion"
+                value={ingredients}
+                onChange={(e) => setIngredients(e.target.value)}
+                className="min-h-[80px] p-4 border border-[#E3E3E3] rounded-[12px] resize-none text-sm leading-relaxed focus:border-sage focus:ring-sage placeholder:text-sm"
+              />
             </div>
 
-            <div className="space-y-2">
-              <Label>How adventurous are you feeling?</Label>
-              <Select value={difficulty} onValueChange={setDifficulty}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select difficulty" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Quick & Easy">⚡ Quick & Easy</SelectItem>
-                  <SelectItem value="Standard">👨‍🍳 Standard</SelectItem>
-                  <SelectItem value="Complex">🔥 Complex</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-base font-medium text-[#1A1A1A] block text-center">What are you cooking?</Label>
+                <Select value={mealType} onValueChange={setMealType}>
+                  <SelectTrigger className="rounded-[12px] border-[#E3E3E3] focus:border-sage">
+                    <SelectValue placeholder="Select meal type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Breakfast">🌅 Breakfast</SelectItem>
+                    <SelectItem value="Lunch">☀️ Lunch</SelectItem>
+                    <SelectItem value="Dinner">🌙 Dinner</SelectItem>
+                    <SelectItem value="Snack">🍿 Snack</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-base font-medium text-[#1A1A1A] block text-center">How adventurous are you feeling?</Label>
+                <Select value={difficulty} onValueChange={setDifficulty}>
+                  <SelectTrigger className="rounded-[12px] border-[#E3E3E3] focus:border-sage">
+                    <SelectValue placeholder="Select difficulty" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Quick & Easy">⚡ Quick & Easy</SelectItem>
+                    <SelectItem value="Standard">👨‍🍳 Standard</SelectItem>
+                    <SelectItem value="Complex">🔥 Complex</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-          </div>
 
-          <Button 
-            onClick={generateQuickIdeas} 
-            disabled={isGeneratingIdeas || !ingredients.trim() || !mealType || !difficulty}
-            className="w-full"
-            size="lg"
-          >
-            {isGeneratingIdeas ? (
-              <>
-                <Loader className="h-4 w-4 mr-2 animate-spin" />
-                Generating recipe ideas...
-              </>
-            ) : (
-              <>
-                <Sparkles className="h-4 w-4 mr-2" />
-                Find My Recipes!
-              </>
-            )}
-          </Button>
-        </div>
-      )}
-
-      {quickIdeas.length > 0 && (
-        <div className="space-y-4">
-          <div className="text-center">
-            <h3 className="text-lg font-semibold text-navy mb-2">Pick a recipe idea to continue...</h3>
-            <p className="text-sm text-muted-foreground">Click on any recipe to generate the full recipe</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {quickIdeas.map((idea, index) => (
-              <Card 
-                key={index} 
-                className={`cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02] ${
-                  selectedIdeaIndex === index ? 'ring-2 ring-sage' : ''
-                }`}
-                onClick={() => !isGeneratingFullRecipe && handleSelectIdea(index)}
+            <div className="flex justify-center pt-2">
+              <Button 
+                onClick={generateQuickIdeas} 
+                disabled={isGeneratingIdeas || !ingredients.trim() || !mealType || !difficulty}
+                className="bg-[#CFE6D6] hover:bg-[#B8D9C5] text-[#1A1A1A] rounded-[12px] min-h-[44px] shadow-[0_1px_0_rgba(0,0,0,0.04)] font-medium"
               >
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-lg">{idea.title}</CardTitle>
-                  <CardDescription className="text-sm line-clamp-2">
-                    {idea.description}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <Button 
-                    variant="outline" 
-                    className="w-full" 
-                    size="sm"
-                    disabled={isGeneratingFullRecipe}
-                  >
-                    {selectedIdeaIndex === index && isGeneratingFullRecipe ? (
-                      <>
-                        <Loader className="h-3 w-3 mr-1 animate-spin" />
-                        Generating...
-                      </>
-                    ) : (
-                      <>
-                        <Star className="h-3 w-3 mr-1" />
-                        Choose This Recipe
-                      </>
-                    )}
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                {isGeneratingIdeas ? (
+                  <>
+                    <Loader className="h-4 w-4 mr-2 animate-spin" />
+                    Generating recipe ideas...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="h-4 w-4 mr-2" />
+                    Find My Recipes!
+                  </>
+                )}
+              </Button>
+            </div>
+          </>
+        )}
 
-          <div className="text-center pt-4">
-            <Button 
-              variant="ghost" 
-              onClick={() => {
-                setQuickIdeas([]);
-                setIngredients("");
-                setMealType("");
-                setDifficulty("");
-              }}
-              disabled={isGeneratingFullRecipe}
-            >
-              ← Try Different Ingredients
-            </Button>
+        {quickIdeas.length > 0 && (
+          <div className="space-y-4">
+            <div className="text-center">
+              <h3 className="text-lg font-semibold text-[#1A1A1A] mb-2">Pick a recipe idea to continue...</h3>
+              <p className="text-sm text-[#6B6B6B]">Click on any recipe to generate the full recipe</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {quickIdeas.map((idea, index) => (
+                <Card 
+                  key={index} 
+                  className={`cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02] ${
+                    selectedIdeaIndex === index ? 'ring-2 ring-sage' : ''
+                  }`}
+                  onClick={() => !isGeneratingFullRecipe && handleSelectIdea(index)}
+                >
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg">{idea.title}</CardTitle>
+                    <CardDescription className="text-sm line-clamp-2">
+                      {idea.description}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="pt-0">
+                    <Button 
+                      variant="outline" 
+                      className="w-full" 
+                      size="sm"
+                      disabled={isGeneratingFullRecipe}
+                    >
+                      {selectedIdeaIndex === index && isGeneratingFullRecipe ? (
+                        <>
+                          <Loader className="h-3 w-3 mr-1 animate-spin" />
+                          Generating...
+                        </>
+                      ) : (
+                        <>
+                          <Star className="h-3 w-3 mr-1" />
+                          Choose This Recipe
+                        </>
+                      )}
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            <div className="text-center pt-4">
+              <Button 
+                variant="ghost" 
+                onClick={() => {
+                  setQuickIdeas([]);
+                  setIngredients("");
+                  setMealType("");
+                  setDifficulty("");
+                }}
+                disabled={isGeneratingFullRecipe}
+              >
+                ← Try Different Ingredients
+              </Button>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

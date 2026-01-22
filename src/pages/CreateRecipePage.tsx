@@ -8,6 +8,11 @@ export default function CreateRecipePage() {
   useDocumentTitle("Add Recipe | RealiMeali");
   const [searchParams] = useSearchParams();
   
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+  
   // Extract URL and auto flag
   const urlParam = searchParams.get('url');
   const autoParam = searchParams.get('auto');
@@ -35,8 +40,8 @@ export default function CreateRecipePage() {
   const hasAiData = aiRecipeData.title && aiRecipeData.ingredients.length > 0;
   
   return (
-    <div className="min-h-screen bg-[#FAF9F6]">
-      <div className="container max-w-4xl py-6 px-4 sm:py-10 sm:px-6">
+    <div className="min-h-screen bg-gradient-to-br from-[#FAF9F6] via-white to-[#FAF9F6]">
+      <div className="container max-w-5xl py-4 px-2 sm:py-6 sm:px-4">
         <CreateRecipeContainer 
           editingRecipe={hasAiData ? aiRecipeData : undefined}
           isEditMode={false}

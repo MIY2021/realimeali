@@ -1,9 +1,8 @@
-
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Sparkles, Star } from "lucide-react";
+import { Sparkles } from "lucide-react";
 
 interface RecipeGenerateTabProps {
   aiPrompt: string;
@@ -18,8 +17,11 @@ interface RecipeGenerateTabProps {
 
 const styleOptions = [
   { id: 'quick-easy', label: '🚀 Quick & Easy', description: 'Minimal prep time and simple techniques' },
+  { id: 'slow-cooked', label: '⏱️ Slow Cooked', description: 'Low and slow cooking methods' },
   { id: 'cheap-cheerful', label: '💰 Budget-Friendly', description: 'Cost-effective ingredients and methods' },
+  { id: 'healthy', label: '🥗 Healthy', description: 'Nutritious and balanced meals' },
   { id: 'michelin-star', label: '⭐ Michelin Star', description: 'Elevated techniques and presentation' },
+  { id: 'comfort-food', label: '🍲 Comfort Food', description: 'Hearty and satisfying dishes' },
 ];
 
 export function RecipeGenerateTab({ 
@@ -43,51 +45,39 @@ export function RecipeGenerateTab({
   return (
     <div className="max-w-2xl mx-auto">
       <div className="bg-white rounded-[12px] border border-[#E3E3E3] shadow-sm p-6 sm:p-8 space-y-6">
-        <div className="text-center space-y-3">
-          <div className="flex justify-center items-center gap-2 mb-2">
-            <Star className="h-10 w-10 text-sage" />
-            <Sparkles className="h-7 w-7 text-yellow-500" />
-          </div>
-          <h2 className="text-2xl sm:text-3xl font-semibold text-[#1A1A1A]">Generate with AI</h2>
-          <p className="text-sm text-[#6B6B6B] leading-relaxed max-w-md mx-auto">
-            Describe what you want to cook and let AI create a complete recipe
-          </p>
-        </div>
-        
-        <div className="space-y-4">
-          <Label htmlFor="recipe-request" className="text-base font-medium text-[#1A1A1A]">What recipe would you like me to create?</Label>
+        <div>
+          <Label htmlFor="recipe-request" className="text-base font-medium text-[#1A1A1A] block text-center">What recipe would you like me to create?</Label>
           <Textarea
             id="recipe-request"
             value={aiPrompt}
             onChange={(e) => setAiPrompt(e.target.value)}
-            placeholder="Tell me what you're craving! E.g., 'A quick vegetarian dinner for 4 people using ingredients I might have at home' or 'A fancy dessert for a dinner party' or 'Healthy breakfast ideas with oats'."
-            className="w-full h-40 p-4 border border-[#E3E3E3] rounded-[12px] resize-none text-base leading-relaxed focus:border-sage focus:ring-sage"
+            placeholder="E.g., 'A quick vegetarian dinner for 4' or 'A fancy dessert for a dinner party'"
+            className="w-full h-40 p-4 border border-[#E3E3E3] rounded-[12px] resize-none text-sm leading-relaxed focus:border-sage focus:ring-sage mt-2 placeholder:text-sm"
           />
-          
-          <div className="space-y-4">
-            <Label className="text-base font-medium text-[#1A1A1A]">Style Preferences (Optional)</Label>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {styleOptions.map((style) => (
-                <div
-                  key={style.id}
-                  onClick={() => toggleStyle(style.id)}
-                  className={`p-4 border rounded-[12px] cursor-pointer transition-all ${
-                    stylePreferences.includes(style.id)
-                      ? 'border-sage bg-[#CFE6D6]/20 shadow-sm'
-                      : 'border-[#E3E3E3] hover:border-[#B8D9C5]'
-                  }`}
-                >
-                  <div className="font-medium text-sm text-[#1A1A1A]">{style.label}</div>
-                  <div className="text-xs text-[#6B6B6B] mt-1">{style.description}</div>
-                </div>
-              ))}
-            </div>
+        </div>
+        
+        <div className="space-y-3">
+          <Label className="text-base font-medium text-[#1A1A1A] block text-center">Style Preferences (Optional)</Label>
+          <div className="grid grid-cols-2 gap-2">
+            {styleOptions.map((style) => (
+              <div
+                key={style.id}
+                onClick={() => toggleStyle(style.id)}
+                className={`p-2.5 border rounded-[8px] cursor-pointer transition-all ${
+                  stylePreferences.includes(style.id)
+                    ? 'border-sage bg-[#CFE6D6]/20 shadow-sm'
+                    : 'border-[#E3E3E3] hover:border-[#B8D9C5]'
+                }`}
+              >
+                <div className="font-medium text-sm text-[#1A1A1A] text-center">{style.label}</div>
+              </div>
+            ))}
           </div>
         </div>
 
         {/* Progress display */}
         {isProcessing && (
-          <div className="space-y-3">
+          <div className="space-y-2">
             <div className="flex justify-between items-center">
               <span className="text-sm font-medium">Processing recipe...</span>
               <span className="text-sm text-[#6B6B6B]">{Math.round(progressValue)}%</span>
@@ -99,7 +89,7 @@ export function RecipeGenerateTab({
           </div>
         )}
         
-        <div className="flex justify-end pt-2">
+        <div className="flex justify-center pt-2">
           <Button
             onClick={onGenerate}
             disabled={!aiPrompt.trim() || isProcessing}

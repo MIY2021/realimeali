@@ -7,7 +7,7 @@ interface PageHeaderProps {
   actions?: ReactNode;
 }
 
-export function PageHeader({ icon, title, actions }: PageHeaderProps) {
+export function PageHeader({ icon, title, description, actions }: PageHeaderProps) {
   return (
     <div className="flex flex-col gap-3 mb-4 sm:mb-6">
       <div className="flex items-center justify-between">
@@ -21,6 +21,11 @@ export function PageHeader({ icon, title, actions }: PageHeaderProps) {
           </div>
         )}
       </div>
+      {description && (
+        <p className="text-sm text-[#6B6B6B] max-w-3xl">
+          {description}
+        </p>
+      )}
     </div>
   );
 }

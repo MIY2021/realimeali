@@ -6,6 +6,7 @@ import { useRecipeProcessing } from "@/hooks/useRecipeProcessing";
 import { useImageGeneration } from "@/hooks/useImageGeneration";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useRealiChef } from "@/contexts/RealiChefContext";
+import { PageHeader } from "@/components/layout/PageHeader";
 
 import { CreateRecipeTabsWrapper } from "./CreateRecipeTabsWrapper";
 import { useRecipeCreationHandlers, type RecipeOrigin } from "./hooks/useRecipeCreationHandlers";
@@ -25,11 +26,12 @@ export function CreateRecipeContainer({ editingRecipe, isEditMode = false, defau
   
 
   const [activeTab, setActiveTab] = useState(
-    defaultTab || (isEditMode ? "manual" : "url")
+    defaultTab || (isEditMode ? "manual" : "")
   );
   const [recipeOrigin, setRecipeOrigin] = useState<RecipeOrigin>('manual');
   const [originalSourceUrl, setOriginalSourceUrl] = useState<string>('');
   const [manualTabClicked, setManualTabClicked] = useState(isEditMode);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   // Keep hooks as objects instead of destructuring
   const recipeFormHook = useRecipeForm(isEditMode, editingRecipe);
@@ -165,6 +167,32 @@ export function CreateRecipeContainer({ editingRecipe, isEditMode = false, defau
     setActiveTab(tab);
   };
 
+  const handleCardClick = (tab: string) => {
+    setActiveTab(tab);
+    // Set recipe origin when clicking manual tab
+    if (tab === 'manual') {
+      setRecipeOrigin('manual');
+      setManualTabClicked(true);
+    }
+    setIsSheetOpen(true);
+  };
+
+  const handleSheetClose = (open: boolean) => {
+    setIsSheetOpen(open);
+    // If closing and we're on manual tab with imported content, keep it
+    // Otherwise, reset to show cards
+    if (!open && activeTab === 'manual' && recipeOrigin === 'manual' && !isEditMode) {
+      setActiveTab('');
+    }
+  };
+
+  // Close Sheet when switching to manual tab after import
+  useEffect(() => {
+    if (activeTab === 'manual' && recipeOrigin !== 'manual' && isSheetOpen) {
+      setIsSheetOpen(false);
+    }
+  }, [activeTab, recipeOrigin, isSheetOpen]);
+
 
   // Pass manualTabClicked to determine whether to show dynamic tab name
   const effectiveRecipeOrigin = (activeTab === 'manual' && manualTabClicked) ? 'manual' : recipeOrigin;
@@ -191,41 +219,28 @@ export function CreateRecipeContainer({ editingRecipe, isEditMode = false, defau
   }, []);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4">
       {/* Title Section */}
-      <div className="flex flex-col gap-3 mb-4 sm:mb-6">
-        <div className="space-y-1.5">
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl sm:text-3xl font-semibold text-[#1A1A1A] flex items-center gap-2">
-              <Plus 
-                className="h-6 w-6 sm:h-7 sm:w-7" 
-                style={{ color: '#F5B82E', stroke: '#F5B82E' }}
-                aria-hidden="true"
-              />
-              {isEditMode ? "Edit Recipe" : "Add New Recipe"}
-            </h1>
-            {/* Action Buttons */}
-            {isEditMode && (
-              <Button
-                variant="outline"
-                onClick={handleAskAIChef}
-                className="flex items-center gap-2 text-sm"
-              >
-                <Sparkles className="h-4 w-4" />
-                Ask AI Chef
-              </Button>
-            )}
-          </div>
-          {!hasRecipeBeenParsed && (
-            <p className="text-sm text-[#6B6B6B] max-w-3xl">
-              {isEditMode 
-                ? "Update your recipe with any changes. All your existing data is preserved and ready for editing."
-                : "Add a new recipe to your library. Import from a website, paste text, upload an image, or create it manually."
-              }
-            </p>
-          )}
-        </div>
-      </div>
+      <PageHeader
+        icon={
+          <Plus 
+            className="h-6 w-6 sm:h-7 sm:w-7" 
+            style={{ color: '#F5B82E', stroke: '#F5B82E' }}
+            aria-hidden="true"
+          />
+        }
+        title={isEditMode ? "Edit Recipe" : "Add New Recipe"}
+        actions={isEditMode ? (
+          <Button
+            variant="outline"
+            onClick={handleAskAIChef}
+            className="flex items-center gap-2 text-sm"
+          >
+            <Sparkles className="h-4 w-4" />
+            Ask AI Chef
+          </Button>
+        ) : undefined}
+      />
       
       <CreateRecipeTabsWrapper
         isMobile={isMobile}
@@ -245,6 +260,9 @@ export function CreateRecipeContainer({ editingRecipe, isEditMode = false, defau
         isFromAI={isFromAI}
         onSelectWhatCanIMakeRecipe={handleSelectWhatCanIMakeRecipe}
         isSaving={handlers.isSaving}
+        onCardClick={handleCardClick}
+        isSheetOpen={isSheetOpen}
+        onSheetClose={handleSheetClose}
       />
     </div>
   );

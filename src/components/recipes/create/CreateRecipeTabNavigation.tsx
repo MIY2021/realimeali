@@ -1,8 +1,8 @@
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Globe, Upload, Sparkles, Pencil, Camera, Star } from "lucide-react";
 import { RecipeOrigin } from "./CreateRecipeContainer";
+import { cn } from "@/lib/utils";
 
 interface TabOption {
   value: string;
@@ -20,6 +20,7 @@ interface CreateRecipeTabNavigationProps {
   children: React.ReactNode;
   isEditMode?: boolean;
   isFromAI?: boolean;
+  onCardClick?: (tab: string) => void;
 }
 
 const baseTabOptions: TabOption[] = [
@@ -28,42 +29,42 @@ const baseTabOptions: TabOption[] = [
     label: "From Website", 
     emoji: "🌐",
     icon: Globe,
-    description: "Import recipes directly from cooking websites with one click"
+    description: "Import recipes from cooking websites instantly"
   },
   { 
     value: "image", 
     label: "From Photo", 
     emoji: "📸",
     icon: Upload,
-    description: "Take a photo of a recipe card or cookbook page to extract the recipe"
+    description: "Take a photo of a recipe card to extract all details"
   },
   { 
     value: "generate", 
     label: "Generate with AI", 
     emoji: "✨",
     icon: Star,
-    description: "Describe what you want to cook and let AI create a complete recipe"
+    description: "Describe your dish and AI creates the recipe"
   },
   { 
     value: "text", 
     label: "Recipe Text", 
     emoji: "📝",
     icon: Pencil,
-    description: "Paste a recipe from anywhere and our AI will format it perfectly"
+    description: "Paste any recipe text and we'll format it perfectly"
   },
   { 
     value: "whatcanImake", 
     label: "What Can I Make?", 
     emoji: "🍽️",
     icon: Sparkles,
-    description: "Tell us your ingredients and get personalized recipe suggestions"
+    description: "Enter your ingredients and discover recipe ideas"
   },
   { 
     value: "manual", 
     label: "Manual Entry", 
     emoji: "✍️",
     icon: Camera,
-    description: "Create your recipe from scratch with our guided form"
+    description: "Build your recipe step by step with our easy form"
   },
 ];
 
@@ -74,7 +75,8 @@ export function CreateRecipeTabNavigation({
   recipeOrigin,
   children,
   isEditMode = false,
-  isFromAI = false
+  isFromAI = false,
+  onCardClick
 }: CreateRecipeTabNavigationProps) {
   
   // Generate dynamic tab options based on recipe origin and edit mode
@@ -107,7 +109,6 @@ export function CreateRecipeTabNavigation({
   };
 
   const tabOptions = getDynamicTabOptions();
-  const activeTabOption = tabOptions.find(tab => tab.value === activeTab);
   
   // Hide tab navigation after recipe is imported (when on manual tab with a non-manual origin)
   const hideTabsAfterImport = activeTab === "manual" && recipeOrigin !== "manual" && !isEditMode;
@@ -118,52 +119,71 @@ export function CreateRecipeTabNavigation({
   return (
     <div className="w-full">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        {/* Mobile Dropdown */}
-        {!hideTabsAfterImport && !hideTabsInEditMode && isMobile ? (
-          <div className="mb-6">
-            <Select value={activeTab} onValueChange={setActiveTab}>
-              <SelectTrigger className="w-full h-12 rounded-[12px] border border-[#E3E3E3] bg-white shadow-sm">
-                <SelectValue>
-                  {activeTabOption && (
-                    <div className="flex items-center gap-2">
-                      <span className="text-lg">{activeTabOption.emoji}</span>
-                      <span className="font-medium">{activeTabOption.label}</span>
+        {/* Card Grid Navigation */}
+        {!hideTabsAfterImport && !hideTabsInEditMode ? (
+          <div className="mb-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
+              {tabOptions.map((tab) => {
+                const isActive = tab.value === activeTab;
+                
+                return (
+                  <button
+                    key={tab.value}
+                    type="button"
+                    onClick={() => {
+                      setActiveTab(tab.value);
+                      onCardClick?.(tab.value);
+                    }}
+                    className={cn(
+                      "relative flex flex-col items-center justify-start p-4 md:p-5 rounded-[12px]",
+                      "bg-white border-2 transition-all duration-200",
+                      "min-h-[120px] md:min-h-[140px]",
+                      "hover:shadow-md hover:scale-[1.02]",
+                      "focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#F5B82E]",
+                      isActive
+                        ? "border-[#F5B82E] shadow-sm bg-[#F5B82E]/5"
+                        : "border-[#E3E3E3] hover:border-[#F5B82E]/50"
+                    )}
+                    aria-label={tab.label}
+                    aria-pressed={isActive}
+                  >
+                    {/* Icon/Emoji */}
+                    <div className="mb-2 md:mb-3">
+                      <span className="text-3xl md:text-4xl" role="img" aria-hidden="true">
+                        {tab.emoji}
+                      </span>
                     </div>
-                  )}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent className="bg-white border border-[#E3E3E3] shadow-lg rounded-[12px]">
-                {tabOptions.map((tab) => (
-                  <SelectItem key={tab.value} value={tab.value} className="py-3">
-                    <div className="flex items-center gap-2">
-                      <span className="text-lg">{tab.emoji}</span>
-                      <span>{tab.label}</span>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        ) : !hideTabsAfterImport && !hideTabsInEditMode ? (
-          /* Desktop Tabs */
-          <div className="mb-6">
-            <TabsList className={`grid w-full ${isEditMode ? 'grid-cols-1' : 'grid-cols-6'} mb-4 bg-white/50 p-1 rounded-[12px] border border-[#E3E3E3]`}>
-              {tabOptions.map((tab) => (
-                <TabsTrigger 
-                  key={tab.value} 
-                  value={tab.value} 
-                  className="p-3 min-w-0 flex-1 rounded-[10px] data-[state=active]:bg-white data-[state=active]:shadow-sm"
-                >
-                  <span className="mr-2">{tab.emoji}</span>
-                  <span className="truncate">{tab.label}</span>
-                </TabsTrigger>
-              ))}
-            </TabsList>
+                    
+                    {/* Label */}
+                    <h3 className={cn(
+                      "font-semibold text-sm md:text-base mb-1 md:mb-2 text-center",
+                      isActive ? "text-[#1A1A1A]" : "text-[#1A1A1A]"
+                    )}>
+                      {tab.label}
+                    </h3>
+                    
+                    {/* Description */}
+                    <p className={cn(
+                      "text-xs md:text-sm text-center leading-tight",
+                      "text-[#6B6B6B] line-clamp-2"
+                    )}>
+                      {tab.description}
+                    </p>
+                    
+                    {/* Active indicator */}
+                    {isActive && (
+                      <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#F5B82E]" />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         ) : null}
-
-        {children}
       </Tabs>
+      
+      {/* Content is now shown in Sheet, not inline */}
+      {children}
     </div>
   );
 }
