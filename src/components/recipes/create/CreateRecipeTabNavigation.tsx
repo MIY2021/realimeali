@@ -135,20 +135,27 @@ export function CreateRecipeTabNavigation({
                       onCardClick?.(tab.value);
                     }}
                     className={cn(
-                      "relative flex flex-col items-center justify-start p-4 md:p-5 rounded-[12px]",
-                      "bg-white border-2 transition-all duration-200",
+                      "relative flex flex-col items-center justify-start p-4 md:p-5 rounded-[20px]",
+                      "border-2 transition-all duration-200",
                       "min-h-[120px] md:min-h-[140px]",
-                      "hover:shadow-md hover:scale-[1.02]",
+                      "shadow-lg md:hover:shadow-xl md:hover:scale-[1.02]",
                       "focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#F5B82E]",
+                      "md:hover:-translate-y-0.5",
+                      "active:scale-[0.98]",
                       isActive
-                        ? "border-[#F5B82E] shadow-sm bg-[#F5B82E]/5"
-                        : "border-[#E3E3E3] hover:border-[#F5B82E]/50"
+                        ? "border-[#F5B82E] shadow-xl bg-gradient-to-br from-[#F5B82E]/15 via-[#F5B82E]/10 to-white ring-2 ring-[#F5B82E]/30"
+                        : "border-[#E8E8E8] bg-white shadow-md md:hover:border-[#F5B82E]/50 md:hover:bg-gradient-to-br md:hover:from-white md:hover:to-[#F5B82E]/5"
                     )}
                     aria-label={tab.label}
                     aria-pressed={isActive}
                   >
-                    {/* Icon/Emoji */}
-                    <div className="mb-2 md:mb-3">
+                    {/* Icon/Emoji with background circle */}
+                    <div className={cn(
+                      "mb-2 md:mb-3 w-14 h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center transition-all duration-200",
+                      isActive 
+                        ? "bg-[#F5B82E]/20 shadow-sm" 
+                        : "bg-[#F5F5F5]"
+                    )}>
                       <span className="text-3xl md:text-4xl" role="img" aria-hidden="true">
                         {tab.emoji}
                       </span>
@@ -156,7 +163,7 @@ export function CreateRecipeTabNavigation({
                     
                     {/* Label */}
                     <h3 className={cn(
-                      "font-semibold text-sm md:text-base mb-1 md:mb-2 text-center",
+                      "font-semibold text-sm md:text-base mb-1 md:mb-2 text-center transition-colors",
                       isActive ? "text-[#1A1A1A]" : "text-[#1A1A1A]"
                     )}>
                       {tab.label}
@@ -170,9 +177,9 @@ export function CreateRecipeTabNavigation({
                       {tab.description}
                     </p>
                     
-                    {/* Active indicator */}
+                    {/* Active indicator - more prominent */}
                     {isActive && (
-                      <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#F5B82E]" />
+                      <div className="absolute top-3 right-3 w-3 h-3 rounded-full bg-[#F5B82E] shadow-sm ring-2 ring-white" />
                     )}
                   </button>
                 );
