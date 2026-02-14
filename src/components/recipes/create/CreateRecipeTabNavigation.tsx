@@ -187,10 +187,9 @@ export function CreateRecipeTabNavigation({
             </div>
           </div>
         ) : null}
+        {/* Tab content must be inside Tabs so TabsContent has context (e.g. after URL import) */}
+        {children}
       </Tabs>
-      
-      {/* Content is now shown in Sheet, not inline */}
-      {children}
     </div>
   );
 }
