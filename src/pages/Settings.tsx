@@ -8,7 +8,16 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Settings as SettingsIcon, User, Bell, Trash2, Upload, Shuffle } from "lucide-react";
+import {
+  Settings as SettingsIcon,
+  User,
+  Bell,
+  Trash2,
+  Upload,
+  Shuffle,
+  Shield,
+  Database,
+} from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -28,6 +37,17 @@ export default function Settings() {
   const [email, setEmail] = useState("");
   const [selectedFruit, setSelectedFruit] = useState("");
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
+
+  type SettingsSectionId = "profile" | "notifications" | "privacySecurity" | "recipesData" | "account";
+
+  interface SettingsSection {
+    id: SettingsSectionId;
+    label: string;
+    description: string;
+    icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  }
+
+  const [activeSection, setActiveSection] = useState<SettingsSectionId>("profile");
 
   // Scroll to top when component mounts
   useEffect(() => {
@@ -112,235 +132,328 @@ export default function Settings() {
     }
   };
 
+  const SECTIONS: SettingsSection[] = [
+    {
+      id: "profile",
+      label: "Profile",
+      description: "Update your personal information and avatar.",
+      icon: User,
+    },
+    {
+      id: "notifications",
+      label: "Notifications",
+      description: "Control when and how we contact you.",
+      icon: Bell,
+    },
+    {
+      id: "privacySecurity",
+      label: "Privacy & Security",
+      description: "Manage your privacy and account security.",
+      icon: Shield,
+    },
+    {
+      id: "recipesData",
+      label: "Recipes & Data",
+      description: "Restore recipes and manage your data.",
+      icon: Database,
+    },
+    {
+      id: "account",
+      label: "Account",
+      description: "Handle account-level actions and deletion.",
+      icon: Trash2,
+    },
+  ];
+
+  const renderSectionContent = (sectionId: SettingsSectionId) => {
+    switch (sectionId) {
+      case "profile":
+        return (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <User className="h-5 w-5" />
+                Profile Settings
+              </CardTitle>
+              <CardDescription>
+                Update your personal information and profile picture.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-4">
+                <Label>Profile Picture</Label>
+                <div className="flex items-center gap-4">
+                  <Avatar className="h-16 w-16">
+                    <AvatarFallback className="text-2xl bg-terracotta/20">
+                      {selectedFruit}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="space-y-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleRandomizeFruit}
+                      className="flex items-center gap-2"
+                    >
+                      <Shuffle className="h-4 w-4" />
+                      Random
+                    </Button>
+                    <p className="text-xs text-muted-foreground">
+                      Choose from available fruit avatars
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-8 gap-2 max-w-md">
+                  {FRUIT_OPTIONS.map((fruit) => (
+                    <button
+                      key={fruit}
+                      type="button"
+                      onClick={() => setSelectedFruit(fruit)}
+                      className={`h-10 w-10 rounded-lg border-2 flex items-center justify-center text-lg transition-colors ${
+                        selectedFruit === fruit
+                          ? "border-terracotta bg-terracotta/10"
+                          : "border-gray-200 hover:border-gray-300"
+                      }`}
+                    >
+                      {fruit}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <Separator />
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="firstName">First Name</Label>
+                  <Input
+                    id="firstName"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    placeholder="Your first name"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="lastName">Last Name</Label>
+                  <Input
+                    id="lastName"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    placeholder="Your last name"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@email.com"
+                />
+              </div>
+
+              <Button
+                onClick={handleUpdateProfile}
+                disabled={isUpdatingProfile}
+                className="w-full sm:w-auto"
+              >
+                {isUpdatingProfile ? "Saving..." : "Save Changes"}
+              </Button>
+            </CardContent>
+          </Card>
+        );
+      case "notifications":
+        return (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Bell className="h-5 w-5" />
+                Notification Settings
+              </CardTitle>
+              <CardDescription>
+                Choose what notifications you'd like to receive.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="emailNotifications">Email Notifications</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Receive updates about meal plans and recipes
+                  </p>
+                </div>
+                <Switch id="emailNotifications" />
+              </div>
+              <Separator />
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="mealReminders">Meal Reminders</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Get reminded about upcoming meals
+                  </p>
+                </div>
+                <Switch id="mealReminders" />
+              </div>
+              <Separator />
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="communityUpdates">Community Updates</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Notifications about new community recipes
+                  </p>
+                </div>
+                <Switch id="communityUpdates" />
+              </div>
+            </CardContent>
+          </Card>
+        );
+      case "privacySecurity":
+        return (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Shield className="h-5 w-5" />
+                Privacy & Security
+              </CardTitle>
+              <CardDescription>
+                Manage your privacy settings and account security.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="profileVisibility">Public Profile</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Allow others to find and view your profile
+                  </p>
+                </div>
+                <Switch id="profileVisibility" />
+              </div>
+              <Separator />
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="recipeSharing">Recipe Sharing</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Allow sharing of your recipes with the community
+                  </p>
+                </div>
+                <Switch id="recipeSharing" />
+              </div>
+              <Separator />
+              <div className="space-y-2">
+                <Label>Change Password</Label>
+                <div className="grid gap-2">
+                  <Input type="password" placeholder="Current password" />
+                  <Input type="password" placeholder="New password" />
+                  <Input type="password" placeholder="Confirm new password" />
+                </div>
+                <Button variant="outline" className="w-full sm:w-auto">
+                  Update Password
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        );
+      case "recipesData":
+        return (
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Database className="h-5 w-5" />
+                  Recipes & Data
+                </CardTitle>
+                <CardDescription>
+                  Restore deleted recipes and manage your data.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  View and restore recipes you&apos;ve recently deleted, or export a copy of your data.
+                </p>
+                <Button variant="outline" className="w-full sm:w-auto">
+                  Export My Data
+                </Button>
+              </CardContent>
+            </Card>
+            <DeletedRecipesSection />
+          </div>
+        );
+      case "account":
+        return (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Trash2 className="h-5 w-5" />
+                Account Management
+              </CardTitle>
+              <CardDescription>
+                Manage your account deletion options.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-3 sm:grid-cols-2">
+                <Button variant="outline">Export My Data</Button>
+                <Button variant="destructive">Delete Account</Button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Deleting your account will permanently remove all your data, including recipes,
+                meal plans, and shopping lists. This action cannot be undone.
+              </p>
+            </CardContent>
+          </Card>
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
-    <div className="container max-w-4xl py-8 px-4">
-      <div className="mb-8 text-center">
-        <div className="flex items-center justify-center gap-2 mb-4">
+    <div className="container max-w-5xl py-8 px-4">
+      <div className="mb-8">
+        <div className="flex items-center gap-2 mb-2">
           <SettingsIcon className="h-8 w-8 text-terracotta" />
           <h1 className="text-3xl sm:text-4xl font-bold text-navy">Settings</h1>
         </div>
-        <p className="text-muted-foreground max-w-2xl mx-auto">
+        <p className="text-muted-foreground max-w-2xl">
           Manage your account preferences and application settings.
         </p>
       </div>
 
-      <div className="space-y-6">
-        {/* Profile Settings */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <User className="h-5 w-5" />
-              Profile Settings
-            </CardTitle>
-            <CardDescription>
-              Update your personal information and profile picture.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Avatar Selection */}
-            <div className="space-y-4">
-              <Label>Profile Picture</Label>
-              <div className="flex items-center gap-4">
-                <Avatar className="h-16 w-16">
-                  <AvatarFallback className="text-2xl bg-terracotta/20">
-                    {selectedFruit}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="space-y-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={handleRandomizeFruit}
-                    className="flex items-center gap-2"
-                  >
-                    <Shuffle className="h-4 w-4" />
-                    Random
-                  </Button>
-                  <p className="text-xs text-muted-foreground">
-                    Choose from available fruit avatars
-                  </p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-8 gap-2 max-w-md">
-                {FRUIT_OPTIONS.map((fruit) => (
-                  <button
-                    key={fruit}
-                    type="button"
-                    onClick={() => setSelectedFruit(fruit)}
-                    className={`h-10 w-10 rounded-lg border-2 flex items-center justify-center text-lg transition-colors ${
-                      selectedFruit === fruit
-                        ? 'border-terracotta bg-terracotta/10'
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                  >
-                    {fruit}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <Separator />
-
-            {/* Name Fields */}
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="firstName">First Name</Label>
-                <Input 
-                  id="firstName" 
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  placeholder="Your first name" 
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="lastName">Last Name</Label>
-                <Input 
-                  id="lastName" 
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                  placeholder="Your last name" 
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input 
-                id="email" 
-                type="email" 
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="your@email.com" 
-              />
-            </div>
-
-            <Button 
-              onClick={handleUpdateProfile}
-              disabled={isUpdatingProfile}
-              className="w-full sm:w-auto"
-            >
-              {isUpdatingProfile ? "Saving..." : "Save Changes"}
-            </Button>
+      <div className="grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)]">
+        <Card className="h-fit">
+          <CardContent className="space-y-1 p-3 sm:p-4">
+            {SECTIONS.map((section) => {
+              const Icon = section.icon;
+              const isActive = section.id === activeSection;
+              return (
+                <button
+                  key={section.id}
+                  type="button"
+                  onClick={() => setActiveSection(section.id)}
+                  className={`flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors ${
+                    isActive
+                      ? "bg-navy text-background"
+                      : "hover:bg-muted text-muted-foreground"
+                  }`}
+                  aria-current={isActive ? "page" : undefined}
+                >
+                  <Icon className="h-4 w-4" />
+                  <span className="font-medium">{section.label}</span>
+                </button>
+              );
+            })}
           </CardContent>
         </Card>
 
-        {/* Notification Settings */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Bell className="h-5 w-5" />
-              Notification Settings
-            </CardTitle>
-            <CardDescription>
-              Choose what notifications you'd like to receive.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label htmlFor="emailNotifications">Email Notifications</Label>
-                <p className="text-sm text-muted-foreground">
-                  Receive updates about meal plans and recipes
-                </p>
-              </div>
-              <Switch id="emailNotifications" />
-            </div>
-            <Separator />
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label htmlFor="mealReminders">Meal Reminders</Label>
-                <p className="text-sm text-muted-foreground">
-                  Get reminded about upcoming meals
-                </p>
-              </div>
-              <Switch id="mealReminders" />
-            </div>
-            <Separator />
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label htmlFor="communityUpdates">Community Updates</Label>
-                <p className="text-sm text-muted-foreground">
-                  Notifications about new community recipes
-                </p>
-              </div>
-              <Switch id="communityUpdates" />
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Privacy & Security */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <User className="h-5 w-5" />
-              Privacy & Security
-            </CardTitle>
-            <CardDescription>
-              Manage your privacy settings and account security.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label htmlFor="profileVisibility">Public Profile</Label>
-                <p className="text-sm text-muted-foreground">
-                  Allow others to find and view your profile
-                </p>
-              </div>
-              <Switch id="profileVisibility" />
-            </div>
-            <Separator />
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label htmlFor="recipeSharing">Recipe Sharing</Label>
-                <p className="text-sm text-muted-foreground">
-                  Allow sharing of your recipes with the community
-                </p>
-              </div>
-              <Switch id="recipeSharing" />
-            </div>
-            <Separator />
-            <div className="space-y-2">
-              <Label>Change Password</Label>
-              <div className="grid gap-2">
-                <Input type="password" placeholder="Current password" />
-                <Input type="password" placeholder="New password" />
-                <Input type="password" placeholder="Confirm new password" />
-              </div>
-              <Button variant="outline" className="w-full sm:w-auto">
-                Update Password
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Deleted Recipes */}
-        <DeletedRecipesSection />
-
-        {/* Account Management */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Trash2 className="h-5 w-5" />
-              Account Management
-            </CardTitle>
-            <CardDescription>
-              Manage your account data and deletion options.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid gap-3 sm:grid-cols-2">
-              <Button variant="outline">Export My Data</Button>
-              <Button variant="destructive">Delete Account</Button>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Deleting your account will permanently remove all your data, including recipes, 
-              meal plans, and shopping lists. This action cannot be undone.
-            </p>
-          </CardContent>
-        </Card>
+        <main className="space-y-4">
+          {renderSectionContent(activeSection)}
+        </main>
       </div>
     </div>
   );
