@@ -31,6 +31,8 @@ export default function Settings() {
   const { user } = useAuth();
   const { toast } = useToast();
 
+  const [sendingTest, setSendingTest] = useState<null | "daily" | "weekly" | "household">(null);
+
   // Profile state
   const [profile, setProfile] = useState<any>(null);
   const [firstName, setFirstName] = useState("");
@@ -171,6 +173,43 @@ export default function Settings() {
       icon: Trash2,
     },
   ];
+
+  const sendNotificationTest = async (path: string, type: "daily" | "weekly" | "household") => {
+    if (!user) return;
+
+    try {
+      setSendingTest(type);
+
+      const response = await fetch(`/functions/v1/${path}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ userId: user.id }),
+      });
+
+      const data = await response.json().catch(() => null);
+
+      if (!response.ok) {
+        const message = data?.error || "Failed to send test notification.";
+        throw new Error(message);
+      }
+
+      toast({
+        title: "Test email sent",
+        description: "Check your inbox to see how this notification looks.",
+      });
+    } catch (error: any) {
+      console.error("Error sending notification test:", error);
+      toast({
+        title: "Unable to send test",
+        description: error?.message || "Something went wrong sending the test notification.",
+        variant: "destructive",
+      });
+    } finally {
+      setSendingTest(null);
+    }
+  };
 
   const renderSectionContent = (sectionId: SettingsSectionId) => {
     switch (sectionId) {
@@ -349,6 +388,20 @@ export default function Settings() {
                           }
                         />
                       </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="xs"
+                        disabled={
+                          !user ||
+                          isLoadingNotificationSettings ||
+                          !notificationSettings?.daily_dinner_email_enabled ||
+                          sendingTest === "daily"
+                        }
+                        onClick={() => sendNotificationTest("daily-dinner-reminder-test", "daily")}
+                      >
+                        {sendingTest === "daily" ? "Sending..." : "Send test"}
+                      </Button>
                     </div>
                   </div>
                 </div>
@@ -432,6 +485,22 @@ export default function Settings() {
                           }
                         />
                       </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="xs"
+                        disabled={
+                          !user ||
+                          isLoadingNotificationSettings ||
+                          !notificationSettings?.weekly_kickoff_email_enabled ||
+                          sendingTest === "weekly"
+                        }
+                        onClick={() =>
+                          sendNotificationTest("weekly-meal-plan-kickoff-test", "weekly")
+                        }
+                      >
+                        {sendingTest === "weekly" ? "Sending..." : "Send test"}
+                      </Button>
                     </div>
                   </div>
                 </div>
@@ -512,6 +581,23 @@ export default function Settings() {
                           <option value="weekly">Weekly roundup</option>
                         </select>
                       </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="xs"
+                        disabled={
+                          !user ||
+                          isLoadingNotificationSettings ||
+                          (!notificationSettings?.household_activity_push_enabled &&
+                            !notificationSettings?.household_activity_email_enabled) ||
+                          sendingTest === "household"
+                        }
+                        onClick={() =>
+                          sendNotificationTest("household-activity-notifier-test", "household")
+                        }
+                      >
+                        {sendingTest === "household" ? "Sending..." : "Send test"}
+                      </Button>
                     </div>
                   </div>
                 </div>
