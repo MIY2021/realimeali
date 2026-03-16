@@ -22,6 +22,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { DeletedRecipesSection } from "@/components/settings/DeletedRecipesSection";
+import { useNotificationSettings } from "@/hooks/useNotificationSettings";
 
 const FRUIT_OPTIONS = ['🍎', '🍊', '🍌', '🍇', '🍓', '🥝', '🍑', '🥭', '🍍', '🥥', '🍒', '🍈', '🥑', '🍐', '🥔'];
 
@@ -37,6 +38,12 @@ export default function Settings() {
   const [email, setEmail] = useState("");
   const [selectedFruit, setSelectedFruit] = useState("");
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
+
+  const {
+    settings: notificationSettings,
+    isLoading: isLoadingNotificationSettings,
+    updateSettings: updateNotificationSettings,
+  } = useNotificationSettings();
 
   type SettingsSectionId = "profile" | "notifications" | "privacySecurity" | "recipesData" | "account";
 
@@ -279,35 +286,235 @@ export default function Settings() {
                 Choose what notifications you'd like to receive.
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label htmlFor="emailNotifications">Email Notifications</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Receive updates about meal plans and recipes
-                  </p>
+            <CardContent className="space-y-8">
+              <p className="text-sm text-muted-foreground">
+                Control how and when RealiMeali keeps you in the loop. Adjust push and email
+                notifications for dinner reminders, weekly planning, and household activity.
+              </p>
+
+              <div className="space-y-8">
+                {/* Daily dinner reminder */}
+                <div className="md:grid md:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] md:items-center gap-6">
+                  <div className="space-y-1.5">
+                    <div className="flex items-center gap-2">
+                      <Label className="text-sm font-medium">Daily dinner reminder</Label>
+                      <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+                        Daily
+                      </span>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Gentle nudge to decide what&apos;s for dinner around your chosen time.
+                    </p>
+                  </div>
+
+                  <div className="flex flex-col items-stretch gap-3 md:items-end">
+                    <div className="flex flex-wrap items-center justify-end gap-4">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-muted-foreground">Push</span>
+                        <Switch
+                          disabled={isLoadingNotificationSettings || !notificationSettings}
+                          checked={!!notificationSettings?.daily_dinner_push_enabled}
+                          onCheckedChange={(checked) =>
+                            updateNotificationSettings({
+                              daily_dinner_push_enabled: checked,
+                            })
+                          }
+                        />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-muted-foreground">Email</span>
+                        <Switch
+                          disabled={isLoadingNotificationSettings || !notificationSettings}
+                          checked={!!notificationSettings?.daily_dinner_email_enabled}
+                          onCheckedChange={(checked) =>
+                            updateNotificationSettings({
+                              daily_dinner_email_enabled: checked,
+                            })
+                          }
+                        />
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap justify-end gap-3 text-xs text-muted-foreground md:text-[11px]">
+                      <div className="flex items-center gap-2">
+                        <span>Time</span>
+                        <Input
+                          type="time"
+                          className="h-8 w-28"
+                          disabled={isLoadingNotificationSettings || !notificationSettings}
+                          value={notificationSettings?.daily_dinner_time ?? "17:00"}
+                          onChange={(e) =>
+                            updateNotificationSettings({
+                              daily_dinner_time: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <Switch id="emailNotifications" />
-              </div>
-              <Separator />
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label htmlFor="mealReminders">Meal Reminders</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Get reminded about upcoming meals
-                  </p>
+
+                <Separator />
+
+                {/* Weekly meal plan kick-off */}
+                <div className="md:grid md:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] md:items-center gap-6">
+                  <div className="space-y-1.5">
+                    <div className="flex items-center gap-2">
+                      <Label className="text-sm font-medium">Weekly meal plan kick-off</Label>
+                      <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+                        Weekly
+                      </span>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Reminder to plan your meals for the week ahead.
+                    </p>
+                  </div>
+
+                  <div className="flex flex-col items-stretch gap-3 md:items-end">
+                    <div className="flex flex-wrap items-center justify-end gap-4">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-muted-foreground">Push</span>
+                        <Switch
+                          disabled={isLoadingNotificationSettings || !notificationSettings}
+                          checked={!!notificationSettings?.weekly_kickoff_push_enabled}
+                          onCheckedChange={(checked) =>
+                            updateNotificationSettings({
+                              weekly_kickoff_push_enabled: checked,
+                            })
+                          }
+                        />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-muted-foreground">Email</span>
+                        <Switch
+                          disabled={isLoadingNotificationSettings || !notificationSettings}
+                          checked={!!notificationSettings?.weekly_kickoff_email_enabled}
+                          onCheckedChange={(checked) =>
+                            updateNotificationSettings({
+                              weekly_kickoff_email_enabled: checked,
+                            })
+                          }
+                        />
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap justify-end gap-3 text-xs text-muted-foreground md:text-[11px]">
+                      <div className="flex items-center gap-2">
+                        <span>Day</span>
+                        <select
+                          className="h-8 rounded-md border bg-background px-2 text-xs"
+                          disabled={isLoadingNotificationSettings || !notificationSettings}
+                          value={notificationSettings?.weekly_kickoff_day ?? 0}
+                          onChange={(e) =>
+                            updateNotificationSettings({
+                              weekly_kickoff_day: Number(e.target.value),
+                            })
+                          }
+                        >
+                          <option value={0}>Sunday</option>
+                          <option value={1}>Monday</option>
+                          <option value={2}>Tuesday</option>
+                          <option value={3}>Wednesday</option>
+                          <option value={4}>Thursday</option>
+                          <option value={5}>Friday</option>
+                          <option value={6}>Saturday</option>
+                        </select>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span>Time</span>
+                        <Input
+                          type="time"
+                          className="h-8 w-28"
+                          disabled={isLoadingNotificationSettings || !notificationSettings}
+                          value={notificationSettings?.weekly_kickoff_time ?? "15:00"}
+                          onChange={(e) =>
+                            updateNotificationSettings({
+                              weekly_kickoff_time: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <Switch id="mealReminders" />
-              </div>
-              <Separator />
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label htmlFor="communityUpdates">Community Updates</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Notifications about new community recipes
-                  </p>
+
+                <Separator />
+
+                {/* Household activity */}
+                <div className="md:grid md:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] md:items-center gap-6">
+                  <div className="space-y-1.5">
+                    <div className="flex items-center gap-2">
+                      <Label className="text-sm font-medium">Household activity</Label>
+                      <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+                        Activity
+                      </span>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Updates when your household adds recipes or changes the plan.
+                    </p>
+                  </div>
+
+                  <div className="flex flex-col items-stretch gap-3 md:items-end">
+                    <div className="flex flex-wrap items-center justify-end gap-4">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-muted-foreground">Push</span>
+                        <Switch
+                          disabled={isLoadingNotificationSettings || !notificationSettings}
+                          checked={!!notificationSettings?.household_activity_push_enabled}
+                          onCheckedChange={(checked) =>
+                            updateNotificationSettings({
+                              household_activity_push_enabled: checked,
+                            })
+                          }
+                        />
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap justify-end gap-3 text-[11px] text-muted-foreground">
+                      <div className="flex items-center gap-2">
+                        <span>Push level</span>
+                        <select
+                          className="h-8 rounded-md border bg-background px-2 text-xs"
+                          disabled={
+                            isLoadingNotificationSettings ||
+                            !notificationSettings ||
+                            !notificationSettings.household_activity_push_enabled
+                          }
+                          value={notificationSettings?.household_activity_push_level ?? "important"}
+                          onChange={(e) =>
+                            updateNotificationSettings({
+                              household_activity_push_level: e.target.value as
+                                | "important"
+                                | "all",
+                            })
+                          }
+                        >
+                          <option value="important">Important updates only</option>
+                          <option value="all">Every update</option>
+                        </select>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span>Email digest</span>
+                        <select
+                          className="h-8 rounded-md border bg-background px-2 text-xs"
+                          disabled={isLoadingNotificationSettings || !notificationSettings}
+                          value={notificationSettings?.household_activity_email_frequency ?? "none"}
+                          onChange={(e) =>
+                            updateNotificationSettings({
+                              household_activity_email_frequency: e.target.value as
+                                | "none"
+                                | "daily"
+                                | "weekly",
+                              household_activity_email_enabled:
+                                e.target.value === "none" ? false : true,
+                            })
+                          }
+                        >
+                          <option value="none">Off</option>
+                          <option value="daily">Daily roundup</option>
+                          <option value="weekly">Weekly roundup</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <Switch id="communityUpdates" />
               </div>
             </CardContent>
           </Card>
