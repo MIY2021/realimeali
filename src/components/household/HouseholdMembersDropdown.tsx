@@ -1,6 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { profileImageReferrerPolicy } from "@/utils/resolveProfilePhotoUrl";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -57,10 +58,11 @@ export const HouseholdMembersDropdown = () => {
             {householdMembers.map((member) => (
               <DropdownMenuItem key={member.id} className="flex items-center space-x-3 p-3">
                 <Avatar className="h-8 w-8">
-                  <AvatarImage 
-                    src={member.profile?.avatar_url} 
+                  <AvatarImage
+                    src={member.profile?.avatar_url}
                     alt={member.profile?.full_name || member.profile?.email}
                     className="object-cover"
+                    referrerPolicy={profileImageReferrerPolicy(member.profile?.avatar_url)}
                   />
                   <AvatarFallback>
                     {(member.profile?.full_name || member.profile?.email)?.[0]?.toUpperCase() || "U"}

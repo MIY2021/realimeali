@@ -28,8 +28,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-
-const FRUIT_OPTIONS = ['🍎', '🍊', '🍌', '🍇', '🍓', '🥝', '🍑', '🥭', '🍍', '🥥', '🍒', '🍈', '🥑', '🍐', '🥔'];
+import { PRESET_FOOD_AVATARS } from "@/constants/presetFoodAvatars";
 
 interface HouseholdMember {
   id: string;
@@ -123,8 +122,8 @@ export const HouseholdMembersCard = ({ members, isOwner, onRemoveMember, isLoadi
   };
 
   const handleRandomizeFruit = () => {
-    const randomIndex = Math.floor(Math.random() * FRUIT_OPTIONS.length);
-    setSelectedFruit(FRUIT_OPTIONS[randomIndex]);
+    const randomIndex = Math.floor(Math.random() * PRESET_FOOD_AVATARS.length);
+    setSelectedFruit(PRESET_FOOD_AVATARS[randomIndex]);
   };
 
   const handleSaveProfileChanges = async () => {
@@ -288,7 +287,7 @@ export const HouseholdMembersCard = ({ members, isOwner, onRemoveMember, isLoadi
                             </div>
 
                             <div className="grid grid-cols-5 gap-2">
-                              {FRUIT_OPTIONS.map((fruit) => (
+                              {PRESET_FOOD_AVATARS.map((fruit) => (
                                 <button
                                   key={fruit}
                                   type="button"

@@ -1,5 +1,6 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { EnhancedAvatar } from "@/components/ui/enhanced-avatar";
 import {
   Settings as SettingsIcon,
   User,
@@ -23,27 +24,38 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { DeletedRecipesSection } from "@/components/settings/DeletedRecipesSection";
 import { useNotificationSettings } from "@/hooks/useNotificationSettings";
-
-const FRUIT_OPTIONS = ['🍎', '🍊', '🍌', '🍇', '🍓', '🥝', '🍑', '🥭', '🍍', '🥥', '🍒', '🍈', '🥑', '🍐', '🥔'];
+import { sessionProfileQueryKey, useSessionProfile } from "@/hooks/useSessionProfile";
+import { uploadUserAvatar } from "@/services/avatarUploadService";
+import {
+  profilePhotoSourceLabel,
+  resolveProfilePhotoUrl,
+} from "@/utils/resolveProfilePhotoUrl";
+import { PRESET_FOOD_AVATARS } from "@/constants/presetFoodAvatars";
 
 export default function Settings() {
   useDocumentTitle("Settings | RealiMeali");
   const { user } = useAuth();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const { data: profileData, isLoading: isProfileLoading } = useSessionProfile();
+  const avatarFileInputRef = useRef<HTMLInputElement>(null);
 
   const [sendingTest, setSendingTest] = useState<null | "daily" | "weekly" | "household">(null);
 
   // Profile state
-  const [profile, setProfile] = useState<any>(null);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [selectedFruit, setSelectedFruit] = useState("");
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [isRemovingAvatar, setIsRemovingAvatar] = useState(false);
+  const [isApplyingPreset, setIsApplyingPreset] = useState(false);
 
   const {
     settings: notificationSettings,
     isLoading: isLoadingNotificationSettings,
+    error: notificationSettingsError,
     updateSettings: updateNotificationSettings,
   } = useNotificationSettings();
 
@@ -63,38 +75,51 @@ export default function Settings() {
     window.scrollTo(0, 0);
   }, []);
 
-  // Fetch user profile
   useEffect(() => {
+    if (!profileData || !user) return;
+    const fullName = profileData.full_name || "";
+    const nameParts = fullName.split(" ");
+    setFirstName(nameParts[0] || "");
+    setLastName(nameParts.slice(1).join(" ") || "");
+    setEmail(profileData.email || user.email || "");
+    setSelectedFruit(profileData.avatar_data || "🍎");
+  }, [profileData, user]);
+
+  const applyPresetAvatar = async (emoji: string) => {
     if (!user) return;
+    setIsApplyingPreset(true);
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          avatar_url: null,
+          avatar_type: "fruit",
+          avatar_data: emoji,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", user.id);
+      if (error) throw error;
+      setSelectedFruit(emoji);
+      await queryClient.invalidateQueries({ queryKey: sessionProfileQueryKey(user.id) });
+      toast({
+        title: "Avatar updated",
+        description: "Your preset avatar has been saved.",
+      });
+    } catch (err) {
+      console.error("Preset avatar failed:", err);
+      toast({
+        title: "Error",
+        description: "Could not update your avatar. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsApplyingPreset(false);
+    }
+  };
 
-    const fetchProfile = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .single();
-
-        if (error) throw error;
-
-        setProfile(data);
-        const fullName = data.full_name || '';
-        const nameParts = fullName.split(' ');
-        setFirstName(nameParts[0] || '');
-        setLastName(nameParts.slice(1).join(' ') || '');
-        setEmail(data.email || user.email || '');
-        setSelectedFruit(data.avatar_data || '🍎');
-      } catch (error) {
-        console.error('Error fetching profile:', error);
-      }
-    };
-
-    fetchProfile();
-  }, [user]);
-
-  const handleRandomizeFruit = () => {
-    const randomIndex = Math.floor(Math.random() * FRUIT_OPTIONS.length);
-    setSelectedFruit(FRUIT_OPTIONS[randomIndex]);
+  const handleRandomizePreset = () => {
+    const randomIndex = Math.floor(Math.random() * PRESET_FOOD_AVATARS.length);
+    void applyPresetAvatar(PRESET_FOOD_AVATARS[randomIndex]);
   };
 
   const handleUpdateProfile = async () => {
@@ -103,34 +128,29 @@ export default function Settings() {
     setIsUpdatingProfile(true);
     try {
       const fullName = `${firstName.trim()} ${lastName.trim()}`.trim();
-      
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          full_name: fullName,
-          email: email,
-          avatar_type: 'fruit',
-          avatar_data: selectedFruit,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', user.id);
+      const updates: Record<string, string> = {
+        full_name: fullName,
+        email,
+        updated_at: new Date().toISOString(),
+      };
+      const photoUrl = resolveProfilePhotoUrl(profileData, user);
+      if (!photoUrl) {
+        updates.avatar_type = "fruit";
+        updates.avatar_data = selectedFruit || PRESET_FOOD_AVATARS[0];
+      }
+
+      const { error } = await supabase.from("profiles").update(updates).eq("id", user.id);
 
       if (error) throw error;
+
+      await queryClient.invalidateQueries({ queryKey: sessionProfileQueryKey(user.id) });
 
       toast({
         title: "Profile Updated",
         description: "Your profile has been updated successfully.",
       });
-
-      // Refresh profile data
-      setProfile(prev => ({
-        ...prev,
-        full_name: fullName,
-        email: email,
-        avatar_data: selectedFruit
-      }));
     } catch (error) {
-      console.error('Error updating profile:', error);
+      console.error("Error updating profile:", error);
       toast({
         title: "Error",
         description: "Failed to update profile. Please try again.",
@@ -138,6 +158,89 @@ export default function Settings() {
       });
     } finally {
       setIsUpdatingProfile(false);
+    }
+  };
+
+  const handleAvatarFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file || !user) return;
+    if (!file.type.startsWith("image/")) {
+      toast({
+        title: "Invalid file",
+        description: "Please choose an image file.",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "File too large",
+        description: "Maximum size is 5 MB.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsUploadingAvatar(true);
+    try {
+      const url = await uploadUserAvatar(file, user.id);
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          avatar_url: url,
+          avatar_type: "uploaded",
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", user.id);
+      if (error) throw error;
+      await queryClient.invalidateQueries({ queryKey: sessionProfileQueryKey(user.id) });
+      toast({
+        title: "Photo updated",
+        description: "Your profile picture has been saved.",
+      });
+    } catch (err) {
+      console.error("Avatar upload failed:", err);
+      toast({
+        title: "Upload failed",
+        description: "Could not save your photo. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploadingAvatar(false);
+    }
+  };
+
+  const handleRemovePhoto = async () => {
+    if (!user) return;
+    const fruit = selectedFruit || profileData?.avatar_data || PRESET_FOOD_AVATARS[0];
+    setIsRemovingAvatar(true);
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          avatar_url: null,
+          avatar_type: "fruit",
+          avatar_data: fruit,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", user.id);
+      if (error) throw error;
+      setSelectedFruit(fruit);
+      await queryClient.invalidateQueries({ queryKey: sessionProfileQueryKey(user.id) });
+      toast({
+        title: "Photo removed",
+        description: "You can pick an emoji avatar below or upload a new photo anytime.",
+      });
+    } catch (err) {
+      console.error("Remove avatar failed:", err);
+      toast({
+        title: "Error",
+        description: "Could not remove your photo. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsRemovingAvatar(false);
     }
   };
 
@@ -174,36 +277,37 @@ export default function Settings() {
     },
   ];
 
-  const sendNotificationTest = async (path: string, type: "daily" | "weekly" | "household") => {
+  const sendNotificationTest = async (functionName: string, type: "daily" | "weekly" | "household") => {
     if (!user) return;
 
     try {
       setSendingTest(type);
 
-      const response = await fetch(`/functions/v1/${path}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ userId: user.id }),
+      const { data, error } = await supabase.functions.invoke(functionName, {
+        body: { userId: user.id },
       });
 
-      const data = await response.json().catch(() => null);
-
-      if (!response.ok) {
-        const message = data?.error || "Failed to send test notification.";
+      if (error) {
+        const body = data as { error?: string } | null;
+        const message = body?.error ?? error.message;
         throw new Error(message);
+      }
+
+      const body = data as { error?: string } | null;
+      if (body?.error) {
+        throw new Error(body.error);
       }
 
       toast({
         title: "Test email sent",
         description: "Check your inbox to see how this notification looks.",
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error sending notification test:", error);
+      const message = error instanceof Error ? error.message : "Something went wrong sending the test notification.";
       toast({
         title: "Unable to send test",
-        description: error?.message || "Something went wrong sending the test notification.",
+        description: message,
         variant: "destructive",
       });
     } finally {
@@ -213,7 +317,17 @@ export default function Settings() {
 
   const renderSectionContent = (sectionId: SettingsSectionId) => {
     switch (sectionId) {
-      case "profile":
+      case "profile": {
+        const displayUrl = resolveProfilePhotoUrl(profileData, user);
+        const photoLabel = displayUrl ? profilePhotoSourceLabel(profileData) : "";
+        const avatarTypeUi: "google" | "uploaded" | "fruit" = displayUrl
+          ? profileData?.avatar_type === "google"
+            ? "google"
+            : "uploaded"
+          : "fruit";
+        const presetBusy =
+          isApplyingPreset || isUploadingAvatar || isRemovingAvatar;
+
         return (
           <Card>
             <CardHeader>
@@ -226,46 +340,103 @@ export default function Settings() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="space-y-4">
-                <Label>Profile Picture</Label>
-                <div className="flex items-center gap-4">
-                  <Avatar className="h-16 w-16">
-                    <AvatarFallback className="text-2xl bg-terracotta/20">
-                      {selectedFruit}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="space-y-2">
+              {isProfileLoading && !profileData ? (
+                <p className="text-sm text-muted-foreground">Loading profile…</p>
+              ) : null}
+
+              <div className="max-w-xl space-y-4">
+                <Label>Profile picture</Label>
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
+                  <EnhancedAvatar
+                    size="lg"
+                    className="h-20 w-20 shrink-0 ring-2 ring-border"
+                    src={displayUrl ?? undefined}
+                    avatarType={avatarTypeUi}
+                    avatarData={selectedFruit}
+                    fallbackText={firstName || user?.email || "U"}
+                    alt=""
+                  />
+                  <div className="min-w-0 space-y-2">
+                    {photoLabel ? (
+                      <p className="text-sm text-muted-foreground">{photoLabel}</p>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">
+                        Upload a photo or choose a fun food preset below.
+                      </p>
+                    )}
+                    <input
+                      ref={avatarFileInputRef}
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp,image/gif"
+                      className="hidden"
+                      onChange={handleAvatarFileChange}
+                    />
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="flex items-center gap-2"
+                        disabled={isUploadingAvatar || !user}
+                        onClick={() => avatarFileInputRef.current?.click()}
+                      >
+                        <Upload className="h-4 w-4" />
+                        {isUploadingAvatar ? "Uploading…" : "Upload photo"}
+                      </Button>
+                      {displayUrl ? (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="text-muted-foreground"
+                          disabled={isRemovingAvatar || isUploadingAvatar}
+                          onClick={handleRemovePhoto}
+                        >
+                          {isRemovingAvatar ? "Removing…" : "Remove photo"}
+                        </Button>
+                      ) : null}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-3 rounded-lg border border-dashed border-muted-foreground/25 bg-muted/30 p-4">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <p className="text-sm font-medium text-foreground">Preset food avatars</p>
                     <Button
                       type="button"
                       variant="outline"
                       size="sm"
-                      onClick={handleRandomizeFruit}
+                      disabled={presetBusy || !user}
+                      onClick={handleRandomizePreset}
                       className="flex items-center gap-2"
                     >
                       <Shuffle className="h-4 w-4" />
                       Random
                     </Button>
-                    <p className="text-xs text-muted-foreground">
-                      Choose from available fruit avatars
-                    </p>
                   </div>
-                </div>
-
-                <div className="grid grid-cols-8 gap-2 max-w-md">
-                  {FRUIT_OPTIONS.map((fruit) => (
-                    <button
-                      key={fruit}
-                      type="button"
-                      onClick={() => setSelectedFruit(fruit)}
-                      className={`h-10 w-10 rounded-lg border-2 flex items-center justify-center text-lg transition-colors ${
-                        selectedFruit === fruit
-                          ? "border-terracotta bg-terracotta/10"
-                          : "border-gray-200 hover:border-gray-300"
-                      }`}
-                    >
-                      {fruit}
-                    </button>
-                  ))}
+                  <p className="text-xs text-muted-foreground">
+                    {displayUrl
+                      ? "Choosing a preset replaces your current photo. Changes save immediately."
+                      : "Tap one to save — no upload needed. You can still edit your name and use Save Changes below."}
+                  </p>
+                  <div className="grid grid-cols-7 gap-2 sm:grid-cols-8">
+                    {PRESET_FOOD_AVATARS.map((emoji) => (
+                      <button
+                        key={emoji}
+                        type="button"
+                        disabled={presetBusy || !user}
+                        title={emoji}
+                        onClick={() => void applyPresetAvatar(emoji)}
+                        className={`flex h-10 w-10 items-center justify-center rounded-lg border-2 text-lg transition-colors sm:h-9 sm:w-9 ${
+                          !displayUrl && selectedFruit === emoji
+                            ? "border-terracotta bg-terracotta/10"
+                            : "border-gray-200 hover:border-gray-300"
+                        }`}
+                      >
+                        {emoji}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
 
@@ -305,7 +476,7 @@ export default function Settings() {
 
               <Button
                 onClick={handleUpdateProfile}
-                disabled={isUpdatingProfile}
+                disabled={isUpdatingProfile || (isProfileLoading && !profileData)}
                 className="w-full sm:w-auto"
               >
                 {isUpdatingProfile ? "Saving..." : "Save Changes"}
@@ -313,6 +484,7 @@ export default function Settings() {
             </CardContent>
           </Card>
         );
+      }
       case "notifications":
         return (
           <Card>
@@ -330,6 +502,12 @@ export default function Settings() {
                 Control how and when RealiMeali keeps you in the loop. Adjust push and email
                 notifications for dinner reminders, weekly planning, and household activity.
               </p>
+
+              {notificationSettingsError ? (
+                <p className="text-sm text-destructive" role="alert">
+                  {notificationSettingsError}
+                </p>
+              ) : null}
 
               <div className="space-y-8">
                 {/* Daily dinner reminder */}

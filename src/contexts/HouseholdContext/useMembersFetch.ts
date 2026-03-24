@@ -1,8 +1,8 @@
-
-import { useState, useCallback, useRef } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { Household, HouseholdMember } from '@/types';
-import { useAvatarSync } from './useAvatarSync';
+import { useState, useCallback, useRef } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { Household, HouseholdMember } from "@/types";
+import { useAvatarSync } from "./useAvatarSync";
+import { oauthProfilePhotoFromMetadata } from "@/utils/resolveProfilePhotoUrl";
 
 export function useMembersFetch(currentHousehold: Household | null) {
   const [isLoadingMembers, setIsLoadingMembers] = useState(false);
@@ -67,15 +67,13 @@ export function useMembersFetch(currentHousehold: Household | null) {
       const { data: { user: currentAuthUser } } = await supabase.auth.getUser();
       const currentUserId = currentAuthUser?.id;
       
-      console.log('DEBUG MEMBERS: Current auth user:', {
+      console.log("DEBUG MEMBERS: Current auth user:", {
         currentUserId,
-        hasAvatarUrl: !!currentAuthUser?.user_metadata?.avatar_url,
-        avatarUrl: currentAuthUser?.user_metadata?.avatar_url
+        hasOAuthPhoto: !!oauthProfilePhotoFromMetadata(currentAuthUser),
       });
 
-      // Sync Google avatar for current user if needed
-      if (currentUserId && currentAuthUser?.user_metadata?.avatar_url) {
-        console.log('DEBUG MEMBERS: Syncing Google avatar before fetching profiles');
+      if (currentUserId && oauthProfilePhotoFromMetadata(currentAuthUser)) {
+        console.log("DEBUG MEMBERS: Syncing OAuth avatar before fetching profiles");
         await syncGoogleAvatarUrl(currentUserId);
       }
 
@@ -118,9 +116,9 @@ export function useMembersFetch(currentHousehold: Household | null) {
         
         // For Google users, ensure we have their avatar URL
         let avatarUrl = profile?.avatar_url;
-        if (!avatarUrl && profile?.auth_provider === 'google' && member.user_id === currentUserId) {
-          avatarUrl = currentAuthUser?.user_metadata?.avatar_url || null;
-          console.log('DEBUG MEMBERS: Using auth avatar URL for current Google user:', avatarUrl);
+        if (!avatarUrl && profile?.auth_provider === "google" && member.user_id === currentUserId) {
+          avatarUrl = oauthProfilePhotoFromMetadata(currentAuthUser) || null;
+          console.log("DEBUG MEMBERS: Using OAuth metadata photo for current Google user:", avatarUrl);
         }
         
         const memberWithProfile = {

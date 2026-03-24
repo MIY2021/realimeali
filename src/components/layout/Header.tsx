@@ -6,6 +6,11 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { HouseholdMembersDropdown } from "@/components/household/HouseholdMembersDropdown";
+import { useSessionProfile } from "@/hooks/useSessionProfile";
+import {
+  profileImageReferrerPolicy,
+  resolveProfilePhotoUrl,
+} from "@/utils/resolveProfilePhotoUrl";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,6 +31,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 const Header = () => {
   const { user, signOut, isLoading } = useAuth();
+  const { data: profileRow } = useSessionProfile();
   const { currentHousehold } = useHousehold();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [avatarError, setAvatarError] = useState(false);
@@ -67,24 +73,24 @@ const Header = () => {
     { to: "/shopping-list", icon: ShoppingCart, label: "Shopping List" },
   ];
 
+  const headerAvatarUrl = user ? resolveProfilePhotoUrl(profileRow, user) : null;
+
   const handleAvatarError = () => {
-    console.error('Header avatar failed to load:', {
+    console.error("Header avatar failed to load:", {
       userId: user?.id,
-      avatarUrl: user?.user_metadata?.avatar_url,
-      userMetadata: user?.user_metadata,
-      timestamp: new Date().toISOString()
+      avatarUrl: headerAvatarUrl,
+      timestamp: new Date().toISOString(),
     });
     setAvatarError(true);
   };
 
   const handleAvatarLoad = () => {
-    console.log('Header avatar loaded successfully:', {
-      userId: user?.id,
-      avatarUrl: user?.user_metadata?.avatar_url,
-      timestamp: new Date().toISOString()
-    });
     setAvatarError(false);
   };
+
+  useEffect(() => {
+    setAvatarError(false);
+  }, [headerAvatarUrl]);
 
   // Log authentication state for debugging
   useEffect(() => {
@@ -94,7 +100,7 @@ const Header = () => {
       userId: user?.id,
       email: user?.email,
       userMetadata: user?.user_metadata,
-      avatarUrl: user?.user_metadata?.avatar_url,
+      avatarUrl: headerAvatarUrl,
       fullName: user?.user_metadata?.full_name,
       timestamp: new Date().toISOString()
     });
@@ -198,18 +204,28 @@ const Header = () => {
                   <Button variant="ghost" size="sm" className="flex items-center space-x-2 p-1">
                     <div className="relative">
                       <Avatar className="h-8 w-8">
-                        <AvatarImage 
-                          src={user.user_metadata?.avatar_url} 
+                        <AvatarImage
+                          src={headerAvatarUrl ?? undefined}
                           alt={user.user_metadata?.full_name || user.email || "User"}
                           onError={handleAvatarError}
                           onLoad={handleAvatarLoad}
                           className="object-cover"
+                          referrerPolicy={profileImageReferrerPolicy(headerAvatarUrl)}
                         />
-                        <AvatarFallback>
-                          {(user.user_metadata?.full_name || user.email)?.[0].toUpperCase() || "U"}
+                        <AvatarFallback
+                          className={
+                            profileRow?.avatar_type === "fruit" && profileRow.avatar_data
+                              ? "bg-terracotta/20 text-lg"
+                              : "bg-terracotta/20 text-terracotta"
+                          }
+                        >
+                          {profileRow?.avatar_type === "fruit" && profileRow.avatar_data
+                            ? profileRow.avatar_data
+                            : (user.user_metadata?.full_name || user.email)?.[0].toUpperCase() ||
+                              "U"}
                         </AvatarFallback>
                       </Avatar>
-                      {avatarError && user.user_metadata?.avatar_url && (
+                      {avatarError && headerAvatarUrl && (
                         <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border border-white" 
                              title="Avatar failed to load" />
                       )}

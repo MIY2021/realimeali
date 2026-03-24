@@ -61,9 +61,29 @@ export function useNotificationSettings() {
       } else if (!data) {
         setSettings(DEFAULT_SETTINGS);
       } else {
+        const row = data as Record<string, unknown>;
         setSettings({
           ...DEFAULT_SETTINGS,
-          ...data,
+          daily_dinner_push_enabled: Boolean(row.daily_dinner_push_enabled),
+          daily_dinner_email_enabled: Boolean(row.daily_dinner_email_enabled),
+          daily_dinner_time: String(row.daily_dinner_time ?? DEFAULT_SETTINGS.daily_dinner_time),
+          daily_dinner_days_of_week: Array.isArray(row.daily_dinner_days_of_week)
+            ? (row.daily_dinner_days_of_week as number[])
+            : DEFAULT_SETTINGS.daily_dinner_days_of_week,
+          weekly_kickoff_push_enabled: Boolean(row.weekly_kickoff_push_enabled),
+          weekly_kickoff_email_enabled: Boolean(row.weekly_kickoff_email_enabled),
+          weekly_kickoff_day: Number(row.weekly_kickoff_day ?? DEFAULT_SETTINGS.weekly_kickoff_day),
+          weekly_kickoff_time: String(row.weekly_kickoff_time ?? DEFAULT_SETTINGS.weekly_kickoff_time),
+          household_activity_push_enabled: Boolean(row.household_activity_push_enabled),
+          household_activity_email_enabled: Boolean(row.household_activity_email_enabled),
+          household_activity_push_level:
+            row.household_activity_push_level === "all" ? "all" : "important",
+          household_activity_email_frequency:
+            row.household_activity_email_frequency === "daily" ||
+            row.household_activity_email_frequency === "weekly" ||
+            row.household_activity_email_frequency === "none"
+              ? (row.household_activity_email_frequency as NotificationSettings["household_activity_email_frequency"])
+              : "none",
         });
       }
 
@@ -75,15 +95,27 @@ export function useNotificationSettings() {
 
   const updateSettings = async (partial: Partial<NotificationSettings>) => {
     if (!user) return;
-    const next = {
-      ...(settings ?? DEFAULT_SETTINGS),
+    const previous = settings ?? DEFAULT_SETTINGS;
+    const next: NotificationSettings = {
+      ...previous,
       ...partial,
     };
     setSettings(next);
 
     const payload = {
       user_id: user.id,
-      ...next,
+      daily_dinner_push_enabled: next.daily_dinner_push_enabled,
+      daily_dinner_email_enabled: next.daily_dinner_email_enabled,
+      daily_dinner_time: next.daily_dinner_time,
+      daily_dinner_days_of_week: next.daily_dinner_days_of_week,
+      weekly_kickoff_push_enabled: next.weekly_kickoff_push_enabled,
+      weekly_kickoff_email_enabled: next.weekly_kickoff_email_enabled,
+      weekly_kickoff_day: next.weekly_kickoff_day,
+      weekly_kickoff_time: next.weekly_kickoff_time,
+      household_activity_push_enabled: next.household_activity_push_enabled,
+      household_activity_email_enabled: next.household_activity_email_enabled,
+      household_activity_push_level: next.household_activity_push_level,
+      household_activity_email_frequency: next.household_activity_email_frequency,
     };
 
     const { error } = await supabase
@@ -93,7 +125,7 @@ export function useNotificationSettings() {
     if (error) {
       console.error("Error updating notification settings:", error);
       setError("Failed to save notification settings");
-      setSettings(settings);
+      setSettings(previous);
     } else {
       setError(null);
     }

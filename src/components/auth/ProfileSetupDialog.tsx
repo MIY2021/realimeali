@@ -8,14 +8,13 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Upload, Shuffle } from "lucide-react";
+import { PRESET_FOOD_AVATARS } from "@/constants/presetFoodAvatars";
+import { Shuffle } from "lucide-react";
 
 interface ProfileSetupDialogProps {
   isOpen: boolean;
   onComplete: () => void;
 }
-
-const FRUIT_OPTIONS = ['🍎', '🍊', '🍌', '🍇', '🍓', '🥝', '🍑', '🥭', '🍍', '🥥', '🍒', '🍈', '🥑', '🍐', '🥔'];
 
 export function ProfileSetupDialog({ isOpen, onComplete }: ProfileSetupDialogProps) {
   const { user } = useAuth();
@@ -24,16 +23,15 @@ export function ProfileSetupDialog({ isOpen, onComplete }: ProfileSetupDialogPro
   const [selectedFruit, setSelectedFruit] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const getRandomFruit = () => {
-    if (!user) return FRUIT_OPTIONS[0];
-    // Generate consistent random fruit based on user ID
-    const userHash = user.id.split('').reduce((a, b) => a + b.charCodeAt(0), 0);
-    return FRUIT_OPTIONS[userHash % FRUIT_OPTIONS.length];
+  const getRandomPreset = () => {
+    if (!user) return PRESET_FOOD_AVATARS[0];
+    const userHash = user.id.split("").reduce((a, b) => a + b.charCodeAt(0), 0);
+    return PRESET_FOOD_AVATARS[userHash % PRESET_FOOD_AVATARS.length];
   };
 
   const handleRandomize = () => {
-    const randomIndex = Math.floor(Math.random() * FRUIT_OPTIONS.length);
-    setSelectedFruit(FRUIT_OPTIONS[randomIndex]);
+    const randomIndex = Math.floor(Math.random() * PRESET_FOOD_AVATARS.length);
+    setSelectedFruit(PRESET_FOOD_AVATARS[randomIndex]);
   };
 
   const handleComplete = async () => {
@@ -47,7 +45,7 @@ export function ProfileSetupDialog({ isOpen, onComplete }: ProfileSetupDialogPro
 
     setIsLoading(true);
     try {
-      const fruitToUse = selectedFruit || getRandomFruit();
+      const fruitToUse = selectedFruit || getRandomPreset();
       
       const { error } = await supabase
         .from('profiles')
@@ -81,7 +79,7 @@ export function ProfileSetupDialog({ isOpen, onComplete }: ProfileSetupDialogPro
 
   // Initialize fruit selection when dialog opens
   if (isOpen && !selectedFruit) {
-    setSelectedFruit(getRandomFruit());
+    setSelectedFruit(getRandomPreset());
   }
 
   return (
@@ -130,19 +128,19 @@ export function ProfileSetupDialog({ isOpen, onComplete }: ProfileSetupDialogPro
                 </Button>
               </div>
 
-              <div className="grid grid-cols-5 gap-2 max-w-xs mx-auto">
-                {FRUIT_OPTIONS.slice(0, 10).map((fruit) => (
+              <div className="mx-auto grid max-w-sm grid-cols-5 gap-2 sm:grid-cols-6">
+                {PRESET_FOOD_AVATARS.slice(0, 12).map((emoji) => (
                   <button
-                    key={fruit}
+                    key={emoji}
                     type="button"
-                    onClick={() => setSelectedFruit(fruit)}
-                    className={`h-12 w-12 rounded-lg border-2 flex items-center justify-center text-xl transition-colors ${
-                      selectedFruit === fruit
-                        ? 'border-terracotta bg-terracotta/10'
-                        : 'border-gray-200 hover:border-gray-300'
+                    onClick={() => setSelectedFruit(emoji)}
+                    className={`flex h-11 w-11 items-center justify-center rounded-lg border-2 text-lg transition-colors sm:h-10 sm:w-10 ${
+                      selectedFruit === emoji
+                        ? "border-terracotta bg-terracotta/10"
+                        : "border-gray-200 hover:border-gray-300"
                     }`}
                   >
-                    {fruit}
+                    {emoji}
                   </button>
                 ))}
               </div>
