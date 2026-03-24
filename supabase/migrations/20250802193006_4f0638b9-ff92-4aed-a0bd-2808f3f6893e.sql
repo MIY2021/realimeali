@@ -1,5 +1,6 @@
 -- Drop the existing update policy to replace it with a clearer one
 DROP POLICY IF EXISTS "Household members can update household recipes" ON public.recipes;
+DROP POLICY IF EXISTS "Household members can edit all household recipes" ON public.recipes;
 
 -- Create a more explicit policy for household members to edit any recipe in their household
 CREATE POLICY "Household members can edit all household recipes" 
