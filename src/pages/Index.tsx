@@ -164,14 +164,6 @@ export default function Index() {
             onClick={handleMyRecipesClick}
           />
           <StatsCard
-            title="This Week"
-            value={`${currentWeekMealCount}|meals`}
-            icon={Calendar}
-            isLoading={mealPlansLoading}
-            variant="secondary"
-            onClick={handleThisWeekMealPlanClick}
-          />
-          <StatsCard
             title="Favourites"
             value={stats.favoriteRecipes}
             icon={Heart}
@@ -186,6 +178,14 @@ export default function Index() {
             isLoading={achievementsLoading}
             variant="accent"
             onClick={handleAchievementsClick}
+          />
+          <StatsCard
+            title="This Week"
+            value={`${currentWeekMealCount}|meals`}
+            icon={Calendar}
+            isLoading={mealPlansLoading}
+            variant="secondary"
+            onClick={handleThisWeekMealPlanClick}
           />
         </div>
 
