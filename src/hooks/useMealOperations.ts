@@ -1,7 +1,7 @@
 
 import { useCallback } from "react";
 import { MealType } from "@/types";
-import { parseISOWeekKey, getWeekStartDate } from "@/utils/weekUtils";
+import { parseISOWeekKey, getWeekStartDate, formatLocalDateYMD } from "@/utils/weekUtils";
 
 interface UseMealOperationsProps {
   user: any;
@@ -41,7 +41,7 @@ export const useMealOperations = ({
       // Calculate a date within the target week (Monday of that week)
       const { year, week } = parseISOWeekKey(currentWeek);
       const weekStartDate = getWeekStartDate(year, week);
-      const dateStr = weekStartDate.toISOString().split('T')[0];
+      const dateStr = formatLocalDateYMD(weekStartDate);
 
       const mealPlanData = {
         recipe_id: recipe_id,

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Recipe, MealType } from "@/types";
@@ -7,7 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { getCurrentWeekKey, getNextWeek, formatWeekRange, parseISOWeekKey, getWeekStartDate } from "@/utils/weekUtils";
+import { getCurrentWeekKey, getNextWeek, formatWeekRange, parseISOWeekKey, getWeekStartDate, formatLocalDateYMD } from "@/utils/weekUtils";
 
 interface AddToMealPlanDialogProps {
   recipe: Recipe | null;
@@ -37,7 +37,7 @@ export function AddToMealPlanDialog({ recipe, open, onOpenChange, adjustedServin
       // Calculate a date within the target week (Monday of that week)
       const { year, week } = parseISOWeekKey(selectedWeek);
       const weekStartDate = getWeekStartDate(year, week);
-      const dateStr = weekStartDate.toISOString().split('T')[0];
+      const dateStr = formatLocalDateYMD(weekStartDate);
       
       // Use adjusted servings if provided, otherwise use recipe servings
       const plannedServings = adjustedServings || recipe.servings;

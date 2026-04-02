@@ -3,7 +3,7 @@ import { Recipe, MealType } from "@/types";
 import { mealPlanService } from "@/services/mealPlanService";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { supabase } from "@/integrations/supabase/client";
-import { parseISOWeekKey, getWeekStartDate } from "@/utils/weekUtils";
+import { parseISOWeekKey, getWeekStartDate, formatLocalDateYMD } from "@/utils/weekUtils";
 
 export function useRandomMealSelection() {
   const [isGenerating, setIsGenerating] = useState(false);
@@ -60,7 +60,7 @@ export function useRandomMealSelection() {
       // Calculate a date within the target week (Monday of that week)
       const { year, week } = parseISOWeekKey(weekKey);
       const weekStartDate = getWeekStartDate(year, week);
-      const dateStr = weekStartDate.toISOString().split('T')[0];
+      const dateStr = formatLocalDateYMD(weekStartDate);
 
       // Add selected recipes to meal plan
       const addPromises = selectedRecipes.map(async (recipe, index) => {

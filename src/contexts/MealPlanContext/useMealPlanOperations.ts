@@ -2,7 +2,7 @@ import { useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { MealPlan } from "@/types";
 import { mealPlanService } from "@/services/mealPlanService";
-import { getWeekStartDate, parseISOWeekKey, getISOWeekKey } from "@/utils/weekUtils";
+import { getWeekStartDate, parseISOWeekKey, getISOWeekKey, formatLocalDateYMD } from "@/utils/weekUtils";
 
 export const useMealPlanOperations = (
   user: any,
@@ -158,7 +158,7 @@ export const useMealPlanOperations = (
 
         const newPlan = await mealPlanService.addMealPlan(
           {
-            date: newDate.toISOString().split('T')[0],
+            date: formatLocalDateYMD(newDate),
             meal_type: sourcePlan.meal_type,
             recipe_id: sourcePlan.recipe_id,
             created_by: user.id,
@@ -190,7 +190,7 @@ export const useMealPlanOperations = (
 
             await mealPlanService.addMealPlan(
               {
-                date: newLeftoverDate.toISOString().split('T')[0],
+                date: formatLocalDateYMD(newLeftoverDate),
                 meal_type: leftover.meal_type,
                 recipe_id: leftover.recipe_id,
                 created_by: user.id,

@@ -66,6 +66,18 @@ export function parseISOWeekKey(key: string): ISOWeek {
 }
 
 /**
+ * Format a Date as YYYY-MM-DD using local calendar fields.
+ * Avoids `toISOString().split('T')[0]`, which uses UTC and can shift the day
+ * (e.g. Monday local becoming Sunday in DB → wrong ISO week).
+ */
+export function formatLocalDateYMD(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+/**
  * Get the start date (Monday) of an ISO week
  */
 export function getWeekStartDate(year: number, week: number): Date {

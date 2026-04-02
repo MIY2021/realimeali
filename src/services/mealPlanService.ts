@@ -2,7 +2,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { MealPlan, MealType } from "@/types";
 import { HouseholdMealPlan } from "@/contexts/MealPlanContext";
-import { getISOWeekKey } from "@/utils/weekUtils";
+import { getISOWeekKey, formatLocalDateYMD } from "@/utils/weekUtils";
 
 export const mealPlanService = {
   async fetchMealPlans(householdId: string): Promise<MealPlan[]> {
@@ -164,8 +164,8 @@ export const mealPlanService = {
     const endDate = getWeekEndDate(year, week);
     
     // Convert to ISO date strings (YYYY-MM-DD)
-    const startDateStr = startDate.toISOString().split('T')[0];
-    const endDateStr = endDate.toISOString().split('T')[0];
+    const startDateStr = formatLocalDateYMD(startDate);
+    const endDateStr = formatLocalDateYMD(endDate);
     
     // Delete all meal plans within this week's date range
     const { error } = await supabase
@@ -192,8 +192,8 @@ export const mealPlanService = {
     const startDate = getWeekStartDate(year, week);
     const endDate = getWeekEndDate(year, week);
     
-    const startDateStr = startDate.toISOString().split('T')[0];
-    const endDateStr = endDate.toISOString().split('T')[0];
+    const startDateStr = formatLocalDateYMD(startDate);
+    const endDateStr = formatLocalDateYMD(endDate);
     
     const updatePromises = reorderedPlans.map((plan, index) => 
       supabase
