@@ -15,20 +15,29 @@ import { RecentActivity } from "@/components/dashboard/RecentActivity";
 import { LatestRecipesInspiration } from "@/components/dashboard/LatestRecipesInspiration";
 import { HomeOverflowMenu } from "@/components/layout/HomeOverflowMenu";
 import { WelcomeSlidesDialog } from "@/components/onboarding/WelcomeSlidesDialog";
-import { useState, useEffect, useMemo } from "react";
+import { sessionProfileQueryKey, useSessionProfile } from "@/hooks/useSessionProfile";
+import { useQueryClient } from "@tanstack/react-query";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 export default function Index() {
   useDocumentTitle("RealiMeali | Dashboard");
   const { showPrompt, promptTrigger, triggerPromptOnFeatureClick, closePrompt } = useLoginPrompt();
   const { user, isLoading: authLoading } = useAuth();
+  const queryClient = useQueryClient();
+  const {
+    data: sessionProfile,
+    isPending: sessionProfilePending,
+    isError: sessionProfileError,
+  } = useSessionProfile();
   const { stats, isLoading, hasData } = useUserStats();
   const { achievements, isLoading: achievementsLoading } = useAchievements();
   const { getMealPlansForWeek, isLoading: mealPlansLoading } = useMealPlan();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [showWelcomeSlides, setShowWelcomeSlides] = useState(false);
-  const [isCheckingWelcome, setIsCheckingWelcome] = useState(true);
+
+  const isCheckingWelcome = authLoading || (!!user && sessionProfilePending);
 
   // Calculate achievements count
   const unlockedCount = achievements.filter(a => a.isUnlocked).length;
@@ -48,34 +57,67 @@ export default function Index() {
     ).length;
   }, [currentWeekMealPlans]);
 
-  // Auto-show welcome slides for first-time users (localStorage only)
+  const persistWelcomeDismissed = useCallback(async () => {
+    if (!user) return;
+    const storageKey = `hasSeenWelcome_${user.id}`;
+    localStorage.setItem(storageKey, "true");
+    const { error } = await supabase
+      .from("profiles")
+      .update({ has_seen_welcome: true, updated_at: new Date().toISOString() })
+      .eq("id", user.id);
+    if (error) {
+      console.error("Failed to persist has_seen_welcome:", error);
+      return;
+    }
+    await queryClient.invalidateQueries({ queryKey: sessionProfileQueryKey(user.id) });
+  }, [user, queryClient]);
+
+  const handleWelcomeSlidesOpenChange = useCallback(
+    (open: boolean) => {
+      if (!open) {
+        setShowWelcomeSlides((wasOpen) => {
+          if (wasOpen && user) void persistWelcomeDismissed();
+          return false;
+        });
+        return;
+      }
+      setShowWelcomeSlides(true);
+    },
+    [user, persistWelcomeDismissed]
+  );
+
+  // Auto-show welcome slides once per account (profiles.has_seen_welcome), with localStorage backfill and error fallback
   useEffect(() => {
-    if (!user) {
-      setIsCheckingWelcome(false);
+    if (!user || sessionProfilePending) return;
+
+    const storageKey = `hasSeenWelcome_${user.id}`;
+    const fromStorage = localStorage.getItem(storageKey) === "true";
+
+    if (!sessionProfileError && sessionProfile?.has_seen_welcome === true) {
       return;
     }
 
-    const storageKey = `hasSeenWelcome_${user.id}`;
-    const hasSeenWelcome = localStorage.getItem(storageKey) === "true";
-
-    if (!hasSeenWelcome) {
-      const timer = setTimeout(() => {
-        setShowWelcomeSlides(true);
-      }, 500);
-      setIsCheckingWelcome(false);
-      return () => clearTimeout(timer);
+    if (!sessionProfileError && sessionProfile && !sessionProfile.has_seen_welcome && fromStorage) {
+      void (async () => {
+        const { error } = await supabase
+          .from("profiles")
+          .update({ has_seen_welcome: true, updated_at: new Date().toISOString() })
+          .eq("id", user.id);
+        if (error) console.error("Failed to backfill has_seen_welcome:", error);
+        else await queryClient.invalidateQueries({ queryKey: sessionProfileQueryKey(user.id) });
+      })();
+      return;
     }
 
-    setIsCheckingWelcome(false);
-  }, [user]);
-
-  const handleWelcomeSlidesComplete = () => {
-    if (user) {
-      const storageKey = `hasSeenWelcome_${user.id}`;
-      localStorage.setItem(storageKey, "true");
+    if (sessionProfileError && fromStorage) {
+      return;
     }
-    setShowWelcomeSlides(false);
-  };
+
+    const timer = setTimeout(() => setShowWelcomeSlides(true), 500);
+    return () => clearTimeout(timer);
+  }, [user, sessionProfilePending, sessionProfileError, sessionProfile, queryClient]);
+
+  const handleWelcomeSlidesComplete = useCallback(() => {}, []);
 
   const handleMyRecipesClick = () => {
     navigate("/my-recipes");
@@ -149,7 +191,7 @@ export default function Index() {
         {/* Welcome Slides Dialog */}
         <WelcomeSlidesDialog
           open={showWelcomeSlides}
-          onOpenChange={setShowWelcomeSlides}
+          onOpenChange={handleWelcomeSlidesOpenChange}
           onComplete={handleWelcomeSlidesComplete}
         />
 
