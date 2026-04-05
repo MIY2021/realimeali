@@ -18,7 +18,8 @@ export function useAvatarSync() {
             avatar_url: photoUrl,
             updated_at: new Date().toISOString(),
           })
-          .eq("id", userId);
+          .eq("id", userId)
+          .eq("avatar_type", "google");
 
         if (error) {
           console.error("Avatar sync: failed to write profiles.avatar_url:", error);

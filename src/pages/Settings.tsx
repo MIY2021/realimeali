@@ -18,19 +18,32 @@ import {
   Shuffle,
   Shield,
   Database,
+  ImagePlus,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { DeletedRecipesSection } from "@/components/settings/DeletedRecipesSection";
+import { cn } from "@/lib/utils";
 import { useNotificationSettings } from "@/hooks/useNotificationSettings";
 import { sessionProfileQueryKey, useSessionProfile } from "@/hooks/useSessionProfile";
 import { uploadUserAvatar } from "@/services/avatarUploadService";
 import {
+  oauthProfilePhotoFromMetadata,
   profilePhotoSourceLabel,
   resolveProfilePhotoUrl,
 } from "@/utils/resolveProfilePhotoUrl";
-import { PRESET_FOOD_AVATARS } from "@/constants/presetFoodAvatars";
+import {
+  PRESET_AVATAR_MODAL_CHOICES,
+  PRESET_FOOD_AVATARS,
+} from "@/constants/presetFoodAvatars";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export default function Settings() {
   useDocumentTitle("Settings | RealiMeali");
@@ -50,7 +63,9 @@ export default function Settings() {
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [isRemovingAvatar, setIsRemovingAvatar] = useState(false);
+  const [isRestoringGooglePhoto, setIsRestoringGooglePhoto] = useState(false);
   const [isApplyingPreset, setIsApplyingPreset] = useState(false);
+  const [profilePicDialogOpen, setProfilePicDialogOpen] = useState(false);
 
   const {
     settings: notificationSettings,
@@ -85,8 +100,8 @@ export default function Settings() {
     setSelectedFruit(profileData.avatar_data || "🍎");
   }, [profileData, user]);
 
-  const applyPresetAvatar = async (emoji: string) => {
-    if (!user) return;
+  const applyPresetAvatar = async (emoji: string): Promise<boolean> => {
+    if (!user) return false;
     setIsApplyingPreset(true);
     try {
       const { error } = await supabase
@@ -100,11 +115,22 @@ export default function Settings() {
         .eq("id", user.id);
       if (error) throw error;
       setSelectedFruit(emoji);
+      queryClient.setQueryData(sessionProfileQueryKey(user.id), (prev) => {
+        if (!prev || typeof prev !== "object") return prev;
+        return {
+          ...prev,
+          avatar_url: null,
+          avatar_type: "fruit",
+          avatar_data: emoji,
+          updated_at: new Date().toISOString(),
+        };
+      });
       await queryClient.invalidateQueries({ queryKey: sessionProfileQueryKey(user.id) });
       toast({
         title: "Avatar updated",
         description: "Your preset avatar has been saved.",
       });
+      return true;
     } catch (err) {
       console.error("Preset avatar failed:", err);
       toast({
@@ -112,14 +138,16 @@ export default function Settings() {
         description: "Could not update your avatar. Please try again.",
         variant: "destructive",
       });
+      return false;
     } finally {
       setIsApplyingPreset(false);
     }
   };
 
-  const handleRandomizePreset = () => {
+  const handleRandomizePreset = async (closeModalAfter = false) => {
     const randomIndex = Math.floor(Math.random() * PRESET_FOOD_AVATARS.length);
-    void applyPresetAvatar(PRESET_FOOD_AVATARS[randomIndex]);
+    const ok = await applyPresetAvatar(PRESET_FOOD_AVATARS[randomIndex]);
+    if (ok && closeModalAfter) setProfilePicDialogOpen(false);
   };
 
   const handleUpdateProfile = async () => {
@@ -195,6 +223,7 @@ export default function Settings() {
         .eq("id", user.id);
       if (error) throw error;
       await queryClient.invalidateQueries({ queryKey: sessionProfileQueryKey(user.id) });
+      setProfilePicDialogOpen(false);
       toast({
         title: "Photo updated",
         description: "Your profile picture has been saved.",
@@ -228,9 +257,10 @@ export default function Settings() {
       if (error) throw error;
       setSelectedFruit(fruit);
       await queryClient.invalidateQueries({ queryKey: sessionProfileQueryKey(user.id) });
+      setProfilePicDialogOpen(false);
       toast({
         title: "Photo removed",
-        description: "You can pick an emoji avatar below or upload a new photo anytime.",
+        description: "Open Update profile picture anytime to set a new one.",
       });
     } catch (err) {
       console.error("Remove avatar failed:", err);
@@ -241,6 +271,48 @@ export default function Settings() {
       });
     } finally {
       setIsRemovingAvatar(false);
+    }
+  };
+
+  const handleRestoreGooglePhoto = async () => {
+    if (!user) return;
+    const oauthPic = oauthProfilePhotoFromMetadata(user);
+    if (!oauthPic) {
+      toast({
+        title: "No Google photo found",
+        description: "Sign in with Google to use your Google profile picture.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setIsRestoringGooglePhoto(true);
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          avatar_url: null,
+          avatar_type: "google",
+          avatar_data: null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", user.id);
+      if (error) throw error;
+      setSelectedFruit("");
+      await queryClient.invalidateQueries({ queryKey: sessionProfileQueryKey(user.id) });
+      setProfilePicDialogOpen(false);
+      toast({
+        title: "Google photo restored",
+        description: "Your profile picture now matches your Google account.",
+      });
+    } catch (err) {
+      console.error("Restore Google photo failed:", err);
+      toast({
+        title: "Error",
+        description: "Could not switch to your Google photo. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsRestoringGooglePhoto(false);
     }
   };
 
@@ -320,13 +392,36 @@ export default function Settings() {
       case "profile": {
         const displayUrl = resolveProfilePhotoUrl(profileData, user);
         const photoLabel = displayUrl ? profilePhotoSourceLabel(profileData) : "";
-        const avatarTypeUi: "google" | "uploaded" | "fruit" = displayUrl
-          ? profileData?.avatar_type === "google"
+        /* Must follow profiles.avatar_type — NOT displayUrl. Stale cache can still
+           resolve a Google URL for a moment after switching to fruit; inferring type
+           from displayUrl made EnhancedAvatar use "google" and skip the emoji fallback. */
+        const rowAvatarType = profileData?.avatar_type;
+        /* Stray avatar_url (e.g. background Google sync) must not override fruit — see resolveProfilePhotoUrl. */
+        const avatarTypeUi: "google" | "uploaded" | "fruit" =
+          rowAvatarType === "google"
             ? "google"
-            : "uploaded"
-          : "fruit";
-        const presetBusy =
-          isApplyingPreset || isUploadingAvatar || isRemovingAvatar;
+            : rowAvatarType === "uploaded"
+              ? "uploaded"
+              : rowAvatarType === "fruit"
+                ? "fruit"
+                : !!profileData?.avatar_url?.trim()
+                  ? "uploaded"
+                  : "fruit";
+        const googleOAuthPicture = user ? oauthProfilePhotoFromMetadata(user) : null;
+        const signedInWithGoogle =
+          !!user?.identities?.some((id) => id.provider === "google");
+        const usingGoogleFromAccount =
+          profileData?.avatar_type === "google" &&
+          !profileData?.avatar_url?.trim();
+        const canUseGoogleProfilePhoto = Boolean(
+          googleOAuthPicture && profileData && !usingGoogleFromAccount
+        );
+        const showGoogleInDialog = signedInWithGoogle && !!googleOAuthPicture;
+        const avatarActionsBusy =
+          isApplyingPreset ||
+          isUploadingAvatar ||
+          isRemovingAvatar ||
+          isRestoringGooglePhoto;
 
         return (
           <Card>
@@ -347,21 +442,29 @@ export default function Settings() {
               <div className="max-w-xl space-y-4">
                 <Label>Profile picture</Label>
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
-                  <EnhancedAvatar
-                    size="lg"
-                    className="h-20 w-20 shrink-0 ring-2 ring-border"
-                    src={displayUrl ?? undefined}
-                    avatarType={avatarTypeUi}
-                    avatarData={selectedFruit}
-                    fallbackText={firstName || user?.email || "U"}
-                    alt=""
-                  />
-                  <div className="min-w-0 space-y-2">
+                  {/* self-start: column flex defaults to stretch — without this, rounded-full becomes a full-width pill */}
+                  <div
+                    className="shrink-0 self-start rounded-full bg-gradient-to-br from-secondary/30 via-[#F3EDE4] to-terracotta/15 p-1 shadow-md ring-2 ring-[#C9BFB0]/45"
+                    aria-hidden
+                  >
+                    <EnhancedAvatar
+                      size="lg"
+                      className="h-20 w-20 ring-[3px] ring-white"
+                      src={displayUrl ?? undefined}
+                      avatarType={avatarTypeUi}
+                      avatarData={selectedFruit}
+                      fallbackText={firstName || user?.email || "U"}
+                      alt=""
+                    />
+                  </div>
+                  <div className="min-w-0 space-y-3">
                     {photoLabel ? (
                       <p className="text-sm text-muted-foreground">{photoLabel}</p>
                     ) : (
                       <p className="text-sm text-muted-foreground">
-                        Upload a photo or choose a fun food preset below.
+                        {signedInWithGoogle
+                          ? "Tap below to upload, use your Google photo, or pick an avatar."
+                          : "Tap below to upload or pick an avatar."}
                       </p>
                     )}
                     <input
@@ -371,71 +474,124 @@ export default function Settings() {
                       className="hidden"
                       onChange={handleAvatarFileChange}
                     />
-                    <div className="flex flex-wrap gap-2">
+                    <Dialog
+                      open={profilePicDialogOpen}
+                      onOpenChange={setProfilePicDialogOpen}
+                    >
                       <Button
                         type="button"
                         variant="outline"
                         size="sm"
-                        className="flex items-center gap-2"
-                        disabled={isUploadingAvatar || !user}
-                        onClick={() => avatarFileInputRef.current?.click()}
+                        className="flex w-full max-w-xs items-center justify-center gap-2 rounded-[12px] border-[#E3E3E3] bg-[#FAF9F6] font-medium hover:bg-muted/80 sm:w-auto"
+                        disabled={!user || isProfileLoading}
+                        onClick={() => setProfilePicDialogOpen(true)}
                       >
-                        <Upload className="h-4 w-4" />
-                        {isUploadingAvatar ? "Uploading…" : "Upload photo"}
+                        <ImagePlus className="h-4 w-4 text-terracotta" />
+                        Update profile picture
                       </Button>
-                      {displayUrl ? (
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="text-muted-foreground"
-                          disabled={isRemovingAvatar || isUploadingAvatar}
-                          onClick={handleRemovePhoto}
-                        >
-                          {isRemovingAvatar ? "Removing…" : "Remove photo"}
-                        </Button>
-                      ) : null}
-                    </div>
-                  </div>
-                </div>
+                      <DialogContent className="max-h-[min(90vh,640px)] max-w-[min(100vw-2rem,24rem)] gap-0 overflow-y-auto overflow-x-hidden rounded-[16px] border-border/60 p-0 shadow-xl sm:max-w-md">
+                        <DialogHeader className="border-b border-border/60 bg-gradient-to-br from-[#FAF9F6] to-white px-5 py-4 text-left">
+                          <DialogTitle className="font-semibold text-navy">
+                            Profile picture
+                          </DialogTitle>
+                          <DialogDescription className="text-left text-muted-foreground">
+                            Choose an option below — everything saves automatically.
+                          </DialogDescription>
+                        </DialogHeader>
 
-                <div className="space-y-3 rounded-lg border border-dashed border-muted-foreground/25 bg-muted/30 p-4">
-                  <div className="flex flex-wrap items-center gap-3">
-                    <p className="text-sm font-medium text-foreground">Preset food avatars</p>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      disabled={presetBusy || !user}
-                      onClick={handleRandomizePreset}
-                      className="flex items-center gap-2"
-                    >
-                      <Shuffle className="h-4 w-4" />
-                      Random
-                    </Button>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    {displayUrl
-                      ? "Choosing a preset replaces your current photo. Changes save immediately."
-                      : "Tap one to save — no upload needed. You can still edit your name and use Save Changes below."}
-                  </p>
-                  <div className="grid grid-cols-7 gap-2 sm:grid-cols-8">
-                    {PRESET_FOOD_AVATARS.map((emoji) => (
-                      <button
-                        key={emoji}
-                        type="button"
-                        disabled={presetBusy || !user}
-                        title={emoji}
-                        onClick={() => void applyPresetAvatar(emoji)}
-                        className={`flex h-10 w-10 items-center justify-center rounded-lg border-2 text-lg transition-colors sm:h-9 sm:w-9 ${
-                          !displayUrl && selectedFruit === emoji
-                            ? "border-terracotta bg-terracotta/10"
-                            : "border-gray-200 hover:border-gray-300"
-                        }`}
-                      >
-                        {emoji}
-                      </button>
-                    ))}
+                        <div className="space-y-4 px-5 py-4">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="h-11 w-full justify-center gap-2 rounded-[12px]"
+                            disabled={isUploadingAvatar || !user}
+                            onClick={() => avatarFileInputRef.current?.click()}
+                          >
+                            <Upload className="h-4 w-4 shrink-0" />
+                            {isUploadingAvatar ? "Uploading…" : "Upload a photo"}
+                          </Button>
+
+                          {showGoogleInDialog ? (
+                            <div className="space-y-1.5">
+                              {canUseGoogleProfilePhoto ? (
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  className="h-11 w-full justify-center rounded-[12px]"
+                                  disabled={avatarActionsBusy || !user}
+                                  onClick={() => void handleRestoreGooglePhoto()}
+                                >
+                                  {isRestoringGooglePhoto
+                                    ? "Applying…"
+                                    : "Use Google account photo"}
+                                </Button>
+                              ) : (
+                                <p className="rounded-[12px] border border-dashed border-border/70 bg-muted/20 px-3 py-2.5 text-center text-xs text-muted-foreground">
+                                  You&apos;re already using your Google profile picture.
+                                </p>
+                              )}
+                            </div>
+                          ) : null}
+
+                          <div className="relative py-1">
+                            <Separator />
+                            <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-background px-2 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                              Avatars
+                            </span>
+                          </div>
+
+                          <div className="grid grid-cols-4 gap-2">
+                            {PRESET_AVATAR_MODAL_CHOICES.map((emoji) => (
+                              <button
+                                key={emoji}
+                                type="button"
+                                disabled={avatarActionsBusy || !user}
+                                title={emoji}
+                                onClick={async () => {
+                                  const ok = await applyPresetAvatar(emoji);
+                                  if (ok) setProfilePicDialogOpen(false);
+                                }}
+                                className={cn(
+                                  "flex aspect-square items-center justify-center rounded-[12px] border-2 text-2xl transition-all",
+                                  selectedFruit === emoji
+                                    ? "border-terracotta bg-terracotta/10 shadow-sm ring-1 ring-terracotta/20"
+                                    : "border-border/80 bg-white hover:border-terracotta/40 hover:bg-[#FAF9F6]"
+                                )}
+                              >
+                                {emoji}
+                              </button>
+                            ))}
+                          </div>
+
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            size="sm"
+                            disabled={avatarActionsBusy || !user}
+                            className="w-full gap-2 rounded-[12px]"
+                            onClick={() => void handleRandomizePreset(true)}
+                          >
+                            <Shuffle className="h-4 w-4" />
+                            Surprise me
+                          </Button>
+                        </div>
+
+                        {displayUrl ? (
+                          <div className="border-t border-border/60 bg-muted/15 px-5 py-3">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="w-full text-muted-foreground hover:text-destructive"
+                              disabled={isRemovingAvatar || isUploadingAvatar}
+                              onClick={() => void handleRemovePhoto()}
+                            >
+                              {isRemovingAvatar ? "Removing…" : "Remove current photo"}
+                            </Button>
+                          </div>
+                        ) : null}
+                      </DialogContent>
+                    </Dialog>
                   </div>
                 </div>
               </div>

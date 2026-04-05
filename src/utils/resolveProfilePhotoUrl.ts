@@ -45,20 +45,24 @@ export function profileImageReferrerPolicy(
 
 /**
  * URL shown in the UI. Uses profiles.avatar_url when set; for Google accounts
- * falls back to OAuth metadata (`picture`, `avatar_url`, etc.).
+ * falls back to OAuth metadata only when the profile row says avatar_type is google.
+ *
+ * When `profile` is still loading (undefined), returns null — do not use OAuth
+ * picture yet, or fruit/emoji users briefly get src=Google while avatarType is
+ * fruit and avatarData is empty (Radix shows image path, not emoji).
+ *
+ * When `avatar_type` is `fruit`, never return a row URL — household sync may
+ * briefly write `avatar_url` while the account is emoji-only; UI must follow type.
  */
 export function resolveProfilePhotoUrl(
   profile: ProfileAvatarFields | null | undefined,
   authUser: User | null | undefined
 ): string | null {
-  const fromRow = profile?.avatar_url?.trim();
+  if (!profile) return null;
+  if (profile.avatar_type === "fruit") return null;
+  const fromRow = profile.avatar_url?.trim();
   if (fromRow) return fromRow;
-  if (profile?.avatar_type === "google") {
-    const meta = oauthProfilePhotoFromMetadata(authUser);
-    if (meta) return meta;
-  }
-  // Profile query still loading — show OAuth picture if present
-  if (!profile) {
+  if (profile.avatar_type === "google") {
     const meta = oauthProfilePhotoFromMetadata(authUser);
     if (meta) return meta;
   }
@@ -71,6 +75,7 @@ export function profilePhotoSourceLabel(
   const t = profile?.avatar_type;
   if (t === "google") return "From your Google account";
   if (t === "uploaded") return "Your uploaded photo";
+  if (t === "fruit") return "";
   if (profile?.avatar_url?.trim()) return "Profile photo";
   return "";
 }

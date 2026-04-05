@@ -49,3 +49,19 @@ export const PRESET_FOOD_AVATARS = [
   "🥗",
   "🍛",
 ] as const;
+
+/** Curated picks for the profile avatar modal (full list still used for “Surprise me”). */
+export const PRESET_AVATAR_MODAL_CHOICES = [
+  "🍎",
+  "🍊",
+  "🍓",
+  "🥑",
+  "🍕",
+  "🍜",
+  "🍳",
+  "🥗",
+  "🍰",
+  "☕",
+  "🌮",
+  "🍣",
+] as const satisfies readonly (typeof PRESET_FOOD_AVATARS)[number][];
