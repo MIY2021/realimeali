@@ -114,9 +114,15 @@ export function useMembersFetch(currentHousehold: Household | null) {
       const membersWithProfiles: HouseholdMember[] = membersData.map(member => {
         const profile = profilesData?.find(p => p.id === member.user_id);
         
-        // For Google users, ensure we have their avatar URL
-        let avatarUrl = profile?.avatar_url;
-        if (!avatarUrl && profile?.auth_provider === "google" && member.user_id === currentUserId) {
+        /* Fruit / preset accounts use emoji only — never surface stale row URLs or OAuth fill-ins. */
+        let avatarUrl = profile?.avatar_url ?? null;
+        if (profile?.avatar_type === "fruit") {
+          avatarUrl = null;
+        } else if (
+          !avatarUrl &&
+          member.user_id === currentUserId &&
+          profile?.avatar_type === "google"
+        ) {
           avatarUrl = oauthProfilePhotoFromMetadata(currentAuthUser) || null;
           console.log("DEBUG MEMBERS: Using OAuth metadata photo for current Google user:", avatarUrl);
         }

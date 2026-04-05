@@ -21,6 +21,7 @@ import {
   ImagePlus,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useHousehold } from "@/contexts/HouseholdContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { DeletedRecipesSection } from "@/components/settings/DeletedRecipesSection";
@@ -29,6 +30,7 @@ import { useNotificationSettings } from "@/hooks/useNotificationSettings";
 import { sessionProfileQueryKey, useSessionProfile } from "@/hooks/useSessionProfile";
 import { uploadUserAvatar } from "@/services/avatarUploadService";
 import {
+  avatarTypeUiFromProfile,
   oauthProfilePhotoFromMetadata,
   profilePhotoSourceLabel,
   resolveProfilePhotoUrl,
@@ -48,6 +50,7 @@ import {
 export default function Settings() {
   useDocumentTitle("Settings | RealiMeali");
   const { user } = useAuth();
+  const { fetchHouseholdMembers } = useHousehold();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { data: profileData, isLoading: isProfileLoading } = useSessionProfile();
@@ -126,6 +129,7 @@ export default function Settings() {
         };
       });
       await queryClient.invalidateQueries({ queryKey: sessionProfileQueryKey(user.id) });
+      void fetchHouseholdMembers();
       toast({
         title: "Avatar updated",
         description: "Your preset avatar has been saved.",
@@ -223,6 +227,7 @@ export default function Settings() {
         .eq("id", user.id);
       if (error) throw error;
       await queryClient.invalidateQueries({ queryKey: sessionProfileQueryKey(user.id) });
+      void fetchHouseholdMembers();
       setProfilePicDialogOpen(false);
       toast({
         title: "Photo updated",
@@ -257,6 +262,7 @@ export default function Settings() {
       if (error) throw error;
       setSelectedFruit(fruit);
       await queryClient.invalidateQueries({ queryKey: sessionProfileQueryKey(user.id) });
+      void fetchHouseholdMembers();
       setProfilePicDialogOpen(false);
       toast({
         title: "Photo removed",
@@ -299,6 +305,7 @@ export default function Settings() {
       if (error) throw error;
       setSelectedFruit("");
       await queryClient.invalidateQueries({ queryKey: sessionProfileQueryKey(user.id) });
+      void fetchHouseholdMembers();
       setProfilePicDialogOpen(false);
       toast({
         title: "Google photo restored",
@@ -395,18 +402,7 @@ export default function Settings() {
         /* Must follow profiles.avatar_type — NOT displayUrl. Stale cache can still
            resolve a Google URL for a moment after switching to fruit; inferring type
            from displayUrl made EnhancedAvatar use "google" and skip the emoji fallback. */
-        const rowAvatarType = profileData?.avatar_type;
-        /* Stray avatar_url (e.g. background Google sync) must not override fruit — see resolveProfilePhotoUrl. */
-        const avatarTypeUi: "google" | "uploaded" | "fruit" =
-          rowAvatarType === "google"
-            ? "google"
-            : rowAvatarType === "uploaded"
-              ? "uploaded"
-              : rowAvatarType === "fruit"
-                ? "fruit"
-                : !!profileData?.avatar_url?.trim()
-                  ? "uploaded"
-                  : "fruit";
+        const avatarTypeUi = avatarTypeUiFromProfile(profileData);
         const googleOAuthPicture = user ? oauthProfilePhotoFromMetadata(user) : null;
         const signedInWithGoogle =
           !!user?.identities?.some((id) => id.provider === "google");

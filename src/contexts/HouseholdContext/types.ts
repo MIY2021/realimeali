@@ -18,6 +18,7 @@ export interface HouseholdContextType {
   leaveHousehold: (householdId: string) => Promise<boolean>;
   removeMember: (memberId: string, memberUserId: string) => Promise<boolean>;
   fetchJoinRequests: () => Promise<void>;
+  fetchHouseholdMembers: () => Promise<void>;
   approveJoinRequest: (requestId: string) => Promise<boolean>;
   rejectJoinRequest: (requestId: string) => Promise<boolean>;
 }

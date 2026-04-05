@@ -69,6 +69,18 @@ export function resolveProfilePhotoUrl(
   return null;
 }
 
+/** UI avatar mode for EnhancedAvatar — must match DB `avatar_type`, not raw `avatar_url`. */
+export function avatarTypeUiFromProfile(
+  profile: ProfileAvatarFields | null | undefined
+): "google" | "uploaded" | "fruit" {
+  const row = profile?.avatar_type;
+  if (row === "google") return "google";
+  if (row === "uploaded") return "uploaded";
+  if (row === "fruit") return "fruit";
+  if (profile?.avatar_url?.trim()) return "uploaded";
+  return "fruit";
+}
+
 export function profilePhotoSourceLabel(
   profile: ProfileAvatarFields | null | undefined
 ): string {

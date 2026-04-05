@@ -169,6 +169,7 @@ export function HouseholdProvider({ children }: { children: React.ReactNode }) {
     leaveHousehold,
     removeMember,
     fetchJoinRequests: fetchJoinRequestsCallback,
+    fetchHouseholdMembers,
     approveJoinRequest,
     rejectJoinRequest,
   }), [
@@ -186,6 +187,7 @@ export function HouseholdProvider({ children }: { children: React.ReactNode }) {
     leaveHousehold,
     removeMember,
     fetchJoinRequestsCallback,
+    fetchHouseholdMembers,
     approveJoinRequest,
     rejectJoinRequest,
   ]);
