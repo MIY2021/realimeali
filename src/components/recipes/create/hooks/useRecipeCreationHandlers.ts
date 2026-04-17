@@ -5,7 +5,6 @@ import { useHousehold } from "@/contexts/HouseholdContext";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { useRecipeValidation } from "./useRecipeValidation";
 import { uploadRecipeImage, uploadThumbnailFromUrl } from "@/services/imageUploadService";
 
 export type RecipeOrigin = 'url' | 'image' | 'generate' | 'text' | 'manual' | 'whatcanImake';
@@ -299,9 +298,12 @@ export const useRecipeCreationHandlers = ({
             savedRecipe.image_thumbnail = thumbnailUrl;
           }
         } catch (thumbnailError) {
-          // HALT on thumbnail generation error
-          console.error('❌ Failed to generate thumbnail from URL:', thumbnailError);
-          throw new Error(`Failed to generate recipe thumbnail: ${thumbnailError instanceof Error ? thumbnailError.message : 'Unknown error'}`);
+          // Best-effort only: browser fetch() to third-party image URLs often fails (CORS / network).
+          // Recipe is already saved with `image`; missing `image_thumbnail` is acceptable.
+          console.warn(
+            '⚠️ Thumbnail from external image URL skipped (e.g. CORS). Recipe still saved with full image.',
+            thumbnailError
+          );
         }
       }
       

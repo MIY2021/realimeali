@@ -138,17 +138,11 @@ export const RecipesProvider: React.FC<{ children: React.ReactNode }> = ({ child
     recipeData: Omit<Recipe, 'id' | 'created_at' | 'updated_at' | 'created_by'>,
     householdId: string
   ): Promise<Recipe | null> => {
-    try {
-      const newRecipe = await api.createRecipe(recipeData, householdId);
-      if (newRecipe) {
-        setRecipes(prev => [newRecipe, ...prev]);
-      }
-      return newRecipe;
-    } catch (error) {
-      console.error('Error creating recipe:', error);
-      toast.error("Failed to create recipe");
-      return null;
+    const newRecipe = await api.createRecipe(recipeData, householdId);
+    if (newRecipe) {
+      setRecipes(prev => [newRecipe, ...prev]);
     }
+    return newRecipe;
   }, [api]);
 
   const updateRecipe = useCallback(async (id: string, recipeData: Partial<Recipe>): Promise<Recipe | null> => {

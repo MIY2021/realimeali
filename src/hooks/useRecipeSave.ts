@@ -165,9 +165,10 @@ export function useRecipeSave() {
             console.log("✅ Recipe updated with thumbnail");
           }
         } catch (thumbnailError) {
-          // HALT on thumbnail generation error
-          console.error("❌ Failed to generate thumbnail from URL:", thumbnailError);
-          throw new Error(`Failed to generate recipe thumbnail: ${thumbnailError instanceof Error ? thumbnailError.message : 'Unknown error'}`);
+          console.warn(
+            "⚠️ Thumbnail from external image URL skipped (e.g. CORS). Recipe still saved with full image.",
+            thumbnailError
+          );
         }
       }
       

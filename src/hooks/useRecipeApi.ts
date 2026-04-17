@@ -4,6 +4,77 @@ import { Recipe, MealType } from "@/types";
 
 const VALID_MEAL_TYPES: MealType[] = ["breakfast", "lunch", "dinner", "snacks", "sides", "desserts", "drinks"];
 
+/** Importers / sites often use labels that are not in `VALID_MEAL_TYPES`; map before insert. */
+const MEAL_TYPE_SYNONYMS: Record<string, MealType> = {
+  brunch: "breakfast",
+  "afternoon tea": "snacks",
+  elevenses: "snacks",
+  teatime: "snacks",
+  snack: "snacks",
+  starter: "snacks",
+  starters: "snacks",
+  appetizer: "snacks",
+  appetiser: "snacks",
+  "hors d'oeuvre": "snacks",
+  "hors d oeuvre": "snacks",
+  canapes: "snacks",
+  canapés: "snacks",
+  main: "dinner",
+  mains: "dinner",
+  "main course": "dinner",
+  "main dish": "dinner",
+  entree: "dinner",
+  entrée: "dinner",
+  supper: "dinner",
+  feast: "dinner",
+  side: "sides",
+  "side dish": "sides",
+  accompaniment: "sides",
+  sweet: "desserts",
+  sweets: "desserts",
+  dessert: "desserts",
+  pudding: "desserts",
+  baking: "desserts",
+  drink: "drinks",
+  beverage: "drinks",
+  beverages: "drinks",
+  cocktail: "drinks",
+  cocktails: "drinks",
+  wine: "drinks",
+  beer: "drinks",
+  picnic: "lunch",
+  barbecue: "dinner",
+  bbq: "dinner",
+};
+
+/** DB constraint `check_meal_types_valid` only allows these exact lowercase strings. */
+function mealTypesForInsert(
+  meal_types: string[] | undefined,
+  meal_type: string | undefined
+): MealType[] {
+  const raw =
+    meal_types && meal_types.length > 0
+      ? meal_types
+      : meal_type
+        ? [meal_type]
+        : [];
+  const out = new Set<MealType>();
+  for (const t of raw) {
+    const key = String(t).trim().toLowerCase().replace(/\s+/g, " ");
+    const mapped = MEAL_TYPE_SYNONYMS[key];
+    if (mapped) {
+      out.add(mapped);
+    } else if (VALID_MEAL_TYPES.includes(key as MealType)) {
+      out.add(key as MealType);
+    }
+  }
+  if (out.size === 0 && raw.length > 0) {
+    console.warn("mealTypesForInsert: unrecognized meal labels; defaulting to dinner", { raw });
+    return ["dinner"];
+  }
+  return Array.from(out);
+}
+
 export const useRecipeApi = () => {
   // Lite version for meal planner - only fetches essential fields
   const fetchRecipesLite = async (householdId: string): Promise<Recipe[]> => {
@@ -167,10 +238,15 @@ export const useRecipeApi = () => {
         image: recipeData.image,
         is_favorite: recipeData.is_favorite,
         meal_type: recipeData.meal_type,
-        // Handle meal_types array - use new field if available, fallback to single meal_type
-        meal_types: recipeData.meal_types && recipeData.meal_types.length > 0 
-          ? recipeData.meal_types 
-          : (recipeData.meal_type ? [recipeData.meal_type] : []),
+        meal_types: (() => {
+          const mt = mealTypesForInsert(recipeData.meal_types, recipeData.meal_type as string | undefined);
+          if (mt.length === 0) {
+            throw new Error(
+              "Please select at least one meal type for this recipe (breakfast, lunch, dinner, snacks, sides, desserts, or drinks)."
+            );
+          }
+          return mt;
+        })(),
         cuisine_region: recipeData.cuisine_region,
         diet_lifestyle: recipeData.diet_lifestyle,
         // complexity_level removed from database
@@ -327,10 +403,15 @@ export const useRecipeApi = () => {
         is_favorite: recipe.is_favorite,
         has_cooked: recipe.has_cooked, // Include the cooking status
         meal_type: recipe.meal_type,
-        // Handle meal_types array
-        meal_types: recipe.meal_types && recipe.meal_types.length > 0 
-          ? recipe.meal_types 
-          : (recipe.meal_type ? [recipe.meal_type] : []),
+        meal_types: (() => {
+          const mt = mealTypesForInsert(recipe.meal_types, recipe.meal_type as string | undefined);
+          if (mt.length === 0) {
+            throw new Error(
+              "No valid meal types for the database. Choose at least one of: breakfast, lunch, dinner, snacks, sides, desserts, drinks."
+            );
+          }
+          return mt;
+        })(),
         cuisine_region: recipe.cuisine_region,
         diet_lifestyle: recipe.diet_lifestyle,
         // complexity_level removed from database

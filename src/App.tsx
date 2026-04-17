@@ -14,7 +14,6 @@ import { MealPlanApprovalProvider } from "@/contexts/MealPlanApprovalContext";
 import { HouseholdShoppingProvider } from "@/contexts/HouseholdShoppingContext";
 import { RealiChefProvider } from "@/contexts/RealiChefContext";
 import { useParallelDataLoader } from "@/hooks/useParallelDataLoader";
-import { Toaster } from "@/components/ui/toaster";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { AchievementListener } from "@/components/achievements/AchievementListener";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
@@ -88,7 +87,6 @@ function AppContent() {
           </Routes>
         </Suspense>
       </Layout>
-      <Toaster />
     </div>
   );
 }

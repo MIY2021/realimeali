@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Save, X } from "lucide-react";
 import { RecipeOrigin } from "./CreateRecipeContainer";
@@ -27,7 +26,7 @@ export function RecipeSaveSection({
   // The button will be disabled if not complete
 
   const isDisabled = !isComplete || isProcessing || isSaving;
-  
+
   // Debug logging
   if (!isComplete) {
     console.log('⚠️ Save button disabled - recipe not complete:', {
