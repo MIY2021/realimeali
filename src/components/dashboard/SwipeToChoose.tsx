@@ -1,4 +1,4 @@
-import { Heart, Sparkles, Users } from "lucide-react";
+import { Heart, Sparkles, Users, ArrowRight } from "lucide-react";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { useState } from "react";
 import { RecipeSwipeDialog } from "./RecipeSwipeDialog";
@@ -10,28 +10,39 @@ export function SwipeToChoose() {
 
   return (
     <>
-      <button onClick={() => setOpen(true)} className="w-full text-left rounded-3xl overflow-hidden relative group bg-white border border-gray-100 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5">
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 via-white to-orange-50" />
-        <div className="absolute -right-10 -top-12 h-40 w-40 rounded-full bg-emerald-200/40 blur-3xl" />
-        <div className="absolute right-10 bottom-0 h-32 w-32 rounded-full bg-orange-200/35 blur-3xl" />
-        <div className="relative p-6 sm:p-7">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-2 text-emerald-600 text-xs font-black tracking-widest"><Sparkles className="h-4 w-4" /> THIS WEEK</div>
-              <h2 className="text-2xl sm:text-3xl font-black text-gray-900 mt-2">Swipe to Choose</h2>
-              <p className="text-gray-600 mt-2 max-w-sm">Find the meals you and your household both fancy for next week.</p>
-            </div>
-            <div className="hidden sm:flex shrink-0 h-16 w-16 rounded-2xl bg-emerald-100 border border-emerald-200 items-center justify-center rotate-6 group-hover:rotate-12 transition-transform">
-              <Heart className="h-8 w-8 text-emerald-600 fill-emerald-100" />
-            </div>
+      <div className="w-full">
+        <div className="mb-5 flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-1">Swipe to Choose</h2>
+            <p className="text-sm text-gray-600">Pick your favourites for next week together</p>
           </div>
-          <div className="mt-5 flex items-center gap-3 text-sm text-gray-600">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/80 border border-gray-200 px-3 py-1.5"><Users className="h-4 w-4 text-emerald-600" /> Household picks</span>
-            <span className="inline-flex items-center rounded-full bg-white/80 border border-gray-200 px-3 py-1.5">{recipes.length} recipes</span>
-            <span className="ml-auto text-emerald-600 font-bold">Start swiping →</span>
+          <div className="h-10 w-10 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center shadow-md">
+            <Heart className="h-5 w-5 text-white fill-white" />
           </div>
         </div>
-      </button>
+
+        <button onClick={() => setOpen(true)} className="w-full text-left overflow-hidden rounded-3xl bg-white border border-emerald-100 shadow-md hover:shadow-xl transition-all duration-300 group">
+          <div className="relative h-56 sm:h-64 overflow-hidden bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.28),transparent_38%),radial-gradient(circle_at_bottom_left,rgba(255,255,255,0.18),transparent_35%)]" />
+            <div className="absolute -right-8 -top-8 h-36 w-36 rounded-full bg-white/15 blur-2xl" />
+            <div className="absolute left-8 bottom-5 h-24 w-24 rounded-full bg-lime-200/20 blur-2xl" />
+            <div className="relative h-full p-6 sm:p-7 flex flex-col justify-between text-white">
+              <div className="flex items-start justify-between">
+                <div className="inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-1.5 text-xs font-black tracking-wider backdrop-blur-sm"><Sparkles className="h-4 w-4" /> HOUSEHOLD PICKS</div>
+                <div className="h-11 w-11 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm group-hover:scale-110 transition-transform"><ArrowRight className="h-5 w-5" /></div>
+              </div>
+              <div>
+                <h3 className="text-3xl sm:text-4xl font-black tracking-tight">Fancy it or bin it?</h3>
+                <p className="mt-2 text-white/90 max-w-md">Swipe through your recipes and find the meals everyone wants next week.</p>
+                <div className="mt-4 flex flex-wrap gap-2 text-xs font-semibold">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1.5 backdrop-blur-sm"><Users className="h-3.5 w-3.5" /> {recipes.length} recipes</span>
+                  <span className="inline-flex items-center rounded-full bg-white/15 px-3 py-1.5 backdrop-blur-sm">Next week</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </button>
+      </div>
       <RecipeSwipeDialog open={open} onOpenChange={setOpen} recipes={recipes} />
     </>
   );
