@@ -1,9 +1,8 @@
-
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
 
-const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
+const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
 const supabaseUrl = Deno.env.get('SUPABASE_URL');
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
@@ -13,14 +12,13 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    if (!lovableApiKey) {
-      throw new Error('LOVABLE_API_KEY is not configured');
+    if (!openAIApiKey) {
+      throw new Error('OPENAI_API_KEY is not configured');
     }
 
     if (!supabaseUrl || !supabaseServiceKey) {
@@ -32,86 +30,75 @@ serve(async (req) => {
     if (!prompt) {
       return new Response(
         JSON.stringify({ error: 'Prompt is required' }),
-        { 
-          status: 400, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       );
     }
 
-    console.log('Generating image with Gemini via Lovable AI:', prompt);
+    console.log('Generating recipe image with OpenAI GPT Image 1 Mini:', prompt);
 
-    // Generate image with Gemini via Lovable AI
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    const response = await fetch('https://api.openai.com/v1/images/generations', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${lovableApiKey}`,
+        'Authorization': `Bearer ${openAIApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash-image-preview',
-        messages: [
-          { role: 'user', content: prompt }
-        ],
-        modalities: ["image", "text"]
+        model: 'gpt-image-1-mini',
+        prompt,
+        n: 1,
+        size: '1024x1024',
+        quality: 'low',
+        output_format: 'webp',
+        output_compression: 80,
       }),
     });
 
     if (!response.ok) {
       const errorData = await response.text();
-      console.error('Lovable AI error:', errorData);
-      
-      // Handle specific error codes
+      console.error('OpenAI image API error:', response.status, errorData);
+
       if (response.status === 429) {
-        throw new Error('Rate limit exceeded. Please try again in a moment.');
+        throw new Error('OpenAI image generation is temporarily rate limited. Please try again shortly.');
       }
+
       if (response.status === 402) {
-        throw new Error('Lovable AI credits exhausted. Please add credits to your workspace.');
+        throw new Error('OpenAI API billing is unavailable. Please check your API balance.');
       }
-      
-      throw new Error(`Lovable AI error: ${response.status}`);
+
+      throw new Error(`OpenAI image API error: ${response.status}`);
     }
 
     const data = await response.json();
-    
-    // Extract base64 image from Gemini response
-    const base64Image = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+
+    const base64Image = data.data?.[0]?.b64_json;
 
     if (!base64Image) {
-      throw new Error('No image data returned from Lovable AI');
+      throw new Error('No image data returned from OpenAI');
     }
 
     console.log('Image generated, now decoding and uploading to Supabase storage...');
 
-    // Base64 format: "data:image/png;base64,iVBORw0KGg..."
-    // Extract the base64 data after the comma
-    const base64Data = base64Image.split(',')[1];
-    if (!base64Data) {
-      throw new Error('Invalid base64 image data received');
-    }
-
-    // Decode base64 to binary
-    const binaryString = atob(base64Data);
+    const binaryString = atob(base64Image);
     const imageBuffer = new Uint8Array(binaryString.length);
+
     for (let i = 0; i < binaryString.length; i++) {
       imageBuffer[i] = binaryString.charCodeAt(i);
     }
-    
-    // Check file size and log results
+
     const imageSizeBytes = imageBuffer.length;
     const imageSizeMB = (imageSizeBytes / (1024 * 1024)).toFixed(2);
-    console.log(`Downloaded image size: ${imageSizeMB}MB`);
+    console.log(`Generated image size: ${imageSizeMB}MB`);
 
-    // Create Supabase client
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Generate unique filename
     const timestamp = Date.now();
     const prefix = isCommunityRecipe ? 'community-recipe' : 'recipe';
     const fileName = `${prefix}-generated-${timestamp}.webp`;
 
-    // Upload to Supabase storage
-    const { data: uploadData, error: uploadError } = await supabase.storage
+    const { error: uploadError } = await supabase.storage
       .from('recipe-images')
       .upload(fileName, imageBuffer, {
         contentType: 'image/webp',
@@ -123,7 +110,6 @@ serve(async (req) => {
       throw new Error(`Failed to upload image: ${uploadError.message}`);
     }
 
-    // Get public URL
     const { data: urlData } = supabase.storage
       .from('recipe-images')
       .getPublicUrl(fileName);
@@ -131,15 +117,17 @@ serve(async (req) => {
     console.log('Image uploaded successfully to Supabase storage');
 
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         imageUrl: urlData.publicUrl,
-        fileName: fileName,
-        prompt: prompt,
+        fileName,
+        prompt,
         fileSize: imageSizeBytes,
         fileSizeMB: imageSizeMB,
-        model: 'google/gemini-2.5-flash-image-preview',
+        model: 'gpt-image-1-mini',
+        quality: 'low',
+        size: '1024x1024',
         format: 'webp',
-        provider: 'lovable-ai'
+        provider: 'openai'
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -148,9 +136,10 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Error in generate-recipe-image function:', error);
+
     return new Response(
-      JSON.stringify({ 
-        error: error.message || 'Failed to generate image',
+      JSON.stringify({
+        error: error instanceof Error ? error.message : 'Failed to generate image',
         details: 'Please try again later'
       }),
       {
