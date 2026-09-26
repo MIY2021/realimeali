@@ -41,8 +41,7 @@ export const MealPlanWarningDialog = ({
             Generate Meal Plan
           </AlertDialogTitle>
           <AlertDialogDescription className="text-muted-foreground">
-            This week already has meals planned. Generating a new meal plan will 
-            replace all current meals with new randomly selected recipes from your collection.
+            Choose whether the generated meals should replace your current plan or be added alongside it.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className="flex-col-reverse sm:flex-row gap-2">
