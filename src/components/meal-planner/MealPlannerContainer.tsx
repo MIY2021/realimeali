@@ -256,7 +256,7 @@ export default function MealPlannerContainer() {
 
     try {
       const mealPlanData = {
-        date: new Date().toISOString().split('T')[0],
+        date: (() => { const { year, week } = parseISOWeekKey(currentWeek); return formatLocalDateYMD(getWeekStartDate(year, week)); })(),
         meal_type: customMealType,
         created_by: user.id,
         slot_index: 0,
