@@ -30,7 +30,8 @@ interface MealPlannerModalsContainerProps {
   onAddFreetypeMeal: (mealName: string, servings: number) => void;
   onLunchLeftoverConfirm: (servings: number) => void;
   onCreateLeftover: (mealPlan: any, recipe?: any, leftoverServings?: number) => void;
-  onWarningConfirm: () => void;
+  onWarningReplace: () => void;
+  onWarningAdd: () => void;
   onClearAllConfirm: () => void;
   onServingsConfirm: (mealType: MealType, servings: number) => void;
 }
@@ -58,7 +59,8 @@ export const MealPlannerModalsContainer = ({
   onAddFreetypeMeal,
   onLunchLeftoverConfirm,
   onCreateLeftover,
-  onWarningConfirm,
+  onWarningReplace,
+  onWarningAdd,
   onClearAllConfirm,
   onServingsConfirm,
 }: MealPlannerModalsContainerProps) => {
@@ -111,7 +113,8 @@ export const MealPlannerModalsContainer = ({
       <MealPlanWarningDialog
         open={warningDialog}
         onOpenChange={setWarningDialog}
-        onConfirm={onWarningConfirm}
+        onReplace={onWarningReplace}
+        onAdd={onWarningAdd}
       />
 
       <ClearAllMealsDialog
