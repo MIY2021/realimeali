@@ -441,58 +441,64 @@ async function extractWebsiteContent(url: string, extractImages: boolean = false
   }
 }
 
-// OpenAI API call for recipe parsing
+// OpenAI API call for recipe parsing/generation.
+// Uses the current Responses API while preserving RealiMeali's existing response contract.
 async function callOpenAI(systemPrompt: string, userPrompt: string, imageData?: string) {
-  const messages = [
-    { role: 'system', content: systemPrompt }
+  const inputContent: any[] = [
+    { type: 'input_text', text: userPrompt }
   ];
 
   if (imageData) {
-    // Use GPT-4o for vision capabilities
-    messages.push({
-      role: 'user',
-      content: [
-        { type: 'text', text: userPrompt },
-        {
-          type: 'image_url',
-          image_url: {
-            url: `data:image/jpeg;base64,${imageData}`
-          }
-        }
-      ]
+    inputContent.push({
+      type: 'input_image',
+      image_url: `data:image/jpeg;base64,${imageData}`
     });
-  } else {
-    messages.push({ role: 'user', content: userPrompt });
   }
 
   const requestBody = {
-    model: imageData ? 'gpt-4o' : 'gpt-4o-mini',
-    messages,
-    temperature: 0.3,
-    max_tokens: 2000,
+    model: 'gpt-5.6-luna',
+    instructions: systemPrompt,
+    input: [
+      {
+        role: 'user',
+        content: inputContent
+      }
+    ],
+    max_output_tokens: 4000,
+    text: {
+      format: {
+        type: 'json_object'
+      }
+    }
   };
 
   return await retryWithBackoff(async () => {
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch('https://api.openai.com/v1/responses', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${openAIApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(requestBody),
-      signal: AbortSignal.timeout(30000), // 30 second timeout
+      signal: AbortSignal.timeout(60000),
     });
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      console.error('OpenAI API error:', response.status, errorData);
-      
+      console.error('OpenAI Responses API error:', response.status, errorData);
+
       if (response.status === 429) {
         const error = new Error(`Resource unavailable: ${errorData.error?.message || 'Rate limited'}`);
         (error as any).status = 429;
         throw error;
       }
-      
+
+      if (response.status === 408 || response.status >= 500) {
+        const error = new Error(`OpenAI service error: ${errorData.error?.message || response.statusText}`);
+        (error as any).status = response.status === 408 ? 408 : 500;
+        throw error;
+      }
+
       throw new Error(`OpenAI API error: ${response.status} ${errorData.error?.message || response.statusText}`);
     }
 
@@ -500,24 +506,40 @@ async function callOpenAI(systemPrompt: string, userPrompt: string, imageData?: 
   });
 }
 
+// Extract plain text from the Responses API result.
+function getOpenAIText(data: any): string {
+  if (typeof data?.output_text === 'string') {
+    return data.output_text;
+  }
+
+  const output = Array.isArray(data?.output) ? data.output : [];
+  const textParts: string[] = [];
+
+  for (const item of output) {
+    const contents = Array.isArray(item?.content) ? item.content : [];
+    for (const part of contents) {
+      if (typeof part?.text === 'string') {
+        textParts.push(part.text);
+      }
+    }
+  }
+
+  return textParts.join('').trim();
+}
+
 // Helper function to clean JSON response from OpenAI
 function cleanJsonResponse(content: string): string {
-  // Remove markdown code blocks if present
-  let cleaned = content.trim();
-  
-  // Remove ```json at the start
-  if (cleaned.startsWith('```json')) {
-    cleaned = cleaned.replace(/^```json\s*/, '');
+  let cleaned = (content || '').trim();
+
+  if (cleaned.startsWith('\\`\\`\\`json')) {
+    cleaned = cleaned.replace(/^\\`\\`\\`json\s*/, '');
   }
-  
-  // Remove ``` at the end
-  if (cleaned.endsWith('```')) {
-    cleaned = cleaned.replace(/\s*```$/, '');
+
+  if (cleaned.endsWith('\\`\\`\\`')) {
+    cleaned = cleaned.replace(/\s*\\`\\`\\`$/, '');
   }
-  
-  // Remove any remaining markdown formatting
-  cleaned = cleaned.replace(/^```\w*\s*/, '').replace(/\s*```$/, '');
-  
+
+  cleaned = cleaned.replace(/^\\`\\`\\`\w*\s*/, '').replace(/\s*\\`\\`\\`$/, '');
   return cleaned.trim();
 }
 
@@ -839,9 +861,13 @@ Create realistic recipes with proper ingredient amounts and detailed cooking ste
 
     // Make OpenAI API call with retry logic
     const data = await callOpenAI(systemPrompt, userPrompt, body.image);
-    const content_text = data.choices[0].message.content;
+    const content_text = getOpenAIText(data);
 
     console.log('OpenAI response received, parsing JSON...');
+
+    if (!content_text) {
+      throw new Error('OpenAI returned an empty response');
+    }
 
     try {
       // Clean the JSON response before parsing
