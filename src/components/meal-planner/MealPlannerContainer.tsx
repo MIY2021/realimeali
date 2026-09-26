@@ -8,6 +8,7 @@ import { MealPlannerHeader } from "@/components/meal-planner/MealPlannerHeader";
 import { MealPlannerContent } from "@/components/meal-planner/MealPlannerContent";
 import { MealPlannerModalsContainer, MealPlanGenerationMode } from "@/components/meal-planner/MealPlannerModalsContainer";
 import { MealPlannerActions } from "@/components/meal-planner/MealPlannerActions";
+import { RecipeSwipeDialog } from "@/components/dashboard/RecipeSwipeDialog";
 import { CustomMealDialog } from "@/components/meal-planner/CustomMealDialog";
 import { MealPlanInfoDialog } from "@/components/meal-planner/MealPlanInfoDialog";
 import MealPlannerSkeleton from "@/components/meal-planner/MealPlannerSkeleton";
@@ -83,6 +84,7 @@ export default function MealPlannerContainer() {
   // Info dialog state
   const [infoDialog, setInfoDialog] = useState(false);
   const [generationMode, setGenerationMode] = useState<MealPlanGenerationMode>("replace");
+  const [swipeDialog, setSwipeDialog] = useState(false);
 
   const { generateRandomMeals } = useRandomMealSelection();
 
@@ -402,7 +404,10 @@ export default function MealPlannerContainer() {
         onWarningAdd={handleWarningAdd}
         onClearAllConfirm={handleClearAllConfirm}
         onServingsConfirm={handleServingsConfirm}
+        onChooseMeals={() => { setQuantitiesDialog(false); setSwipeDialog(true); }}
       />
+
+      <RecipeSwipeDialog open={swipeDialog} onOpenChange={setSwipeDialog} recipes={recipes} />
 
       <CustomMealDialog
         open={customMealDialog}
