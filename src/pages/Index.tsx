@@ -10,7 +10,6 @@ import { useMealPlan } from "@/contexts/MealPlanContext";
 import { getCurrentWeekKey } from "@/utils/weekUtils";
 import { WelcomeHeader } from "@/components/dashboard/WelcomeHeader";
 import { StatsCard } from "@/components/dashboard/StatsCard";
-import { QuickActions } from "@/components/dashboard/QuickActions";
 import { SwipeToChoose } from "@/components/dashboard/SwipeToChoose";
 import { RecentActivity } from "@/components/dashboard/RecentActivity";
 import { LatestRecipesInspiration } from "@/components/dashboard/LatestRecipesInspiration";
@@ -238,8 +237,6 @@ export default function Index() {
         {/* Weekly household recipe matching */}
         <SwipeToChoose />
 
-        {/* Quick Actions */}
-        <QuickActions />
 
         {/* Recent Activity */}
         <RecentActivity isLoading={isLoading} />
