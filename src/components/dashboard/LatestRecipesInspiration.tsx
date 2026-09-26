@@ -129,7 +129,7 @@ export const LatestRecipesInspiration = () => {
       <div className="mb-5 flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-gray-900 mb-1">
-            Recipe of the Day
+            Recipe of Da Day
           </h2>
           <p className="text-sm text-gray-600">
             Discover something new every day
