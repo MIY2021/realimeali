@@ -1,4 +1,4 @@
-import { useCallback, useState, useEffect, useMemo } from "react";
+import { useCallback, useState, useEffect, useMemo, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
@@ -90,13 +90,15 @@ export default function MealPlannerContainer() {
 
   const currentMealPlans = getMealPlansForWeek(currentWeek);
 
-  // Refresh meal plans whenever the Meal Planner page is opened.
-  // The app-wide parallel loader intentionally runs only once per household,
-  // so returning to this page otherwise leaves it showing stale/empty data.
+  // Refresh once when this page mounts. Do not depend on fetchMealPlans here:
+  // its context callback can change while loading state updates, which would
+  // otherwise cause a fetch -> loading -> render -> fetch loop.
+  const hasRefreshedOnMount = useRef(false);
   useEffect(() => {
-    if (!user || !currentHousehold) return;
+    if (!user || !currentHousehold || hasRefreshedOnMount.current) return;
+    hasRefreshedOnMount.current = true;
     void fetchMealPlans();
-  }, [user?.id, currentHousehold?.id, fetchMealPlans]);
+  }, [user?.id, currentHousehold?.id]);
 
   // Create a wrapper function that matches the expected signature
   const generateRandomMealPlan = useCallback(async (quantities: { 
