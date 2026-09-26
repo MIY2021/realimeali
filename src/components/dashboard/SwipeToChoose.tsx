@@ -1,4 +1,4 @@
-import { Heart, Sparkles, Users, ArrowRight } from "lucide-react";
+import { ArrowRight, Heart, Sparkles, Users } from "lucide-react";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { useState } from "react";
 import { RecipeSwipeDialog } from "./RecipeSwipeDialog";
@@ -6,7 +6,12 @@ import { RecipeSwipeDialog } from "./RecipeSwipeDialog";
 export function SwipeToChoose() {
   const { recipes, isLoading } = useRecipes();
   const [open, setOpen] = useState(false);
+
   if (isLoading || recipes.length === 0) return null;
+
+  const imageRecipes = recipes
+    .filter(recipe => recipe.image_thumbnail || recipe.image)
+    .slice(0, 3);
 
   return (
     <>
@@ -14,35 +19,83 @@ export function SwipeToChoose() {
         <div className="mb-5 flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold text-gray-900 mb-1">Swipe to Choose</h2>
-            <p className="text-sm text-gray-600">Pick your favourites for next week together</p>
+            <p className="text-sm text-gray-600">Find the meals everyone fancies next week</p>
           </div>
-          <div className="h-10 w-10 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center shadow-md">
-            <Heart className="h-5 w-5 text-white fill-white" />
+          <div className="h-10 w-10 rounded-full bg-terracotta flex items-center justify-center shadow-md">
+            <Heart className="h-5 w-5 text-white" />
           </div>
         </div>
 
-        <button onClick={() => setOpen(true)} className="w-full text-left overflow-hidden rounded-3xl bg-white border border-emerald-100 shadow-md hover:shadow-xl transition-all duration-300 group">
-          <div className="relative h-56 sm:h-64 overflow-hidden bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.28),transparent_38%),radial-gradient(circle_at_bottom_left,rgba(255,255,255,0.18),transparent_35%)]" />
-            <div className="absolute -right-8 -top-8 h-36 w-36 rounded-full bg-white/15 blur-2xl" />
-            <div className="absolute left-8 bottom-5 h-24 w-24 rounded-full bg-lime-200/20 blur-2xl" />
-            <div className="relative h-full p-6 sm:p-7 flex flex-col justify-between text-white">
-              <div className="flex items-start justify-between">
-                <div className="inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-1.5 text-xs font-black tracking-wider backdrop-blur-sm"><Sparkles className="h-4 w-4" /> HOUSEHOLD PICKS</div>
-                <div className="h-11 w-11 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm group-hover:scale-110 transition-transform"><ArrowRight className="h-5 w-5" /></div>
-              </div>
-              <div>
-                <h3 className="text-3xl sm:text-4xl font-black tracking-tight">Fancy it or bin it?</h3>
-                <p className="mt-2 text-white/90 max-w-md">Swipe through your recipes and find the meals everyone wants next week.</p>
-                <div className="mt-4 flex flex-wrap gap-2 text-xs font-semibold">
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1.5 backdrop-blur-sm"><Users className="h-3.5 w-3.5" /> {recipes.length} recipes</span>
-                  <span className="inline-flex items-center rounded-full bg-white/15 px-3 py-1.5 backdrop-blur-sm">Next week</span>
+        <button
+          onClick={() => setOpen(true)}
+          className="group w-full overflow-hidden rounded-2xl bg-white border border-gray-200 shadow-md hover:shadow-lg transition-shadow duration-200 text-left"
+        >
+          <div className="relative h-48 sm:h-56 overflow-hidden bg-gray-100">
+            {imageRecipes.length > 0 ? (
+              <div className="absolute inset-0 flex gap-1">
+                <div className="relative w-[54%] overflow-hidden">
+                  <img
+                    src={imageRecipes[0].image_thumbnail || imageRecipes[0].image}
+                    alt=""
+                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                </div>
+                <div className="flex w-[46%] gap-1">
+                  {imageRecipes.slice(1, 3).map((recipe, index) => (
+                    <div key={recipe.id} className={index === 0 ? "relative w-1/2 overflow-hidden" : "relative w-1/2 overflow-hidden"}>
+                      <img
+                        src={recipe.image_thumbnail || recipe.image}
+                        alt=""
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                    </div>
+                  ))}
+                  {imageRecipes.length === 2 && <div className="w-1/2 bg-[#f2eee9]" />}
                 </div>
               </div>
+            ) : (
+              <div className="absolute inset-0 bg-[#f2eee9] flex items-center justify-center">
+                <Heart className="h-12 w-12 text-terracotta" />
+              </div>
+            )}
+
+            <div className="absolute inset-x-0 top-0 flex items-center justify-between p-4">
+              <span className="inline-flex items-center gap-2 bg-white px-3 py-1.5 text-xs font-bold tracking-widest text-gray-900 shadow-sm">
+                <Sparkles className="h-3.5 w-3.5 text-terracotta" />
+                NEXT WEEK
+              </span>
+              <span className="bg-gray-900/75 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-sm">
+                {recipes.length} recipes
+              </span>
+            </div>
+          </div>
+
+          <div className="p-5 sm:p-6">
+            <div className="flex items-end justify-between gap-5">
+              <div>
+                <h3 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900">
+                  What do we fancy?
+                </h3>
+                <p className="mt-2 max-w-md text-sm sm:text-base leading-6 text-gray-600">
+                  Swipe through your recipes. Say yes to the ones you would actually eat.
+                </p>
+              </div>
+              <div className="hidden sm:flex shrink-0 h-12 w-12 items-center justify-center rounded-full bg-terracotta text-white group-hover:translate-x-1 transition-transform">
+                <ArrowRight className="h-5 w-5" />
+              </div>
+            </div>
+
+            <div className="mt-5 flex items-center justify-between border-t border-gray-100 pt-4">
+              <div className="flex items-center gap-2 text-sm font-medium text-gray-600">
+                <Users className="h-4 w-4 text-terracotta" />
+                Household picks sync together
+              </div>
+              <span className="text-sm font-bold text-terracotta">Start swiping</span>
             </div>
           </div>
         </button>
       </div>
+
       <RecipeSwipeDialog open={open} onOpenChange={setOpen} recipes={recipes} />
     </>
   );
