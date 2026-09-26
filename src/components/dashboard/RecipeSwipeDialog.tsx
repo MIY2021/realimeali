@@ -88,11 +88,11 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg overflow-hidden rounded-2xl border border-gray-200 bg-[#faf8f5] p-0 text-gray-900 shadow-2xl">
+      <DialogContent className="max-w-lg overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 p-0 text-gray-900 shadow-2xl">
         <div className="flex min-h-[78vh] flex-col">
           <div className="flex items-center justify-between border-b border-gray-200 bg-white px-5 py-4">
             <div>
-              <div className="flex items-center gap-2 text-xs font-bold tracking-widest text-terracotta">
+              <div className="flex items-center gap-2 text-xs font-bold tracking-widest text-gray-700">
                 <Sparkles className="h-4 w-4" />
                 NEXT WEEK
               </div>
@@ -105,7 +105,7 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
           </div>
 
           <div className="h-1 bg-gray-200">
-            <div className="h-full bg-terracotta transition-all" style={{ width: progress + "%" }} />
+            <div className="h-full bg-gray-900 transition-all" style={{ width: progress + "%" }} />
           </div>
 
           <div className="flex flex-1 items-center justify-center px-5 py-6">
@@ -132,7 +132,7 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
                   }}
                   onDoubleClick={goToRecipe}
                 >
-                  <div className="relative h-[58%] overflow-hidden bg-[#f2eee9]">
+                  <div className="relative h-[58%] overflow-hidden bg-gray-100">
                     {image ? (
                       <img src={image} alt={current.title} className="h-full w-full object-cover" draggable={false} />
                     ) : (
@@ -142,7 +142,7 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
                     )}
 
                     {dragX > 40 && (
-                      <div className="absolute left-4 top-4 border-2 border-terracotta bg-white px-3 py-1 text-sm font-bold uppercase tracking-widest text-terracotta shadow-sm">
+                      <div className="absolute left-4 top-4 border-2 border-gray-800 bg-white px-3 py-1 text-sm font-bold uppercase tracking-widest text-terracotta shadow-sm">
                         Fancy it
                       </div>
                     )}
