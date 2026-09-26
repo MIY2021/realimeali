@@ -43,8 +43,8 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg p-0 overflow-hidden border border-gray-100 bg-gray-50 text-gray-900 rounded-3xl shadow-2xl">
-        <div className="min-h-[78vh] flex flex-col">
+      <DialogContent className="max-w-lg p-0 overflow-hidden border border-gray-200 bg-white text-gray-900 rounded-3xl shadow-2xl">
+        <div className="min-h-[78vh] flex flex-col bg-white">
           <div className="px-5 pt-5 pb-3 flex items-center justify-between bg-white">
             <div>
               <div className="flex items-center gap-2 text-emerald-600 text-xs font-black tracking-widest"><Sparkles className="h-4 w-4" /> SWIPE TO CHOOSE</div>
@@ -53,7 +53,7 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
             </div>
             <div className="text-right text-xs text-gray-500"><div>{remainingRecipes.length} left</div><div className="mt-1">{progress}%</div></div>
           </div>
-          <div className="px-5 py-2 bg-white border-b border-gray-100"><div className="h-1.5 rounded-full bg-gray-100 overflow-hidden"><div className="h-full bg-emerald-500 transition-all" style={{ width: progress + "%" }} /></div></div>
+          <div className="px-5 py-2 bg-white border-b border-gray-200"><div className="h-1.5 rounded-full bg-gray-100 overflow-hidden"><div className="h-full bg-emerald-500 transition-all" style={{ width: progress + "%" }} /></div></div>
 
           <div className="flex-1 flex items-center justify-center px-5 py-6">
             {isLoading ? <div className="text-center text-gray-500">Loading your choices…</div> : current ? (
