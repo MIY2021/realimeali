@@ -1,6 +1,8 @@
 
 import { useCallback } from "react";
 
+export type MealPlanGenerationMode = "replace" | "add";
+
 interface UseMealPlanGenerationProps {
   user: any;
   currentHousehold: any;
@@ -60,7 +62,7 @@ export const useMealPlanGeneration = ({
     sides: number;
     desserts: number;
     drinks: number;
-  }) => {
+  }, mode: MealPlanGenerationMode = "replace") => {
     console.log("🎯 handleRandomizeWithQuantities called with:", quantities);
     console.log("📊 Generation context validation:", {
       user: !!user,
@@ -97,10 +99,13 @@ export const useMealPlanGeneration = ({
     console.log('🚀 Starting meal plan generation process...');
     
     try {
-      // Clear existing meal plans for the week FIRST
-      console.log('🧹 Clearing existing meal plans for week', currentWeek);
-      await clearWeek(currentWeek);
-      console.log('✅ Week cleared successfully');
+      if (mode === "replace") {
+        console.log('🧹 Clearing existing meal plans for week', currentWeek);
+        await clearWeek(currentWeek);
+        console.log('✅ Week cleared successfully');
+      } else {
+        console.log('➕ Keeping existing meal plans and adding generated meals');
+      }
       
       console.log('📋 About to call generateRandomMealPlan with:', {
         quantities,
