@@ -82,7 +82,6 @@ export default function MealPlannerContainer() {
   
   // Info dialog state
   const [infoDialog, setInfoDialog] = useState(false);
-  const [mealPlanGenerationMode, setMealPlanGenerationMode] = useState<"replace" | "add">("replace");
 
   const { generateRandomMeals } = useRandomMealSelection();
 
@@ -228,19 +227,17 @@ export default function MealPlannerContainer() {
   }, [setPendingLeftoverData, setPendingMealType, setLeftoverDialog]);
 
   const handleRandomizeClick = useCallback(() => {
-    // Always ask whether generated meals should replace or be added to the plan.
-    setWarningDialog(true);
-  }, [setWarningDialog]);
+    // Check if there are existing meal plans
+    if (currentMealPlans.length > 0) {
+      setWarningDialog(true);
+    } else {
+      handleRandomize();
+    }
+  }, [currentMealPlans.length, handleRandomize, setWarningDialog]);
 
-  const handleGenerationChoice = useCallback((mode: "replace" | "add") => {
-    setMealPlanGenerationMode(mode);
-    setWarningDialog(false);
+  const handleWarningConfirm = useCallback(() => {
     handleRandomize();
-  }, [handleRandomize, setWarningDialog]);
-
-  const handleRandomizeWithQuantitiesForMode = useCallback((quantities: any) => {
-    return handleRandomizeWithQuantities(quantities, mealPlanGenerationMode === "replace");
-  }, [handleRandomizeWithQuantities, mealPlanGenerationMode]);
+  }, [handleRandomize]);
 
   const handleClearAllConfirm = useCallback(() => {
     performClearAll();
@@ -385,13 +382,12 @@ export default function MealPlannerContainer() {
         pendingLeftoverData={pendingLeftoverData}
         recipes={recipes}
         currentWeek={currentWeek}
-        onRandomizeWithQuantities={handleRandomizeWithQuantitiesForMode}
+        onRandomizeWithQuantities={handleRandomizeWithQuantities}
         onSimpleMealSelect={handleSimpleMealSelect}
         onAddFreetypeMeal={handleAddFreetypeMeal}
         onLunchLeftoverConfirm={handleLunchLeftoverConfirm}
         onCreateLeftover={handleCreateLeftoverWithServings}
-        onWarningReplace={() => handleGenerationChoice("replace")}
-        onWarningAdd={() => handleGenerationChoice("add")}
+        onWarningConfirm={handleWarningConfirm}
         onClearAllConfirm={handleClearAllConfirm}
         onServingsConfirm={handleServingsConfirm}
       />
