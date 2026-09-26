@@ -39,6 +39,7 @@ interface MealPlannerModalsContainerProps {
   onWarningAdd: () => void;
   onClearAllConfirm: () => void;
   onServingsConfirm: (mealType: MealType, servings: number) => void;
+  onChooseMeals: () => void;
 }
 
 export const MealPlannerModalsContainer = ({
@@ -69,6 +70,7 @@ export const MealPlannerModalsContainer = ({
   onWarningAdd,
   onClearAllConfirm,
   onServingsConfirm,
+  onChooseMeals,
 }: MealPlannerModalsContainerProps) => {
   const isNewLunchMeal = pendingMealType === 'lunch' && !pendingLeftoverData;
 
@@ -79,6 +81,7 @@ export const MealPlannerModalsContainer = ({
         onClose={() => setQuantitiesDialog(false)}
         onConfirm={(quantities) => onRandomizeWithQuantities(quantities, generationMode)}
         availableRecipes={recipes.length}
+        onChooseMeals={onChooseMeals}
       />
 
       <MealPlannerRecipeSelection
