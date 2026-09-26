@@ -1,4 +1,3 @@
-
 import { MealPlanQuantitiesDialog } from "@/components/meal-planner/MealPlanQuantitiesDialog";
 import { MealPlannerRecipeSelection } from "@/components/meal-planner/MealPlannerRecipeSelection";
 import { LeftoverServingsDialog } from "@/components/meal-planner/LeftoverServingsDialog";
@@ -6,6 +5,8 @@ import { MealPlanWarningDialog } from "@/components/meal-planner/MealPlanWarning
 import { ClearAllMealsDialog } from "@/components/meal-planner/ClearAllMealsDialog";
 import { MealServingsDialog } from "@/components/meal-planner/MealServingsDialog";
 import { Recipe, MealType } from "@/types";
+
+export type MealPlanGenerationMode = "replace" | "add";
 
 interface MealPlannerModalsContainerProps {
   quantitiesDialog: boolean;
@@ -24,13 +25,18 @@ interface MealPlannerModalsContainerProps {
   setPendingMealType: (mealType: MealType | null) => void;
   pendingLeftoverData: { mealPlan: any; recipe?: any } | null;
   recipes: Recipe[];
-  currentWeek: string; // ISO week key
-  onRandomizeWithQuantities: (quantities: any) => void;
+  currentWeek: string;
+  generationMode: MealPlanGenerationMode;
+  onRandomizeWithQuantities: (
+    quantities: any,
+    mode: MealPlanGenerationMode
+  ) => void;
   onSimpleMealSelect: (recipeId: string) => void;
   onAddFreetypeMeal: (mealName: string, servings: number) => void;
   onLunchLeftoverConfirm: (servings: number) => void;
   onCreateLeftover: (mealPlan: any, recipe?: any, leftoverServings?: number) => void;
-  onWarningConfirm: () => void;
+  onWarningReplace: () => void;
+  onWarningAdd: () => void;
   onClearAllConfirm: () => void;
   onServingsConfirm: (mealType: MealType, servings: number) => void;
 }
@@ -53,24 +59,17 @@ export const MealPlannerModalsContainer = ({
   pendingLeftoverData,
   recipes,
   currentWeek,
+  generationMode,
   onRandomizeWithQuantities,
   onSimpleMealSelect,
   onAddFreetypeMeal,
   onLunchLeftoverConfirm,
   onCreateLeftover,
-  onWarningConfirm,
+  onWarningReplace,
+  onWarningAdd,
   onClearAllConfirm,
   onServingsConfirm,
 }: MealPlannerModalsContainerProps) => {
-  
-  console.log("🎭 MealPlannerModalsContainer render:", {
-    leftoverDialog,
-    pendingMealType,
-    isNewLunchMeal: pendingMealType === 'lunch' && !pendingLeftoverData,
-    hasPendingLeftoverData: !!pendingLeftoverData
-  });
-
-  // Determine if this is a new lunch meal (no leftover data) vs creating leftovers (has leftover data)
   const isNewLunchMeal = pendingMealType === 'lunch' && !pendingLeftoverData;
 
   return (
@@ -78,7 +77,7 @@ export const MealPlannerModalsContainer = ({
       <MealPlanQuantitiesDialog
         isOpen={quantitiesDialog}
         onClose={() => setQuantitiesDialog(false)}
-        onConfirm={onRandomizeWithQuantities}
+        onConfirm={(quantities) => onRandomizeWithQuantities(quantities, generationMode)}
         availableRecipes={recipes.length}
       />
 
@@ -99,7 +98,6 @@ export const MealPlannerModalsContainer = ({
         onClose={() => {
           setLeftoverDialog(false);
           setPendingMealType(null);
-          // Don't clear pendingLeftoverData here to allow proper debugging
         }}
         mealPlan={pendingLeftoverData?.mealPlan || null}
         recipe={pendingLeftoverData?.recipe || null}
@@ -111,7 +109,8 @@ export const MealPlannerModalsContainer = ({
       <MealPlanWarningDialog
         open={warningDialog}
         onOpenChange={setWarningDialog}
-        onConfirm={onWarningConfirm}
+        onReplace={onWarningReplace}
+        onAdd={onWarningAdd}
       />
 
       <ClearAllMealsDialog
