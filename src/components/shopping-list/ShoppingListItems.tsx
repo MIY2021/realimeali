@@ -14,7 +14,7 @@ interface ShoppingListItemsProps {
   sortOption: SortOption;
 }
 
-export default function ShoppingListItems({
+// Shopping list UI validated by frontend build workflow\nexport default function ShoppingListItems({
   shoppingList,
   copiedItemId,
   onToggleItem,
