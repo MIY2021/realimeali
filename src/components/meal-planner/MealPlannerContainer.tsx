@@ -6,7 +6,7 @@ import { useMealPlan } from "@/contexts/MealPlanContext";
 
 import { MealPlannerHeader } from "@/components/meal-planner/MealPlannerHeader";
 import { MealPlannerContent } from "@/components/meal-planner/MealPlannerContent";
-import { MealPlannerModalsContainer } from "@/components/meal-planner/MealPlannerModalsContainer";
+import { MealPlannerModalsContainer, MealPlanGenerationMode } from "@/components/meal-planner/MealPlannerModalsContainer";
 import { MealPlannerActions } from "@/components/meal-planner/MealPlannerActions";
 import { CustomMealDialog } from "@/components/meal-planner/CustomMealDialog";
 import { MealPlanInfoDialog } from "@/components/meal-planner/MealPlanInfoDialog";
@@ -82,6 +82,7 @@ export default function MealPlannerContainer() {
   
   // Info dialog state
   const [infoDialog, setInfoDialog] = useState(false);
+  const [generationMode, setGenerationMode] = useState<MealPlanGenerationMode>("replace");
 
   const { generateRandomMeals } = useRandomMealSelection();
 
@@ -227,17 +228,27 @@ export default function MealPlannerContainer() {
   }, [setPendingLeftoverData, setPendingMealType, setLeftoverDialog]);
 
   const handleRandomizeClick = useCallback(() => {
-    // Check if there are existing meal plans
     if (currentMealPlans.length > 0) {
       setWarningDialog(true);
     } else {
+      setGenerationMode("replace");
       handleRandomize();
     }
   }, [currentMealPlans.length, handleRandomize, setWarningDialog]);
 
-  const handleWarningConfirm = useCallback(() => {
+  const handleGenerationChoice = useCallback((mode: MealPlanGenerationMode) => {
+    setGenerationMode(mode);
+    setWarningDialog(false);
     handleRandomize();
-  }, [handleRandomize]);
+  }, [handleRandomize, setWarningDialog]);
+
+  const handleWarningReplace = useCallback(() => {
+    handleGenerationChoice("replace");
+  }, [handleGenerationChoice]);
+
+  const handleWarningAdd = useCallback(() => {
+    handleGenerationChoice("add");
+  }, [handleGenerationChoice]);
 
   const handleClearAllConfirm = useCallback(() => {
     performClearAll();
@@ -382,12 +393,14 @@ export default function MealPlannerContainer() {
         pendingLeftoverData={pendingLeftoverData}
         recipes={recipes}
         currentWeek={currentWeek}
+        generationMode={generationMode}
         onRandomizeWithQuantities={handleRandomizeWithQuantities}
         onSimpleMealSelect={handleSimpleMealSelect}
         onAddFreetypeMeal={handleAddFreetypeMeal}
         onLunchLeftoverConfirm={handleLunchLeftoverConfirm}
         onCreateLeftover={handleCreateLeftoverWithServings}
-        onWarningConfirm={handleWarningConfirm}
+        onWarningReplace={handleWarningReplace}
+        onWarningAdd={handleWarningAdd}
         onClearAllConfirm={handleClearAllConfirm}
         onServingsConfirm={handleServingsConfirm}
       />
