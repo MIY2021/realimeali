@@ -60,7 +60,7 @@ export const useMealPlanGeneration = ({
     sides: number;
     desserts: number;
     drinks: number;
-  }) => {
+  }, replaceExisting: boolean = true) => {
     console.log("🎯 handleRandomizeWithQuantities called with:", quantities);
     console.log("📊 Generation context validation:", {
       user: !!user,
@@ -97,10 +97,14 @@ export const useMealPlanGeneration = ({
     console.log('🚀 Starting meal plan generation process...');
     
     try {
-      // Clear existing meal plans for the week FIRST
-      console.log('🧹 Clearing existing meal plans for week', currentWeek);
-      await clearWeek(currentWeek);
-      console.log('✅ Week cleared successfully');
+      // Replace mode clears the selected week; add mode preserves existing meals.
+      if (replaceExisting) {
+        console.log('🧹 Clearing existing meal plans for week', currentWeek);
+        await clearWeek(currentWeek);
+        console.log('✅ Week cleared successfully');
+      } else {
+        console.log('➕ Add mode: preserving existing meal plans for week', currentWeek);
+      }
       
       console.log('📋 About to call generateRandomMealPlan with:', {
         quantities,
@@ -150,7 +154,7 @@ export const useMealPlanGeneration = ({
       setIsLoading(false);
       console.log('🏁 Generation process complete, loading set to false');
     }
-  }, [user, currentHousehold, currentWeek, generateRandomMealPlan, clearWeek, setIsLoading, toast, recipes, refreshMealPlans]);
+  }, [user, currentHousehold, currentWeek, generateRandomMealPlan, clearWeek, setIsLoading, toast, recipes, refreshMealPlans, replaceExisting]);
 
   return {
     handleRandomize,
