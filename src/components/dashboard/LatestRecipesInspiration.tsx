@@ -1,4 +1,4 @@
-import { Sparkles } from "lucide-react";
+import { ChefHat } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -135,8 +135,8 @@ export const LatestRecipesInspiration = () => {
             Discover something new every day
           </p>
         </div>
-        <div className="h-10 w-10 rounded-full bg-gradient-to-br from-yellow-400 to-orange-400 flex items-center justify-center shadow-md">
-          <span className="text-xl">⭐</span>
+        <div className="h-10 w-10 rounded-full bg-white border border-gray-200 flex items-center justify-center shadow-sm">
+          <ChefHat className="h-5 w-5 text-terracotta" />
         </div>
       </div>
       
