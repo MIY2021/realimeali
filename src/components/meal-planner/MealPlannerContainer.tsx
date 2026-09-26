@@ -238,9 +238,8 @@ export default function MealPlannerContainer() {
 
   const handleGenerationChoice = useCallback((mode: MealPlanGenerationMode) => {
     setGenerationMode(mode);
-    setWarningDialog(false);
     handleRandomize();
-  }, [handleRandomize, setWarningDialog]);
+  }, [handleRandomize]);
 
   const handleWarningReplace = useCallback(() => {
     handleGenerationChoice("replace");
