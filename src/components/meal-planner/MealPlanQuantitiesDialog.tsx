@@ -18,6 +18,7 @@ interface MealPlanQuantitiesDialogProps {
     drinks: number;
   }) => void;
   availableRecipes?: number;
+  onChooseMeals?: () => void;
 }
 
 export function MealPlanQuantitiesDialog({
@@ -25,6 +26,7 @@ export function MealPlanQuantitiesDialog({
   onClose,
   onConfirm,
   availableRecipes = 0,
+  onChooseMeals,
 }: MealPlanQuantitiesDialogProps) {
   const [quantities, setQuantities] = useState({
     dinner: 5,
@@ -69,12 +71,12 @@ export function MealPlanQuantitiesDialog({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Generate Meal Plan</DialogTitle>
+          <DialogTitle>Generate your meal plan</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6">
           <div className="text-sm text-muted-foreground space-y-1">
-            <p>How many meals would you like to generate for each meal type?</p>
+            <p>Let RealiMeali choose for you, or pick your own favourites.</p>
             <p className="text-xs">
               Available recipes: <span className="font-medium text-foreground">{availableRecipes}</span>
             </p>
@@ -99,6 +101,20 @@ export function MealPlanQuantitiesDialog({
               />
             </div>
           ))}
+
+          <div className="border-t border-gray-100 pt-4 mt-2">
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={onChooseMeals}
+              disabled={!onChooseMeals || availableRecipes === 0}
+            >
+              ♥ Choose meals yourself
+            </Button>
+            <p className="text-xs text-muted-foreground text-center mt-2">
+              Swipe through your recipes and choose the ones you fancy.
+            </p>
+          </div>
 
           <div className="flex justify-end space-x-2 pt-4">
             <Button variant="outline" onClick={onClose}>
