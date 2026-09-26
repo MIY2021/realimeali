@@ -108,29 +108,6 @@ export interface HouseholdJoinRequest {
   updated_at: string;
 }
 
-export interface PublicRecipeShare {
-  public_share_id: string;
-  original_recipe_id: string;
-  shared_by_user_id: string;
-  shared_by_name: string;
-  shared_by_household_name: string;
-  title: string;
-  description: string[];
-  ingredients: string[];
-  instructions: string[];
-  prep_time: number;
-  cook_time: number;
-  servings: number;
-  image?: string;
-  expires_at: string;
-  created_at: string;
-  meal_type?: string;
-  original_household_id: string;
-  view_count: number;
-  alcoholic_pairing?: string;
-  non_alcoholic_pairing?: string;
-}
-
 export interface UserProfile {
   id: string;
   email: string;
