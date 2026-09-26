@@ -14,7 +14,8 @@ interface ShoppingListItemsProps {
   sortOption: SortOption;
 }
 
-// Shopping list UI validated by frontend build workflow\nexport default function ShoppingListItems({
+// Shopping list UI validated by frontend build workflow
+export default function ShoppingListItems({
   shoppingList,
   copiedItemId,
   onToggleItem,
@@ -98,7 +99,6 @@ interface ShoppingListItemsProps {
               copiedItemId={copiedItemId}
               onCheck={(checked) => onToggleItem(item.id)}
               onCopy={() => onCopyItem(item.id)}
-              onUpdate={onUpdateItem}
               getRecipeNames={getRecipeNames}
               sortOption={sortOption}
             />
