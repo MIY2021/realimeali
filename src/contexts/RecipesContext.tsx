@@ -79,42 +79,6 @@ export const RecipesProvider: React.FC<{ children: React.ReactNode }> = ({ child
       console.log('RecipesContext: Fetched recipes:', fetchedRecipes.length);
       setRecipes(fetchedRecipes);
       
-      // Automatically regenerate thumbnails for recipes with images
-      // This fixes both missing thumbnails and incorrect thumbnails (like "Chili Soy Salmon")
-      // Do this in the background to avoid blocking UI
-      setTimeout(async () => {
-        const { regenerateRecipeThumbnail } = await import('@/services/imageUploadService');
-        for (const recipe of fetchedRecipes) {
-          // Regenerate thumbnail if recipe has an image (regardless of whether thumbnail exists)
-          // This ensures thumbnails always match the current image
-          if (recipe.image && (recipe as any).created_by) {
-            // Only regenerate if thumbnail is missing OR if we want to force regenerate all
-            // For now, regenerate all to fix incorrect thumbnails
-            const needsRegeneration = !(recipe as any).image_thumbnail;
-            if (needsRegeneration) {
-              console.log(`🔄 Auto-regenerating thumbnail for: ${recipe.title}`);
-              try {
-                const thumbnailUrl = await regenerateRecipeThumbnail(
-                  recipe.id,
-                  recipe.image,
-                  (recipe as any).created_by
-                );
-                // Update the recipe in state after regeneration
-                if (thumbnailUrl) {
-                  setRecipes(prev => prev.map(r => 
-                    r.id === recipe.id 
-                      ? { ...r, image_thumbnail: thumbnailUrl } as any
-                      : r
-                  ));
-                }
-              } catch (error) {
-                console.error(`❌ Failed to regenerate thumbnail for ${recipe.title}:`, error);
-              }
-            }
-          }
-        }
-      }, 1000); // Wait 1 second after recipes are loaded
-      
       console.timeEnd('[Performance] Recipes fetch');
     } catch (error) {
       console.error('RecipesContext: Error fetching recipes:', error);
