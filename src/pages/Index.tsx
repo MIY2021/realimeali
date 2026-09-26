@@ -177,7 +177,7 @@ export default function Index() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
-      <div className="container max-w-2xl mx-auto px-4 py-6 space-y-6">
+      <div className="container max-w-2xl mx-auto px-4 py-6 space-y-8">
         {/* Welcome Header with Daily Tip and Menu Button */}
         <WelcomeHeader onMenuClick={() => setMenuOpen(true)} />
 
@@ -195,8 +195,8 @@ export default function Index() {
           onComplete={handleWelcomeSlidesComplete}
         />
 
-        {/* Stats Cards Grid - Enhanced with gradients and better visuals */}
-        <div className="grid grid-cols-2 gap-4">
+        {/* Stats */}
+        <section className="grid grid-cols-2 gap-4" aria-label="Your stats">
           <StatsCard
             title="My Recipes"
             value={stats.totalRecipes}
@@ -229,17 +229,22 @@ export default function Index() {
             variant="secondary"
             onClick={handleThisWeekMealPlanClick}
           />
-        </div>
+        </section>
 
-        {/* Recipe of the Day - Prominent Section */}
-        <LatestRecipesInspiration />
+        {/* Recipe of the Day */}
+        <section className="border-t border-gray-200 pt-8" aria-label="Recipe of the Day">
+          <LatestRecipesInspiration />
+        </section>
 
         {/* Weekly household recipe matching */}
-        <SwipeToChoose />
-
+        <section className="border-t border-gray-200 pt-8" aria-label="Swipe to Choose">
+          <SwipeToChoose />
+        </section>
 
         {/* Recent Activity */}
-        <RecentActivity isLoading={isLoading} />
+        <section className="border-t border-gray-200 pt-8" aria-label="Recent Activity">
+          <RecentActivity isLoading={isLoading} />
+        </section>
       </div>
     </div>
   );
