@@ -1,10 +1,13 @@
 import { ArrowRight, Heart, Sparkles, Users } from "lucide-react";
 import { useRecipes } from "@/contexts/RecipesContext";
+import { useHousehold } from "@/contexts/HouseholdContext";
 import { useState } from "react";
 import { RecipeSwipeDialog } from "./RecipeSwipeDialog";
 
 export function SwipeToChoose() {
   const { recipes, isLoading } = useRecipes();
+  const { householdMembers } = useHousehold();
+  const isSolo = householdMembers.length < 2;
   const [open, setOpen] = useState(false);
 
   if (isLoading || recipes.length === 0) return null;
@@ -19,7 +22,7 @@ export function SwipeToChoose() {
         <div className="mb-5 flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold text-gray-900 mb-1">Swipe to Choose</h2>
-            <p className="text-sm text-gray-600">Find the meals everyone fancies next week</p>
+            <p className="text-sm text-gray-600">Pick the meals you fancy next week</p>
           </div>
           <div className="h-10 w-10 rounded-full bg-white border border-gray-200 flex items-center justify-center shadow-sm">
             <Heart className="h-5 w-5 text-terracotta" />
@@ -74,10 +77,10 @@ export function SwipeToChoose() {
             <div className="flex items-end justify-between gap-5">
               <div>
                 <h3 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900">
-                  What do we fancy?
+                  What do you fancy?
                 </h3>
                 <p className="mt-2 max-w-md text-sm sm:text-base leading-6 text-gray-600">
-                  Swipe through your recipes. Say yes to the ones you would actually eat.
+                  Swipe through your recipes and pick the ones you would actually eat.
                 </p>
               </div>
               <div className="hidden sm:flex shrink-0 h-12 w-12 items-center justify-center rounded-full bg-gray-900 text-white group-hover:translate-x-1 transition-transform">
@@ -87,8 +90,8 @@ export function SwipeToChoose() {
 
             <div className="mt-5 flex items-center justify-between border-t border-gray-100 pt-4">
               <div className="flex items-center gap-2 text-sm font-medium text-gray-600">
-                <Users className="h-4 w-4 text-terracotta" />
-                Household picks sync together
+                {isSolo ? <Heart className="h-4 w-4 text-terracotta" /> : <Users className="h-4 w-4 text-terracotta" />}
+                {isSolo ? "Your picks for next week" : "Household picks sync together"}
               </div>
               <span className="text-sm font-bold text-gray-900">Start swiping</span>
             </div>
