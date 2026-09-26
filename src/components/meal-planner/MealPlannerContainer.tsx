@@ -19,6 +19,7 @@ import { useMealPlannerState } from "@/hooks/useMealPlannerState";
 import { useMealPlannerLayout } from "@/hooks/useMealPlannerLayout";
 import { MealType, Recipe, MealPlan } from "@/types";
 import { useToast } from "@/hooks/use-toast";
+import { parseISOWeekKey, getWeekStartDate, formatLocalDateYMD } from "@/utils/weekUtils";
 
 export default function MealPlannerContainer() {
   useDocumentTitle("Meal Planner | RealiMeali");
@@ -176,7 +177,7 @@ export default function MealPlannerContainer() {
 
     try {
       const mealPlanData = {
-        date: new Date().toISOString().split('T')[0],
+        date: (() => { const { year, week } = parseISOWeekKey(currentWeek); return formatLocalDateYMD(getWeekStartDate(year, week)); })(),
         meal_type: pendingMealType,
         created_by: user.id,
         slot_index: 0,
