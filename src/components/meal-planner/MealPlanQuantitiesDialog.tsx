@@ -76,7 +76,7 @@ export function MealPlanQuantitiesDialog({
 
         <div className="space-y-6">
           <div className="text-sm text-muted-foreground space-y-1">
-            <p>Let RealiMeali choose for you, or pick your own favourites.</p>
+            <p>Let RealiMeali generate your plan, or swipe through your recipes to pick what you fancy.</p>
             <p className="text-xs">
               Available recipes: <span className="font-medium text-foreground">{availableRecipes}</span>
             </p>
@@ -109,10 +109,10 @@ export function MealPlanQuantitiesDialog({
               onClick={onChooseMeals}
               disabled={!onChooseMeals || availableRecipes === 0}
             >
-              ♥ Choose meals yourself
+              ♥ Swipe to choose meals
             </Button>
             <p className="text-xs text-muted-foreground text-center mt-2">
-              Swipe through your recipes and choose the ones you fancy.
+              Swipe through your recipes and pick the meals you fancy for next week.
             </p>
           </div>
 
