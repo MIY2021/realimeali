@@ -90,6 +90,14 @@ export default function MealPlannerContainer() {
 
   const currentMealPlans = getMealPlansForWeek(currentWeek);
 
+  // Refresh meal plans whenever the Meal Planner page is opened.
+  // The app-wide parallel loader intentionally runs only once per household,
+  // so returning to this page otherwise leaves it showing stale/empty data.
+  useEffect(() => {
+    if (!user || !currentHousehold) return;
+    void fetchMealPlans();
+  }, [user?.id, currentHousehold?.id, fetchMealPlans]);
+
   // Create a wrapper function that matches the expected signature
   const generateRandomMealPlan = useCallback(async (quantities: { 
     dinner: number; 
