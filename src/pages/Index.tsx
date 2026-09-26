@@ -11,6 +11,7 @@ import { getCurrentWeekKey } from "@/utils/weekUtils";
 import { WelcomeHeader } from "@/components/dashboard/WelcomeHeader";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { QuickActions } from "@/components/dashboard/QuickActions";
+import { SwipeToChoose } from "@/components/dashboard/SwipeToChoose";
 import { RecentActivity } from "@/components/dashboard/RecentActivity";
 import { LatestRecipesInspiration } from "@/components/dashboard/LatestRecipesInspiration";
 import { HomeOverflowMenu } from "@/components/layout/HomeOverflowMenu";
@@ -233,6 +234,9 @@ export default function Index() {
 
         {/* Recipe of the Day - Prominent Section */}
         <LatestRecipesInspiration />
+
+        {/* Weekly household recipe matching */}
+        <SwipeToChoose />
 
         {/* Quick Actions */}
         <QuickActions />
