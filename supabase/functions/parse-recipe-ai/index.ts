@@ -631,7 +631,19 @@ Return ONLY valid JSON. No explanations.`;
       userPrompt = `Extract recipe information from this website content:\n\n${websiteContent}`;
       
     } else if (body.recipeText) {
-      systemPrompt = `You are a recipe parsing assistant. Extract recipe information from text and classify it across 6 dimensions. 
+      systemPrompt = `You are a recipe parsing assistant. Convert the supplied recipe text into RealiMeali's structured format.
+
+SOURCE-PRESERVATION RULES — THESE ARE CRITICAL:
+- The supplied recipe text is the authoritative source. Do NOT rewrite, summarise, shorten, simplify, or invent recipe content.
+- Preserve EVERY ingredient line, including its exact quantity, unit, ingredient name, and useful preparation detail. NEVER return an empty ingredients array when ingredients are present in the source.
+- Preserve the FULL cooking method. Do NOT turn detailed method paragraphs into short step titles. If the source says "Cook the mushrooms and peppers over medium-high heat for 4–5 minutes, stirring occasionally until nicely browned", that full instruction must remain in the corresponding instructions entry.
+- Keep step headings when present, but include the complete explanatory text belonging to each heading.
+- Preserve important cooking temperatures, timings, sequencing, warnings, and separation/resting instructions.
+- You may remove numbering/bullet markers from the source, but you must not remove the actual recipe information.
+- Do not add ingredients that are not in the source. Do not invent missing quantities.
+- If the source contains an optional ingredient, preserve it as optional.
+- The output should be a faithful structured transcription first; classification and metadata are secondary.
+- Before returning JSON, check that every ingredient and every substantive method instruction from the source is represented in the output.
 
 CRITICAL: You MUST carefully examine ingredients for meat content. If ANY meat (beef, pork, lamb, chicken, turkey, fish, seafood, etc.) is present, the recipe CANNOT be classified as "vegetarian" or "vegan". Be extremely careful about this classification.
 
@@ -690,7 +702,12 @@ If you detect ANY meat ingredients (ground beef, mince, chicken, etc.), do NOT i
 
 Return ONLY valid JSON. No explanations.`;
 
-      userPrompt = `Parse this recipe text and classify it:\n\n${body.recipeText}`;
+      userPrompt = `Parse this recipe text faithfully into the required JSON structure.
+
+IMPORTANT: This is a transcription/structuring task, NOT a recipe-writing task. Preserve all source ingredients, quantities, and detailed instructions. Do not summarise the method.
+
+SOURCE RECIPE:
+${body.recipeText}`;
       
     } else if (body.image && body.mimeType) {
       // Handle image processing with OCR
