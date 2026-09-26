@@ -42,10 +42,10 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
 
   const finishMessage = useMemo(() => {
     if (householdMemberCount < 2) {
-      return "Your picks are saved. When another household member swipes, shared matches will appear here.";
+      return "Your picks are saved for next week.";
     }
     if (matchRecipes.length === 0) {
-      return "No matches yet. Matches appear as you both choose recipes.";
+      return "Your picks are saved. Shared matches will appear when another household member chooses too.";
     }
     return matchRecipes.length + " recipe" + (matchRecipes.length === 1 ? "" : "s") + " matched for next week.";
   }, [householdMemberCount, matchRecipes.length]);
@@ -85,6 +85,7 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
   };
 
   const image = current?.image_thumbnail || current?.image;
+  const isSolo = householdMemberCount < 2;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -96,7 +97,7 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
                 <Sparkles className="h-4 w-4" />
                 NEXT WEEK
               </div>
-              <h2 className="mt-1 text-xl font-bold text-gray-900">What do we fancy?</h2>
+              <h2 className="mt-1 text-xl font-bold text-gray-900">What do you fancy?</h2>
             </div>
             <div className="text-right">
               <div className="text-sm font-bold text-gray-900">{remainingRecipes.length} left</div>
