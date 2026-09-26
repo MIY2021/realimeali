@@ -2,7 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { EnhancedAvatar } from "@/components/ui/enhanced-avatar";
 import { format, startOfWeek } from "date-fns";
 import { getISOWeekKey } from "@/utils/weekUtils";
-import { UtensilsCrossed } from "lucide-react";
+import { Clock3, UtensilsCrossed } from "lucide-react";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useHouseholdActivity } from "@/hooks/useHouseholdActivity";
@@ -43,11 +43,19 @@ export const RecentActivity = ({ isLoading: externalLoading }: RecentActivityPro
   if (isLoading) {
     return (
       <div className="w-full">
-        <div className="mb-4">
-          <h2 className="text-xl font-bold">
+        <div className="mb-5 flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-1">
             Recent Activity
           </h2>
+          <p className="text-sm text-gray-600">
+            See what&apos;s been happening in your household
+          </p>
         </div>
+        <div className="h-10 w-10 rounded-full bg-white border border-gray-200 flex items-center justify-center shadow-sm">
+          <Clock3 className="h-5 w-5 text-terracotta" />
+        </div>
+      </div>
         <div className="space-y-2">
           {[...Array(3)].map((_, i) => (
             <div key={i} className="bg-white rounded-3xl shadow-sm p-4">
@@ -70,10 +78,18 @@ export const RecentActivity = ({ isLoading: externalLoading }: RecentActivityPro
   if (activities.length === 0) {
     return (
       <div className="w-full">
-      <div className="mb-4">
-        <h2 className="text-xl font-extrabold">
-          Recent Activity
-        </h2>
+      <div className="mb-5 flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-1">
+            Recent Activity
+          </h2>
+          <p className="text-sm text-gray-600">
+            See what&apos;s been happening in your household
+          </p>
+        </div>
+        <div className="h-10 w-10 rounded-full bg-white border border-gray-200 flex items-center justify-center shadow-sm">
+          <Clock3 className="h-5 w-5 text-terracotta" />
+        </div>
       </div>
         <div className="bg-white rounded-3xl shadow-sm p-8 text-center">
           <UtensilsCrossed className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
@@ -88,10 +104,18 @@ export const RecentActivity = ({ isLoading: externalLoading }: RecentActivityPro
 
   return (
     <div className="w-full">
-      <div className="mb-4">
-        <h2 className="text-xl font-bold text-gray-900">
-          Recent Activity
-        </h2>
+      <div className="mb-5 flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-1">
+            Recent Activity
+          </h2>
+          <p className="text-sm text-gray-600">
+            See what&apos;s been happening in your household
+          </p>
+        </div>
+        <div className="h-10 w-10 rounded-full bg-white border border-gray-200 flex items-center justify-center shadow-sm">
+          <Clock3 className="h-5 w-5 text-terracotta" />
+        </div>
       </div>
       <div className="space-y-3">
         {displayActivities.map((activity) => {
