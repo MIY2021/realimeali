@@ -90,15 +90,16 @@ export default function MealPlannerContainer() {
 
   const currentMealPlans = getMealPlansForWeek(currentWeek);
 
-  // Refresh once when this page mounts. Do not depend on fetchMealPlans here:
-  // its context callback can change while loading state updates, which would
-  // otherwise cause a fetch -> loading -> render -> fetch loop.
+  // Refresh once when the Meal Planner page mounts. Keep this completely
+  // independent of the loading state so the refresh cannot cause a render loop.
   const hasRefreshedOnMount = useRef(false);
   useEffect(() => {
-    if (!user || !currentHousehold || hasRefreshedOnMount.current) return;
+    if (!user?.id || !currentHousehold?.id || hasRefreshedOnMount.current) return;
     hasRefreshedOnMount.current = true;
-    void fetchMealPlans();
-  }, [user?.id, currentHousehold?.id]);
+    fetchMealPlans();
+    // Intentionally mount-only: fetchMealPlans updates context loading state.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Create a wrapper function that matches the expected signature
   const generateRandomMealPlan = useCallback(async (quantities: { 
