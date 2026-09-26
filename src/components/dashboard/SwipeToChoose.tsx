@@ -21,8 +21,8 @@ export function SwipeToChoose() {
             <h2 className="text-2xl font-bold text-gray-900 mb-1">Swipe to Choose</h2>
             <p className="text-sm text-gray-600">Find the meals everyone fancies next week</p>
           </div>
-          <div className="h-10 w-10 rounded-full bg-terracotta flex items-center justify-center shadow-md">
-            <Heart className="h-5 w-5 text-white" />
+          <div className="h-10 w-10 rounded-full bg-white border border-gray-200 flex items-center justify-center shadow-sm">
+            <Heart className="h-5 w-5 text-terracotta" />
           </div>
         </div>
 
@@ -50,7 +50,7 @@ export function SwipeToChoose() {
                       />
                     </div>
                   ))}
-                  {imageRecipes.length === 2 && <div className="w-1/2 bg-[#f2eee9]" />}
+                  {imageRecipes.length === 2 && <div className="w-1/2 bg-gray-100" />}
                 </div>
               </div>
             ) : (
@@ -60,11 +60,11 @@ export function SwipeToChoose() {
             )}
 
             <div className="absolute inset-x-0 top-0 flex items-center justify-between p-4">
-              <span className="inline-flex items-center gap-2 bg-white px-3 py-1.5 text-xs font-bold tracking-widest text-gray-900 shadow-sm">
+              <span className="inline-flex items-center gap-2 bg-white/95 px-3 py-1.5 text-xs font-bold tracking-widest text-gray-800 shadow-sm">
                 <Sparkles className="h-3.5 w-3.5 text-terracotta" />
                 NEXT WEEK
               </span>
-              <span className="bg-gray-900/75 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-sm">
+              <span className="bg-white/95 px-3 py-1.5 text-xs font-semibold text-gray-700 shadow-sm">
                 {recipes.length} recipes
               </span>
             </div>
@@ -80,7 +80,7 @@ export function SwipeToChoose() {
                   Swipe through your recipes. Say yes to the ones you would actually eat.
                 </p>
               </div>
-              <div className="hidden sm:flex shrink-0 h-12 w-12 items-center justify-center rounded-full bg-terracotta text-white group-hover:translate-x-1 transition-transform">
+              <div className="hidden sm:flex shrink-0 h-12 w-12 items-center justify-center rounded-full bg-gray-900 text-white group-hover:translate-x-1 transition-transform">
                 <ArrowRight className="h-5 w-5" />
               </div>
             </div>
@@ -90,7 +90,7 @@ export function SwipeToChoose() {
                 <Users className="h-4 w-4 text-terracotta" />
                 Household picks sync together
               </div>
-              <span className="text-sm font-bold text-terracotta">Start swiping</span>
+              <span className="text-sm font-bold text-gray-900">Start swiping</span>
             </div>
           </div>
         </button>
