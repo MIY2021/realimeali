@@ -45,7 +45,14 @@ DROP POLICY IF EXISTS "Users can update their own recipe swipes" ON public.recip
 CREATE POLICY "Users can update their own recipe swipes"
 ON public.recipe_swipes FOR UPDATE
 USING (user_id = auth.uid())
-WITH CHECK (user_id = auth.uid());
+WITH CHECK (
+  user_id = auth.uid()
+  AND EXISTS (
+    SELECT 1 FROM public.household_members hm
+    WHERE hm.household_id = recipe_swipes.household_id
+      AND hm.user_id = auth.uid()
+  )
+);
 
 DROP POLICY IF EXISTS "Users can delete their own recipe swipes" ON public.recipe_swipes;
 CREATE POLICY "Users can delete their own recipe swipes"
