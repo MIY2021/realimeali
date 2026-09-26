@@ -909,6 +909,19 @@ Create realistic recipes with proper ingredient amounts and detailed cooking ste
       
       // Validate and clean the response
       const rawIngredients = Array.isArray(parsedRecipe.ingredients) ? parsedRecipe.ingredients : [];
+      const rawInstructions = Array.isArray(parsedRecipe.instructions) ? parsedRecipe.instructions : [];
+
+      // Never silently accept a text import that lost its ingredients or method.
+      // A structured import must preserve the source recipe rather than returning a partial summary.
+      if (body.recipeText) {
+        const sourceText = String(body.recipeText);
+        const sourceHasIngredients = /(^|\\n)\\s*(ingredients?|what you need)\\s*:?\\s*(\\n|$)/i.test(sourceText);
+        const sourceHasMethod = /(^|\\n)\\s*(method|instructions?|directions?|steps?)\\s*:?\\s*(\\n|$)/i.test(sourceText);
+
+        if ((sourceHasIngredients && rawIngredients.length === 0) || (sourceHasMethod && rawInstructions.length === 0)) {
+          throw new Error('The recipe importer could not preserve all of the source recipe. Please try the import again.');
+        }
+      }
       
       // Use the group indices directly from AI response (much simpler!)
       const groupIndices = Array.isArray(parsedRecipe.ingredientGroupIndices) 
