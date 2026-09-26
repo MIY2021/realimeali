@@ -1,4 +1,3 @@
-
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,38 +12,38 @@ import {
 interface MealPlanWarningDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onConfirm: () => void;
+  onReplace: () => void;
+  onAdd: () => void;
 }
 
 export const MealPlanWarningDialog = ({
   open,
   onOpenChange,
-  onConfirm,
+  onReplace,
+  onAdd,
 }: MealPlanWarningDialogProps) => {
-  const handleConfirm = () => {
-    onConfirm();
-    onOpenChange(false);
-  };
-
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent className="sm:max-w-md">
         <AlertDialogHeader>
           <AlertDialogTitle className="text-xl font-semibold text-navy">
-            Replace Existing Meal Plan?
+            Existing Meal Plan
           </AlertDialogTitle>
           <AlertDialogDescription className="text-muted-foreground">
-            This week already has meals planned. Generating a new meal plan will 
-            replace all current meals with new randomly selected recipes from your collection.
+            This week already has meals planned. Choose whether the generated meals
+            should replace your current plan or be added alongside it.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className="flex-col-reverse sm:flex-row gap-2">
           <AlertDialogCancel className="mt-0">Cancel</AlertDialogCancel>
+          <AlertDialogAction onClick={onAdd}>
+            Add to Existing Plan
+          </AlertDialogAction>
           <AlertDialogAction
-            onClick={handleConfirm}
+            onClick={onReplace}
             className="bg-terracotta hover:bg-terracotta/90"
           >
-            Continue with New Plan
+            Replace Existing Plan
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
