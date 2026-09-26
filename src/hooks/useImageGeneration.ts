@@ -123,7 +123,7 @@ export function useImageGeneration() {
       
       toast({
         title: "Image Generated!",
-        description: `Professional cookbook-style image created using Gemini! (${data.fileSizeMB}MB WebP)`,
+        description: `Professional cookbook-style image created with OpenAI! (${data.fileSizeMB}MB WebP)`,
       });
 
       setTimeout(() => {
