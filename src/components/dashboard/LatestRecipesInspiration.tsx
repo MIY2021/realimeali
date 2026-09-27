@@ -1,10 +1,8 @@
-import { ChefHat } from "lucide-react";
+import { Clock, Users, Plus, ArrowRight, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { ImportedRecipeCard } from "@/components/discover-recipes/ImportedRecipeCard";
 import { ImportedRecipe } from "@/services/importedRecipeService";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { useToast } from "@/hooks/use-toast";
@@ -19,45 +17,32 @@ export const LatestRecipesInspiration = () => {
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const [addToMealPlanOpen, setAddToMealPlanOpen] = useState(false);
 
-  // Fetch all featured recipes
   const { data: allFeaturedRecipes, isLoading, error } = useQuery({
-    queryKey: ['featured-recipes-for-daily'],
+    queryKey: ["featured-recipes-for-daily"],
     queryFn: async (): Promise<ImportedRecipe[]> => {
       const { data, error } = await supabase
-        .from('imported_recipes')
-        .select('*')
-        .eq('is_featured', true)
-        .order('priority_score', { ascending: false })
-        .order('created_at', { ascending: false });
+        .from("imported_recipes")
+        .select("*")
+        .eq("is_featured", true)
+        .order("priority_score", { ascending: false })
+        .order("created_at", { ascending: false });
 
-      if (error) {
-        console.error('Error fetching featured recipes:', error);
-        throw new Error(`Failed to fetch featured recipes: ${error.message}`);
-      }
-
+      if (error) throw new Error(`Failed to fetch featured recipes: ${error.message}`);
       return (data || []) as unknown as ImportedRecipe[];
     },
-    staleTime: 1000 * 60 * 60, // 1 hour - featured recipes don't change often
-    gcTime: 1000 * 60 * 60 * 2, // 2 hours
+    staleTime: 1000 * 60 * 60,
+    gcTime: 1000 * 60 * 60 * 2,
     retry: 1,
   });
 
-  // Select recipe of the day based on current date (same for all users)
   const recipeOfTheDay = useMemo(() => {
-    if (!allFeaturedRecipes || allFeaturedRecipes.length === 0) return null;
-
-    // Get today's date as a number (days since epoch)
-    const today = new Date();
-    const daysSinceEpoch = Math.floor(today.getTime() / (1000 * 60 * 60 * 24));
-    
-    // Use date to deterministically pick a recipe (same for all users)
-    const recipeIndex = daysSinceEpoch % allFeaturedRecipes.length;
-    
-    return allFeaturedRecipes[recipeIndex];
+    if (!allFeaturedRecipes?.length) return null;
+    const daysSinceEpoch = Math.floor(new Date().getTime() / (1000 * 60 * 60 * 24));
+    return allFeaturedRecipes[daysSinceEpoch % allFeaturedRecipes.length];
   }, [allFeaturedRecipes]);
 
-  const handleAddToMealPlan = async (recipe: ImportedRecipe) => {
-    if (!user || !currentHousehold) {
+  const handleAddToMealPlan = async () => {
+    if (!recipeOfTheDay || !user || !currentHousehold) {
       toast({
         title: "Please log in",
         description: "You need to be logged in to add recipes to your meal plan.",
@@ -66,52 +51,48 @@ export const LatestRecipesInspiration = () => {
       return;
     }
 
-    // First, add recipe to My Recipes if it doesn't exist
     try {
       const { data: existingRecipe } = await supabase
-        .from('recipes')
-        .select('*')
-        .eq('household_id', currentHousehold.id)
-        .eq('source_url', recipe.source_url)
-        .eq('is_deleted', false)
+        .from("recipes")
+        .select("*")
+        .eq("household_id", currentHousehold.id)
+        .eq("source_url", recipeOfTheDay.source_url)
+        .eq("is_deleted", false)
         .single();
 
       if (existingRecipe) {
-        // Recipe already exists, use it
         setSelectedRecipe(existingRecipe as any);
         setAddToMealPlanOpen(true);
       } else {
-        // Insert recipe into household recipes
         const { data: newRecipe, error: insertError } = await supabase
-          .from('recipes')
+          .from("recipes")
           .insert([{
-            title: recipe.title,
-            description: recipe.description || '',
-            ingredients: recipe.ingredients || [],
-            instructions: recipe.instructions || [],
-            prep_time: recipe.prep_time || 0,
-            cook_time: recipe.cook_time || 0,
-            servings: recipe.servings || 1,
-            image: recipe.image,
-            meal_types: recipe.meal_types || [],
-            cuisine_region: recipe.cuisine_region as any,
-            diet_lifestyle: recipe.diet_lifestyle as any,
-            source_url: recipe.source_url,
+            title: recipeOfTheDay.title,
+            description: recipeOfTheDay.description || "",
+            ingredients: recipeOfTheDay.ingredients || [],
+            instructions: recipeOfTheDay.instructions || [],
+            prep_time: recipeOfTheDay.prep_time || 0,
+            cook_time: recipeOfTheDay.cook_time || 0,
+            servings: recipeOfTheDay.servings || 1,
+            image: recipeOfTheDay.image,
+            meal_types: recipeOfTheDay.meal_types || [],
+            cuisine_region: recipeOfTheDay.cuisine_region as any,
+            diet_lifestyle: recipeOfTheDay.diet_lifestyle as any,
+            source_url: recipeOfTheDay.source_url,
             user_id: user.id,
             household_id: currentHousehold.id,
-            import_method: 'featured',
+            import_method: "featured",
             is_favorite: false,
           }])
           .select()
           .single();
 
         if (insertError) throw insertError;
-
         setSelectedRecipe(newRecipe as any);
         setAddToMealPlanOpen(true);
       }
     } catch (error) {
-      console.error('Error adding recipe:', error);
+      console.error("Error adding recipe:", error);
       toast({
         title: "Error",
         description: "Failed to add recipe. Please try again.",
@@ -120,57 +101,91 @@ export const LatestRecipesInspiration = () => {
     }
   };
 
-  if (error) {
-    return null; // Silently fail if we can't fetch inspiration recipes
+  if (error) return null;
+
+  if (isLoading) {
+    return <div className="h-[420px] w-full rounded-2xl bg-white border border-gray-200 animate-pulse" />;
   }
 
-  return (
-    <div className="w-full">
-      <div className="mb-5 flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-1">
-            Recipe of the Day
-          </h2>
-          <p className="text-sm text-gray-600">
-            Discover something new every day
-          </p>
-        </div>
-        <div className="h-10 w-10 rounded-full bg-white border border-gray-200 flex items-center justify-center shadow-sm">
-          <ChefHat className="h-5 w-5 text-terracotta" />
-        </div>
+  if (!recipeOfTheDay) {
+    return (
+      <div className="rounded-2xl border border-gray-200 bg-white p-8 text-center">
+        <Sparkles className="h-8 w-8 text-gray-300 mx-auto mb-3" />
+        <p className="text-sm text-gray-600 mb-4">No recipes available at the moment.</p>
+        <Link to="/discover-recipes" className="inline-flex items-center gap-2 rounded-full bg-[#b85f49] px-5 py-2.5 text-sm font-semibold text-white">
+          Explore recipes <ArrowRight className="h-4 w-4" />
+        </Link>
       </div>
-      
-      {isLoading ? (
-        <Skeleton className="h-[400px] w-full rounded-lg" />
-      ) : recipeOfTheDay ? (
-        <>
-          <ImportedRecipeCard
-            recipe={recipeOfTheDay}
-            mobileLayout="1"
-            onAddToMealPlan={handleAddToMealPlan}
-          />
+    );
+  }
 
-          {selectedRecipe && (
-            <AddToMealPlanDialog
-              recipe={selectedRecipe}
-              open={addToMealPlanOpen}
-              onOpenChange={setAddToMealPlanOpen}
-            />
-          )}
-        </>
-      ) : (
-        <div className="text-center py-12 bg-white rounded-3xl shadow-sm">
-          <Sparkles className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-          <p className="text-gray-600 mb-4">
-            No recipes available at the moment.
-          </p>
-          <Link to="/discover-recipes">
-            <button className="px-6 py-2 bg-[#FFDD6B] text-gray-900 rounded-full font-semibold hover:bg-[#FFDD6B]/90 transition-colors">
-              Explore Recipes
-            </button>
+  const totalTime = (recipeOfTheDay.prep_time || 0) + (recipeOfTheDay.cook_time || 0);
+
+  return (
+    <>
+      <article className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+        <Link to={`/discover-recipes/${recipeOfTheDay.id}`} className="group block">
+          <div className="relative h-64 sm:h-80 overflow-hidden bg-[#eeeae5]">
+            {recipeOfTheDay.image ? (
+              <img
+                src={recipeOfTheDay.image}
+                alt={recipeOfTheDay.title}
+                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+              />
+            ) : (
+              <div className="h-full flex items-center justify-center text-5xl">🍽️</div>
+            )}
+            <div className="absolute left-4 top-4 inline-flex items-center gap-2 rounded-full bg-white/95 px-3 py-1.5 text-xs font-bold text-gray-800 shadow-sm">
+              <Sparkles className="h-3.5 w-3.5 text-[#b85f49]" />
+              RECIPE OF THE DAY
+            </div>
+          </div>
+        </Link>
+
+        <div className="p-5 sm:p-6">
+          <Link to={`/discover-recipes/${recipeOfTheDay.id}`} className="group">
+            <h3 className="text-2xl font-bold tracking-tight text-gray-900 group-hover:text-[#b85f49] transition-colors">
+              {recipeOfTheDay.title}
+            </h3>
           </Link>
+
+          {recipeOfTheDay.description && (
+            <p className="mt-2 text-sm leading-6 text-gray-600 line-clamp-2">
+              {recipeOfTheDay.description}
+            </p>
+          )}
+
+          <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-gray-500">
+            {totalTime > 0 && (
+              <span className="inline-flex items-center gap-1.5"><Clock className="h-4 w-4" />{totalTime} min</span>
+            )}
+            <span className="inline-flex items-center gap-1.5"><Users className="h-4 w-4" />{recipeOfTheDay.servings} servings</span>
+          </div>
+
+          <div className="mt-5 flex gap-2">
+            <Link
+              to={`/discover-recipes/${recipeOfTheDay.id}`}
+              className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-800 hover:bg-gray-50 transition-colors"
+            >
+              View recipe <ArrowRight className="h-4 w-4" />
+            </Link>
+            <button
+              onClick={handleAddToMealPlan}
+              className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-[#b85f49] px-4 py-3 text-sm font-semibold text-white hover:bg-[#a9513d] transition-colors"
+            >
+              <Plus className="h-4 w-4" /> Add to plan
+            </button>
+          </div>
         </div>
+      </article>
+
+      {selectedRecipe && (
+        <AddToMealPlanDialog
+          recipe={selectedRecipe}
+          open={addToMealPlanOpen}
+          onOpenChange={setAddToMealPlanOpen}
+        />
       )}
-    </div>
+    </>
   );
 };
