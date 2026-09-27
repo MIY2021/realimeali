@@ -1,122 +1,71 @@
-# Welcome to your Lovable project
+# RealiMeali
 
-## Project info
+RealiMeali is a meal planning and recipe management app built with React, TypeScript, Vite and Supabase.
 
-**URL**: https://lovable.dev/projects/54a3de06-762f-4195-8b16-59a97d0921c3
+## Development
 
-## How can I edit this code?
+### Requirements
 
-There are several ways of editing your application.
+- Node.js
+- npm
 
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/54a3de06-762f-4195-8b16-59a97d0921c3) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
+### Install
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
 git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
 cd <YOUR_PROJECT_NAME>
+npm install
+```
 
-# Step 3: Install the necessary dependencies.
-npm i
+### Run locally
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+```sh
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+The app uses Vite for the frontend, Supabase for backend services and TypeScript/React for the application.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Code standards
 
-**Use GitHub Codespaces**
+### UK spelling
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## Code Standards
-
-### UK Spelling Requirement
-
-**This project uses UK English spelling everywhere for user-facing text.** All user-facing strings, labels, messages, and UI text must use UK spelling conventions.
+RealiMeali uses UK English spelling in user-facing text.
 
 Common examples:
+
 - `colour` not `color`
 - `organise` not `organize`
 - `centre` not `center`
 - `favourite` not `favorite`
 - `recognise` not `recognize`
 - `behaviour` not `behavior`
-- `licence` (noun) / `license` (verb) - note the distinction
+- `licence` (noun) / `license` (verb)
 - `defence` not `defense`
 - `travelled` not `traveled`
 - `cancelled` not `canceled`
-- `flavour` not `flavor`
 
-#### Automatic UK Spelling Conversion
+Spell checking is available with:
 
-For automatic conversion of US to UK spellings in user-facing text, use the `UKText` component or `useUKText` hook:
-
-```tsx
-import { UKText, useUKText } from "@/components/shared/UKText";
-
-// Component approach
-<UKText>This is my favorite color</UKText>
-// Renders: "This is my favourite colour"
-
-// Hook approach (for dynamic strings)
-const message = useUKText("Organize your recipes by color");
-// Returns: "Organise your recipes by colour"
-```
-
-The conversion utility (`src/utils/ukSpelling.ts`) automatically handles all common US→UK spelling conversions.
-
-#### Spell Checking
-
-Spell checking is enforced via `cspell` configured for UK English. Run spell checks with:
 ```sh
 npm run lint:spell
 ```
 
-Or run all linting (including spell check):
+Run the full lint suite with:
+
 ```sh
 npm run lint:all
 ```
 
-## How can I deploy this project?
+## Build
 
-Simply open [Lovable](https://lovable.dev/projects/54a3de06-762f-4195-8b16-59a97d0921c3) and click on Share -> Publish.
+```sh
+npm run build
+```
 
-## Can I connect a custom domain to my Lovable project?
+GitHub Actions runs the build check for changes pushed to `main`.
 
-Yes, you can!
+## Deployment
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+The production site is deployed from the GitHub repository to the configured hosting environment. The production domain is:
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+https://realimeali.com/
