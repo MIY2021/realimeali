@@ -309,6 +309,9 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
                         className="mt-2 h-12 w-full rounded-xl border border-gray-200 bg-white px-4 text-sm text-gray-700"
                       />
                     </label>
+                    <div className="mt-2 rounded-lg bg-white px-3 py-2 text-center text-sm font-medium text-gray-600">
+                      {formatWeekOptionLabel(weekKey)}
+                    </div>
                   </div>
                 )}
 
