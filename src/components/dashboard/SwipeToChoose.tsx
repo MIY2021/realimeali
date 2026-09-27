@@ -1,4 +1,4 @@
-import { ArrowRight, Heart, Sparkles, Users } from "lucide-react";
+import { ArrowRight, Heart, Sparkles } from "lucide-react";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { useState } from "react";
@@ -6,8 +6,6 @@ import { RecipeSwipeDialog } from "./RecipeSwipeDialog";
 
 export function SwipeToChoose() {
   const { recipes, isLoading } = useRecipes();
-  const { householdMembers } = useHousehold();
-  const isSolo = householdMembers.length < 2;
   const [open, setOpen] = useState(false);
 
   if (isLoading || recipes.length === 0) return null;
@@ -86,11 +84,13 @@ export function SwipeToChoose() {
             </div>
 
             <div className="mt-5 flex items-center justify-between border-t border-gray-100 pt-4">
-              <div className="flex items-center gap-2 text-sm font-medium text-gray-600">
-                {isSolo ? <Heart className="h-4 w-4 text-terracotta" /> : <Users className="h-4 w-4 text-terracotta" />}
-                {isSolo ? "Your picks go straight to the meal plan" : "Everyone can add their own picks"}
-              </div>
-              <span className="text-sm font-bold text-gray-900">Start swiping</span>
+              <span className="text-sm font-medium text-gray-600">
+                Your picks go straight to the meal plan
+              </span>
+              <span className="inline-flex items-center gap-2 rounded-full bg-gray-900 px-4 py-2 text-sm font-bold text-white transition-transform group-hover:translate-x-1">
+                Start swiping
+                <ArrowRight className="h-4 w-4" />
+              </span>
             </div>
           </div>
         </button>
