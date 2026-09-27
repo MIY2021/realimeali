@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowRight, Check, Heart, Sparkles, Undo2 } from "lucide-react";
-import { MealPlan, MealType, Recipe } from "@/types";
+import { MealType, Recipe } from "@/types";
 import { useRecipeSwipe } from "@/hooks/useRecipeSwipe";
 import { useMealPlan } from "@/contexts/MealPlanContext";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
