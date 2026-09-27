@@ -20,7 +20,6 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
     setWeekKey,
     remainingRecipes,
     yesCount,
-    householdMemberCount,
     isLoading,
     isSaving,
     dbAvailable,
