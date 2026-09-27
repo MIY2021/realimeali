@@ -28,6 +28,7 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
   } = useRecipeSwipe(recipes);
 
   const [weekChosen, setWeekChosen] = useState(false);
+  const [swipingStarted, setSwipingStarted] = useState(false);
   const [anotherWeekOpen, setAnotherWeekOpen] = useState(false);
   const [sessionYesCount, setSessionYesCount] = useState(0);
   const [dragX, setDragX] = useState(0);
@@ -39,6 +40,7 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
   useEffect(() => {
     if (!open) {
       setWeekChosen(false);
+      setSwipingStarted(false);
       setAnotherWeekOpen(false);
       setSessionYesCount(0);
       setDragX(0);
@@ -197,15 +199,20 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
                   </div>
                 )}
 
-                {weekChosen && !isLoading && (
+              </div>
+            ) : !swipingStarted ? (
+              <div className="w-full max-w-sm text-center">
+                <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+                  <div className="text-sm font-semibold uppercase tracking-wider text-gray-500">Selected week</div>
+                  <div className="mt-2 text-2xl font-bold text-gray-900">{selectedWeekLabel}</div>
                   <Button
-                    className="mt-8 h-12 w-full rounded-xl bg-terracotta text-base font-semibold text-white hover:bg-terracotta/90"
-                    onClick={() => setWeekChosen(true)}
+                    className="mt-6 h-12 w-full rounded-xl bg-terracotta text-base font-semibold text-white hover:bg-terracotta/90"
+                    onClick={() => setSwipingStarted(true)}
                   >
                     Start swiping
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
-                )}
+                </div>
               </div>
             ) : isLoading ? (
               <div className="text-center text-gray-500">Loading your choices…</div>
