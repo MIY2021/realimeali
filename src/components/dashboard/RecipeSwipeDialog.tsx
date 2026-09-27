@@ -458,7 +458,7 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
 
                       {dragX > 40 && (
                         <div className="absolute left-4 top-4 border-2 border-green-200 bg-white px-3 py-1 text-sm font-bold uppercase tracking-widest text-green-600 shadow-sm">
-                          Fancy it
+                          Add to meal plan
                         </div>
                       )}
                       <div className="pointer-events-none absolute inset-x-0 top-1/2 z-10 flex -translate-y-1/2 items-center justify-between px-4">
@@ -474,7 +474,7 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
 
                       {dragX > 40 && (
                         <div className="absolute left-4 top-4 border-2 border-gray-800 bg-white px-3 py-1 text-sm font-bold uppercase tracking-widest text-terracotta shadow-sm">
-                          Fancy it
+                          Add to meal plan
                         </div>
                       )}
                       {dragX < -40 && (
