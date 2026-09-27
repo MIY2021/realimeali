@@ -461,6 +461,20 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
                           Fancy it
                         </div>
                       )}
+                      <div className="pointer-events-none absolute inset-x-0 top-1/2 z-10 flex -translate-y-1/2 items-center justify-between px-4">
+                        <span className="rounded-full bg-white/85 px-3 py-1.5 text-[11px] font-bold tracking-[0.16em] text-gray-500 shadow-sm backdrop-blur-sm">
+                          NO
+                        </span>
+                        <span className="rounded-full bg-white/85 px-3 py-1.5 text-[11px] font-bold tracking-[0.16em] text-terracotta shadow-sm backdrop-blur-sm">
+                          YES
+                        </span>
+                      </div>
+
+                      {dragX > 40 && (
+                        <div className="absolute left-4 top-4 border-2 border-gray-800 bg-white px-3 py-1 text-sm font-bold uppercase tracking-widest text-terracotta shadow-sm">
+                          Fancy it
+                        </div>
+                      )}
                       {dragX < -40 && (
                         <div className="absolute right-4 top-4 border-2 border-gray-800 bg-white px-3 py-1 text-sm font-bold uppercase tracking-widest text-gray-800 shadow-sm">
                           Skip
