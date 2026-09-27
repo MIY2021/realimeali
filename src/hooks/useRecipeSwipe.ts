@@ -14,6 +14,7 @@ import {
 } from "@/utils/weekUtils";
 
 export type SwipeDecision = "yes" | "no";
+export type SwipeMealType = "breakfast" | "lunch" | "dinner";
 
 export function useRecipeSwipe(recipes: Recipe[]) {
   const { user } = useAuth();
@@ -25,15 +26,16 @@ export function useRecipeSwipe(recipes: Recipe[]) {
   const [isSaving, setIsSaving] = useState(false);
   const [dbAvailable, setDbAvailable] = useState(true);
   const [weekKey, setWeekKey] = useState(() => getNextWeek(getCurrentWeekKey()));
+  const [mealType, setMealType] = useState<SwipeMealType>("dinner");
 
   const plannedRecipeIds = useMemo(
     () =>
       new Set(
         getMealPlansForWeek(weekKey)
-          .filter(plan => plan.meal_type === "dinner" && plan.recipe_id)
+          .filter(plan => plan.meal_type === mealType && plan.recipe_id)
           .map(plan => plan.recipe_id as string)
       ),
-    [getMealPlansForWeek, weekKey]
+    [getMealPlansForWeek, weekKey, mealType]
   );
 
   // Cycle through every dinner recipe in the household. The order is stable
@@ -42,7 +44,7 @@ export function useRecipeSwipe(recipes: Recipe[]) {
     const candidates = recipes.filter(recipe => {
       if (recipe.household_id !== currentHousehold?.id) return false;
       return Boolean(
-        recipe.meal_types?.includes("dinner") || recipe.meal_type === "dinner"
+        recipe.meal_types?.includes(mealType) || recipe.meal_type === mealType
       );
     });
 
@@ -59,7 +61,7 @@ export function useRecipeSwipe(recipes: Recipe[]) {
       })
       .sort((a, b) => a.sort - b.sort)
       .map(({ recipe }) => recipe);
-  }, [recipes, currentHousehold?.id, weekKey]);
+  }, [recipes, currentHousehold?.id, weekKey, mealType]);
 
   const remainingRecipes = useMemo(
     () =>
@@ -159,7 +161,7 @@ export function useRecipeSwipe(recipes: Recipe[]) {
           await addMealPlan(
             {
               recipe_id: recipe.id,
-              meal_type: "dinner",
+              meal_type: mealType,
               date,
               created_by: user.id,
               slot_index: nextSlotIndex,
@@ -206,6 +208,7 @@ export function useRecipeSwipe(recipes: Recipe[]) {
       user,
       currentHousehold?.id,
       weekKey,
+      mealType,
       isSaving,
       getMealPlansForWeek,
       addMealPlan,
@@ -216,6 +219,8 @@ export function useRecipeSwipe(recipes: Recipe[]) {
   return {
     weekKey,
     setWeekKey,
+    mealType,
+    setMealType,
     remainingRecipes,
     yesCount,
     householdMemberCount: householdMembers.length,
