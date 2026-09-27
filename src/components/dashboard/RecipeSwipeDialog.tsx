@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowRight, Check, Eye, Heart, Undo2, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Eye, Heart, Undo2, X } from "lucide-react";
 import { MealIcon } from "@/components/icons/RealiMealiIcons";
 import { MealType, Recipe } from "@/types";
 import { useRecipeSwipe } from "@/hooks/useRecipeSwipe";
@@ -457,16 +457,18 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
                       )}
 
                       {dragX > 40 && (
-                        <div className="absolute left-4 top-4 border-2 border-gray-800 bg-white px-3 py-1 text-sm font-bold uppercase tracking-widest text-terracotta shadow-sm">
+                        <div className="absolute left-4 top-4 border-2 border-green-200 bg-white px-3 py-1 text-sm font-bold uppercase tracking-widest text-green-600 shadow-sm">
                           Fancy it
                         </div>
                       )}
                       <div className="pointer-events-none absolute inset-x-0 top-1/2 z-10 flex -translate-y-1/2 items-center justify-between px-4">
-                        <span className="rounded-full bg-white/85 px-3 py-1.5 text-[11px] font-bold tracking-[0.16em] text-red-600 shadow-sm backdrop-blur-sm">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-white/80 px-3 py-1.5 text-[11px] font-bold tracking-[0.14em] text-red-500 shadow-sm backdrop-blur-sm">
+                          <ArrowLeft className="h-3 w-3" />
                           NO
                         </span>
-                        <span className="rounded-full bg-white/85 px-3 py-1.5 text-[11px] font-bold tracking-[0.16em] text-green-600 shadow-sm backdrop-blur-sm">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-white/80 px-3 py-1.5 text-[11px] font-bold tracking-[0.14em] text-green-600 shadow-sm backdrop-blur-sm">
                           YES
+                          <ArrowRight className="h-3 w-3" />
                         </span>
                       </div>
 
@@ -476,7 +478,7 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
                         </div>
                       )}
                       {dragX < -40 && (
-                        <div className="absolute right-4 top-4 border-2 border-gray-800 bg-white px-3 py-1 text-sm font-bold uppercase tracking-widest text-gray-800 shadow-sm">
+                        <div className="absolute right-4 top-4 border-2 border-red-200 bg-white px-3 py-1 text-sm font-bold uppercase tracking-widest text-red-500 shadow-sm">
                           Skip
                         </div>
                       )}
