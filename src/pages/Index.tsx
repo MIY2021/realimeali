@@ -195,7 +195,7 @@ export default function Index() {
           )}
         </section>
 
-        <section aria-labelledby="quick-actions-heading" className="mb-8">
+        <section aria-labelledby="quick-actions-heading" className="mb-4">
           <h2 id="quick-actions-heading" className="text-xs font-bold uppercase tracking-[0.16em] text-gray-500 mb-3">Quick actions</h2>
           <div className="grid grid-cols-3 gap-2">
             <button onClick={() => navigate("/my-recipes/new")} className="min-h-[74px] rounded-xl border border-gray-200 bg-white px-3 py-3 text-left hover:border-[#b85f49] transition-colors">
