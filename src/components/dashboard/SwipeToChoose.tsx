@@ -85,9 +85,9 @@ export function SwipeToChoose() {
 
             <div className="mt-5 flex items-center justify-between border-t border-gray-100 pt-4">
               <span className="text-sm font-medium text-gray-600">
-                Your picks go straight to the meal plan
+                Pick your meals
               </span>
-              <span className="inline-flex items-center gap-2 rounded-full bg-gray-900 px-4 py-2 text-sm font-bold text-white transition-transform group-hover:translate-x-1">
+              <span className="inline-flex items-center gap-2 rounded-full bg-terracotta px-5 py-2.5 text-sm font-bold text-white shadow-sm transition-all group-hover:bg-[#cf6f55] group-hover:translate-x-1 group-hover:shadow-md">
                 Start swiping
                 <ArrowRight className="h-4 w-4" />
               </span>
