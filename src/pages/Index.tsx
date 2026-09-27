@@ -130,8 +130,7 @@ export default function Index() {
           <div className="flex items-center gap-3">
             <ChefHat className="h-11 w-11 shrink-0 text-[#b85f49]" strokeWidth={2.2} aria-label="RealiMeali" />
             <div>
-              <p className="text-sm font-medium text-gray-500">RealiMeali</p>
-              <h1 className="mt-0.5 text-2xl font-bold tracking-tight text-gray-900">What are we cooking, {displayName}?</h1>
+              <h1 className="text-2xl font-bold tracking-tight text-gray-900">What are we cooking, {displayName}?</h1>
             </div>
           </div>
           <button
