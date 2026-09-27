@@ -2,7 +2,8 @@ import realimealiLogo from "@/assets/realimeali-logo.ts";
 
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { User, CalendarDays, Book, ShoppingCart, AlignJustify, Bookmark, User as UserIcon, Home } from "lucide-react";
+import { User, AlignJustify, User as UserIcon, Home } from "lucide-react";
+import { RecipeCardIcon, DiscoverRecipeIcon, MealPlanIcon, ShoppingBasketIcon } from "@/components/icons/RealiMealiIcons";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -68,10 +69,10 @@ const Header = () => {
 
   const navigationItems = [
     { to: "/", icon: Home, label: "Home" },
-    { to: "/my-recipes", icon: Book, label: "My Recipes" },
-    { to: "/discover-recipes", icon: Bookmark, label: "Discover Recipes" },
-    { to: "/meal-planner", icon: CalendarDays, label: "Meal Planner" },
-    { to: "/shopping-list", icon: ShoppingCart, label: "Shopping List" },
+    { to: "/my-recipes", icon: RecipeCardIcon, label: "My Recipes" },
+    { to: "/discover-recipes", icon: DiscoverRecipeIcon, label: "Discover Recipes" },
+    { to: "/meal-planner", icon: MealPlanIcon, label: "Meal Planner" },
+    { to: "/shopping-list", icon: ShoppingBasketIcon, label: "Shopping List" },
   ];
 
   const headerAvatarUrl = user ? resolveProfilePhotoUrl(profileRow, user) : null;
