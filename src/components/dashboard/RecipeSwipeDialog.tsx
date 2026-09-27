@@ -234,9 +234,10 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
                   </Button>
                 </div>
               </div>
-            ) : isLoading ? (
-              <div className="text-center text-gray-500">Loading your choices…</div>
-            ) : current ? (
+            ) : (
+              isLoading ? (
+                <div className="text-center text-gray-500">Loading your choices…</div>
+              ) : current ? (
               <div className="flex w-full max-w-sm flex-col">
                 <div className="relative h-[54vh] w-full">
                   {next && (
@@ -318,8 +319,8 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
                   </select>
                 </div>
               </div>
-            ) : (
-              <div className="max-w-sm text-center">
+              ) : (
+                <div className="max-w-sm text-center">
                 <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-[#f2eee9]">
                   <Check className="h-8 w-8 text-terracotta" />
                 </div>
@@ -336,7 +337,8 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
                   View meal plan
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
-              </div>
+                </div>
+              )
             )}
           </div>
 
