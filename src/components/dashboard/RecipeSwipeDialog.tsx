@@ -162,9 +162,7 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
             {!swipingStarted ? (
               <div className="w-full max-w-sm text-center">
                 <h3 className="text-3xl font-bold text-gray-900">Choose a week</h3>
-                <p className="mt-2 text-sm text-gray-500">
-                  Pick a week, then start swiping.
-                </p>
+                <p className="mt-2 text-sm text-gray-500">Pick a week, then start swiping.</p>
 
                 <div className="mt-8 space-y-3">
                   <Button
@@ -179,6 +177,7 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
                     <span>This week</span>
                     <span className="ml-2 text-sm font-normal text-gray-500">{formatWeekOptionLabel(thisWeek)}</span>
                   </Button>
+
                   <Button
                     variant="outline"
                     className={"h-12 w-full justify-center rounded-xl text-base font-semibold " + (weekChosen && weekKey === nextWeek ? "border-terracotta bg-[#fff8f5] text-gray-900" : "border-gray-300 bg-white")}
@@ -191,6 +190,7 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
                     <span>Next week</span>
                     <span className="ml-2 text-sm font-normal text-gray-500">{formatWeekOptionLabel(nextWeek)}</span>
                   </Button>
+
                   <Button
                     variant="outline"
                     className="h-12 w-full justify-center rounded-xl border-gray-300 bg-white text-base font-semibold"
@@ -234,65 +234,66 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
                   </Button>
                 </div>
               </div>
-            ) : (
-              isLoading ? (
-                <div className="text-center text-gray-500">Loading your choices…</div>
-              ) : current ? (
+            ) : isLoading ? (
+              <div className="text-center text-gray-500">Loading your choices…</div>
+            ) : current ? (
               <div className="flex w-full max-w-sm flex-col">
                 <div className="relative h-[54vh] w-full">
                   {next && (
-                  <div className="absolute inset-x-3 top-3 bottom-0 rounded-2xl border border-gray-200 bg-white shadow-sm" />
-                )}
+                    <div className="absolute inset-x-3 top-3 bottom-0 rounded-2xl border border-gray-200 bg-white shadow-sm" />
+                  )}
 
-                <div
-                  key={current.id}
-                  className="absolute inset-0 cursor-grab touch-none select-none overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-lg active:cursor-grabbing"
-                  style={{
-                    transform: "translateX(" + dragX + "px) rotate(" + dragX / 22 + "deg)",
-                    transition: dragging ? "none" : "transform 180ms ease-out",
-                  }}
-                  onPointerDown={handlePointerDown}
-                  onPointerMove={handlePointerMove}
-                  onPointerUp={handlePointerUp}
-                  onPointerCancel={() => {
-                    setDragging(false);
-                    setDragX(0);
-                  }}
-                  onDoubleClick={goToRecipe}
-                >
-                  <div className="relative h-[58%] overflow-hidden bg-gray-100">
-                    {image ? (
-                      <img src={image} alt={current.title} className="h-full w-full object-cover" draggable={false} />
-                    ) : (
-                      <div className="flex h-full items-center justify-center">
-                        <span className="text-5xl">🍽️</span>
-                      </div>
-                    )}
+                  <div
+                    key={current.id}
+                    className="absolute inset-0 cursor-grab touch-none select-none overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-lg active:cursor-grabbing"
+                    style={{
+                      transform: "translateX(" + dragX + "px) rotate(" + dragX / 22 + "deg)",
+                      transition: dragging ? "none" : "transform 180ms ease-out",
+                    }}
+                    onPointerDown={handlePointerDown}
+                    onPointerMove={handlePointerMove}
+                    onPointerUp={handlePointerUp}
+                    onPointerCancel={() => {
+                      setDragging(false);
+                      setDragX(0);
+                    }}
+                    onDoubleClick={goToRecipe}
+                  >
+                    <div className="relative h-[58%] overflow-hidden bg-gray-100">
+                      {image ? (
+                        <img src={image} alt={current.title} className="h-full w-full object-cover" draggable={false} />
+                      ) : (
+                        <div className="flex h-full items-center justify-center">
+                          <span className="text-5xl">🍽️</span>
+                        </div>
+                      )}
 
-                    {dragX > 40 && (
-                      <div className="absolute left-4 top-4 border-2 border-gray-800 bg-white px-3 py-1 text-sm font-bold uppercase tracking-widest text-terracotta shadow-sm">
-                        Fancy it
-                      </div>
-                    )}
-                    {dragX < -40 && (
-                      <div className="absolute right-4 top-4 border-2 border-gray-800 bg-white px-3 py-1 text-sm font-bold uppercase tracking-widest text-gray-800 shadow-sm">
-                        Skip
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="p-5">
-                    <div className="text-xs font-bold uppercase tracking-wider text-terracotta">
-                      {current.cuisine_region?.replace("_", " ") || "Recipe"}
+                      {dragX > 40 && (
+                        <div className="absolute left-4 top-4 border-2 border-gray-800 bg-white px-3 py-1 text-sm font-bold uppercase tracking-widest text-terracotta shadow-sm">
+                          Fancy it
+                        </div>
+                      )}
+                      {dragX < -40 && (
+                        <div className="absolute right-4 top-4 border-2 border-gray-800 bg-white px-3 py-1 text-sm font-bold uppercase tracking-widest text-gray-800 shadow-sm">
+                          Skip
+                        </div>
+                      )}
                     </div>
-                    <h3 className="mt-1 line-clamp-2 text-2xl font-bold text-gray-900">{current.title}</h3>
-                    <div className="mt-3 flex gap-3 text-sm text-gray-500">
-                      <span>{current.prep_time + current.cook_time} min</span>
-                      <span>•</span>
-                      <span>{current.servings} servings</span>
+
+                    <div className="p-5">
+                      <div className="text-xs font-bold uppercase tracking-wider text-terracotta">
+                        {current.cuisine_region?.replace("_", " ") || "Recipe"}
+                      </div>
+                      <h3 className="mt-1 line-clamp-2 text-2xl font-bold text-gray-900">{current.title}</h3>
+                      <div className="mt-3 flex gap-3 text-sm text-gray-500">
+                        <span>{current.prep_time + current.cook_time} min</span>
+                        <span>•</span>
+                        <span>{current.servings} servings</span>
+                      </div>
                     </div>
                   </div>
                 </div>
+
                 <div className="mt-3">
                   <div className="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500">
                     Meal type
@@ -319,14 +320,16 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
                   </select>
                 </div>
               </div>
-              ) : (
-                <div className="max-w-sm text-center">
+            ) : (
+              <div className="max-w-sm text-center">
                 <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-[#f2eee9]">
                   <Check className="h-8 w-8 text-terracotta" />
                 </div>
                 <h3 className="text-3xl font-bold text-gray-900">All done.</h3>
                 <p className="mt-3 text-gray-500">{finishMessage}</p>
-                <p className="mt-2 text-sm font-semibold text-gray-700">♥ {sessionYesCount} {sessionYesCount === 1 ? "meal" : "meals"} added to your plan</p>
+                <p className="mt-2 text-sm font-semibold text-gray-700">
+                  ♥ {sessionYesCount} {sessionYesCount === 1 ? "meal" : "meals"} added to your plan
+                </p>
                 <Button
                   className="mt-5 h-11 rounded-full bg-gray-900 px-5 text-white hover:bg-gray-800"
                   onClick={() => {
@@ -337,8 +340,7 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
                   View meal plan
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
-                </div>
-              )
+              </div>
             )}
           </div>
 
