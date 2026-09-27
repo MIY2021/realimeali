@@ -135,12 +135,7 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
             <h2 className="mt-1 text-xl font-bold text-gray-900">
               {swipingStarted ? "What do you fancy?" : "Choose your week"}
             </h2>
-
-            {!swipingStarted ? (
-              <p className="mt-2 text-sm text-gray-600">
-                Pick a week before you start swiping.
-              </p>
-            ) : (
+            {swipingStarted ? (
               <>
                 <div className="mt-1 text-sm text-gray-500">{selectedWeekLabel}</div>
                 <div className="mt-3 flex items-center justify-between">
@@ -156,6 +151,10 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
                   </div>
                 </div>
               </>
+            ) : (
+              <p className="mt-2 text-sm text-gray-600">
+                Pick a week before you start swiping.
+              </p>
             )}
           </div>
 
