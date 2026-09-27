@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import { useRecipeForm } from "@/hooks/useRecipeForm";
 import { useRecipeProcessing } from "@/hooks/useRecipeProcessing";
 import { useImageGeneration } from "@/hooks/useImageGeneration";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useRealiChef } from "@/contexts/RealiChefContext";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { RealiChefIcon, RecipeCardIcon } from "@/components/icons/RealiMealiIcons";
 
 import { CreateRecipeTabsWrapper } from "./CreateRecipeTabsWrapper";
 import { useRecipeCreationHandlers, type RecipeOrigin } from "./hooks/useRecipeCreationHandlers";
@@ -223,9 +224,8 @@ export function CreateRecipeContainer({ editingRecipe, isEditMode = false, defau
       {/* Title Section */}
       <PageHeader
         icon={
-          <Plus 
-            className="h-6 w-6 sm:h-7 sm:w-7" 
-            style={{ color: '#F5B82E', stroke: '#F5B82E' }}
+          <RecipeCardIcon 
+            className="h-6 w-6 sm:h-7 sm:w-7 text-[#B85F49]" 
             aria-hidden="true"
           />
         }
@@ -236,7 +236,7 @@ export function CreateRecipeContainer({ editingRecipe, isEditMode = false, defau
             onClick={handleAskAIChef}
             className="flex items-center gap-2 text-sm"
           >
-            <Sparkles className="h-4 w-4" />
+            <RealiChefIcon className="h-4 w-4" />
             Ask AI Chef
           </Button>
         ) : undefined}
