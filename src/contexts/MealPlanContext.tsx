@@ -87,6 +87,33 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [stableUserId, stableHouseholdId, toast]);
 
+  // Keep household meal-plan state in sync when another household member
+  // adds, removes, or changes a meal plan. The subscription only triggers a
+  // lightweight refresh; the existing fetch remains the single source of truth.
+  useEffect(() => {
+    if (!stableUserId || !stableHouseholdId) return;
+
+    const channel = supabase
+      .channel(`meal-plan-realtime-${stableHouseholdId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'household_meal_plans',
+          filter: `household_id=eq.${stableHouseholdId}`,
+        },
+        () => {
+          void fetchMealPlans();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, [stableUserId, stableHouseholdId, fetchMealPlans]);
+
   // Auto-fetch disabled - now controlled by useParallelDataLoader for better performance
   // Clear meal plans when user/household changes to null
   useEffect(() => {
