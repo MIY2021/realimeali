@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowRight, Check, Eye, Heart, Sparkles, Undo2, X } from "lucide-react";
+import { ArrowRight, Check, Eye, Heart, Undo2, X } from "lucide-react";
+import { MealIcon } from "@/components/icons/RealiMealiIcons";
 import { MealType, Recipe } from "@/types";
 import { useRecipeSwipe } from "@/hooks/useRecipeSwipe";
 import { useMealPlan } from "@/contexts/MealPlanContext";
@@ -176,8 +177,8 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
         <div className="flex min-h-[78vh] flex-col">
           <div className="border-b border-gray-200 bg-white px-5 py-4">
             <div className="flex items-center gap-2 text-xs font-bold tracking-widest text-gray-700">
-              <Sparkles className="h-4 w-4" />
-              PICK YOUR MEALS
+              <MealIcon className="h-4 w-4" />
+              CHOOSE MEALS
             </div>
             <h2 className="mt-1 text-xl font-bold text-gray-900">
               {swipingStarted ? "What do you fancy?" : "Choose your week"}
@@ -223,7 +224,7 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
               </>
             ) : (
               <p className="mt-2 text-sm text-gray-600">
-                Pick a week before you start swiping.
+                Choose a week, then swipe through recipes to build your meal plan.
               </p>
             )}
 
