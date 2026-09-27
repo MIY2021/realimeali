@@ -1,13 +1,13 @@
 
 import { Tabs, TabsContent } from "@/components/ui/tabs";
-import { Globe, Upload, Sparkles, Pencil, Camera, Star } from "lucide-react";
+import { Globe, Camera, Pencil, ChevronRight } from "lucide-react";
+import { RecipeCardIcon, RealiChefIcon, MealIcon } from "@/components/icons/RealiMealiIcons";
 import { RecipeOrigin } from "./CreateRecipeContainer";
 import { cn } from "@/lib/utils";
 
 interface TabOption {
   value: string;
   label: string;
-  emoji: string;
   icon: React.ComponentType<{ className?: string }>;
   description: string;
 }
@@ -27,44 +27,38 @@ const baseTabOptions: TabOption[] = [
   { 
     value: "url", 
     label: "From Website", 
-    emoji: "🌐",
     icon: Globe,
-    description: "Import recipes from cooking websites instantly"
+    description: "Paste a link and we’ll do the rest"
   },
   { 
     value: "image", 
     label: "From Photo", 
-    emoji: "📸",
-    icon: Upload,
-    description: "Take a photo of a recipe card to extract all details"
+    icon: Camera,
+    description: "Scan a recipe card with your camera"
   },
   { 
     value: "generate", 
     label: "Generate with AI", 
-    emoji: "✨",
-    icon: Star,
-    description: "Describe your dish and AI creates the recipe"
+    icon: RealiChefIcon,
+    description: "Tell RealiChef what you fancy"
   },
   { 
     value: "text", 
     label: "Recipe Text", 
-    emoji: "📝",
-    icon: Pencil,
-    description: "Paste any recipe text and we'll format it perfectly"
+    icon: RecipeCardIcon,
+    description: "Paste recipe text and we’ll format it"
   },
   { 
     value: "whatcanImake", 
     label: "What Can I Make?", 
-    emoji: "🍽️",
-    icon: Sparkles,
-    description: "Enter your ingredients and discover recipe ideas"
+    icon: MealIcon,
+    description: "Use what you already have"
   },
   { 
     value: "manual", 
     label: "Manual Entry", 
-    emoji: "✍️",
-    icon: Camera,
-    description: "Build your recipe step by step with our easy form"
+    icon: Pencil,
+    description: "Build your recipe your way"
   },
 ];
 
@@ -97,8 +91,7 @@ export function CreateRecipeTabNavigation({
         if (manualTabIndex !== -1) {
           tabOptions[manualTabIndex] = {
             ...tabOptions[manualTabIndex],
-            label: isFromAI ? `Manual Entry [AI Generated]` : `Manual Entry (${originalTab.label})`,
-            emoji: "✍️",
+            label: isFromAI ? `Manual Entry · AI recipe` : `Manual Entry · ${originalTab.label}`,
             description: isFromAI ? `Edit your AI generated recipe manually` : `Edit your ${originalTab.label.toLowerCase()} recipe manually`
           };
         }
@@ -122,10 +115,11 @@ export function CreateRecipeTabNavigation({
         {/* Card Grid Navigation */}
         {!hideTabsAfterImport && !hideTabsInEditMode ? (
           <div className="mb-4">
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
               {tabOptions.map((tab) => {
                 const isActive = tab.value === activeTab;
-                
+                const Icon = tab.icon;
+
                 return (
                   <button
                     key={tab.value}
@@ -135,52 +129,35 @@ export function CreateRecipeTabNavigation({
                       onCardClick?.(tab.value);
                     }}
                     className={cn(
-                      "relative flex flex-col items-center justify-start p-4 md:p-5 rounded-[20px]",
-                      "border-2 transition-all duration-200",
-                      "min-h-[120px] md:min-h-[140px]",
-                      "shadow-lg md:hover:shadow-xl md:hover:scale-[1.02]",
-                      "focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#F5B82E]",
-                      "md:hover:-translate-y-0.5",
-                      "active:scale-[0.98]",
+                      "group relative flex items-center gap-4 w-full text-left p-4 rounded-2xl",
+                      "border bg-white transition-all duration-200",
+                      "focus:outline-none focus:ring-2 focus:ring-[#F5B82E]/40",
+                      "active:scale-[0.99] md:hover:-translate-y-0.5 md:hover:shadow-md",
                       isActive
-                        ? "border-[#F5B82E] shadow-xl bg-gradient-to-br from-[#F5B82E]/15 via-[#F5B82E]/10 to-white ring-2 ring-[#F5B82E]/30"
-                        : "border-[#E8E8E8] bg-white shadow-md md:hover:border-[#F5B82E]/50 md:hover:bg-gradient-to-br md:hover:from-white md:hover:to-[#F5B82E]/5"
+                        ? "border-[#F5B82E] bg-[#FFF9EA] shadow-sm"
+                        : "border-gray-200 shadow-sm md:hover:border-[#F5B82E]/50"
                     )}
                     aria-label={tab.label}
                     aria-pressed={isActive}
                   >
-                    {/* Icon/Emoji with background circle */}
                     <div className={cn(
-                      "mb-2 md:mb-3 w-14 h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center transition-all duration-200",
-                      isActive 
-                        ? "bg-[#F5B82E]/20 shadow-sm" 
-                        : "bg-[#F5F5F5]"
+                      "h-12 w-12 shrink-0 rounded-xl flex items-center justify-center",
+                      "transition-colors",
+                      isActive ? "bg-[#F5B82E]/15 text-[#B85F49]" : "bg-[#F7F5F2] text-[#B85F49]"
                     )}>
-                      <span className="text-3xl md:text-4xl" role="img" aria-hidden="true">
-                        {tab.emoji}
-                      </span>
+                      <Icon className="h-6 w-6" strokeWidth={2} aria-hidden="true" />
                     </div>
-                    
-                    {/* Label */}
-                    <h3 className={cn(
-                      "font-semibold text-sm md:text-base mb-1 md:mb-2 text-center transition-colors",
-                      isActive ? "text-[#1A1A1A]" : "text-[#1A1A1A]"
-                    )}>
-                      {tab.label}
-                    </h3>
-                    
-                    {/* Description */}
-                    <p className={cn(
-                      "text-xs md:text-sm text-center leading-tight",
-                      "text-[#6B6B6B] line-clamp-2"
-                    )}>
-                      {tab.description}
-                    </p>
-                    
-                    {/* Active indicator - more prominent */}
-                    {isActive && (
-                      <div className="absolute top-3 right-3 w-3 h-3 rounded-full bg-[#F5B82E] shadow-sm ring-2 ring-white" />
-                    )}
+
+                    <div className="min-w-0 flex-1">
+                      <h3 className="font-semibold text-[15px] text-[#1A1A1A] leading-tight">
+                        {tab.label}
+                      </h3>
+                      <p className="mt-1 text-xs leading-snug text-[#6B6B6B] line-clamp-2">
+                        {tab.description}
+                      </p>
+                    </div>
+
+                    <ChevronRight className="h-5 w-5 shrink-0 text-gray-300 transition-transform group-hover:translate-x-0.5 group-hover:text-[#B85F49]" />
                   </button>
                 );
               })}
