@@ -353,7 +353,7 @@ export function EnhancedMealCard({
 
             {/* Lunch Leftover icon - top-right */}
             {existingLeftover && (
-              <div className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-yellow-500/80 flex items-center justify-center shadow-sm animate-scale-in-slow">
+              <div className="absolute top-0.5 right-5 w-4 h-4 rounded-full bg-yellow-500/80 flex items-center justify-center shadow-sm animate-scale-in-slow">
                 <UtensilsCrossed className="h-2.5 w-2.5 text-white" />
               </div>
             )}
