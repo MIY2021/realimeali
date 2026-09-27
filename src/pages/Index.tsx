@@ -1,5 +1,4 @@
-import realimealiLogo from "@/assets/realimeali-logo.ts";
-import { ArrowRight, BookOpen, CalendarDays, Heart, ShoppingCart } from "lucide-react";
+import { ArrowRight, BookOpen, CalendarDays, Heart, ShoppingCart, ChefHat } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { LoginPromptDialog } from "@/components/auth/LoginPromptDialog";
@@ -129,7 +128,7 @@ export default function Index() {
 
         <header className="flex items-center justify-between mb-7">
           <div className="flex items-center gap-3">
-            <img src={realimealiLogo} alt="RealiMeali" className="h-11 w-11 shrink-0 object-contain" />
+            <ChefHat className="h-11 w-11 shrink-0 text-[#b85f49]" strokeWidth={2.2} aria-label="RealiMeali" />
             <div>
               <p className="text-sm font-medium text-gray-500">RealiMeali</p>
               <h1 className="mt-0.5 text-2xl font-bold tracking-tight text-gray-900">What are we cooking, {displayName}?</h1>
