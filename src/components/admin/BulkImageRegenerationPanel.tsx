@@ -95,7 +95,7 @@ export function BulkImageRegenerationPanel() {
         </div>
         <CardDescription>
           Regenerate the existing AI-generated recipe images using the new varied food-photography system.
-          Images are processed in small batches and only replaced after a new image succeeds.
+          Images are processed in small batches and only replaced after a new image succeeds. If the request fails, the error is shown here.
         </CardDescription>
       </CardHeader>
       <CardContent className="px-0 space-y-4">
