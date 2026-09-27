@@ -153,7 +153,7 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 p-0 text-gray-900 shadow-2xl">
+      <DialogContent className="relative max-w-lg overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 p-0 text-gray-900 shadow-2xl">
         <div className="flex min-h-[78vh] flex-col">
           <div className="border-b border-gray-200 bg-white px-5 py-4">
             <div className="flex items-center gap-2 text-xs font-bold tracking-widest text-gray-700">
@@ -199,7 +199,7 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
               </p>
             )}
             {swipingStarted && showPlannedPreview && plannedMealCount > 0 && (
-              <div className="mt-3 rounded-xl border border-gray-200 bg-gray-50 p-3">
+              <div className="absolute left-5 right-5 top-[108px] z-30 max-h-[52vh] overflow-y-auto rounded-xl border border-gray-200 bg-white p-3 shadow-xl">
                 <div className="mb-2 flex items-center justify-between">
                   <span className="text-xs font-semibold uppercase tracking-wider text-gray-500">
                     Planned {mealType}
