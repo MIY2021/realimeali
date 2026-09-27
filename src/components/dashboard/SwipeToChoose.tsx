@@ -65,7 +65,7 @@ export function SwipeToChoose() {
             <div className="absolute inset-x-0 top-0 flex items-center justify-between p-4">
               <span className="inline-flex items-center gap-2 bg-white/95 px-3 py-1.5 text-xs font-bold tracking-widest text-gray-800 shadow-sm">
                 <Sparkles className="h-3.5 w-3.5 text-terracotta" />
-                NEXT WEEK
+                PICK YOUR MEALS
               </span>
             </div>
           </div>
