@@ -343,7 +343,7 @@ export function EnhancedMealCard({
                 <RecipeImage
                   recipe={recipe}
                   useThumbnail={true}
-                  imgClassName={`cursor-pointer hover:opacity-80 transition-opacity ${mealPlan.is_completed ? 'grayscale brightness-75' : ''`}
+                  imgClassName={`cursor-pointer hover:opacity-80 transition-opacity ${mealPlan.is_completed ? 'grayscale brightness-75' : ''}`}
                   iconSize="h-6 w-6"
                   fixedSize={true}
                 />
@@ -352,7 +352,7 @@ export function EnhancedMealCard({
 
             {/* Lunch Leftover icon - top-left */}
             {existingLeftover && (
-              <div className="absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-yellow-500/80 flex items-center justify-center shadow-sm animate-scale-in-slow">
+              <div className="absolute bottom-0.5 left-0.5 w-4 h-4 rounded-full bg-yellow-500/80 flex items-center justify-center shadow-sm animate-scale-in-slow">
                 <UtensilsCrossed className="h-2.5 w-2.5 text-white" />
               </div>
             )}
