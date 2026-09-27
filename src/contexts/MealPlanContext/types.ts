@@ -29,7 +29,7 @@ export interface MealPlanContextType {
   mealPlans: MealPlan[];
   getMealPlansForWeek: (weekKey: string) => MealPlan[];
   getRecipeForMealPlan: (mealPlan: MealPlan) => Recipe | undefined;
-  addMealPlan: (mealPlanData: Omit<MealPlan, 'id' | 'created_at' | 'updated_at'>, weekKey: string, silentMode?: boolean) => Promise<void>;
+  addMealPlan: (mealPlanData: Omit<MealPlan, 'id' | 'created_at' | 'updated_at'>, weekKey: string, silentMode?: boolean) => Promise<MealPlan>;
   addMealPlanWithLeftovers: (mealPlanData: Omit<MealPlan, 'id' | 'created_at' | 'updated_at'>, weekKey: string, leftoverServings?: number, silentMode?: boolean) => Promise<void>;
   removeMealPlan: (id: string) => Promise<void>;
   clearWeek: (weekKey: string) => Promise<void>;
