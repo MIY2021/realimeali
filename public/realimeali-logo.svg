@@ -1,15 +1,27 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="RealiMeali">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1266 1243" role="img" aria-label="RealiMeali">
 <defs>
-  <linearGradient id="tile" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFF8ED"/><stop offset="1" stop-color="#F9E6CF"/></linearGradient>
-  <linearGradient id="bowl" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFB52E"/><stop offset=".45" stop-color="#F76B20"/><stop offset="1" stop-color="#C92F24"/></linearGradient>
-  <linearGradient id="leaf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#9AD32F"/><stop offset="1" stop-color="#2F7D32"/></linearGradient>
-  <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFB52E"/><stop offset="1" stop-color="#F15A24"/></linearGradient>
+  <linearGradient id="tile" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#FFF9EF"/><stop offset="1" stop-color="#F9E7D2"/>
+  </linearGradient>
+  <linearGradient id="bowl" x1="0" y1="0" x2="0.9" y2="1">
+    <stop offset="0" stop-color="#FFB62B"/><stop offset="0.48" stop-color="#FF6A16"/><stop offset="1" stop-color="#D93224"/>
+  </linearGradient>
+  <linearGradient id="bowlShade" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#F44B20"/><stop offset="1" stop-color="#B72D25"/>
+  </linearGradient>
+  <linearGradient id="green" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#67B83A"/><stop offset="1" stop-color="#18733A"/>
+  </linearGradient>
+  <linearGradient id="orange" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#FFB51E"/><stop offset="1" stop-color="#F36A1C"/>
+  </linearGradient>
 </defs>
-<rect x="8" y="8" width="496" height="496" rx="104" fill="url(#tile)"/>
-<path d="M91 259c8 112 78 181 165 181s157-69 165-181c-49 35-104 53-165 53S140 294 91 259Z" fill="url(#bowl)"/>
-<path d="M92 259c47 32 102 48 164 48s117-16 164-48c-6 22-10 38-18 51-42 26-91 39-146 39s-104-13-146-39c-8-13-12-29-18-51Z" fill="#FCEBD7" opacity=".9"/>
-<path d="M139 248c-2-64 31-112 88-137 7 58-16 104-88 137Z" fill="url(#leaf)"/>
-<path d="M169 229c16-38 35-67 60-91" fill="none" stroke="#FCEBD7" stroke-width="8" stroke-linecap="round"/>
-<path d="M292 217c-3-47 23-82 69-103 2 42-18 77-69 103Z" fill="url(#accent)"/>
-<path d="M116 277c43 29 90 43 140 43s97-14 140-43" fill="none" stroke="#FF9A24" stroke-width="10" stroke-linecap="round" opacity=".65"/>
+<rect x="96" y="34" width="1074" height="1175" rx="250" fill="url(#tile)"/>
+<path d="M237 555 C246 765 382 1014 640 1045 C898 1014 1020 765 1029 555 C913 626 793 663 640 663 C487 663 353 626 237 555Z" fill="url(#bowl)"/>
+<path d="M237 555 C358 621 486 650 640 650 C794 650 922 621 1029 555 C1017 602 1003 636 977 668 C882 724 770 749 640 749 C510 749 398 724 303 668 C277 636 249 602 237 555Z" fill="#FFF7EA"/>
+<path d="M309 600 C381 636 493 653 640 653 C787 653 899 636 971 600" fill="none" stroke="#FF8A1E" stroke-width="16" stroke-linecap="round"/>
+<path d="M398 545 C377 373 465 254 637 188 C649 349 575 472 398 545Z" fill="url(#green)"/>
+<path d="M451 508 C497 405 550 319 613 258" fill="none" stroke="#FFF7EA" stroke-width="18" stroke-linecap="round"/>
+<path d="M682 513 C671 386 748 295 887 246 C891 361 822 455 682 513Z" fill="url(#orange)"/>
+<ellipse cx="660" cy="862" rx="270" ry="155" fill="url(#bowlShade)" opacity=".58" transform="rotate(-15 660 862)"/>
 </svg>
