@@ -6,7 +6,7 @@ import { useMealPlan } from "@/contexts/MealPlanContext";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { getCurrentWeekKey, getNextWeek, formatWeekRange, getWeekStartDate, parseISOWeekKey } from "@/utils/weekUtils";
+import { getCurrentWeekKey, getNextWeek, formatWeekRange, getWeekStartDate, parseISOWeekKey, getISOWeekKey } from "@/utils/weekUtils";
 
 interface RecipeSwipeDialogProps {
   open: boolean;
@@ -295,13 +295,14 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
                 {anotherWeekOpen && (
                   <div className="mt-4 text-left">
                     <label className="block text-sm font-semibold text-gray-700">
-                      Select week
+                      Pick any day in the week
                       <input
-                        type="week"
-                        value={weekKey}
+                        type="date"
+                        value={formatLocalDateYMD(getWeekStartDate(parseISOWeekKey(weekKey).year, parseISOWeekKey(weekKey).week))}
                         onChange={event => {
                           if (event.target.value) {
-                            setWeekKey(event.target.value);
+                            const selectedDate = new Date(event.target.value + "T12:00:00");
+                            setWeekKey(getISOWeekKey(selectedDate));
                             setWeekChosen(true);
                             setAnotherWeekOpen(false);
                           }
