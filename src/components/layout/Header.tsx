@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { User, UtensilsCrossed, CalendarDays, Book, ShoppingCart, AlignJustify, Bookmark, User as UserIcon, Home } from "lucide-react";
+import { User, CalendarDays, Book, ShoppingCart, AlignJustify, Bookmark, User as UserIcon, Home } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -111,7 +111,7 @@ const Header = () => {
       <header className="fixed top-0 left-0 right-0 z-50 w-full border-b bg-[#fdc8a4]/95 backdrop-blur-sm shadow-sm">
         <div className="container flex h-16 items-center justify-between px-4 sm:px-6">
           <Link to="/" className="flex items-center space-x-2">
-            <UtensilsCrossed className="h-6 w-6 text-terracotta" />
+            <img src="/realimeali-logo.svg" alt="RealiMeali" className="h-9 w-9 object-contain" />
             <span className="text-xl font-bold text-navy">RealiMeali</span>
           </Link>
           
