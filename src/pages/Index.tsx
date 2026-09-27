@@ -1,4 +1,4 @@
-import { ArrowRight, BookOpen, CalendarDays, Heart, ShoppingCart, ChefHat } from "lucide-react";
+import { ArrowRight, CalendarDays, ChefHat } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { LoginPromptDialog } from "@/components/auth/LoginPromptDialog";
@@ -9,6 +9,7 @@ import { getCurrentWeekKey } from "@/utils/weekUtils";
 import { SwipeToChoose } from "@/components/dashboard/SwipeToChoose";
 import { LatestRecipesInspiration } from "@/components/dashboard/LatestRecipesInspiration";
 import { HomeOverflowMenu } from "@/components/layout/HomeOverflowMenu";
+import { RecipeCardIcon, MealIcon, ShoppingBasketIcon } from "@/components/icons/RealiMealiIcons";
 import { WelcomeSlidesDialog } from "@/components/onboarding/WelcomeSlidesDialog";
 import { sessionProfileQueryKey, useSessionProfile } from "@/hooks/useSessionProfile";
 import { useQueryClient } from "@tanstack/react-query";
@@ -198,15 +199,15 @@ export default function Index() {
           <h2 id="quick-actions-heading" className="text-xs font-bold uppercase tracking-[0.16em] text-gray-500 mb-3">Quick actions</h2>
           <div className="grid grid-cols-3 gap-2">
             <button onClick={() => navigate("/my-recipes/new")} className="min-h-[74px] rounded-xl border border-gray-200 bg-white px-3 py-3 text-left hover:border-[#b85f49] transition-colors">
-              <BookOpen className="h-5 w-5 text-[#b85f49] mb-2" />
+              <RecipeCardIcon className="h-5 w-5 text-[#b85f49] mb-2" />
               <span className="block text-sm font-semibold text-gray-900">Add recipe</span>
             </button>
             <button onClick={() => document.getElementById("meal-picker")?.scrollIntoView({ behavior: "smooth" })} className="min-h-[74px] rounded-xl border border-gray-200 bg-white px-3 py-3 text-left hover:border-[#b85f49] transition-colors">
-              <Heart className="h-5 w-5 text-[#b85f49] mb-2" />
+              <MealIcon className="h-5 w-5 text-[#b85f49] mb-2" />
               <span className="block text-sm font-semibold text-gray-900">Pick meals</span>
             </button>
             <button onClick={() => navigate("/shopping-list")} className="min-h-[74px] rounded-xl border border-gray-200 bg-white px-3 py-3 text-left hover:border-[#b85f49] transition-colors">
-              <ShoppingCart className="h-5 w-5 text-[#b85f49] mb-2" />
+              <ShoppingBasketIcon className="h-5 w-5 text-[#b85f49] mb-2" />
               <span className="block text-sm font-semibold text-gray-900">Shopping list</span>
             </button>
           </div>
