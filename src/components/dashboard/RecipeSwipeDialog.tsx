@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowRight, Check, Heart, Sparkles, Undo2 } from "lucide-react";
+import { ArrowRight, Check, Eye, Heart, Sparkles, Undo2, X } from "lucide-react";
 import { MealType, Recipe } from "@/types";
 import { useRecipeSwipe } from "@/hooks/useRecipeSwipe";
 import { useMealPlan } from "@/contexts/MealPlanContext";
@@ -40,6 +40,7 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
   const [dragging, setDragging] = useState(false);
   const [plannedCountPulse, setPlannedCountPulse] = useState(false);
   const [showPlannedPreview, setShowPlannedPreview] = useState(false);
+  const [showRecipePreview, setShowRecipePreview] = useState(false);
   const previousPlannedCount = useRef<number | null>(null);
   const startX = useRef(0);
   const current = remainingRecipes[0];
@@ -55,6 +56,7 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
       setDragX(0);
       setDragging(false);
       setShowPlannedPreview(false);
+      setShowRecipePreview(false);
     }
   }, [open]);
 
@@ -148,6 +150,10 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
     if (dragX > 100) await handleSwipe("yes");
     else if (dragX < -100) await handleSwipe("no");
     else setDragX(0);
+  };
+
+  const openRecipePreview = () => {
+    setShowRecipePreview(true);
   };
 
   const goToRecipe = () => {
@@ -261,6 +267,74 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
               </div>
             )}
           </div>
+
+          {showRecipePreview && current && (
+            <div className="absolute inset-0 z-40 flex flex-col overflow-hidden bg-white">
+              <div className="flex items-center justify-between border-b border-gray-200 px-5 py-4">
+                <div>
+                  <div className="text-xs font-bold uppercase tracking-wider text-terracotta">Recipe preview</div>
+                  <h3 className="mt-1 text-xl font-bold text-gray-900">{current.title}</h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowRecipePreview(false)}
+                  className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-800"
+                  aria-label="Close recipe preview"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+              <div className="flex-1 overflow-y-auto">
+                {image ? (
+                  <img src={image} alt={current.title} className="h-48 w-full object-cover" />
+                ) : (
+                  <div className="flex h-48 items-center justify-center bg-gray-100 text-5xl">🍽️</div>
+                )}
+                <div className="space-y-6 p-5">
+                  {current.description && (
+                    <p className="text-sm leading-6 text-gray-600">{current.description}</p>
+                  )}
+                  <div>
+                    <h4 className="mb-3 text-sm font-bold uppercase tracking-wider text-gray-500">Ingredients</h4>
+                    <ul className="space-y-2 text-sm text-gray-700">
+                      {(current.ingredients || []).map((ingredient, index) => (
+                        <li key={index} className="flex gap-2">
+                          <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-terracotta" />
+                          <span>{ingredient}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div>
+                    <h4 className="mb-3 text-sm font-bold uppercase tracking-wider text-gray-500">Method</h4>
+                    <ol className="space-y-3 text-sm leading-6 text-gray-700">
+                      {(current.instructions || []).map((instruction, index) => (
+                        <li key={index} className="flex gap-3">
+                          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gray-100 text-xs font-bold text-gray-500">{index + 1}</span>
+                          <span>{instruction}</span>
+                        </li>
+                      ))}
+                    </ol>
+                  </div>
+                  {current.top_tip && (
+                    <div className="rounded-xl bg-[#fff8f5] p-4">
+                      <div className="text-xs font-bold uppercase tracking-wider text-terracotta">Top tip</div>
+                      <p className="mt-1 text-sm leading-6 text-gray-700">{current.top_tip}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className="border-t border-gray-200 bg-white p-4">
+                <button
+                  type="button"
+                  onClick={() => setShowRecipePreview(false)}
+                  className="h-11 w-full rounded-xl bg-gray-900 text-sm font-semibold text-white hover:bg-gray-800"
+                >
+                  Back to swiping
+                </button>
+              </div>
+            </div>
+          )}
 
           <div className="flex flex-1 items-center justify-center px-5 py-6">
             {!swipingStarted ? (
@@ -412,6 +486,19 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
                         <span>•</span>
                         <span>{current.servings} servings</span>
                       </div>
+                      <button
+                        type="button"
+                        onPointerDown={event => event.stopPropagation()}
+                        onClick={event => {
+                          event.stopPropagation();
+                          openRecipePreview();
+                        }}
+                        className="mt-4 inline-flex h-10 items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-4 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-100"
+                        aria-label={"Preview " + current.title}
+                      >
+                        <Eye className="h-4 w-4" />
+                        Preview recipe
+                      </button>
                     </div>
                   </div>
                 </div>
