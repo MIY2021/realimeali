@@ -102,7 +102,7 @@ export function LoginForm() {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="flex flex-col items-center justify-center mb-8">
-          <img src="/realimeali-logo.svg" alt="RealiMeali" className="h-20 w-20 object-contain" />
+          <img src="/realimeali-logo.png" alt="RealiMeali" className="h-20 w-20 object-contain" />
           <span className="mt-3 text-4xl font-bold text-navy">RealiMeali</span>
         </div>
 
