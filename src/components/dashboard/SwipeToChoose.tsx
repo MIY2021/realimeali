@@ -1,4 +1,4 @@
-import { ArrowRight, Heart, Sparkles } from "lucide-react";
+import { ArrowRight, Heart } from "lucide-react";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { useEffect, useRef, useState } from "react";
 import { RecipeSwipeDialog } from "./RecipeSwipeDialog";
@@ -80,8 +80,7 @@ export function SwipeToChoose() {
             )}
 
             <div className="absolute left-4 top-4">
-              <span className="inline-flex items-center gap-2 bg-white/95 px-3 py-1.5 text-xs font-bold tracking-widest text-gray-800 shadow-sm">
-                <Sparkles className="h-3.5 w-3.5 text-terracotta" />
+              <span className="inline-flex items-center rounded-full bg-white/95 px-3 py-1.5 text-xs font-bold tracking-widest text-gray-800 shadow-sm">
                 PICK YOUR MEALS
               </span>
             </div>
