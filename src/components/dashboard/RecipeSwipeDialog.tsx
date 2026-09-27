@@ -123,7 +123,7 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
               PICK YOUR MEALS
             </div>
             <h2 className="mt-1 text-xl font-bold text-gray-900">
-              "Choose your week"
+              weekChosen ? "What do you fancy?" : "Choose your week"
             </h2>
             {weekChosen ? (
               <div className="mt-1 text-sm text-gray-500">{selectedWeekLabel}</div>
@@ -160,7 +160,7 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
                 <div className="mt-8 space-y-3">
                   <Button
                     variant="outline"
-                    className={"h-12 w-full justify-center rounded-xl text-base font-semibold " + (weekKey === thisWeek ? "border-terracotta bg-[#fff8f5] text-gray-900" : "border-gray-300 bg-white")}
+                    className={"h-12 w-full justify-center rounded-xl text-base font-semibold " + (weekChosen && weekKey === thisWeek ? "border-terracotta bg-[#fff8f5] text-gray-900" : "border-gray-300 bg-white")}
                     onClick={() => {
                       setWeekKey(thisWeek);
                       setAnotherWeekOpen(false);
@@ -172,7 +172,7 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
                   </Button>
                   <Button
                     variant="outline"
-                    className={"h-12 w-full justify-center rounded-xl text-base font-semibold " + (weekKey === nextWeek ? "border-terracotta bg-[#fff8f5] text-gray-900" : "border-gray-300 bg-white")}
+                    className={"h-12 w-full justify-center rounded-xl text-base font-semibold " + (weekChosen && weekKey === nextWeek ? "border-terracotta bg-[#fff8f5] text-gray-900" : "border-gray-300 bg-white")}
                     onClick={() => {
                       setWeekKey(nextWeek);
                       setAnotherWeekOpen(false);
@@ -235,8 +235,34 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
             ) : isLoading ? (
               <div className="text-center text-gray-500">Loading your choices…</div>
             ) : current ? (
-              <div className="relative h-[54vh] w-full max-w-sm">
-                {next && (
+              <div className="flex w-full max-w-sm flex-col">
+                <div className="mb-3">
+                  <div className="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500">
+                    Meal type
+                  </div>
+                  <select
+                    value={mealType}
+                    onChange={event => setMealType(event.target.value as MealType)}
+                    className="h-11 w-full rounded-xl border border-gray-200 bg-white px-4 text-sm font-semibold text-gray-800 outline-none focus:border-terracotta focus:ring-1 focus:ring-terracotta"
+                    aria-label="Meal type"
+                  >
+                    {([
+                      ["breakfast", "Breakfast"],
+                      ["lunch", "Lunch"],
+                      ["dinner", "Dinner"],
+                      ["snacks", "Snacks"],
+                      ["sides", "Sides"],
+                      ["desserts", "Desserts"],
+                      ["drinks", "Drinks"],
+                      ["appetizers", "Appetizers"],
+                      ["sauce", "Sauce"],
+                    ] as const satisfies ReadonlyArray<[MealType, string]>).map(([value, label]) => (
+                      <option key={value} value={value}>{label}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="relative h-[54vh] w-full">
+                  {next && (
                   <div className="absolute inset-x-3 top-3 bottom-0 rounded-2xl border border-gray-200 bg-white shadow-sm" />
                 )}
 
@@ -289,6 +315,7 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
                     </div>
                   </div>
                 </div>
+                </div>
               </div>
             ) : (
               <div className="max-w-sm text-center">
@@ -312,40 +339,6 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
             )}
           </div>
 
-          {weekChosen && (
-            <div className="border-t border-gray-200 bg-white px-5 pb-5 pt-4">
-              <div className="mx-auto max-w-sm">
-                <div className="mb-2 text-center text-xs font-semibold uppercase tracking-wider text-gray-500">
-                  Meal type
-                </div>
-                <select
-                  value={mealType}
-                  onChange={event => setMealType(event.target.value as MealType)}
-                  className="h-11 w-full rounded-xl border border-gray-200 bg-white px-4 text-sm font-semibold text-gray-800 outline-none focus:border-terracotta focus:ring-1 focus:ring-terracotta"
-                  aria-label="Meal type"
-                >
-                  {([
-                    ["breakfast", "Breakfast"],
-                    ["lunch", "Lunch"],
-                    ["dinner", "Dinner"],
-                    ["snacks", "Snacks"],
-                    ["sides", "Sides"],
-                    ["desserts", "Desserts"],
-                    ["drinks", "Drinks"],
-                    ["appetizers", "Appetizers"],
-                    ["sauce", "Sauce"],
-                  ] as const satisfies ReadonlyArray<[MealType, string]>).map(([value, label]) => (
-                    <option key={value} value={value}>{label}</option>
-                  ))}
-                </select>
-                {!dbAvailable && (
-                  <p className="mt-3 text-center text-xs text-amber-600">
-                    Your swipe couldn't be synced yet. Please try again.
-                  </p>
-                )}
-              </div>
-            </div>
-          )}
         </div>
       </DialogContent>
     </Dialog>
