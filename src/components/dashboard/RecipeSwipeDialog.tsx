@@ -18,6 +18,8 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
   const {
     weekKey,
     setWeekKey,
+    mealType,
+    setMealType,
     remainingRecipes,
     isLoading,
     isSaving,
@@ -260,44 +262,39 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
             )}
           </div>
 
-          {weekChosen && current && (
+          {weekChosen && (
             <div className="border-t border-gray-200 bg-white px-5 pb-5 pt-4">
-              <div className="flex items-center justify-center gap-4">
-                <Button
-                  variant="outline"
-                  className="h-12 rounded-full border-gray-300 bg-white px-5 text-gray-700 hover:bg-gray-50"
-                  onClick={() => handleSwipe("no")}
-                  disabled={isSaving}
-                >
-                  <X className="mr-2 h-4 w-4" />
-                  Skip
-                </Button>
-                <Button
-                  variant="outline"
-                  className="h-12 rounded-full border-gray-300 bg-white px-5 text-gray-700 hover:bg-gray-50"
-                  onClick={goToRecipe}
-                >
-                  View recipe
-                </Button>
-                <Button
-                  className="h-12 rounded-full bg-terracotta px-5 text-white hover:bg-terracotta/90"
-                  onClick={() => handleSwipe("yes")}
-                  disabled={isSaving}
-                >
-                  <Heart className="mr-2 h-4 w-4" />
-                  Fancy it
-                </Button>
+              <div className="mx-auto max-w-sm">
+                <div className="mb-2 text-center text-xs font-semibold uppercase tracking-wider text-gray-500">
+                  Meal type
+                </div>
+                <div className="grid grid-cols-3 rounded-xl border border-gray-200 bg-gray-50 p-1">
+                  {([
+                    ["breakfast", "Breakfast"],
+                    ["lunch", "Lunch"],
+                    ["dinner", "Dinner"],
+                  ] as const).map(([value, label]) => (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => setMealType(value)}
+                      className={
+                        "h-10 rounded-lg text-sm font-semibold transition-colors " +
+                        (mealType === value
+                          ? "bg-terracotta text-white shadow-sm"
+                          : "text-gray-600 hover:bg-white hover:text-gray-900")
+                      }
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+                {!dbAvailable && (
+                  <p className="mt-3 text-center text-xs text-amber-600">
+                    Your swipe couldn't be synced yet. Please try again.
+                  </p>
+                )}
               </div>
-              <div className="mt-3 flex justify-center gap-1 text-xs text-gray-400">
-                <span>Drag the card left or right</span>
-                <ArrowLeft className="h-3 w-3" />
-                <ArrowRight className="h-3 w-3" />
-              </div>
-              {!dbAvailable && (
-                <p className="mt-3 text-center text-xs text-amber-600">
-                  Your swipe couldn't be synced yet. Please try again.
-                </p>
-              )}
             </div>
           )}
         </div>
