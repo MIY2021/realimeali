@@ -462,10 +462,10 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
                         </div>
                       )}
                       <div className="pointer-events-none absolute inset-x-0 top-1/2 z-10 flex -translate-y-1/2 items-center justify-between px-4">
-                        <span className="rounded-full bg-white/85 px-3 py-1.5 text-[11px] font-bold tracking-[0.16em] text-gray-500 shadow-sm backdrop-blur-sm">
+                        <span className="rounded-full bg-white/85 px-3 py-1.5 text-[11px] font-bold tracking-[0.16em] text-red-600 shadow-sm backdrop-blur-sm">
                           NO
                         </span>
-                        <span className="rounded-full bg-white/85 px-3 py-1.5 text-[11px] font-bold tracking-[0.16em] text-terracotta shadow-sm backdrop-blur-sm">
+                        <span className="rounded-full bg-white/85 px-3 py-1.5 text-[11px] font-bold tracking-[0.16em] text-green-600 shadow-sm backdrop-blur-sm">
                           YES
                         </span>
                       </div>
