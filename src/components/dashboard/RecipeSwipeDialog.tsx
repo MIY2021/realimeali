@@ -174,7 +174,7 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 p-0 text-gray-900 shadow-2xl">
-        <div className="flex min-h-[78vh] flex-col">
+        <div className="flex flex-col">
           <div className="border-b border-gray-200 bg-white px-5 py-4">
             <div className="flex items-center gap-2 text-sm font-bold tracking-[0.14em] text-gray-700">
               <MealIcon className="h-4 w-4 text-terracotta" />
