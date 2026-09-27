@@ -150,32 +150,32 @@ const AdminDashboard = () => {
             <CardContent>
               <Accordion type="single" collapsible className="w-full">
                 <AccordionItem value="image-prompt">
-                  <AccordionTrigger className="hover:no-underline"><div className="flex items-center gap-3"><div className="p-2 rounded-lg bg-blue-100"><Image className="h-5 w-5 text-blue-600" /></div><div className="text-left"><div className="font-semibold">Image Generation Prompt</div><div className="text-sm text-muted-foreground font-normal">Configure AI prompt for recipe image generation</div></div></div></AccordionTrigger>
+                  <AccordionTrigger className="hover:no-underline"><div className="flex items-center gap-3"><div className="p-2 rounded-lg bg-blue-100"><Image className="h-5 w-5 text-blue-600" /></div><div className="text-left"><div className="font-semibold">Image Generation Prompt</div><div className="text-sm text-muted-foreground font-normal">Configure AI prompt for recipe image generation</div></div></div></div></AccordionTrigger>
                   <AccordionContent><ImagePromptSettingsPanel /></AccordionContent>
                 </AccordionItem>
 
                 <AccordionItem value="bulk-image-regeneration">
-                  <AccordionTrigger className="hover:no-underline"><div className="flex items-center gap-3"><div className="p-2 rounded-lg bg-amber-100"><RefreshCw className="h-5 w-5 text-amber-600" /></div><div className="text-left"><div className="font-semibold">Regenerate Existing AI Images</div><div className="text-sm text-muted-foreground font-normal">Regenerate existing recipe images with the new photography system</div></div></div></AccordionTrigger>
+                  <AccordionTrigger className="hover:no-underline"><div className="flex items-center gap-3"><div className="p-2 rounded-lg bg-amber-100"><RefreshCw className="h-5 w-5 text-amber-600" /></div><div className="text-left"><div className="font-semibold">Regenerate Existing AI Images</div><div className="text-sm text-muted-foreground font-normal">Regenerate existing recipe images with the new photography system</div></div></div></div></AccordionTrigger>
                   <AccordionContent><BulkImageRegenerationPanel /></AccordionContent>
                 </AccordionItem>
 
                 <AccordionItem value="thumbnail-generation">
-                  <AccordionTrigger className="hover:no-underline"><div className="flex items-center gap-3"><div className="p-2 rounded-lg bg-purple-100"><FileImage className="h-5 w-5 text-purple-600" /></div><div className="text-left"><div className="font-semibold">Thumbnail Generation</div><div className="text-sm text-muted-foreground font-normal">Generate optimized thumbnails for recipes</div></div></AccordionTrigger>
+                  <AccordionTrigger className="hover:no-underline"><div className="flex items-center gap-3"><div className="p-2 rounded-lg bg-purple-100"><FileImage className="h-5 w-5 text-purple-600" /></div><div className="text-left"><div className="font-semibold">Thumbnail Generation</div><div className="text-sm text-muted-foreground font-normal">Generate optimized thumbnails for recipes</div></div></div></AccordionTrigger>
                   <AccordionContent><ThumbnailGenerationPanel /></AccordionContent>
                 </AccordionItem>
 
                 <AccordionItem value="ingredient-parsing">
-                  <AccordionTrigger className="hover:no-underline"><div className="flex items-center gap-3"><div className="p-2 rounded-lg bg-green-100"><Sparkles className="h-5 w-5 text-green-600" /></div><div className="text-left"><div className="font-semibold">Ingredient Parsing</div><div className="text-sm text-muted-foreground font-normal">Parse and categorize recipe ingredients using AI</div></div></AccordionTrigger>
+                  <AccordionTrigger className="hover:no-underline"><div className="flex items-center gap-3"><div className="p-2 rounded-lg bg-green-100"><Sparkles className="h-5 w-5 text-green-600" /></div><div className="text-left"><div className="font-semibold">Ingredient Parsing</div><div className="text-sm text-muted-foreground font-normal">Parse and categorize recipe ingredients using AI</div></div></div></AccordionTrigger>
                   <AccordionContent><IngredientParsingPanel /></AccordionContent>
                 </AccordionItem>
 
                 <AccordionItem value="process-recipes">
-                  <AccordionTrigger className="hover:no-underline"><div className="flex items-center gap-3"><div className="p-2 rounded-lg bg-orange-100"><RefreshCw className="h-5 w-5 text-orange-600" /></div><div className="text-left"><div className="font-semibold">Process All Recipes</div><div className="text-sm text-muted-foreground font-normal">Batch process recipes for categorization and analysis</div></div></div></AccordionTrigger>
+                  <AccordionTrigger className="hover:no-underline"><div className="flex items-center gap-3"><div className="p-2 rounded-lg bg-orange-100"><RefreshCw className="h-5 w-5 text-orange-600" /></div><div className="text-left"><div className="font-semibold">Process All Recipes</div><div className="text-sm text-muted-foreground font-normal">Batch process recipes for categorization and analysis</div></div></div></div></AccordionTrigger>
                   <AccordionContent><ProcessAllRecipesPanel /></AccordionContent>
                 </AccordionItem>
 
                 <AccordionItem value="drink-pairing-backfill">
-                  <AccordionTrigger className="hover:no-underline"><div className="flex items-center gap-3"><div className="p-2 rounded-lg bg-rose-100"><Wine className="h-5 w-5 text-rose-600" /></div><div className="text-left"><div className="font-semibold">Drink Pairing Backfill</div><div className="text-sm text-muted-foreground font-normal">Generate Perfect Pairing suggestions for recipes missing drink pairings</div></div></AccordionTrigger>
+                  <AccordionTrigger className="hover:no-underline"><div className="flex items-center gap-3"><div className="p-2 rounded-lg bg-rose-100"><Wine className="h-5 w-5 text-rose-600" /></div><div className="text-left"><div className="font-semibold">Drink Pairing Backfill</div><div className="text-sm text-muted-foreground font-normal">Generate Perfect Pairing suggestions for recipes missing drink pairings</div></div></div></AccordionTrigger>
                   <AccordionContent><DrinkPairingBackfillPanel /></AccordionContent>
                 </AccordionItem>
               </Accordion>
