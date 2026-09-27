@@ -34,6 +34,8 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
   const [sessionYesCount, setSessionYesCount] = useState(0);
   const [dragX, setDragX] = useState(0);
   const [dragging, setDragging] = useState(false);
+  const [plannedCountPulse, setPlannedCountPulse] = useState(false);
+  const previousPlannedCount = useRef<number | null>(null);
   const startX = useRef(0);
   const current = remainingRecipes[0];
   const next = remainingRecipes[1];
@@ -48,6 +50,22 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
       setDragging(false);
     }
   }, [open]);
+
+  // Give the household planned total a subtle pulse whenever it changes.
+  // This catches both local additions and realtime updates from another user.
+  useEffect(() => {
+    if (previousPlannedCount.current === null) {
+      previousPlannedCount.current = plannedMealCount;
+      return;
+    }
+
+    if (previousPlannedCount.current !== plannedMealCount) {
+      previousPlannedCount.current = plannedMealCount;
+      setPlannedCountPulse(true);
+      const timer = window.setTimeout(() => setPlannedCountPulse(false), 450);
+      return () => window.clearTimeout(timer);
+    }
+  }, [plannedMealCount]);
 
   // Reset the card position whenever the active recipe changes.
   // This prevents the next card inheriting the previous card's swipe transform.
@@ -146,8 +164,11 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
                   >
                     Change week
                   </button>
-                  <div className="text-xs text-gray-500">
-                    ♥ {sessionYesCount} added · {plannedMealCount} {mealType === "desserts" || mealType === "drinks" || mealType === "snacks" || mealType === "sides" ? mealType : mealType + "s"} planned
+                  <div
+                    className={"text-xs text-gray-500 transition-transform duration-300 " + (plannedCountPulse ? "scale-[1.04] text-gray-700" : "")}
+                  >
+                    ♥ {sessionYesCount} added · <span className={plannedCountPulse ? "font-semibold text-terracotta" : ""}>{plannedMealCount}</span>{" "}
+                    {mealType === "desserts" || mealType === "drinks" || mealType === "snacks" || mealType === "sides" ? mealType : mealType + "s"} planned
                   </div>
                 </div>
               </>
