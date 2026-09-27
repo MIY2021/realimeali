@@ -368,6 +368,33 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
                 <p className="mt-2 text-sm font-semibold text-gray-700">
                   ♥ {sessionYesCount} {sessionYesCount === 1 ? "meal" : "meals"} added to your plan
                 </p>
+
+                <div className="mx-auto mt-6 w-full max-w-xs text-left">
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500">
+                    Keep swiping
+                  </label>
+                  <select
+                    value={mealType}
+                    onChange={event => setMealType(event.target.value as MealType)}
+                    className="mt-2 h-11 w-full rounded-xl border border-gray-200 bg-white px-4 text-sm font-semibold text-gray-800 outline-none focus:border-terracotta focus:ring-1 focus:ring-terracotta"
+                    aria-label="Choose another meal type"
+                  >
+                    {([
+                      ["breakfast", "Breakfast"],
+                      ["lunch", "Lunch"],
+                      ["dinner", "Dinner"],
+                      ["snacks", "Snacks"],
+                      ["sides", "Sides"],
+                      ["desserts", "Desserts"],
+                      ["drinks", "Drinks"],
+                      ["appetizers", "Appetizers"],
+                      ["sauce", "Sauce"],
+                    ] as const satisfies ReadonlyArray<[MealType, string]>).map(([value, label]) => (
+                      <option key={value} value={value}>{label}</option>
+                    ))}
+                  </select>
+                </div>
+
                 <Button
                   className="mt-5 h-11 rounded-full bg-gray-900 px-5 text-white hover:bg-gray-800"
                   onClick={() => {
