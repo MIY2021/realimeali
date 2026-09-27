@@ -145,11 +145,11 @@ export function MealPlannerRecipeCard({
             aria-label={"Added by " + creatorName}
           >
             {creatorProfile?.avatar_url ? (
-              <img src={creatorProfile.avatar_url} alt="" className="absolute left-[12px] top-[2px] h-5 w-5 object-cover rounded-full" />
+              <img src={creatorProfile.avatar_url} alt="" className="absolute left-[12px] top-[2px] h-5 w-5 object-cover" />
             ) : creatorProfile?.avatar_data ? (
-              <img src={creatorProfile.avatar_data} alt="" className="absolute left-[12px] top-[2px] h-5 w-5 object-cover rounded-full" />
+              <img src={creatorProfile.avatar_data} alt="" className="absolute left-[12px] top-[2px] h-5 w-5 object-cover" />
             ) : (
-              <span className="absolute left-[12px] top-[2px] flex h-5 w-5 items-center justify-center rounded-full text-[7px] font-semibold text-gray-600">
+              <span className="absolute left-[12px] top-[2px] flex h-5 w-5 items-center justify-center text-[7px] font-semibold text-gray-600">
                 {creatorInitials}
               </span>
             )}
