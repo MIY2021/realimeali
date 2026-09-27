@@ -140,16 +140,16 @@ export function MealPlannerRecipeCard({
         {/* Added-by corner cutout - top-left */}
         {mealCreator && (
           <div
-            className="absolute left-0 top-0 z-10 h-7 w-7 overflow-hidden rounded-br-full border-b-2 border-r-2 border-white bg-white shadow-sm"
+            className="absolute left-0 top-0 z-10 h-8 w-8 overflow-hidden border-b-2 border-r-2 border-white bg-white shadow-sm [clip-path:polygon(0_0,100%_0,0_100%)]"
             title={"Added by " + creatorName}
             aria-label={"Added by " + creatorName}
           >
             {creatorProfile?.avatar_url ? (
-              <img src={creatorProfile.avatar_url} alt="" className="h-full w-full object-cover" />
+              <img src={creatorProfile.avatar_url} alt="" className="absolute left-[7px] top-[7px] h-5 w-5 object-cover rounded-full" />
             ) : creatorProfile?.avatar_data ? (
-              <img src={creatorProfile.avatar_data} alt="" className="h-full w-full object-cover" />
+              <img src={creatorProfile.avatar_data} alt="" className="absolute left-[7px] top-[7px] h-5 w-5 object-cover rounded-full" />
             ) : (
-              <span className="flex h-full w-full items-center justify-center text-[9px] font-semibold text-gray-600">
+              <span className="absolute left-[7px] top-[7px] flex h-5 w-5 items-center justify-center rounded-full text-[7px] font-semibold text-gray-600">
                 {creatorInitials}
               </span>
             )}
@@ -158,7 +158,7 @@ export function MealPlannerRecipeCard({
 
         {/* Lunch Leftover icon - top-left */}
         {existingLeftover && (
-          <div className="absolute top-2 left-2 w-5 h-5 rounded-full bg-yellow-500/80 flex items-center justify-center shadow-sm animate-scale-in-slow">
+          <div className="absolute top-2 right-8 w-5 h-5 rounded-full bg-yellow-500/80 flex items-center justify-center shadow-sm animate-scale-in-slow">
             <UtensilsCrossed className="h-3 w-3 text-white" />
           </div>
         )}
