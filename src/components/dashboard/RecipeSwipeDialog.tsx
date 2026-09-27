@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowRight, Check, Heart, Sparkles } from "lucide-react";
-import { Recipe } from "@/types";
+import { MealType, Recipe } from "@/types";
 import { useRecipeSwipe } from "@/hooks/useRecipeSwipe";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -268,27 +268,26 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
                 <div className="mb-2 text-center text-xs font-semibold uppercase tracking-wider text-gray-500">
                   Meal type
                 </div>
-                <div className="grid grid-cols-3 rounded-xl border border-gray-200 bg-gray-50 p-1">
+                <select
+                  value={mealType}
+                  onChange={event => setMealType(event.target.value as MealType)}
+                  className="h-11 w-full rounded-xl border border-gray-200 bg-white px-4 text-sm font-semibold text-gray-800 outline-none focus:border-terracotta focus:ring-1 focus:ring-terracotta"
+                  aria-label="Meal type"
+                >
                   {([
                     ["breakfast", "Breakfast"],
                     ["lunch", "Lunch"],
                     ["dinner", "Dinner"],
-                  ] as const).map(([value, label]) => (
-                    <button
-                      key={value}
-                      type="button"
-                      onClick={() => setMealType(value)}
-                      className={
-                        "h-10 rounded-lg text-sm font-semibold transition-colors " +
-                        (mealType === value
-                          ? "bg-terracotta text-white shadow-sm"
-                          : "text-gray-600 hover:bg-white hover:text-gray-900")
-                      }
-                    >
-                      {label}
-                    </button>
+                    ["snacks", "Snacks"],
+                    ["sides", "Sides"],
+                    ["desserts", "Desserts"],
+                    ["drinks", "Drinks"],
+                    ["appetizers", "Appetizers"],
+                    ["sauce", "Sauce"],
+                  ] as const satisfies ReadonlyArray<[MealType, string]>).map(([value, label]) => (
+                    <option key={value} value={value}>{label}</option>
                   ))}
-                </div>
+                </select>
                 {!dbAvailable && (
                   <p className="mt-3 text-center text-xs text-amber-600">
                     Your swipe couldn't be synced yet. Please try again.
