@@ -348,6 +348,25 @@ export function EnhancedMealCard({
               />
             </Link>
             
+            {/* Added-by avatar - top-right */}
+            {mealCreator && (
+              <div
+                className="absolute top-0.5 right-0.5 z-10 h-5 w-5 overflow-hidden rounded-full border border-white bg-gray-100 shadow-sm"
+                title={"Added by " + creatorName}
+                aria-label={"Added by " + creatorName}
+              >
+                {creatorProfile?.avatar_url ? (
+                  <img src={creatorProfile.avatar_url} alt="" className="h-full w-full object-cover" />
+                ) : creatorProfile?.avatar_data ? (
+                  <img src={creatorProfile.avatar_data} alt="" className="h-full w-full object-cover" />
+                ) : (
+                  <span className="flex h-full w-full items-center justify-center text-[7px] font-semibold text-gray-600">
+                    {creatorInitials}
+                  </span>
+                )}
+              </div>
+            )}
+
             {/* Lunch Leftover icon - top-left */}
             {existingLeftover && (
               <div className="absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-yellow-500/80 flex items-center justify-center shadow-sm animate-scale-in-slow">
@@ -382,8 +401,7 @@ export function EnhancedMealCard({
                   </p>
                 )}
               </div>
-              <div className="flex items-center gap-2 flex-shrink-0">
-                {creatorAvatar}
+              <div className="relative flex items-center gap-2 flex-shrink-0">
                 {/* Drag Handle - Large touch target for mobile */}
                 <div 
                   {...(dragHandleProps as React.HTMLAttributes<HTMLDivElement>)} 
