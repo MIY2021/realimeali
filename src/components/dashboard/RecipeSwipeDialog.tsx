@@ -131,18 +131,15 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
 
           <div className="flex flex-1 items-center justify-center px-5 py-6">
             {!weekChosen ? (
-              <div className="w-full max-w-sm text-center">
-                <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-[#f2eee9]">
-                  <Heart className="h-8 w-8 text-terracotta" />
-                </div>
-                <h3 className="text-2xl font-bold text-gray-900">Choose your week</h3>
+              <div className="w-full max-w-sm">
+                <h3 className="text-3xl font-bold text-gray-900">Choose a week</h3>
                 <p className="mt-2 text-sm text-gray-500">
-                  Your choices will be added to this week's meal plan.
+                  Where should we add the meals you pick?
                 </p>
 
-                <div className="mt-6 grid grid-cols-2 gap-3">
+                <div className="mt-7 grid grid-cols-2 gap-3">
                   <Button
-                    className="h-12"
+                    className="h-12 bg-terracotta text-white hover:bg-terracotta/90"
                     onClick={() => {
                       setWeekKey(thisWeek);
                       setWeekChosen(true);
@@ -162,9 +159,9 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
                   </Button>
                 </div>
 
-                <div className="mt-3">
-                  <label className="block text-left text-sm font-medium text-gray-700">
-                    Or choose another week
+                <div className="mt-5 border-t border-gray-200 pt-5">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Another week
                     <input
                       type="week"
                       value={weekKey}
@@ -174,7 +171,7 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
                           setWeekChosen(true);
                         }
                       }}
-                      className="mt-1 h-10 w-full rounded-md border border-gray-200 bg-white px-3 text-sm text-gray-700"
+                      className="mt-2 h-11 w-full rounded-lg border border-gray-200 bg-white px-3 text-sm text-gray-700"
                     />
                   </label>
                 </div>
@@ -259,7 +256,7 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
             )}
           </div>
 
-          {current && (
+          {weekChosen && current && (
             <div className="border-t border-gray-200 bg-white px-5 pb-5 pt-4">
               <div className="flex items-center justify-center gap-4">
                 <Button
