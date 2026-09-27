@@ -1,6 +1,7 @@
 
 import { Link, useLocation } from "react-router-dom";
-import { Book, Bookmark, CalendarDays, ShoppingCart, Home } from "lucide-react";
+import { Home } from "lucide-react";
+import { RecipeCardIcon, DiscoverRecipeIcon, MealPlanIcon, ShoppingBasketIcon } from "@/components/icons/RealiMealiIcons";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
 
@@ -17,25 +18,25 @@ const BottomNavigation = () => {
     },
     { 
       to: "/my-recipes", 
-      icon: Book, 
+      icon: RecipeCardIcon, 
       label: "My Recipes",
       activePattern: /^\/my-recipes/
     },
     { 
       to: "/meal-planner", 
-      icon: CalendarDays, 
+      icon: MealPlanIcon, 
       label: "Meal Plan",
       activePattern: /^\/meal-planner/
     },
     { 
       to: "/shopping-list", 
-      icon: ShoppingCart, 
+      icon: ShoppingBasketIcon, 
       label: "Shopping",
       activePattern: /^\/shopping-list/
     },
     { 
       to: "/discover-recipes", 
-      icon: Bookmark, 
+      icon: DiscoverRecipeIcon, 
       label: "Discover",
       activePattern: /^\/discover-recipes/
     },
