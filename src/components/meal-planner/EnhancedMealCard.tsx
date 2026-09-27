@@ -340,11 +340,11 @@ export function EnhancedMealCard({
                 aria-label={"Added by " + creatorName}
               >
                 {creatorProfile?.avatar_url ? (
-                  <img src={creatorProfile.avatar_url} alt="" className="absolute left-[11px] top-[1px] h-4 w-4 object-cover rounded-full" />
+                  <img src={creatorProfile.avatar_url} alt="" className="absolute left-[11px] top-[1px] h-4 w-4 object-cover" />
                 ) : creatorProfile?.avatar_data ? (
-                  <img src={creatorProfile.avatar_data} alt="" className="absolute left-[11px] top-[1px] h-4 w-4 object-cover rounded-full" />
+                  <img src={creatorProfile.avatar_data} alt="" className="absolute left-[11px] top-[1px] h-4 w-4 object-cover" />
                 ) : (
-                  <span className="absolute left-[11px] top-[1px] flex h-4 w-4 items-center justify-center rounded-full bg-gray-100 text-[6px] font-semibold text-gray-600">
+                  <span className="absolute left-[11px] top-[1px] flex h-4 w-4 items-center justify-center bg-gray-100 text-[6px] font-semibold text-gray-600">
                     {creatorInitials}
                   </span>
                 )}
