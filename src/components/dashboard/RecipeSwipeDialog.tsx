@@ -28,6 +28,7 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
   } = useRecipeSwipe(recipes);
 
   const [weekChosen, setWeekChosen] = useState(false);
+  const [anotherWeekOpen, setAnotherWeekOpen] = useState(false);
   const [sessionYesCount, setSessionYesCount] = useState(0);
   const [dragX, setDragX] = useState(0);
   const [dragging, setDragging] = useState(false);
@@ -38,6 +39,7 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
   useEffect(() => {
     if (!open) {
       setWeekChosen(false);
+      setAnotherWeekOpen(false);
       setSessionYesCount(0);
       setDragX(0);
       setDragging(false);
@@ -109,13 +111,13 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
               PICK YOUR MEALS
             </div>
             <h2 className="mt-1 text-xl font-bold text-gray-900">
-              {weekChosen ? "What do you fancy?" : "Which week?"}
+              {weekChosen ? "What do you fancy?" : "Choose your week"}
             </h2>
             {weekChosen ? (
               <div className="mt-1 text-sm text-gray-500">{selectedWeekLabel}</div>
             ) : (
               <p className="mt-2 text-sm text-gray-600">
-                Choose the week you want to add meals to before we start.
+                Pick a week before you start swiping.
               </p>
             )}
 
@@ -137,17 +139,19 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
 
           <div className="flex flex-1 items-center justify-center px-5 py-6">
             {!weekChosen ? (
-              <div className="w-full max-w-sm">
+              <div className="w-full max-w-sm text-center">
                 <h3 className="text-3xl font-bold text-gray-900">Choose a week</h3>
                 <p className="mt-2 text-sm text-gray-500">
-                  Where should we add the meals you pick?
+                  Pick a week, then we'll get started.
                 </p>
 
-                <div className="mt-7 grid grid-cols-2 gap-3">
+                <div className="mt-8 space-y-3">
                   <Button
-                    className="h-12 bg-terracotta text-white hover:bg-terracotta/90"
+                    variant="outline"
+                    className="h-12 w-full justify-center rounded-xl border-gray-300 bg-white text-base font-semibold hover:border-terracotta hover:bg-white"
                     onClick={() => {
                       setWeekKey(thisWeek);
+                      setAnotherWeekOpen(false);
                       setWeekChosen(true);
                     }}
                   >
@@ -155,32 +159,53 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
                   </Button>
                   <Button
                     variant="outline"
-                    className="h-12"
+                    className="h-12 w-full justify-center rounded-xl border-gray-300 bg-white text-base font-semibold hover:border-terracotta hover:bg-white"
                     onClick={() => {
                       setWeekKey(nextWeek);
+                      setAnotherWeekOpen(false);
                       setWeekChosen(true);
                     }}
                   >
                     Next week
                   </Button>
+                  <Button
+                    variant="outline"
+                    className="h-12 w-full justify-center rounded-xl border-gray-300 bg-white text-base font-semibold hover:border-terracotta hover:bg-white"
+                    onClick={() => setAnotherWeekOpen(true)}
+                  >
+                    Another week
+                  </Button>
                 </div>
 
-                <div className="mt-5 border-t border-gray-200 pt-5">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Another week
-                    <input
-                      type="week"
-                      value={weekKey}
-                      onChange={event => {
-                        if (event.target.value) {
-                          setWeekKey(event.target.value);
-                          setWeekChosen(true);
-                        }
-                      }}
-                      className="mt-2 h-11 w-full rounded-lg border border-gray-200 bg-white px-3 text-sm text-gray-700"
-                    />
-                  </label>
-                </div>
+                {anotherWeekOpen && (
+                  <div className="mt-4 text-left">
+                    <label className="block text-sm font-semibold text-gray-700">
+                      Select week
+                      <input
+                        type="week"
+                        value={weekKey}
+                        onChange={event => {
+                          if (event.target.value) {
+                            setWeekKey(event.target.value);
+                            setWeekChosen(true);
+                            setAnotherWeekOpen(false);
+                          }
+                        }}
+                        className="mt-2 h-12 w-full rounded-xl border border-gray-200 bg-white px-4 text-sm text-gray-700"
+                      />
+                    </label>
+                  </div>
+                )}
+
+                {weekChosen && !isLoading && (
+                  <Button
+                    className="mt-8 h-12 w-full rounded-xl bg-terracotta text-base font-semibold text-white hover:bg-terracotta/90"
+                    onClick={() => setWeekChosen(true)}
+                  >
+                    Start swiping
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                )}
               </div>
             ) : isLoading ? (
               <div className="text-center text-gray-500">Loading your choices…</div>
