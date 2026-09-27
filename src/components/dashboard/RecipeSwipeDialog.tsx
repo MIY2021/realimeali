@@ -275,7 +275,7 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
                   <X className="h-5 w-5" />
                 </button>
               </div>
-              <div className="flex-1 overflow-y-auto">
+              <div className="min-h-0 flex-1 overflow-y-auto">
                 {image ? (
                   <img src={image} alt={current.title} className="h-48 w-full object-cover" />
                 ) : (
