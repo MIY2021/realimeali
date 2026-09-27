@@ -1,4 +1,4 @@
-import { ArrowRight, BookOpen, CalendarDays, Heart, ShoppingCart, Sparkles } from "lucide-react";
+import { ArrowRight, BookOpen, CalendarDays, Heart, ShoppingCart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { LoginPromptDialog } from "@/components/auth/LoginPromptDialog";
@@ -211,12 +211,9 @@ export default function Index() {
         </section>
 
         <section className="border-t border-gray-200 pt-7 mb-8" aria-labelledby="inspiration-heading">
-          <div className="flex items-end justify-between mb-4">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#b85f49]">Need some inspiration?</p>
-              <h2 id="inspiration-heading" className="mt-1 text-xl font-bold text-gray-900">Fancy this?</h2>
-            </div>
-            <Sparkles className="h-5 w-5 text-[#b85f49]" />
+          <div className="mb-4">
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#b85f49]">Need some inspiration?</p>
+            <h2 id="inspiration-heading" className="mt-1 text-xl font-bold text-gray-900">Fancy this?</h2>
           </div>
           <LatestRecipesInspiration />
         </section>
