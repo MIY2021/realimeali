@@ -223,8 +223,8 @@ export default function Index() {
 
         <section id="meal-picker" className="border-t border-gray-200 pt-7" aria-labelledby="picker-heading">
           <div className="mb-4">
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#b85f49]">Fancy something different?</p>
-            <h2 id="picker-heading" className="mt-1 text-xl font-bold text-gray-900">Pick your meals</h2>
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#b85f49]">Build your week</p>
+            <h2 id="picker-heading" className="mt-1 text-xl font-bold text-gray-900">Choose meals for your week</h2>
           </div>
           <SwipeToChoose />
         </section>
