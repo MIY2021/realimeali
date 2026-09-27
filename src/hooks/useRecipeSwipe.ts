@@ -117,6 +117,11 @@ export function useRecipeSwipe(recipes: Recipe[]) {
     void loadSwipes();
   }, [loadSwipes]);
 
+  useEffect(() => {
+    lastActionRef.current = null;
+    setCanUndo(false);
+  }, [weekKey, mealType]);
+
   const swipe = useCallback(
     async (recipe: Recipe, decision: SwipeDecision) => {
       if (!user || !currentHousehold || isSaving) return false;
