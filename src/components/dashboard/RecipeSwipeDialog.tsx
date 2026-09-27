@@ -6,7 +6,7 @@ import { useMealPlan } from "@/contexts/MealPlanContext";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { getCurrentWeekKey, getNextWeek, formatWeekRange, getWeekStartDate, parseISOWeekKey, getISOWeekKey, formatLocalDateYMD } from "@/utils/weekUtils";
+import { getCurrentWeekKey, getNextWeek, getPreviousWeek, formatWeekRange, getWeekStartDate, parseISOWeekKey } from "@/utils/weekUtils";
 
 interface RecipeSwipeDialogProps {
   open: boolean;
@@ -34,6 +34,7 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
   const [weekChosen, setWeekChosen] = useState(false);
   const [swipingStarted, setSwipingStarted] = useState(false);
   const [anotherWeekOpen, setAnotherWeekOpen] = useState(false);
+  const [pickerWeekKey, setPickerWeekKey] = useState(weekKey);
   const [sessionYesCount, setSessionYesCount] = useState(0);
   const [dragX, setDragX] = useState(0);
   const [dragging, setDragging] = useState(false);
@@ -87,6 +88,17 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
 
   const thisWeek = getCurrentWeekKey();
   const nextWeek = getNextWeek(thisWeek);
+
+  const pickerWeeks = useMemo(() => {
+    const weeks: string[] = [];
+    let cursor = pickerWeekKey;
+    for (let i = 0; i < 4; i++) cursor = getPreviousWeek(cursor);
+    for (let i = 0; i < 9; i++) {
+      weeks.push(cursor);
+      cursor = getNextWeek(cursor);
+    }
+    return weeks;
+  }, [pickerWeekKey]);
 
   const thisWeekLabel = formatWeekRange(
     parseISOWeekKey(thisWeek).year,
@@ -286,7 +298,7 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
                   <Button
                     variant="outline"
                     className="h-12 w-full justify-center rounded-xl border-gray-300 bg-white text-base font-semibold"
-                    onClick={() => setAnotherWeekOpen(true)}
+                    onClick={() => { setPickerWeekKey(weekKey); setAnotherWeekOpen(true); }}
                   >
                     Another week
                   </Button>
@@ -294,25 +306,39 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
 
                 {anotherWeekOpen && (
                   <div className="mt-4 text-left">
-                    <label className="block text-sm font-semibold text-gray-700">
-                      Pick any day in the week
-                      <input
-                        type="date"
-                        value={formatLocalDateYMD(getWeekStartDate(parseISOWeekKey(weekKey).year, parseISOWeekKey(weekKey).week))}
-                        onChange={event => {
-                          if (event.target.value) {
-                            const selectedDate = new Date(event.target.value + "T12:00:00");
-                            setWeekKey(getISOWeekKey(selectedDate));
-                            setWeekChosen(true);
-                            setAnotherWeekOpen(false);
-                          }
-                        }}
-                        className="mt-2 h-12 w-full rounded-xl border border-gray-200 bg-white px-4 text-sm text-gray-700"
-                      />
-                    </label>
-                    <div className="mt-2 rounded-lg bg-white px-3 py-2 text-center text-sm font-medium text-gray-600">
-                      {formatWeekOptionLabel(weekKey)}
+                    <div className="mb-2 text-sm font-semibold text-gray-700">Select week</div>
+                    <div className="relative overflow-hidden rounded-xl border border-gray-300 bg-white">
+                      <div className="pointer-events-none absolute inset-x-0 top-1/2 z-10 h-12 -translate-y-1/2 border-y border-gray-300 bg-gray-50/60" />
+                      <div className="h-56 snap-y snap-mandatory overflow-y-auto px-2 py-20">
+                        {pickerWeeks.map(key => {
+                          const { year, week } = parseISOWeekKey(key);
+                          const selected = key === pickerWeekKey;
+                          return (
+                            <button
+                              key={key}
+                              type="button"
+                              onClick={() => {
+                                setPickerWeekKey(key);
+                                setWeekKey(key);
+                                setWeekChosen(true);
+                              }}
+                              className={"relative z-20 flex h-12 w-full snap-center items-center justify-between rounded-lg px-4 text-left transition-colors " +
+                                (selected ? "font-semibold text-gray-900" : "text-gray-500")}
+                            >
+                              <span>Week {week}, {year}</span>
+                              <span className="text-sm">{formatWeekOptionLabel(key)}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
+                    <button
+                      type="button"
+                      onClick={() => setAnotherWeekOpen(false)}
+                      className="mt-3 h-11 w-full rounded-xl bg-terracotta text-sm font-semibold text-white"
+                    >
+                      Set week
+                    </button>
                   </div>
                 )}
 
