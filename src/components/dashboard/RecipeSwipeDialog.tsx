@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowLeft, ArrowRight, Check, Heart, Sparkles, X } from "lucide-react";
+import { ArrowRight, Check, Heart, Sparkles } from "lucide-react";
 import { Recipe } from "@/types";
 import { useRecipeSwipe } from "@/hooks/useRecipeSwipe";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
