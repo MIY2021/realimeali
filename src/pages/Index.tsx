@@ -231,14 +231,14 @@ export default function Index() {
           />
         </section>
 
+        {/* Swipe to Choose */}
+        <section className="border-t border-gray-200 pt-8" aria-label="Swipe to Choose">
+          <SwipeToChoose />
+        </section>
+
         {/* Recipe of the Day */}
         <section className="border-t border-gray-200 pt-8" aria-label="Recipe of the Day">
           <LatestRecipesInspiration />
-        </section>
-
-        {/* Weekly household recipe matching */}
-        <section className="border-t border-gray-200 pt-8" aria-label="Swipe to Choose">
-          <SwipeToChoose />
         </section>
 
         {/* Recent Activity */}
