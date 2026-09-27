@@ -137,10 +137,10 @@ export function MealPlannerRecipeCard({
           }`}
         />
         
-        {/* Added-by avatar - top-right */}
+        {/* Added-by corner cutout - top-left */}
         {mealCreator && (
           <div
-            className="absolute top-2 right-2 h-7 w-7 overflow-hidden rounded-full border-2 border-white bg-gray-100 shadow-md"
+            className="absolute left-0 top-0 z-10 h-9 w-9 overflow-hidden rounded-br-xl border-b-2 border-r-2 border-white bg-white shadow-md"
             title={"Added by " + creatorName}
             aria-label={"Added by " + creatorName}
           >
