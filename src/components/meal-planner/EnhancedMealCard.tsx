@@ -53,23 +53,7 @@ export function EnhancedMealCard({
     .join("")
     .toUpperCase();
 
-  const creatorAvatar = mealCreator ? (
-    <div
-      className="h-6 w-6 shrink-0 overflow-hidden rounded-full border border-white bg-gray-100 shadow-sm"
-      title={"Added by " + creatorName}
-      aria-label={"Added by " + creatorName}
-    >
-      {creatorProfile?.avatar_url ? (
-        <img src={creatorProfile.avatar_url} alt="" className="h-full w-full object-cover" />
-      ) : creatorProfile?.avatar_data ? (
-        <img src={creatorProfile.avatar_data} alt="" className="h-full w-full object-cover" />
-      ) : (
-        <span className="flex h-full w-full items-center justify-center text-[9px] font-semibold text-gray-600">
-          {creatorInitials}
-        </span>
-      )}
-    </div>
-  ) : null;
+
 
   // Performance: O(1) lookup using pre-computed map instead of O(n) find()
   const existingLeftover = leftoverMap.get(mealPlan.id);
