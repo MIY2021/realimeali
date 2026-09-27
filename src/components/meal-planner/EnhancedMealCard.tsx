@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 
 import { MealPlan, Recipe, MealType } from "@/types";
 import { useMealPlan } from "@/contexts/MealPlanContext";
+import { useHousehold } from "@/contexts/HouseholdContext";
 import { Link } from "react-router-dom";
 import { generateSlug } from "@/utils/slugUtils";
 
@@ -35,7 +36,40 @@ export function EnhancedMealCard({
   leftoverMap,
 }: EnhancedMealCardProps) {
   const { updateMealPlanCompletion, updateMealPlanServings } = useMealPlan();
+  const { householdMembers } = useHousehold();
   const { toast } = useToast();
+
+  const mealCreator = householdMembers.find(member => member.user_id === mealPlan.created_by);
+  const creatorProfile = mealCreator?.profile;
+  const creatorName =
+    creatorProfile?.full_name ||
+    creatorProfile?.email ||
+    "Household member";
+  const creatorInitials = creatorName
+    .split(" ")
+    .map(part => part[0])
+    .filter(Boolean)
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+
+  const creatorAvatar = mealCreator ? (
+    <div
+      className="h-6 w-6 shrink-0 overflow-hidden rounded-full border border-white bg-gray-100 shadow-sm"
+      title={"Added by " + creatorName}
+      aria-label={"Added by " + creatorName}
+    >
+      {creatorProfile?.avatar_url ? (
+        <img src={creatorProfile.avatar_url} alt="" className="h-full w-full object-cover" />
+      ) : creatorProfile?.avatar_data ? (
+        <img src={creatorProfile.avatar_data} alt="" className="h-full w-full object-cover" />
+      ) : (
+        <span className="flex h-full w-full items-center justify-center text-[9px] font-semibold text-gray-600">
+          {creatorInitials}
+        </span>
+      )}
+    </div>
+  ) : null;
 
   // Performance: O(1) lookup using pre-computed map instead of O(n) find()
   const existingLeftover = leftoverMap.get(mealPlan.id);
@@ -349,6 +383,7 @@ export function EnhancedMealCard({
                 )}
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
+                {creatorAvatar}
                 {/* Drag Handle - Large touch target for mobile */}
                 <div 
                   {...(dragHandleProps as React.HTMLAttributes<HTMLDivElement>)} 
