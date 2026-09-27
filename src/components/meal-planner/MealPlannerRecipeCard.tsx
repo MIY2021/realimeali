@@ -151,13 +151,13 @@ export function MealPlannerRecipeCard({
             recipe={recipe}
             useThumbnail={true}
             alt={getTitle()}
-            imgClassName={`${mealPlan.is_completed ? 'grayscale brightness-75' : ''`}
+            imgClassName={`${mealPlan.is_completed ? 'grayscale brightness-75' : ''}`}
           />
         </div>
 
         {/* Lunch Leftover icon - top-left */}
         {existingLeftover && (
-          <div className="absolute top-2 left-2 w-5 h-5 rounded-full bg-yellow-500/80 flex items-center justify-center shadow-sm animate-scale-in-slow">
+          <div className="absolute bottom-2 left-2 w-5 h-5 rounded-full bg-yellow-500/80 flex items-center justify-center shadow-sm animate-scale-in-slow">
             <UtensilsCrossed className="h-3 w-3 text-white" />
           </div>
         )}
