@@ -332,10 +332,10 @@ export function EnhancedMealCard({
               />
             </Link>
             
-            {/* Added-by avatar - top-right */}
+            {/* Added-by corner cutout - top-left */}
             {mealCreator && (
               <div
-                className="absolute top-0.5 right-0.5 z-10 h-5 w-5 overflow-hidden rounded-full border border-white bg-gray-100 shadow-sm"
+                className="absolute left-0 top-0 z-10 h-7 w-7 overflow-hidden rounded-br-lg border-b border-r border-white bg-white shadow-sm"
                 title={"Added by " + creatorName}
                 aria-label={"Added by " + creatorName}
               >
@@ -344,16 +344,16 @@ export function EnhancedMealCard({
                 ) : creatorProfile?.avatar_data ? (
                   <img src={creatorProfile.avatar_data} alt="" className="h-full w-full object-cover" />
                 ) : (
-                  <span className="flex h-full w-full items-center justify-center text-[7px] font-semibold text-gray-600">
+                  <span className="flex h-full w-full items-center justify-center bg-gray-100 text-[7px] font-semibold text-gray-600">
                     {creatorInitials}
                   </span>
                 )}
               </div>
             )}
 
-            {/* Lunch Leftover icon - top-left */}
+            {/* Lunch Leftover icon - top-right */}
             {existingLeftover && (
-              <div className="absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-yellow-500/80 flex items-center justify-center shadow-sm animate-scale-in-slow">
+              <div className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-yellow-500/80 flex items-center justify-center shadow-sm animate-scale-in-slow">
                 <UtensilsCrossed className="h-2.5 w-2.5 text-white" />
               </div>
             )}
