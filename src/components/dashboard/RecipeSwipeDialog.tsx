@@ -27,6 +27,7 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
   } = useRecipeSwipe(recipes);
 
   const [weekChosen, setWeekChosen] = useState(false);
+  const [sessionYesCount, setSessionYesCount] = useState(0);
   const [dragX, setDragX] = useState(0);
   const [dragging, setDragging] = useState(false);
   const startX = useRef(0);
@@ -36,6 +37,7 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
   useEffect(() => {
     if (!open) {
       setWeekChosen(false);
+      setSessionYesCount(0);
       setDragX(0);
       setDragging(false);
     }
@@ -62,7 +64,10 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
     if (!current || isSaving) return;
     setDragX(decision === "yes" ? 420 : -420);
     window.setTimeout(async () => {
-      void swipe(current, decision);
+      const saved = await swipe(current, decision);
+      if (saved && decision === "yes") {
+        setSessionYesCount(count => count + 1);
+      }
     }, 180);
   };
 
@@ -123,7 +128,7 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
                   Change week
                 </button>
                 <div className="text-xs text-gray-500">
-                  ♥ {yesCount} {yesCount === 1 ? "meal" : "meals"} added
+                  ♥ {sessionYesCount} {sessionYesCount === 1 ? "meal" : "meals"} added
                 </div>
               </div>
             ) : null}
