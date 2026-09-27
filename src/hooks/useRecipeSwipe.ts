@@ -71,6 +71,12 @@ export function useRecipeSwipe(recipes: Recipe[]) {
     [swipePool, swipes, plannedRecipeIds]
   );
 
+  const plannedMealCount = useMemo(
+    () =>
+      getMealPlansForWeek(weekKey).filter(plan => plan.meal_type === mealType).length,
+    [getMealPlansForWeek, weekKey, mealType]
+  );
+
   const yesCount = useMemo(
     () => Object.values(swipes).filter(decision => decision === "yes").length,
     [swipes]
@@ -226,6 +232,7 @@ export function useRecipeSwipe(recipes: Recipe[]) {
     setMealType,
     remainingRecipes,
     yesCount,
+    plannedMealCount,
     householdMemberCount: householdMembers.length,
     isLoading,
     isSaving,
