@@ -236,31 +236,6 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
               <div className="text-center text-gray-500">Loading your choices…</div>
             ) : current ? (
               <div className="flex w-full max-w-sm flex-col">
-                <div className="mb-3">
-                  <div className="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500">
-                    Meal type
-                  </div>
-                  <select
-                    value={mealType}
-                    onChange={event => setMealType(event.target.value as MealType)}
-                    className="h-11 w-full rounded-xl border border-gray-200 bg-white px-4 text-sm font-semibold text-gray-800 outline-none focus:border-terracotta focus:ring-1 focus:ring-terracotta"
-                    aria-label="Meal type"
-                  >
-                    {([
-                      ["breakfast", "Breakfast"],
-                      ["lunch", "Lunch"],
-                      ["dinner", "Dinner"],
-                      ["snacks", "Snacks"],
-                      ["sides", "Sides"],
-                      ["desserts", "Desserts"],
-                      ["drinks", "Drinks"],
-                      ["appetizers", "Appetizers"],
-                      ["sauce", "Sauce"],
-                    ] as const satisfies ReadonlyArray<[MealType, string]>).map(([value, label]) => (
-                      <option key={value} value={value}>{label}</option>
-                    ))}
-                  </select>
-                </div>
                 <div className="relative h-[54vh] w-full">
                   {next && (
                   <div className="absolute inset-x-3 top-3 bottom-0 rounded-2xl border border-gray-200 bg-white shadow-sm" />
@@ -314,6 +289,31 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
                       <span>{current.servings} servings</span>
                     </div>
                   </div>
+                </div>
+                <div className="mt-3">
+                  <div className="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500">
+                    Meal type
+                  </div>
+                  <select
+                    value={mealType}
+                    onChange={event => setMealType(event.target.value as MealType)}
+                    className="h-11 w-full rounded-xl border border-gray-200 bg-white px-4 text-sm font-semibold text-gray-800 outline-none focus:border-terracotta focus:ring-1 focus:ring-terracotta"
+                    aria-label="Meal type"
+                  >
+                    {([
+                      ["breakfast", "Breakfast"],
+                      ["lunch", "Lunch"],
+                      ["dinner", "Dinner"],
+                      ["snacks", "Snacks"],
+                      ["sides", "Sides"],
+                      ["desserts", "Desserts"],
+                      ["drinks", "Drinks"],
+                      ["appetizers", "Appetizers"],
+                      ["sauce", "Sauce"],
+                    ] as const satisfies ReadonlyArray<[MealType, string]>).map(([value, label]) => (
+                      <option key={value} value={value}>{label}</option>
+                    ))}
+                  </select>
                 </div>
                 </div>
               </div>
