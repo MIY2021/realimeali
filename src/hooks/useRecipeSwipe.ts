@@ -85,7 +85,8 @@ export function useRecipeSwipe(recipes: Recipe[]) {
       .select("recipe_id, user_id, decision")
       .eq("household_id", currentHousehold.id)
       .eq("user_id", user.id)
-      .eq("week_key", weekKey);
+      .eq("week_key", weekKey)
+      .eq("meal_type", mealType);
 
     if (error) {
       console.error("Failed to load recipe swipes:", error);
@@ -102,7 +103,7 @@ export function useRecipeSwipe(recipes: Recipe[]) {
 
     setSwipes(own);
     setIsLoading(false);
-  }, [user?.id, currentHousehold?.id, weekKey]);
+  }, [user?.id, currentHousehold?.id, weekKey, mealType]);
 
   useEffect(() => {
     void loadSwipes();
@@ -123,9 +124,10 @@ export function useRecipeSwipe(recipes: Recipe[]) {
             user_id: user.id,
             recipe_id: recipe.id,
             week_key: weekKey,
+            meal_type: mealType,
             decision,
           },
-          { onConflict: "household_id,user_id,recipe_id,week_key" }
+          { onConflict: "household_id,user_id,recipe_id,week_key,meal_type" }
         );
 
       if (error) {
@@ -145,11 +147,11 @@ export function useRecipeSwipe(recipes: Recipe[]) {
           const { year, week } = parseISOWeekKey(weekKey);
           const weekStart = getWeekStartDate(year, week);
           const date = formatLocalDateYMD(weekStart);
-          const existingDinnerPlans = getMealPlansForWeek(weekKey).filter(
-            plan => plan.meal_type === "dinner"
+          const existingMealPlans = getMealPlansForWeek(weekKey).filter(
+            plan => plan.meal_type === mealType
           );
           const nextSlotIndex =
-            existingDinnerPlans.reduce(
+            existingMealPlans.reduce(
               (max, plan) => Math.max(max, plan.slot_index ?? 0),
               -1
             ) + 1;
