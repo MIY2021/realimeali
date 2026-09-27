@@ -335,16 +335,16 @@ export function EnhancedMealCard({
             {/* Added-by corner cutout - top-left */}
             {mealCreator && (
               <div
-                className="absolute left-0 top-0 z-10 h-7 w-7 overflow-hidden border-b border-r border-white bg-white shadow-sm [clip-path:polygon(0_0,100%_0,0_100%)]"
+                className="absolute right-0 top-0 z-10 h-7 w-7 overflow-hidden border-b border-r border-white bg-white shadow-sm [clip-path:polygon(0_0,100%_0,0_100%)]"
                 title={"Added by " + creatorName}
                 aria-label={"Added by " + creatorName}
               >
                 {creatorProfile?.avatar_url ? (
-                  <img src={creatorProfile.avatar_url} alt="" className="absolute left-[6px] top-[6px] h-4 w-4 object-cover rounded-full" />
+                  <img src={creatorProfile.avatar_url} alt="" className="absolute right-[6px] top-[6px] h-4 w-4 object-cover rounded-full" />
                 ) : creatorProfile?.avatar_data ? (
-                  <img src={creatorProfile.avatar_data} alt="" className="absolute left-[6px] top-[6px] h-4 w-4 object-cover rounded-full" />
+                  <img src={creatorProfile.avatar_data} alt="" className="absolute right-[6px] top-[6px] h-4 w-4 object-cover rounded-full" />
                 ) : (
-                  <span className="absolute left-[6px] top-[6px] flex h-4 w-4 items-center justify-center rounded-full bg-gray-100 text-[6px] font-semibold text-gray-600">
+                  <span className="absolute right-[6px] top-[6px] flex h-4 w-4 items-center justify-center rounded-full bg-gray-100 text-[6px] font-semibold text-gray-600">
                     {creatorInitials}
                   </span>
                 )}
