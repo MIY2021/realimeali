@@ -1,4 +1,4 @@
-import { ShoppingCart } from "lucide-react";
+import { ShoppingBasketIcon } from "@/components/icons/RealiMealiIcons";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { PageHeader } from "@/components/layout/PageHeader";
 
@@ -24,7 +24,7 @@ export default function ShoppingListHeader({
   return (
     <PageHeader
       icon={
-        <ShoppingCart 
+        <ShoppingBasketIcon 
           className="h-6 w-6 sm:h-7 sm:w-7" 
           style={{ color: '#F5B82E', stroke: '#F5B82E' }}
           aria-hidden="true"
