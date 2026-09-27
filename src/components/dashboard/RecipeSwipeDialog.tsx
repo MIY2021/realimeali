@@ -462,11 +462,11 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
                         </div>
                       )}
                       <div className="pointer-events-none absolute inset-x-0 top-1/2 z-10 flex -translate-y-1/2 items-center justify-between px-4">
-                        <span className="inline-flex items-center gap-1 rounded-full bg-white/80 px-3 py-1.5 text-[11px] font-bold tracking-[0.14em] text-red-500 shadow-sm backdrop-blur-sm">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-white/65 px-3 py-1.5 text-[11px] font-bold tracking-[0.14em] text-red-400 shadow-sm backdrop-blur-sm">
                           <ArrowLeft className="h-3 w-3" />
                           NO
                         </span>
-                        <span className="inline-flex items-center gap-1 rounded-full bg-white/80 px-3 py-1.5 text-[11px] font-bold tracking-[0.14em] text-green-600 shadow-sm backdrop-blur-sm">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-white/65 px-3 py-1.5 text-[11px] font-bold tracking-[0.14em] text-green-500 shadow-sm backdrop-blur-sm">
                           YES
                           <ArrowRight className="h-3 w-3" />
                         </span>
