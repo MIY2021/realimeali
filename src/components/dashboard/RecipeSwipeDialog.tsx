@@ -176,57 +176,47 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
       <DialogContent className="max-w-lg overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 p-0 text-gray-900 shadow-2xl">
         <div className="flex min-h-[78vh] flex-col">
           <div className="border-b border-gray-200 bg-white px-5 py-4">
-            <div className="flex items-center gap-2 text-xs font-bold tracking-widest text-gray-700">
-              <MealIcon className="h-4 w-4" />
+            <div className="flex items-center gap-2 text-sm font-bold tracking-[0.14em] text-gray-700">
+              <MealIcon className="h-4 w-4 text-terracotta" />
               CHOOSE MEALS
             </div>
-            <h2 className="mt-1 text-xl font-bold text-gray-900">
-              {swipingStarted ? "What do you fancy?" : "Choose your week"}
-            </h2>
             {swipingStarted ? (
-              <>
-                <div className="mt-1 text-sm text-gray-500">{selectedWeekLabel}</div>
-                <div className="mt-3 flex items-center justify-between">
+              <div className="mt-3 flex items-center justify-between">
+                <button
+                  type="button"
+                  onClick={() => setWeekChosen(false)}
+                  className="text-sm font-semibold text-gray-600 hover:text-gray-900"
+                >
+                  {selectedWeekLabel}
+                </button>
+                <div className="flex items-center gap-2">
+                  <span
+                    className={"text-xs text-gray-500 transition-transform duration-300 " + (plannedCountPulse ? "scale-[1.04] text-gray-700" : "")}
+                  >
+                    ♥ {sessionYesCount} added ·{" "}
+                  </span>
                   <button
                     type="button"
-                    onClick={() => setWeekChosen(false)}
-                    className="text-sm font-medium text-gray-600 underline underline-offset-2"
+                    onClick={() => setShowPlannedPreview(value => !value)}
+                    disabled={plannedMealCount === 0}
+                    className={
+                      "text-xs transition-colors " +
+                      (plannedCountPulse ? "font-semibold text-terracotta" : "text-gray-500") +
+                      " " +
+                      (plannedMealCount > 0
+                        ? "underline underline-offset-2 hover:text-gray-800"
+                        : "cursor-default")
+                    }
+                    aria-label={plannedMealCount > 0 ? "Preview planned meals" : "No meals planned"}
                   >
-                    Change week
+                    {plannedMealCount}{" "}
+                    {mealType === "desserts" || mealType === "drinks" || mealType === "snacks" || mealType === "sides"
+                      ? mealType
+                      : mealType + "s"} planned
                   </button>
-                  <div className="flex items-center gap-2">
-                    <span
-                      className={"text-xs text-gray-500 transition-transform duration-300 " + (plannedCountPulse ? "scale-[1.04] text-gray-700" : "")}
-                    >
-                      ♥ {sessionYesCount} added ·{" "}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => setShowPlannedPreview(value => !value)}
-                      disabled={plannedMealCount === 0}
-                      className={
-                        "text-xs transition-colors " +
-                        (plannedCountPulse ? "font-semibold text-terracotta" : "text-gray-500") +
-                        " " +
-                        (plannedMealCount > 0
-                          ? "underline underline-offset-2 hover:text-gray-800"
-                          : "cursor-default")
-                      }
-                      aria-label={plannedMealCount > 0 ? "Preview planned meals" : "No meals planned"}
-                    >
-                      {plannedMealCount}{" "}
-                      {mealType === "desserts" || mealType === "drinks" || mealType === "snacks" || mealType === "sides"
-                        ? mealType
-                        : mealType + "s"} planned
-                    </button>
-                  </div>
                 </div>
-              </>
-            ) : (
-              <p className="mt-2 text-sm text-gray-600">
-                Choose a week, then swipe through recipes to build your meal plan.
-              </p>
-            )}
+              </div>
+            ) : null}
 
             {swipingStarted && showPlannedPreview && plannedMealCount > 0 && (
               <div className="absolute left-5 right-5 top-[108px] z-30 max-h-[52vh] overflow-y-auto rounded-xl border border-gray-200 bg-white p-3 shadow-xl">
@@ -339,52 +329,53 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
 
           <div className="flex flex-1 items-center justify-center px-5 py-6">
             {!swipingStarted ? (
-              <div className="w-full max-w-sm text-center">
-                <h3 className="text-3xl font-bold text-gray-900">Choose a week</h3>
-                <p className="mt-2 text-sm text-gray-500">Pick a week, then start swiping.</p>
+              <div className="w-full max-w-sm">
+                <div className="mb-4 text-left">
+                  <p className="text-xs font-bold uppercase tracking-[0.14em] text-gray-400">Week</p>
+                </div>
 
-                <div className="mt-8 space-y-3">
+                <div className="space-y-2">
                   <Button
                     variant="outline"
-                    className={"h-12 w-full justify-center rounded-xl text-base font-semibold " + (weekChosen && weekKey === thisWeek ? "border-terracotta bg-[#fff8f5] text-gray-900" : "border-gray-300 bg-white")}
+                    className={"h-16 w-full justify-between rounded-2xl border bg-white px-5 text-left " + (weekChosen && weekKey === thisWeek ? "border-terracotta bg-[#fff8f5] ring-1 ring-terracotta/20" : "border-gray-200")}
                     onClick={() => {
                       setWeekKey(thisWeek);
                       setAnotherWeekOpen(false);
                       setWeekChosen(true);
                     }}
                   >
-                    <span>This week</span>
-                    <span className="ml-2 text-sm font-normal text-gray-500">{formatWeekOptionLabel(thisWeek)}</span>
+                    <span className="font-semibold text-gray-900">This week</span>
+                    <span className="text-sm text-gray-500">{formatWeekOptionLabel(thisWeek)}</span>
                   </Button>
 
                   <Button
                     variant="outline"
-                    className={"h-12 w-full justify-center rounded-xl text-base font-semibold " + (weekChosen && weekKey === nextWeek ? "border-terracotta bg-[#fff8f5] text-gray-900" : "border-gray-300 bg-white")}
+                    className={"h-16 w-full justify-between rounded-2xl border bg-white px-5 text-left " + (weekChosen && weekKey === nextWeek ? "border-terracotta bg-[#fff8f5] ring-1 ring-terracotta/20" : "border-gray-200")}
                     onClick={() => {
                       setWeekKey(nextWeek);
                       setAnotherWeekOpen(false);
                       setWeekChosen(true);
                     }}
                   >
-                    <span>Next week</span>
-                    <span className="ml-2 text-sm font-normal text-gray-500">{formatWeekOptionLabel(nextWeek)}</span>
+                    <span className="font-semibold text-gray-900">Next week</span>
+                    <span className="text-sm text-gray-500">{formatWeekOptionLabel(nextWeek)}</span>
                   </Button>
 
                   <Button
                     variant="outline"
-                    className="h-12 w-full justify-center rounded-xl border-gray-300 bg-white text-base font-semibold"
+                    className="h-16 w-full justify-between rounded-2xl border border-gray-200 bg-white px-5 text-left"
                     onClick={() => { setPickerWeekKey(weekKey); setAnotherWeekOpen(true); }}
                   >
-                    Another week
+                    <span className="font-semibold text-gray-900">Another week</span>
+                    <ArrowRight className="h-4 w-4 text-gray-400" />
                   </Button>
                 </div>
 
                 {anotherWeekOpen && (
-                  <div className="mt-4 text-left">
-                    <div className="mb-2 text-sm font-semibold text-gray-700">Select week</div>
-                    <div className="relative overflow-hidden rounded-xl border border-gray-300 bg-white">
-                      <div className="pointer-events-none absolute inset-x-0 top-1/2 z-10 h-12 -translate-y-1/2 border-y border-gray-300 bg-gray-50/60" />
-                      <div className="h-56 snap-y snap-mandatory overflow-y-auto px-2 py-20">
+                  <div className="mt-3 text-left">
+                    <div className="relative overflow-hidden rounded-2xl border border-gray-200 bg-white">
+                      <div className="pointer-events-none absolute inset-x-0 top-1/2 z-10 h-12 -translate-y-1/2 border-y border-gray-200 bg-gray-50/70" />
+                      <div className="h-48 snap-y snap-mandatory overflow-y-auto px-2 py-16">
                         {pickerWeeks.map(key => {
                           const { year, week } = parseISOWeekKey(key);
                           const selected = key === pickerWeekKey;
@@ -397,7 +388,7 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
                                 setWeekKey(key);
                                 setWeekChosen(true);
                               }}
-                              className={"relative z-20 flex h-12 w-full snap-center items-center justify-between rounded-lg px-4 text-left transition-colors " +
+                              className={"relative z-20 flex h-12 w-full snap-center items-center justify-between rounded-xl px-4 text-left transition-colors " +
                                 (selected ? "font-semibold text-gray-900" : "text-gray-500")}
                             >
                               <span>Week {week}, {year}</span>
@@ -410,16 +401,16 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
                     <button
                       type="button"
                       onClick={() => setAnotherWeekOpen(false)}
-                      className="mt-3 h-11 w-full rounded-xl bg-terracotta text-sm font-semibold text-white"
+                      className="mt-2 h-10 w-full text-sm font-semibold text-terracotta"
                     >
-                      Set week
+                      Done
                     </button>
                   </div>
                 )}
 
-                <div className="mt-6 border-t border-gray-200 pt-5">
+                <div className="mt-5">
                   <Button
-                    className="mt-3 h-12 w-full rounded-xl bg-terracotta text-base font-semibold text-white hover:bg-terracotta/90 disabled:opacity-50"
+                    className="h-12 w-full rounded-2xl bg-terracotta text-base font-semibold text-white shadow-sm hover:bg-terracotta/90 disabled:bg-gray-200 disabled:text-gray-400"
                     disabled={!weekChosen}
                     onClick={() => {
                       setSwipingStarted(true);
