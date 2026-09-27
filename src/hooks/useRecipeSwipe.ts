@@ -142,38 +142,27 @@ export function useRecipeSwipe(recipes: Recipe[]) {
         try {
           const { year, week } = parseISOWeekKey(weekKey);
           const weekStart = getWeekStartDate(year, week);
+          const date = formatLocalDateYMD(weekStart);
           const existingDinnerPlans = getMealPlansForWeek(weekKey).filter(
             plan => plan.meal_type === "dinner"
           );
+          const nextSlotIndex =
+            existingDinnerPlans.reduce(
+              (max, plan) => Math.max(max, plan.slot_index ?? 0),
+              -1
+            ) + 1;
 
-          // Put the meal on the first free dinner day. If the week is full,
-          // add another dinner slot to Monday rather than changing the UI.
-          const occupiedDates = new Set(
-            existingDinnerPlans.map(plan => plan.date)
-          );
-          let date = formatLocalDateYMD(weekStart);
-
-          for (let day = 0; day < 7; day++) {
-            const candidate = new Date(weekStart);
-            candidate.setDate(weekStart.getDate() + day);
-            const candidateDate = formatLocalDateYMD(candidate);
-            if (!occupiedDates.has(candidateDate)) {
-              date = candidateDate;
-              break;
-            }
-          }
-
-          const plansOnDate = existingDinnerPlans.filter(
-            plan => plan.date === date
-          );
-
+          // The Meal Planner is a flexible weekly meal collection, not a
+          // day-by-day planner. The database currently requires a date, so
+          // the week start is used only as a storage anchor; this feature
+          // never chooses or fills individual days.
           await addMealPlan(
             {
               recipe_id: recipe.id,
               meal_type: "dinner",
               date,
               created_by: user.id,
-              slot_index: plansOnDate.length,
+              slot_index: nextSlotIndex,
               is_leftover: false,
               household_id: currentHousehold.id,
               week_key: weekKey,
