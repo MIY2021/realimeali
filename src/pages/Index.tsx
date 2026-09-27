@@ -1,3 +1,4 @@
+import realimealiLogo from "@/assets/realimeali-logo.png";
 import { ArrowRight, BookOpen, CalendarDays, Heart, ShoppingCart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
@@ -128,7 +129,7 @@ export default function Index() {
 
         <header className="flex items-center justify-between mb-7">
           <div className="flex items-center gap-3">
-            <img src="/realimeali-logo.png" alt="RealiMeali" className="h-11 w-11 shrink-0 object-contain" />
+            <img src={realimealiLogo} alt="RealiMeali" className="h-11 w-11 shrink-0 object-contain" />
             <div>
               <p className="text-sm font-medium text-gray-500">RealiMeali</p>
               <h1 className="mt-0.5 text-2xl font-bold tracking-tight text-gray-900">What are we cooking, {displayName}?</h1>
