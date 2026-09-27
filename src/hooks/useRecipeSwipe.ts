@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { MealType, Recipe } from "@/types";
 import { useAuth } from "@/contexts/AuthContext";
@@ -19,7 +19,7 @@ export type SwipeMealType = MealType;
 export function useRecipeSwipe(recipes: Recipe[]) {
   const { user } = useAuth();
   const { currentHousehold, householdMembers } = useHousehold();
-  const { getMealPlansForWeek, addMealPlan } = useMealPlan();
+  const { getMealPlansForWeek, addMealPlan, removeMealPlan } = useMealPlan();
   const { toast } = useToast();
   const [swipes, setSwipes] = useState<Record<string, SwipeDecision>>({});
   const [isLoading, setIsLoading] = useState(false);
@@ -27,6 +27,8 @@ export function useRecipeSwipe(recipes: Recipe[]) {
   const [dbAvailable, setDbAvailable] = useState(true);
   const [weekKey, setWeekKey] = useState(() => getNextWeek(getCurrentWeekKey()));
   const [mealType, setMealType] = useState<SwipeMealType>("dinner");
+  const [canUndo, setCanUndo] = useState(false);
+  const lastActionRef = useRef<{ recipeId: string; decision: SwipeDecision; mealPlanId?: string } | null>(null);
 
   const plannedRecipeIds = useMemo(
     () =>
@@ -166,7 +168,7 @@ export function useRecipeSwipe(recipes: Recipe[]) {
           // day-by-day planner. The database currently requires a date, so
           // the week start is used only as a storage anchor; this feature
           // never chooses or fills individual days.
-          await addMealPlan(
+          const newMealPlan = await addMealPlan(
             {
               recipe_id: recipe.id,
               meal_type: mealType,
@@ -183,6 +185,12 @@ export function useRecipeSwipe(recipes: Recipe[]) {
             },
             weekKey
           );
+
+          lastActionRef.current = {
+            recipeId: recipe.id,
+            decision,
+            mealPlanId: newMealPlan?.id,
+          };
         } catch (error) {
           console.error("Failed to add recipe to meal plan:", error);
           await supabase
@@ -209,6 +217,13 @@ export function useRecipeSwipe(recipes: Recipe[]) {
         }
       }
 
+      if (decision === "no") {
+        lastActionRef.current = {
+          recipeId: recipe.id,
+          decision,
+        };
+      }
+      setCanUndo(true);
       setDbAvailable(true);
       setIsSaving(false);
       return true;
@@ -222,6 +237,7 @@ export function useRecipeSwipe(recipes: Recipe[]) {
       getMealPlansForWeek,
       addMealPlan,
       toast,
+      removeMealPlan,
     ]
   );
 
@@ -238,6 +254,48 @@ export function useRecipeSwipe(recipes: Recipe[]) {
     isSaving,
     dbAvailable,
     swipe,
+    undo: async () => {
+      const action = lastActionRef.current;
+      if (!action || !user || !currentHousehold || isSaving) return false;
+
+      setIsSaving(true);
+      try {
+        if (action.decision === "yes" && action.mealPlanId) {
+          await removeMealPlan(action.mealPlanId);
+        }
+
+        const { error } = await supabase
+          .from("recipe_swipes")
+          .delete()
+          .eq("household_id", currentHousehold.id)
+          .eq("user_id", user.id)
+          .eq("recipe_id", action.recipeId)
+          .eq("week_key", weekKey)
+          .eq("meal_type", mealType);
+
+        if (error) throw error;
+
+        setSwipes(prev => {
+          const next = { ...prev };
+          delete next[action.recipeId];
+          return next;
+        });
+        lastActionRef.current = null;
+        setCanUndo(false);
+        return true;
+      } catch (error) {
+        console.error("Failed to undo recipe swipe:", error);
+        toast({
+          title: "Couldn't undo",
+          description: "Please try again.",
+          variant: "destructive",
+        });
+        return false;
+      } finally {
+        setIsSaving(false);
+      }
+    },
+    canUndo,
     reload: loadSwipes,
     allComplete: swipePool.length > 0 && remainingRecipes.length === 0,
   };
