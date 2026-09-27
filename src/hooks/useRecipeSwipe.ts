@@ -23,9 +23,33 @@ export function useRecipeSwipe(recipes: Recipe[]) {
 
   const weekKey = useMemo(() => getNextWeek(getCurrentWeekKey()), []);
 
+  // Don't make people swipe the entire recipe library. Build a stable,
+  // deterministic random pool for the household/week so reopening the
+  // dialog shows the same selection, while each new week gets a new mix.
+  const swipePool = useMemo(() => {
+    const candidates = recipes.filter(
+      recipe => recipe.household_id === currentHousehold?.id
+    );
+
+    const seedSource = `${currentHousehold?.id ?? ""}:${weekKey}`;
+    let seed = 0;
+    for (let i = 0; i < seedSource.length; i++) {
+      seed = (seed * 31 + seedSource.charCodeAt(i)) >>> 0;
+    }
+
+    return [...candidates]
+      .map(recipe => {
+        seed = (seed * 1664525 + 1013904223) >>> 0;
+        return { recipe, sort: seed };
+      })
+      .sort((a, b) => a.sort - b.sort)
+      .slice(0, Math.min(20, candidates.length))
+      .map(({ recipe }) => recipe);
+  }, [recipes, currentHousehold?.id, weekKey]);
+
   const remainingRecipes = useMemo(
-    () => recipes.filter(recipe => recipe.household_id === currentHousehold?.id && !swipes[recipe.id]),
-    [recipes, currentHousehold?.id, swipes]
+    () => swipePool.filter(recipe => !swipes[recipe.id]),
+    [swipePool, swipes]
   );
 
   const loadSwipes = useCallback(async () => {
@@ -107,7 +131,7 @@ export function useRecipeSwipe(recipes: Recipe[]) {
   );
 
   return {
-    weekKey, remainingRecipes, matches, matchRecipes, swipes,
+    weekKey, remainingRecipes, matches, matchRecipes, swipes, swipePool,
     householdMemberCount: householdMembers.length,
     isLoading, isSaving, dbAvailable, swipe, reload: loadSwipes,
     allComplete: recipes.length > 0 && remainingRecipes.length === 0,
