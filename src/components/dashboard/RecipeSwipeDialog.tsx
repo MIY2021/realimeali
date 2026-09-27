@@ -123,7 +123,7 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
               PICK YOUR MEALS
             </div>
             <h2 className="mt-1 text-xl font-bold text-gray-900">
-              weekChosen ? "What do you fancy?" : "Choose your week"
+              {weekChosen ? "What do you fancy?" : "Choose your week"}
             </h2>
             {weekChosen ? (
               <div className="mt-1 text-sm text-gray-500">{selectedWeekLabel}</div>
