@@ -1,4 +1,4 @@
-import { Clock, Users, Plus, ArrowRight, Sparkles } from "lucide-react";
+import { Clock, Users, Plus, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -104,13 +104,12 @@ export const LatestRecipesInspiration = () => {
   if (error) return null;
 
   if (isLoading) {
-    return <div className="h-[420px] w-full rounded-2xl bg-white border border-gray-200 animate-pulse" />;
+    return <div className="h-[300px] w-full rounded-2xl bg-white border border-gray-200 animate-pulse" />;
   }
 
   if (!recipeOfTheDay) {
     return (
       <div className="rounded-2xl border border-gray-200 bg-white p-8 text-center">
-        <Sparkles className="h-8 w-8 text-gray-300 mx-auto mb-3" />
         <p className="text-sm text-gray-600 mb-4">No recipes available at the moment.</p>
         <Link to="/discover-recipes" className="inline-flex items-center gap-2 rounded-full bg-[#b85f49] px-5 py-2.5 text-sm font-semibold text-white">
           Explore recipes <ArrowRight className="h-4 w-4" />
@@ -125,7 +124,7 @@ export const LatestRecipesInspiration = () => {
     <>
       <article className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
         <Link to={`/discover-recipes/${recipeOfTheDay.id}`} className="group block">
-          <div className="relative h-64 sm:h-80 overflow-hidden bg-[#eeeae5]">
+          <div className="relative h-40 sm:h-48 overflow-hidden bg-[#eeeae5]">
             {recipeOfTheDay.image ? (
               <img
                 src={recipeOfTheDay.image}
@@ -135,14 +134,13 @@ export const LatestRecipesInspiration = () => {
             ) : (
               <div className="h-full flex items-center justify-center text-5xl">🍽️</div>
             )}
-            <div className="absolute left-4 top-4 inline-flex items-center gap-2 rounded-full bg-white/95 px-3 py-1.5 text-xs font-bold text-gray-800 shadow-sm">
-              <Sparkles className="h-3.5 w-3.5 text-[#b85f49]" />
+            <div className="absolute left-4 top-4 rounded-full bg-white/95 px-3 py-1.5 text-xs font-bold tracking-wide text-gray-800 shadow-sm">
               RECIPE OF THE DAY
             </div>
           </div>
         </Link>
 
-        <div className="p-5 sm:p-6">
+        <div className="p-4 sm:p-5">
           <Link to={`/discover-recipes/${recipeOfTheDay.id}`} className="group">
             <h3 className="text-2xl font-bold tracking-tight text-gray-900 group-hover:text-[#b85f49] transition-colors">
               {recipeOfTheDay.title}
@@ -162,7 +160,7 @@ export const LatestRecipesInspiration = () => {
             <span className="inline-flex items-center gap-1.5"><Users className="h-4 w-4" />{recipeOfTheDay.servings} servings</span>
           </div>
 
-          <div className="mt-5 flex gap-2">
+          <div className="mt-4 flex gap-2">
             <Link
               to={`/discover-recipes/${recipeOfTheDay.id}`}
               className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-800 hover:bg-gray-50 transition-colors"
