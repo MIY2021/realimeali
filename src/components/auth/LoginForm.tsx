@@ -3,7 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
-import { Mail } from "lucide-react";
+import { Mail, ChefHat } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -102,7 +102,7 @@ export function LoginForm() {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="flex flex-col items-center justify-center mb-8">
-          <img src="/realimeali-logo.png" alt="RealiMeali" className="h-20 w-20 object-contain" />
+          <ChefHat className="h-20 w-20 text-terracotta" strokeWidth={2} aria-label="RealiMeali" />
           <span className="mt-3 text-4xl font-bold text-navy">RealiMeali</span>
         </div>
 
