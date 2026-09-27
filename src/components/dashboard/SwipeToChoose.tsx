@@ -48,9 +48,9 @@ export function SwipeToChoose() {
       <div className="w-full">
         <button
           onClick={() => setOpen(true)}
-          className="group w-full overflow-hidden rounded-2xl bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200 text-left"
+          className="group w-full text-left"
         >
-          <div className="relative h-40 sm:h-48 overflow-hidden bg-gray-100">
+          <div className="relative h-40 sm:h-48 overflow-hidden rounded-2xl bg-gray-100">
             {imageRecipes.length > 0 ? (
               <div className="absolute inset-0 flex gap-1">
                 <div className="relative w-[54%] overflow-hidden">
@@ -86,7 +86,7 @@ export function SwipeToChoose() {
             </div>
           </div>
 
-          <div className="flex items-center justify-between gap-4 p-4 sm:p-5">
+          <div className="flex items-center justify-between gap-4 pt-4">
             <div>
               <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-gray-900">
                 Swipe through your recipes
