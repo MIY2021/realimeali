@@ -3,33 +3,48 @@ import { supabase } from "@/integrations/supabase/client";
 import { Recipe } from "@/types";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
-import { getCurrentWeekKey, getNextWeek } from "@/utils/weekUtils";
+import { useMealPlan } from "@/contexts/MealPlanContext";
+import { useToast } from "@/hooks/use-toast";
+import {
+  formatLocalDateYMD,
+  getCurrentWeekKey,
+  getNextWeek,
+  getWeekStartDate,
+  parseISOWeekKey,
+} from "@/utils/weekUtils";
 
 export type SwipeDecision = "yes" | "no";
-
-export interface RecipeSwipeMatch {
-  recipeId: string;
-  userIds: string[];
-}
 
 export function useRecipeSwipe(recipes: Recipe[]) {
   const { user } = useAuth();
   const { currentHousehold, householdMembers } = useHousehold();
+  const { getMealPlansForWeek, addMealPlan } = useMealPlan();
+  const { toast } = useToast();
   const [swipes, setSwipes] = useState<Record<string, SwipeDecision>>({});
-  const [matches, setMatches] = useState<RecipeSwipeMatch[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [dbAvailable, setDbAvailable] = useState(true);
+  const [weekKey, setWeekKey] = useState(() => getNextWeek(getCurrentWeekKey()));
 
-  const weekKey = useMemo(() => getNextWeek(getCurrentWeekKey()), []);
+  const plannedRecipeIds = useMemo(
+    () =>
+      new Set(
+        getMealPlansForWeek(weekKey)
+          .filter(plan => plan.meal_type === "dinner" && plan.recipe_id)
+          .map(plan => plan.recipe_id as string)
+      ),
+    [getMealPlansForWeek, weekKey]
+  );
 
-  // Don't make people swipe the entire recipe library. Build a stable,
-  // deterministic random pool for the household/week so reopening the
-  // dialog shows the same selection, while each new week gets a new mix.
+  // Cycle through every dinner recipe in the household. The order is stable
+  // for the selected household/week, but changes for a new week.
   const swipePool = useMemo(() => {
-    const candidates = recipes.filter(
-      recipe => recipe.household_id === currentHousehold?.id
-    );
+    const candidates = recipes.filter(recipe => {
+      if (recipe.household_id !== currentHousehold?.id) return false;
+      return Boolean(
+        recipe.meal_types?.includes("dinner") || recipe.meal_type === "dinner"
+      );
+    });
 
     const seedSource = `${currentHousehold?.id ?? ""}:${weekKey}`;
     let seed = 0;
@@ -43,13 +58,20 @@ export function useRecipeSwipe(recipes: Recipe[]) {
         return { recipe, sort: seed };
       })
       .sort((a, b) => a.sort - b.sort)
-      .slice(0, Math.min(20, candidates.length))
       .map(({ recipe }) => recipe);
   }, [recipes, currentHousehold?.id, weekKey]);
 
   const remainingRecipes = useMemo(
-    () => swipePool.filter(recipe => !swipes[recipe.id]),
-    [swipePool, swipes]
+    () =>
+      swipePool.filter(
+        recipe => !swipes[recipe.id] && !plannedRecipeIds.has(recipe.id)
+      ),
+    [swipePool, swipes, plannedRecipeIds]
+  );
+
+  const yesCount = useMemo(
+    () => Object.values(swipes).filter(decision => decision === "yes").length,
+    [swipes]
   );
 
   const loadSwipes = useCallback(async () => {
@@ -60,6 +82,7 @@ export function useRecipeSwipe(recipes: Recipe[]) {
       .from("recipe_swipes")
       .select("recipe_id, user_id, decision")
       .eq("household_id", currentHousehold.id)
+      .eq("user_id", user.id)
       .eq("week_key", weekKey);
 
     if (error) {
@@ -71,69 +94,147 @@ export function useRecipeSwipe(recipes: Recipe[]) {
 
     setDbAvailable(true);
     const own: Record<string, SwipeDecision> = {};
-    const yesByRecipe = new Map<string, string[]>();
-
     (data || []).forEach(row => {
-      if (row.user_id === user.id) own[row.recipe_id] = row.decision as SwipeDecision;
-      if (row.decision === "yes") {
-        const ids = yesByRecipe.get(row.recipe_id) || [];
-        ids.push(row.user_id);
-        yesByRecipe.set(row.recipe_id, ids);
-      }
+      own[row.recipe_id] = row.decision as SwipeDecision;
     });
 
     setSwipes(own);
-    setMatches(
-      Array.from(yesByRecipe.entries())
-        .filter(([, ids]) => new Set(ids).size >= 2)
-        .map(([recipeId, userIds]) => ({ recipeId, userIds: [...new Set(userIds)] }))
-    );
     setIsLoading(false);
-  }, [user, currentHousehold?.id, weekKey]);
+  }, [user?.id, currentHousehold?.id, weekKey]);
 
-  useEffect(() => { void loadSwipes(); }, [loadSwipes]);
+  useEffect(() => {
+    void loadSwipes();
+  }, [loadSwipes]);
 
-  const swipe = useCallback(async (recipe: Recipe, decision: SwipeDecision) => {
-    if (!user || !currentHousehold || isSaving) return false;
+  const swipe = useCallback(
+    async (recipe: Recipe, decision: SwipeDecision) => {
+      if (!user || !currentHousehold || isSaving) return false;
 
-    setIsSaving(true);
-    setSwipes(prev => ({ ...prev, [recipe.id]: decision }));
+      setIsSaving(true);
+      setSwipes(prev => ({ ...prev, [recipe.id]: decision }));
 
-    const { error } = await supabase
-      .from("recipe_swipes")
-      .upsert(
-        { household_id: currentHousehold.id, user_id: user.id, recipe_id: recipe.id, week_key: weekKey, decision },
-        { onConflict: "household_id,user_id,recipe_id,week_key" }
-      );
+      const { error } = await supabase
+        .from("recipe_swipes")
+        .upsert(
+          {
+            household_id: currentHousehold.id,
+            user_id: user.id,
+            recipe_id: recipe.id,
+            week_key: weekKey,
+            decision,
+          },
+          { onConflict: "household_id,user_id,recipe_id,week_key" }
+        );
 
-    if (error) {
-      console.error("Failed to save recipe swipe:", error);
-      setSwipes(prev => {
-        const next = { ...prev };
-        delete next[recipe.id];
-        return next;
-      });
-      setDbAvailable(false);
+      if (error) {
+        console.error("Failed to save recipe swipe:", error);
+        setSwipes(prev => {
+          const next = { ...prev };
+          delete next[recipe.id];
+          return next;
+        });
+        setDbAvailable(false);
+        setIsSaving(false);
+        return false;
+      }
+
+      if (decision === "yes") {
+        try {
+          const { year, week } = parseISOWeekKey(weekKey);
+          const weekStart = getWeekStartDate(year, week);
+          const existingDinnerPlans = getMealPlansForWeek(weekKey).filter(
+            plan => plan.meal_type === "dinner"
+          );
+
+          // Put the meal on the first free dinner day. If the week is full,
+          // add another dinner slot to Monday rather than changing the UI.
+          const occupiedDates = new Set(
+            existingDinnerPlans.map(plan => plan.date)
+          );
+          let date = formatLocalDateYMD(weekStart);
+
+          for (let day = 0; day < 7; day++) {
+            const candidate = new Date(weekStart);
+            candidate.setDate(weekStart.getDate() + day);
+            const candidateDate = formatLocalDateYMD(candidate);
+            if (!occupiedDates.has(candidateDate)) {
+              date = candidateDate;
+              break;
+            }
+          }
+
+          const plansOnDate = existingDinnerPlans.filter(
+            plan => plan.date === date
+          );
+
+          await addMealPlan(
+            {
+              recipe_id: recipe.id,
+              meal_type: "dinner",
+              date,
+              created_by: user.id,
+              slot_index: plansOnDate.length,
+              is_leftover: false,
+              household_id: currentHousehold.id,
+              week_key: weekKey,
+              original_servings: recipe.servings || 4,
+              planned_servings: recipe.servings || 4,
+              is_completed: false,
+              is_freetyped: false,
+            },
+            weekKey
+          );
+        } catch (error) {
+          console.error("Failed to add recipe to meal plan:", error);
+          await supabase
+            .from("recipe_swipes")
+            .delete()
+            .eq("household_id", currentHousehold.id)
+            .eq("user_id", user.id)
+            .eq("recipe_id", recipe.id)
+            .eq("week_key", weekKey);
+
+          setSwipes(prev => {
+            const next = { ...prev };
+            delete next[recipe.id];
+            return next;
+          });
+          setIsSaving(false);
+          toast({
+            title: "Couldn't add meal",
+            description: "The recipe wasn't added to your meal plan. Please try again.",
+            variant: "destructive",
+          });
+          return false;
+        }
+      }
+
+      setDbAvailable(true);
       setIsSaving(false);
-      return false;
-    }
-
-    setDbAvailable(true);
-    setIsSaving(false);
-    await loadSwipes();
-    return true;
-  }, [user, currentHousehold?.id, weekKey, isSaving, loadSwipes]);
-
-  const matchRecipes = useMemo(
-    () => matches.map(match => recipes.find(recipe => recipe.id === match.recipeId))
-      .filter((recipe): recipe is Recipe => Boolean(recipe)),
-    [matches, recipes]
+      return true;
+    },
+    [
+      user,
+      currentHousehold?.id,
+      weekKey,
+      isSaving,
+      getMealPlansForWeek,
+      addMealPlan,
+      toast,
+    ]
   );
 
   return {
-    weekKey, remainingRecipes, matches, matchRecipes, swipes, swipePool,
+    weekKey,
+    setWeekKey,
+    remainingRecipes,
+    yesCount,
     householdMemberCount: householdMembers.length,
-    isLoading, isSaving, dbAvailable, swipe, reload: loadSwipes,
-    allComplete: recipes.length > 0 && remainingRecipes.length === 0,
+    isLoading,
+    isSaving,
+    dbAvailable,
+    swipe,
+    reload: loadSwipes,
+    allComplete: swipePool.length > 0 && remainingRecipes.length === 0,
   };
 }
