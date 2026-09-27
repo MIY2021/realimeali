@@ -128,33 +128,32 @@ export function MealPlannerRecipeCard({
         className="relative cursor-pointer" 
         onClick={recipe ? handleViewRecipe : undefined}
       >
-        <RecipeImage
-          recipe={recipe}
-          useThumbnail={true}
-          alt={getTitle()}
-          imgClassName={`${
-            mealPlan.is_completed ? 'grayscale brightness-75' : ''
-          }`}
-        />
-        
-        {/* Added-by avatar - top-right */}
         {mealCreator && (
-          <div
-            className="absolute top-2 right-2 h-7 w-7 overflow-hidden rounded-full border-2 border-white bg-gray-100 shadow-md"
-            title={"Added by " + creatorName}
-            aria-label={"Added by " + creatorName}
-          >
-            {creatorProfile?.avatar_url ? (
-              <img src={creatorProfile.avatar_url} alt="" className="h-full w-full object-cover" />
-            ) : creatorProfile?.avatar_data ? (
-              <img src={creatorProfile.avatar_data} alt="" className="h-full w-full object-cover" />
-            ) : (
-              <span className="flex h-full w-full items-center justify-center text-[9px] font-semibold text-gray-600">
-                {creatorInitials}
-              </span>
+              <div
+                className="absolute -top-0.5 -left-0.5 z-0 h-7 w-7 overflow-hidden rounded-full bg-gray-100"
+                title={"Added by " + creatorName}
+                aria-label={"Added by " + creatorName}
+              >
+                {creatorProfile?.avatar_url ? (
+                  <img src={creatorProfile.avatar_url} alt="" className="h-full w-full object-cover" />
+                ) : creatorProfile?.avatar_data ? (
+                  <img src={creatorProfile.avatar_data} alt="" className="h-full w-full object-cover" />
+                ) : (
+                  <span className="flex h-full w-full items-center justify-center text-[9px] font-semibold text-gray-600">
+                    {creatorInitials}
+                  </span>
+                )}
+              </div>
             )}
-          </div>
-        )}
+
+        <div className="absolute inset-0 overflow-hidden rounded-xl bg-gray-100 [clip-path:polygon(0_0,100%_0,100%_100%,0_100%,0_24px,24px_0)]">
+          <RecipeImage
+            recipe={recipe}
+            useThumbnail={true}
+            alt={getTitle()}
+            imgClassName={`${mealPlan.is_completed ? 'grayscale brightness-75' : ''`}
+          />
+        </div>
 
         {/* Lunch Leftover icon - top-left */}
         {existingLeftover && (
