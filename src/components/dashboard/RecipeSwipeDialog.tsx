@@ -285,17 +285,7 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
                   {current.description && (
                     <p className="text-sm leading-6 text-gray-600">{current.description}</p>
                   )}
-                  <div>
-                    <h4 className="mb-3 text-sm font-bold uppercase tracking-wider text-gray-500">Method</h4>
-                    <ol className="space-y-3 text-sm leading-6 text-gray-700">
-                      {(current.instructions || []).map((instruction, index) => (
-                        <li key={index} className="flex gap-3">
-                          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gray-100 text-xs font-bold text-gray-500">{index + 1}</span>
-                          <span>{instruction}</span>
-                        </li>
-                      ))}
-                    </ol>
-                  </div>
+
 
                   <div>
                     <h4 className="mb-3 text-sm font-bold uppercase tracking-wider text-gray-500">Ingredients</h4>
@@ -307,6 +297,17 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
                         </li>
                       ))}
                     </ul>
+                  </div>
+                                    <div>
+                    <h4 className="mb-3 text-sm font-bold uppercase tracking-wider text-gray-500">Method</h4>
+                    <ol className="space-y-3 text-sm leading-6 text-gray-700">
+                      {(current.instructions || []).map((instruction, index) => (
+                        <li key={index} className="flex gap-3">
+                          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gray-100 text-xs font-bold text-gray-500">{index + 1}</span>
+                          <span>{instruction}</span>
+                        </li>
+                      ))}
+                    </ol>
                   </div>
                   {current.top_tip && (
                     <div className="rounded-xl bg-[#fff8f5] p-4">
@@ -474,7 +475,7 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
                       </div>
 
                       {dragX > 40 && (
-                        <div className="absolute left-4 top-4 border-2 border-gray-800 bg-white px-3 py-1 text-sm font-bold uppercase tracking-widest text-terracotta shadow-sm">
+                        <div className="absolute left-4 top-4 border-2 border-green-200 bg-white px-3 py-1 text-sm font-bold uppercase tracking-widest text-green-600 shadow-sm">
                           Add to meal plan
                         </div>
                       )}
