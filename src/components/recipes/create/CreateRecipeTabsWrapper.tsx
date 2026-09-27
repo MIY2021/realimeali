@@ -7,6 +7,8 @@ import { RecipeOrigin } from "./CreateRecipeContainer";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Tabs } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
+import { Globe, Camera, Pencil } from "lucide-react";
+import { RecipeCardIcon, RealiChefIcon, MealIcon } from "@/components/icons/RealiMealiIcons";
 
 interface CreateRecipeTabsWrapperProps {
   isMobile: boolean;
@@ -65,15 +67,15 @@ export function CreateRecipeTabsWrapper({
 
   // Get tab label and icon for Sheet header
   const getTabInfo = (tab: string) => {
-    const tabInfo: Record<string, { label: string; emoji: string }> = {
-      url: { label: "From Website", emoji: "🌐" },
-      image: { label: "From Photo", emoji: "📸" },
-      generate: { label: "Generate with AI", emoji: "✨" },
-      text: { label: "Recipe Text", emoji: "📝" },
-      whatcanImake: { label: "What Can I Make?", emoji: "🍽️" },
-      manual: { label: "Manual Entry", emoji: "✍️" }
+    const tabInfo: Record<string, { label: string; icon: React.ComponentType<{ className?: string }> }> = {
+      url: { label: "From Website", icon: Globe },
+      image: { label: "From Photo", icon: Camera },
+      generate: { label: "Generate with AI", icon: RealiChefIcon },
+      text: { label: "Recipe Text", icon: RecipeCardIcon },
+      whatcanImake: { label: "What Can I Make?", icon: MealIcon },
+      manual: { label: "Manual Entry", icon: Pencil }
     };
-    return tabInfo[tab] || { label: "Add Recipe", emoji: "➕" };
+    return tabInfo[tab] || { label: "Add Recipe", icon: RecipeCardIcon };
   };
 
   return (
@@ -137,7 +139,7 @@ export function CreateRecipeTabsWrapper({
             <div className="flex flex-col h-full">
               <SheetHeader className="px-4 sm:px-6 py-3 bg-white border-b sticky top-0 z-10">
                 <SheetTitle className="flex items-center justify-center gap-2 text-lg sm:text-xl">
-                  <span className="text-xl sm:text-2xl">{getTabInfo(activeTab).emoji}</span>
+                  <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#F7F5F2] text-[#B85F49]"><>{(() => { const Icon = getTabInfo(activeTab).icon; return <Icon className="h-5 w-5" />; })()}</></span>
                   {getTabInfo(activeTab).label}
                 </SheetTitle>
               </SheetHeader>
