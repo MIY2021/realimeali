@@ -6,7 +6,7 @@ import { useMealPlan } from "@/contexts/MealPlanContext";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { getCurrentWeekKey, getNextWeek, formatWeekRange, getWeekStartDate, parseISOWeekKey, getISOWeekKey } from "@/utils/weekUtils";
+import { getCurrentWeekKey, getNextWeek, formatWeekRange, getWeekStartDate, parseISOWeekKey, getISOWeekKey, formatLocalDateYMD } from "@/utils/weekUtils";
 
 interface RecipeSwipeDialogProps {
   open: boolean;
