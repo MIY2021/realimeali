@@ -49,6 +49,8 @@ export const useMealPlanOperations = (
           description: `${recipe?.title || 'Meal'} added to ${mealPlanData.meal_type}`,
         });
       }
+
+      return newMealPlan;
     } catch (error) {
       console.error("Error adding meal plan:", error);
       if (!silentMode) {
