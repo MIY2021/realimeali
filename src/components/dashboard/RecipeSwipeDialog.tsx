@@ -19,7 +19,6 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
     weekKey,
     setWeekKey,
     remainingRecipes,
-    yesCount,
     isLoading,
     isSaving,
     dbAvailable,
@@ -246,7 +245,7 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
                 </div>
                 <h3 className="text-3xl font-bold text-gray-900">All done.</h3>
                 <p className="mt-3 text-gray-500">{finishMessage}</p>
-                <p className="mt-2 text-sm font-semibold text-gray-700">♥ {yesCount} {yesCount === 1 ? "meal" : "meals"} added to your plan</p>
+                <p className="mt-2 text-sm font-semibold text-gray-700">♥ {sessionYesCount} {sessionYesCount === 1 ? "meal" : "meals"} added to your plan</p>
                 <Button
                   className="mt-5 h-11 rounded-full bg-gray-900 px-5 text-white hover:bg-gray-800"
                   onClick={() => {
