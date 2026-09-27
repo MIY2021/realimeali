@@ -1,4 +1,4 @@
-import realimealiLogo from "@/assets/realimeali-logo.png";
+import realimealiLogo from "@/assets/realimeali-logo.ts";
 
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";

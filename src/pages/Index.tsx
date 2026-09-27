@@ -1,4 +1,4 @@
-import realimealiLogo from "@/assets/realimeali-logo.png";
+import realimealiLogo from "@/assets/realimeali-logo.ts";
 import { ArrowRight, BookOpen, CalendarDays, Heart, ShoppingCart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
