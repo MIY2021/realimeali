@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import { createRecipeUrl } from "@/utils/slugUtils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useMealPlan } from "@/contexts/MealPlanContext";
+import { useHousehold } from "@/contexts/HouseholdContext";
 import { useToast } from "@/hooks/use-toast";
 
 interface MealPlannerRecipeCardProps {
@@ -30,7 +31,19 @@ export function MealPlannerRecipeCard({
   const isMobile = useIsMobile();
   const [servings, setServings] = useState(mealPlan.planned_servings || recipe?.servings || 1);
   const { updateMealPlanCompletion, updateMealPlanServings } = useMealPlan();
+  const { householdMembers } = useHousehold();
   const { toast } = useToast();
+
+  const mealCreator = householdMembers.find(member => member.user_id === mealPlan.created_by);
+  const creatorProfile = mealCreator?.profile;
+  const creatorName = creatorProfile?.full_name || creatorProfile?.email || "Household member";
+  const creatorInitials = creatorName
+    .split(" ")
+    .map(part => part[0])
+    .filter(Boolean)
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
 
   // Track leftover state for styling
   const existingLeftover = allMealPlans.find(plan => 
@@ -124,6 +137,25 @@ export function MealPlannerRecipeCard({
           }`}
         />
         
+        {/* Added-by avatar - top-right */}
+        {mealCreator && (
+          <div
+            className="absolute top-2 right-2 h-7 w-7 overflow-hidden rounded-full border-2 border-white bg-gray-100 shadow-md"
+            title={"Added by " + creatorName}
+            aria-label={"Added by " + creatorName}
+          >
+            {creatorProfile?.avatar_url ? (
+              <img src={creatorProfile.avatar_url} alt="" className="h-full w-full object-cover" />
+            ) : creatorProfile?.avatar_data ? (
+              <img src={creatorProfile.avatar_data} alt="" className="h-full w-full object-cover" />
+            ) : (
+              <span className="flex h-full w-full items-center justify-center text-[9px] font-semibold text-gray-600">
+                {creatorInitials}
+              </span>
+            )}
+          </div>
+        )}
+
         {/* Lunch Leftover icon - top-left */}
         {existingLeftover && (
           <div className="absolute top-2 left-2 w-5 h-5 rounded-full bg-yellow-500/80 flex items-center justify-center shadow-sm animate-scale-in-slow">
