@@ -335,7 +335,7 @@ export function EnhancedMealCard({
             {/* Added-by corner cutout - top-left */}
             {mealCreator && (
               <div
-                className="absolute right-0 top-0 z-10 h-8 w-8 overflow-hidden border-b border-l border-white bg-white shadow-sm [clip-path:polygon(0_0,100%_0,100%_100%)]"
+                className="absolute right-0 top-0 z-10 h-8 w-8 overflow-hidden border-b border-l border-white bg-white shadow-sm [clip-path:polygon(0_0,100%_0,100%_100%)] after:absolute after:bottom-0 after:left-0 after:h-px after:w-[141%] after:origin-left after:rotate-[-45deg] after:bg-white/90 after:shadow-[0_1px_2px_rgba(0,0,0,0.12)] after:content-['']"
                 title={"Added by " + creatorName}
                 aria-label={"Added by " + creatorName}
               >
