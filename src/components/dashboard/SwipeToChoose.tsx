@@ -1,4 +1,5 @@
-import { ArrowRight, Heart } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+import { MealIcon } from "@/components/icons/RealiMealiIcons";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { useEffect, useRef, useState } from "react";
 import { RecipeSwipeDialog } from "./RecipeSwipeDialog";
@@ -75,13 +76,13 @@ export function SwipeToChoose() {
               </div>
             ) : (
               <div className="absolute inset-0 bg-[#f2eee9] flex items-center justify-center">
-                <Heart className="h-10 w-10 text-terracotta" />
+                <MealIcon className="h-10 w-10 text-terracotta" />
               </div>
             )}
 
             <div className="absolute left-4 top-4">
               <span className="inline-flex items-center rounded-full bg-white/95 px-3 py-1.5 text-xs font-bold tracking-widest text-gray-800 shadow-sm">
-                PICK YOUR MEALS
+                SWIPE TO CHOOSE
               </span>
             </div>
           </div>
@@ -89,10 +90,10 @@ export function SwipeToChoose() {
           <div className="flex items-center justify-between gap-4 pt-4">
             <div>
               <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-gray-900">
-                Swipe through your recipes
+                Choose meals for your week
               </h3>
               <p className="mt-1 text-sm text-gray-500">
-                Pick the ones you fancy for your week.
+                Swipe right to add a recipe. Swipe left to skip.
               </p>
             </div>
 
