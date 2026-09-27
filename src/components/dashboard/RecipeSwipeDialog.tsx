@@ -29,6 +29,7 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
   } = useRecipeSwipe(recipes);
 
   const [weekChosen, setWeekChosen] = useState(false);
+  const [swipingStarted, setSwipingStarted] = useState(false);
   const [anotherWeekOpen, setAnotherWeekOpen] = useState(false);
   const [sessionYesCount, setSessionYesCount] = useState(0);
   const [dragX, setDragX] = useState(0);
@@ -40,6 +41,7 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
   useEffect(() => {
     if (!open) {
       setWeekChosen(false);
+      setSwipingStarted(false);
       setAnotherWeekOpen(false);
       setSessionYesCount(0);
       setDragX(0);
@@ -139,7 +141,7 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
           </div>
 
           <div className="flex flex-1 items-center justify-center px-5 py-6">
-            {!weekChosen ? (
+            {!swipingStarted ? (
               <div className="w-full max-w-sm text-center">
                 <h3 className="text-3xl font-bold text-gray-900">Choose a week</h3>
                 <p className="mt-2 text-sm text-gray-500">
@@ -210,7 +212,7 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
                     className="mt-3 h-12 w-full rounded-xl bg-terracotta text-base font-semibold text-white hover:bg-terracotta/90 disabled:opacity-50"
                     disabled={!weekChosen}
                     onClick={() => {
-                      setWeekChosen(true);
+                      setSwipingStarted(true);
                       setAnotherWeekOpen(false);
                     }}
                   >
