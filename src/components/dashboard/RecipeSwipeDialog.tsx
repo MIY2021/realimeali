@@ -40,6 +40,13 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
     }
   }, [open]);
 
+  // Reset the card position whenever the active recipe changes.
+  // This prevents the next card inheriting the previous card's swipe transform.
+  useEffect(() => {
+    setDragX(0);
+    setDragging(false);
+  }, [current?.id]);
+
   const finishMessage = useMemo(() => {
     if (householdMemberCount < 2) {
       return "Your picks are saved for next week.";
@@ -54,8 +61,7 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
     if (!current || isSaving) return;
     setDragX(decision === "yes" ? 420 : -420);
     window.setTimeout(async () => {
-      await swipe(current, decision);
-      setDragX(0);
+      void swipe(current, decision);
     }, 180);
   };
 
@@ -119,6 +125,7 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
                 )}
 
                 <div
+                  key={current.id}
                   className="absolute inset-0 cursor-grab touch-none select-none overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-lg active:cursor-grabbing"
                   style={{
                     transform: "translateX(" + dragX + "px) rotate(" + dragX / 22 + "deg)",
