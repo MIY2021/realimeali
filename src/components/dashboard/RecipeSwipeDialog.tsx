@@ -73,6 +73,16 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
     parseISOWeekKey(nextWeek).week
   );
 
+  const formatWeekOptionLabel = (weekKey: string) => {
+    const { year, week } = parseISOWeekKey(weekKey);
+    const start = getWeekStartDate(year, week);
+    const end = new Date(start);
+    end.setDate(start.getDate() + 6);
+    const formatDay = (date: Date) =>
+      date.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
+    return `${formatDay(start)} – ${formatDay(end)}`;
+  };
+
   const finishMessage = "Your picks have been added to the meal plan.";
  
   const handleSwipe = async (decision: "yes" | "no") => {
@@ -168,7 +178,7 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
                     }}
                   >
                     <span>This week</span>
-                    <span className="ml-2 text-sm font-normal text-gray-500">{thisWeekLabel}</span>
+                    <span className="ml-2 text-sm font-normal text-gray-500">{formatWeekOptionLabel(thisWeek)}</span>
                   </Button>
                   <Button
                     variant="outline"
@@ -180,7 +190,7 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
                     }}
                   >
                     <span>Next week</span>
-                    <span className="ml-2 text-sm font-normal text-gray-500">{nextWeekLabel}</span>
+                    <span className="ml-2 text-sm font-normal text-gray-500">{formatWeekOptionLabel(nextWeek)}</span>
                   </Button>
                   <Button
                     variant="outline"
