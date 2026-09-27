@@ -123,30 +123,30 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
               PICK YOUR MEALS
             </div>
             <h2 className="mt-1 text-xl font-bold text-gray-900">
-              {weekChosen ? "What do you fancy?" : "Choose your week"}
+              {swipingStarted ? "What do you fancy?" : "Choose your week"}
             </h2>
-            {weekChosen ? (
-              <div className="mt-1 text-sm text-gray-500">{selectedWeekLabel}</div>
-            ) : (
+
+            {!swipingStarted ? (
               <p className="mt-2 text-sm text-gray-600">
                 Pick a week before you start swiping.
               </p>
-            )}
-
-            {weekChosen ? (
-              <div className="mt-3 flex items-center justify-between">
-                <button
-                  type="button"
-                  onClick={() => setWeekChosen(false)}
-                  className="text-sm font-medium text-gray-600 underline underline-offset-2"
-                >
-                  Change week
-                </button>
-                <div className="text-xs text-gray-500">
-                  ♥ {sessionYesCount} added · {plannedMealCount} planned
+            ) : (
+              <>
+                <div className="mt-1 text-sm text-gray-500">{selectedWeekLabel}</div>
+                <div className="mt-3 flex items-center justify-between">
+                  <button
+                    type="button"
+                    onClick={() => setWeekChosen(false)}
+                    className="text-sm font-medium text-gray-600 underline underline-offset-2"
+                  >
+                    Change week
+                  </button>
+                  <div className="text-xs text-gray-500">
+                    ♥ {sessionYesCount} added · {plannedMealCount} planned
+                  </div>
                 </div>
-              </div>
-            ) : null}
+              </>
+            )}
           </div>
 
           <div className="flex flex-1 items-center justify-center px-5 py-6">
