@@ -3,7 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
-import { UtensilsCrossed, Mail } from "lucide-react";
+import { Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -101,9 +101,9 @@ export function LoginForm() {
     <div className="min-h-screen flex items-center justify-center bg-background pt-12 px-4">
       <div className="w-full max-w-md">
         {/* Logo */}
-        <div className="flex items-center justify-center space-x-3 mb-8">
-          <UtensilsCrossed className="h-12 w-12 text-sage" />
-          <span className="text-4xl font-bold text-navy">RealiMeali</span>
+        <div className="flex flex-col items-center justify-center mb-8">
+          <img src="/realimeali-logo.svg" alt="RealiMeali" className="h-20 w-20 object-contain" />
+          <span className="mt-3 text-4xl font-bold text-navy">RealiMeali</span>
         </div>
 
         {/* Card */}
