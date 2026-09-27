@@ -5,6 +5,7 @@ import { useRecipeSwipe } from "@/hooks/useRecipeSwipe";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { getCurrentWeekKey, getNextWeek, formatWeekRange, parseISOWeekKey } from "@/utils/weekUtils";
 
 interface RecipeSwipeDialogProps {
   open: boolean;
@@ -15,8 +16,10 @@ interface RecipeSwipeDialogProps {
 export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDialogProps) {
   const navigate = useNavigate();
   const {
+    weekKey,
+    setWeekKey,
     remainingRecipes,
-    matchRecipes,
+    yesCount,
     householdMemberCount,
     isLoading,
     isSaving,
@@ -29,9 +32,6 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
   const startX = useRef(0);
   const current = remainingRecipes[0];
   const next = remainingRecipes[1];
-  const progress = recipes.length
-    ? Math.round(((recipes.length - remainingRecipes.length) / recipes.length) * 100)
-    : 0;
 
   useEffect(() => {
     if (!open) {
@@ -47,16 +47,16 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
     setDragging(false);
   }, [current?.id]);
 
-  const finishMessage = useMemo(() => {
-    if (householdMemberCount < 2) {
-      return "Your picks are saved for next week.";
-    }
-    if (matchRecipes.length === 0) {
-      return "Your picks are saved. Shared matches will appear when another household member chooses too.";
-    }
-    return matchRecipes.length + " recipe" + (matchRecipes.length === 1 ? "" : "s") + " matched for next week.";
-  }, [householdMemberCount, matchRecipes.length]);
+  const selectedWeekLabel = useMemo(() => {
+    const { year, week } = parseISOWeekKey(weekKey);
+    return formatWeekRange(year, week);
+  }, [weekKey]);
 
+  const thisWeek = getCurrentWeekKey();
+  const nextWeek = getNextWeek(thisWeek);
+
+  const finishMessage = "Your picks have been added to the meal plan.";
+ 
   const handleSwipe = async (decision: "yes" | "no") => {
     if (!current || isSaving) return;
     setDragX(decision === "yes" ? 420 : -420);
@@ -91,28 +91,51 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
   };
 
   const image = current?.image_thumbnail || current?.image;
-  const isSolo = householdMemberCount < 2;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 p-0 text-gray-900 shadow-2xl">
         <div className="flex min-h-[78vh] flex-col">
-          <div className="flex items-center justify-between border-b border-gray-200 bg-white px-5 py-4">
-            <div>
-              <div className="flex items-center gap-2 text-xs font-bold tracking-widest text-gray-700">
-                <Sparkles className="h-4 w-4" />
-                NEXT WEEK
+          <div className="border-b border-gray-200 bg-white px-5 py-4">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2 text-xs font-bold tracking-widest text-gray-700">
+                  <Sparkles className="h-4 w-4" />
+                  PICK YOUR MEALS
+                </div>
+                <h2 className="mt-1 text-xl font-bold text-gray-900">What do you fancy?</h2>
               </div>
-              <h2 className="mt-1 text-xl font-bold text-gray-900">What do you fancy?</h2>
+              <div className="text-right text-xs text-gray-500">
+                <div className="font-medium text-gray-700">{selectedWeekLabel}</div>
+                <div className="mt-1">♥ {yesCount} {yesCount === 1 ? "meal" : "meals"} added</div>
+              </div>
             </div>
-            <div className="text-right">
-              <div className="text-sm font-bold text-gray-900">{remainingRecipes.length} left</div>
-              <div className="mt-1 text-xs text-gray-500">{progress}% picked</div>
-            </div>
-          </div>
 
-          <div className="h-1 bg-gray-200">
-            <div className="h-full bg-gray-900 transition-all" style={{ width: progress + "%" }} />
+            <div className="mt-4 grid grid-cols-2 gap-2">
+              <Button
+                variant={weekKey === thisWeek ? "default" : "outline"}
+                className="h-10"
+                onClick={() => setWeekKey(thisWeek)}
+              >
+                This week
+              </Button>
+              <Button
+                variant={weekKey === nextWeek ? "default" : "outline"}
+                className="h-10"
+                onClick={() => setWeekKey(nextWeek)}
+              >
+                Next week
+              </Button>
+            </div>
+            <label className="mt-2 block">
+              <span className="sr-only">Choose another week</span>
+              <input
+                type="week"
+                value={weekKey}
+                onChange={event => event.target.value && setWeekKey(event.target.value)}
+                className="h-9 w-full rounded-md border border-gray-200 bg-white px-3 text-sm text-gray-700"
+              />
+            </label>
           </div>
 
           <div className="flex flex-1 items-center justify-center px-5 py-6">
@@ -181,28 +204,7 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
                 </div>
                 <h3 className="text-3xl font-bold text-gray-900">All done.</h3>
                 <p className="mt-3 text-gray-500">{finishMessage}</p>
-                {matchRecipes.length > 0 && (
-                  <div className="mt-6 space-y-3 text-left">
-                    <div className="text-xs font-bold tracking-widest text-gray-500">MATCHES FOR NEXT WEEK</div>
-                    {matchRecipes.slice(0, 6).map(recipe => (
-                      <button
-                        key={recipe.id}
-                        onClick={() => {
-                          onOpenChange(false);
-                          navigate("/my-recipes/" + recipe.id);
-                        }}
-                        className="flex w-full items-center gap-3 border-b border-gray-200 bg-white p-3 text-left transition hover:bg-gray-50"
-                      >
-                        {recipe.image_thumbnail || recipe.image ? (
-                          <img src={recipe.image_thumbnail || recipe.image} alt="" className="h-14 w-14 rounded-lg object-cover" />
-                        ) : (
-                          <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-[#f2eee9]">🍽️</div>
-                        )}
-                        <span className="font-bold text-gray-900">{recipe.title}</span>
-                      </button>
-                    ))}
-                  </div>
-                )}
+                <p className="mt-2 text-sm font-semibold text-gray-700">♥ {yesCount} {yesCount === 1 ? "meal" : "meals"} added to your plan</p>
               </div>
             )}
           </div>
