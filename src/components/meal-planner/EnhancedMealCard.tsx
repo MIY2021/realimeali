@@ -320,22 +320,9 @@ export function EnhancedMealCard({
         <div className="flex min-h-24 max-w-full overflow-hidden">
           {/* Recipe Image - Slightly smaller with padding */}
           <div className="w-24 h-20 flex-shrink-0 ml-2 my-2 mr-0 relative overflow-hidden rounded-md">
-            <Link to={recipeUrl}>
-              <RecipeImage 
-                recipe={recipe}
-                useThumbnail={true}
-                imgClassName={`cursor-pointer hover:opacity-80 transition-opacity ${
-                  mealPlan.is_completed ? 'grayscale brightness-75' : ''
-                }`}
-                iconSize="h-6 w-6"
-                fixedSize={true}
-              />
-            </Link>
-            
-            {/* Added-by avatar - top-right */}
             {mealCreator && (
               <div
-                className="absolute top-0.5 right-0.5 z-10 h-5 w-5 overflow-hidden rounded-full border border-white bg-gray-100 shadow-sm"
+                className="absolute -top-0.5 -left-0.5 z-0 h-6 w-6 overflow-hidden rounded-full bg-gray-100"
                 title={"Added by " + creatorName}
                 aria-label={"Added by " + creatorName}
               >
@@ -344,12 +331,24 @@ export function EnhancedMealCard({
                 ) : creatorProfile?.avatar_data ? (
                   <img src={creatorProfile.avatar_data} alt="" className="h-full w-full object-cover" />
                 ) : (
-                  <span className="flex h-full w-full items-center justify-center text-[7px] font-semibold text-gray-600">
+                  <span className="flex h-full w-full items-center justify-center text-[8px] font-semibold text-gray-600">
                     {creatorInitials}
                   </span>
                 )}
               </div>
             )}
+
+            <div className="absolute inset-0 overflow-hidden rounded-md bg-gray-100 [clip-path:polygon(0_0,100%_0,100%_100%,0_100%,0_20px,20px_0)]">
+              <Link to={recipeUrl}>
+                <RecipeImage
+                  recipe={recipe}
+                  useThumbnail={true}
+                  imgClassName={`cursor-pointer hover:opacity-80 transition-opacity ${mealPlan.is_completed ? 'grayscale brightness-75' : ''`}
+                  iconSize="h-6 w-6"
+                  fixedSize={true}
+                />
+              </Link>
+            </div>
 
             {/* Lunch Leftover icon - top-left */}
             {existingLeftover && (
