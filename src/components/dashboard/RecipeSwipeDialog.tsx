@@ -21,6 +21,7 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
     mealType,
     setMealType,
     remainingRecipes,
+    plannedMealCount,
     isLoading,
     isSaving,
     dbAvailable,
@@ -133,7 +134,7 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
                   Change week
                 </button>
                 <div className="text-xs text-gray-500">
-                  ♥ {sessionYesCount} {sessionYesCount === 1 ? "meal" : "meals"} added
+                  ♥ {sessionYesCount} added · {plannedMealCount} planned
                 </div>
               </div>
             ) : null}
