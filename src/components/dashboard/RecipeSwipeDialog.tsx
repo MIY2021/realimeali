@@ -26,6 +26,7 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
     swipe,
   } = useRecipeSwipe(recipes);
 
+  const [weekChosen, setWeekChosen] = useState(false);
   const [dragX, setDragX] = useState(0);
   const [dragging, setDragging] = useState(false);
   const startX = useRef(0);
@@ -34,6 +35,7 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
 
   useEffect(() => {
     if (!open) {
+      setWeekChosen(false);
       setDragX(0);
       setDragging(false);
     }
@@ -96,49 +98,88 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
       <DialogContent className="max-w-lg overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 p-0 text-gray-900 shadow-2xl">
         <div className="flex min-h-[78vh] flex-col">
           <div className="border-b border-gray-200 bg-white px-5 py-4">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <div className="flex items-center gap-2 text-xs font-bold tracking-widest text-gray-700">
-                  <Sparkles className="h-4 w-4" />
-                  PICK YOUR MEALS
-                </div>
-                <h2 className="mt-1 text-xl font-bold text-gray-900">What do you fancy?</h2>
-              </div>
-              <div className="text-right text-xs text-gray-500">
-                <div className="font-medium text-gray-700">{selectedWeekLabel}</div>
-                <div className="mt-1">♥ {yesCount} {yesCount === 1 ? "meal" : "meals"} added</div>
-              </div>
+            <div className="flex items-center gap-2 text-xs font-bold tracking-widest text-gray-700">
+              <Sparkles className="h-4 w-4" />
+              PICK YOUR MEALS
             </div>
+            <h2 className="mt-1 text-xl font-bold text-gray-900">
+              {weekChosen ? "What do you fancy?" : "Which week?"}
+            </h2>
+            {weekChosen ? (
+              <div className="mt-1 text-sm text-gray-500">{selectedWeekLabel}</div>
+            ) : (
+              <p className="mt-2 text-sm text-gray-600">
+                Choose the week you want to add meals to before we start.
+              </p>
+            )}
 
-            <div className="mt-4 grid grid-cols-2 gap-2">
-              <Button
-                variant={weekKey === thisWeek ? "default" : "outline"}
-                className="h-10"
-                onClick={() => setWeekKey(thisWeek)}
-              >
-                This week
-              </Button>
-              <Button
-                variant={weekKey === nextWeek ? "default" : "outline"}
-                className="h-10"
-                onClick={() => setWeekKey(nextWeek)}
-              >
-                Next week
-              </Button>
-            </div>
-            <label className="mt-2 block">
-              <span className="sr-only">Choose another week</span>
-              <input
-                type="week"
-                value={weekKey}
-                onChange={event => event.target.value && setWeekKey(event.target.value)}
-                className="h-9 w-full rounded-md border border-gray-200 bg-white px-3 text-sm text-gray-700"
-              />
-            </label>
+            {weekChosen ? (
+              <div className="mt-3 flex items-center justify-between">
+                <button
+                  type="button"
+                  onClick={() => setWeekChosen(false)}
+                  className="text-sm font-medium text-gray-600 underline underline-offset-2"
+                >
+                  Change week
+                </button>
+                <div className="text-xs text-gray-500">
+                  ♥ {yesCount} {yesCount === 1 ? "meal" : "meals"} added
+                </div>
+              </div>
+            ) : null}
           </div>
 
           <div className="flex flex-1 items-center justify-center px-5 py-6">
-            {isLoading ? (
+            {!weekChosen ? (
+              <div className="w-full max-w-sm text-center">
+                <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-[#f2eee9]">
+                  <Heart className="h-8 w-8 text-terracotta" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900">Choose your week</h3>
+                <p className="mt-2 text-sm text-gray-500">
+                  Your choices will be added to this week's meal plan.
+                </p>
+
+                <div className="mt-6 grid grid-cols-2 gap-3">
+                  <Button
+                    className="h-12"
+                    onClick={() => {
+                      setWeekKey(thisWeek);
+                      setWeekChosen(true);
+                    }}
+                  >
+                    This week
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="h-12"
+                    onClick={() => {
+                      setWeekKey(nextWeek);
+                      setWeekChosen(true);
+                    }}
+                  >
+                    Next week
+                  </Button>
+                </div>
+
+                <div className="mt-3">
+                  <label className="block text-left text-sm font-medium text-gray-700">
+                    Or choose another week
+                    <input
+                      type="week"
+                      value={weekKey}
+                      onChange={event => {
+                        if (event.target.value) {
+                          setWeekKey(event.target.value);
+                          setWeekChosen(true);
+                        }
+                      }}
+                      className="mt-1 h-10 w-full rounded-md border border-gray-200 bg-white px-3 text-sm text-gray-700"
+                    />
+                  </label>
+                </div>
+              </div>
+            ) : isLoading ? (
               <div className="text-center text-gray-500">Loading your choices…</div>
             ) : current ? (
               <div className="relative h-[54vh] w-full max-w-sm">
