@@ -22,7 +22,7 @@ export function SwipeToChoose() {
         <div className="mb-5 flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold text-gray-900 mb-1">Swipe to Choose</h2>
-            <p className="text-sm text-gray-600">Pick the meals you fancy next week</p>
+            <p className="text-sm text-gray-600">Choose a week and pick the meals you fancy</p>
           </div>
           <div className="h-10 w-10 rounded-full bg-white border border-gray-200 flex items-center justify-center shadow-sm">
             <Heart className="h-5 w-5 text-terracotta" />
@@ -67,9 +67,6 @@ export function SwipeToChoose() {
                 <Sparkles className="h-3.5 w-3.5 text-terracotta" />
                 NEXT WEEK
               </span>
-              <span className="bg-white/95 px-3 py-1.5 text-xs font-semibold text-gray-700 shadow-sm">
-                {recipes.length} recipes
-              </span>
             </div>
           </div>
 
@@ -91,7 +88,7 @@ export function SwipeToChoose() {
             <div className="mt-5 flex items-center justify-between border-t border-gray-100 pt-4">
               <div className="flex items-center gap-2 text-sm font-medium text-gray-600">
                 {isSolo ? <Heart className="h-4 w-4 text-terracotta" /> : <Users className="h-4 w-4 text-terracotta" />}
-                {isSolo ? "Your picks for next week" : "Household picks sync together"}
+                {isSolo ? "Your picks go straight to the meal plan" : "Everyone can add their own picks"}
               </div>
               <span className="text-sm font-bold text-gray-900">Start swiping</span>
             </div>
