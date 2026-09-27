@@ -185,7 +185,8 @@ export function useRecipeSwipe(recipes: Recipe[]) {
             .eq("household_id", currentHousehold.id)
             .eq("user_id", user.id)
             .eq("recipe_id", recipe.id)
-            .eq("week_key", weekKey);
+            .eq("week_key", weekKey)
+            .eq("meal_type", mealType);
 
           setSwipes(prev => {
             const next = { ...prev };
