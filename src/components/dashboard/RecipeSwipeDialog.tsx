@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowRight, Check, Heart, Sparkles, Undo2 } from "lucide-react";
-import { MealType, Recipe } from "@/types";
+import { MealPlan, MealType, Recipe } from "@/types";
 import { useRecipeSwipe } from "@/hooks/useRecipeSwipe";
+import { useMealPlan } from "@/contexts/MealPlanContext";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
@@ -37,10 +38,12 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
   const [dragX, setDragX] = useState(0);
   const [dragging, setDragging] = useState(false);
   const [plannedCountPulse, setPlannedCountPulse] = useState(false);
+  const [showPlannedPreview, setShowPlannedPreview] = useState(false);
   const previousPlannedCount = useRef<number | null>(null);
   const startX = useRef(0);
   const current = remainingRecipes[0];
   const next = remainingRecipes[1];
+  const { getMealPlansForWeek, getRecipeForMealPlan } = useMealPlan();
 
   useEffect(() => {
     if (!open) {
@@ -142,6 +145,11 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
   };
 
   const image = current?.image_thumbnail || current?.image;
+  const plannedMeals = getMealPlansForWeek(weekKey).filter(plan => plan.meal_type === mealType);
+
+  useEffect(() => {
+    setShowPlannedPreview(false);
+  }, [weekKey, mealType]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -166,11 +174,22 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
                   >
                     Change week
                   </button>
-                  <div
-                    className={"text-xs text-gray-500 transition-transform duration-300 " + (plannedCountPulse ? "scale-[1.04] text-gray-700" : "")}
-                  >
-                    ♥ {sessionYesCount} added · <span className={plannedCountPulse ? "font-semibold text-terracotta" : ""}>{plannedMealCount}</span>{" "}
-                    {mealType === "desserts" || mealType === "drinks" || mealType === "snacks" || mealType === "sides" ? mealType : mealType + "s"} planned
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={"text-xs text-gray-500 transition-transform duration-300 " + (plannedCountPulse ? "scale-[1.04] text-gray-700" : "")}
+                    >
+                      ♥ {sessionYesCount} added ·{" "}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setShowPlannedPreview(value => !value)}
+                      disabled={plannedMealCount === 0}
+                      className={"text-xs transition-colors " + (plannedCountPulse ? "font-semibold text-terracotta" : "text-gray-500") + " " + (plannedMealCount > 0 ? "underline underline-offset-2 hover:text-gray-800" : "cursor-default")}
+                      aria-label={plannedMealCount > 0 ? "Preview planned meals" : "No meals planned"}
+                    >
+                      {plannedMealCount}{" "}
+                      {mealType === "desserts" || mealType === "drinks" || mealType === "snacks" || mealType === "sides" ? mealType : mealType + "s"} planned
+                    </button>
                   </div>
                 </div>
               </>
@@ -178,6 +197,45 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
               <p className="mt-2 text-sm text-gray-600">
                 Pick a week before you start swiping.
               </p>
+            )}
+            {swipingStarted && showPlannedPreview && plannedMealCount > 0 && (
+              <div className="mt-3 rounded-xl border border-gray-200 bg-gray-50 p-3">
+                <div className="mb-2 flex items-center justify-between">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+                    Planned {mealType}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setShowPlannedPreview(false)}
+                    className="text-xs font-medium text-gray-400 hover:text-gray-700"
+                  >
+                    Close
+                  </button>
+                </div>
+                <div className="space-y-2">
+                  {plannedMeals.map(plan => {
+                    const recipe = getRecipeForMealPlan(plan);
+                    return (
+                      <div key={plan.id} className="flex items-center gap-3 rounded-lg bg-white p-2">
+                        <div className="h-10 w-10 shrink-0 overflow-hidden rounded-md bg-gray-100">
+                          {recipe?.image_thumbnail || recipe?.image ? (
+                            <img
+                              src={recipe.image_thumbnail || recipe.image}
+                              alt=""
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            <div className="flex h-full items-center justify-center text-sm">🍽️</div>
+                          )}
+                        </div>
+                        <span className="line-clamp-2 text-sm font-medium text-gray-800">
+                          {recipe?.title || "Planned meal"}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
             )}
           </div>
 
