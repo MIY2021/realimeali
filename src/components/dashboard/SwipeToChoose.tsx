@@ -87,7 +87,7 @@ export function SwipeToChoose() {
             </div>
           </div>
 
-          <div className="flex items-center justify-between gap-4 pt-4">
+          <div className="flex justify-end pt-4">
             <span className="inline-flex shrink-0 items-center gap-2 rounded-full bg-terracotta px-4 py-2.5 text-sm font-bold text-white shadow-sm transition-all group-hover:bg-[#cf6f55] group-hover:translate-x-1">
               Start
               <ArrowRight className="h-4 w-4" />
