@@ -5,7 +5,7 @@ import { useRecipeSwipe } from "@/hooks/useRecipeSwipe";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { getCurrentWeekKey, getNextWeek, formatWeekRange, parseISOWeekKey } from "@/utils/weekUtils";
+import { getCurrentWeekKey, getNextWeek, formatWeekRange, getWeekStartDate, parseISOWeekKey } from "@/utils/weekUtils";
 
 interface RecipeSwipeDialogProps {
   open: boolean;
@@ -316,7 +316,6 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
                       <option key={value} value={value}>{label}</option>
                     ))}
                   </select>
-                </div>
                 </div>
               </div>
             ) : (
