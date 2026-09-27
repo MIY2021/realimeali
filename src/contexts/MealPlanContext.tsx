@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { mealPlanService } from "@/services/mealPlanService";
 import { MealPlanContextType } from "./MealPlanContext/types";
 import { useMealPlanOperations } from "./MealPlanContext/useMealPlanOperations";
+import { supabase } from "@/integrations/supabase/client";
 
 export type { HouseholdMealPlan } from "./MealPlanContext/types";
 
