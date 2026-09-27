@@ -342,8 +342,8 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
                     ))}
                   </select>
 
-                  {canUndo && (
-                    <div className="mt-2 flex justify-end">
+                  <div className="mt-2 flex h-5 justify-end">
+                    {canUndo && (
                       <button
                         type="button"
                         onClick={() => void undo()}
@@ -354,8 +354,8 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
                         <Undo2 className="h-3.5 w-3.5" />
                         Undo
                       </button>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
               </div>
             ) : (
