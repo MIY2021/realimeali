@@ -335,16 +335,16 @@ export function EnhancedMealCard({
             {/* Added-by corner cutout - top-left */}
             {mealCreator && (
               <div
-                className="absolute right-0 top-0 z-10 h-7 w-7 overflow-hidden border-b border-l border-white bg-white shadow-sm [clip-path:polygon(0_0,100%_0,100%_100%)]"
+                className="absolute right-0 top-0 z-10 h-8 w-8 overflow-hidden border-b border-l border-white bg-white shadow-sm [clip-path:polygon(0_0,100%_0,100%_100%)]"
                 title={"Added by " + creatorName}
                 aria-label={"Added by " + creatorName}
               >
                 {creatorProfile?.avatar_url ? (
-                  <img src={creatorProfile.avatar_url} alt="" className="absolute left-[11px] top-[1px] h-4 w-4 object-cover" />
+                  <img src={creatorProfile.avatar_url} alt="" className="h-full w-full object-cover" />
                 ) : creatorProfile?.avatar_data ? (
-                  <img src={creatorProfile.avatar_data} alt="" className="absolute left-[11px] top-[1px] h-4 w-4 object-cover" />
+                  <img src={creatorProfile.avatar_data} alt="" className="h-full w-full object-cover" />
                 ) : (
-                  <span className="absolute left-[11px] top-[1px] flex h-4 w-4 items-center justify-center bg-gray-100 text-[6px] font-semibold text-gray-600">
+                  <span className="flex h-full w-full items-center justify-center bg-gray-100 text-[7px] font-semibold text-gray-600">
                     {creatorInitials}
                   </span>
                 )}
