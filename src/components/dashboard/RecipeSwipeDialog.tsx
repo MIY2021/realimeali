@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowRight, Check, Heart, Sparkles } from "lucide-react";
+import { ArrowRight, Check, Heart, Sparkles, Undo2 } from "lucide-react";
 import { MealType, Recipe } from "@/types";
 import { useRecipeSwipe } from "@/hooks/useRecipeSwipe";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -26,6 +26,8 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
     isSaving,
     dbAvailable,
     swipe,
+    undo,
+    canUndo,
   } = useRecipeSwipe(recipes);
 
   const [weekChosen, setWeekChosen] = useState(false);
@@ -339,6 +341,21 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
                       <option key={value} value={value}>{label}</option>
                     ))}
                   </select>
+
+                  {canUndo && (
+                    <div className="mt-2 flex justify-end">
+                      <button
+                        type="button"
+                        onClick={() => void undo()}
+                        disabled={isSaving}
+                        className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-400 transition-colors hover:text-gray-700 disabled:opacity-50"
+                        aria-label="Undo last swipe"
+                      >
+                        <Undo2 className="h-3.5 w-3.5" />
+                        Undo
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             ) : (
