@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { Plus, Book } from "lucide-react";
+import { Plus } from "lucide-react";
+import { RecipeCardIcon } from "@/components/icons/RealiMealiIcons";
 import { Link, useSearchParams } from "react-router-dom";
 import { RecipeList } from "@/components/recipes/RecipeList";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -66,7 +67,7 @@ export default function RecipesPage() {
       >
         <PageHeader
           icon={
-            <Book
+            <RecipeCardIcon
               className="h-6 w-6 sm:h-7 sm:w-7"
               style={{ color: "#F5B82E", stroke: "#F5B82E" }}
               aria-hidden="true"
