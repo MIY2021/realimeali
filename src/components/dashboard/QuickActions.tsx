@@ -1,4 +1,5 @@
-import { Plus, Calendar, Sparkles, Shuffle } from "lucide-react";
+import { Plus } from "lucide-react";
+import { MealPlanIcon, RealiChefIcon, RandomRecipeIcon } from "@/components/icons/RealiMealiIcons";
 import { Link, useNavigate } from "react-router-dom";
 import { useRealiChef } from "@/contexts/RealiChefContext";
 import { useRecipes } from "@/contexts/RecipesContext";
@@ -34,31 +35,31 @@ export const QuickActions = () => {
       icon: Plus,
       href: "/create-recipe",
       type: "navigation" as const,
-      iconBg: "bg-emerald-500",
+      iconBg: "bg-sage",
       iconColor: "text-white",
     },
     {
       title: "Plan Meals",
-      icon: Calendar,
+      icon: MealPlanIcon,
       href: "/meal-planner",
       type: "navigation" as const,
-      iconBg: "bg-blue-500",
+      iconBg: "bg-terracotta",
       iconColor: "text-white",
     },
     {
       title: "AI Chef",
-      icon: Sparkles,
+      icon: RealiChefIcon,
       type: "modal" as const,
       onClick: () => setIsOpen(true),
-      iconBg: "bg-purple-500",
+      iconBg: "bg-[#8B6BAE]",
       iconColor: "text-white",
     },
     {
       title: "Random Recipe",
-      icon: Shuffle,
+      icon: RandomRecipeIcon,
       type: "modal" as const,
       onClick: handleRandomRecipe,
-      iconBg: "bg-red-500",
+      iconBg: "bg-[#D96C4F]",
       iconColor: "text-white",
     },
   ];
