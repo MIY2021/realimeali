@@ -449,7 +449,7 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
                     }}
                     onDoubleClick={goToRecipe}
                   >
-                    <div className="relative h-[58%] overflow-hidden bg-gray-100">
+                    <div className="relative h-[54%] overflow-hidden bg-gray-100">
                       {image ? (
                         <img src={image} alt={current.title} className="h-full w-full object-cover" draggable={false} />
                       ) : (
@@ -474,11 +474,6 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
                         </span>
                       </div>
 
-                      {dragX > 40 && (
-                        <div className="absolute left-4 top-4 border-2 border-green-200 bg-white px-3 py-1 text-sm font-bold uppercase tracking-widest text-green-600 shadow-sm">
-                          Add to meal plan
-                        </div>
-                      )}
                       {dragX < -40 && (
                         <div className="absolute right-4 top-4 border-2 border-red-200 bg-white px-3 py-1 text-sm font-bold uppercase tracking-widest text-red-500 shadow-sm">
                           Skip
@@ -486,7 +481,7 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
                       )}
                     </div>
 
-                    <div className="p-5">
+                    <div className="flex h-[46%] flex-col p-5">
                       <div className="text-xs font-bold uppercase tracking-wider text-terracotta">
                         {current.cuisine_region?.replace("_", " ") || "Recipe"}
                       </div>
@@ -503,7 +498,7 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
                           event.stopPropagation();
                           openRecipePreview();
                         }}
-                        className="mt-4 inline-flex h-10 items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-4 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-100"
+                        className="mt-auto inline-flex h-10 items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-4 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-100"
                         aria-label={"Preview " + current.title}
                       >
                         <Eye className="h-4 w-4" />
