@@ -286,17 +286,6 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
                     <p className="text-sm leading-6 text-gray-600">{current.description}</p>
                   )}
                   <div>
-                    <h4 className="mb-3 text-sm font-bold uppercase tracking-wider text-gray-500">Ingredients</h4>
-                    <ul className="space-y-2 text-sm text-gray-700">
-                      {(current.ingredients || []).map((ingredient, index) => (
-                        <li key={index} className="flex gap-2">
-                          <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-terracotta" />
-                          <span>{ingredient}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                  <div>
                     <h4 className="mb-3 text-sm font-bold uppercase tracking-wider text-gray-500">Method</h4>
                     <ol className="space-y-3 text-sm leading-6 text-gray-700">
                       {(current.instructions || []).map((instruction, index) => (
@@ -306,6 +295,18 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
                         </li>
                       ))}
                     </ol>
+                  </div>
+
+                  <div>
+                    <h4 className="mb-3 text-sm font-bold uppercase tracking-wider text-gray-500">Ingredients</h4>
+                    <ul className="space-y-2 text-sm text-gray-700">
+                      {(current.ingredients || []).map((ingredient, index) => (
+                        <li key={index} className="flex gap-2">
+                          <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-terracotta" />
+                          <span>{ingredient}</span>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
                   {current.top_tip && (
                     <div className="rounded-xl bg-[#fff8f5] p-4">
