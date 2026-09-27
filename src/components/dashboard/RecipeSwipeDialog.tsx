@@ -222,13 +222,6 @@ export function RecipeSwipeDialog({ open, onOpenChange, recipes }: RecipeSwipeDi
                 )}
 
                 <div className="mt-6 border-t border-gray-200 pt-5">
-                  <div className="text-sm text-gray-500">
-                    {weekChosen ? (
-                      <>Selected: <span className="font-semibold text-gray-800">{selectedWeekLabel}</span></>
-                    ) : (
-                      "Select a week to continue"
-                    )}
-                  </div>
                   <Button
                     className="mt-3 h-12 w-full rounded-xl bg-terracotta text-base font-semibold text-white hover:bg-terracotta/90 disabled:opacity-50"
                     disabled={!weekChosen}
