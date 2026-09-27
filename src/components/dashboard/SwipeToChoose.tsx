@@ -1,12 +1,42 @@
 import { ArrowRight, Heart, Sparkles } from "lucide-react";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { RecipeSwipeDialog } from "./RecipeSwipeDialog";
 
 export function SwipeToChoose() {
   const { recipes, isLoading } = useRecipes();
   const [open, setOpen] = useState(false);
+  const historyStateAdded = useRef(false);
+
+  useEffect(() => {
+    if (!open || historyStateAdded.current) return;
+
+    window.history.pushState({ realimealiMealPicker: true }, "", window.location.href);
+    historyStateAdded.current = true;
+
+    const handleBack = () => {
+      historyStateAdded.current = false;
+      setOpen(false);
+    };
+
+    window.addEventListener("popstate", handleBack);
+    return () => window.removeEventListener("popstate", handleBack);
+  }, [open]);
+
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (nextOpen) {
+      setOpen(true);
+      return;
+    }
+
+    setOpen(false);
+
+    if (historyStateAdded.current) {
+      historyStateAdded.current = false;
+      window.history.back();
+    }
+  };
 
   if (isLoading || recipes.length === 0) return null;
 
@@ -96,7 +126,7 @@ export function SwipeToChoose() {
         </button>
       </div>
 
-      <RecipeSwipeDialog open={open} onOpenChange={setOpen} recipes={recipes} />
+      <RecipeSwipeDialog open={open} onOpenChange={handleOpenChange} recipes={recipes} />
     </>
   );
 }
