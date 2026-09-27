@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Recipe } from "@/types";
+import { MealType, Recipe } from "@/types";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { useMealPlan } from "@/contexts/MealPlanContext";
@@ -14,7 +14,7 @@ import {
 } from "@/utils/weekUtils";
 
 export type SwipeDecision = "yes" | "no";
-export type SwipeMealType = "breakfast" | "lunch" | "dinner";
+export type SwipeMealType = MealType;
 
 export function useRecipeSwipe(recipes: Recipe[]) {
   const { user } = useAuth();
