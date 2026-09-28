@@ -249,6 +249,30 @@ export function MealPlannerRecipeCard({
 
         {/* Action buttons row */}
         <div className="flex items-center justify-end gap-2 mt-2">
+          {/* Save custom meal as a full recipe */}
+          {mealPlan.is_freetyped && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-7 px-2 text-[11px] whitespace-nowrap text-[#B85F49] border-[#B85F49]/30 hover:bg-[#B85F49]/10 focus:ring-2 focus:ring-[#7CC4A0] focus:ring-offset-2"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const params = new URLSearchParams({
+                  title: mealPlan.meal_name || "Custom Meal",
+                  servings: String(mealPlan.planned_servings || 1),
+                  meal_type: mealPlan.meal_type,
+                  meal_plan_id: mealPlan.id,
+                  source: "custom-meal",
+                });
+                navigate(`/my-recipes/new?${params.toString()}`);
+              }}
+              title="Save as recipe"
+            >
+              Save as Recipe
+            </Button>
+          )}
+
           {/* Completion toggle */}
           <Button
             variant="outline"
