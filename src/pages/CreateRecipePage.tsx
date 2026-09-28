@@ -35,17 +35,31 @@ export default function CreateRecipePage() {
 
   // Get the target tab from URL params
   const targetTab = searchParams.get('tab') || 'url';
+  const isCustomMeal = searchParams.get('source') === 'custom-meal';
+  const customMealType = searchParams.get('meal_type') || '';
+  const customMealTitle = searchParams.get('title') || '';
+  const customMealServings = parseInt(searchParams.get('servings') || '1');
 
   // Check if we have AI recipe data
   const hasAiData = aiRecipeData.title && aiRecipeData.ingredients.length > 0;
+
+  const initialRecipeData = isCustomMeal
+    ? {
+        ...aiRecipeData,
+        title: customMealTitle,
+        servings: customMealServings,
+        meal_types: customMealType ? [customMealType] : [],
+        import_method: 'custom_meal',
+      }
+    : aiRecipeData;
   
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#FAF9F6] via-white to-[#FAF9F6]">
       <div className="container max-w-5xl py-4 px-2 sm:py-6 sm:px-4">
         <CreateRecipeContainer 
-          editingRecipe={hasAiData ? aiRecipeData : undefined}
+          editingRecipe={hasAiData || isCustomMeal ? initialRecipeData : undefined}
           isEditMode={false}
-          defaultTab={hasAiData || urlParam ? targetTab : undefined}
+          defaultTab={hasAiData || isCustomMeal || urlParam ? targetTab : undefined}
         />
       </div>
     </div>
