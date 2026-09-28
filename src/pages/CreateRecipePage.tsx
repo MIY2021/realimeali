@@ -57,9 +57,9 @@ export default function CreateRecipePage() {
     <div className="min-h-screen bg-gradient-to-br from-[#FAF9F6] via-white to-[#FAF9F6]">
       <div className="container max-w-5xl py-4 px-2 sm:py-6 sm:px-4">
         <CreateRecipeContainer 
-          editingRecipe={hasAiData || isCustomMeal ? initialRecipeData : undefined}
+          editingRecipe={hasAiData ? initialRecipeData : undefined}
           isEditMode={false}
-          defaultTab={hasAiData || isCustomMeal || urlParam ? targetTab : undefined}
+          defaultTab={hasAiData || urlParam ? targetTab : undefined}
         />
       </div>
     </div>
