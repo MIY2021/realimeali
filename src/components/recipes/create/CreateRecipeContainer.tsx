@@ -275,7 +275,7 @@ export function CreateRecipeContainer({ editingRecipe, isEditMode = false, defau
         ) : undefined}
       />
       
-      {<CreateRecipeTabsWrapper
+      <CreateRecipeTabsWrapper
         isMobile={isMobile}
         activeTab={activeTab}
         setActiveTab={handleTabChange}
