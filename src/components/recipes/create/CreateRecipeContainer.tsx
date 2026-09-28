@@ -43,6 +43,13 @@ export function CreateRecipeContainer({ editingRecipe, isEditMode = false, defau
   const recipeFormHook = useRecipeForm(isEditMode, editingRecipe);
   const recipeProcessingHook = useRecipeProcessing();
 
+  // When a custom meal opens the normal recipe flow, seed the AI prompt with its name.
+  // This keeps the AI tab useful without forcing the user to retype the meal name.
+  useEffect(() => {
+    if (!customMealContext || isEditMode) return;
+    recipeProcessingHook.setAiPrompt(`Recipe for ${customMealContext.title}`);
+  }, [customMealContext?.mealPlanId, customMealContext?.title, isEditMode]);
+
   useEffect(() => {
     if (!customMealContext || isEditMode) return;
     recipeFormHook.setNewRecipe(prev => ({
