@@ -86,6 +86,14 @@ export default function MealPlannerContainer() {
   const [infoDialog, setInfoDialog] = useState(false);
   const [generationMode, setGenerationMode] = useState<MealPlanGenerationMode>("replace");
   const [swipeDialog, setSwipeDialog] = useState(false);
+  const [pendingCustomRecipe, setPendingCustomRecipe] = useState<{
+    mealPlanId: string;
+    customMealTitle: string;
+    recipeId: string;
+    recipeTitle: string;
+    servings: number;
+  } | null>(null);
+  const [isReplacingCustomMeal, setIsReplacingCustomMeal] = useState(false);
 
   const { generateRandomMeals } = useRandomMealSelection();
 
@@ -98,6 +106,14 @@ export default function MealPlannerContainer() {
     if (!user?.id || !currentHousehold?.id || hasRefreshedOnMount.current) return;
     hasRefreshedOnMount.current = true;
     fetchMealPlans();
+    const pending = sessionStorage.getItem("realimeali_pending_custom_recipe");
+    if (pending) {
+      try {
+        setPendingCustomRecipe(JSON.parse(pending));
+      } catch {
+        sessionStorage.removeItem("realimeali_pending_custom_recipe");
+      }
+    }
     // Intentionally mount-only: fetchMealPlans updates context loading state.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
