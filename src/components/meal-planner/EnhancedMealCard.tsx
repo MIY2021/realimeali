@@ -200,6 +200,7 @@ export function EnhancedMealCard({
                         title: mealPlan.meal_name || "Custom Meal",
                         servings: String(mealPlan.planned_servings || 1),
                         meal_type: mealPlan.meal_type,
+                        meal_plan_id: mealPlan.id,
                         source: "custom-meal",
                       });
                       navigate(`/my-recipes/new?${params.toString()}`);
