@@ -37,6 +37,7 @@ export default function MealPlannerContainer() {
     copyWeek,
     reorderMealPlans,
     fetchMealPlans,
+    replaceFreetypedMealPlan,
     isLoading: mealPlansLoading
   } = useMealPlan();
   const { toast } = useToast();
@@ -266,6 +267,37 @@ export default function MealPlannerContainer() {
     performClearAll();
   }, [performClearAll]);
 
+  const clearPendingCustomRecipe = useCallback(() => {
+    sessionStorage.removeItem("realimeali_pending_custom_recipe");
+    setPendingCustomRecipe(null);
+  }, []);
+
+  const handleKeepCustomRecipe = useCallback(() => {
+    clearPendingCustomRecipe();
+  }, [clearPendingCustomRecipe]);
+
+  const handleReplaceCustomRecipe = useCallback(async () => {
+    if (!pendingCustomRecipe) return;
+    setIsReplacingCustomMeal(true);
+    try {
+      await replaceFreetypedMealPlan(
+        pendingCustomRecipe.mealPlanId,
+        pendingCustomRecipe.recipeId,
+        pendingCustomRecipe.servings
+      );
+      clearPendingCustomRecipe();
+    } catch (error) {
+      console.error("Failed to replace custom meal:", error);
+      toast({
+        title: "Couldn't replace meal",
+        description: "The recipe was saved, but the custom meal could not be replaced.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsReplacingCustomMeal(false);
+    }
+  }, [pendingCustomRecipe, replaceFreetypedMealPlan, clearPendingCustomRecipe, toast]);
+
   const handleCreateLeftoverWithServings = useCallback(async (mealPlan: MealPlan, recipe: Recipe | undefined, leftoverServings: number) => {
     console.log("🔄 handleCreateLeftoverWithServings:", { leftoverServings });
     await handleCreateLeftover(mealPlan, recipe, leftoverServings);
@@ -417,6 +449,29 @@ export default function MealPlannerContainer() {
         onServingsConfirm={handleServingsConfirm}
         onChooseMeals={() => { setQuantitiesDialog(false); setSwipeDialog(true); }}
       />
+
+      <Dialog open={!!pendingCustomRecipe} onOpenChange={(open) => { if (!open && !isReplacingCustomMeal) clearPendingCustomRecipe(); }}>
+        <DialogContent className="w-[calc(100%-2rem)] max-w-md rounded-2xl">
+          <DialogHeader>
+            <DialogTitle>Recipe saved!</DialogTitle>
+            <DialogDescription className="text-sm leading-relaxed">
+              Would you like to replace <strong>{pendingCustomRecipe?.customMealTitle}</strong> in your meal plan with <strong>{pendingCustomRecipe?.recipeTitle}</strong>?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex-col gap-2 sm:flex-row">
+            <Button
+              onClick={handleReplaceCustomRecipe}
+              disabled={isReplacingCustomMeal}
+              className="w-full bg-[#B85F49] hover:bg-[#A65340] text-white sm:w-auto"
+            >
+              {isReplacingCustomMeal ? "Replacing..." : "Replace Custom Meal"}
+            </Button>
+            <Button onClick={handleKeepCustomRecipe} variant="outline" disabled={isReplacingCustomMeal} className="w-full sm:w-auto">
+              Keep Custom Meal
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <RecipeSwipeDialog open={swipeDialog} onOpenChange={setSwipeDialog} recipes={recipes} />
 
