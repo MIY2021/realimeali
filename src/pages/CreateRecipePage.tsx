@@ -36,6 +36,7 @@ export default function CreateRecipePage() {
   // Get the target tab from URL params
   const targetTab = searchParams.get('tab') || 'url';
   const isCustomMeal = searchParams.get('source') === 'custom-meal';
+  const customMealPlanId = searchParams.get('meal_plan_id') || '';
   const customMealType = searchParams.get('meal_type') || '';
   const customMealTitle = searchParams.get('title') || '';
   const customMealServings = parseInt(searchParams.get('servings') || '1');
@@ -60,6 +61,12 @@ export default function CreateRecipePage() {
           editingRecipe={hasAiData ? initialRecipeData : undefined}
           isEditMode={false}
           defaultTab={hasAiData || urlParam ? targetTab : undefined}
+          customMealContext={isCustomMeal && customMealPlanId ? {
+            mealPlanId: customMealPlanId,
+            title: customMealTitle || 'Custom Meal',
+            servings: customMealServings,
+            mealType: customMealType,
+          } : undefined}
         />
       </div>
     </div>
