@@ -42,6 +42,15 @@ export function CreateRecipeContainer({ editingRecipe, isEditMode = false, defau
   // Keep hooks as objects instead of destructuring
   const recipeFormHook = useRecipeForm(isEditMode, editingRecipe);
   const recipeProcessingHook = useRecipeProcessing();
+
+  useEffect(() => {
+    if (!customMealContext || isEditMode) return;
+    recipeFormHook.setNewRecipe(prev => ({
+      ...prev,
+      servings: prev.servings || customMealContext.servings,
+      meal_types: prev.meal_types?.length ? prev.meal_types : (customMealContext.mealType ? [customMealContext.mealType] : []),
+    }));
+  }, [customMealContext?.mealPlanId]);
   const recipeRef = useRef(recipeFormHook.newRecipe);
 
   const { handleGenerateImage } = useImageGeneration();
