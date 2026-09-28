@@ -36,6 +36,7 @@ export interface MealPlanContextType {
   copyWeek: (sourceWeekKey: string, targetWeekKey: string) => Promise<void>;
   reorderMealPlans: (mealType: MealType, weekKey: string, reorderedIds: string[]) => Promise<void>;
   updateMealPlanServings: (mealPlanId: string, plannedServings: number) => Promise<void>;
+  replaceFreetypedMealPlan: (mealPlanId: string, recipeId: string, plannedServings: number) => Promise<void>;
   updateMealPlanCompletion: (mealPlanId: string, isCompleted: boolean) => Promise<void>; // Add completion function
   isLoading: boolean;
   fetchMealPlans?: () => Promise<void>;
