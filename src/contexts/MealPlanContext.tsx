@@ -140,6 +140,16 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
     return recipes.find(recipe => recipe.id === mealPlan.recipe_id);
   }, [recipes]);
 
+  const replaceFreetypedMealPlan = useCallback(async (mealPlanId: string, recipeId: string, plannedServings: number) => {
+    if (!user || !currentHousehold) throw new Error('User must be logged in and have a household');
+    await mealPlanService.replaceFreetypedMealPlan(mealPlanId, recipeId, plannedServings, currentHousehold.id);
+    setMealPlans(prev => prev.map(plan =>
+      plan.id === mealPlanId
+        ? { ...plan, recipe_id: recipeId, is_freetyped: false, meal_name: undefined, original_servings: plannedServings, planned_servings: plannedServings }
+        : plan
+    ));
+  }, [user?.id, currentHousehold?.id]);
+
   const updateMealPlanServings = useCallback(async (mealPlanId: string, plannedServings: number) => {
     if (!user || !currentHousehold) {
       throw new Error('User must be logged in and have a household');
@@ -326,6 +336,7 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
     copyWeek,
     reorderMealPlans,
     updateMealPlanServings,
+    replaceFreetypedMealPlan,
     updateMealPlanCompletion, // Add completion function
     isLoading,
     fetchMealPlans
