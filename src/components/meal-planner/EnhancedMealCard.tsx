@@ -201,7 +201,6 @@ export function EnhancedMealCard({
                         servings: String(mealPlan.planned_servings || 1),
                         meal_type: mealPlan.meal_type,
                         source: "custom-meal",
-                        tab: "manual",
                       });
                       navigate(`/my-recipes/new?${params.toString()}`);
                     }}
