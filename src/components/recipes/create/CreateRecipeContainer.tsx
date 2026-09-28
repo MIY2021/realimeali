@@ -76,10 +76,6 @@ export function CreateRecipeContainer({ editingRecipe, isEditMode = false, defau
   };
 
 
-  const handleKeepCustomMeal = () => {
-    navigate("/my-recipes");
-  };
-
   const handlers = useRecipeCreationHandlers({
     recipeFormHook,
     recipeProcessingHook,
