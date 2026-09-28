@@ -9,7 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { MealPlan, Recipe, MealType } from "@/types";
 import { useMealPlan } from "@/contexts/MealPlanContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { generateSlug } from "@/utils/slugUtils";
 
 
@@ -38,6 +38,7 @@ export function EnhancedMealCard({
   const { updateMealPlanCompletion, updateMealPlanServings } = useMealPlan();
   const { householdMembers } = useHousehold();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const mealCreator = householdMembers.find(member => member.user_id === mealPlan.created_by);
   const creatorProfile = mealCreator?.profile;
@@ -189,6 +190,26 @@ export function EnhancedMealCard({
                 </div>
 
                 <div className="flex items-center gap-1 flex-shrink-0">
+                  {/* Save custom meal as a full recipe */}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-7 px-2 text-xs text-[#B85F49] border-[#B85F49]/30 hover:bg-[#B85F49]/10"
+                    onClick={() => {
+                      const params = new URLSearchParams({
+                        title: mealPlan.meal_name || "Custom Meal",
+                        servings: String(mealPlan.planned_servings || 1),
+                        meal_type: mealPlan.meal_type,
+                        source: "custom-meal",
+                        tab: "manual",
+                      });
+                      navigate(`/my-recipes/new?${params.toString()}`);
+                    }}
+                    title="Save as recipe"
+                  >
+                    Save as Recipe
+                  </Button>
+
                   {/* Completion Tick Icon */}
                   <Button
                     variant="outline"
