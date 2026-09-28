@@ -19,6 +19,8 @@ interface UseRecipeCreationHandlersProps {
   originalSourceUrl: string;
   isEditMode?: boolean;
   editingRecipe?: any;
+  customMealPlanId?: string;
+  onCustomMealSaved?: (savedRecipe: any) => Promise<void> | void;
 }
 
 export const useRecipeCreationHandlers = ({
@@ -31,6 +33,8 @@ export const useRecipeCreationHandlers = ({
   originalSourceUrl,
   isEditMode = false,
   editingRecipe,
+  customMealPlanId,
+  onCustomMealSaved,
 }: UseRecipeCreationHandlersProps) => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -319,10 +323,12 @@ export const useRecipeCreationHandlers = ({
         // Navigate back to recipe detail with potentially new slug
         const newSlug = savedRecipe.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
         navigate(`/my-recipes/${newSlug}`);
+      } else if (customMealPlanId && onCustomMealSaved) {
+        await onCustomMealSaved(savedRecipe);
       } else {
         navigate("/my-recipes");
       }
-      setTimeout(() => {
+      if (!customMealPlanId) setTimeout(() => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }, 100);
     } catch (error) {
