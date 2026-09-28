@@ -147,7 +147,7 @@ export function EnhancedMealCard({
               </div>
 
               {/* Bottom Controls */}
-              <div className="flex items-center justify-between gap-0.5 w-full max-w-full overflow-hidden">
+              <div className="flex items-center justify-between gap-1 w-full max-w-full">
                 <div className="flex items-center gap-1 min-w-0 flex-1">
                   <span className="text-[10px] text-gray-600 leading-none whitespace-nowrap">Servings:</span>
                   <div className="flex items-center gap-0.5">
@@ -189,12 +189,12 @@ export function EnhancedMealCard({
                   </div>
                 </div>
 
-                <div className="flex items-center gap-1 flex-shrink-0">
+                <div className="flex items-center gap-1 flex-shrink-0 flex-wrap justify-end">
                   {/* Save custom meal as a full recipe */}
                   <Button
                     variant="outline"
                     size="sm"
-                    className="h-7 px-2 text-xs text-[#B85F49] border-[#B85F49]/30 hover:bg-[#B85F49]/10"
+                    className="h-7 px-2 text-[11px] whitespace-nowrap text-[#B85F49] border-[#B85F49]/30 hover:bg-[#B85F49]/10"
                     onClick={() => {
                       const params = new URLSearchParams({
                         title: mealPlan.meal_name || "Custom Meal",
