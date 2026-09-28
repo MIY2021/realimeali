@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Check } from "lucide-react";
 import { useRecipeForm } from "@/hooks/useRecipeForm";
 import { useRecipeProcessing } from "@/hooks/useRecipeProcessing";
 import { useImageGeneration } from "@/hooks/useImageGeneration";
@@ -12,6 +12,7 @@ import { RealiChefIcon, RecipeCardIcon } from "@/components/icons/RealiMealiIcon
 import { CreateRecipeTabsWrapper } from "./CreateRecipeTabsWrapper";
 import { useRecipeCreationHandlers, type RecipeOrigin } from "./hooks/useRecipeCreationHandlers";
 import { useToast } from "@/hooks/use-toast";
+import { useMealPlan } from "@/contexts/MealPlanContext";
 
 export type { RecipeOrigin };
 
@@ -19,11 +20,15 @@ interface CreateRecipeContainerProps {
   editingRecipe?: any;
   isEditMode?: boolean;
   defaultTab?: string;
+  customMealContext?: { mealPlanId: string; title: string; servings: number; mealType: string };
 }
 
-export function CreateRecipeContainer({ editingRecipe, isEditMode = false, defaultTab }: CreateRecipeContainerProps) {
+export function CreateRecipeContainer({ editingRecipe, isEditMode = false, defaultTab, customMealContext }: CreateRecipeContainerProps) {
   const isMobile = useIsMobile();
   const { toast } = useToast();
+  const { replaceFreetypedMealPlan } = useMealPlan();
+  const [savedCustomRecipe, setSavedCustomRecipe] = useState<any>(null);
+  const [isReplacingCustomMeal, setIsReplacingCustomMeal] = useState(false);
   
 
   const [activeTab, setActiveTab] = useState(
@@ -44,6 +49,35 @@ export function CreateRecipeContainer({ editingRecipe, isEditMode = false, defau
   const { setIsOpen, updatePageContext } = useRealiChef();
 
 
+  const handleCustomMealSaved = async (savedRecipe: any) => {
+    setSavedCustomRecipe(savedRecipe);
+  };
+
+  const handleReplaceCustomMeal = async () => {
+    if (!customMealContext || !savedCustomRecipe) return;
+    setIsReplacingCustomMeal(true);
+    try {
+      await replaceFreetypedMealPlan(customMealContext.mealPlanId, savedCustomRecipe.id, customMealContext.servings);
+      toast({
+        title: "Meal plan updated",
+        description: savedCustomRecipe.title + " has replaced " + customMealContext.title + ".",
+      });
+      navigate("/meal-planner");
+    } catch (error) {
+      toast({
+        title: "Couldn't replace meal",
+        description: "The recipe was saved, but the custom meal could not be replaced.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsReplacingCustomMeal(false);
+    }
+  };
+
+  const handleKeepCustomMeal = () => {
+    navigate("/my-recipes");
+  };
+
   const handlers = useRecipeCreationHandlers({
     recipeFormHook,
     recipeProcessingHook,
@@ -54,6 +88,8 @@ export function CreateRecipeContainer({ editingRecipe, isEditMode = false, defau
     originalSourceUrl,
     isEditMode,
     editingRecipe,
+    customMealPlanId: customMealContext?.mealPlanId,
+    onCustomMealSaved: handleCustomMealSaved,
   });
 
   // Simple save handler without draft clearing
@@ -220,7 +256,31 @@ export function CreateRecipeContainer({ editingRecipe, isEditMode = false, defau
   }, []);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4">      {savedCustomRecipe && customMealContext ? (
+        <div className="rounded-xl border border-[#B85F49]/20 bg-[#FFF9F6] p-5 shadow-sm">
+          <div className="flex items-start gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-green-100 text-green-600">
+              <Check className="h-5 w-5" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <h2 className="font-semibold text-gray-900">Recipe saved!</h2>
+              <p className="mt-1 text-sm text-gray-600">
+                Would you like to replace <strong>{customMealContext.title}</strong> in your meal plan with <strong>{savedCustomRecipe.title}</strong>?
+              </p>
+              <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+                <Button onClick={handleReplaceCustomMeal} disabled={isReplacingCustomMeal} className="bg-[#B85F49] hover:bg-[#A65340] text-white">
+                  {isReplacingCustomMeal ? "Replacing..." : "Replace Custom Meal"}
+                </Button>
+                <Button onClick={handleKeepCustomMeal} variant="outline">
+                  Keep Custom Meal
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+
       {/* Title Section */}
       <PageHeader
         icon={
@@ -242,7 +302,7 @@ export function CreateRecipeContainer({ editingRecipe, isEditMode = false, defau
         ) : undefined}
       />
       
-      <CreateRecipeTabsWrapper
+      {!savedCustomRecipe && <CreateRecipeTabsWrapper
         isMobile={isMobile}
         activeTab={activeTab}
         setActiveTab={handleTabChange}
@@ -263,7 +323,7 @@ export function CreateRecipeContainer({ editingRecipe, isEditMode = false, defau
         onCardClick={handleCardClick}
         isSheetOpen={isSheetOpen}
         onSheetClose={handleSheetClose}
-      />
+      />}
     </div>
   );
 }
