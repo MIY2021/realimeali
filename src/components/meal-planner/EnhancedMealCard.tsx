@@ -189,8 +189,7 @@ export function EnhancedMealCard({
                   </div>
                 </div>
 
-                <div className="flex items-center gap-1 flex-shrink-0 flex-wrap justify-end">
-                  {/* Save custom meal as a full recipe */}
+                <div className="flex items-center gap-1 flex-shrink-0">
                   <Button
                     variant="outline"
                     size="sm"
