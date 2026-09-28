@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Clock, Users, Trash2, Plus, Minus, Check, UtensilsCrossed } from "lucide-react";
+import { Clock, Users, Trash2, Plus, Minus, Check, UtensilsCrossed, Save } from "lucide-react";
 import { MealPlan, Recipe } from "@/types";
 import { RecipeImage } from "@/components/ui/recipe-image";
 import { useNavigate } from "react-router-dom";
@@ -254,7 +254,7 @@ export function MealPlannerRecipeCard({
             <Button
               variant="outline"
               size="sm"
-              className="h-7 px-2 text-[11px] whitespace-nowrap text-[#B85F49] border-[#B85F49]/30 hover:bg-[#B85F49]/10 focus:ring-2 focus:ring-[#7CC4A0] focus:ring-offset-2"
+              className="h-7 w-7 p-0 text-[#B85F49] border-[#B85F49]/30 hover:bg-[#B85F49]/10 focus:ring-2 focus:ring-[#7CC4A0] focus:ring-offset-2"
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -269,7 +269,7 @@ export function MealPlannerRecipeCard({
               }}
               title="Save as recipe"
             >
-              Save as Recipe
+              <Save className="h-3.5 w-3.5" />
             </Button>
           )}
 
