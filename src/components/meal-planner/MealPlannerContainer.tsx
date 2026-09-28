@@ -19,6 +19,8 @@ import { useMealPlannerOperations } from "@/hooks/useMealPlannerOperations";
 import { useMealPlannerState } from "@/hooks/useMealPlannerState";
 import { useMealPlannerLayout } from "@/hooks/useMealPlannerLayout";
 import { MealType, Recipe, MealPlan } from "@/types";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { parseISOWeekKey, getWeekStartDate, formatLocalDateYMD } from "@/utils/weekUtils";
 
@@ -37,6 +39,7 @@ export default function MealPlannerContainer() {
     copyWeek,
     reorderMealPlans,
     fetchMealPlans,
+    replaceFreetypedMealPlan,
     isLoading: mealPlansLoading
   } = useMealPlan();
   const { toast } = useToast();
@@ -86,6 +89,16 @@ export default function MealPlannerContainer() {
   const [generationMode, setGenerationMode] = useState<MealPlanGenerationMode>("replace");
   const [swipeDialog, setSwipeDialog] = useState(false);
 
+  // Optional handoff from the recipe creator. Kept isolated from planner loading/render state.
+  const [pendingCustomRecipe, setPendingCustomRecipe] = useState<{
+    mealPlanId: string;
+    customMealTitle: string;
+    recipeId: string;
+    recipeTitle: string;
+    servings: number;
+  } | null>(null);
+  const [isReplacingCustomMeal, setIsReplacingCustomMeal] = useState(false);
+
   const { generateRandomMeals } = useRandomMealSelection();
 
   const currentMealPlans = getMealPlansForWeek(currentWeek);
@@ -97,6 +110,25 @@ export default function MealPlannerContainer() {
     if (!user?.id || !currentHousehold?.id || hasRefreshedOnMount.current) return;
     hasRefreshedOnMount.current = true;
     fetchMealPlans();
+
+    const pending = sessionStorage.getItem("realimeali_pending_custom_recipe");
+    if (pending) {
+      try {
+        const parsed = JSON.parse(pending);
+        if (
+          parsed?.mealPlanId &&
+          parsed?.recipeId &&
+          parsed?.recipeTitle
+        ) {
+          setPendingCustomRecipe(parsed);
+        } else {
+          sessionStorage.removeItem("realimeali_pending_custom_recipe");
+        }
+      } catch {
+        sessionStorage.removeItem("realimeali_pending_custom_recipe");
+      }
+    }
+
     // Intentionally mount-only: fetchMealPlans updates context loading state.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -266,6 +298,38 @@ export default function MealPlannerContainer() {
     performClearAll();
   }, [performClearAll]);
 
+  const dismissPendingCustomRecipe = useCallback(() => {
+    sessionStorage.removeItem("realimeali_pending_custom_recipe");
+    setPendingCustomRecipe(null);
+  }, []);
+
+  const handleKeepCustomRecipe = useCallback(() => {
+    dismissPendingCustomRecipe();
+  }, [dismissPendingCustomRecipe]);
+
+  const handleReplaceCustomRecipe = useCallback(async () => {
+    if (!pendingCustomRecipe) return;
+
+    setIsReplacingCustomMeal(true);
+    try {
+      await replaceFreetypedMealPlan(
+        pendingCustomRecipe.mealPlanId,
+        pendingCustomRecipe.recipeId,
+        pendingCustomRecipe.servings
+      );
+      dismissPendingCustomRecipe();
+    } catch (error) {
+      console.error("Failed to replace custom meal:", error);
+      toast({
+        title: "Couldn't replace meal",
+        description: "The recipe was saved, but the custom meal could not be replaced.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsReplacingCustomMeal(false);
+    }
+  }, [pendingCustomRecipe, replaceFreetypedMealPlan, dismissPendingCustomRecipe, toast]);
+
   const handleCreateLeftoverWithServings = useCallback(async (mealPlan: MealPlan, recipe: Recipe | undefined, leftoverServings: number) => {
     console.log("🔄 handleCreateLeftoverWithServings:", { leftoverServings });
     await handleCreateLeftover(mealPlan, recipe, leftoverServings);
@@ -417,6 +481,39 @@ export default function MealPlannerContainer() {
         onServingsConfirm={handleServingsConfirm}
         onChooseMeals={() => { setQuantitiesDialog(false); setSwipeDialog(true); }}
       />
+
+      <Dialog
+        open={Boolean(pendingCustomRecipe)}
+        onOpenChange={(open) => {
+          if (!open && !isReplacingCustomMeal) dismissPendingCustomRecipe();
+        }}
+      >
+        <DialogContent className="w-[calc(100%-2rem)] max-w-md rounded-2xl">
+          <DialogHeader>
+            <DialogTitle>Recipe saved!</DialogTitle>
+            <DialogDescription className="leading-relaxed">
+              Would you like to replace <strong>{pendingCustomRecipe?.customMealTitle}</strong> in your meal plan with <strong>{pendingCustomRecipe?.recipeTitle}</strong>?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex-col gap-2 sm:flex-row">
+            <Button
+              onClick={handleReplaceCustomRecipe}
+              disabled={isReplacingCustomMeal}
+              className="w-full bg-[#B85F49] text-white hover:bg-[#A65340] sm:w-auto"
+            >
+              {isReplacingCustomMeal ? "Replacing..." : "Replace Custom Meal"}
+            </Button>
+            <Button
+              onClick={handleKeepCustomRecipe}
+              variant="outline"
+              disabled={isReplacingCustomMeal}
+              className="w-full sm:w-auto"
+            >
+              Keep Custom Meal
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <RecipeSwipeDialog open={swipeDialog} onOpenChange={setSwipeDialog} recipes={recipes} />
 
