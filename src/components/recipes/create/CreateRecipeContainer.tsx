@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Plus, Trash2, Check } from "lucide-react";
 import { useRecipeForm } from "@/hooks/useRecipeForm";
@@ -25,6 +26,7 @@ interface CreateRecipeContainerProps {
 
 export function CreateRecipeContainer({ editingRecipe, isEditMode = false, defaultTab, customMealContext }: CreateRecipeContainerProps) {
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
   const { toast } = useToast();
   const { replaceFreetypedMealPlan } = useMealPlan();
   
