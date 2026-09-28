@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { Trash2, Plus, Minus, GripVertical, UtensilsCrossed, Check } from "lucide-react";
+import { Trash2, Plus, Minus, GripVertical, UtensilsCrossed, Check, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { RecipeImage } from "@/components/ui/recipe-image";
@@ -193,7 +193,7 @@ export function EnhancedMealCard({
                   <Button
                     variant="outline"
                     size="sm"
-                    className="h-7 px-2 text-[11px] whitespace-nowrap text-[#B85F49] border-[#B85F49]/30 hover:bg-[#B85F49]/10"
+                    className="h-7 w-7 p-0 text-[#B85F49] border-[#B85F49]/30 hover:bg-[#B85F49]/10"
                     onClick={() => {
                       const params = new URLSearchParams({
                         title: mealPlan.meal_name || "Custom Meal",
@@ -206,7 +206,7 @@ export function EnhancedMealCard({
                     }}
                     title="Save as recipe"
                   >
-                    Save as Recipe
+                    <Save className="h-3.5 w-3.5" />
                   </Button>
 
                   {/* Completion Tick Icon */}
