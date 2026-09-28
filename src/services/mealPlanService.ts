@@ -71,6 +71,27 @@ export const mealPlanService = {
     return this.transformDbToMealPlan(data);
   },
 
+  async replaceFreetypedMealPlan(
+    mealPlanId: string,
+    recipeId: string,
+    plannedServings: number,
+    householdId: string
+  ): Promise<void> {
+    const { error } = await supabase
+      .from('household_meal_plans')
+      .update({
+        recipe_id: recipeId,
+        is_freetyped: false,
+        meal_name: null,
+        original_servings: plannedServings,
+        planned_servings: plannedServings,
+      })
+      .eq('id', mealPlanId)
+      .eq('household_id', householdId)
+      .eq('is_freetyped', true);
+    if (error) throw error;
+  },
+
   async updateMealPlanServings(
     mealPlanId: string, 
     plannedServings: number,
