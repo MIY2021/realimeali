@@ -31,6 +31,62 @@ function cleanMarkdownFormatting(text: string): string {
   return text.trim();
 }
 
+// Count words for preservation checks. This intentionally ignores punctuation/formatting.
+function wordCount(text: string): number {
+  return (text || '').trim().split(/\\s+/).filter(Boolean).length;
+}
+
+// Extract the method/instructions portion from pasted recipe text so we can
+// detect when the model has silently compressed a detailed source.
+function extractSourceMethod(text: string): string {
+  const source = (text || '').replace(/\\r\\n/g, '\\n');
+  const lines = source.split('\\n');
+  const headingRegex = /^\\s*(method|instructions?|directions?|steps?)\\s*:??\\s*$/i;
+  const startIndex = lines.findIndex(line => headingRegex.test(line));
+
+  if (startIndex === -1) {
+    return '';
+  }
+
+  // Stop at a clear subsequent recipe section if one exists.
+  const endHeadingRegex = /^\\s*(notes?|tips?|serving suggestions?|storage|nutrition|variations?|equipment)\\s*:??\\s*$/i;
+  const remaining = lines.slice(startIndex + 1);
+  const endOffset = remaining.findIndex(line => endHeadingRegex.test(line));
+  const methodLines = endOffset === -1 ? remaining : remaining.slice(0, endOffset);
+
+  return methodLines.join('\\n').trim();
+}
+
+// Decide whether a parsed method is materially shorter than the supplied method.
+// We allow some reduction because numbering/bullets and tiny formatting differences
+// are legitimate, but a recipe that has been compressed must not pass this check.
+function instructionsNeedRepair(sourceText: string, parsedInstructions: unknown[]): boolean {
+  const sourceMethod = extractSourceMethod(sourceText);
+  if (!sourceMethod || !Array.isArray(parsedInstructions) || parsedInstructions.length === 0) {
+    return false;
+  }
+
+  const sourceWords = wordCount(sourceMethod);
+  const parsedText = parsedInstructions
+    .filter((step): step is string => typeof step === 'string')
+    .join(' ');
+  const parsedWords = wordCount(parsedText);
+
+  if (sourceWords < 40) {
+    return false;
+  }
+
+  const ratio = parsedWords / sourceWords;
+  console.log('Recipe text instruction preservation check:', {
+    sourceWords,
+    parsedWords,
+    ratio: Number(ratio.toFixed(2))
+  });
+
+  // A faithful transcription should retain the vast majority of the source method.
+  return ratio < 0.75;
+}
+
 // Exponential backoff retry logic
 async function retryWithBackoff<T>(
   fn: () => Promise<T>,
@@ -443,7 +499,12 @@ async function extractWebsiteContent(url: string, extractImages: boolean = false
 
 // OpenAI API call for recipe parsing/generation.
 // Uses the current Responses API while preserving RealiMeali's existing response contract.
-async function callOpenAI(systemPrompt: string, userPrompt: string, imageData?: string) {
+async function callOpenAI(
+  systemPrompt: string,
+  userPrompt: string,
+  imageData?: string,
+  maxOutputTokens: number = 4000
+) {
   const inputContent: any[] = [
     { type: 'input_text', text: userPrompt }
   ];
@@ -464,7 +525,7 @@ async function callOpenAI(systemPrompt: string, userPrompt: string, imageData?: 
         content: inputContent
       }
     ],
-    max_output_tokens: 4000,
+    max_output_tokens: maxOutputTokens,
     text: {
       format: {
         type: 'json_object'
@@ -631,6 +692,23 @@ Return ONLY valid JSON. No explanations.`;
       userPrompt = `Extract recipe information from this website content:\n\n${websiteContent}`;
       
     } else if (body.recipeText) {
+      systemPrompt = `You are a recipe parsing assistant for RealiMeali. This is a SOURCE-PRESERVING TRANSCRIPTION task, not a rewriting or summarisation task.
+
+SOURCE PRESERVATION CONTRACT — MANDATORY:
+- The user's pasted recipe text is authoritative.
+- Preserve the actual source wording for ingredients and cooking instructions. You may remove only list numbering/bullet characters and obvious markdown formatting.
+- NEVER paraphrase, condense, simplify, generalise, or "clean up" the cooking method.
+- Every substantive sentence in the source method must appear in the output instructions, in the same order.
+- Retain all quantities, temperatures, timings, cooking stages, visual cues, texture cues, stirring instructions, turning/flipping instructions, sequencing, resting, draining, separating, covering/uncovering, and warnings.
+- If a source step contains multiple sentences, keep all of those sentences. Do not replace them with a short summary.
+- If the source uses a heading such as "Sauce", "For the chicken", or "To serve", keep the heading and ALL of the method text underneath it.
+- One output instruction may contain multiple source sentences when they belong to the same step; splitting is fine, deleting is not.
+- Do not invent missing details.
+- Do not use shorthand such as "cook until done", "prepare as usual", or "continue cooking" when the source gives specific detail.
+- The instructions array should be a faithful segmentation of the source method, not a newly written method.
+- After constructing the JSON, mentally compare the instructions to the source and fix any missing wording before responding.
+- IMPORTANT: the output must favour completeness over brevity. Long, detailed instruction strings are expected and are correct.
+
       systemPrompt = `You are a recipe parsing assistant. Convert the supplied recipe text into RealiMeali's structured format.
 
 SOURCE-PRESERVATION RULES — THESE ARE CRITICAL:
@@ -704,7 +782,7 @@ Return ONLY valid JSON. No explanations.`;
 
       userPrompt = `Parse this recipe text faithfully into the required JSON structure.
 
-IMPORTANT: This is a transcription/structuring task, NOT a recipe-writing task. Preserve all source ingredients, quantities, and detailed instructions. Do not summarise the method.
+This is a transcription/structuring task. Preserve the source method in full. Do not summarise, shorten, or rewrite it.
 
 SOURCE RECIPE:
 ${body.recipeText}`;
@@ -876,9 +954,14 @@ Create realistic recipes with proper ingredient amounts and detailed cooking ste
       throw new Error('Missing required parameters. Provide websiteUrl, recipeText, image with mimeType, or generateRequest.');
     }
 
-    // Make OpenAI API call with retry logic
-    const data = await callOpenAI(systemPrompt, userPrompt, body.image);
-    const content_text = getOpenAIText(data);
+    // Text imports get a larger output budget because the full source method must survive JSON encoding.
+    let data = await callOpenAI(
+      systemPrompt,
+      userPrompt,
+      body.image,
+      body.recipeText ? 10000 : 4000
+    );
+    let content_text = getOpenAIText(data);
 
     console.log('OpenAI response received, parsing JSON...');
 
@@ -905,12 +988,58 @@ Create realistic recipes with proper ingredient amounts and detailed cooking ste
         }
       }
       
-      const parsedRecipe = JSON.parse(cleanedContent);
+      let parsedRecipe = JSON.parse(cleanedContent);
       
       // Validate and clean the response
       const rawIngredients = Array.isArray(parsedRecipe.ingredients) ? parsedRecipe.ingredients : [];
-      const rawInstructions = Array.isArray(parsedRecipe.instructions) ? parsedRecipe.instructions : [];
+      let rawInstructions = Array.isArray(parsedRecipe.instructions) ? parsedRecipe.instructions : [];
 
+      // A long text import that has been heavily compressed should be re-parsed automatically.
+      if (body.recipeText && instructionsNeedRepair(String(body.recipeText), rawInstructions)) {
+        console.warn('Recipe text import appears heavily summarised. Re-running with strict preservation instructions.');
+
+        const repairSystemPrompt = `${systemPrompt}
+
+REPAIR PASS — THE FIRST PARSE FAILED THE SOURCE-PRESERVATION CHECK.
+
+The instructions returned in the first pass were materially shorter than the supplied source method. This is NOT acceptable.
+
+For this repair pass:
+- Treat the source method as text that must be transcribed, not rewritten.
+- Copy every substantive source sentence into the instructions array in the same order.
+- Preserve wording, quantities, timings, temperatures, visual/texture cues, and sequencing.
+- Do not summarise any sentence.
+- Do not merge away meaningful details.
+- The final instruction text should be close in length to the source method.
+- Prioritise the full method over brevity.
+
+Return ONLY valid JSON using the same schema.`;
+
+        const repairUserPrompt = `${userPrompt}
+
+The first parse was too compressed. Re-read the SOURCE RECIPE and return the COMPLETE method with no summarisation. Every substantive method sentence must be represented in instructions.`;
+
+        const repairData = await callOpenAI(
+          repairSystemPrompt,
+          repairUserPrompt,
+          undefined,
+          12000
+        );
+
+        const repairText = getOpenAIText(repairData);
+        if (!repairText) {
+          throw new Error('The recipe importer could not produce a complete method during the repair pass.');
+        }
+
+        const repairContent = cleanJsonResponse(repairText);
+        parsedRecipe = JSON.parse(repairContent);
+        rawInstructions = Array.isArray(parsedRecipe.instructions) ? parsedRecipe.instructions : [];
+
+        if (instructionsNeedRepair(String(body.recipeText), rawInstructions)) {
+          throw new Error('The recipe importer could not preserve the full method from the pasted recipe. Please try the import again.');
+        }
+      }
+      
       // Never silently accept a text import that lost its ingredients or method.
       // A structured import must preserve the source recipe rather than returning a partial summary.
       if (body.recipeText) {
