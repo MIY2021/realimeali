@@ -944,7 +944,7 @@ Create realistic recipes with proper ingredient amounts and detailed cooking ste
 
     try {
       // Clean the JSON response before parsing
-      const cleanedContent = cleanJsonResponse(content_text);
+      let cleanedContent = cleanJsonResponse(content_text);
       console.log('Cleaned content:', cleanedContent);
       
       // Handle quick ideas response (array format)
@@ -1007,6 +1007,7 @@ The first parse was too compressed. Re-read the SOURCE RECIPE and return the COM
         const repairContent = cleanJsonResponse(repairText);
         parsedRecipe = JSON.parse(repairContent);
         rawInstructions = Array.isArray(parsedRecipe.instructions) ? parsedRecipe.instructions : [];
+        cleanedContent = repairContent;
 
         if (instructionsNeedRepair(String(body.recipeText), rawInstructions)) {
           throw new Error('The recipe importer could not preserve the full method from the pasted recipe. Please try the import again.');
