@@ -31,6 +31,62 @@ function cleanMarkdownFormatting(text: string): string {
   return text.trim();
 }
 
+// Count words for preservation checks. This intentionally ignores punctuation/formatting.
+function wordCount(text: string): number {
+  return (text || '').trim().split(/\\s+/).filter(Boolean).length;
+}
+
+// Extract the method/instructions portion from pasted recipe text so we can
+// detect when the model has silently compressed a detailed source.
+function extractSourceMethod(text: string): string {
+  const source = (text || '').replace(/\\r\\n/g, '\\n');
+  const lines = source.split('\\n');
+  const headingRegex = /^\\s*(method|instructions?|directions?|steps?)\\s*:??\\s*$/i;
+  const startIndex = lines.findIndex(line => headingRegex.test(line));
+
+  if (startIndex === -1) {
+    return '';
+  }
+
+  // Stop at a clear subsequent recipe section if one exists.
+  const endHeadingRegex = /^\\s*(notes?|tips?|serving suggestions?|storage|nutrition|variations?|equipment)\\s*:??\\s*$/i;
+  const remaining = lines.slice(startIndex + 1);
+  const endOffset = remaining.findIndex(line => endHeadingRegex.test(line));
+  const methodLines = endOffset === -1 ? remaining : remaining.slice(0, endOffset);
+
+  return methodLines.join('\\n').trim();
+}
+
+// Decide whether a parsed method is materially shorter than the supplied method.
+// We allow some reduction because numbering/bullets and tiny formatting differences
+// are legitimate, but a recipe that has been compressed must not pass this check.
+function instructionsNeedRepair(sourceText: string, parsedInstructions: unknown[]): boolean {
+  const sourceMethod = extractSourceMethod(sourceText);
+  if (!sourceMethod || !Array.isArray(parsedInstructions) || parsedInstructions.length === 0) {
+    return false;
+  }
+
+  const sourceWords = wordCount(sourceMethod);
+  const parsedText = parsedInstructions
+    .filter((step): step is string => typeof step === 'string')
+    .join(' ');
+  const parsedWords = wordCount(parsedText);
+
+  if (sourceWords < 40) {
+    return false;
+  }
+
+  const ratio = parsedWords / sourceWords;
+  console.log('Recipe text instruction preservation check:', {
+    sourceWords,
+    parsedWords,
+    ratio: Number(ratio.toFixed(2))
+  });
+
+  // A faithful transcription should retain the vast majority of the source method.
+  return ratio < 0.75;
+}
+
 // Exponential backoff retry logic
 async function retryWithBackoff<T>(
   fn: () => Promise<T>,
@@ -443,7 +499,12 @@ async function extractWebsiteContent(url: string, extractImages: boolean = false
 
 // OpenAI API call for recipe parsing/generation.
 // Uses the current Responses API while preserving RealiMeali's existing response contract.
-async function callOpenAI(systemPrompt: string, userPrompt: string, imageData?: string) {
+async function callOpenAI(
+  systemPrompt: string,
+  userPrompt: string,
+  imageData?: string,
+  maxOutputTokens: number = 4000
+) {
   const inputContent: any[] = [
     { type: 'input_text', text: userPrompt }
   ];
@@ -464,7 +525,7 @@ async function callOpenAI(systemPrompt: string, userPrompt: string, imageData?: 
         content: inputContent
       }
     ],
-    max_output_tokens: 4000,
+    max_output_tokens: maxOutputTokens,
     text: {
       format: {
         type: 'json_object'
@@ -631,19 +692,21 @@ Return ONLY valid JSON. No explanations.`;
       userPrompt = `Extract recipe information from this website content:\n\n${websiteContent}`;
       
     } else if (body.recipeText) {
-      systemPrompt = `You are a recipe parsing assistant. Convert the supplied recipe text into RealiMeali's structured format.
+      systemPrompt = `You are a recipe parsing assistant for RealiMeali. This is a SOURCE-PRESERVING TRANSCRIPTION task, not a rewriting or summarisation task.
 
-SOURCE-PRESERVATION RULES — THESE ARE CRITICAL:
-- The supplied recipe text is the authoritative source. Do NOT rewrite, summarise, shorten, simplify, or invent recipe content.
-- Preserve EVERY ingredient line, including its exact quantity, unit, ingredient name, and useful preparation detail. NEVER return an empty ingredients array when ingredients are present in the source.
-- Preserve the FULL cooking method. Do NOT turn detailed method paragraphs into short step titles. If the source says "Cook the mushrooms and peppers over medium-high heat for 4–5 minutes, stirring occasionally until nicely browned", that full instruction must remain in the corresponding instructions entry.
-- Keep step headings when present, but include the complete explanatory text belonging to each heading.
-- Preserve important cooking temperatures, timings, sequencing, warnings, and separation/resting instructions.
-- You may remove numbering/bullet markers from the source, but you must not remove the actual recipe information.
-- Do not add ingredients that are not in the source. Do not invent missing quantities.
-- If the source contains an optional ingredient, preserve it as optional.
-- The output should be a faithful structured transcription first; classification and metadata are secondary.
-- Before returning JSON, check that every ingredient and every substantive method instruction from the source is represented in the output.
+SOURCE PRESERVATION CONTRACT — MANDATORY:
+- The user's pasted recipe text is authoritative.
+- Preserve the actual source wording for ingredients and cooking instructions. You may remove only list numbering/bullet characters and obvious markdown formatting.
+- NEVER paraphrase, condense, simplify, generalise, or "clean up" the cooking method.
+- Every substantive sentence in the source method must appear in the output instructions, in the same order.
+- Retain all quantities, temperatures, timings, cooking stages, visual cues, texture cues, stirring instructions, turning/flipping instructions, sequencing, resting, draining, separating, covering/uncovering, and warnings.
+- If a source step contains multiple sentences, keep all of those sentences. Do not replace them with a short summary.
+- If the source uses a heading such as "Sauce", "For the chicken", or "To serve", keep the heading and ALL of the method text underneath it.
+- One output instruction may contain multiple source sentences when they belong to the same step; splitting is fine, deleting is not.
+- Do not invent missing details.
+- Do not use shorthand such as "cook until done", "prepare as usual", or "continue cooking" when the source gives specific detail.
+- The instructions array should be a faithful segmentation of the source method, not a newly written method.
+- The output must favour completeness over brevity. Long, detailed instruction strings are expected and are correct.
 
 CRITICAL: You MUST carefully examine ingredients for meat content. If ANY meat (beef, pork, lamb, chicken, turkey, fish, seafood, etc.) is present, the recipe CANNOT be classified as "vegetarian" or "vegan". Be extremely careful about this classification.
 
@@ -659,52 +722,40 @@ Look for words that represent recipe sections or components (marinade, sauce, dr
 Return a JSON object with this EXACT structure:
 {
   "title": "Recipe name",
-  "description": "Brief description (1-2 sentences)",
-  "ingredients": ["MARINADE", "2 tbsp yogurt", "1 tsp spices", "FLATBREADS", "200g flour", "For the garnish:", "6 slices pancetta"],
-  "ingredientGroupIndices": [0, 3, 6],
-  "instructions": ["step 1", "step 2"],
+  "description": "Brief description",
+  "ingredients": ["ingredient 1", "ingredient 2"],
+  "ingredientGroupIndices": [],
+  "instructions": ["FULL SOURCE STEP 1", "FULL SOURCE STEP 2"],
   "topTip": "One helpful cooking tip",
-  "alcoholicPairing": "A specific wine, beer, or cocktail that pairs well with this dish",
-  "nonAlcoholicPairing": "A specific non-alcoholic beverage pairing (mocktail, tea, sparkling water, etc.)",
+  "alcoholicPairing": "A specific pairing",
+  "nonAlcoholicPairing": "A specific non-alcoholic pairing",
   "prepTime": 15,
   "cookTime": 30,
   "servings": 4,
   "classification": {
     "mealType": "dinner",
-    "cuisineRegion": "italian" or ["italian", "mediterranean"] if multiple cuisines apply, 
-    "cookingMethod": "oven_baked",
+    "cuisineRegion": "british",
+    "cookingMethod": "one_pot",
     "dietLifestyle": [],
     "complexityLevel": "standard",
-    "mainIngredient": "pasta"
+    "mainIngredient": "chicken"
   }
 }
 
-IMPORTANT: ingredientGroupIndices must be an array of zero-based indices indicating which positions in the ingredients array are group headers. For example, if "MARINADE" is at index 0, "FLATBREADS" is at index 3, and "For the garnish:" is at index 6, then ingredientGroupIndices should be [0, 3, 6]. Always include ALL section headers regardless of their format (ALL CAPS, title case, with/without colons). If there are no group headers, use an empty array [].
+INGREDIENT RULES:
+- Preserve EVERY ingredient line exactly enough to retain quantity, unit, ingredient name, preparation detail, and optional status.
+- Preserve ingredient section headers as separate entries when present.
+- Do not add ingredients that are not in the source.
 
-Classification rules:
-- mealType: breakfast, lunch, dinner, snacks, sides, desserts, drinks, sauces_dips, soups_stews, salads, baking_breads
-- cuisineRegion: british, american, italian, french, mexican, indian, chinese, japanese, thai, mediterranean, middle_eastern, african, korean, caribbean, nordic, eastern_european (can be a single string or array of strings if multiple cuisines apply - REQUIRED: always suggest at least one cuisine based on ingredients, cooking methods, and recipe name)  
-- cookingMethod: one_pot, oven_baked, air_fryer, slow_cooker, pressure_cooker, bbq_grilled, stir_fried, roasted, raw_no_cook
-- dietLifestyle: ONLY include if 100% certain - check ALL ingredients carefully for meat/dairy/gluten: vegetarian, vegan, pescatarian, gluten_free, dairy_free, low_carb_keto, high_protein, paleo, diabetic_friendly, budget_meals, kid_friendly, pregnancy_safe
-- complexityLevel: quick_easy, standard, complex
-- mainIngredient: MUST be one of these EXACT values: chicken, beef, pork, lamb, fish, tofu_tempeh, eggs, cheese, pasta, rice, lentils_beans, vegetables, potatoes, fruit, nuts_seeds, chocolate
-
-IMPORTANT: For mainIngredient, if the primary ingredient doesn't match exactly, choose the closest match:
-- Hot dogs/sausages → pork (or beef if beef hot dogs)
-- Seafood/shellfish → fish
-- Any beans/legumes → lentils_beans
-- Mixed vegetables → vegetables
-- Bread/flour items → pasta (closest grain option)
-- Dairy items → cheese
-- Nuts or seeds → nuts_seeds
-
-If you detect ANY meat ingredients (ground beef, mince, chicken, etc.), do NOT include "vegetarian" in dietLifestyle array. Leave dietLifestyle empty if unsure.
-
-Return ONLY valid JSON. No explanations.`;
+INSTRUCTION RULES:
+- Preserve full paragraphs and full numbered steps. Do not turn them into short step titles.
+- A faithful output is expected to contain roughly the same amount of instructional text as the source method. Large reductions are a failure.
+- Do not prioritise classification metadata over source recipe content.
+- Return ONLY valid JSON.`;
 
       userPrompt = `Parse this recipe text faithfully into the required JSON structure.
 
-IMPORTANT: This is a transcription/structuring task, NOT a recipe-writing task. Preserve all source ingredients, quantities, and detailed instructions. Do not summarise the method.
+This is a transcription/structuring task. Preserve the source method in full. Do not summarise, shorten, or rewrite it.
 
 SOURCE RECIPE:
 ${body.recipeText}`;
@@ -876,9 +927,14 @@ Create realistic recipes with proper ingredient amounts and detailed cooking ste
       throw new Error('Missing required parameters. Provide websiteUrl, recipeText, image with mimeType, or generateRequest.');
     }
 
-    // Make OpenAI API call with retry logic
-    const data = await callOpenAI(systemPrompt, userPrompt, body.image);
-    const content_text = getOpenAIText(data);
+    // Text imports get a larger output budget because the full source method must survive JSON encoding.
+    let data = await callOpenAI(
+      systemPrompt,
+      userPrompt,
+      body.image,
+      body.recipeText ? 10000 : 4000
+    );
+    let content_text = getOpenAIText(data);
 
     console.log('OpenAI response received, parsing JSON...');
 
@@ -888,7 +944,7 @@ Create realistic recipes with proper ingredient amounts and detailed cooking ste
 
     try {
       // Clean the JSON response before parsing
-      const cleanedContent = cleanJsonResponse(content_text);
+      let cleanedContent = cleanJsonResponse(content_text);
       console.log('Cleaned content:', cleanedContent);
       
       // Handle quick ideas response (array format)
@@ -905,12 +961,59 @@ Create realistic recipes with proper ingredient amounts and detailed cooking ste
         }
       }
       
-      const parsedRecipe = JSON.parse(cleanedContent);
+      let parsedRecipe = JSON.parse(cleanedContent);
       
       // Validate and clean the response
       const rawIngredients = Array.isArray(parsedRecipe.ingredients) ? parsedRecipe.ingredients : [];
-      const rawInstructions = Array.isArray(parsedRecipe.instructions) ? parsedRecipe.instructions : [];
+      let rawInstructions = Array.isArray(parsedRecipe.instructions) ? parsedRecipe.instructions : [];
 
+      // A long text import that has been heavily compressed should be re-parsed automatically.
+      if (body.recipeText && instructionsNeedRepair(String(body.recipeText), rawInstructions)) {
+        console.warn('Recipe text import appears heavily summarised. Re-running with strict preservation instructions.');
+
+        const repairSystemPrompt = `${systemPrompt}
+
+REPAIR PASS — THE FIRST PARSE FAILED THE SOURCE-PRESERVATION CHECK.
+
+The instructions returned in the first pass were materially shorter than the supplied source method. This is NOT acceptable.
+
+For this repair pass:
+- Treat the source method as text that must be transcribed, not rewritten.
+- Copy every substantive source sentence into the instructions array in the same order.
+- Preserve wording, quantities, timings, temperatures, visual/texture cues, and sequencing.
+- Do not summarise any sentence.
+- Do not merge away meaningful details.
+- The final instruction text should be close in length to the source method.
+- Prioritise the full method over brevity.
+
+Return ONLY valid JSON using the same schema.`;
+
+        const repairUserPrompt = `${userPrompt}
+
+The first parse was too compressed. Re-read the SOURCE RECIPE and return the COMPLETE method with no summarisation. Every substantive method sentence must be represented in instructions.`;
+
+        const repairData = await callOpenAI(
+          repairSystemPrompt,
+          repairUserPrompt,
+          undefined,
+          12000
+        );
+
+        const repairText = getOpenAIText(repairData);
+        if (!repairText) {
+          throw new Error('The recipe importer could not produce a complete method during the repair pass.');
+        }
+
+        const repairContent = cleanJsonResponse(repairText);
+        parsedRecipe = JSON.parse(repairContent);
+        rawInstructions = Array.isArray(parsedRecipe.instructions) ? parsedRecipe.instructions : [];
+        cleanedContent = repairContent;
+
+        if (instructionsNeedRepair(String(body.recipeText), rawInstructions)) {
+          throw new Error('The recipe importer could not preserve the full method from the pasted recipe. Please try the import again.');
+        }
+      }
+      
       // Never silently accept a text import that lost its ingredients or method.
       // A structured import must preserve the source recipe rather than returning a partial summary.
       if (body.recipeText) {
