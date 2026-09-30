@@ -706,22 +706,7 @@ SOURCE PRESERVATION CONTRACT — MANDATORY:
 - Do not invent missing details.
 - Do not use shorthand such as "cook until done", "prepare as usual", or "continue cooking" when the source gives specific detail.
 - The instructions array should be a faithful segmentation of the source method, not a newly written method.
-- After constructing the JSON, mentally compare the instructions to the source and fix any missing wording before responding.
-- IMPORTANT: the output must favour completeness over brevity. Long, detailed instruction strings are expected and are correct.
-
-      systemPrompt = `You are a recipe parsing assistant. Convert the supplied recipe text into RealiMeali's structured format.
-
-SOURCE-PRESERVATION RULES — THESE ARE CRITICAL:
-- The supplied recipe text is the authoritative source. Do NOT rewrite, summarise, shorten, simplify, or invent recipe content.
-- Preserve EVERY ingredient line, including its exact quantity, unit, ingredient name, and useful preparation detail. NEVER return an empty ingredients array when ingredients are present in the source.
-- Preserve the FULL cooking method. Do NOT turn detailed method paragraphs into short step titles. If the source says "Cook the mushrooms and peppers over medium-high heat for 4–5 minutes, stirring occasionally until nicely browned", that full instruction must remain in the corresponding instructions entry.
-- Keep step headings when present, but include the complete explanatory text belonging to each heading.
-- Preserve important cooking temperatures, timings, sequencing, warnings, and separation/resting instructions.
-- You may remove numbering/bullet markers from the source, but you must not remove the actual recipe information.
-- Do not add ingredients that are not in the source. Do not invent missing quantities.
-- If the source contains an optional ingredient, preserve it as optional.
-- The output should be a faithful structured transcription first; classification and metadata are secondary.
-- Before returning JSON, check that every ingredient and every substantive method instruction from the source is represented in the output.
+- The output must favour completeness over brevity. Long, detailed instruction strings are expected and are correct.
 
 CRITICAL: You MUST carefully examine ingredients for meat content. If ANY meat (beef, pork, lamb, chicken, turkey, fish, seafood, etc.) is present, the recipe CANNOT be classified as "vegetarian" or "vegan". Be extremely careful about this classification.
 
@@ -737,48 +722,36 @@ Look for words that represent recipe sections or components (marinade, sauce, dr
 Return a JSON object with this EXACT structure:
 {
   "title": "Recipe name",
-  "description": "Brief description (1-2 sentences)",
-  "ingredients": ["MARINADE", "2 tbsp yogurt", "1 tsp spices", "FLATBREADS", "200g flour", "For the garnish:", "6 slices pancetta"],
-  "ingredientGroupIndices": [0, 3, 6],
-  "instructions": ["step 1", "step 2"],
+  "description": "Brief description",
+  "ingredients": ["ingredient 1", "ingredient 2"],
+  "ingredientGroupIndices": [],
+  "instructions": ["FULL SOURCE STEP 1", "FULL SOURCE STEP 2"],
   "topTip": "One helpful cooking tip",
-  "alcoholicPairing": "A specific wine, beer, or cocktail that pairs well with this dish",
-  "nonAlcoholicPairing": "A specific non-alcoholic beverage pairing (mocktail, tea, sparkling water, etc.)",
+  "alcoholicPairing": "A specific pairing",
+  "nonAlcoholicPairing": "A specific non-alcoholic pairing",
   "prepTime": 15,
   "cookTime": 30,
   "servings": 4,
   "classification": {
     "mealType": "dinner",
-    "cuisineRegion": "italian" or ["italian", "mediterranean"] if multiple cuisines apply, 
-    "cookingMethod": "oven_baked",
+    "cuisineRegion": "british",
+    "cookingMethod": "one_pot",
     "dietLifestyle": [],
     "complexityLevel": "standard",
-    "mainIngredient": "pasta"
+    "mainIngredient": "chicken"
   }
 }
 
-IMPORTANT: ingredientGroupIndices must be an array of zero-based indices indicating which positions in the ingredients array are group headers. For example, if "MARINADE" is at index 0, "FLATBREADS" is at index 3, and "For the garnish:" is at index 6, then ingredientGroupIndices should be [0, 3, 6]. Always include ALL section headers regardless of their format (ALL CAPS, title case, with/without colons). If there are no group headers, use an empty array [].
+INGREDIENT RULES:
+- Preserve EVERY ingredient line exactly enough to retain quantity, unit, ingredient name, preparation detail, and optional status.
+- Preserve ingredient section headers as separate entries when present.
+- Do not add ingredients that are not in the source.
 
-Classification rules:
-- mealType: breakfast, lunch, dinner, snacks, sides, desserts, drinks, sauces_dips, soups_stews, salads, baking_breads
-- cuisineRegion: british, american, italian, french, mexican, indian, chinese, japanese, thai, mediterranean, middle_eastern, african, korean, caribbean, nordic, eastern_european (can be a single string or array of strings if multiple cuisines apply - REQUIRED: always suggest at least one cuisine based on ingredients, cooking methods, and recipe name)  
-- cookingMethod: one_pot, oven_baked, air_fryer, slow_cooker, pressure_cooker, bbq_grilled, stir_fried, roasted, raw_no_cook
-- dietLifestyle: ONLY include if 100% certain - check ALL ingredients carefully for meat/dairy/gluten: vegetarian, vegan, pescatarian, gluten_free, dairy_free, low_carb_keto, high_protein, paleo, diabetic_friendly, budget_meals, kid_friendly, pregnancy_safe
-- complexityLevel: quick_easy, standard, complex
-- mainIngredient: MUST be one of these EXACT values: chicken, beef, pork, lamb, fish, tofu_tempeh, eggs, cheese, pasta, rice, lentils_beans, vegetables, potatoes, fruit, nuts_seeds, chocolate
-
-IMPORTANT: For mainIngredient, if the primary ingredient doesn't match exactly, choose the closest match:
-- Hot dogs/sausages → pork (or beef if beef hot dogs)
-- Seafood/shellfish → fish
-- Any beans/legumes → lentils_beans
-- Mixed vegetables → vegetables
-- Bread/flour items → pasta (closest grain option)
-- Dairy items → cheese
-- Nuts or seeds → nuts_seeds
-
-If you detect ANY meat ingredients (ground beef, mince, chicken, etc.), do NOT include "vegetarian" in dietLifestyle array. Leave dietLifestyle empty if unsure.
-
-Return ONLY valid JSON. No explanations.`;
+INSTRUCTION RULES:
+- Preserve full paragraphs and full numbered steps. Do not turn them into short step titles.
+- A faithful output is expected to contain roughly the same amount of instructional text as the source method. Large reductions are a failure.
+- Do not prioritise classification metadata over source recipe content.
+- Return ONLY valid JSON.`;
 
       userPrompt = `Parse this recipe text faithfully into the required JSON structure.
 
