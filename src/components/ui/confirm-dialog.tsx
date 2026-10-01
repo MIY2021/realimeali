@@ -1,4 +1,5 @@
 import { useState } from "react";
+import type { ReactNode, MouseEvent } from "react";
 import { AlertTriangle, Loader2, Trash2 } from "lucide-react";
 import {
   AlertDialog,
@@ -16,7 +17,7 @@ interface ConfirmDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   title: string;
-  description: React.ReactNode;
+  description: ReactNode;
   confirmLabel?: string;
   cancelLabel?: string;
   onConfirm: () => Promise<void> | void;
@@ -35,7 +36,7 @@ export function ConfirmDialog({
 }: ConfirmDialogProps) {
   const [isConfirming, setIsConfirming] = useState(false);
 
-  const handleConfirm = async (event: React.MouseEvent) => {
+  const handleConfirm = async (event: MouseEvent) => {
     event.preventDefault();
     if (isConfirming) return;
 
