@@ -74,7 +74,7 @@ export default function RecipesPage() {
             />
           }
           title="My Recipes"
-          description={getWelcomeText()}
+
         />
 
         {!user ? (

@@ -66,7 +66,7 @@ const AchievementsPage = () => {
           />
         }
         title="Achievements"
-        description="Earn badges as you cook, plan, and create. Unlock them all to become a true culinary master and showcase your kitchen expertise!"
+        description={`${unlockedCount} of ${totalCount} achievements unlocked`}
       />
       
       {/* Toggle and unlocked count */}
