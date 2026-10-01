@@ -1,9 +1,7 @@
-
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Recipe } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
-import { normalizeCuisineRegion } from "@/utils/recipeClassification";
 
 export function useTextRecipeProcessing() {
   const { toast } = useToast();
@@ -11,145 +9,96 @@ export function useTextRecipeProcessing() {
   const [isProcessing, setIsProcessing] = useState(false);
 
   const handleProcessText = async (
-    setNewRecipe: (recipe: Omit<Recipe, 'id' | 'created_at' | 'updated_at' | 'created_by'>) => void,
-    currentRecipe: Omit<Recipe, 'id' | 'created_at' | 'updated_at' | 'created_by'>,
+    setNewRecipe: (recipe: Omit<Recipe, "id" | "created_at" | "updated_at" | "created_by">) => void,
+    currentRecipe: Omit<Recipe, "id" | "created_at" | "updated_at" | "created_by">,
     setActiveTab: (tab: string) => void
   ) => {
-    if (!recipeText.trim()) {
+    const sourceText = recipeText.trim();
+
+    if (!sourceText) {
       toast({
-        title: "Error",
-        description: "Please enter some recipe text to process",
+        title: "Recipe text required",
+        description: "Paste a recipe into the box first.",
         variant: "destructive",
       });
       return;
     }
 
     setIsProcessing(true);
-    
-    // Add timeout to prevent hanging
-    const timeoutId = setTimeout(() => {
-      setIsProcessing(false);
-      toast({
-        title: "Processing Timeout",
-        description: "Text processing is taking too long. Please try again with shorter text or check your connection.",
-        variant: "destructive",
-      });
-    }, 60000); // 60 second timeout
 
     try {
-      console.log('Processing recipe text:', recipeText.substring(0, 100) + '...');
-      
-      const { data, error } = await supabase.functions.invoke('parse-recipe-ai', {
-        body: { 
-          recipeText: recipeText.trim(),
-          preserveQuantities: true // Add flag to preserve quantities
-        }
+      console.log("Starting dedicated recipe text import:", {
+        characters: sourceText.length,
+        lines: sourceText.split(/\r?\n/).length,
       });
 
-      clearTimeout(timeoutId); // Clear timeout on success
+      const { data, error } = await supabase.functions.invoke("parse-recipe-text", {
+        body: { recipeText: sourceText },
+      });
 
       if (error) {
-        console.error('Error calling parse-recipe-ai function:', error);
-        throw new Error(error.message || 'Failed to process recipe text');
+        console.error("Recipe text import failed:", error);
+        throw new Error(error.message || "Failed to process recipe text.");
       }
 
-      if (!data?.parsedRecipe) {
-        throw new Error('No recipe data could be extracted from the text');
+      const recipeData = data?.parsedRecipe;
+
+      if (!recipeData) {
+        throw new Error("The recipe importer returned no recipe.");
       }
 
-      console.log('Received processed recipe:', data.parsedRecipe);
-      
-      const recipeData = data.parsedRecipe;
-      
-      // Transform the data to match our Recipe interface (same as URL import)
+      if (!Array.isArray(recipeData.ingredients) || recipeData.ingredients.length === 0) {
+        throw new Error("The recipe importer returned no ingredients.");
+      }
+
+      if (!Array.isArray(recipeData.instructions) || recipeData.instructions.length === 0) {
+        throw new Error("The recipe importer returned no cooking instructions.");
+      }
+
       const transformedRecipe = {
         ...currentRecipe,
-        title: recipeData.title || "",
+        title: recipeData.title,
         description: recipeData.description || "",
-        ingredients: Array.isArray(recipeData.ingredients) ? recipeData.ingredients : [],
-        ingredient_group_indices: Array.isArray(recipeData.ingredientGroupIndices) ? recipeData.ingredientGroupIndices : undefined,
-        instructions: Array.isArray(recipeData.instructions) ? recipeData.instructions : [],
-        prep_time: recipeData.prepTime || 0,
-        cook_time: recipeData.cookTime || 0,
-        servings: recipeData.servings || 1,
+        ingredients: recipeData.ingredients,
+        ingredient_group_indices: Array.isArray(recipeData.ingredientGroupIndices)
+          ? recipeData.ingredientGroupIndices
+          : undefined,
+        instructions: recipeData.instructions,
+        prep_time: Number.isFinite(recipeData.prepTime) ? recipeData.prepTime : 0,
+        cook_time: Number.isFinite(recipeData.cookTime) ? recipeData.cookTime : 0,
+        servings: Number.isFinite(recipeData.servings) ? recipeData.servings : 4,
         top_tip: recipeData.topTip || "",
         alcoholic_pairing: recipeData.alcoholicPairing || null,
         non_alcoholic_pairing: recipeData.nonAlcoholicPairing || null,
-        // Classification is returned by the Edge Function in both flattened
-        // fields (for backwards compatibility) and a nested classification object.
-        // Accept both shapes so imported recipes actually populate the form.
-        meal_types: recipeData.mealType
-          ? [recipeData.mealType]
-          : recipeData.classification?.mealType
-            ? [recipeData.classification.mealType]
-            : (currentRecipe.meal_types || []),
-        cuisine_region: (() => {
-          const cuisine = recipeData.cuisineRegion ?? recipeData.classification?.cuisineRegion;
-          if (Array.isArray(cuisine)) return cuisine.map(normalizeCuisineRegion).filter(Boolean)[0] || currentRecipe.cuisine_region;
-          return cuisine ? normalizeCuisineRegion(cuisine) || currentRecipe.cuisine_region : currentRecipe.cuisine_region;
-        })(),
+        meal_types: recipeData.mealType ? [recipeData.mealType] : [],
+        cuisine_region: recipeData.cuisineRegion || undefined,
         diet_lifestyle: Array.isArray(recipeData.dietLifestyle)
           ? recipeData.dietLifestyle
-          : (Array.isArray(recipeData.classification?.dietLifestyle)
-            ? recipeData.classification.dietLifestyle
-            : (currentRecipe.diet_lifestyle || [])),
-        // Store suggested tags for confirmation (support multiple cuisines)
-        suggestedTags: {
-          meal_types: recipeData.mealType ? [recipeData.mealType] : [],
-          cuisine_region: (() => {
-            const cuisine = recipeData.cuisineRegion ?? recipeData.classification?.cuisineRegion;
-            if (Array.isArray(cuisine)) {
-              // Normalize all cuisine suggestions
-              const normalized = cuisine.map(c => normalizeCuisineRegion(c)).filter(Boolean);
-              console.log('✅ Storing cuisine suggestions (array):', normalized);
-              return normalized;
-            }
-            if (cuisine) {
-              // Normalize single cuisine suggestion
-              const normalized = normalizeCuisineRegion(cuisine);
-              if (normalized) {
-                console.log('✅ Storing cuisine suggestion (single):', normalized, '(normalized from:', cuisine, ')');
-                return [normalized];
-              }
-            }
-            console.warn('⚠️ No cuisine suggestion from AI');
-            return [];
-          })(),
-          diet_lifestyle: Array.isArray(recipeData.dietLifestyle) ? recipeData.dietLifestyle : [],
-        },
+          : [],
         household_id: currentRecipe.household_id,
         is_favorite: currentRecipe.is_favorite,
         has_cooked: currentRecipe.has_cooked,
-        image: undefined, // Start with no image so user can select
+        image: undefined,
       };
-      
+
       setNewRecipe(transformedRecipe);
       setActiveTab("manual");
-      
-      toast({
-        title: "Recipe Processed! 🎉",
-        description: "Your recipe has been organized and categorized automatically with quantities preserved.",
-      });
-
-      // Clear the text input on success
       setRecipeText("");
-      
-    } catch (error) {
-      clearTimeout(timeoutId);
-      console.error('Error processing recipe text:', error);
-      
-      let errorMessage = "Failed to process recipe text. Please try again.";
-      if (error instanceof Error) {
-        if (error.message.includes('timeout') || error.message.includes('network')) {
-          errorMessage = "Connection timeout. Please check your internet and try again.";
-        } else if (error.message.includes('rate limit')) {
-          errorMessage = "Too many requests. Please wait a moment before trying again.";
-        }
-      }
-      
+
       toast({
-        title: "Processing Failed",
-        description: errorMessage,
+        title: "Recipe imported! 🎉",
+        description: "The recipe has been extracted and is ready to review.",
+      });
+    } catch (error) {
+      console.error("Error processing recipe text:", error);
+
+      const message = error instanceof Error
+        ? error.message
+        : "Failed to process recipe text. Please try again.";
+
+      toast({
+        title: "Recipe import failed",
+        description: message,
         variant: "destructive",
       });
     } finally {
