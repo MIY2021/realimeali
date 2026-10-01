@@ -498,7 +498,7 @@ function parseRecipeTextSource(source: string) {
       .trim()
       .replace(/^\s*#{1,6}\s*/, '')
       .replace(/^\s*(?:\*\*|__)(.*?)(?:\*\*|__)\s*$/, '$1')
-      .replace(/^\s*(?:[-•]\s+|\d{1,3}[.)]\s+|step\s+\d{1,3}\s*[:.)-]\s*)/i, '')
+      .replace(/^\s*(?:[^\p{L}\p{N}]*)?(?:\d{1,3}[.)]\s+|step\s+\d{1,3}\s*[:.)-]\s*)/iu, '')
       .replace(/^\s*(?:\*\*|__)(.*?)(?:\*\*|__)\s*$/, '$1')
       .trim();
 
@@ -520,7 +520,7 @@ function parseRecipeTextSource(source: string) {
 
       // Numbered/Step headings start a new instruction. Blank lines inside
       // a numbered step are formatting only and stay with that step.
-      const isStepStart = /^(?:\*\*|__)?\s*#{0,6}\s*(?:\d{1,3}[.)]\s+|step\s+\d{1,3}\s*[:.)-]\s*)/i.test(line);
+      const isStepStart = /^\s*(?:[^\p{L}\p{N}]*)?(?:\d{1,3}[.)]\s+|step\s+\d{1,3}\s*[:.)-]\s*)/iu.test(line);
 
       if (isStepStart) {
         if (current) instructions.push(current.trim());
@@ -905,9 +905,32 @@ Return ONLY valid JSON. No explanations.`;
         sourceRecipe.instructions
       );
 
+      // Use AI only for the recipe title. The pasted ingredients and instructions
+      // remain completely source-preserved and never depend on AI.
+      let aiTitle = '';
+      try {
+        const titleResponse = await callOpenAI(
+          `You are a recipe title editor. Read the supplied recipe text and return a JSON object with one field: "title".
+If the source contains a genuine recipe title, use it.
+Ignore conversational introductions, commentary, phrases like "Absolutely —", and section headings such as Ingredients or Method.
+If there is no genuine title, create a concise, appetising cookbook-style recipe title from the dish itself.
+Do not invent ingredients or change the dish.
+Return only valid json.`,
+          `Choose the recipe title from this source. Return only the title field as valid json.
+
+SOURCE RECIPE:
+${sourceRecipe.source}`
+        );
+        const titleText = getOpenAIText(titleResponse);
+        const titleJson = JSON.parse(cleanJsonResponse(titleText));
+        if (typeof titleJson?.title === 'string') aiTitle = titleJson.title.trim();
+      } catch (titleError) {
+        console.warn('AI title generation failed; using parsed source title:', titleError);
+      }
+
       const cleanedRecipe = {
         ...metadata,
-        title: cleanMarkdownFormatting(metadata.title) || 'Untitled Recipe',
+        title: cleanMarkdownFormatting(aiTitle || sourceRecipe.title || metadata.title) || 'Untitled Recipe',
         ingredients: sourceRecipe.ingredients,
         ingredientGroupIndices: sourceRecipe.ingredientGroupIndices.length > 0
           ? sourceRecipe.ingredientGroupIndices
