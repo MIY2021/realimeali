@@ -142,7 +142,7 @@ function validate(recipe: any) {
     .filter((i: number) => Number.isInteger(i) && i >= 0 && i < recipe.ingredients.length)
     .sort((a: number, b: number) => a - b);
 
-  const instructionLikeGroup = /^(combine|mix|whisk|stir|add|heat|cook|bake|knead|beat|roll|place|pour|transfer|divide|shape|season|remove|bring|reduce|simmer|boil|fry|saute|sauté)\\b/i;
+  const instructionLikeGroup = /^(combine|mix|whisk|stir|add|heat|cook|bake|knead|beat|roll|place|pour|transfer|divide|shape|season|remove|bring|reduce|simmer|boil|fry|saute|sauté)\b/i;
 
   recipe.ingredientGroupIndices = rawGroupIndices.filter((index: number) => {
     const value = recipe.ingredients[index].trim();
