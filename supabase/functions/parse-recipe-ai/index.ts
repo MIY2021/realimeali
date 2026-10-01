@@ -625,7 +625,7 @@ function extractRecipeTextMetadata(source: string, title: string, ingredients: s
     [/\b(?:japanese|miso|mirin|sushi|teriyaki)\b/i, 'japanese'],
     [/\b(?:french|dijon|crème fraîche|creme fraiche|provençal|provencal)\b/i, 'french'],
     [/\b(?:greek|feta|oregano|tzatziki)\b/i, 'mediterranean'],
-    [/\b(?:middle eastern|tahini|sumac|za' + "'atar|harissa)\b/i, 'middle_eastern'],
+    [/\b(?:middle eastern|tahini|sumac|za['’]atar|harissa)\b/i, 'middle_eastern'],
   ];
   for (const [pattern, cuisine] of cuisineRules) {
     if (pattern.test(lower)) {
