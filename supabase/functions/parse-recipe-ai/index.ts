@@ -524,6 +524,9 @@ function parseRecipeTextSource(source: string) {
         continue;
       }
 
+      // Ignore Markdown horizontal rules/separators commonly pasted between steps.
+      if (/^(?:\*{3,}|-{3,}|_{3,})$/.test(line)) continue;
+
       // Treat numbered/bold step headings as the start of a new instruction.
       // All following prose remains attached to that step instead of being summarised.
       const isStepStart = /^(?:\*\*|__)?\s*#{0,6}\s*(?:\d{1,3}[.)]\s+|step\s+\d{1,3}\s*[:.)-]\s*)/i.test(line);
