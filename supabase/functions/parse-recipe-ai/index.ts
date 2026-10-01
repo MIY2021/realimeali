@@ -525,6 +525,9 @@ function parseRecipeTextSource(source: string) {
       if (isStepStart) {
         if (current) instructions.push(current.trim());
         current = cleanSourceLine(line);
+        if (current && current.split(/\s+/).length <= 8 && !/[.!?:;]$/.test(current)) {
+          current += '.';
+        }
       } else {
         const cleaned = cleanSourceLine(line);
         if (cleaned) current = current ? current + ' ' + cleaned : cleaned;
