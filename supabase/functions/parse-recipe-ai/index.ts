@@ -908,15 +908,19 @@ Return ONLY valid JSON. No explanations.`;
       // Use AI only for the recipe title. The pasted ingredients and instructions
       // remain completely source-preserved and never depend on AI.
       let aiTitle = '';
+      let aiDescription = '';
+      let aiMealType = '';
       try {
         const titleResponse = await callOpenAI(
-          `You are a recipe title editor. Read the supplied recipe text and return a JSON object with one field: "title".
+          `You are a recipe editor. Read the supplied recipe text and return a JSON object with these fields: "title", "description", and "mealType".
 If the source contains a genuine recipe title, use it.
 Ignore conversational introductions, commentary, phrases like "Absolutely —", and section headings such as Ingredients or Method.
 If there is no genuine title, create a concise, appetising cookbook-style recipe title from the dish itself.
+Write a natural 1-2 sentence description suitable for a recipe app.
+Set mealType to one of: breakfast, lunch, dinner, snacks, sides, desserts, drinks, sauces_dips, soups_stews, salads, baking_breads.
 Do not invent ingredients or change the dish.
 Return only valid json.`,
-          `Choose the recipe title from this source. Return only the title field as valid json.
+          `Choose the recipe title, write the recipe description, and classify the meal type from this source. Return only valid json.
 
 SOURCE RECIPE:
 ${sourceRecipe.source}`
@@ -924,6 +928,8 @@ ${sourceRecipe.source}`
         const titleText = getOpenAIText(titleResponse);
         const titleJson = JSON.parse(cleanJsonResponse(titleText));
         if (typeof titleJson?.title === 'string') aiTitle = titleJson.title.trim();
+        if (typeof titleJson?.description === 'string') aiDescription = titleJson.description.trim();
+        if (typeof titleJson?.mealType === 'string') aiMealType = titleJson.mealType.trim();
       } catch (titleError) {
         console.warn('AI title generation failed; using parsed source title:', titleError);
       }
@@ -931,11 +937,15 @@ ${sourceRecipe.source}`
       const cleanedRecipe = {
         ...metadata,
         title: cleanMarkdownFormatting(aiTitle || sourceRecipe.title || metadata.title) || 'Untitled Recipe',
+        description: aiDescription || metadata.description,
         ingredients: sourceRecipe.ingredients,
         ingredientGroupIndices: sourceRecipe.ingredientGroupIndices.length > 0
           ? sourceRecipe.ingredientGroupIndices
           : undefined,
         instructions: sourceRecipe.instructions,
+        mealType: aiMealType || metadata.classification.mealType,
+        cuisineRegion: metadata.classification.cuisineRegion,
+        dietLifestyle: metadata.classification.dietLifestyle,
       };
 
       console.log('Recipe text parsed successfully without AI:', {
