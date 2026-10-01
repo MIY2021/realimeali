@@ -9,6 +9,7 @@ import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { RecipeDetail as RecipeDetailComponent } from "@/components/recipes/RecipeDetail";
 
 import { AddToMealPlanDialog } from "@/components/recipes/AddToMealPlanDialog";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Recipe } from "@/types";
 import { generateSlug } from "@/utils/slugUtils";
 import { useRealiChefContext } from "@/hooks/useRealiChefContext";
@@ -22,6 +23,7 @@ export default function RecipeDetail() {
   const { householdMembers, currentHousehold } = useHousehold();
   
   const [isAddToMealPlanOpen, setIsAddToMealPlanOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [adjustedServings, setAdjustedServings] = useState<number | undefined>(undefined);
   const [hasAttemptedLoad, setHasAttemptedLoad] = useState(false);
   const [fullRecipe, setFullRecipe] = useState<Recipe | null>(null);
@@ -121,15 +123,10 @@ export default function RecipeDetail() {
 
   const handleDelete = async () => {
     if (!recipe) return;
-    
-    const confirmed = window.confirm(
-      `Are you sure you want to delete "${recipe.title}"?\n\nThis recipe will be moved to trash and can be recovered from Settings within 30 days. After 30 days, it will be permanently deleted.`
-    );
-    if (confirmed) {
-      const success = await deleteRecipe(recipe.id);
-      if (success) {
-        navigate("/my-recipes");
-      }
+
+    const success = await deleteRecipe(recipe.id);
+    if (success) {
+      navigate("/my-recipes");
     }
   };
 
@@ -221,13 +218,31 @@ export default function RecipeDetail() {
           <RecipeDetailComponent
             recipe={recipe}
             onEdit={canEdit ? handleEdit : undefined}
-            onDelete={canEdit ? handleDelete : undefined}
+            onDelete={canEdit ? () => setIsDeleteDialogOpen(true) : undefined}
             isOwner={canEdit}
             onAddToMealPlan={handleAddToMealPlan}
             onImageUpdate={canEdit ? handleImageUpdate : undefined}
           />
 
-          {/* Dialogs */}
+          {/* Branded dialogs */}
+          {recipe && (
+            <ConfirmDialog
+              open={isDeleteDialogOpen}
+              onOpenChange={setIsDeleteDialogOpen}
+              title="Delete recipe?"
+              description={
+                <>
+                  <span className="font-medium text-foreground">"{recipe.title}"</span> will be moved to trash.
+                  You can recover it from Settings within 30 days, after which it will be permanently deleted.
+                </>
+              }
+              confirmLabel="Move to trash"
+              cancelLabel="Keep recipe"
+              destructive
+              onConfirm={handleDelete}
+            />
+          )}
+
           {isAddToMealPlanOpen && recipe && (
             <AddToMealPlanDialog
               recipe={recipe}
