@@ -447,63 +447,106 @@ function parseRecipeTextSource(source: string) {
   const normalized = String(source || '').replace(/\r\n?/g, '\n').trim();
   const lines = normalized.split('\n');
 
+  // Markdown-aware matching: headings such as "### Ingredients" and bold
+  // headings such as "**Method**" are common when users paste from ChatGPT.
+  const normalizeForMatching = (line: string) =>
+    line.trim()
+      .replace(/^\s*#{1,6}\s*/, '')
+      .replace(/^\s*(?:\*\*|__)(.*?)(?:\*\*|__)\s*$/, '$1')
+      .replace(/\s+$/, '');
+
   const ingredientHeading = /^\s*(ingredients?|what you(?:'|’)ll need|what you need|you will need|shopping list)\s*:?\s*$/i;
   const methodHeading = /^\s*(method|instructions?|directions?|steps?|how to make|preparation|to make)\s*:?\s*$/i;
 
+  const isIngredientHeading = (line: string) => ingredientHeading.test(normalizeForMatching(line));
+  const isMethodHeading = (line: string) => methodHeading.test(normalizeForMatching(line));
+
   let title = '';
   const titleIndex = lines.findIndex(line => {
-    const value = line.trim();
-    return value && !ingredientHeading.test(value) && !methodHeading.test(value);
+    const value = normalizeForMatching(line);
+    return value && !isIngredientHeading(line) && !isMethodHeading(line);
   });
-  if (titleIndex >= 0) title = lines[titleIndex].trim().replace(/^#+\s*/, '');
+  if (titleIndex >= 0) title = normalizeForMatching(lines[titleIndex]).replace(/^[-*]\s+/, '');
 
   let ingredientStart = -1;
   let methodStart = -1;
   lines.forEach((line, index) => {
-    if (ingredientStart === -1 && ingredientHeading.test(line)) ingredientStart = index;
-    if (methodStart === -1 && methodHeading.test(line)) methodStart = index;
+    if (ingredientStart === -1 && isIngredientHeading(line)) ingredientStart = index;
+    if (methodStart === -1 && isMethodHeading(line)) methodStart = index;
   });
 
   const sectionEnd = (start: number) => {
     if (start < 0) return lines.length;
     for (let i = start + 1; i < lines.length; i++) {
-      if (ingredientHeading.test(lines[i]) || methodHeading.test(lines[i])) return i;
+      if (ingredientStart === start && isMethodHeading(lines[i])) return i;
+      if (methodStart === start && isIngredientHeading(lines[i])) return i;
     }
     return lines.length;
   };
 
   const cleanSourceLine = (line: string) =>
-    line.replace(/^\s*(?:[-•*]\s+|\d{1,3}[.)]\s+|step\s+\d{1,3}\s*[:.)-]\s*)/i, '').trim();
+    line
+      .trim()
+      .replace(/^\s*(?:[-•]\s+|\d{1,3}[.)]\s+|step\s+\d{1,3}\s*[:.)-]\s*)/i, '')
+      .replace(/^\s*(?:\*\*|__)(.*?)(?:\*\*|__)\s*$/, '$1')
+      .trim();
 
   const ingredientLines = ingredientStart >= 0
-    ? lines.slice(ingredientStart + 1, sectionEnd(ingredientStart)).map(cleanSourceLine).filter(Boolean)
+    ? lines.slice(ingredientStart + 1, sectionEnd(ingredientStart))
+        .map(cleanSourceLine)
+        .filter(Boolean)
     : [];
 
   let instructions: string[] = [];
   if (methodStart >= 0) {
     const methodLines = lines.slice(methodStart + 1, sectionEnd(methodStart));
     let current = '';
+
     for (const rawLine of methodLines) {
+      const line = rawLine.trim();
+
+      if (!line) {
+        if (current) {
+          instructions.push(current);
+          current = '';
+        }
+        continue;
+      }
+
+      // Treat numbered/bold step headings as the start of a new instruction.
+      // All following prose remains attached to that step instead of being summarised.
+      const isStepStart = /^(?:\*\*|__)?\s*(?:\d{1,3}[.)]\s+|step\s+\d{1,3}\s*[:.)-]\s*)/i.test(line);
+
+      if (isStepStart) {
+        if (current) instructions.push(current);
+        current = cleanSourceLine(line);
+      } else {
+        current = current ? current + ' ' + cleanSourceLine(line) : cleanSourceLine(line);
+      }
+    }
+
+    if (current) instructions.push(current);
+  }
+
+  // Fallback for recipes without a Method heading but with numbered steps.
+  if (instructions.length === 0) {
+    let current = '';
+    for (const rawLine of lines) {
       const line = rawLine.trim();
       if (!line) {
         if (current) { instructions.push(current); current = ''; }
         continue;
       }
-      if (/^(?:[-•*]\s+|\d{1,3}[.)]\s+|step\s+\d{1,3}\s*[:.)-]\s*)/i.test(line)) {
+
+      const isStepStart = /^(?:\*\*|__)?\s*(?:\d{1,3}[.)]\s+|step\s+\d{1,3}\s*[:.)-]\s*)/i.test(line);
+      if (isStepStart) {
         if (current) instructions.push(current);
         current = cleanSourceLine(line);
-      } else {
-        current = current ? current + ' ' + line : line;
+      } else if (current) {
+        current += ' ' + cleanSourceLine(line);
       }
     }
     if (current) instructions.push(current);
-  }
-
-  if (instructions.length === 0) {
-    instructions = lines
-      .map(line => line.trim())
-      .filter(line => /^(?:\d{1,3}[.)]\s+|step\s+\d{1,3}\s*[:.)-]\s+)/i.test(line))
-      .map(cleanSourceLine);
   }
 
   const groupIndices: number[] = [];
@@ -511,7 +554,7 @@ function parseRecipeTextSource(source: string) {
     const value = line.replace(/:$/, '').trim();
     const looksLikeHeader =
       !/\d/.test(value) &&
-      /^(?:for\s+(?:the\s+)?|the\s+)?(?:marinade|sauce|dressing|filling|topping|garnish|crust|base|cake|icing|frosting|glaze|dip|to serve|serving|assembly)$/i.test(value);
+      /^(?:for\s+(?:the\s+)?|the\s+)?(?:marinade|sauce|dressing|filling|topping|garnish|crust|base|cake|icing|frosting|glaze|dip|to serve|serving|vegetables|chicken)$/i.test(value);
     if (looksLikeHeader) groupIndices.push(index);
   });
 
@@ -722,6 +765,7 @@ Return ONLY valid JSON. No explanations.`;
 DO NOT return, rewrite, summarise, correct, or invent ingredients or instructions.
 Your job is ONLY to provide metadata for the supplied recipe: title, description, topTip, pairings, prepTime, cookTime, servings, and classification.
 Use the source text only to infer metadata. Never invent recipe content.
+The response must be valid JSON.
 
 Return ONLY valid JSON with this exact structure:
 {
