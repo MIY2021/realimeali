@@ -31,7 +31,7 @@ export default function ShoppingListHeader({
         />
       }
       title="Shopping List"
-      description={getWelcomeText()}
+
     />
   );
 }
