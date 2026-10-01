@@ -779,7 +779,7 @@ Return ONLY valid JSON. No explanations.`;
 DO NOT return, rewrite, summarise, correct, or invent ingredients or instructions.
 Your job is ONLY to provide metadata for the supplied recipe: title, description, topTip, pairings, prepTime, cookTime, servings, and classification.
 Use the source text only to infer metadata. Never invent recipe content.
-The response must be valid JSON.
+The response must be valid json.
 
 Return ONLY valid JSON with this exact structure:
 {
