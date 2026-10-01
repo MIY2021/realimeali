@@ -515,52 +515,45 @@ function parseRecipeTextSource(source: string) {
 
     for (const rawLine of methodLines) {
       const line = rawLine.trim();
-
-      if (!line) {
-        if (current) {
-          instructions.push(current);
-          current = '';
-        }
-        continue;
-      }
-
-      // Ignore Markdown horizontal rules/separators commonly pasted between steps.
       if (/^(?:\*{3,}|-{3,}|_{3,})$/.test(line)) continue;
+      if (!line) continue;
 
-      // Treat numbered/bold step headings as the start of a new instruction.
-      // All following prose remains attached to that step instead of being summarised.
+      // Numbered/Step headings start a new instruction. Blank lines inside
+      // a numbered step are formatting only and stay with that step.
       const isStepStart = /^(?:\*\*|__)?\s*#{0,6}\s*(?:\d{1,3}[.)]\s+|step\s+\d{1,3}\s*[:.)-]\s*)/i.test(line);
 
       if (isStepStart) {
-        if (current) instructions.push(current);
+        if (current) instructions.push(current.trim());
         current = cleanSourceLine(line);
       } else {
-        current = current ? current + ' ' + cleanSourceLine(line) : cleanSourceLine(line);
+        const cleaned = cleanSourceLine(line);
+        if (cleaned) current = current ? current + ' ' + cleaned : cleaned;
       }
     }
 
-    if (current) instructions.push(current);
+    if (current) instructions.push(current.trim());
   }
 
-  // Fallback for recipes without a Method heading but with numbered steps.
+  // Fallback for recipes without a Method heading: group content by numbered
+  // steps rather than by blank lines.
   if (instructions.length === 0) {
     let current = '';
+    let sawStep = false;
     for (const rawLine of lines) {
       const line = rawLine.trim();
-      if (!line) {
-        if (current) { instructions.push(current); current = ''; }
-        continue;
-      }
-
-      const isStepStart = /^(?:\*\*|__)?\s*(?:\d{1,3}[.)]\s+|step\s+\d{1,3}\s*[:.)-]\s*)/i.test(line);
+      if (/^(?:\*{3,}|-{3,}|_{3,})$/.test(line)) continue;
+      if (!line) continue;
+      const isStepStart = /^(?:\*\*|__)?\s*#{0,6}\s*(?:\d{1,3}[.)]\s+|step\s+\d{1,3}\s*[:.)-]\s*)/i.test(line);
       if (isStepStart) {
-        if (current) instructions.push(current);
+        sawStep = true;
+        if (current) instructions.push(current.trim());
         current = cleanSourceLine(line);
-      } else if (current) {
-        current += ' ' + cleanSourceLine(line);
+      } else if (sawStep) {
+        const cleaned = cleanSourceLine(line);
+        if (cleaned) current = current ? current + ' ' + cleaned : cleaned;
       }
     }
-    if (current) instructions.push(current);
+    if (current) instructions.push(current.trim());
   }
 
   const groupIndices: number[] = [];
