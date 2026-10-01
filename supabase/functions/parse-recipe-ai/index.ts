@@ -575,6 +575,132 @@ function parseRecipeTextSource(source: string) {
   return { source: normalized, title, ingredients: ingredientLines, ingredientGroupIndices: groupIndices, instructions };
 }
 
+
+function extractRecipeTextMetadata(source: string, title: string, ingredients: string[], instructions: string[]) {
+  const text = String(source || '');
+  const lower = text.toLowerCase();
+
+  const findMinutes = (patterns: RegExp[], fallback: number) => {
+    for (const pattern of patterns) {
+      const match = text.match(pattern);
+      if (match?.[1]) {
+        const value = parseInt(match[1], 10);
+        if (Number.isFinite(value)) return Math.max(0, value);
+      }
+    }
+    return fallback;
+  };
+
+  const prepTime = findMinutes([
+    /(?:prep|preparation)\s*time\s*[:\-]?\s*(\d+)\s*(?:minutes?|mins?|m)\b/i,
+    /(?:prep|preparation)\s*[:\-]?\s*(\d+)\s*(?:minutes?|mins?|m)\b/i,
+  ], 15);
+
+  const cookTime = findMinutes([
+    /(?:cook|cooking)\s*time\s*[:\-]?\s*(\d+)\s*(?:minutes?|mins?|m)\b/i,
+    /(?:cook|cooking)\s*[:\-]?\s*(\d+)\s*(?:minutes?|mins?|m)\b/i,
+  ], 30);
+
+  const servingMatch = text.match(/(?:serves?|servings?|makes?|yield)\s*[:\-]?\s*(\d+)\b/i);
+  const servings = servingMatch ? Math.max(1, parseInt(servingMatch[1], 10)) : 4;
+
+  let mealType = 'dinner';
+  if (/\b(?:breakfast|brunch)\b/i.test(lower)) mealType = 'breakfast';
+  else if (/\b(?:dessert|pudding|cake|brownie|cookie|biscuits?)\b/i.test(lower)) mealType = 'desserts';
+  else if (/\b(?:snack|snacks)\b/i.test(lower)) mealType = 'snacks';
+  else if (/\b(?:salad)\b/i.test(lower)) mealType = 'salads';
+  else if (/\b(?:soup|stew)\b/i.test(lower)) mealType = 'soups_stews';
+  else if (/\b(?:side dish|sides)\b/i.test(lower)) mealType = 'sides';
+  else if (/\b(?:drink|cocktail|mocktail|smoothie)\b/i.test(lower)) mealType = 'drinks';
+  else if (/\b(?:bread|flatbread|loaf|baking)\b/i.test(lower)) mealType = 'baking_breads';
+  else if (/\b(?:lunch)\b/i.test(lower)) mealType = 'lunch';
+
+  let cuisineRegion = 'british';
+  const cuisineRules: Array<[RegExp, string]> = [
+    [/\b(?:thai|lemongrass|fish sauce|nam pla|red curry paste)\b/i, 'thai'],
+    [/\b(?:italian|pasta|parmesan|parmigiano|pancetta|prosciutto|risotto|pesto)\b/i, 'italian'],
+    [/\b(?:mexican|taco|tortilla|chipotle|jalapeño|jalapeno|salsa)\b/i, 'mexican'],
+    [/\b(?:indian|curry|garam masala|tikka|naan|turmeric)\b/i, 'indian'],
+    [/\b(?:chinese|soy sauce|five-spice|sesame oil|hoisin)\b/i, 'chinese'],
+    [/\b(?:japanese|miso|mirin|sushi|teriyaki)\b/i, 'japanese'],
+    [/\b(?:french|dijon|crème fraîche|creme fraiche|provençal|provencal)\b/i, 'french'],
+    [/\b(?:greek|feta|oregano|tzatziki)\b/i, 'mediterranean'],
+    [/\b(?:middle eastern|tahini|sumac|za' + "'atar|harissa)\b/i, 'middle_eastern'],
+  ];
+  for (const [pattern, cuisine] of cuisineRules) {
+    if (pattern.test(lower)) {
+      cuisineRegion = cuisine;
+      break;
+    }
+  }
+
+  let cookingMethod = 'one_pot';
+  if (/\b(?:air fryer|air-fry|airfryer)\b/i.test(lower)) cookingMethod = 'air_fryer';
+  else if (/\b(?:slow cooker|crock pot|crockpot)\b/i.test(lower)) cookingMethod = 'slow_cooker';
+  else if (/\b(?:pressure cooker|instant pot)\b/i.test(lower)) cookingMethod = 'pressure_cooker';
+  else if (/\b(?:bbq|barbecue|grill|grilled)\b/i.test(lower)) cookingMethod = 'bbq_grilled';
+  else if (/\b(?:stir[- ]?fry|stir[- ]?fried)\b/i.test(lower)) cookingMethod = 'stir_fried';
+  else if (/\b(?:roast|roasted)\b/i.test(lower)) cookingMethod = 'roasted';
+  else if (/\b(?:bake|baked|oven)\b/i.test(lower)) cookingMethod = 'oven_baked';
+  else if (/\b(?:no[- ]cook|raw)\b/i.test(lower)) cookingMethod = 'raw_no_cook';
+
+  const mainIngredientRules: Array<[RegExp, string]> = [
+    [/\b(?:chicken)\b/i, 'chicken'],
+    [/\b(?:beef|mince|steak)\b/i, 'beef'],
+    [/\b(?:pork|pancetta|bacon|ham|sausage)\b/i, 'pork'],
+    [/\b(?:lamb)\b/i, 'lamb'],
+    [/\b(?:salmon|cod|tuna|prawn|prawns|shrimp|seafood|fish)\b/i, 'fish'],
+    [/\b(?:tofu|tempeh)\b/i, 'tofu_tempeh'],
+    [/\b(?:egg|eggs)\b/i, 'eggs'],
+    [/\b(?:parmesan|cheddar|mozzarella|feta|cheese)\b/i, 'cheese'],
+    [/\b(?:pasta|spaghetti|penne|linguine|tagliatelle)\b/i, 'pasta'],
+    [/\b(?:rice|risotto)\b/i, 'rice'],
+    [/\b(?:lentil|lentils|bean|beans|chickpea|chickpeas)\b/i, 'lentils_beans'],
+    [/\b(?:potato|potatoes)\b/i, 'potatoes'],
+  ];
+  let mainIngredient = 'vegetables';
+  for (const [pattern, ingredient] of mainIngredientRules) {
+    if (pattern.test(lower)) {
+      mainIngredient = ingredient;
+      break;
+    }
+  }
+
+  const dietLifestyle: string[] = [];
+  const hasMeat = /\b(?:beef|pork|lamb|chicken|turkey|bacon|ham|sausage|pancetta|prosciutto|mince|steak)\b/i.test(lower);
+  const hasFish = /\b(?:fish|salmon|cod|tuna|prawn|prawns|shrimp|seafood)\b/i.test(lower);
+  const hasDairy = /\b(?:milk|cream|butter|cheese|yogurt|yoghurt|parmesan|cheddar|mozzarella)\b/i.test(lower);
+
+  if (!hasMeat && !hasFish && !hasDairy) dietLifestyle.push('vegan');
+  else if (!hasMeat && !hasDairy) dietLifestyle.push('pescatarian');
+  if (!hasMeat && !hasFish) dietLifestyle.push('vegetarian');
+
+  const complexityLevel = instructions.length <= 5 && prepTime + cookTime <= 35
+    ? 'quick_easy'
+    : instructions.length >= 10 || prepTime + cookTime >= 120
+      ? 'complex'
+      : 'standard';
+
+  return {
+    title,
+    description: '',
+    topTip: 'Read the full method through before you start, and have all your ingredients ready to go.',
+    alcoholicPairing: null,
+    nonAlcoholicPairing: null,
+    prepTime,
+    cookTime,
+    servings,
+    classification: {
+      mealType,
+      cuisineRegion,
+      cookingMethod,
+      dietLifestyle,
+      complexityLevel,
+      mainIngredient,
+    },
+  };
+}
+
 // OpenAI API call for recipe parsing/generation.
 // Uses the current Responses API while preserving RealiMeali's existing response contract.
 async function callOpenAI(systemPrompt: string, userPrompt: string, imageData?: string) {
@@ -765,8 +891,9 @@ Return ONLY valid JSON. No explanations.`;
       userPrompt = `Extract recipe information from this website content:\n\n${websiteContent}`;
       
     } else if (body.recipeText) {
-      // Pasted recipe text is authoritative. Parse recipe content locally;
-      // AI is used only for metadata/classification and never rewrites the method.
+      // Pasted recipe text is authoritative and MUST NOT depend on AI.
+      // The import path is deliberately deterministic so an OpenAI outage,
+      // JSON-mode issue, rate limit, or metadata failure cannot prevent import.
       console.log('Processing recipe text with deterministic source preservation');
 
       const sourceRecipe = parseRecipeTextSource(body.recipeText);
@@ -774,32 +901,35 @@ Return ONLY valid JSON. No explanations.`;
         throw new Error('Could not reliably find both ingredients and cooking instructions in the pasted recipe text.');
       }
 
-      systemPrompt = `You are a recipe metadata classifier.
+      const metadata = extractRecipeTextMetadata(
+        sourceRecipe.source,
+        sourceRecipe.title || 'Untitled Recipe',
+        sourceRecipe.ingredients,
+        sourceRecipe.instructions
+      );
 
-DO NOT return, rewrite, summarise, correct, or invent ingredients or instructions.
-Your job is ONLY to provide metadata for the supplied recipe: title, description, topTip, pairings, prepTime, cookTime, servings, and classification.
-Use the source text only to infer metadata. Never invent recipe content.
-The response must be valid json.
+      const cleanedRecipe = {
+        ...metadata,
+        title: cleanMarkdownFormatting(metadata.title) || 'Untitled Recipe',
+        ingredients: sourceRecipe.ingredients,
+        ingredientGroupIndices: sourceRecipe.ingredientGroupIndices.length > 0
+          ? sourceRecipe.ingredientGroupIndices
+          : undefined,
+        instructions: sourceRecipe.instructions,
+      };
 
-Return ONLY valid JSON with this exact structure:
-{
-  "title": "",
-  "description": "",
-  "topTip": "",
-  "alcoholicPairing": "",
-  "nonAlcoholicPairing": "",
-  "prepTime": 0,
-  "cookTime": 0,
-  "servings": 4,
-  "classification": {"mealType":"dinner","cuisineRegion":"british","cookingMethod":"one_pot","dietLifestyle":[],"complexityLevel":"standard","mainIngredient":"vegetables"}
-}
+      console.log('Recipe text parsed successfully without AI:', {
+        title: cleanedRecipe.title,
+        ingredients: cleanedRecipe.ingredients.length,
+        instructions: cleanedRecipe.instructions.length,
+        prepTime: cleanedRecipe.prepTime,
+        cookTime: cleanedRecipe.cookTime,
+        servings: cleanedRecipe.servings,
+      });
 
-Do not return ingredients or instructions.`;
-
-      userPrompt = `Provide metadata only for this recipe. The exact source content is preserved separately by RealiMeali and must not be rewritten.
-
-SOURCE RECIPE:
-${sourceRecipe.source}`;
+      return new Response(JSON.stringify({ parsedRecipe: cleanedRecipe }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
       
     } else if (body.image && body.mimeType) {
       // Handle image processing with OCR
