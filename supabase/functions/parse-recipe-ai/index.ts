@@ -453,6 +453,7 @@ function parseRecipeTextSource(source: string) {
     line.trim()
       .replace(/^\s*#{1,6}\s*/, '')
       .replace(/^\s*(?:\*\*|__)(.*?)(?:\*\*|__)\s*$/, '$1')
+      .replace(/^[^\p{L}\p{N}]+/u, '')
       .replace(/\s+$/, '');
 
   const ingredientHeading = /^\s*(ingredients?|what you(?:'|’)ll need|what you need|you will need|shopping list)\s*:?\s*$/i;
@@ -462,10 +463,18 @@ function parseRecipeTextSource(source: string) {
   const isMethodHeading = (line: string) => methodHeading.test(normalizeForMatching(line));
 
   let title = '';
-  const titleIndex = lines.findIndex(line => {
-    const value = normalizeForMatching(line);
-    return value && !isIngredientHeading(line) && !isMethodHeading(line);
+  // Prefer an actual Markdown heading as the recipe title. This avoids treating
+  // introductory prose such as "Absolutely — ..." as the title.
+  const markdownTitleIndex = lines.findIndex(line => {
+    const value = line.trim();
+    return /^#{1,6}\s+/.test(value) && !isIngredientHeading(line) && !isMethodHeading(line);
   });
+  const titleIndex = markdownTitleIndex >= 0
+    ? markdownTitleIndex
+    : lines.findIndex(line => {
+        const value = normalizeForMatching(line);
+        return value && !isIngredientHeading(line) && !isMethodHeading(line);
+      });
   if (titleIndex >= 0) title = normalizeForMatching(lines[titleIndex]).replace(/^[-*]\s+/, '');
 
   let ingredientStart = -1;
@@ -487,6 +496,8 @@ function parseRecipeTextSource(source: string) {
   const cleanSourceLine = (line: string) =>
     line
       .trim()
+      .replace(/^\s*#{1,6}\s*/, '')
+      .replace(/^\s*(?:\*\*|__)(.*?)(?:\*\*|__)\s*$/, '$1')
       .replace(/^\s*(?:[-•]\s+|\d{1,3}[.)]\s+|step\s+\d{1,3}\s*[:.)-]\s*)/i, '')
       .replace(/^\s*(?:\*\*|__)(.*?)(?:\*\*|__)\s*$/, '$1')
       .trim();
@@ -515,7 +526,7 @@ function parseRecipeTextSource(source: string) {
 
       // Treat numbered/bold step headings as the start of a new instruction.
       // All following prose remains attached to that step instead of being summarised.
-      const isStepStart = /^(?:\*\*|__)?\s*(?:\d{1,3}[.)]\s+|step\s+\d{1,3}\s*[:.)-]\s*)/i.test(line);
+      const isStepStart = /^(?:\*\*|__)?\s*#{0,6}\s*(?:\d{1,3}[.)]\s+|step\s+\d{1,3}\s*[:.)-]\s*)/i.test(line);
 
       if (isStepStart) {
         if (current) instructions.push(current);
