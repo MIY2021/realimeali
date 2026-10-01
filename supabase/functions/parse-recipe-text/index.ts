@@ -18,7 +18,7 @@ const schema = {
     title: { type: "string" },
     description: { type: "string" },
     ingredients: { type: "array", items: { type: "string" } },
-    ingredientGroupIndices: { type: "array", items: { type: "integer", minimum: 0 } },
+    ingredientGroupIndices: { type: "array", items: { type: "integer", minimum: 0 }, description: "Zero-based indices in ingredients for genuine ingredient-section headers only." },
     instructions: { type: "array", items: { type: "string" } },
     prepTime: { type: "integer", minimum: 0 },
     cookTime: { type: "integer", minimum: 0 },
@@ -38,9 +38,15 @@ const SYSTEM_PROMPT = `You are RealiMeali's recipe text importer.
 Turn arbitrary pasted recipe text into ONE structured recipe. SOURCE PRESERVATION IS THE HIGHEST PRIORITY.
 
 INGREDIENTS:
-- Extract every ingredient.
-- Preserve quantities, units, ingredient names and qualifiers from the source. Do not simplify, combine, substitute, correct or invent.
-- Keep genuine ingredient section headings such as "FOR THE SAUCE" as group entries and put their zero-based positions in ingredientGroupIndices.
+- Extract every actual ingredient from the ingredient section(s). Preserve quantities, units, ingredient names and qualifiers from the source. Do not simplify, combine, substitute, correct or invent.
+- Ingredient groups are IMPORTANT because RealiMeali uses them to organise the recipe and deliberately excludes group headers from the shopping list.
+- When the source has a genuine ingredient-section heading such as "FOR THE DOUGH", "FOR THE FILLING", "FOR THE SAUCE", "FOR THE TOPPING" or "TO SERVE", include that heading as its own entry in the ingredients array and put its zero-based index in ingredientGroupIndices.
+- Every ingredient group entry MUST end with a colon, e.g. "For the sauce:".
+- Keep the original group wording where possible; only normalise obvious formatting such as capitalisation and adding the final colon.
+- All actual ingredients following a group heading belong to that group until the next group heading.
+- Do NOT invent groups merely because ingredients seem related. If the source has no genuine group headings, return an empty ingredientGroupIndices array.
+- CRITICAL: a cooking action is NOT an ingredient group. Phrases such as "Combine together", "Mix with a mixer", "Whisk", "Stir", "Add", "Heat", "Cook", "Bake", "Knead", "Beat", "Roll", "Place" and "Pour" are method instructions, not ingredients or groups.
+- Do not turn instruction fragments, method headings or explanatory prose into ingredients.
 
 INSTRUCTIONS:
 - Preserve the COMPLETE cooking method. Do NOT summarise, shorten, rewrite, improve or omit it.
@@ -129,9 +135,25 @@ function validate(recipe: any) {
 
   recipe.ingredients = recipe.ingredients.map((v: unknown) => String(v).trim()).filter(Boolean);
   recipe.instructions = recipe.instructions.map((v: unknown) => String(v).trim()).filter(Boolean);
-  recipe.ingredientGroupIndices = [...new Set(recipe.ingredientGroupIndices || [])]
+
+  // Group headers are stored inside the ingredients array for backwards compatibility,
+  // but must be unmistakable so the UI and shopping-list logic can exclude them.
+  const rawGroupIndices = [...new Set(recipe.ingredientGroupIndices || [])]
     .filter((i: number) => Number.isInteger(i) && i >= 0 && i < recipe.ingredients.length)
     .sort((a: number, b: number) => a - b);
+
+  const instructionLikeGroup = /^(combine|mix|whisk|stir|add|heat|cook|bake|knead|beat|roll|place|pour|transfer|divide|shape|season|remove|bring|reduce|simmer|boil|fry|saute|sauté)\b/i;
+
+  recipe.ingredientGroupIndices = rawGroupIndices.filter((index: number) => {
+    const value = recipe.ingredients[index].trim();
+    if (instructionLikeGroup.test(value)) {
+      console.warn("Rejecting instruction-like ingredient group", { index, value });
+      return false;
+    }
+    if (!value.endsWith(":")) recipe.ingredients[index] = `${value}:`;
+    return true;
+  });
+
   recipe.dietLifestyle = recipe.dietLifestyle.filter((v: string) => DIETS.includes(v));
   return recipe;
 }
@@ -161,6 +183,8 @@ serve(async (req) => {
     console.log("Text recipe import succeeded", {
       title: recipe.title,
       ingredients: recipe.ingredients.length,
+      ingredientGroups: recipe.ingredientGroupIndices,
+      groupTitles: recipe.ingredientGroupIndices.map((i: number) => recipe.ingredients[i]),
       instructions: recipe.instructions.length,
       prepTime: recipe.prepTime,
       cookTime: recipe.cookTime,
