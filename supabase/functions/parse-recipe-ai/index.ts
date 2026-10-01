@@ -441,6 +441,83 @@ async function extractWebsiteContent(url: string, extractImages: boolean = false
   }
 }
 
+// Deterministic parser for pasted recipe text.
+// The source text is authoritative: ingredients and instructions are never rewritten by AI.
+function parseRecipeTextSource(source: string) {
+  const normalized = String(source || '').replace(/\r\n?/g, '\n').trim();
+  const lines = normalized.split('\n');
+
+  const ingredientHeading = /^\s*(ingredients?|what you(?:'|’)ll need|what you need|you will need|shopping list)\s*:?\s*$/i;
+  const methodHeading = /^\s*(method|instructions?|directions?|steps?|how to make|preparation|to make)\s*:?\s*$/i;
+
+  let title = '';
+  const titleIndex = lines.findIndex(line => {
+    const value = line.trim();
+    return value && !ingredientHeading.test(value) && !methodHeading.test(value);
+  });
+  if (titleIndex >= 0) title = lines[titleIndex].trim().replace(/^#+\s*/, '');
+
+  let ingredientStart = -1;
+  let methodStart = -1;
+  lines.forEach((line, index) => {
+    if (ingredientStart === -1 && ingredientHeading.test(line)) ingredientStart = index;
+    if (methodStart === -1 && methodHeading.test(line)) methodStart = index;
+  });
+
+  const sectionEnd = (start: number) => {
+    if (start < 0) return lines.length;
+    for (let i = start + 1; i < lines.length; i++) {
+      if (ingredientHeading.test(lines[i]) || methodHeading.test(lines[i])) return i;
+    }
+    return lines.length;
+  };
+
+  const cleanSourceLine = (line: string) =>
+    line.replace(/^\s*(?:[-•*]\s+|\d{1,3}[.)]\s+|step\s+\d{1,3}\s*[:.)-]\s*)/i, '').trim();
+
+  const ingredientLines = ingredientStart >= 0
+    ? lines.slice(ingredientStart + 1, sectionEnd(ingredientStart)).map(cleanSourceLine).filter(Boolean)
+    : [];
+
+  let instructions: string[] = [];
+  if (methodStart >= 0) {
+    const methodLines = lines.slice(methodStart + 1, sectionEnd(methodStart));
+    let current = '';
+    for (const rawLine of methodLines) {
+      const line = rawLine.trim();
+      if (!line) {
+        if (current) { instructions.push(current); current = ''; }
+        continue;
+      }
+      if (/^(?:[-•*]\s+|\d{1,3}[.)]\s+|step\s+\d{1,3}\s*[:.)-]\s*)/i.test(line)) {
+        if (current) instructions.push(current);
+        current = cleanSourceLine(line);
+      } else {
+        current = current ? current + ' ' + line : line;
+      }
+    }
+    if (current) instructions.push(current);
+  }
+
+  if (instructions.length === 0) {
+    instructions = lines
+      .map(line => line.trim())
+      .filter(line => /^(?:\d{1,3}[.)]\s+|step\s+\d{1,3}\s*[:.)-]\s+)/i.test(line))
+      .map(cleanSourceLine);
+  }
+
+  const groupIndices: number[] = [];
+  ingredientLines.forEach((line, index) => {
+    const value = line.replace(/:$/, '').trim();
+    const looksLikeHeader =
+      !/\d/.test(value) &&
+      /^(?:for\s+(?:the\s+)?|the\s+)?(?:marinade|sauce|dressing|filling|topping|garnish|crust|base|cake|icing|frosting|glaze|dip|to serve|serving|assembly)$/i.test(value);
+    if (looksLikeHeader) groupIndices.push(index);
+  });
+
+  return { source: normalized, title, ingredients: ingredientLines, ingredientGroupIndices: groupIndices, instructions };
+}
+
 // OpenAI API call for recipe parsing/generation.
 // Uses the current Responses API while preserving RealiMeali's existing response contract.
 async function callOpenAI(systemPrompt: string, userPrompt: string, imageData?: string) {
@@ -631,83 +708,40 @@ Return ONLY valid JSON. No explanations.`;
       userPrompt = `Extract recipe information from this website content:\n\n${websiteContent}`;
       
     } else if (body.recipeText) {
-      systemPrompt = `You are a recipe parsing assistant. Convert the supplied recipe text into RealiMeali's structured format.
+      // Pasted recipe text is authoritative. Parse recipe content locally;
+      // AI is used only for metadata/classification and never rewrites the method.
+      console.log('Processing recipe text with deterministic source preservation');
 
-SOURCE-PRESERVATION RULES — THESE ARE CRITICAL:
-- The supplied recipe text is the authoritative source. Do NOT rewrite, summarise, shorten, simplify, or invent recipe content.
-- Preserve EVERY ingredient line, including its exact quantity, unit, ingredient name, and useful preparation detail. NEVER return an empty ingredients array when ingredients are present in the source.
-- Preserve the FULL cooking method. Do NOT turn detailed method paragraphs into short step titles. If the source says "Cook the mushrooms and peppers over medium-high heat for 4–5 minutes, stirring occasionally until nicely browned", that full instruction must remain in the corresponding instructions entry.
-- Keep step headings when present, but include the complete explanatory text belonging to each heading.
-- Preserve important cooking temperatures, timings, sequencing, warnings, and separation/resting instructions.
-- You may remove numbering/bullet markers from the source, but you must not remove the actual recipe information.
-- Do not add ingredients that are not in the source. Do not invent missing quantities.
-- If the source contains an optional ingredient, preserve it as optional.
-- The output should be a faithful structured transcription first; classification and metadata are secondary.
-- Before returning JSON, check that every ingredient and every substantive method instruction from the source is represented in the output.
+      const sourceRecipe = parseRecipeTextSource(body.recipeText);
+      if (sourceRecipe.ingredients.length === 0 || sourceRecipe.instructions.length === 0) {
+        throw new Error('Could not reliably find both ingredients and cooking instructions in the pasted recipe text.');
+      }
 
-CRITICAL: You MUST carefully examine ingredients for meat content. If ANY meat (beef, pork, lamb, chicken, turkey, fish, seafood, etc.) is present, the recipe CANNOT be classified as "vegetarian" or "vegan". Be extremely careful about this classification.
+      systemPrompt = `You are a recipe metadata classifier.
 
-CRITICAL: When parsing ingredients, distinguish between ingredient group headers (sections that contain multiple ingredients) and individual ingredients. Group headers can appear in various formats:
-- ALL CAPS: "MARINADE", "FLATBREADS", "SAUCE", "GARNISH", "TOPPING"
-- Title Case: "Marinade", "Flatbreads", "For the Sauce"
-- With colons: "For the marinade:", "MARINADE:", "Sauce:"
-- Without colons: "MARINADE", "Flatbreads"
-- Common patterns: "For the [name]:", "[NAME]", "[Name]"
+DO NOT return, rewrite, summarise, correct, or invent ingredients or instructions.
+Your job is ONLY to provide metadata for the supplied recipe: title, description, topTip, pairings, prepTime, cookTime, servings, and classification.
+Use the source text only to infer metadata. Never invent recipe content.
 
-Look for words that represent recipe sections or components (marinade, sauce, dressing, crust, filling, topping, garnish, flatbreads, etc.) rather than actual ingredients. Use your semantic understanding to identify these section headers based on context - they typically appear before a group of related ingredients and represent a component of the recipe.
-
-Return a JSON object with this EXACT structure:
+Return ONLY valid JSON with this exact structure:
 {
-  "title": "Recipe name",
-  "description": "Brief description (1-2 sentences)",
-  "ingredients": ["MARINADE", "2 tbsp yogurt", "1 tsp spices", "FLATBREADS", "200g flour", "For the garnish:", "6 slices pancetta"],
-  "ingredientGroupIndices": [0, 3, 6],
-  "instructions": ["step 1", "step 2"],
-  "topTip": "One helpful cooking tip",
-  "alcoholicPairing": "A specific wine, beer, or cocktail that pairs well with this dish",
-  "nonAlcoholicPairing": "A specific non-alcoholic beverage pairing (mocktail, tea, sparkling water, etc.)",
-  "prepTime": 15,
-  "cookTime": 30,
+  "title": "",
+  "description": "",
+  "topTip": "",
+  "alcoholicPairing": "",
+  "nonAlcoholicPairing": "",
+  "prepTime": 0,
+  "cookTime": 0,
   "servings": 4,
-  "classification": {
-    "mealType": "dinner",
-    "cuisineRegion": "italian" or ["italian", "mediterranean"] if multiple cuisines apply, 
-    "cookingMethod": "oven_baked",
-    "dietLifestyle": [],
-    "complexityLevel": "standard",
-    "mainIngredient": "pasta"
-  }
+  "classification": {"mealType":"dinner","cuisineRegion":"british","cookingMethod":"one_pot","dietLifestyle":[],"complexityLevel":"standard","mainIngredient":"vegetables"}
 }
 
-IMPORTANT: ingredientGroupIndices must be an array of zero-based indices indicating which positions in the ingredients array are group headers. For example, if "MARINADE" is at index 0, "FLATBREADS" is at index 3, and "For the garnish:" is at index 6, then ingredientGroupIndices should be [0, 3, 6]. Always include ALL section headers regardless of their format (ALL CAPS, title case, with/without colons). If there are no group headers, use an empty array [].
+Do not return ingredients or instructions.`;
 
-Classification rules:
-- mealType: breakfast, lunch, dinner, snacks, sides, desserts, drinks, sauces_dips, soups_stews, salads, baking_breads
-- cuisineRegion: british, american, italian, french, mexican, indian, chinese, japanese, thai, mediterranean, middle_eastern, african, korean, caribbean, nordic, eastern_european (can be a single string or array of strings if multiple cuisines apply - REQUIRED: always suggest at least one cuisine based on ingredients, cooking methods, and recipe name)  
-- cookingMethod: one_pot, oven_baked, air_fryer, slow_cooker, pressure_cooker, bbq_grilled, stir_fried, roasted, raw_no_cook
-- dietLifestyle: ONLY include if 100% certain - check ALL ingredients carefully for meat/dairy/gluten: vegetarian, vegan, pescatarian, gluten_free, dairy_free, low_carb_keto, high_protein, paleo, diabetic_friendly, budget_meals, kid_friendly, pregnancy_safe
-- complexityLevel: quick_easy, standard, complex
-- mainIngredient: MUST be one of these EXACT values: chicken, beef, pork, lamb, fish, tofu_tempeh, eggs, cheese, pasta, rice, lentils_beans, vegetables, potatoes, fruit, nuts_seeds, chocolate
-
-IMPORTANT: For mainIngredient, if the primary ingredient doesn't match exactly, choose the closest match:
-- Hot dogs/sausages → pork (or beef if beef hot dogs)
-- Seafood/shellfish → fish
-- Any beans/legumes → lentils_beans
-- Mixed vegetables → vegetables
-- Bread/flour items → pasta (closest grain option)
-- Dairy items → cheese
-- Nuts or seeds → nuts_seeds
-
-If you detect ANY meat ingredients (ground beef, mince, chicken, etc.), do NOT include "vegetarian" in dietLifestyle array. Leave dietLifestyle empty if unsure.
-
-Return ONLY valid JSON. No explanations.`;
-
-      userPrompt = `Parse this recipe text faithfully into the required JSON structure.
-
-IMPORTANT: This is a transcription/structuring task, NOT a recipe-writing task. Preserve all source ingredients, quantities, and detailed instructions. Do not summarise the method.
+      userPrompt = `Provide metadata only for this recipe. The exact source content is preserved separately by RealiMeali and must not be rewritten.
 
 SOURCE RECIPE:
-${body.recipeText}`;
+${sourceRecipe.source}`;
       
     } else if (body.image && body.mimeType) {
       // Handle image processing with OCR
@@ -911,41 +945,39 @@ Create realistic recipes with proper ingredient amounts and detailed cooking ste
       const rawIngredients = Array.isArray(parsedRecipe.ingredients) ? parsedRecipe.ingredients : [];
       const rawInstructions = Array.isArray(parsedRecipe.instructions) ? parsedRecipe.instructions : [];
 
-      // Never silently accept a text import that lost its ingredients or method.
-      // A structured import must preserve the source recipe rather than returning a partial summary.
-      if (body.recipeText) {
-        const sourceText = String(body.recipeText);
-        const sourceHasIngredients = /(^|\\n)\\s*(ingredients?|what you need)\\s*:?\\s*(\\n|$)/i.test(sourceText);
-        const sourceHasMethod = /(^|\\n)\\s*(method|instructions?|directions?|steps?)\\s*:?\\s*(\\n|$)/i.test(sourceText);
+      // For pasted text, ignore any AI-generated recipe content completely.
+      const sourceRecipe = body.recipeText ? parseRecipeTextSource(body.recipeText) : null;
+      const finalIngredients = sourceRecipe ? sourceRecipe.ingredients : rawIngredients;
+      const finalInstructions = sourceRecipe ? sourceRecipe.instructions : rawInstructions;
+      const finalGroupIndices = sourceRecipe
+        ? sourceRecipe.ingredientGroupIndices
+        : (Array.isArray(parsedRecipe.ingredientGroupIndices)
+            ? parsedRecipe.ingredientGroupIndices.filter((idx: number) => typeof idx === 'number' && idx >= 0 && idx < finalIngredients.length)
+            : []);
 
-        if ((sourceHasIngredients && rawIngredients.length === 0) || (sourceHasMethod && rawInstructions.length === 0)) {
-          throw new Error('The recipe importer could not preserve all of the source recipe. Please try the import again.');
-        }
+      if (body.recipeText && (finalIngredients.length === 0 || finalInstructions.length === 0)) {
+        throw new Error('The pasted recipe must contain identifiable ingredients and cooking instructions.');
       }
-      
-      // Use the group indices directly from AI response (much simpler!)
-      const groupIndices = Array.isArray(parsedRecipe.ingredientGroupIndices) 
-        ? parsedRecipe.ingredientGroupIndices.filter((idx: number) => typeof idx === 'number' && idx >= 0 && idx < rawIngredients.length)
-        : [];
-      
+
+      const groupIndices = finalGroupIndices;
+
       const cleanedRecipe = {
-        title: cleanMarkdownFormatting(parsedRecipe.title) || 'Untitled Recipe',
+        title: cleanMarkdownFormatting((sourceRecipe?.title || parsedRecipe.title)) || 'Untitled Recipe',
         description: parsedRecipe.description || '',
-        ingredients: rawIngredients,
+        ingredients: finalIngredients,
         ingredientGroupIndices: groupIndices.length > 0 ? groupIndices : undefined,
-        instructions: Array.isArray(parsedRecipe.instructions) ? parsedRecipe.instructions : [],
+        instructions: finalInstructions,
         topTip: parsedRecipe.topTip || 'Enjoy cooking this delicious recipe!',
         alcoholicPairing: parsedRecipe.alcoholicPairing || null,
         nonAlcoholicPairing: parsedRecipe.nonAlcoholicPairing || null,
         prepTime: Math.max(0, parseInt(parsedRecipe.prepTime) || 0),
         cookTime: Math.max(0, parseInt(parsedRecipe.cookTime) || 0),
         servings: Math.max(1, parseInt(parsedRecipe.servings) || 1),
-        // Include classification
         mealType: parsedRecipe.classification?.mealType,
-        cuisineRegion: parsedRecipe.classification?.cuisineRegion || 'british', // Can be string or array, default to british if not provided
+        cuisineRegion: parsedRecipe.classification?.cuisineRegion || 'british',
         cookingMethod: parsedRecipe.classification?.cookingMethod,
-        dietLifestyle: Array.isArray(parsedRecipe.classification?.dietLifestyle) 
-          ? parsedRecipe.classification.dietLifestyle 
+        dietLifestyle: Array.isArray(parsedRecipe.classification?.dietLifestyle)
+          ? parsedRecipe.classification.dietLifestyle
           : [],
         complexityLevel: parsedRecipe.classification?.complexityLevel,
         mainIngredient: parsedRecipe.classification?.mainIngredient,
