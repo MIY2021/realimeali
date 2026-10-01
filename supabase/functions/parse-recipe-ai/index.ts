@@ -582,6 +582,10 @@ async function callOpenAI(systemPrompt: string, userPrompt: string, imageData?: 
     });
   }
 
+  // OpenAI's json_object mode requires the literal word "json" in an input
+  // message, not only in the top-level instructions field.
+  inputContent[0] = { type: 'input_text', text: userPrompt + '\n\nReturn the result as valid json.' };
+
   const requestBody = {
     model: 'gpt-5.6-luna',
     instructions: systemPrompt,
