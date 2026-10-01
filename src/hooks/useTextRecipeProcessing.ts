@@ -75,16 +75,29 @@ export function useTextRecipeProcessing() {
         top_tip: recipeData.topTip || "",
         alcoholic_pairing: recipeData.alcoholicPairing || null,
         non_alcoholic_pairing: recipeData.nonAlcoholicPairing || null,
-        // Convert mealType (string) to meal_types (array)
-        meal_types: recipeData.mealType ? [recipeData.mealType] : (currentRecipe.meal_types || []),
-        // Don't auto-select cuisine - let user confirm/reject via autotag buttons
-        cuisine_region: currentRecipe.cuisine_region,
-        diet_lifestyle: Array.isArray(recipeData.dietLifestyle) ? recipeData.dietLifestyle : (currentRecipe.diet_lifestyle || []),
+        // Classification is returned by the Edge Function in both flattened
+        // fields (for backwards compatibility) and a nested classification object.
+        // Accept both shapes so imported recipes actually populate the form.
+        meal_types: recipeData.mealType
+          ? [recipeData.mealType]
+          : recipeData.classification?.mealType
+            ? [recipeData.classification.mealType]
+            : (currentRecipe.meal_types || []),
+        cuisine_region: (() => {
+          const cuisine = recipeData.cuisineRegion ?? recipeData.classification?.cuisineRegion;
+          if (Array.isArray(cuisine)) return cuisine.map(normalizeCuisineRegion).filter(Boolean)[0] || currentRecipe.cuisine_region;
+          return cuisine ? normalizeCuisineRegion(cuisine) || currentRecipe.cuisine_region : currentRecipe.cuisine_region;
+        })(),
+        diet_lifestyle: Array.isArray(recipeData.dietLifestyle)
+          ? recipeData.dietLifestyle
+          : (Array.isArray(recipeData.classification?.dietLifestyle)
+            ? recipeData.classification.dietLifestyle
+            : (currentRecipe.diet_lifestyle || [])),
         // Store suggested tags for confirmation (support multiple cuisines)
         suggestedTags: {
           meal_types: recipeData.mealType ? [recipeData.mealType] : [],
           cuisine_region: (() => {
-            const cuisine = recipeData.cuisineRegion;
+            const cuisine = recipeData.cuisineRegion ?? recipeData.classification?.cuisineRegion;
             if (Array.isArray(cuisine)) {
               // Normalize all cuisine suggestions
               const normalized = cuisine.map(c => normalizeCuisineRegion(c)).filter(Boolean);
