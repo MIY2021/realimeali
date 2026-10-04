@@ -10,6 +10,38 @@ const buildCheckedKey = (name: string, recipeId: string) => {
   return `${name.toLowerCase().trim()}::${recipeId}`;
 };
 
+const buildGenerationSignature = (mealPlans: any[], recipes: any[]) => {
+  const mealPlanSignature = mealPlans
+    .map(plan => ({
+      id: plan.id,
+      week_key: plan.week_key,
+      recipe_id: plan.recipe_id,
+      meal_name: plan.meal_name,
+      is_freetyped: plan.is_freetyped,
+      is_leftover: plan.is_leftover,
+      planned_servings: plan.planned_servings,
+      original_servings: plan.original_servings,
+    }))
+    .sort((a, b) => a.id.localeCompare(b.id));
+
+  const relevantRecipeIds = new Set(
+    mealPlans
+      .filter(plan => !plan.is_leftover && !plan.is_freetyped && plan.recipe_id)
+      .map(plan => plan.recipe_id)
+  );
+
+  const recipeSignature = recipes
+    .filter(recipe => relevantRecipeIds.has(recipe.id))
+    .map(recipe => ({
+      id: recipe.id,
+      title: recipe.title,
+      ingredients: recipe.ingredients,
+    }))
+    .sort((a, b) => a.id.localeCompare(b.id));
+
+  return JSON.stringify({ mealPlans: mealPlanSignature, recipes: recipeSignature });
+};
+
 /**
  * Automatically generates shopping lists when meal plans change.
  * Simple: meal plans change → shopping list regenerates
@@ -25,6 +57,9 @@ export const useAutoShoppingListGeneration = () => {
   const pendingGenerationsRef = useRef<Set<string>>(new Set());
   // Track previous week keys to detect when weeks are cleared
   const previousWeekKeysRef = useRef<Set<string>>(new Set());
+  // Prevent unrelated re-renders (such as checking a shopping-list item)
+  // from regenerating and reordering the entire list.
+  const lastGenerationSignatureRef = useRef<string | null>(null);
 
   // Watch meal plans and regenerate shopping lists
   useEffect(() => {
@@ -32,7 +67,15 @@ export const useAutoShoppingListGeneration = () => {
       return;
     }
 
-    console.log('[Auto-Generate] Meal plans changed, regenerating shopping lists...', mealPlans.length);
+    const generationSignature = buildGenerationSignature(mealPlans, recipes);
+
+    if (lastGenerationSignatureRef.current === generationSignature) {
+      return;
+    }
+
+    lastGenerationSignatureRef.current = generationSignature;
+
+    console.log('[Auto-Generate] Meal plans/recipes changed, regenerating shopping lists...', mealPlans.length);
 
     // Get all unique week keys from meal plans
     const weekKeys = new Set<string>();
