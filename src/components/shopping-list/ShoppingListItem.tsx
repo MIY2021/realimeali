@@ -1,10 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, Check, ShoppingCart } from "lucide-react";
-import { createRecipeUrl } from "@/utils/slugUtils";
-import { Link, useNavigate } from "react-router-dom";
-import { useRecipes } from "@/contexts/RecipesContext";
-import { useMealPlan } from "@/contexts/MealPlanContext";
+
 import { useShoppingListInteractions } from "./ShoppingListInteractions";
 import { useToast } from "@/hooks/use-toast";
 import { formatQuantity } from "@/utils/shoppingListUtils";
@@ -19,12 +16,9 @@ interface ShoppingListItemProps {
   quantityDisplay?: string;
   unit?: string;
   isChecked: boolean;
-  recipeIds: string[];
   copiedItemId: string | null;
   onCheck: (checked: boolean) => void;
   onCopy: () => void;
-  getRecipeNames: (recipeIds: string[]) => string;
-  sortOption?: SortOption;
 }
 
 export function ShoppingListItem({
@@ -38,13 +32,8 @@ export function ShoppingListItem({
   copiedItemId,
   onCheck,
   onCopy,
-  getRecipeNames,
-  sortOption = "none"
 }: ShoppingListItemProps) {
   const { toast } = useToast();
-  const { recipes } = useRecipes();
-  const { mealPlans: allMealPlans } = useMealPlan();
-  const navigate = useNavigate();
 
   const shoppingSearchName = getShoppingSearchName(name, quantity, unit);
 
@@ -88,57 +77,6 @@ export function ShoppingListItem({
   } = useShoppingListInteractions(isChecked, onCheck, handleCopyName);
 
   const handleToggleCheck = () => onCheck(!isChecked);
-
-  const getRecipeNamesWithIds = (recipeIds: string[]) => {
-    if (name.toLowerCase().startsWith("everything for")) {
-      return [{ id: recipeIds[0] || "custom", name: "Custom Entry" }];
-    }
-
-    const uniqueRecipeIds = [...new Set(recipeIds)];
-
-    if (uniqueRecipeIds.length === 1) {
-      return [{
-        id: uniqueRecipeIds[0],
-        name: getRecipeNames(uniqueRecipeIds)
-      }];
-    }
-
-    return uniqueRecipeIds.map((recipeId) => {
-      const recipe = recipes.find(r => r.id === recipeId);
-      if (recipe) return { id: recipeId, name: recipe.title };
-
-      const customMeal = allMealPlans?.find(mp => mp.id === recipeId && mp.is_freetyped && mp.meal_name);
-      if (customMeal) return { id: recipeId, name: "Custom Entry" };
-
-      return { id: recipeId, name: "Recipe " + recipeId.substring(0, 8) };
-    });
-  };
-
-  const recipeData = getRecipeNamesWithIds(recipeIds);
-
-  const getRecipeUrl = (recipeId: string, recipeName: string): string | null => {
-    if (recipeName === "Custom Entry" || recipeName.toLowerCase().includes("custom")) return null;
-
-    const recipe = recipes.find(r => r.id === recipeId);
-    if (recipe) return createRecipeUrl(recipe);
-
-    if (recipeName && !recipeName.startsWith("Recipe ")) {
-      return createRecipeUrl({ title: recipeName });
-    }
-
-    return null;
-  };
-
-  const handleRecipeClick = (e: React.MouseEvent, recipeId: string, recipeName: string) => {
-    e.stopPropagation();
-    e.preventDefault();
-
-    const url = getRecipeUrl(recipeId, recipeName);
-    if (url) {
-      sessionStorage.setItem("restoreShoppingListScroll", "true");
-      navigate(url);
-    }
-  };
 
   return (
     <div
@@ -187,35 +125,7 @@ export function ShoppingListItem({
           <span className="font-medium break-words text-foreground">{name}</span>
         </div>
 
-        {recipeIds.length > 0 && sortOption !== "recipe" && (
-          <div className="mt-1 truncate text-xs text-muted-foreground">
-            {recipeData.map((recipe, index) => {
-              const recipeUrl = getRecipeUrl(recipe.id, recipe.name);
-              const recipeName = recipe.name.trim();
 
-              return (
-                <span key={recipe.id + "-" + recipe.name}>
-                  {recipeUrl ? (
-                    <Link
-                      to={recipeUrl}
-                      onClick={(e) => handleRecipeClick(e, recipe.id, recipe.name)}
-                      className="hover:underline"
-                    >
-                      {recipeName}
-                    </Link>
-                  ) : (
-                    recipeName
-                  )}
-                  {index < recipeData.length - 1 && " · "}
-                </span>
-              );
-            })}
-          </div>
-        )}
-
-        {recipeIds.length === 0 && (
-          <div className="mt-1 text-xs text-muted-foreground">Manually added</div>
-        )}
       </div>
 
       <Button
