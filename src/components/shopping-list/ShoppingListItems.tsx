@@ -1,9 +1,8 @@
 
-import { Card, CardContent } from "@/components/ui/card";
 import { ShoppingListItem } from "./ShoppingListItem";
 import { ShoppingListItem as ShoppingListItemType } from "@/types/shoppingList";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { SortOption, GroupedShoppingListItem } from "@/utils/shoppingListSorting";
+import { Apple, Beef, Cookie, Droplets, Globe2, Milk, Package, Snowflake, Wheat, Wine } from "lucide-react";
 
 interface ShoppingListItemsProps {
   shoppingList: ShoppingListItemType[] | GroupedShoppingListItem[];
@@ -14,7 +13,20 @@ interface ShoppingListItemsProps {
   sortOption: SortOption;
 }
 
-// Shopping list UI validated by frontend build workflow
+const categoryIcons: Record<string, React.ComponentType<{ className?: string }>> = {
+  "Fruit & Vegetables": Apple,
+  "Meat & Fish": Beef,
+  "Chilled Food": Milk,
+  "Bakery": Wheat,
+  "Frozen Food": Snowflake,
+  "Food Cupboard": Package,
+  "Snacks & Treats": Cookie,
+  "World & Dietary": Globe2,
+  "Drinks": Droplets,
+  "Alcohol": Wine,
+  "Other": Package,
+};
+
 export default function ShoppingListItems({
   shoppingList,
   copiedItemId,
@@ -23,89 +35,82 @@ export default function ShoppingListItems({
   getRecipeNames,
   sortOption
 }: ShoppingListItemsProps) {
-  const isMobile = useIsMobile();
-
-  // Check if items are grouped
-  const isGrouped = sortOption !== "none" && Array.isArray(shoppingList) && shoppingList.length > 0 && typeof shoppingList[0] === 'object' && 'groupKey' in shoppingList[0];
+  const isGrouped =
+    sortOption !== "none" &&
+    shoppingList.length > 0 &&
+    "groupKey" in shoppingList[0];
 
   if (isGrouped) {
     const groupedItems = shoppingList as GroupedShoppingListItem[];
-    
+
     return (
-      <div 
-        className={isMobile ? "space-y-4" : "space-y-6"}
-        data-shopping-list-container
-      >
-        {groupedItems.map((group) => (
-          <div key={group.groupKey} className="space-y-2">
-            {/* Section Header */}
-            <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b-2 border-border/60 pb-2.5 pt-3 mb-2">
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider">
-                  {group.groupLabel}
-                </h3>
-                <span className="text-xs text-muted-foreground font-normal">
-                  {group.items.length} {group.items.length === 1 ? 'item' : 'items'}
+      <div className="space-y-6 sm:space-y-8" data-shopping-list-container>
+        {groupedItems.map((group) => {
+          const CategoryIcon = categoryIcons[group.groupLabel] || Package;
+
+          return (
+            <section key={group.groupKey} aria-labelledby={"shopping-group-" + group.groupKey}>
+              <div className="mb-1 flex items-center justify-between px-1.5">
+                <div className="flex min-w-0 items-center gap-2">
+                  <CategoryIcon className="h-4 w-4 shrink-0 text-[#F5B82E]" aria-hidden="true" />
+                  <h3
+                    id={"shopping-group-" + group.groupKey}
+                    className="truncate text-xs font-bold uppercase tracking-[0.12em] text-muted-foreground"
+                  >
+                    {group.groupLabel}
+                  </h3>
+                </div>
+                <span className="shrink-0 text-xs font-medium text-muted-foreground/70">
+                  {group.items.length}
                 </span>
               </div>
-            </div>
-            
-            {/* Group Items */}
-            <div className={isMobile ? "space-y-2" : "space-y-3"}>
-              {group.items.map((item) => (
-                <Card key={item.id} className="w-full border border-border bg-card shadow-sm hover:shadow-md transition-shadow" data-shopping-list-item>
-                  <CardContent className={isMobile ? "p-3" : "p-4"}>
-                    <ShoppingListItem
-                      id={item.id}
-                      name={item.name}
-                      quantity={item.consolidatedQuantity || item.quantity || 1}
-                      quantityDisplay={item.quantityDisplay}
-                      unit={item.consolidatedUnit || item.unit}
-                      isChecked={item.isChecked}
-                      recipeIds={[...new Set(item.recipeIds)]}
-                      copiedItemId={copiedItemId}
-                      onCheck={(checked) => onToggleItem(item.id)}
-                      onCopy={() => onCopyItem(item.id)}
-                      getRecipeNames={getRecipeNames}
-                      sortOption={sortOption}
-                    />
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        ))}
+
+              <div className="divide-y divide-border/60">
+                {group.items.map((item) => (
+                  <ShoppingListItem
+                    key={item.id}
+                    id={item.id}
+                    name={item.name}
+                    quantity={item.consolidatedQuantity ?? item.quantity}
+                    quantityDisplay={item.quantityDisplay}
+                    unit={item.consolidatedUnit || item.unit}
+                    isChecked={item.isChecked}
+                    recipeIds={[...new Set(item.recipeIds)]}
+                    copiedItemId={copiedItemId}
+                    onCheck={() => onToggleItem(item.id)}
+                    onCopy={() => onCopyItem(item.id)}
+                    getRecipeNames={getRecipeNames}
+                    sortOption={sortOption}
+                  />
+                ))}
+              </div>
+            </section>
+          );
+        })}
       </div>
     );
   }
 
-  // Ungrouped display (sortOption === "none")
   const ungroupedItems = shoppingList as ShoppingListItemType[];
 
   return (
-    <div 
-      className={isMobile ? "space-y-2" : "space-y-3"}
-      data-shopping-list-container
-    >
+    <div className="divide-y divide-border/60" data-shopping-list-container>
       {ungroupedItems.map((item) => (
-        <Card key={item.id} className="w-full border border-border bg-card shadow-sm hover:shadow-md transition-shadow" data-shopping-list-item>
-          <CardContent className={isMobile ? "p-3" : "p-4"}>
-            <ShoppingListItem
-              id={item.id}
-              name={item.name}
-              quantity={item.consolidatedQuantity || item.quantity || 1}
-              quantityDisplay={item.quantityDisplay}
-              unit={item.consolidatedUnit || item.unit}
-              isChecked={item.isChecked}
-              recipeIds={[...new Set(item.recipeIds)]}
-              copiedItemId={copiedItemId}
-              onCheck={(checked) => onToggleItem(item.id)}
-              onCopy={() => onCopyItem(item.id)}
-              getRecipeNames={getRecipeNames}
-              sortOption={sortOption}
-            />
-          </CardContent>
-        </Card>
+        <ShoppingListItem
+          key={item.id}
+          id={item.id}
+          name={item.name}
+          quantity={item.consolidatedQuantity ?? item.quantity}
+          quantityDisplay={item.quantityDisplay}
+          unit={item.consolidatedUnit || item.unit}
+          isChecked={item.isChecked}
+          recipeIds={[...new Set(item.recipeIds)]}
+          copiedItemId={copiedItemId}
+          onCheck={() => onToggleItem(item.id)}
+          onCopy={() => onCopyItem(item.id)}
+          getRecipeNames={getRecipeNames}
+          sortOption={sortOption}
+        />
       ))}
     </div>
   );
