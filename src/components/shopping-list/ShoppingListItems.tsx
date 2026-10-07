@@ -9,7 +9,6 @@ interface ShoppingListItemsProps {
   copiedItemId: string | null;
   onToggleItem: (itemId: string) => void;
   onCopyItem: (itemId: string) => void;
-  sortOption: SortOption;
 }
 
 const categoryIcons: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -76,7 +75,6 @@ export default function ShoppingListItems({
                     copiedItemId={copiedItemId}
                     onCheck={() => onToggleItem(item.id)}
                     onCopy={() => onCopyItem(item.id)}
-                    sortOption={sortOption}
                   />
                 ))}
               </div>
@@ -103,7 +101,6 @@ export default function ShoppingListItems({
           copiedItemId={copiedItemId}
           onCheck={() => onToggleItem(item.id)}
           onCopy={() => onCopyItem(item.id)}
-          sortOption={sortOption}
         />
       ))}
     </div>
