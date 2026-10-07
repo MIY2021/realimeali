@@ -1,11 +1,9 @@
-import { useCallback } from "react";
 import { MealType, Recipe, MealPlan } from "@/types";
 import { MealPlannerRecipeCard } from "@/components/meal-planner/MealPlannerRecipeCard";
 import { MealSectionSkeleton } from "@/components/meal-planner/MealSectionSkeleton";
 import { MealGenerationLoading } from "@/components/meal-planner/MealGenerationLoading";
 import { Button } from "@/components/ui/button";
-import { Plus, Clock, Book, UtensilsCrossed, Search, Check, User } from "lucide-react";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { Plus } from "lucide-react";
 
 interface MealPlannerGridViewProps {
   currentMealPlans: MealPlan[];
@@ -23,120 +21,72 @@ interface MealPlannerGridViewProps {
 export const MealPlannerGridView = ({
   currentMealPlans,
   recipes,
-  mealLayout,
   isDataLoading = false,
   isGenerating = false,
   onAddMeal,
-  onAddCustomMeal,
   onRemoveMeal,
   onCreateLeftover,
-  onReorderMeals,
 }: MealPlannerGridViewProps) => {
-  const isMobile = useIsMobile();
-  const mealTypes: MealType[] = ["dinner", "lunch", "breakfast", "snacks", "sides", "desserts", "drinks"];
+  const recipeMap = new Map(recipes.map(recipe => [recipe.id, recipe]));
 
-  const getMealPlansForType = useCallback((mealType: MealType): MealPlan[] => {
-    return currentMealPlans
-      .filter(plan => plan.meal_type === mealType)
-      .sort((a, b) => {
-        // Sort completed meals to the bottom
-        if (a.is_completed !== b.is_completed) {
-          return a.is_completed ? 1 : -1;
-        }
-        // Then sort by slot_index
-        return (a.slot_index || 0) - (b.slot_index || 0);
-      });
-  }, [currentMealPlans]);
+  const meals = [...currentMealPlans].sort((a, b) => {
+    if (a.is_completed !== b.is_completed) return a.is_completed ? 1 : -1;
+    return (a.slot_index || 0) - (b.slot_index || 0);
+  });
 
-  const getRecipeById = useCallback((id: string): Recipe | undefined => {
-    return recipes.find(recipe => recipe.id === id);
-  }, [recipes]);
+  const handleAddMeal = () => onAddMeal("dinner");
 
-  // Determine grid classes for meal cards based on layout preference
-  const getMealCardGridClasses = () => {
-    if (isMobile) {
-      return mealLayout === '1' 
-        ? 'grid grid-cols-1 gap-4 sm:gap-6'
-        : 'grid grid-cols-2 gap-3 sm:gap-4';
-    }
-    // Default responsive layout for desktop
-    return mealLayout === '1'
-      ? 'grid grid-cols-1 gap-4 sm:gap-6'
-      : 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6';
-  };
+  if (isDataLoading) {
+    return (
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 sm:gap-5">
+        {[1, 2, 3, 4, 5, 6].map(i => (
+          <div key={i} className="overflow-hidden rounded-2xl border bg-card">
+            <MealSectionSkeleton count={1} />
+          </div>
+        ))}
+      </div>
+    );
+  }
 
-  // Get meal type icon
-  const getMealTypeIcon = (mealType: MealType) => {
-    switch (mealType) {
-      case 'breakfast': return Clock;
-      case 'lunch': return Book;
-      case 'dinner': return UtensilsCrossed;
-      case 'snacks': return Plus;
-      case 'drinks': return Search;
-      case 'desserts': return Check;
-      case 'sides': return User;
-      default: return UtensilsCrossed;
-    }
-  };
+  if (isGenerating && meals.length === 0) {
+    return <MealGenerationLoading mealType="dinner" />;
+  }
 
   return (
-    <div className="space-y-4 pt-2">
-      {mealTypes.map((mealType, sectionIndex) => {
-        const meals = getMealPlansForType(mealType);
-        const Icon = getMealTypeIcon(mealType);
-        
-        return (
-          <div key={mealType} className="space-y-3">
-            {/* Section Header */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <h3 className="text-xl font-semibold capitalize text-navy">
-                  {mealType}
-                </h3>
-                <span className="text-sm text-grey-light">
-                  ({isDataLoading ? '–' : meals.length})
-                </span>
-              </div>
-              {/* Override min-height/min-width with !important to allow h-6 w-6 (24px) sizing */}
-              <Button
-                variant="ghost"
-                onClick={() => onAddMeal(mealType)}
-                disabled={isDataLoading}
-                aria-busy={isDataLoading}
-                className="h-6 w-6 !min-h-0 !min-w-0 rounded-full bg-[#F5B82E]/50 hover:bg-[#F5B82E]/70 p-0 disabled:opacity-50"
-              >
-                <Plus className="h-4 w-4 text-white" />
-              </Button>
-            </div>
+    <div className="space-y-5">
+      {meals.length > 0 && (
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 sm:gap-5">
+          {meals.map(meal => (
+            <MealPlannerRecipeCard
+              key={meal.id}
+              mealPlan={meal}
+              recipe={recipeMap.get(meal.recipe_id)}
+              onRemove={onRemoveMeal}
+              onCreateLeftover={onCreateLeftover}
+              allMealPlans={currentMealPlans}
+            />
+          ))}
+        </div>
+      )}
 
-            {/* Meals Grid */}
-            {isDataLoading ? (
-              <MealSectionSkeleton count={3} />
-            ) : meals.length === 0 ? (
-              isGenerating ? (
-                <MealGenerationLoading mealType={mealType} />
-              ) : (
-                <div className="border border-dashed border-gray-200 rounded-lg p-4 text-center text-grey-light">
-                  <span className="text-sm">No {mealType} planned yet</span>
-                </div>
-              )
-            ) : (
-              <div className={getMealCardGridClasses()}>
-                {meals.map((meal, index) => (
-                  <MealPlannerRecipeCard
-                    key={meal.id}
-                    mealPlan={meal}
-                    recipe={getRecipeById(meal.recipe_id)}
-                    onRemove={onRemoveMeal}
-                    onCreateLeftover={onCreateLeftover}
-                    allMealPlans={currentMealPlans}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-        );
-      })}
+      <Button
+        variant="outline"
+        onClick={handleAddMeal}
+        className="group w-full rounded-2xl border-2 border-dashed py-7 text-muted-foreground hover:border-[#F5B82E] hover:bg-[#F5B82E]/5 hover:text-navy"
+      >
+        <span className="mr-2 flex h-9 w-9 items-center justify-center rounded-full bg-[#F5B82E]/15 group-hover:bg-[#F5B82E]/25">
+          <Plus className="h-5 w-5 text-[#D99B16]" />
+        </span>
+        <span className="font-semibold">
+          {meals.length === 0 ? "Add your first meal" : "Add another meal"}
+        </span>
+      </Button>
+
+      {meals.length === 0 && (
+        <p className="px-4 text-center text-sm text-muted-foreground">
+          Pick a few meals you might fancy this week. There’s no need to decide which day they’re for.
+        </p>
+      )}
     </div>
   );
 };
