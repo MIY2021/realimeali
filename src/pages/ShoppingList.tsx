@@ -25,7 +25,6 @@ export default function ShoppingList() {
 
   const { user } = useAuth();
   const { currentHousehold } = useHousehold();
-  const { recipes } = useRecipes();
   const { getMealPlansForWeek, mealPlans: allMealPlans, copyWeek } = useMealPlan();
   const { toast } = useToast();
 
