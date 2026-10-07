@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import ShoppingListHeader from "@/components/shopping-list/ShoppingListHeader";
 import ShoppingListItems from "@/components/shopping-list/ShoppingListItems";
 import ShoppingListEmptyState from "@/components/shopping-list/ShoppingListEmptyState";
@@ -12,140 +12,120 @@ import { useHousehold } from "@/contexts/HouseholdContext";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { useMealPlan } from "@/contexts/MealPlanContext";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
-import { usePageTransition } from "@/hooks/usePageTransition";
 import { useToast } from "@/hooks/use-toast";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
-import { Send, ArrowUpDown } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Send, Plus, SlidersHorizontal } from "lucide-react";
 import { Link } from "react-router-dom";
 import { getCurrentWeekKey } from "@/utils/weekUtils";
-import { HeaderControls } from "@/components/layout/HeaderControls";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SortOption, groupShoppingListItems } from "@/utils/shoppingListSorting";
 
 export default function ShoppingList() {
   useDocumentTitle("Shopping List | RealiMeali");
-  
+
   const { user } = useAuth();
   const { currentHousehold } = useHousehold();
   const { recipes } = useRecipes();
   const { getMealPlansForWeek, mealPlans: allMealPlans, copyWeek } = useMealPlan();
   const { toast } = useToast();
-  const isMobile = useIsMobile();
-  
-  // Use same localStorage key as meal planner for consistency
+
   const WEEK_STORAGE_KEY = "meal-planner-current-week";
   const [currentWeek, setCurrentWeek] = useState<string>(() => {
-    if (typeof window === 'undefined') {
-      return getCurrentWeekKey();
-    }
+    if (typeof window === "undefined") return getCurrentWeekKey();
     try {
       const saved = localStorage.getItem(WEEK_STORAGE_KEY);
-      if (saved && /^\d{4}-W\d{1,2}$/.test(saved)) {
-        return saved;
-      }
-    } catch (e) {
-      // Ignore
+      if (saved && /^\d{4}-W\d{1,2}$/.test(saved)) return saved;
+    } catch {
+      // Ignore storage errors.
     }
     return getCurrentWeekKey();
   });
-  
+
   const [allWeeksModalOpen, setAllWeeksModalOpen] = useState(false);
   const [copiedItemId, setCopiedItemId] = useState<string | null>(null);
   const [showOnlyUnchecked, setShowOnlyUnchecked] = useState(false);
-  const [infoDialog, setInfoDialog] = useState(false);
   const [sortOption, setSortOption] = useState<SortOption>("category");
-  
-  // Sync week with localStorage
+  const [newItemName, setNewItemName] = useState("");
+
   useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === WEEK_STORAGE_KEY && e.newValue && /^\d{4}-W\d{1,2}$/.test(e.newValue)) {
         setCurrentWeek(e.newValue);
       }
     };
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
 
   useEffect(() => {
     localStorage.setItem(WEEK_STORAGE_KEY, currentWeek);
   }, [currentWeek]);
-  
-  // Enable automatic shopping list generation (silent - no UI indication)
+
   useAutoShoppingListGeneration();
-  
+
   const {
     shoppingList,
     toggleItemChecked,
-    refreshList,
+    addCustomItem,
   } = useShoppingList(currentWeek);
 
-  // Load toggle state from localStorage on mount
   useEffect(() => {
-    const saved = localStorage.getItem('realiMeali_showOnlyUnchecked');
+    const saved = localStorage.getItem("realiMeali_showOnlyUnchecked");
     if (saved) {
-      setShowOnlyUnchecked(JSON.parse(saved));
+      try {
+        setShowOnlyUnchecked(JSON.parse(saved));
+      } catch {
+        setShowOnlyUnchecked(false);
+      }
     }
-    const savedSort = localStorage.getItem('realiMeali_shoppingListSort');
-    if (savedSort && (savedSort === "category" || savedSort === "recipe")) {
+
+    const savedSort = localStorage.getItem("realiMeali_shoppingListSort");
+    if (savedSort === "category" || savedSort === "recipe") {
       setSortOption(savedSort as SortOption);
     } else {
-      // Default to category, or migrate "none" to "category"
       setSortOption("category");
-      localStorage.setItem('realiMeali_shoppingListSort', "category");
+      localStorage.setItem("realiMeali_shoppingListSort", "category");
     }
   }, []);
 
-  // Save toggle state to localStorage when it changes
   useEffect(() => {
-    localStorage.setItem('realiMeali_showOnlyUnchecked', JSON.stringify(showOnlyUnchecked));
+    localStorage.setItem("realiMeali_showOnlyUnchecked", JSON.stringify(showOnlyUnchecked));
   }, [showOnlyUnchecked]);
 
-  // Save sort option to localStorage when it changes
   useEffect(() => {
-    localStorage.setItem('realiMeali_shoppingListSort', sortOption);
+    localStorage.setItem("realiMeali_shoppingListSort", sortOption);
   }, [sortOption]);
-
-
-  // Remove lastGenerated tracking - not needed without generation UI
 
   const mealPlans = getMealPlansForWeek(currentWeek);
   const hasMealPlans = mealPlans.length > 0;
 
-  // Calculate item counts
   const totalItems = shoppingList.length;
   const completedItems = shoppingList.filter(item => item.isChecked).length;
+  const remainingItems = totalItems - completedItems;
+  const progress = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
 
   const getRecipeNames = (recipeIds: string[]): string => {
     const uniqueRecipeIds = [...new Set(recipeIds)];
     const recipeNames = uniqueRecipeIds
       .map(id => {
-        // First try to find it as a recipe
         const recipe = recipes.find(r => r.id === id);
-        if (recipe) {
-          return recipe.title;
-        }
-        
-        // If not found as recipe, check if it's a custom meal (meal plan ID)
+        if (recipe) return recipe.title;
+
         const customMeal = mealPlans.find(mp => mp.id === id && mp.is_freetyped && mp.meal_name);
-        if (customMeal) {
-          return 'Custom Entry';
-        }
-        
-        return `Recipe ${id.substring(0, 8)}`;
+        if (customMeal) return "Custom Entry";
+
+        return "Recipe " + id.substring(0, 8);
       })
       .filter(Boolean);
-    
-    return recipeNames.length > 0 ? recipeNames.join(', ') : 'Unknown Recipe';
+
+    return recipeNames.length > 0 ? recipeNames.join(", ") : "Unknown Recipe";
   };
 
-  // Filter shopping list
-  const filteredShoppingList = showOnlyUnchecked 
+  const filteredShoppingList = showOnlyUnchecked
     ? shoppingList.filter(item => !item.isChecked)
     : shoppingList;
 
-  // Group items based on sort option
   const groupedItems = groupShoppingListItems(
     filteredShoppingList,
     sortOption,
@@ -154,24 +134,23 @@ export default function ShoppingList() {
 
   const handleCopyItem = (itemId: string) => {
     setCopiedItemId(itemId);
-    setTimeout(() => {
-      setCopiedItemId(null);
-    }, 2000);
+    setTimeout(() => setCopiedItemId(null), 2000);
   };
 
   const handleShare = () => {
     const listText = shoppingList
       .map(item => {
-        const qty = item.consolidatedQuantity && item.consolidatedQuantity > 1 
-          ? ` (${item.consolidatedQuantity}${item.consolidatedUnit ? ` ${item.consolidatedUnit}` : ''})`
-          : '';
-        return `• ${item.name}${qty}`;
+        const quantity = item.quantityDisplay
+          || (item.consolidatedQuantity !== undefined ? String(item.consolidatedQuantity) : undefined);
+        const unit = item.consolidatedUnit || item.unit;
+        const qty = quantity ? " (" + quantity + (unit && unit !== "pcs" ? " " + unit : "") + ")" : "";
+        return "• " + item.name + qty;
       })
-      .join('\n');
+      .join("\n");
 
     if (navigator.share) {
       navigator.share({
-        title: `Shopping List`,
+        title: "RealiMeali Shopping List",
         text: listText,
       });
     } else {
@@ -183,14 +162,17 @@ export default function ShoppingList() {
     }
   };
 
-  // Remove loading state check - show UI immediately
+  const handleAddItem = async (event?: React.FormEvent) => {
+    event?.preventDefault();
+    const name = newItemName.trim();
+    if (!name) return;
+    await addCustomItem(name);
+    setNewItemName("");
+  };
 
   return (
-    <div className="container max-w-4xl py-4 px-4 sm:py-8 sm:px-6 space-y-3" data-scroll-content>
-      <ShoppingListHeader
-        onShare={handleShare} 
-        onInfoClick={() => setInfoDialog(true)}
-      />
+    <div className="w-full max-w-3xl mx-auto px-3 pb-8 sm:px-6 sm:pb-12" data-scroll-content>
+      <ShoppingListHeader onShare={handleShare} onInfoClick={() => undefined} />
 
       {!user ? (
         <div className="py-10 text-center">
@@ -204,65 +186,105 @@ export default function ShoppingList() {
               You need to create or join a household to manage shopping lists.
             </p>
             <Button asChild className="bg-terracotta hover:bg-terracotta/90">
-              <Link to="/household">
-                Manage Household
-              </Link>
+              <Link to="/household">Manage Household</Link>
             </Button>
           </div>
         </div>
       ) : (
         <>
-          <HeaderControls
-            weekControl={
-              <WeekSelector 
-                currentWeek={currentWeek} 
+          <div className="mb-4 rounded-2xl border border-border/70 bg-card shadow-sm overflow-hidden">
+            <div className="flex items-center justify-between gap-2 px-3 py-2.5 sm:px-4">
+              <WeekSelector
+                currentWeek={currentWeek}
                 onWeekChange={setCurrentWeek}
                 onWeekClick={() => setAllWeeksModalOpen(true)}
               />
-            }
-            utilityActions={
-              <>
-                {/* Manual generate button removed - shopping lists now generate automatically */}
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={handleShare}
-                  className="h-9 w-9 p-0"
-                  title="Share"
-                >
-                  <Send className="w-4 h-4" />
-                </Button>
-              </>
-            }
-            rightActions={
-              user && currentHousehold ? (
-                <div className="flex items-center gap-3 ml-auto">
-                  <div className="flex items-center gap-2 bg-gray-100 rounded-lg px-3 py-1.5 border border-gray-200">
-                    <label htmlFor="show-unchecked" className="text-xs font-medium whitespace-nowrap text-gray-700 cursor-pointer">
-                      Hide Checked
-                    </label>
-                    <Switch
-                      id="show-unchecked"
-                      checked={showOnlyUnchecked}
-                      onCheckedChange={setShowOnlyUnchecked}
-                      className="data-[state=checked]:bg-[#F5B82E]"
-                    />
-                  </div>
-                  <Select value={sortOption} onValueChange={(value) => setSortOption(value as SortOption)}>
-                    <SelectTrigger id="sort-option" className="h-8 w-auto min-w-[100px] text-xs px-2 focus:ring-0 focus-visible:ring-0">
-                      <ArrowUpDown className="h-4 w-4 mr-2 flex-shrink-0" />
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="category">Category</SelectItem>
-                      <SelectItem value="recipe">Recipe</SelectItem>
-                    </SelectContent>
-                  </Select>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleShare}
+                className="h-9 w-9 p-0 rounded-full"
+                title="Share shopping list"
+                aria-label="Share shopping list"
+              >
+                <Send className="h-4 w-4" />
+              </Button>
+            </div>
+
+            <div className="border-t border-border/60 px-4 py-3 sm:px-5">
+              <div className="flex items-end justify-between gap-4 mb-2">
+                <div>
+                  <p className="text-lg font-semibold text-foreground">
+                    {remainingItems} <span className="font-normal text-muted-foreground">
+                      {remainingItems === 1 ? "item" : "items"} to buy
+                    </span>
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {completedItems} of {totalItems} bought
+                  </p>
                 </div>
-              ) : null
-            }
-          />
-          
+                <span className="text-sm font-semibold text-muted-foreground">{progress}%</span>
+              </div>
+              <div
+                className="h-2 w-full rounded-full bg-muted overflow-hidden"
+                role="progressbar"
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={progress}
+                aria-label={progress + "% of shopping list completed"}
+              >
+                <div
+                  className="h-full rounded-full bg-[#F5B82E] transition-all duration-500"
+                  style={{ width: progress + "%" }}
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-2 border-t border-border/60 px-3 py-2.5 sm:flex-row sm:items-center sm:justify-between sm:px-4">
+              <div className="flex items-center gap-1 rounded-xl bg-muted/70 p-1 w-fit">
+                <button
+                  type="button"
+                  onClick={() => setShowOnlyUnchecked(false)}
+                  className={
+                    "rounded-lg px-3 py-1.5 text-xs font-medium transition-colors " +
+                    (!showOnlyUnchecked
+                      ? "bg-background text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground")
+                  }
+                  aria-pressed={!showOnlyUnchecked}
+                >
+                  All {totalItems}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowOnlyUnchecked(true)}
+                  className={
+                    "rounded-lg px-3 py-1.5 text-xs font-medium transition-colors " +
+                    (showOnlyUnchecked
+                      ? "bg-background text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground")
+                  }
+                  aria-pressed={showOnlyUnchecked}
+                >
+                  To buy {remainingItems}
+                </button>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <SlidersHorizontal className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+                <Select value={sortOption} onValueChange={(value) => setSortOption(value as SortOption)}>
+                  <SelectTrigger className="h-8 w-auto min-w-[120px] border-0 bg-transparent px-1 text-xs font-medium shadow-none focus:ring-0">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="category">Shop by category</SelectItem>
+                    <SelectItem value="recipe">Shop by recipe</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+
           <CalendarMonthModal
             open={allWeeksModalOpen}
             onOpenChange={setAllWeeksModalOpen}
@@ -272,7 +294,6 @@ export default function ShoppingList() {
             onCopyWeek={copyWeek}
           />
 
-          {/* Show list if it exists, otherwise only show empty state if no meal plans */}
           {shoppingList.length > 0 ? (
             <ShoppingListItems
               shoppingList={groupedItems}
@@ -283,12 +304,32 @@ export default function ShoppingList() {
               sortOption={sortOption}
             />
           ) : (
-            <ShoppingListEmptyState
-              hasMealPlans={hasMealPlans}
-            />
+            <ShoppingListEmptyState hasMealPlans={hasMealPlans} />
           )}
 
-          {/* Remove info dialog - not needed without generation UI */}
+          {shoppingList.length > 0 && (
+            <form
+              onSubmit={handleAddItem}
+              className="sticky bottom-3 z-20 mt-5 flex items-center gap-2 rounded-2xl border border-border bg-background/95 p-2 shadow-lg backdrop-blur"
+            >
+              <Plus className="ml-2 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+              <Input
+                value={newItemName}
+                onChange={(e) => setNewItemName(e.target.value)}
+                placeholder="Add an item..."
+                aria-label="Add an item to the shopping list"
+                className="h-10 border-0 bg-transparent px-1 shadow-none focus-visible:ring-0"
+              />
+              <Button
+                type="submit"
+                size="sm"
+                disabled={!newItemName.trim()}
+                className="h-9 rounded-xl bg-[#F5B82E] px-4 text-black hover:bg-[#e9aa20]"
+              >
+                Add
+              </Button>
+            </form>
+          )}
         </>
       )}
     </div>
