@@ -6,7 +6,6 @@ import { useShoppingListInteractions } from "./ShoppingListInteractions";
 import { useToast } from "@/hooks/use-toast";
 import { formatQuantity } from "@/utils/shoppingListUtils";
 import { getShoppingSearchName } from "@/utils/shoppingIngredientUtils";
-import { SortOption } from "@/utils/shoppingListSorting";
 import { openOcadoSearch } from "@/utils/ocadoShopping";
 
 interface ShoppingListItemProps {
@@ -28,7 +27,6 @@ export function ShoppingListItem({
   quantityDisplay,
   unit,
   isChecked,
-  recipeIds,
   copiedItemId,
   onCheck,
   onCopy,
