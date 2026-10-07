@@ -63,13 +63,13 @@ export function WeekSelector({
   const endDayName = weekEndDate.toLocaleDateString('en-US', { weekday: 'short' }); // e.g., "Sun"
   
   return (
-    <div className="flex items-center gap-1.5">
+    <div className="flex min-w-0 items-center gap-1 sm:gap-1.5">
       <Button
         variant="ghost"
         size="sm"
         onClick={handleCurrentWeek}
         disabled={isLoading || isCurrentlyOnCurrentWeek}
-        className="h-9 w-9 p-0 hover:bg-gray-100 disabled:opacity-40"
+        className="h-9 w-9 shrink-0 p-0 hover:bg-gray-100 disabled:opacity-40"
         aria-label="Go to current week"
         title="Go to current week"
       >
@@ -81,7 +81,7 @@ export function WeekSelector({
         size="sm"
         onClick={handlePrevious}
         disabled={isLoading}
-        className="h-9 w-9 p-0 hover:bg-gray-100"
+        className="h-9 w-9 shrink-0 p-0 hover:bg-gray-100"
         aria-label="Previous week"
       >
         <ChevronLeft className="h-4 w-4 text-gray-600" />
@@ -92,12 +92,12 @@ export function WeekSelector({
         size="sm"
         onClick={handleWeekClick}
         disabled={isLoading || !onWeekClick}
-        className={`h-9 px-4 w-[220px] font-medium text-sm hover:bg-gray-100 ${onWeekClick ? 'cursor-pointer' : ''}`}
+        className={`h-9 min-w-0 w-[150px] sm:w-[220px] px-2 sm:px-4 font-medium text-sm hover:bg-gray-100 ${onWeekClick ? "cursor-pointer" : ""}`}
         aria-label="Select week"
       >
         <span className="whitespace-nowrap text-gray-900">
           {weekRange}
-          <span className="text-gray-500 font-normal ml-1.5">{startDayName} → {endDayName}</span>
+          <span className="hidden sm:inline text-gray-500 font-normal ml-1.5">{startDayName} → {endDayName}</span>
         </span>
       </Button>
       
@@ -106,7 +106,7 @@ export function WeekSelector({
         size="sm"
         onClick={handleNext}
         disabled={isLoading}
-        className="h-9 w-9 p-0 hover:bg-gray-100"
+        className="h-9 w-9 shrink-0 p-0 hover:bg-gray-100"
         aria-label="Next week"
       >
         <ChevronRight className="h-4 w-4 text-gray-600" />
