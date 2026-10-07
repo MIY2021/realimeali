@@ -82,7 +82,7 @@ export default function ShoppingList() {
     }
 
     const savedSort = localStorage.getItem("realiMeali_shoppingListSort");
-    if (savedSort === "category" || savedSort === "recipe") {
+    if (savedSort === "category") {
       setSortOption(savedSort as SortOption);
     } else {
       setSortOption("category");
