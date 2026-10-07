@@ -376,6 +376,7 @@ export type Database = {
           is_custom: boolean
           name: string
           quantity: number | null
+          quantity_display: string | null
           recipe_ids: string[] | null
           source_ingredients: string[] | null
           unit: string | null
@@ -395,6 +396,8 @@ export type Database = {
           is_custom?: boolean
           name: string
           quantity?: number | null
+          quantity_display?: string | null
+          quantity_display?: string | null
           recipe_ids?: string[] | null
           source_ingredients?: string[] | null
           unit?: string | null
