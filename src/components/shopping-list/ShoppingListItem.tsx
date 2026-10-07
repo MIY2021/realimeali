@@ -6,7 +6,8 @@ import { useRecipes } from "@/contexts/RecipesContext";
 import { useMealPlan } from "@/contexts/MealPlanContext";
 import { useShoppingListInteractions } from "./ShoppingListInteractions";
 import { useToast } from "@/hooks/use-toast";
-import { extractIngredientName, formatQuantity } from "@/utils/shoppingListUtils";
+import { formatQuantity } from "@/utils/shoppingListUtils";
+import { getShoppingSearchName } from "@/utils/shoppingIngredientUtils";
 import { SortOption } from "@/utils/shoppingListSorting";
 import { openOcadoSearch } from "@/utils/ocadoShopping";
 
@@ -42,30 +43,28 @@ export function ShoppingListItem({
   const { mealPlans: allMealPlans } = useMealPlan();
   const navigate = useNavigate();
 
+  const shoppingSearchName = getShoppingSearchName(name, quantity, unit);
+
   const handleCopyName = async () => {
     try {
-      // Use AI to extract clean ingredient name
-      const cleanName = await extractIngredientName(name);
-      navigator.clipboard.writeText(cleanName);
-      onCopy(); // This triggers the visual feedback
-      toast({
-        title: "Copied to clipboard",
-        description: `"${cleanName}" copied to clipboard`,
-      });
-    } catch (error) {
-      // Fallback to copying the original name
-      navigator.clipboard.writeText(name);
+      await navigator.clipboard.writeText(shoppingSearchName);
       onCopy();
       toast({
         title: "Copied to clipboard",
-        description: `"${name}" copied to clipboard`,
+        description: `"${shoppingSearchName}" copied to clipboard`,
+      });
+    } catch (error) {
+      toast({
+        title: "Couldn't copy item",
+        description: "Please try copying the item again.",
+        variant: "destructive",
       });
     }
   };
 
   const handleOcadoClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    const opened = openOcadoSearch(name);
+    const opened = openOcadoSearch(shoppingSearchName);
 
     if (!opened) {
       toast({
@@ -196,7 +195,7 @@ export function ShoppingListItem({
             <div className={`text-sm ${isChecked ? 'line-through' : ''}`} style={{ color: isChecked ? 'hsl(var(--shopping-grey))' : 'hsl(var(--shopping-navy))' }}>
               {quantity && unit && recipeIds.length > 0 && !getRecipeNames(recipeIds).includes('Custom Entry') && (
                 <span className="text-sm mr-1" style={{ color: 'hsl(var(--shopping-grey))' }}>
-                  {formatQuantity(quantity)} {unit}
+                  {formatQuantity(quantity)} {unit === "pcs" ? "" : unit}
                 </span>
               )}
               <span className="font-medium">{name}</span>
