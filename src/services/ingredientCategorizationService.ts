@@ -268,6 +268,77 @@ export async function batchGetCategoriesFromDatabase(
   return resultMap;
 }
 
+
+export interface ShoppingIngredientNormalization {
+  id: number;
+  category: IngredientCategory;
+  shoppingName: string;
+}
+
+export async function normalizeShoppingIngredients(
+  ingredients: string[]
+): Promise<Map<string, ShoppingIngredientNormalization>> {
+  const resultMap = new Map<string, ShoppingIngredientNormalization>();
+
+  const uniqueIngredients = [...new Set(
+    ingredients.map(value => value.trim()).filter(Boolean)
+  )];
+
+  if (!uniqueIngredients.length) return resultMap;
+
+  try {
+    const { data, error } = await supabase.functions.invoke(
+      'normalize-shopping-ingredients',
+      {
+        body: {
+          ingredients: uniqueIngredients.map((text, id) => ({ id, text }))
+        }
+      }
+    );
+
+    if (error) {
+      console.error('Error normalising shopping ingredients:', error);
+      return resultMap;
+    }
+
+    const validCategories: IngredientCategory[] = [
+      "Fruit & Vegetables",
+      "Meat & Fish",
+      "Chilled Food",
+      "Bakery",
+      "Frozen Food",
+      "Food Cupboard",
+      "Snacks & Treats",
+      "World & Dietary",
+      "Drinks",
+      "Alcohol",
+      "Other"
+    ];
+
+    for (const item of data?.items || []) {
+      const id = Number(item?.id);
+      const source = uniqueIngredients[id];
+      const shoppingName = typeof item?.shoppingName === 'string'
+        ? item.shoppingName.trim()
+        : '';
+
+      if (!source || !shoppingName) continue;
+
+      resultMap.set(source.toLowerCase(), {
+        id,
+        category: validCategories.includes(item.category)
+          ? item.category
+          : DEFAULT_INGREDIENT_CATEGORY,
+        shoppingName
+      });
+    }
+  } catch (error) {
+    console.error('Error normalising shopping ingredients:', error);
+  }
+
+  return resultMap;
+}
+
 /**
  * Batch categorizes multiple ingredients
  * Returns a map of ingredient names (lowercased) to categories
