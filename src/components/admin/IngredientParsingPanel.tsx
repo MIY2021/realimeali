@@ -93,12 +93,11 @@ export function IngredientParsingPanel() {
       
       for (const ingredient of validIngredients) {
         try {
-          const result = await getCategoryForIngredient(ingredient);
+          const category = await getCategoryForIngredient(ingredient);
           
           parsedIngredients.push({
             original: ingredient,
-            category: result.category,
-            cleanedName: result.cleanedName,
+            category,
           });
         } catch (err: any) {
           parsedIngredients.push({
