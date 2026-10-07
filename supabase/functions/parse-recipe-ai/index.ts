@@ -833,6 +833,14 @@ serve(async (req) => {
 
 CRITICAL: You MUST carefully examine ingredients for meat content. If ANY meat (beef, pork, lamb, chicken, turkey, fish, seafood, etc.) is present, the recipe CANNOT be classified as "vegetarian" or "vegan". Be extremely careful about this classification.
 
+INGREDIENT SOURCE FIDELITY:
+- Ingredients are source data, not shopping-list search terms.
+- Preserve each genuine ingredient as written, including quantities, units, preparation form and meaningful qualifiers.
+- Do NOT simplify an ingredient because it sounds more convenient for shopping. For example, "lemon wedges" may remain "lemon wedges" in the recipe, and "ground cumin" may remain "ground cumin".
+- Do NOT remove quantities such as "1/2 tsp", "2 tbsp" or "1 tin" from recipe ingredients.
+- Do NOT convert packaging words, preparation words or quantities into a different ingredient.
+- Shopping-list normalisation happens later in a separate step; your job here is faithful recipe extraction.
+
 CRITICAL: When parsing ingredients, distinguish between ingredient group headers (sections that contain multiple ingredients) and individual ingredients. Group headers can appear in various formats:
 - ALL CAPS: "MARINADE", "FLATBREADS", "SAUCE", "GARNISH", "TOPPING"
 - Title Case: "Marinade", "Flatbreads", "For the Sauce"
@@ -971,6 +979,14 @@ ${sourceRecipe.source}`
       systemPrompt = `You are a recipe parsing assistant with vision capabilities. Read and extract recipe information from the provided image and classify it across 6 dimensions.
 
 CRITICAL: You MUST carefully examine ingredients for meat content. If ANY meat (beef, pork, lamb, chicken, turkey, fish, seafood, etc.) is present, the recipe CANNOT be classified as "vegetarian" or "vegan". Be extremely careful about this classification.
+
+INGREDIENT SOURCE FIDELITY:
+- Ingredients are source data, not shopping-list search terms.
+- Preserve each genuine ingredient as written, including quantities, units, preparation form and meaningful qualifiers.
+- Do NOT simplify an ingredient because it sounds more convenient for shopping. For example, "lemon wedges" may remain "lemon wedges" in the recipe, and "ground cumin" may remain "ground cumin".
+- Do NOT remove quantities such as "1/2 tsp", "2 tbsp" or "1 tin" from recipe ingredients.
+- Do NOT convert packaging words, preparation words or quantities into a different ingredient.
+- Shopping-list normalisation happens later in a separate step; your job here is faithful recipe extraction.
 
 CRITICAL: When parsing ingredients, distinguish between ingredient group headers (sections that contain multiple ingredients) and individual ingredients. Group headers can appear in various formats:
 - ALL CAPS: "MARINADE", "FLATBREADS", "SAUCE", "GARNISH", "TOPPING"
