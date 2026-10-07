@@ -34,7 +34,7 @@ export const MealPlannerContent = ({
   const cookedCount = currentMealPlans.filter(plan => plan.is_completed).length;
 
   return (
-    <div className="space-y-5 sm:space-y-7">
+    <div className="space-y-6 sm:space-y-8">
       <div className="px-1">
         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
           Your meals
@@ -42,9 +42,7 @@ export const MealPlannerContent = ({
         <p className="mt-1 text-sm text-muted-foreground">
           {isDataLoading
             ? "Loading your week…"
-            : currentMealPlans.length === 0
-              ? "Choose the meals you fancy this week"
-              : `${currentMealPlans.length} ${currentMealPlans.length === 1 ? "meal" : "meals"} planned${cookedCount > 0 ? ` · ${cookedCount} cooked` : ""}`}
+            : `${currentMealPlans.length} ${currentMealPlans.length === 1 ? "meal" : "meals"} planned${cookedCount > 0 ? ` · ${cookedCount} cooked` : ""}`}
         </p>
       </div>
 
