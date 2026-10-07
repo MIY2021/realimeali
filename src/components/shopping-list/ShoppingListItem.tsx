@@ -1,6 +1,5 @@
-
 import { Button } from "@/components/ui/button";
-import { ClipboardCopy, CheckCircle2, Check } from "lucide-react";
+import { ClipboardCopy, CheckCircle2, Check, ShoppingCart } from "lucide-react";
 import { createRecipeUrl } from "@/utils/slugUtils";
 import { Link, useNavigate } from "react-router-dom";
 import { useRecipes } from "@/contexts/RecipesContext";
@@ -9,6 +8,7 @@ import { useShoppingListInteractions } from "./ShoppingListInteractions";
 import { useToast } from "@/hooks/use-toast";
 import { extractIngredientName, formatQuantity } from "@/utils/shoppingListUtils";
 import { SortOption } from "@/utils/shoppingListSorting";
+import { openOcadoSearch } from "@/utils/ocadoShopping";
 
 interface ShoppingListItemProps {
   id: string;
@@ -63,6 +63,19 @@ export function ShoppingListItem({
     }
   };
 
+  const handleOcadoClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const opened = openOcadoSearch(name);
+
+    if (!opened) {
+      toast({
+        title: "Couldn't open Ocado",
+        description: "Please try opening Ocado in your browser.",
+        variant: "destructive",
+      });
+    }
+  };
+
   // Set up touch interactions
   const {
     handleTouchStart,
@@ -76,7 +89,6 @@ export function ShoppingListItem({
   const handleToggleCheck = () => {
     onCheck(!isChecked);
   };
-
 
   // Get recipe names for display - need to get individual recipe names with their IDs
   const getRecipeNamesWithIds = (recipeIds: string[]) => {
@@ -232,6 +244,16 @@ export function ShoppingListItem({
 
       {/* Actions and checkbox on the right - closer together with more padding */}
       <div className="flex items-center gap-2 ml-4 -mr-4">
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={handleOcadoClick}
+          className="h-10 w-10 p-0 hover:bg-muted touch-manipulation"
+          title="Shop on Ocado"
+          aria-label={`Shop for ${name} on Ocado`}
+        >
+          <ShoppingCart className="h-4 w-4" />
+        </Button>
         <Button 
           size="sm" 
           variant="ghost" 
