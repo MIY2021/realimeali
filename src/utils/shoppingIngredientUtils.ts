@@ -1,5 +1,3 @@
-import { extractIngredientNameFallback } from "@/utils/shoppingListUtils";
-
 export interface ParsedShoppingIngredient {
   name: string;
   quantity?: number;
@@ -8,54 +6,21 @@ export interface ParsedShoppingIngredient {
 }
 
 const UNIT_ALIASES: Record<string, string> = {
-  g: "g",
-  gram: "g",
-  grams: "g",
-  kg: "kg",
-  kilo: "kg",
-  kilos: "kg",
-  ml: "ml",
-  millilitre: "ml",
-  millilitres: "ml",
-  milliliter: "ml",
-  milliliters: "ml",
-  l: "l",
-  litre: "l",
-  litres: "l",
-  liter: "l",
-  liters: "l",
+  g: "g", gram: "g", grams: "g",
+  kg: "kg", kilo: "kg", kilos: "kg", kilogram: "kg", kilograms: "kg",
+  ml: "ml", millilitre: "ml", millilitres: "ml", milliliter: "ml", milliliters: "ml",
+  l: "l", litre: "l", litres: "l", liter: "l", liters: "l",
   cl: "cl",
-  tsp: "tsp",
-  "tsp.": "tsp",
-  teaspoon: "tsp",
-  teaspoons: "tsp",
-  tbsp: "tbsp",
-  "tbsp.": "tbsp",
-  tablespoon: "tbsp",
-  tablespoons: "tbsp",
-  oz: "oz",
-  ounce: "oz",
-  ounces: "oz",
-  lb: "lb",
-  lbs: "lb",
-  pound: "lb",
-  pounds: "lb",
-  tin: "tin",
-  tins: "tins",
-  can: "tin",
-  cans: "tins",
-  packet: "packet",
-  packets: "packets",
-  pack: "pack",
-  packs: "packs",
-  bunch: "bunch",
-  bunches: "bunches",
-  clove: "cloves",
-  cloves: "cloves",
-  slice: "slices",
-  slices: "slices",
-  piece: "pcs",
-  pieces: "pcs",
+  tsp: "tsp", "tsp.": "tsp", teaspoon: "tsp", teaspoons: "tsp",
+  tbsp: "tbsp", "tbsp.": "tbsp", tablespoon: "tbsp", tablespoons: "tbsp",
+  oz: "oz", ounce: "oz", ounces: "oz",
+  lb: "lb", lbs: "lb", pound: "lb", pounds: "lb",
+  tin: "tin", tins: "tins", can: "tin", cans: "tins",
+  packet: "packet", packets: "packets", pack: "pack", packs: "packs",
+  bunch: "bunch", bunches: "bunches",
+  clove: "cloves", cloves: "cloves",
+  slice: "slices", slices: "slices",
+  piece: "pcs", pieces: "pcs",
 };
 
 const NUMBER_PATTERN = "(?:\\d+(?:\\.\\d+)?|\\d+\\s+\\d+\\/\\d+|\\d+\\/\\d+|[½¼¾⅓⅔⅛⅜⅝⅞])";
@@ -63,15 +28,8 @@ const NUMBER_PATTERN = "(?:\\d+(?:\\.\\d+)?|\\d+\\s+\\d+\\/\\d+|\\d+\\/\\d+|[½�
 const fractionToNumber = (value: string): number | undefined => {
   const trimmed = value.trim();
   const unicodeFractions: Record<string, number> = {
-    "½": 0.5,
-    "¼": 0.25,
-    "¾": 0.75,
-    "⅓": 1 / 3,
-    "⅔": 2 / 3,
-    "⅛": 0.125,
-    "⅜": 0.375,
-    "⅝": 0.625,
-    "⅞": 0.875,
+    "½": 0.5, "¼": 0.25, "¾": 0.75, "⅓": 1 / 3, "⅔": 2 / 3,
+    "⅛": 0.125, "⅜": 0.375, "⅝": 0.625, "⅞": 0.875,
   };
 
   if (unicodeFractions[trimmed] !== undefined) return unicodeFractions[trimmed];
@@ -93,29 +51,51 @@ const fractionToNumber = (value: string): number | undefined => {
 
 const tidyName = (value: string): string => {
   let name = value
-    .replace(/^week\\d+-/i, "")
-    .replace(/\\s+/g, " ")
+    .replace(/^week\d+-/i, "")
+    .replace(/\s+/g, " ")
     .trim();
 
-  // Preparation notes are useful to cooks, but usually make poor supermarket searches.
-  name = name.replace(/\\s*\\([^)]*\\)/g, "").trim();
-  name = name.split(/,\\s*/)[0].trim();
+  name = name.replace(/\s*\([^)]*\)/g, "").trim();
 
-  // Remove common preparation phrases that follow the ingredient.
+  // Remove preparation/cooking notes, but do not blindly remove everything after a comma.
   name = name.replace(
-    /\\s+(?:peeled|chopped|diced|minced|sliced|grated|crushed|halved|quartered|rinsed|drained|pitted|de-seeded|deseeded|finely|roughly)\\b.*$/i,
+    /,\s*(?:thinly|finely|roughly|very finely|roughly|peeled|chopped|diced|minced|sliced|grated|crushed|halved|quartered|rinsed|drained|pitted|deseeded|de-seeded|to serve|for serving|divided|separated)\b.*$/i,
     ""
   ).trim();
 
-  return name.replace(/^[,;:\-\\s]+|[,;:\-\\s]+$/g, "").trim();
+  name = name.replace(
+    /\s+(?:peeled|chopped|diced|minced|sliced|grated|crushed|halved|quartered|rinsed|drained|pitted|deseeded|de-seeded)\b.*$/i,
+    ""
+  ).trim();
+
+  return name.replace(/^[,;:\-\s]+|[,;:\-\s]+$/g, "").trim();
+};
+
+/**
+ * Removes generic shopping-search noise without destroying meaningful product
+ * characteristics such as "5% fat", "smoked", "light", "frozen" or "baby".
+ */
+export const canonicalizeShoppingSearchName = (value: string): string => {
+  let name = value
+    .replace(/\s+/g, " ")
+    .replace(/^[,;:\-\s]+|[,;:\-\s]+$/g, "")
+    .trim();
+
+  // Generic size/quality wording is not useful in a supermarket search.
+  name = name.replace(/\b(?:small|medium|large|extra large|xl|good quality|high quality|nice)\b\s*/gi, "");
+  name = name.replace(/\s{2,}/g, " ").trim();
+
+  // Never allow an accidental trailing punctuation mark or dangling conjunction.
+  name = name.replace(/\s+(?:and|&|,|;)$/i, "").trim();
+
+  return name;
 };
 
 export function parseShoppingIngredient(rawIngredient: string): ParsedShoppingIngredient {
-  const original = rawIngredient.trim();
-  const cleaned = tidyName(original);
+  const cleaned = tidyName(rawIngredient.trim());
 
   const amountMatch = cleaned.match(new RegExp(
-    "^(" + NUMBER_PATTERN + ")\\s*(g|kg|ml|l|cl|oz|lb|lbs|tsp\\.?|tbsp\\.?|teaspoons?|tablespoons?|grams?|gram|kilos?|kilograms?|millilitres?|milliliters?|litres?|liters?|ounces?|pounds?|tins?|cans?|packets?|packs?|bunches?|cloves?|slices?|pieces?)\\b\\s*",
+    "^((" + NUMBER_PATTERN + "))\\s*(g|kg|ml|l|cl|oz|lb|lbs|tsp\\.?|tbsp\\.?|teaspoons?|tablespoons?|grams?|kilos?|kilograms?|millilitres?|milliliters?|litres?|liters?|ounces?|pounds?|tins?|cans?|packets?|packs?|bunches?|cloves?|slices?|pieces?)\\b\\s*",
     "i"
   ));
 
@@ -123,7 +103,7 @@ export function parseShoppingIngredient(rawIngredient: string): ParsedShoppingIn
     const quantity = fractionToNumber(amountMatch[1]);
     const rawUnit = amountMatch[2].toLowerCase();
     const unit = UNIT_ALIASES[rawUnit] || rawUnit;
-    const name = cleaned.slice(amountMatch[0].length).trim();
+    const name = canonicalizeShoppingSearchName(cleaned.slice(amountMatch[0].length).trim());
 
     return {
       name: name || cleaned,
@@ -133,41 +113,21 @@ export function parseShoppingIngredient(rawIngredient: string): ParsedShoppingIn
     };
   }
 
-  // Countable ingredients without an explicit unit: "2 onions", "3 lemons".
-  const countMatch = cleaned.match(new RegExp("^(" + NUMBER_PATTERN + ")\\s+(.+)$", "i"));
+  // Do not interpret percentages such as "5% fat beef mince" as "5 pieces".
+  const countMatch = cleaned.match(new RegExp("^((" + NUMBER_PATTERN + "))\\s+(?!%)(.+)$", "i"));
   if (countMatch) {
     const quantity = fractionToNumber(countMatch[1]);
-    const name = countMatch[2].trim();
+    const name = canonicalizeShoppingSearchName(countMatch[2].trim());
 
     if (quantity !== undefined && name) {
-      return {
-        name,
-        quantity,
-        unit: "pcs",
-        searchName: name,
-      };
+      return { name, quantity, unit: "pcs", searchName: name };
     }
   }
 
-  const fallbackName = extractIngredientNameFallback(cleaned);
-  const searchName = fallbackName || cleaned;
+  const searchName = canonicalizeShoppingSearchName(cleaned);
+  return { name: searchName, searchName };
+};
 
-  return {
-    name: searchName,
-    searchName,
-  };
-}
-
-/**
- * One canonical supermarket query for every shopping-list action.
- * The stored shopping-list name is already cleaned, but this also handles
- * older lists and manually added items safely.
- */
-export function getShoppingSearchName(
-  name: string,
-  quantity?: number,
-  unit?: string
-): string {
-  const parsed = parseShoppingIngredient(name);
-  return parsed.searchName || name.trim();
+export function getShoppingSearchName(name: string, quantity?: number, unit?: string): string {
+  return parseShoppingIngredient(name).searchName || name.trim();
 }
