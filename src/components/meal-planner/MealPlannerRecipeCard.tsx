@@ -137,25 +137,6 @@ export function MealPlannerRecipeCard({
           }`}
         />
         
-        {/* Added-by corner cutout - top-left */}
-        {mealCreator && (
-          <div
-            className="absolute right-0 top-0 z-10 h-10 w-10 overflow-hidden border-b-2 border-l-2 border-white bg-white shadow-sm [clip-path:polygon(0_0,100%_0,100%_100%)] after:absolute after:left-0 after:top-0 after:h-px after:w-[141%] after:origin-left after:rotate-[45deg] after:bg-white/80 after:shadow-[0_1px_2px_rgba(0,0,0,0.10)] after:content-['']"
-            title={"Added by " + creatorName}
-            aria-label={"Added by " + creatorName}
-          >
-            {creatorProfile?.avatar_url ? (
-              <img src={creatorProfile.avatar_url} alt="" className="h-full w-full object-cover" />
-            ) : creatorProfile?.avatar_data ? (
-              <img src={creatorProfile.avatar_data} alt="" className="h-full w-full object-cover" />
-            ) : (
-              <span className="flex h-full w-full items-center justify-center text-[9px] font-semibold text-gray-600">
-                {creatorInitials}
-              </span>
-            )}
-          </div>
-        )}
-
         {/* Lunch Leftover icon - top-left */}
         {existingLeftover && (
           <div className="absolute top-2 left-2 w-5 h-5 rounded-full bg-yellow-500/80 flex items-center justify-center shadow-sm animate-scale-in-slow">
