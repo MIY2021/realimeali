@@ -195,7 +195,7 @@ export function ShoppingListItem({
       <div className="flex-1 min-w-0">
         <div>
             <div className={`text-sm ${isChecked ? 'line-through' : ''}`} style={{ color: isChecked ? 'hsl(var(--shopping-grey))' : 'hsl(var(--shopping-navy))' }}>
-              {quantity !== undefined && recipeIds.length > 0 && !getRecipeNames(recipeIds).includes('Custom Entry') && (
+              {quantity !== undefined && (
                 <span className="text-sm mr-1" style={{ color: 'hsl(var(--shopping-grey))' }}>
                   {quantityDisplay || formatQuantity(quantity)}{unit && unit !== "pcs" ? ` ${unit}` : ""}
                 </span>
