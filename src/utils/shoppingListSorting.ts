@@ -1,7 +1,7 @@
 import { ShoppingListItem } from "@/types/shoppingList";
 import { INGREDIENT_CATEGORIES } from "@/types/ingredientCategories";
 
-export type SortOption = "none" | "category" | "recipe";
+export type SortOption = "none" | "category";
 
 export interface GroupedShoppingListItem {
   groupKey: string;
