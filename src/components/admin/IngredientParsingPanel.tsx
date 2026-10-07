@@ -13,7 +13,6 @@ import { IngredientCategory } from "@/types/ingredientCategories";
 interface ParsedIngredient {
   original: string;
   category: IngredientCategory | null;
-  cleanedName?: string;
   error?: string;
 }
 
@@ -203,11 +202,6 @@ export function IngredientParsingPanel() {
                         <p className="text-sm font-medium text-foreground">
                           {ingredient.original}
                         </p>
-                        {ingredient.cleanedName && ingredient.cleanedName !== ingredient.original && (
-                          <p className="text-xs text-muted-foreground mt-1">
-                            → <span className="font-medium">{ingredient.cleanedName}</span>
-                          </p>
-                        )}
                       </div>
                       <div className="text-right">
                         {ingredient.error ? (
