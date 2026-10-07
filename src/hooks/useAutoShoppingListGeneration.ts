@@ -50,7 +50,7 @@ export const useAutoShoppingListGeneration = () => {
   const { user } = useAuth();
   const { currentHousehold } = useHousehold();
   const { recipes, isLoading: recipesLoading } = useRecipes();
-  const { mealPlans, getMealPlansForWeek } = useMealPlan();
+  const { mealPlans, getMealPlansForWeek, isLoading: mealPlansLoading } = useMealPlan();
   const { generateAndSaveFromMealPlans } = useShoppingListGenerator();
   
   // Track pending generations to prevent duplicates
@@ -63,7 +63,7 @@ export const useAutoShoppingListGeneration = () => {
 
   // Watch meal plans and regenerate shopping lists
   useEffect(() => {
-    if (!user || !currentHousehold || recipesLoading || recipes.length === 0) {
+    if (!user || !currentHousehold || recipesLoading || mealPlansLoading || recipes.length === 0) {
       return;
     }
 
@@ -185,7 +185,7 @@ export const useAutoShoppingListGeneration = () => {
     return () => {
       cancelled = true;
     };
-  }, [mealPlans, user, currentHousehold, recipesLoading, recipes, generateAndSaveFromMealPlans, getMealPlansForWeek]);
+  }, [mealPlans, user, currentHousehold, recipesLoading, mealPlansLoading, recipes, generateAndSaveFromMealPlans, getMealPlansForWeek]);
 
   // Return empty object - no UI states needed
   return {};
