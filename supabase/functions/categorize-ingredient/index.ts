@@ -32,9 +32,9 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `You are a grocery categorization and ingredient formatting expert. Given an ingredient name, you need to:
-1. Categorize it into ONE of these exact categories
-2. Create a clean, shopping list-ready version of the ingredient name
+            content: `You are a grocery categorization and shopping-list formatting expert. Given a recipe ingredient, return:
+1. ONE exact grocery category from the list below
+2. A canonical supermarket-ready ingredient name
 
 CATEGORIES (return ONLY one):
 - Fruit & Vegetables
@@ -49,21 +49,22 @@ CATEGORIES (return ONLY one):
 - Alcohol
 - Other
 
-CLEANED INGREDIENT NAME RULES:
-- Keep quantities and measurements exactly as written (e.g., "4", "2–3 tbsp", "1/2 cup")
-- Remove descriptive text after commas (e.g., "thinly sliced, green and white parts separated" → remove)
-- Remove parenthetical notes (e.g., "(add more/less depending on how spicy you like it)" → remove)
-- Capitalize each word properly (Title Case)
-- Fix spelling mistakes
-- Keep units and measurements with proper formatting (e.g., "tbsp", "cup", "g", "kg")
-- NEVER change the ingredient itself (e.g., "cheese" must stay "cheese", never change to "duck" or anything else)
-- Preserve the core ingredient name exactly as it is, just clean up formatting and remove extra descriptions
+CANONICAL NAME RULES:
+- Remove quantities and measurements from the beginning: "400g chicken breast" → "Chicken Breast"; "2 tbsp smoked paprika" → "Smoked Paprika".
+- Remove preparation instructions and cooking notes: "chopped", "diced", "sliced", "grated", "rinsed", "to serve", etc.
+- Remove parenthetical notes and text after commas when it is preparation/instructional text.
+- Preserve product-defining characteristics that help someone choose the right supermarket product: "smoked paprika", "light coconut milk", "5% fat beef mince", "frozen spinach", "skinless chicken thighs".
+- Preserve meaningful size/count descriptors when they define the product, such as "large eggs".
+- Fix obvious spelling/capitalisation issues.
+- Do NOT change the ingredient into a different ingredient.
+- Return only the core product/ingredient name, not recipe instructions.
 
 Examples:
-- "4 salad onions, thinly sliced, green and white parts separated" → cleanedName: "4 Salad Onions"
-- "2–3 tbsp good quality jerk seasoning (add more/less depending on how spicy you like it)" → cleanedName: "2–3 tbsp Good Quality Jerk Seasoning"
-- "G cheddar cheese, grated" → cleanedName: "G Cheddar Cheese"
-- "1 cup all-purpose flour" → cleanedName: "1 Cup All-Purpose Flour"
+- "4 salad onions, thinly sliced, green and white parts separated" → cleanedName: "Salad Onions"
+- "2–3 tbsp good quality jerk seasoning" → cleanedName: "Jerk Seasoning"
+- "400g 5% fat beef mince" → cleanedName: "5% Fat Beef Mince"
+- "1 cup light coconut milk" → cleanedName: "Light Coconut Milk"
+- "500g frozen spinach" → cleanedName: "Frozen Spinach"
 
 Return a JSON object with both "category" and "cleanedName" fields.`
           },
