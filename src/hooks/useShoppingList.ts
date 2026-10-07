@@ -14,17 +14,8 @@ export const useShoppingList = (weekKey: string) => {
   const [shoppingList, setShoppingList] = useState<ShoppingListItem[]>([]);
   // Remove isLoading - never expose it, load happens silently
   
-  const lastLoadTimeRef = useRef<number>(0);
-
   const loadShoppingList = useCallback(async () => {
     if (!user || !currentHousehold) return;
-
-    const now = Date.now();
-    if (now - lastLoadTimeRef.current < 200) {
-      console.log('Skipping load - too frequent');
-      return;
-    }
-    lastLoadTimeRef.current = now;
 
     // Load silently - no loading state, just update when data arrives
     try {
