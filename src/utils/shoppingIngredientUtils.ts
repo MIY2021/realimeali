@@ -95,7 +95,7 @@ export function parseShoppingIngredient(rawIngredient: string): ParsedShoppingIn
   const cleaned = tidyName(rawIngredient.trim());
 
   const amountMatch = cleaned.match(new RegExp(
-    "^((" + NUMBER_PATTERN + "))\\s*(g|kg|ml|l|cl|oz|lb|lbs|tsp\\.?|tbsp\\.?|teaspoons?|tablespoons?|grams?|kilos?|kilograms?|millilitres?|milliliters?|litres?|liters?|ounces?|pounds?|tins?|cans?|packets?|packs?|bunches?|cloves?|slices?|pieces?)\\b\\s*",
+    "^(" + NUMBER_PATTERN + ")\\s*(g|kg|ml|l|cl|oz|lb|lbs|tsp\\.?|tbsp\\.?|teaspoons?|tablespoons?|grams?|kilos?|kilograms?|millilitres?|milliliters?|litres?|liters?|ounces?|pounds?|tins?|cans?|packets?|packs?|bunches?|cloves?|slices?|pieces?)\\b\\s*",
     "i"
   ));
 
