@@ -558,7 +558,6 @@ export type Database = {
       ingredient_categories: {
         Row: {
           category: string
-          cleaned_name: string | null
           created_at: string
           id: string
           ingredient_name: string
@@ -566,7 +565,6 @@ export type Database = {
         }
         Insert: {
           category: string
-          cleaned_name?: string | null
           created_at?: string
           id?: string
           ingredient_name: string
@@ -574,7 +572,6 @@ export type Database = {
         }
         Update: {
           category?: string
-          cleaned_name?: string | null
           created_at?: string
           id?: string
           ingredient_name?: string
