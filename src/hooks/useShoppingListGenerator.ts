@@ -229,10 +229,17 @@ export const useShoppingListGenerator = () => {
 
       if (itemsToInsert.length === 0) return [];
 
-      const { data, error } = await supabase
-        .from('household_shopping_lists')
-        .insert(itemsToInsert)
-        .select('id, name, quantity, quantity_display, unit, consolidated_quantity, consolidated_unit, source_ingredients, is_checked, is_custom, recipe_ids, created_at, created_by, category');
+      // Replace the week's list atomically. This prevents the old list being
+      // deleted before a failed AI/network generation has produced new items.
+      const { data, error } = await (supabase as any).rpc(
+        'replace_household_shopping_list',
+        {
+          p_household_id: currentHousehold.id,
+          p_created_by: user.id,
+          p_week_key: weekKey,
+          p_items: itemsToInsert,
+        }
+      );
 
       if (error) throw error;
 
