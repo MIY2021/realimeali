@@ -154,6 +154,9 @@ export const useAutoShoppingListGeneration = () => {
           const recipeIds = item.recipeIds.length > 0 ? item.recipeIds : ["custom"];
           recipeIds.forEach(recipeId => {
             checkedMap.set(buildCheckedKey(item.name, recipeId), true);
+            (item.sourceIngredients || []).forEach(sourceIngredient => {
+              checkedMap.set(buildCheckedKey(sourceIngredient, recipeId), true);
+            });
           });
         });
 
