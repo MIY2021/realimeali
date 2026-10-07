@@ -9,7 +9,6 @@ import { useShoppingList } from "@/hooks/useShoppingList";
 import { useAutoShoppingListGeneration } from "@/hooks/useAutoShoppingListGeneration";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
-import { useRecipes } from "@/contexts/RecipesContext";
 import { useMealPlan } from "@/contexts/MealPlanContext";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useToast } from "@/hooks/use-toast";
@@ -107,23 +106,6 @@ export default function ShoppingList() {
   const remainingItems = totalItems - completedItems;
   const progress = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
 
-  const getRecipeNames = (recipeIds: string[]): string => {
-    const uniqueRecipeIds = [...new Set(recipeIds)];
-    const recipeNames = uniqueRecipeIds
-      .map(id => {
-        const recipe = recipes.find(r => r.id === id);
-        if (recipe) return recipe.title;
-
-        const customMeal = mealPlans.find(mp => mp.id === id && mp.is_freetyped && mp.meal_name);
-        if (customMeal) return "Custom Entry";
-
-        return "Recipe " + id.substring(0, 8);
-      })
-      .filter(Boolean);
-
-    return recipeNames.length > 0 ? recipeNames.join(", ") : "Unknown Recipe";
-  };
-
   const filteredShoppingList = shoppingList.filter(item => {
     if (showOnlyUnchecked && item.isChecked) return false;
     if (!searchOpen || !searchQuery.trim()) return true;
@@ -131,11 +113,7 @@ export default function ShoppingList() {
     return item.name.toLowerCase().includes(query);
   });
 
-  const groupedItems = groupShoppingListItems(
-    filteredShoppingList,
-    sortOption,
-    getRecipeNames
-  );
+  const groupedItems = groupShoppingListItems(filteredShoppingList, sortOption);
 
   const handleCopyItem = (itemId: string) => {
     setCopiedItemId(itemId);
@@ -319,7 +297,6 @@ export default function ShoppingList() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="category">Shop by category</SelectItem>
-                    <SelectItem value="recipe">Shop by recipe</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -341,7 +318,6 @@ export default function ShoppingList() {
               copiedItemId={copiedItemId}
               onToggleItem={toggleItemChecked}
               onCopyItem={handleCopyItem}
-              getRecipeNames={getRecipeNames}
               sortOption={sortOption}
             />
           ) : (
