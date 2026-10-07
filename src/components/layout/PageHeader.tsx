@@ -8,6 +8,7 @@ interface PageHeaderProps {
   visuallyHidden?: boolean;
 }
 
+// Primary navigation pages can keep an accessible h1 without showing a redundant page title.
 export function PageHeader({ icon, title, description, actions, visuallyHidden = false }: PageHeaderProps) {
   if (visuallyHidden) {
     return <h1 className="sr-only">{title}</h1>;
