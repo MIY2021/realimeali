@@ -160,8 +160,9 @@ export const useAutoShoppingListGeneration = () => {
           });
         });
 
-        // Clear and regenerate with latest meal plans
-        await ShoppingListService.clearAll(currentHousehold.id, weekKey);
+        // Regenerate atomically. The generator replaces the list only after it
+        // has successfully prepared a non-empty set of items, so a temporary
+        // AI/network failure can never wipe an existing shopping list.
         await generateAndSaveFromMealPlans(weekKey, checkedMap);
 
         console.log(`[Auto-Generate] Successfully regenerated shopping list for ${weekKey}`);
