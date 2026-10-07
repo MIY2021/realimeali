@@ -5,7 +5,7 @@ import { useMealPlan } from "@/contexts/MealPlanContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { ShoppingListService } from "@/services/shoppingListService";
-import { batchGetCategoriesFromDatabase, getCategoryForIngredient } from "@/services/ingredientCategorizationService";
+import { batchGetCategoriesFromDatabase, getCategoryForIngredient, normalizeShoppingIngredients } from "@/services/ingredientCategorizationService";
 import { DEFAULT_INGREDIENT_CATEGORY } from "@/types/ingredientCategories";
 import { supabase } from "@/integrations/supabase/client";
 import { parseShoppingIngredient } from "@/utils/shoppingIngredientUtils";
@@ -93,29 +93,14 @@ export const useShoppingListGenerator = () => {
 
       if (ingredientItems.length === 0) return [];
 
-      // First use cached category/clean-name mappings.
       const uniqueRawNames = [...new Set(ingredientItems.map(item => item.rawName))];
+
+      // Categories can use the existing local/database cache, but shopping names
+      // are always semantically normalised from the current ingredient text.
+      // This deliberately avoids trusting old cleaned_name cache entries created
+      // by earlier versions of the normaliser.
       const categoryMap = await batchGetCategoriesFromDatabase(uniqueRawNames);
-
-      // Any ingredient not yet cached gets classified once and saved for future weeks.
-      const missingNames = uniqueRawNames.filter(
-        name => !categoryMap.has(name.toLowerCase().trim())
-      );
-
-      if (missingNames.length > 0) {
-        const results = await Promise.allSettled(
-          missingNames.map(async name => ({
-            name,
-            result: await getCategoryForIngredient(name)
-          }))
-        );
-
-        results.forEach(result => {
-          if (result.status === 'fulfilled') {
-            categoryMap.set(result.value.name.toLowerCase().trim(), result.value.result);
-          }
-        });
-      }
+      const shoppingNameMap = await normalizeShoppingIngredients(uniqueRawNames);
 
       type PreparedItem = {
         name: string;
@@ -129,13 +114,16 @@ export const useShoppingListGenerator = () => {
       const preparedItems: PreparedItem[] = ingredientItems
         .map(item => {
           const parsed = parseShoppingIngredient(item.rawName);
-          const categoryData = categoryMap.get(item.rawName.toLowerCase().trim());
+          const key = item.rawName.toLowerCase().trim();
+          const categoryData = categoryMap.get(key);
+          const normalizedData = shoppingNameMap.get(key);
 
-          // The AI/database clean name is authoritative when available.
-          // The local parser then removes any remaining quantity/preparation noise.
-          const cleanedCandidate = categoryData?.cleanedName?.trim() || parsed.name;
-          const cleanedParsed = parseShoppingIngredient(cleanedCandidate);
-          const name = cleanedParsed.searchName || parsed.searchName;
+          // The AI normaliser supplies the supermarket search name. The local
+          // parser is only a safety net if the model accidentally includes an
+          // amount in its response.
+          const aiName = normalizedData?.shoppingName?.trim();
+          const normalizedParsed = aiName ? parseShoppingIngredient(aiName) : null;
+          const name = normalizedParsed?.searchName || aiName || parsed.searchName;
 
           if (!name || name.toLowerCase() === 'water') {
             return null;
@@ -147,7 +135,7 @@ export const useShoppingListGenerator = () => {
             unit: parsed.unit,
             recipeId: item.recipeId,
             rawName: item.rawName,
-            category: categoryData?.category || DEFAULT_INGREDIENT_CATEGORY
+            category: normalizedData?.category || categoryData?.category || DEFAULT_INGREDIENT_CATEGORY
           };
         })
         .filter((item): item is PreparedItem => item !== null);
