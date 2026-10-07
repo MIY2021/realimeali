@@ -1,5 +1,6 @@
+
 import { Button } from "@/components/ui/button";
-import { ClipboardCopy, CheckCircle2, Check, ShoppingCart } from "lucide-react";
+import { CheckCircle2, Check, ShoppingCart } from "lucide-react";
 import { createRecipeUrl } from "@/utils/slugUtils";
 import { Link, useNavigate } from "react-router-dom";
 import { useRecipes } from "@/contexts/RecipesContext";
@@ -53,9 +54,9 @@ export function ShoppingListItem({
       onCopy();
       toast({
         title: "Copied to clipboard",
-        description: `"${shoppingSearchName}" copied to clipboard`,
+        description: '"' + shoppingSearchName + '" copied to clipboard',
       });
-    } catch (error) {
+    } catch {
       toast({
         title: "Couldn't copy item",
         description: "Please try copying the item again.",
@@ -77,7 +78,6 @@ export function ShoppingListItem({
     }
   };
 
-  // Set up touch interactions
   const {
     handleTouchStart,
     handleTouchEnd,
@@ -87,98 +87,66 @@ export function ShoppingListItem({
     handleMouseLeave
   } = useShoppingListInteractions(isChecked, onCheck, handleCopyName);
 
-  const handleToggleCheck = () => {
-    onCheck(!isChecked);
-  };
+  const handleToggleCheck = () => onCheck(!isChecked);
 
-  // Get recipe names for display - need to get individual recipe names with their IDs
   const getRecipeNamesWithIds = (recipeIds: string[]) => {
-    // If this item starts with "Everything for", it's always a custom meal
-    if (name.toLowerCase().startsWith('everything for')) {
-      return [{
-        id: recipeIds[0] || 'custom',
-        name: 'Custom Entry'
-      }];
+    if (name.toLowerCase().startsWith("everything for")) {
+      return [{ id: recipeIds[0] || "custom", name: "Custom Entry" }];
     }
-    
-    // Get unique recipe IDs
+
     const uniqueRecipeIds = [...new Set(recipeIds)];
-    
-    // If only one recipe, return it directly without splitting
+
     if (uniqueRecipeIds.length === 1) {
-      const recipeName = getRecipeNames(uniqueRecipeIds);
       return [{
         id: uniqueRecipeIds[0],
-        name: recipeName
+        name: getRecipeNames(uniqueRecipeIds)
       }];
     }
-    
-    // For multiple recipes, we need to get each recipe name individually
-    // to avoid splitting recipe titles that contain commas
+
     return uniqueRecipeIds.map((recipeId) => {
       const recipe = recipes.find(r => r.id === recipeId);
-      if (recipe) {
-        return {
-          id: recipeId,
-          name: recipe.title
-        };
-      }
-      
-      // Check if it's a custom meal
+      if (recipe) return { id: recipeId, name: recipe.title };
+
       const customMeal = allMealPlans?.find(mp => mp.id === recipeId && mp.is_freetyped && mp.meal_name);
-      if (customMeal) {
-        return {
-          id: recipeId,
-          name: 'Custom Entry'
-        };
-      }
-      
-      return {
-        id: recipeId,
-        name: `Recipe ${recipeId.substring(0, 8)}`
-      };
+      if (customMeal) return { id: recipeId, name: "Custom Entry" };
+
+      return { id: recipeId, name: "Recipe " + recipeId.substring(0, 8) };
     });
   };
 
   const recipeData = getRecipeNamesWithIds(recipeIds);
 
   const getRecipeUrl = (recipeId: string, recipeName: string): string | null => {
-    // Don't link custom entries
-    if (recipeName === 'Custom Entry' || recipeName.toLowerCase().includes('custom')) {
-      return null;
-    }
-    
-    // Find the recipe by ID
+    if (recipeName === "Custom Entry" || recipeName.toLowerCase().includes("custom")) return null;
+
     const recipe = recipes.find(r => r.id === recipeId);
-    if (recipe) {
-      return createRecipeUrl(recipe);
-    }
-    
-    // If recipe not found, try to create URL from name
-    if (recipeName && !recipeName.startsWith('Recipe ')) {
+    if (recipe) return createRecipeUrl(recipe);
+
+    if (recipeName && !recipeName.startsWith("Recipe ")) {
       return createRecipeUrl({ title: recipeName });
     }
-    
+
     return null;
   };
 
   const handleRecipeClick = (e: React.MouseEvent, recipeId: string, recipeName: string) => {
     e.stopPropagation();
     e.preventDefault();
-    
+
     const url = getRecipeUrl(recipeId, recipeName);
     if (url) {
-      // Store scroll position restore flag
-      sessionStorage.setItem('restoreShoppingListScroll', 'true');
+      sessionStorage.setItem("restoreShoppingListScroll", "true");
       navigate(url);
     }
   };
 
   return (
-    <div 
-      className={`flex items-center transition-all duration-200 ${
-        isChecked ? 'opacity-60' : ''
-      } ${copiedItemId === id ? 'bg-green-50 rounded-md p-1 -m-1' : ''}`}
+    <div
+      className={
+        "group flex min-h-[68px] items-center gap-3 py-3 transition-all duration-200 " +
+        (isChecked ? "opacity-55 " : "") +
+        (copiedItemId === id ? "bg-green-50/70" : "")
+      }
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
       onTouchMove={handleTouchMove}
@@ -186,105 +154,82 @@ export function ShoppingListItem({
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseLeave}
     >
-      {/* Triangle icon on the left */}
-      <div className="flex items-center mr-2">
-        <span className="h-4 w-4 flex items-center justify-center text-muted-foreground text-xs">▷</span>
-      </div>
-
-      {/* Main content - limited width to make room for buttons */}
-      <div className="flex-1 min-w-0">
-        <div>
-            <div className={`text-sm ${isChecked ? 'line-through' : ''}`} style={{ color: isChecked ? 'hsl(var(--shopping-grey))' : 'hsl(var(--shopping-navy))' }}>
-              {quantity !== undefined && (
-                <span className="text-sm mr-1" style={{ color: 'hsl(var(--shopping-grey))' }}>
-                  {quantityDisplay || formatQuantity(quantity)}{unit && unit !== "pcs" ? ` ${unit}` : ""}
-                </span>
-              )}
-              <span className="font-medium break-words">{name}</span>
-            </div>
-            
-            {recipeIds.length > 0 && sortOption !== "recipe" && (
-              <div className="mt-0.5 text-xs truncate" style={{ color: 'hsl(var(--shopping-action-green))' }}>
-                {recipeData.map((recipe, index) => {
-                  const recipeUrl = getRecipeUrl(recipe.id, recipe.name);
-                  const recipeName = recipe.name.trim();
-                  
-                  if (recipeUrl) {
-                    return (
-                      <span key={`${recipe.id}-${recipe.name}`}>
-                        <Link
-                          to={recipeUrl}
-                          onClick={(e) => handleRecipeClick(e, recipe.id, recipe.name)}
-                          className="hover:underline cursor-pointer"
-                          style={{ color: 'hsl(var(--shopping-action-green))' }}
-                        >
-                          {recipeName}
-                        </Link>
-                        {index < recipeData.length - 1 && ', '}
-                      </span>
-                    );
-                  } else {
-                    return (
-                      <span key={`${recipe.id}-${recipe.name}`}>
-                        {recipeName}
-                        {index < recipeData.length - 1 && ', '}
-                      </span>
-                    );
-                  }
-                })}
-              </div>
-            )}
-            
-            {recipeIds.length === 0 && (
-              <div className="mt-0.5 text-xs" style={{ color: 'hsl(var(--shopping-action-green))' }}>
-                Manually Added Item
-              </div>
-            )}
+      <Button
+        size="sm"
+        variant="ghost"
+        onClick={handleToggleCheck}
+        className={
+          "h-10 w-10 shrink-0 rounded-full p-0 touch-manipulation " +
+          (isChecked
+            ? "bg-green-50 text-green-600 hover:bg-green-100"
+            : "text-muted-foreground hover:bg-muted hover:text-foreground")
+        }
+        title={isChecked ? "Mark as incomplete" : "Mark as complete"}
+        aria-label={isChecked ? "Mark " + name + " as incomplete" : "Mark " + name + " as complete"}
+      >
+        {isChecked ? (
+          <div className="relative">
+            <CheckCircle2 className="h-6 w-6 fill-current" />
+            <Check className="absolute left-1/2 top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 text-white stroke-[3]" />
           </div>
+        ) : (
+          <CheckCircle2 className="h-6 w-6" />
+        )}
+      </Button>
+
+      <div className="min-w-0 flex-1">
+        <div className={"flex items-baseline gap-1.5 leading-tight text-[15px] " + (isChecked ? "line-through" : "")}>
+          {quantity !== undefined && (
+            <span className="shrink-0 font-semibold text-muted-foreground">
+              {quantityDisplay || formatQuantity(quantity)}{unit && unit !== "pcs" ? " " + unit : ""}
+            </span>
+          )}
+          <span className="font-medium break-words text-foreground">{name}</span>
+        </div>
+
+        {recipeIds.length > 0 && sortOption !== "recipe" && (
+          <div className="mt-1 truncate text-xs text-muted-foreground">
+            {recipeData.map((recipe, index) => {
+              const recipeUrl = getRecipeUrl(recipe.id, recipe.name);
+              const recipeName = recipe.name.trim();
+
+              return (
+                <span key={recipe.id + "-" + recipe.name}>
+                  {recipeUrl ? (
+                    <Link
+                      to={recipeUrl}
+                      onClick={(e) => handleRecipeClick(e, recipe.id, recipe.name)}
+                      className="hover:underline"
+                    >
+                      {recipeName}
+                    </Link>
+                  ) : (
+                    recipeName
+                  )}
+                  {index < recipeData.length - 1 && " · "}
+                </span>
+              );
+            })}
+          </div>
+        )}
+
+        {recipeIds.length === 0 && (
+          <div className="mt-1 text-xs text-muted-foreground">Manually added</div>
+        )}
       </div>
 
-      {/* Actions and checkbox on the right - closer together with more padding */}
-      <div className="flex items-center gap-2 ml-4 -mr-4 shrink-0">
-        <Button
-          size="sm"
-          variant="ghost"
-          onClick={handleOcadoClick}
-          className="h-10 w-10 p-0 hover:bg-muted touch-manipulation"
-          title="Shop on Ocado"
-          aria-label={`Shop for ${name} on Ocado`}
-        >
-          <ShoppingCart className="h-4 w-4" />
-        </Button>
-        <Button 
-          size="sm" 
-          variant="ghost" 
-          onClick={handleCopyName}
-          className="h-10 w-10 p-0 hover:bg-muted touch-manipulation"
-          title="Copy item name"
-        >
-          <ClipboardCopy className="h-4 w-4" />
-        </Button>
-        <Button
-          size="sm"
-          variant="ghost"
-          onClick={handleToggleCheck}
-          className={`h-10 w-10 p-0 touch-manipulation relative ${
-            isChecked 
-              ? 'bg-green-50 text-green-600 hover:bg-green-100' 
-              : 'hover:bg-muted text-gray-400'
-          }`}
-          title={isChecked ? "Mark as incomplete" : "Mark as complete"}
-        >
-          {isChecked ? (
-            <div className="relative">
-              <CheckCircle2 className="h-5 w-5 fill-current" />
-              <Check className="h-3 w-3 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white stroke-[3]" />
-            </div>
-          ) : (
-            <CheckCircle2 className="h-5 w-5" />
-          )}
-        </Button>
-      </div>
+      <Button
+        size="sm"
+        variant="ghost"
+        onClick={handleOcadoClick}
+        className="h-10 w-10 shrink-0 rounded-full p-0 text-muted-foreground hover:bg-[#F5B82E]/15 hover:text-foreground touch-manipulation"
+        title="Shop on Ocado"
+        aria-label={"Shop for " + name + " on Ocado"}
+      >
+        <ShoppingCart className="h-[18px] w-[18px]" />
+      </Button>
+
+      <span className="sr-only">Long press or touch-hold to copy the shopping item name.</span>
     </div>
   );
 }
