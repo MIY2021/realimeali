@@ -105,6 +105,9 @@ export const useShoppingListGenerator = () => {
       type PreparedItem = {
         name: string;
         quantity?: number;
+        quantityMin?: number;
+        quantityMax?: number;
+        quantityDisplay?: string;
         unit?: string;
         recipeId: string;
         rawName: string;
@@ -132,6 +135,9 @@ export const useShoppingListGenerator = () => {
           return {
             name,
             quantity: parsed.quantity,
+            quantityMin: parsed.quantityMin,
+            quantityMax: parsed.quantityMax,
+            quantityDisplay: parsed.quantityDisplay,
             unit: parsed.unit,
             recipeId: item.recipeId,
             rawName: item.rawName,
@@ -145,6 +151,9 @@ export const useShoppingListGenerator = () => {
       const grouped = new Map<string, {
         name: string;
         quantity?: number;
+        quantityMin?: number;
+        quantityMax?: number;
+        quantityDisplay?: string;
         unit?: string;
         recipeIds: string[];
         sourceIngredients: string[];
@@ -163,6 +172,9 @@ export const useShoppingListGenerator = () => {
           grouped.set(groupKey, {
             name: item.name,
             quantity: item.quantity,
+            quantityMin: item.quantityMin,
+            quantityMax: item.quantityMax,
+            quantityDisplay: item.quantityDisplay,
             unit: item.unit,
             recipeIds: [item.recipeId],
             sourceIngredients: [item.rawName],
@@ -176,6 +188,17 @@ export const useShoppingListGenerator = () => {
           existing.quantity += item.quantity;
         } else if (existing.quantity === undefined) {
           existing.quantity = item.quantity;
+        }
+
+        if (item.quantityMin !== undefined && item.quantityMax !== undefined) {
+          existing.quantityMin = (existing.quantityMin ?? 0) + item.quantityMin;
+          existing.quantityMax = (existing.quantityMax ?? 0) + item.quantityMax;
+        }
+
+        if (existing.quantityMin !== undefined && existing.quantityMax !== undefined) {
+          existing.quantityDisplay = existing.quantityMin === existing.quantityMax
+            ? String(existing.quantityMin)
+            : `${existing.quantityMin}–${existing.quantityMax}`;
         }
 
         if (!existing.recipeIds.includes(item.recipeId)) {
@@ -196,6 +219,7 @@ export const useShoppingListGenerator = () => {
         is_checked: item.checked,
         recipe_ids: item.recipeIds,
         quantity: item.quantity,
+        quantity_display: item.quantityDisplay,
         unit: item.unit || '',
         consolidated_quantity: item.quantity ?? 1,
         consolidated_unit: item.unit || '',
@@ -208,7 +232,7 @@ export const useShoppingListGenerator = () => {
       const { data, error } = await supabase
         .from('household_shopping_lists')
         .insert(itemsToInsert)
-        .select('id, name, quantity, unit, consolidated_quantity, consolidated_unit, source_ingredients, is_checked, is_custom, recipe_ids, created_at, created_by, category');
+        .select('id, name, quantity, quantity_display, unit, consolidated_quantity, consolidated_unit, source_ingredients, is_checked, is_custom, recipe_ids, created_at, created_by, category');
 
       if (error) throw error;
 
@@ -216,6 +240,7 @@ export const useShoppingListGenerator = () => {
         id: item.id,
         name: item.name,
         quantity: item.quantity,
+        quantityDisplay: item.quantity_display,
         unit: item.unit,
         consolidatedQuantity: item.consolidated_quantity,
         consolidatedUnit: item.consolidated_unit,
