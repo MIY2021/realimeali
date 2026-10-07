@@ -59,6 +59,7 @@ export default function ShoppingListItems({
                       id={item.id}
                       name={item.name}
                       quantity={item.consolidatedQuantity || item.quantity || 1}
+                      quantityDisplay={item.quantityDisplay}
                       unit={item.consolidatedUnit || item.unit}
                       isChecked={item.isChecked}
                       recipeIds={[...new Set(item.recipeIds)]}
@@ -93,6 +94,7 @@ export default function ShoppingListItems({
               id={item.id}
               name={item.name}
               quantity={item.consolidatedQuantity || item.quantity || 1}
+              quantityDisplay={item.quantityDisplay}
               unit={item.consolidatedUnit || item.unit}
               isChecked={item.isChecked}
               recipeIds={[...new Set(item.recipeIds)]}
