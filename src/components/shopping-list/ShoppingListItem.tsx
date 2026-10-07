@@ -15,6 +15,7 @@ interface ShoppingListItemProps {
   id: string;
   name: string;
   quantity?: number;
+  quantityDisplay?: string;
   unit?: string;
   isChecked: boolean;
   recipeIds: string[];
@@ -29,6 +30,7 @@ export function ShoppingListItem({
   id,
   name,
   quantity,
+  quantityDisplay,
   unit,
   isChecked,
   recipeIds,
@@ -193,9 +195,9 @@ export function ShoppingListItem({
       <div className="flex-1 min-w-0">
         <div>
             <div className={`text-sm ${isChecked ? 'line-through' : ''}`} style={{ color: isChecked ? 'hsl(var(--shopping-grey))' : 'hsl(var(--shopping-navy))' }}>
-              {quantity && unit && recipeIds.length > 0 && !getRecipeNames(recipeIds).includes('Custom Entry') && (
+              {quantity !== undefined && recipeIds.length > 0 && !getRecipeNames(recipeIds).includes('Custom Entry') && (
                 <span className="text-sm mr-1" style={{ color: 'hsl(var(--shopping-grey))' }}>
-                  {formatQuantity(quantity)} {unit === "pcs" ? "" : unit}
+                  {quantityDisplay || formatQuantity(quantity)}{unit && unit !== "pcs" ? ` ${unit}` : ""}
                 </span>
               )}
               <span className="font-medium break-words">{name}</span>
