@@ -1,6 +1,9 @@
 export interface ParsedShoppingIngredient {
   name: string;
   quantity?: number;
+  quantityMin?: number;
+  quantityMax?: number;
+  quantityDisplay?: string;
   unit?: string;
   searchName: string;
 }
@@ -24,6 +27,27 @@ const UNIT_ALIASES: Record<string, string> = {
 };
 
 const NUMBER_PATTERN = "(?:\\d+(?:\\.\\d+)?|\\d+\\s+\\d+\\/\\d+|\\d+\\/\\d+|[½¼¾⅓⅔⅛⅜⅝⅞])";
+const RANGE_PATTERN = `(${NUMBER_PATTERN})\\s*[–-]\\s*(${NUMBER_PATTERN})`;
+
+const formatParsedNumber = (value: string): string => {
+  const number = fractionToNumber(value);
+  if (number === undefined) return value.trim();
+
+  const fractions: Array<[number, string]> = [
+    [0.125, "⅛"], [0.25, "¼"], [1 / 3, "⅓"], [0.5, "½"],
+    [2 / 3, "⅔"], [0.75, "¾"], [0.875, "⅞"]
+  ];
+
+  if (Number.isInteger(number)) return String(number);
+
+  for (const [decimal, symbol] of fractions) {
+    if (Math.abs(number - decimal) < 0.01) return symbol;
+    const whole = Math.floor(number);
+    if (whole > 0 && Math.abs(number - whole - decimal) < 0.01) return `${whole}${symbol}`;
+  }
+
+  return String(Math.round(number * 100) / 100);
+};
 
 const fractionToNumber = (value: string): number | undefined => {
   const trimmed = value.trim();
@@ -93,9 +117,32 @@ export const canonicalizeShoppingSearchName = (value: string): string => {
 
 export function parseShoppingIngredient(rawIngredient: string): ParsedShoppingIngredient {
   const cleaned = tidyName(rawIngredient.trim());
+  const unitPattern = "g|kg|ml|l|cl|oz|lb|lbs|tsp\\.?|tbsp\\.?|teaspoons?|tablespoons?|grams?|kilos?|kilograms?|millilitres?|milliliters?|litres?|liters?|ounces?|pounds?|tins?|cans?|packets?|packs?|bunches?|cloves?|slices?|pieces?";
+
+  // Support ranges such as "2-3 tbsp", "3–4 chicken breasts" and "½–1 tsp".
+  const rangeAmountMatch = cleaned.match(new RegExp(
+    "^" + RANGE_PATTERN + "\\s*(" + unitPattern + ")\\b\\s*",
+    "i"
+  ));
+
+  if (rangeAmountMatch) {
+    const min = fractionToNumber(rangeAmountMatch[1]);
+    const max = fractionToNumber(rangeAmountMatch[2]);
+    const rawUnit = rangeAmountMatch[3].toLowerCase();
+    const unit = UNIT_ALIASES[rawUnit] || rawUnit;
+    const name = canonicalizeShoppingSearchName(cleaned.slice(rangeAmountMatch[0].length).trim());
+
+    if (min !== undefined && max !== undefined && name) {
+      return {
+        name, quantity: min, quantityMin: min, quantityMax: max,
+        quantityDisplay: `${formatParsedNumber(rangeAmountMatch[1])}–${formatParsedNumber(rangeAmountMatch[2])}`,
+        unit, searchName: name,
+      };
+    }
+  }
 
   const amountMatch = cleaned.match(new RegExp(
-    "^(" + NUMBER_PATTERN + ")\\s*(g|kg|ml|l|cl|oz|lb|lbs|tsp\\.?|tbsp\\.?|teaspoons?|tablespoons?|grams?|kilos?|kilograms?|millilitres?|milliliters?|litres?|liters?|ounces?|pounds?|tins?|cans?|packets?|packs?|bunches?|cloves?|slices?|pieces?)\\b\\s*",
+    "^(" + NUMBER_PATTERN + ")\\s*(" + unitPattern + ")\\b\\s*",
     "i"
   ));
 
@@ -106,21 +153,60 @@ export function parseShoppingIngredient(rawIngredient: string): ParsedShoppingIn
     const name = canonicalizeShoppingSearchName(cleaned.slice(amountMatch[0].length).trim());
 
     return {
-      name: name || cleaned,
-      quantity,
-      unit,
-      searchName: name || cleaned,
+      name: name || cleaned, quantity, quantityMin: quantity, quantityMax: quantity,
+      quantityDisplay: formatParsedNumber(amountMatch[1]), unit, searchName: name || cleaned,
     };
   }
 
+  // Handle wording where the quantity follows the preparation, e.g. "Juice of ½ lemon".
+  const quantityAfterPrepMatch = cleaned.match(new RegExp(
+    "^(juice|zest)\\s+of\\s+(" + NUMBER_PATTERN + ")\\s+(.+)$", "i"
+  ));
+
+  if (quantityAfterPrepMatch) {
+    const quantity = fractionToNumber(quantityAfterPrepMatch[2]);
+    const name = canonicalizeShoppingSearchName(
+      `${quantityAfterPrepMatch[1]} ${quantityAfterPrepMatch[3].trim()}`
+    );
+
+    if (quantity !== undefined && name) {
+      return {
+        name, quantity, quantityMin: quantity, quantityMax: quantity,
+        quantityDisplay: formatParsedNumber(quantityAfterPrepMatch[2]),
+        unit: "pcs", searchName: name,
+      };
+    }
+  }
+
   // Do not interpret percentages such as "5% fat beef mince" as "5 pieces".
+  const countRangeMatch = cleaned.match(new RegExp(
+    "^" + RANGE_PATTERN + "\\s+(?!%)(.+)$", "i"
+  ));
+
+  if (countRangeMatch) {
+    const min = fractionToNumber(countRangeMatch[1]);
+    const max = fractionToNumber(countRangeMatch[2]);
+    const name = canonicalizeShoppingSearchName(countRangeMatch[3].trim());
+
+    if (min !== undefined && max !== undefined && name) {
+      return {
+        name, quantity: min, quantityMin: min, quantityMax: max,
+        quantityDisplay: `${formatParsedNumber(countRangeMatch[1])}–${formatParsedNumber(countRangeMatch[2])}`,
+        unit: "pcs", searchName: name,
+      };
+    }
+  }
+
   const countMatch = cleaned.match(new RegExp("^(" + NUMBER_PATTERN + ")\\s+(?!%)(.+)$", "i"));
   if (countMatch) {
     const quantity = fractionToNumber(countMatch[1]);
     const name = canonicalizeShoppingSearchName(countMatch[2].trim());
 
     if (quantity !== undefined && name) {
-      return { name, quantity, unit: "pcs", searchName: name };
+      return {
+        name, quantity, quantityMin: quantity, quantityMax: quantity,
+        quantityDisplay: formatParsedNumber(countMatch[1]), unit: "pcs", searchName: name
+      };
     }
   }
 
