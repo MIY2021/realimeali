@@ -190,7 +190,7 @@ export function ShoppingListItem({
       </div>
 
       {/* Main content - limited width to make room for buttons */}
-      <div className="flex-1 min-w-0 max-w-[65%]">
+      <div className="flex-1 min-w-0">
         <div>
             <div className={`text-sm ${isChecked ? 'line-through' : ''}`} style={{ color: isChecked ? 'hsl(var(--shopping-grey))' : 'hsl(var(--shopping-navy))' }}>
               {quantity && unit && recipeIds.length > 0 && !getRecipeNames(recipeIds).includes('Custom Entry') && (
@@ -198,7 +198,7 @@ export function ShoppingListItem({
                   {formatQuantity(quantity)} {unit === "pcs" ? "" : unit}
                 </span>
               )}
-              <span className="font-medium">{name}</span>
+              <span className="font-medium break-words">{name}</span>
             </div>
             
             {recipeIds.length > 0 && sortOption !== "recipe" && (
@@ -242,7 +242,7 @@ export function ShoppingListItem({
       </div>
 
       {/* Actions and checkbox on the right - closer together with more padding */}
-      <div className="flex items-center gap-2 ml-4 -mr-4">
+      <div className="flex items-center gap-2 ml-4 -mr-4 shrink-0">
         <Button
           size="sm"
           variant="ghost"
