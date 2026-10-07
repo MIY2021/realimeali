@@ -207,6 +207,8 @@ export const useShoppingListGenerator = () => {
         is_custom: false,
         is_checked: item.checked,
         recipe_ids: item.recipeIds,
+        quantity: item.quantity,
+        unit: item.unit || '',
         consolidated_quantity: item.quantity ?? 1,
         consolidated_unit: item.unit || '',
         source_ingredients: item.sourceIngredients,
