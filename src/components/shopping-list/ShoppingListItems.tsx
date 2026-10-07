@@ -41,13 +41,13 @@ export default function ShoppingListItems({
     const groupedItems = shoppingList as GroupedShoppingListItem[];
 
     return (
-      <div className="space-y-6 sm:space-y-8" data-shopping-list-container>
+      <div className="space-y-8 sm:space-y-10" data-shopping-list-container>
         {groupedItems.map((group) => {
           const CategoryIcon = categoryIcons[group.groupLabel] || Package;
 
           return (
             <section key={group.groupKey} aria-labelledby={"shopping-group-" + group.groupKey}>
-              <div className="mb-1 flex items-center justify-between px-1.5">
+              <div className="mb-2 flex items-center justify-between border-b border-border/70 px-1.5 pb-2">
                 <div className="flex min-w-0 items-center gap-2">
                   <CategoryIcon className="h-4 w-4 shrink-0 text-[#F5B82E]" aria-hidden="true" />
                   <h3
@@ -57,7 +57,7 @@ export default function ShoppingListItems({
                     {group.groupLabel}
                   </h3>
                 </div>
-                <span className="shrink-0 text-xs font-medium text-muted-foreground/70">
+                <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs font-semibold text-muted-foreground">
                   {group.items.length}
                 </span>
               </div>
