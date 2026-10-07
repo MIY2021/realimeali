@@ -5,7 +5,7 @@ import { useMealPlan } from "@/contexts/MealPlanContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { ShoppingListService } from "@/services/shoppingListService";
-import { batchGetCategoriesFromDatabase, getCategoryForIngredient, normalizeShoppingIngredients } from "@/services/ingredientCategorizationService";
+import { batchGetCategoriesFromDatabase, normalizeShoppingIngredients } from "@/services/ingredientCategorizationService";
 import { DEFAULT_INGREDIENT_CATEGORY } from "@/types/ingredientCategories";
 import { supabase } from "@/integrations/supabase/client";
 import { parseShoppingIngredient } from "@/utils/shoppingIngredientUtils";
