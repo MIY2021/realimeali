@@ -15,7 +15,7 @@ import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Send, Plus, SlidersHorizontal } from "lucide-react";
+import { Send, Plus, SlidersHorizontal, Search, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import { getCurrentWeekKey } from "@/utils/weekUtils";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -47,6 +47,7 @@ export default function ShoppingList() {
   const [showOnlyUnchecked, setShowOnlyUnchecked] = useState(false);
   const [sortOption, setSortOption] = useState<SortOption>("category");
   const [newItemName, setNewItemName] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {
@@ -122,9 +123,12 @@ export default function ShoppingList() {
     return recipeNames.length > 0 ? recipeNames.join(", ") : "Unknown Recipe";
   };
 
-  const filteredShoppingList = showOnlyUnchecked
-    ? shoppingList.filter(item => !item.isChecked)
-    : shoppingList;
+  const filteredShoppingList = shoppingList.filter(item => {
+    if (showOnlyUnchecked && item.isChecked) return false;
+    if (!searchQuery.trim()) return true;
+    const query = searchQuery.trim().toLowerCase();
+    return item.name.toLowerCase().includes(query);
+  });
 
   const groupedItems = groupShoppingListItems(
     filteredShoppingList,
@@ -199,17 +203,53 @@ export default function ShoppingList() {
                 onWeekChange={setCurrentWeek}
                 onWeekClick={() => setAllWeeksModalOpen(true)}
               />
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleShare}
-                className="h-9 w-9 p-0 rounded-full"
-                title="Share shopping list"
-                aria-label="Share shopping list"
-              >
-                <Send className="h-4 w-4" />
-              </Button>
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSearchQuery(searchQuery ? "" : "__open__")}
+                  className="h-9 w-9 p-0 rounded-full"
+                  title="Search shopping list"
+                  aria-label="Search shopping list"
+                >
+                  <Search className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleShare}
+                  className="h-9 w-9 p-0 rounded-full"
+                  title="Share shopping list"
+                  aria-label="Share shopping list"
+                >
+                  <Send className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
+
+            {searchQuery !== "" && (
+              <div className="border-t border-border/60 px-3 py-2 sm:px-4">
+                <div className="flex items-center gap-2 rounded-xl bg-muted/60 px-3">
+                  <Search className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+                  <Input
+                    autoFocus
+                    value={searchQuery === "__open__" ? "" : searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search your shopping list..."
+                    aria-label="Search your shopping list"
+                    className="h-10 border-0 bg-transparent px-0 shadow-none focus-visible:ring-0"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery("")}
+                    className="rounded-full p-1 text-muted-foreground hover:bg-background hover:text-foreground"
+                    aria-label="Close search"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+            )}
 
             <div className="border-t border-border/60 px-4 py-3 sm:px-5">
               <div className="flex items-end justify-between gap-4 mb-2">
@@ -307,8 +347,7 @@ export default function ShoppingList() {
             <ShoppingListEmptyState hasMealPlans={hasMealPlans} />
           )}
 
-          {shoppingList.length > 0 && (
-            <form
+          <form
               onSubmit={handleAddItem}
               className="sticky bottom-3 z-20 mt-5 flex items-center gap-2 rounded-2xl border border-border bg-background/95 p-2 shadow-lg backdrop-blur"
             >
@@ -328,8 +367,7 @@ export default function ShoppingList() {
               >
                 Add
               </Button>
-            </form>
-          )}
+          </form>
         </>
       )}
     </div>
