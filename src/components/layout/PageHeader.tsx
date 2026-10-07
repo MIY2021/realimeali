@@ -5,9 +5,14 @@ interface PageHeaderProps {
   title: string;
   description?: string;
   actions?: ReactNode;
+  visuallyHidden?: boolean;
 }
 
-export function PageHeader({ icon, title, description, actions }: PageHeaderProps) {
+export function PageHeader({ icon, title, description, actions, visuallyHidden = false }: PageHeaderProps) {
+  if (visuallyHidden) {
+    return <h1 className="sr-only">{title}</h1>;
+  }
+
   return (
     <div className="flex flex-col gap-3 mb-4 sm:mb-6">
       <div className="flex items-center justify-between">
