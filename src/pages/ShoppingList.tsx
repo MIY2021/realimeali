@@ -48,6 +48,7 @@ export default function ShoppingList() {
   const [sortOption, setSortOption] = useState<SortOption>("category");
   const [newItemName, setNewItemName] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
 
   useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {
@@ -125,7 +126,7 @@ export default function ShoppingList() {
 
   const filteredShoppingList = shoppingList.filter(item => {
     if (showOnlyUnchecked && item.isChecked) return false;
-    if (!searchQuery.trim()) return true;
+    if (!searchOpen || !searchQuery.trim()) return true;
     const query = searchQuery.trim().toLowerCase();
     return item.name.toLowerCase().includes(query);
   });
@@ -207,7 +208,7 @@ export default function ShoppingList() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => setSearchQuery(searchQuery ? "" : "__open__")}
+                  onClick={() => setSearchOpen(value => !value)}
                   className="h-9 w-9 p-0 rounded-full"
                   title="Search shopping list"
                   aria-label="Search shopping list"
@@ -227,13 +228,13 @@ export default function ShoppingList() {
               </div>
             </div>
 
-            {searchQuery !== "" && (
+            {searchOpen && (
               <div className="border-t border-border/60 px-3 py-2 sm:px-4">
                 <div className="flex items-center gap-2 rounded-xl bg-muted/60 px-3">
                   <Search className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
                   <Input
                     autoFocus
-                    value={searchQuery === "__open__" ? "" : searchQuery}
+                    value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search your shopping list..."
                     aria-label="Search your shopping list"
@@ -241,7 +242,7 @@ export default function ShoppingList() {
                   />
                   <button
                     type="button"
-                    onClick={() => setSearchQuery("")}
+                    onClick={() => { setSearchQuery(""); setSearchOpen(false); }}
                     className="rounded-full p-1 text-muted-foreground hover:bg-background hover:text-foreground"
                     aria-label="Close search"
                   >
