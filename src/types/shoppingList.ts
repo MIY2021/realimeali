@@ -3,6 +3,7 @@ export interface ShoppingListItem {
   id: string;
   name: string;
   quantity?: number;
+  quantityDisplay?: string;
   unit?: string;
   consolidatedQuantity?: number;
   consolidatedUnit?: string;
