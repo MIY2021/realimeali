@@ -28,7 +28,7 @@ export const MealPlannerHeader = ({ user, currentHousehold, onInfoClick }: MealP
         />
       }
       title="Meal Planner"
-
+      visuallyHidden
     />
   );
 };
