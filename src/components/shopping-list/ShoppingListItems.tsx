@@ -9,6 +9,7 @@ interface ShoppingListItemsProps {
   copiedItemId: string | null;
   onToggleItem: (itemId: string) => void;
   onCopyItem: (itemId: string) => void;
+  sortOption: SortOption;
 }
 
 const categoryIcons: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -46,8 +47,12 @@ export default function ShoppingListItems({
           const CategoryIcon = categoryIcons[group.groupLabel] || Package;
 
           return (
-            <section key={group.groupKey} aria-labelledby={"shopping-group-" + group.groupKey}>
-              <div className="mb-2 flex items-center justify-between border-b border-border/70 px-1.5 pb-2">
+            <section
+              key={group.groupKey}
+              aria-labelledby={"shopping-group-" + group.groupKey}
+              className="overflow-hidden rounded-2xl border border-border/80 bg-card shadow-sm"
+            >
+              <div className="flex items-center justify-between border-b border-border/70 bg-muted/35 px-4 py-3">
                 <div className="flex min-w-0 items-center gap-2">
                   <CategoryIcon className="h-4 w-4 shrink-0 text-[#F5B82E]" aria-hidden="true" />
                   <h3
@@ -62,7 +67,7 @@ export default function ShoppingListItems({
                 </span>
               </div>
 
-              <div className="divide-y divide-border/60">
+              <div className="divide-y divide-border/60 px-3 sm:px-4">
                 {group.items.map((item) => (
                   <ShoppingListItem
                     key={item.id}
