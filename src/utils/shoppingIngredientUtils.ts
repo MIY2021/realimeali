@@ -76,13 +76,13 @@ const fractionToNumber = (value: string): number | undefined => {
 
   if (unicodeFractions[trimmed] !== undefined) return unicodeFractions[trimmed];
 
-  if (/^\\d+\\s+\\d+\\/\\d+$/.test(trimmed)) {
-    const [whole, fraction] = trimmed.split(/\\s+/);
+  if (/^\d+\s+\d+\/\d+$/.test(trimmed)) {
+    const [whole, fraction] = trimmed.split(/\s+/);
     const [numerator, denominator] = fraction.split("/").map(Number);
     return Number(whole) + numerator / denominator;
   }
 
-  if (/^\\d+\\/\\d+$/.test(trimmed)) {
+  if (/^\d+\/\d+$/.test(trimmed)) {
     const [numerator, denominator] = trimmed.split("/").map(Number);
     return numerator / denominator;
   }
