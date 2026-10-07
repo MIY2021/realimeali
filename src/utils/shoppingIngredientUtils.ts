@@ -114,7 +114,7 @@ export function parseShoppingIngredient(rawIngredient: string): ParsedShoppingIn
   }
 
   // Do not interpret percentages such as "5% fat beef mince" as "5 pieces".
-  const countMatch = cleaned.match(new RegExp("^((" + NUMBER_PATTERN + "))\\s+(?!%)(.+)$", "i"));
+  const countMatch = cleaned.match(new RegExp("^(" + NUMBER_PATTERN + ")\\s+(?!%)(.+)$", "i"));
   if (countMatch) {
     const quantity = fractionToNumber(countMatch[1]);
     const name = canonicalizeShoppingSearchName(countMatch[2].trim());
