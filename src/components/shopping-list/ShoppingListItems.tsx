@@ -9,7 +9,6 @@ interface ShoppingListItemsProps {
   copiedItemId: string | null;
   onToggleItem: (itemId: string) => void;
   onCopyItem: (itemId: string) => void;
-  getRecipeNames: (recipeIds: string[]) => string;
   sortOption: SortOption;
 }
 
@@ -32,7 +31,6 @@ export default function ShoppingListItems({
   copiedItemId,
   onToggleItem,
   onCopyItem,
-  getRecipeNames,
   sortOption
 }: ShoppingListItemsProps) {
   const isGrouped =
@@ -75,11 +73,9 @@ export default function ShoppingListItems({
                     quantityDisplay={item.quantityDisplay}
                     unit={item.consolidatedUnit || item.unit}
                     isChecked={item.isChecked}
-                    recipeIds={[...new Set(item.recipeIds)]}
                     copiedItemId={copiedItemId}
                     onCheck={() => onToggleItem(item.id)}
                     onCopy={() => onCopyItem(item.id)}
-                    getRecipeNames={getRecipeNames}
                     sortOption={sortOption}
                   />
                 ))}
@@ -104,11 +100,9 @@ export default function ShoppingListItems({
           quantityDisplay={item.quantityDisplay}
           unit={item.consolidatedUnit || item.unit}
           isChecked={item.isChecked}
-          recipeIds={[...new Set(item.recipeIds)]}
           copiedItemId={copiedItemId}
           onCheck={() => onToggleItem(item.id)}
           onCopy={() => onCopyItem(item.id)}
-          getRecipeNames={getRecipeNames}
           sortOption={sortOption}
         />
       ))}
