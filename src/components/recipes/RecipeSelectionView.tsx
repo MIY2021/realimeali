@@ -30,6 +30,7 @@ import {
   COOKING_DURATION_OPTIONS,
 } from "@/utils/recipeClassification";
 import { Recipe, MealType } from "@/types";
+import { PageControlsCard } from "@/components/layout/PageControlsCard";
 
 interface RecipeSelectionViewProps {
   recipes: Recipe[];
@@ -200,7 +201,7 @@ export function RecipeSelectionView({
         </div>
       ) : (
 
-        <div>
+        <PageControlsCard className="p-4">
           {/* Search, Sort Controls */}
           <div className="flex gap-3 mb-6">
             <div className="flex-1 relative">
@@ -252,7 +253,7 @@ export function RecipeSelectionView({
             onToggle={toggleFilters}
             alwaysVisible={true}
           />
-        </div>
+        </PageControlsCard>
       )}
       
       {filteredAndSortedRecipes.length === 0 ? (
