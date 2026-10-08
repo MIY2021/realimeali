@@ -123,7 +123,6 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
     }
 
     if (!stableUserId || !stableHouseholdId) {
-    if (!stableUserId || !stableHouseholdId) {
       if (lastFetchedHouseholdIdRef.current) {
         console.log('MealPlanContext: No user or household, clearing meal plans');
         setMealPlans([]);
@@ -131,7 +130,7 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
         currentUserIdRef.current = null;
       }
     }
-  }, [stableUserId, stableHouseholdId]);
+  }, [stableUserId, stableHouseholdId, fetchMealPlans]);
 
   const getMealPlansForWeek = useCallback((weekKey: string): MealPlan[] => {
     if (!stableUserId || !stableHouseholdId) return [];
