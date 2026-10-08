@@ -31,21 +31,8 @@ export const MealPlannerContent = ({
   onRemoveMeal,
   onCreateLeftover,
 }: MealPlannerContentProps) => {
-  const cookedCount = currentMealPlans.filter(plan => plan.is_completed).length;
-
   return (
-    <div className="space-y-6 sm:space-y-8">
-      <div className="px-1">
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-          Your meals
-        </p>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {isDataLoading
-            ? "Loading your week…"
-            : `${currentMealPlans.length} ${currentMealPlans.length === 1 ? "meal" : "meals"} planned${cookedCount > 0 ? ` · ${cookedCount} cooked` : ""}`}
-        </p>
-      </div>
-
+    <div>
       <MealPlannerGridView
         currentMealPlans={currentMealPlans}
         recipes={recipes}
