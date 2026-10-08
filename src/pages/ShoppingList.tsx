@@ -14,11 +14,10 @@ import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Send, Plus, SlidersHorizontal, Search, X } from "lucide-react";
+import { Send, Plus, Search, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import { getCurrentWeekKey } from "@/utils/weekUtils";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { SortOption, groupShoppingListItems } from "@/utils/shoppingListSorting";
+import { groupByCategory } from "@/utils/shoppingListSorting";
 import { PageControlsCard } from "@/components/layout/PageControlsCard";
 import OcadoShoppingMode from "@/components/shopping-list/OcadoShoppingMode";
 
@@ -45,7 +44,6 @@ export default function ShoppingList() {
   const [allWeeksModalOpen, setAllWeeksModalOpen] = useState(false);
   const [copiedItemId, setCopiedItemId] = useState<string | null>(null);
   const [showOnlyUnchecked, setShowOnlyUnchecked] = useState(false);
-  const [sortOption, setSortOption] = useState<SortOption>("category");
   const [newItemName, setNewItemName] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
@@ -83,22 +81,11 @@ export default function ShoppingList() {
       }
     }
 
-    const savedSort = localStorage.getItem("realiMeali_shoppingListSort");
-    if (savedSort === "category") {
-      setSortOption(savedSort as SortOption);
-    } else {
-      setSortOption("category");
-      localStorage.setItem("realiMeali_shoppingListSort", "category");
-    }
   }, []);
 
   useEffect(() => {
     localStorage.setItem("realiMeali_showOnlyUnchecked", JSON.stringify(showOnlyUnchecked));
   }, [showOnlyUnchecked]);
-
-  useEffect(() => {
-    localStorage.setItem("realiMeali_shoppingListSort", sortOption);
-  }, [sortOption]);
 
   const mealPlans = getMealPlansForWeek(currentWeek);
   const hasMealPlans = mealPlans.length > 0;
@@ -115,7 +102,7 @@ export default function ShoppingList() {
     return item.name.toLowerCase().includes(query);
   });
 
-  const groupedItems = groupShoppingListItems(filteredShoppingList, sortOption);
+  const groupedItems = groupByCategory(filteredShoppingList);
 
   const handleOpenOcado = (itemId: string) => {
     setOcadoItemId(itemId);
@@ -265,7 +252,7 @@ export default function ShoppingList() {
               </div>
             </div>
 
-            <div className="flex flex-col gap-2 border-t border-border/60 px-3 py-2.5 sm:flex-row sm:items-center sm:justify-between sm:px-4">
+            <div className="border-t border-border/60 px-3 py-2.5 sm:px-4">
               <div className="flex items-center gap-1 rounded-xl bg-muted/70 p-1 w-fit">
                 <button
                   type="button"
@@ -293,18 +280,6 @@ export default function ShoppingList() {
                 >
                   To buy {remainingItems}
                 </button>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <SlidersHorizontal className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-                <Select value={sortOption} onValueChange={(value) => setSortOption(value as SortOption)}>
-                  <SelectTrigger className="h-8 w-auto min-w-[120px] border-0 bg-transparent px-1 text-xs font-medium shadow-none focus:ring-0">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="category">Shop by category</SelectItem>
-                  </SelectContent>
-                </Select>
               </div>
             </div>
           </PageControlsCard>
