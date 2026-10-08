@@ -202,7 +202,7 @@ export default function Index() {
               <RecipeCardIcon className="h-5 w-5 text-[#b85f49] mb-2" />
               <span className="block text-sm font-semibold text-gray-900">Add recipe</span>
             </button>
-            <button onClick={() => navigate("/meal-planner?generate=1")} className="min-h-[74px] rounded-xl border border-gray-200 bg-white px-3 py-3 text-left hover:border-[#b85f49] transition-colors">
+            <button onClick={() => navigate("/meal-planner", { state: { openGenerator: true } })} className="min-h-[74px] rounded-xl border border-gray-200 bg-white px-3 py-3 text-left hover:border-[#b85f49] transition-colors">
               <RecipeCardIcon className="h-5 w-5 text-[#b85f49] mb-2" />
               <span className="block text-sm font-semibold text-gray-900">Generate plan</span>
             </button>
