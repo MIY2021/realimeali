@@ -6,8 +6,6 @@ import { ClearAllMealsDialog } from "@/components/meal-planner/ClearAllMealsDial
 import { MealServingsDialog } from "@/components/meal-planner/MealServingsDialog";
 import { Recipe, MealType } from "@/types";
 
-export type MealPlanGenerationMode = "replace" | "add";
-
 interface MealPlannerModalsContainerProps {
   quantitiesDialog: boolean;
   setQuantitiesDialog: (open: boolean) => void;
@@ -27,10 +25,9 @@ interface MealPlannerModalsContainerProps {
   recipes: Recipe[];
   currentWeek: string;
   generationMode: MealPlanGenerationMode;
-  onRandomizeWithQuantities: (quantities: any, mode: MealPlanGenerationMode) => void;
+  onConfirmGeneratedMeals: (meals: GeneratedMeal[], mode: MealPlanGenerationMode) => void;
   onSimpleMealSelect: (recipeId: string) => void;
   onAddFreetypeMeal: (mealName: string, servings: number) => void;
-  onGenerateMeal: () => Promise<void>;
   onLunchLeftoverConfirm: (servings: number) => void;
   onCreateLeftover: (mealPlan: any, recipe?: any, leftoverServings?: number) => void;
   onWarningReplace: () => void;
@@ -59,10 +56,9 @@ export const MealPlannerModalsContainer = ({
   recipes,
   currentWeek,
   generationMode,
-  onRandomizeWithQuantities,
+  onConfirmGeneratedMeals,
   onSimpleMealSelect,
   onAddFreetypeMeal,
-  onGenerateMeal,
   onLunchLeftoverConfirm,
   onCreateLeftover,
   onWarningReplace,
@@ -78,9 +74,10 @@ export const MealPlannerModalsContainer = ({
       <MealPlanQuantitiesDialog
         isOpen={quantitiesDialog}
         onClose={() => setQuantitiesDialog(false)}
-        onConfirm={(quantities) => onRandomizeWithQuantities(quantities, generationMode)}
+        onConfirm={onConfirmGeneratedMeals}
         availableRecipes={recipes.length}
-        onChooseMeals={onChooseMeals}
+        recipes={recipes}
+        currentMealCount={generationMode === "add" ? 0 : undefined}
       />
 
       <MealPlannerRecipeSelection
@@ -93,7 +90,6 @@ export const MealPlannerModalsContainer = ({
         recipes={recipes}
         onSelectRecipe={onSimpleMealSelect}
         onAddFreetypeMeal={onAddFreetypeMeal}
-        onGenerateMeal={onGenerateMeal}
       />
 
       <LeftoverServingsDialog
