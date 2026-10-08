@@ -191,6 +191,27 @@ export default function MealPlannerContainer() {
     currentMealPlans,
   });
 
+  const handleGenerateMeal = useCallback(async () => {
+    if (!pendingMealType) return;
+
+    try {
+      await generateRandomMeals(currentWeek, pendingMealType, 1);
+      await fetchMealPlans();
+      toast({
+        title: "Meal generated",
+        description: `A random ${pendingMealType} has been added to your meal plan.`,
+      });
+    } catch (error) {
+      console.error("Error generating meal:", error);
+      toast({
+        title: "Couldn't generate meal",
+        description: error instanceof Error ? error.message : "No suitable recipe could be generated.",
+        variant: "destructive",
+      });
+      throw error;
+    }
+  }, [pendingMealType, currentWeek, generateRandomMeals, fetchMealPlans, toast]);
+
   const handleAddMeal = useCallback((mealType: MealType) => {
     console.log("🍽️ handleAddMeal called with mealType:", mealType);
     setPendingMealType(mealType);
@@ -418,7 +439,6 @@ export default function MealPlannerContainer() {
       />
 
       <MealPlannerActions
-        onRandomize={handleRandomizeClick}
         onShare={handleShare}
         onClearAll={handleClearAll}
         isLoading={isLoading || isDataLoading}
@@ -473,6 +493,7 @@ export default function MealPlannerContainer() {
         onRandomizeWithQuantities={handleRandomizeWithQuantities}
         onSimpleMealSelect={handleSimpleMealSelect}
         onAddFreetypeMeal={handleAddFreetypeMeal}
+        onGenerateMeal={handleGenerateMeal}
         onLunchLeftoverConfirm={handleLunchLeftoverConfirm}
         onCreateLeftover={handleCreateLeftoverWithServings}
         onWarningReplace={handleWarningReplace}
