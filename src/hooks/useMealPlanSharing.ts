@@ -27,14 +27,20 @@ export const useMealPlanSharing = ({
 }: UseMealPlanSharingProps) => {
 
   const formatMealPlanText = useCallback(() => {
-    if (!mealPlans.length || !recipes.length) {
-      return `Meal Plan\n\nNo meals planned for this week.`;
+    const weekPlans = mealPlans.filter(plan => plan.week_key === currentWeek);
+
+    const { year, week } = parseISOWeekKey(currentWeek);
+    const weekRange = formatWeekRange(year, week);
+
+    if (!weekPlans.length) {
+      return `🍽️ RealiMeali Meal Plan
+Week of ${weekRange}
+
+No meals planned for this week.`;
     }
 
-    // Group meal plans by meal type
+    // Group meal plans by meal type while preserving the planner's structure.
     const mealsByType: { [key: string]: MealPlan[] } = {};
-    const weekPlans = mealPlans.filter(plan => plan.week_key === currentWeek);
-    
     weekPlans.forEach(plan => {
       if (!mealsByType[plan.meal_type]) {
         mealsByType[plan.meal_type] = [];
@@ -42,69 +48,81 @@ export const useMealPlanSharing = ({
       mealsByType[plan.meal_type].push(plan);
     });
 
-    // Format text with date range
-    const { year, week } = parseISOWeekKey(currentWeek);
-    const weekRange = formatWeekRange(year, week);
-    let text = `Meal Plan - Week of ${weekRange}\n\n`;
-    
-    // Match frontend order and add food emojis
     const mealTypeOrder = ['dinner', 'lunch', 'breakfast', 'snacks', 'sides', 'desserts', 'drinks'];
     const mealTypeLabels: { [key: string]: string } = {
       dinner: '🍽️ Dinner',
-      lunch: '🥗 Lunch', 
+      lunch: '🥗 Lunch',
       breakfast: '🥞 Breakfast',
       snacks: '🍿 Snacks',
       sides: '🥬 Sides',
       desserts: '🍰 Desserts',
-      drinks: '🥤 Drinks'
+      drinks: '🥤 Drinks',
     };
+
+    let text = `🍽️ RealiMeali Meal Plan
+Week of ${weekRange}
+
+`;
 
     mealTypeOrder.forEach(mealType => {
       const plans = mealsByType[mealType];
-      if (plans && plans.length > 0) {
-        text += `${mealTypeLabels[mealType]}:\n`;
-        
-        plans.forEach(plan => {
-          const recipe = recipes.find(r => r.id === plan.recipe_id);
-          if (recipe) {
-            let recipeName = recipe.title;
-            if (plan.is_leftover) {
-              recipeName += ` (Leftover - ${plan.leftover_servings || 1} servings)`;
-            }
-            text += `• ${recipeName}\n`;
-          }
-        });
-        text += '\n';
-      }
+      if (!plans?.length) return;
+
+      text += `${mealTypeLabels[mealType]}:
+`;
+
+      plans.forEach(plan => {
+        // Recipe-backed meals use the recipe title.
+        const recipe = plan.recipe_id
+          ? recipes.find(r => r.id === plan.recipe_id)
+          : undefined;
+
+        // Freetyped/custom meals have their name stored directly on the plan.
+        let mealName = recipe?.title || plan.meal_name || 'Custom meal';
+
+        if (plan.is_leftover) {
+          mealName += ` (Leftover - ${plan.leftover_servings || 1} servings)`;
+        }
+
+        text += `• ${mealName}
+`;
+      });
+
+      text += '\n';
     });
-    
-    return text;
+
+    return text.trim();
   }, [currentWeek, mealPlans, recipes]);
 
   const handleShare = useCallback(async () => {
     const mealPlanText = formatMealPlanText();
     const { year, week } = parseISOWeekKey(currentWeek);
     const weekRange = formatWeekRange(year, week);
-    const shareTitle = `Meal Plan - Week of ${weekRange}`;
-    const shareUrl = `${window.location.origin}/meal-planner`;
-    const textWithUrl = `${mealPlanText}\nView and edit this meal plan: ${shareUrl}`;
+    const shareTitle = `RealiMeali Meal Plan - Week of ${weekRange}`;
+
+    // Preserve the exact week being shared when the recipient opens RealiMeali.
+    const shareUrl = `${window.location.origin}/meal-planner?week=${encodeURIComponent(currentWeek)}`;
+    const textWithUrl = `${mealPlanText}
+
+View and edit this meal plan:
+${shareUrl}`;
 
     if (navigator.share) {
       try {
         await navigator.share({
           title: shareTitle,
-          text: textWithUrl
+          text: textWithUrl,
         });
       } catch (err) {
+        // User cancellation is normal and should not show an error.
         console.log('Share cancelled or failed');
       }
     } else {
-      // Fallback to clipboard with formatted text including URL
       try {
         await navigator.clipboard.writeText(textWithUrl);
         toast({
           title: "Meal Plan Copied",
-          description: `Meal plan copied to clipboard`,
+          description: "Meal plan copied to clipboard",
         });
       } catch (err) {
         toast({
@@ -117,8 +135,7 @@ export const useMealPlanSharing = ({
 
   const handleClearAll = useCallback(() => {
     if (!user || !currentHousehold) return;
-    
-    // Use the dialog if available, otherwise fallback to confirm
+
     if (setClearAllDialog) {
       setClearAllDialog(true);
     } else {
