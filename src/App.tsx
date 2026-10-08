@@ -42,7 +42,7 @@ const NotFound = lazy(() => import("@/pages/NotFound"));
 
 const queryClient = new QueryClient();
 
-function AppContent() {
+function AppContent() {\n  // Data contexts own their initial loading; no page-level loader is needed.
   return (
     <div className="App">
       <AchievementListener />
