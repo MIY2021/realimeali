@@ -99,36 +99,6 @@ export default function MealPlannerContainer() {
 
   const currentMealPlans = getMealPlansForWeek(currentWeek);
 
-  // Refresh once the authenticated household is actually available.
-  // Auth/household context can initialise after this component first mounts.
-  const hasRefreshedOnMount = useRef(false);
-  useEffect(() => {
-    if (!user?.id || !currentHousehold?.id || hasRefreshedOnMount.current) return;
-    hasRefreshedOnMount.current = true;
-    fetchMealPlans();
-
-    const pending = sessionStorage.getItem("realimeali_pending_custom_recipe");
-    if (pending) {
-      try {
-        const parsed = JSON.parse(pending);
-        if (
-          parsed?.mealPlanId &&
-          parsed?.recipeId &&
-          parsed?.recipeTitle
-        ) {
-          setPendingCustomRecipe(parsed);
-        } else {
-          sessionStorage.removeItem("realimeali_pending_custom_recipe");
-        }
-      } catch {
-        sessionStorage.removeItem("realimeali_pending_custom_recipe");
-      }
-    }
-
-    // Intentionally mount-only: fetchMealPlans updates context loading state.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id, currentHousehold?.id, fetchMealPlans]);
-
   const {
     handleAddRecipeToMeal,
     handleRemoveMeal,
