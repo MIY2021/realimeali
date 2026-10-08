@@ -15,7 +15,6 @@ interface MealPlannerGridViewProps {
   onAddCustomMeal: (mealType: MealType) => void;
   onRemoveMeal: (planId: string) => void;
   onCreateLeftover: (mealPlan: MealPlan, recipe: Recipe) => void;
-  onReorderMeals: (mealType: MealType, reorderedIds: string[]) => Promise<void>;
 }
 
 export const MealPlannerGridView = ({
@@ -26,7 +25,6 @@ export const MealPlannerGridView = ({
   onAddMeal,
   onRemoveMeal,
   onCreateLeftover,
-  onReorderMeals,
 }: MealPlannerGridViewProps) => {
   const recipeMap = new Map(recipes.map(recipe => [recipe.id, recipe]));
   const mealTypes: MealType[] = ["dinner", "lunch", "breakfast", "snacks", "sides", "desserts", "drinks"];
