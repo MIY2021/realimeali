@@ -4,6 +4,7 @@ import { Share, Trash2, Sparkles, Loader, MoreHorizontal } from "lucide-react";
 import { WeekSelector } from "@/components/shared/WeekSelector";
 import { CalendarMonthModal } from "@/components/shared/CalendarMonthModal";
 import { HeaderControls } from "@/components/layout/HeaderControls";
+import { PageControlsCard } from "@/components/layout/PageControlsCard";
 import { MealPlan } from "@/types";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
@@ -34,6 +35,7 @@ export const MealPlannerActions = ({
 
   return (
     <>
+      <PageControlsCard>
       <HeaderControls
         weekControl={
           <WeekSelector
@@ -77,6 +79,7 @@ export const MealPlannerActions = ({
           </>
         }
       />
+      </PageControlsCard>
 
       <CalendarMonthModal
         open={allWeeksModalOpen}
