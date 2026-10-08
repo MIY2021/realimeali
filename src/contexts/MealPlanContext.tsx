@@ -68,11 +68,10 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
       console.log('DEBUG: Fetching meal plans for household:', householdId);
       
       currentUserIdRef.current = userId;
-      lastFetchedHouseholdIdRef.current = householdId;
-      
       const plans = await mealPlanService.fetchMealPlans(householdId);
       console.log('DEBUG: Transformed plans:', plans);
       setMealPlans(plans);
+      lastFetchedHouseholdIdRef.current = householdId;
       console.timeEnd('[Performance] Meal plans fetch');
     } catch (err) {
       console.error("Error fetching meal plans:", err);
@@ -115,9 +114,15 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
     };
   }, [stableUserId, stableHouseholdId, fetchMealPlans]);
 
-  // Auto-fetch disabled - now controlled by useParallelDataLoader for better performance
-  // Clear meal plans when user/household changes to null
+  // This context owns its initial fetch. The page does not start a second
+  // request, so there is one authoritative loading lifecycle.
   useEffect(() => {
+    if (stableUserId && stableHouseholdId && lastFetchedHouseholdIdRef.current !== stableHouseholdId) {
+      void fetchMealPlans();
+      return;
+    }
+
+    if (!stableUserId || !stableHouseholdId) {
     if (!stableUserId || !stableHouseholdId) {
       if (lastFetchedHouseholdIdRef.current) {
         console.log('MealPlanContext: No user or household, clearing meal plans');
