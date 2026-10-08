@@ -1,13 +1,12 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Share2, Trash2, Sparkles, Loader } from "lucide-react";
+import { Share2, Trash2 } from "lucide-react";
 import { WeekSelector } from "@/components/shared/WeekSelector";
 import { CalendarMonthModal } from "@/components/shared/CalendarMonthModal";
 import { PageControlsCard } from "@/components/layout/PageControlsCard";
 import { MealPlan } from "@/types";
 
 interface MealPlannerActionsProps {
-  onRandomize: () => void;
   onShare: () => void;
   onClearAll: () => void;
   isLoading: boolean;
@@ -20,7 +19,6 @@ interface MealPlannerActionsProps {
 }
 
 export const MealPlannerActions = ({
-  onRandomize,
   onShare,
   onClearAll,
   isLoading,
@@ -65,19 +63,6 @@ export const MealPlannerActions = ({
               <Share2 className="h-4 w-4" />
             </Button>
           </div>
-
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={onRandomize}
-            disabled={isLoading}
-            aria-busy={isLoading}
-            className="h-9 rounded-full px-4"
-            title="Generate Meal Plan"
-          >
-            {isLoading ? <Loader className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-            <span className="ml-2">{isLoading ? "Generating…" : "Surprise me"}</span>
-          </Button>
         </div>
       </PageControlsCard>
 
