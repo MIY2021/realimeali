@@ -31,6 +31,7 @@ export const MealPlannerContent = ({
   onAddCustomMeal,
   onRemoveMeal,
   onCreateLeftover,
+  onReorderMeals,
 }: MealPlannerContentProps) => {
   return (
     <div>
