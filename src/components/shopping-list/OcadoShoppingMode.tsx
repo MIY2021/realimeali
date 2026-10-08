@@ -3,21 +3,21 @@ import { Button } from "@/components/ui/button";
 import { ShoppingListItem as ShoppingListItemType } from "@/types/shoppingList";
 import { getShoppingSearchName } from "@/utils/shoppingIngredientUtils";
 
-interface OcadoShoppingModeProps {
+interface Sainsbury'sShoppingModeProps {
   items: ShoppingListItemType[];
   selectedItemId: string;
   onSelectItem: (itemId: string) => void;
   onClose: () => void;
 }
 
-const OCADO_SEARCH_URL = "https://www.ocado.com/search";
+const SAINSBURYS_SEARCH_URL = "https://www.sainsburys.co.uk/gol-ui/groceries/search";
 
-export default function OcadoShoppingMode({
+export default function Sainsbury'sShoppingMode({
   items,
   selectedItemId,
   onSelectItem,
   onClose,
-}: OcadoShoppingModeProps) {
+}: Sainsbury'sShoppingModeProps) {
   const currentIndex = Math.max(0, items.findIndex(item => item.id === selectedItemId));
   const selectedItem = items[currentIndex];
 
@@ -28,7 +28,7 @@ export default function OcadoShoppingMode({
     selectedItem.consolidatedQuantity ?? selectedItem.quantity,
     selectedItem.consolidatedUnit || selectedItem.unit,
   );
-  const ocadoUrl = OCADO_SEARCH_URL + "?q=" + encodeURIComponent(searchName);
+  const sainsburysUrl = SAINSBURYS_SEARCH_URL + "?q=" + encodeURIComponent(searchName);
 
   const goPrevious = () => {
     if (currentIndex > 0) onSelectItem(items[currentIndex - 1].id);
@@ -43,8 +43,8 @@ export default function OcadoShoppingMode({
       <div className="absolute inset-0 bottom-20 bg-muted/20">
         <iframe
           key={selectedItem.id}
-          src={ocadoUrl}
-          title={"Ocado search for " + searchName}
+          src={sainsburysUrl}
+          title={"Sainsbury's search for " + searchName}
           className="h-full w-full border-0"
           referrerPolicy="strict-origin-when-cross-origin"
         />
@@ -84,7 +84,7 @@ export default function OcadoShoppingMode({
           </Button>
 
           <a
-            href={ocadoUrl}
+            href={sainsburysUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="hidden sm:inline-flex"
@@ -100,7 +100,7 @@ export default function OcadoShoppingMode({
             size="sm"
             onClick={onClose}
             className="h-10 w-10 shrink-0 rounded-full p-0"
-            aria-label="Close Ocado shopping mode"
+            aria-label="Close Sainsbury's shopping mode"
           >
             <X className="h-5 w-5" />
           </Button>
