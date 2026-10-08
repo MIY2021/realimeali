@@ -28,6 +28,7 @@ export const MealPlannerContent = ({
   isDataLoading = false,
   isLoading,
   onAddMeal,
+  onAddCustomMeal,
   onRemoveMeal,
   onCreateLeftover,
 }: MealPlannerContentProps) => {
@@ -40,10 +41,10 @@ export const MealPlannerContent = ({
         isDataLoading={isDataLoading}
         isGenerating={isLoading}
         onAddMeal={onAddMeal}
-        onAddCustomMeal={() => undefined}
+        onAddCustomMeal={onAddCustomMeal}
         onRemoveMeal={onRemoveMeal}
         onCreateLeftover={onCreateLeftover}
-        onReorderMeals={() => Promise.resolve()}
+        onReorderMeals={onReorderMeals}
       />
     </div>
   );
