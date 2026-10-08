@@ -20,6 +20,7 @@ import { getCurrentWeekKey } from "@/utils/weekUtils";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SortOption, groupShoppingListItems } from "@/utils/shoppingListSorting";
 import { PageControlsCard } from "@/components/layout/PageControlsCard";
+import OcadoShoppingMode from "@/components/shopping-list/OcadoShoppingMode";
 
 export default function ShoppingList() {
   useDocumentTitle("Shopping List | RealiMeali");
@@ -48,6 +49,7 @@ export default function ShoppingList() {
   const [newItemName, setNewItemName] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
+  const [ocadoItemId, setOcadoItemId] = useState<string | null>(null);
 
   useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {
@@ -114,6 +116,10 @@ export default function ShoppingList() {
   });
 
   const groupedItems = groupShoppingListItems(filteredShoppingList, sortOption);
+
+  const handleOpenOcado = (itemId: string) => {
+    setOcadoItemId(itemId);
+  };
 
   const handleCopyItem = (itemId: string) => {
     setCopiedItemId(itemId);
@@ -318,6 +324,7 @@ export default function ShoppingList() {
               copiedItemId={copiedItemId}
               onToggleItem={toggleItemChecked}
               onCopyItem={handleCopyItem}
+              onOcado={handleOpenOcado}
               sortOption={sortOption}
             />
           ) : (
@@ -345,6 +352,15 @@ export default function ShoppingList() {
                 Add
               </Button>
           </form>
+
+          {ocadoItemId && shoppingList.some(item => item.id === ocadoItemId) && (
+            <OcadoShoppingMode
+              items={shoppingList}
+              selectedItemId={ocadoItemId}
+              onSelectItem={setOcadoItemId}
+              onClose={() => setOcadoItemId(null)}
+            />
+          )}
         </>
       )}
     </div>
