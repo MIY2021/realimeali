@@ -151,6 +151,7 @@ export default function MealPlannerContainer() {
     setPendingMealType,
     setClearAllDialog,
     refreshMealPlans: fetchMealPlans,
+    currentMealPlans,
   });
 
   const handleRandomizeClick = useCallback(() => setQuantitiesDialog(true), [setQuantitiesDialog]);
@@ -441,7 +442,6 @@ export default function MealPlannerContainer() {
         setPendingMealType={setPendingMealType}
         pendingLeftoverData={pendingLeftoverData}
         recipes={recipes}
-        currentWeek={currentWeek}
         currentMealCount={currentMealPlans.length}
         onConfirmGeneratedMeals={handleConfirmGeneratedMeals}
         onSimpleMealSelect={handleSimpleMealSelect}
