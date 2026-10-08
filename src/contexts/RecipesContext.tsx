@@ -38,23 +38,19 @@ export const RecipesProvider: React.FC<{ children: React.ReactNode }> = ({ child
   // Performance: Track last fetched household to prevent duplicate fetches
   const lastFetchedHouseholdIdRef = useRef<string | null>(null);
 
-  // Auto-fetch disabled - now controlled by useParallelDataLoader for better performance
-  // Clear recipes when household changes to null
+  // The context owns its initial fetch. This keeps loading deterministic and
+  // avoids a second global loader racing the page/context lifecycle.
   useEffect(() => {
     const householdId = currentHousehold?.id || null;
-    
-    // When household loads and we have no recipes, set loading to true
-    if (householdId && recipes.length === 0 && !isLoadingHousehold) {
-      setIsLoading(true);
-    }
-    
-    if (!householdId && lastFetchedHouseholdIdRef.current) {
-      console.log('RecipesContext: No household available, clearing recipes');
+    if (!householdId) {
       lastFetchedHouseholdIdRef.current = null;
       setRecipes([]);
       setIsLoading(false);
+      return;
     }
-  }, [currentHousehold?.id, isLoadingHousehold, recipes.length]);
+    if (isLoadingHousehold || lastFetchedHouseholdIdRef.current === householdId) return;
+    void fetchRecipes(householdId);
+  }, [currentHousehold?.id, isLoadingHousehold, fetchRecipes]);
 
   const fetchRecipes = useCallback(async (householdId: string | null) => {
     if (!householdId) {
@@ -72,13 +68,11 @@ export const RecipesProvider: React.FC<{ children: React.ReactNode }> = ({ child
     console.log('RecipesContext: Fetching recipes for household:', householdId);
     setIsLoading(true);
     setError(null);
-    lastFetchedHouseholdIdRef.current = householdId;
-    
     try {
       const fetchedRecipes = await api.fetchRecipesLite(householdId);
       console.log('RecipesContext: Fetched recipes:', fetchedRecipes.length);
       setRecipes(fetchedRecipes);
-      
+      lastFetchedHouseholdIdRef.current = householdId;
       console.timeEnd('[Performance] Recipes fetch');
     } catch (error) {
       console.error('RecipesContext: Error fetching recipes:', error);
