@@ -37,54 +37,50 @@ export const MealPlannerActions = ({
       <PageControlsCard>
         <HeaderControls
           weekControl={
-            <WeekSelector
-              currentWeek={currentWeek}
-              onWeekChange={setCurrentWeek}
-              onWeekClick={() => setAllWeeksModalOpen(true)}
-              isLoading={isLoading}
-            />
+            <div className="flex items-center gap-1">
+              <WeekSelector
+                currentWeek={currentWeek}
+                onWeekChange={setCurrentWeek}
+                onWeekClick={() => setAllWeeksModalOpen(true)}
+                isLoading={isLoading}
+              />
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onClearAll}
+                disabled={isLoading}
+                className="h-9 w-9 rounded-full p-0 text-muted-foreground hover:text-destructive"
+                title="Clear week"
+                aria-label="Clear week"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onShare}
+                disabled={isLoading}
+                className="h-9 w-9 rounded-full p-0"
+                title="Share meal plan"
+                aria-label="Share meal plan"
+              >
+                <Share2 className="h-4 w-4" />
+              </Button>
+            </div>
           }
           utilityActions={
-            <>
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={onRandomize}
-                disabled={isLoading}
-                aria-busy={isLoading}
-                className="h-9 rounded-full px-4"
-                title="Generate Meal Plan"
-              >
-                {isLoading ? <Loader className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-                <span className="ml-2">{isLoading ? "Generating…" : "Surprise me"}</span>
-              </Button>
-
-              <div className="flex items-center gap-1">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={onShare}
-                  disabled={isLoading}
-                  className="h-9 w-9 rounded-full p-0"
-                  title="Share meal plan"
-                  aria-label="Share meal plan"
-                >
-                  <Share2 className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={onClearAll}
-                  disabled={isLoading}
-                  className="h-9 w-9 rounded-full p-0 text-muted-foreground hover:text-destructive"
-                  title="Clear week"
-                  aria-label="Clear week"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-
-            </>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={onRandomize}
+              disabled={isLoading}
+              aria-busy={isLoading}
+              className="h-9 rounded-full px-4"
+              title="Generate Meal Plan"
+            >
+              {isLoading ? <Loader className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+              <span className="ml-2">{isLoading ? "Generating…" : "Surprise me"}</span>
+            </Button>
           }
         />
       </PageControlsCard>
