@@ -6,7 +6,7 @@ import { FreetypeMealDialog } from "@/components/meal-planner/FreetypeMealDialog
 import { Recipe, MealType } from "@/types";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useState, useEffect } from "react";
-import { Sparkles, Loader } from "lucide-react";
+import { Dices, Loader } from "lucide-react";
 
 interface MealPlannerRecipeSelectionProps {
   open: boolean;
@@ -90,32 +90,19 @@ export function MealPlannerRecipeSelection({
       >
         <div className="flex flex-col h-full">
           <SheetHeader className="px-4 py-4 bg-white border-b">
-            <div className="flex items-center justify-between gap-3">
-              <SheetTitle>Add {MEAL_TYPE_LABELS[mealType]}</SheetTitle>
-              <Button
-                type="button"
-                variant="primary"
-                size="sm"
-                onClick={handleGenerateMeal}
-                disabled={isGeneratingMeal}
-                className="h-9 shrink-0 rounded-full px-3"
-              >
-                {isGeneratingMeal ? (
-                  <Loader className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Sparkles className="h-4 w-4" />
-                )}
-                <span className="ml-1.5">Generate</span>
-              </Button>
-            </div>
-          </SheetHeader>
-
-          <div className="flex-1 overflow-hidden">
+            <SheetTitle>Add {MEAL_TYPE_LABELS[mealType]}</SheetTitle>
+          </SheetHeader>      <div className="flex-1 overflow-hidden">
             <Tabs value={activeTab} onValueChange={handleTabChange} className="h-full flex flex-col">
               <div className="flex-1 overflow-hidden">
                 <TabsContent value="recipes" className="h-full m-0 p-0">
                   <div className={`h-full ${isMobile ? 'overflow-y-auto scrollbar-hide' : 'overflow-y-auto'}`}>
                     <div className={`${isMobile ? 'px-4' : 'max-w-7xl mx-auto px-8'} py-4`}>
+                       <div className="mb-4 flex justify-end">
+                         <Button type="button" variant="outline" size="sm" onClick={handleGenerateMeal} disabled={isGeneratingMeal} className="rounded-full">
+                           {isGeneratingMeal ? <Loader className="h-4 w-4 animate-spin" /> : <Dices className="h-4 w-4" />}
+                           <span className="ml-1.5">{isGeneratingMeal ? "Generating…" : "Generate a meal"}</span>
+                         </Button>
+                       </div>
                        <RecipeSelectionView
                          recipes={recipes}
                          isLoading={false}
