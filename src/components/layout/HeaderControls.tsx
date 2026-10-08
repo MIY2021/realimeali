@@ -16,7 +16,7 @@ export function HeaderControls({
   rightActions
 }: HeaderControlsProps) {
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 bg-white rounded-xl border border-gray-200 shadow-sm">
+    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4">
       {/* Left side: Week selector */}
       <div className="flex items-center flex-shrink-0">
         {weekControl}
