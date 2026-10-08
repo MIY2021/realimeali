@@ -28,7 +28,7 @@ export default function MealPlannerContainer() {
   useDocumentTitle("Meal Planner | RealiMeali");
   
   const { user } = useAuth();
-  const { recipes, isLoading: recipesLoading } = useRecipes();
+  const { recipes } = useRecipes();
   const { currentHousehold } = useHousehold();
   const { 
     mealPlans,
@@ -44,8 +44,9 @@ export default function MealPlannerContainer() {
   } = useMealPlan();
   const { toast } = useToast();
 
-  // Handle initial loading - show content immediately when data is available
-  const isDataLoading = !user || !currentHousehold || recipesLoading;
+  // The planner shell must not wait for the recipe catalogue. Recipes load independently;
+  // a slow recipe request must never prevent the meal-planning UI from rendering.
+  const isDataLoading = !user || !currentHousehold;
   
   const {
     currentWeek,
@@ -372,7 +373,7 @@ export default function MealPlannerContainer() {
         setCurrentWeek={setCurrentWeek}
         mealLayout={mealLayout}
         onMealLayoutChange={handleMealLayoutChange}
-        allMealPlans={isDataLoading ? [] : mealPlans}
+        allMealPlans={mealPlans}
         copyWeek={copyWeek}
       />
 
@@ -381,9 +382,9 @@ export default function MealPlannerContainer() {
         setCurrentWeek={setCurrentWeek}
         isLoading={isLoading}
         isDataLoading={isDataLoading}
-        currentMealPlans={isDataLoading ? [] : currentMealPlans}
-        allMealPlans={isDataLoading ? [] : mealPlans}
-        recipes={isDataLoading ? [] : recipes}
+        currentMealPlans={currentMealPlans}
+        allMealPlans={mealPlans}
+        recipes={recipes}
         mealLayout={mealLayout}
         onMealLayoutChange={handleMealLayoutChange}
         onRandomize={handleRandomizeClick}
