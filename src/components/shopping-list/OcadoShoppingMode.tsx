@@ -39,8 +39,8 @@ export default function OcadoShoppingMode({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-background">
-      <div className="min-h-0 flex-1 bg-muted/20">
+    <div className="fixed inset-0 z-[9999] bg-background">
+      <div className="absolute inset-0 bottom-20 bg-muted/20">
         <iframe
           key={selectedItem.id}
           src={ocadoUrl}
@@ -50,9 +50,8 @@ export default function OcadoShoppingMode({
         />
       </div>
 
-      <div className="relative z-10 shrink-0 border-t border-border bg-card shadow-[0_-8px_24px_rgba(0,0,0,0.15)]">
-
-        <div className="mx-auto flex max-w-3xl items-center gap-2 px-3 py-2">
+      <div className="absolute inset-x-0 bottom-0 z-[10000] min-h-20 border-t-2 border-border bg-card shadow-[0_-8px_24px_rgba(0,0,0,0.18)]">
+        <div className="mx-auto flex min-h-20 max-w-3xl items-center gap-2 px-3 py-2">
           <Button
             variant="ghost"
             size="sm"
@@ -65,7 +64,7 @@ export default function OcadoShoppingMode({
           </Button>
 
           <div className="min-w-0 flex-1 text-center">
-            <div className="truncate text-sm font-semibold text-foreground">
+            <div className="truncate text-base font-semibold text-foreground">
               🛒 {selectedItem.name}
             </div>
             <div className="text-xs text-muted-foreground">
