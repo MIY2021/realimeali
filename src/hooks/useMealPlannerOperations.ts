@@ -2,7 +2,6 @@
 import { MealType } from "@/types";
 import { useMealOperations } from "./useMealOperations";
 import { useLeftoverOperations } from "./useLeftoverOperations";
-import { useMealPlanGeneration } from "./useMealPlanGeneration";
 import { useMealPlanSharing } from "./useMealPlanSharing";
 
 interface UseMealPlannerOperationsProps {
@@ -14,16 +13,12 @@ interface UseMealPlannerOperationsProps {
   removeMealPlan: any;
   clearWeek: any;
   reorderMealPlans: any;
-  generateRandomMealPlan: (quantities: any, weekKey: string) => Promise<number>;
   setAddMealModal: any;
-  setIsLoading: (loading: boolean) => void;
   toast: any;
-  setQuantitiesDialog: (open: boolean) => void;
   setServingsDialog: (open: boolean) => void;
   setPendingMealType: (mealType: MealType | null) => void;
   setClearAllDialog?: (open: boolean) => void;
   refreshMealPlans?: () => Promise<void>;
-  currentMealPlans?: any[];
 }
 
 export const useMealPlannerOperations = (props: UseMealPlannerOperationsProps) => {
@@ -50,19 +45,6 @@ export const useMealPlannerOperations = (props: UseMealPlannerOperationsProps) =
     refreshMealPlans: props.refreshMealPlans,
   });
 
-  const generationOperations = useMealPlanGeneration({
-    user: props.user,
-    currentHousehold: props.currentHousehold,
-    currentWeek: props.currentWeek,
-    generateRandomMealPlan: props.generateRandomMealPlan,
-    clearWeek: props.clearWeek,
-    setIsLoading: props.setIsLoading,
-    setQuantitiesDialog: props.setQuantitiesDialog,
-    toast: props.toast,
-    recipes: props.recipes,
-    refreshMealPlans: props.refreshMealPlans,
-  });
-
   const sharingOperations = useMealPlanSharing({
     user: props.user,
     currentHousehold: props.currentHousehold,
@@ -78,7 +60,6 @@ export const useMealPlannerOperations = (props: UseMealPlannerOperationsProps) =
   return {
     ...mealOperations,
     ...leftoverOperations,
-    ...generationOperations,
     ...sharingOperations,
   };
 };
