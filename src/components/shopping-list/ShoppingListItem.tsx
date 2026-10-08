@@ -6,7 +6,6 @@ import { useShoppingListInteractions } from "./ShoppingListInteractions";
 import { useToast } from "@/hooks/use-toast";
 import { formatQuantity } from "@/utils/shoppingListUtils";
 import { getShoppingSearchName } from "@/utils/shoppingIngredientUtils";
-import { openOcadoSearch } from "@/utils/ocadoShopping";
 
 interface ShoppingListItemProps {
   id: string;
@@ -18,6 +17,7 @@ interface ShoppingListItemProps {
   copiedItemId: string | null;
   onCheck: (checked: boolean) => void;
   onCopy: () => void;
+  onOcado: (itemId: string) => void;
 }
 
 export function ShoppingListItem({
@@ -30,6 +30,7 @@ export function ShoppingListItem({
   copiedItemId,
   onCheck,
   onCopy,
+  onOcado,
 }: ShoppingListItemProps) {
   const { toast } = useToast();
 
@@ -54,15 +55,7 @@ export function ShoppingListItem({
 
   const handleOcadoClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    const opened = openOcadoSearch(shoppingSearchName);
-
-    if (!opened) {
-      toast({
-        title: "Couldn't open Ocado",
-        description: "Please try opening Ocado in your browser.",
-        variant: "destructive",
-      });
-    }
+    onOcado(id);
   };
 
   const {
