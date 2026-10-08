@@ -24,7 +24,6 @@ interface MealPlannerModalsContainerProps {
   setPendingMealType: (mealType: MealType | null) => void;
   pendingLeftoverData: { mealPlan: any; recipe?: any } | null;
   recipes: Recipe[];
-  currentWeek: string;
   currentMealCount: number;
   onConfirmGeneratedMeals: (meals: GeneratedMeal[], mode: MealPlanGenerationMode) => void;
   onSimpleMealSelect: (recipeId: string) => void;
@@ -35,7 +34,6 @@ interface MealPlannerModalsContainerProps {
   onWarningAdd: () => void;
   onClearAllConfirm: () => void;
   onServingsConfirm: (mealType: MealType, servings: number) => void;
-  onChooseMeals: () => void;
 }
 
 export const MealPlannerModalsContainer = ({
@@ -55,7 +53,6 @@ export const MealPlannerModalsContainer = ({
   setPendingMealType,
   pendingLeftoverData,
   recipes,
-  currentWeek,
   currentMealCount,
   onConfirmGeneratedMeals,
   onSimpleMealSelect,
@@ -66,7 +63,6 @@ export const MealPlannerModalsContainer = ({
   onWarningAdd,
   onClearAllConfirm,
   onServingsConfirm,
-  onChooseMeals,
 }: MealPlannerModalsContainerProps) => {
   const isNewLunchMeal = pendingMealType === "lunch" && !pendingLeftoverData;
 
