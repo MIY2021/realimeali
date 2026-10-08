@@ -19,6 +19,7 @@ import { Link } from "react-router-dom";
 import { getCurrentWeekKey } from "@/utils/weekUtils";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SortOption, groupShoppingListItems } from "@/utils/shoppingListSorting";
+import { PageControlsCard } from "@/components/layout/PageControlsCard";
 
 export default function ShoppingList() {
   useDocumentTitle("Shopping List | RealiMeali");
@@ -174,7 +175,7 @@ export default function ShoppingList() {
         </div>
       ) : (
         <>
-          <div className="mb-4 rounded-2xl border border-border/70 bg-card shadow-sm overflow-hidden">
+          <PageControlsCard className="mb-4">
             <div className="flex items-center justify-between gap-2 px-3 py-2.5 sm:px-4">
               <WeekSelector
                 currentWeek={currentWeek}
@@ -300,7 +301,7 @@ export default function ShoppingList() {
                 </Select>
               </div>
             </div>
-          </div>
+          </PageControlsCard>
 
           <CalendarMonthModal
             open={allWeeksModalOpen}
