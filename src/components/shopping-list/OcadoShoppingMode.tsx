@@ -39,7 +39,7 @@ export default function OcadoShoppingMode({
   };
 
   return (
-    <div className="fixed inset-0 z-[9999] bg-background">
+    <div className="fixed inset-x-0 top-0 bottom-16 md:bottom-0 z-40 bg-background">
       <div className="absolute inset-0 bottom-20 bg-muted/20">
         <iframe
           key={selectedItem.id}
@@ -50,7 +50,7 @@ export default function OcadoShoppingMode({
         />
       </div>
 
-      <div className="absolute inset-x-0 bottom-0 z-[10000] min-h-20 border-t-2 border-border bg-card shadow-[0_-8px_24px_rgba(0,0,0,0.18)]">
+      <div className="absolute inset-x-0 bottom-0 z-40 min-h-20 border-t-2 border-border bg-card shadow-[0_-8px_24px_rgba(0,0,0,0.18)]">
         <div className="mx-auto flex min-h-20 max-w-3xl items-center gap-2 px-3 py-2">
           <Button
             variant="ghost"
