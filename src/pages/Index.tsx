@@ -9,7 +9,7 @@ import { getCurrentWeekKey } from "@/utils/weekUtils";
 import { SwipeToChoose } from "@/components/dashboard/SwipeToChoose";
 import { LatestRecipesInspiration } from "@/components/dashboard/LatestRecipesInspiration";
 import { HomeOverflowMenu } from "@/components/layout/HomeOverflowMenu";
-import { RecipeCardIcon, MealIcon, ShoppingBasketIcon } from "@/components/icons/RealiMealiIcons";
+import { RecipeCardIcon, ShoppingBasketIcon } from "@/components/icons/RealiMealiIcons";
 import { WelcomeSlidesDialog } from "@/components/onboarding/WelcomeSlidesDialog";
 import { sessionProfileQueryKey, useSessionProfile } from "@/hooks/useSessionProfile";
 import { useQueryClient } from "@tanstack/react-query";
@@ -202,9 +202,9 @@ export default function Index() {
               <RecipeCardIcon className="h-5 w-5 text-[#b85f49] mb-2" />
               <span className="block text-sm font-semibold text-gray-900">Add recipe</span>
             </button>
-            <button onClick={() => document.getElementById("meal-picker")?.scrollIntoView({ behavior: "smooth" })} className="min-h-[74px] rounded-xl border border-gray-200 bg-white px-3 py-3 text-left hover:border-[#b85f49] transition-colors">
-              <MealIcon className="h-5 w-5 text-[#b85f49] mb-2" />
-              <span className="block text-sm font-semibold text-gray-900">Pick meals</span>
+            <button onClick={() => navigate("/meal-planner?generate=1")} className="min-h-[74px] rounded-xl border border-gray-200 bg-white px-3 py-3 text-left hover:border-[#b85f49] transition-colors">
+              <RecipeCardIcon className="h-5 w-5 text-[#b85f49] mb-2" />
+              <span className="block text-sm font-semibold text-gray-900">Generate plan</span>
             </button>
             <button onClick={() => navigate("/shopping-list")} className="min-h-[74px] rounded-xl border border-gray-200 bg-white px-3 py-3 text-left hover:border-[#b85f49] transition-colors">
               <ShoppingBasketIcon className="h-5 w-5 text-[#b85f49] mb-2" />
