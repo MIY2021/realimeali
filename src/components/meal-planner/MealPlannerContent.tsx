@@ -18,7 +18,6 @@ interface MealPlannerContentProps {
   onAddCustomMeal: (mealType: MealType) => void;
   onRemoveMeal: (planId: string) => void;
   onCreateLeftover: (mealPlan: MealPlan, recipe: Recipe) => void;
-  onReorderMeals: (mealType: MealType, reorderedIds: string[]) => Promise<void>;
   copyWeek?: (sourceWeekKey: string, targetWeekKey: string) => Promise<void>;
 }
 
@@ -31,7 +30,6 @@ export const MealPlannerContent = ({
   onAddCustomMeal,
   onRemoveMeal,
   onCreateLeftover,
-  onReorderMeals,
 }: MealPlannerContentProps) => {
   return (
     <div>
@@ -45,7 +43,6 @@ export const MealPlannerContent = ({
         onAddCustomMeal={onAddCustomMeal}
         onRemoveMeal={onRemoveMeal}
         onCreateLeftover={onCreateLeftover}
-        onReorderMeals={onReorderMeals}
       />
     </div>
   );
