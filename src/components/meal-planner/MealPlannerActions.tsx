@@ -1,12 +1,11 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Share2, Trash2, Sparkles, Loader, MoreHorizontal } from "lucide-react";
+import { Share2, Trash2, Sparkles, Loader } from "lucide-react";
 import { WeekSelector } from "@/components/shared/WeekSelector";
 import { CalendarMonthModal } from "@/components/shared/CalendarMonthModal";
 import { HeaderControls } from "@/components/layout/HeaderControls";
 import { PageControlsCard } from "@/components/layout/PageControlsCard";
 import { MealPlan } from "@/types";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 interface MealPlannerActionsProps {
   onRandomize: () => void;
@@ -60,36 +59,31 @@ export const MealPlannerActions = ({
                 <span className="ml-2">{isLoading ? "Generating…" : "Surprise me"}</span>
               </Button>
 
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={onShare}
-                disabled={isLoading}
-                className="h-9 w-9 rounded-full p-0"
-                title="Share meal plan"
-                aria-label="Share meal plan"
-              >
-                <Share2 className="h-4 w-4" />
-              </Button>
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onShare}
+                  disabled={isLoading}
+                  className="h-9 w-9 rounded-full p-0"
+                  title="Share meal plan"
+                  aria-label="Share meal plan"
+                >
+                  <Share2 className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onClearAll}
+                  disabled={isLoading}
+                  className="h-9 w-9 rounded-full p-0 text-muted-foreground hover:text-destructive"
+                  title="Clear week"
+                  aria-label="Clear week"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
 
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    className="h-9 w-9 rounded-full p-0"
-                    aria-label="More meal planner options"
-                  >
-                    <MoreHorizontal className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={onClearAll} className="text-destructive focus:text-destructive">
-                    <Trash2 className="mr-2 h-4 w-4" /> Clear week
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
             </>
           }
         />
