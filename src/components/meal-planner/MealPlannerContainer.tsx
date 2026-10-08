@@ -45,7 +45,7 @@ export default function MealPlannerContainer() {
   const { toast } = useToast();
 
   // Handle initial loading - show content immediately when data is available
-  const isDataLoading = !user || !currentHousehold || recipesLoading || mealPlansLoading;
+  const isDataLoading = !user || !currentHousehold || recipesLoading;
   
   const {
     currentWeek,
