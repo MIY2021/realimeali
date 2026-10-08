@@ -410,7 +410,7 @@ export default function MealPlannerContainer() {
   }
 
   return (
-    <div className="container max-w-4xl py-4 px-4 sm:py-8 sm:px-6 space-y-3 min-h-screen" data-scroll-content style={{ scrollbarGutter: 'stable' }}>
+    <div className="container max-w-3xl mx-auto py-4 px-4 pb-8 sm:py-8 sm:px-6 sm:pb-12 min-h-screen" data-scroll-content style={{ scrollbarGutter: 'stable' }}>
       <MealPlannerHeader
         user={user}
         currentHousehold={currentHousehold}
