@@ -10,6 +10,7 @@ interface ShoppingListItemsProps {
   onToggleItem: (itemId: string) => void;
   onCopyItem: (itemId: string) => void;
   sortOption: SortOption;
+  onOcado: (itemId: string) => void;
 }
 
 const categoryIcons: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -31,7 +32,8 @@ export default function ShoppingListItems({
   copiedItemId,
   onToggleItem,
   onCopyItem,
-  sortOption
+  sortOption,
+  onOcado
 }: ShoppingListItemsProps) {
   const isGrouped =
     sortOption !== "none" &&
@@ -80,6 +82,7 @@ export default function ShoppingListItems({
                     copiedItemId={copiedItemId}
                     onCheck={() => onToggleItem(item.id)}
                     onCopy={() => onCopyItem(item.id)}
+                    onOcado={onOcado}
                   />
                 ))}
               </div>
@@ -106,6 +109,7 @@ export default function ShoppingListItems({
           copiedItemId={copiedItemId}
           onCheck={() => onToggleItem(item.id)}
           onCopy={() => onCopyItem(item.id)}
+          onOcado={onOcado}
         />
       ))}
     </div>
