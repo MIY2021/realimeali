@@ -59,6 +59,14 @@ export const useMealPlannerState = () => {
   };
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("generate") === "1") {
+      setQuantitiesDialog(true);
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+  }, []);
+
+  useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === WEEK_STORAGE_KEY && e.newValue) {
         if (e.newValue === "1" || e.newValue === "2") {
