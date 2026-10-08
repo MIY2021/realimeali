@@ -300,7 +300,6 @@ export default function ShoppingList() {
               onToggleItem={toggleItemChecked}
               onCopyItem={handleCopyItem}
               onOcado={handleOpenOcado}
-              sortOption={sortOption}
             />
           ) : (
             <ShoppingListEmptyState hasMealPlans={hasMealPlans} />
