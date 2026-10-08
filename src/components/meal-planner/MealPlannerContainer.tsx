@@ -146,6 +146,7 @@ export default function MealPlannerContainer() {
     clearWeek,
     reorderMealPlans,
     setAddMealModal,
+    setIsLoading,
     toast,
     setServingsDialog,
     setPendingMealType,
