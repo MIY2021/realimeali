@@ -13,7 +13,6 @@ import { MealPlanProvider } from "@/contexts/MealPlanContext";
 import { MealPlanApprovalProvider } from "@/contexts/MealPlanApprovalContext";
 import { HouseholdShoppingProvider } from "@/contexts/HouseholdShoppingContext";
 import { RealiChefProvider } from "@/contexts/RealiChefContext";
-import { useParallelDataLoader } from "@/hooks/useParallelDataLoader";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { AchievementListener } from "@/components/achievements/AchievementListener";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
@@ -44,8 +43,6 @@ const NotFound = lazy(() => import("@/pages/NotFound"));
 const queryClient = new QueryClient();
 
 function AppContent() {
-  // Coordinate parallel loading of recipes and meal plans
-  useParallelDataLoader();
   return (
     <div className="App">
       <AchievementListener />
