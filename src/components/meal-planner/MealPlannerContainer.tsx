@@ -52,6 +52,7 @@ export default function MealPlannerContainer() {
     setCurrentWeek,
     isLoading,
     quantitiesDialog,
+    setQuantitiesDialog,
     servingsDialog,
     setServingsDialog,
     simpleMealDialog,
