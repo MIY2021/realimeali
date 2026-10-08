@@ -99,8 +99,8 @@ export default function MealPlannerContainer() {
 
   const currentMealPlans = getMealPlansForWeek(currentWeek);
 
-  // Refresh once when the Meal Planner page mounts. Keep this completely
-  // independent of the loading state so the refresh cannot cause a render loop.
+  // Refresh once the authenticated household is actually available.
+  // Auth/household context can initialise after this component first mounts.
   const hasRefreshedOnMount = useRef(false);
   useEffect(() => {
     if (!user?.id || !currentHousehold?.id || hasRefreshedOnMount.current) return;
@@ -127,7 +127,7 @@ export default function MealPlannerContainer() {
 
     // Intentionally mount-only: fetchMealPlans updates context loading state.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [user?.id, currentHousehold?.id, fetchMealPlans]);
 
   const {
     handleAddRecipeToMeal,
