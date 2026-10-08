@@ -26,6 +26,7 @@ export const MealPlannerGridView = ({
   onAddMeal,
   onRemoveMeal,
   onCreateLeftover,
+  onReorderMeals,
 }: MealPlannerGridViewProps) => {
   const recipeMap = new Map(recipes.map(recipe => [recipe.id, recipe]));
   const mealTypes: MealType[] = ["dinner", "lunch", "breakfast", "snacks", "sides", "desserts", "drinks"];
