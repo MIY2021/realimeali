@@ -19,7 +19,7 @@ import { Link } from "react-router-dom";
 import { getCurrentWeekKey } from "@/utils/weekUtils";
 import { groupByCategory } from "@/utils/shoppingListSorting";
 import { PageControlsCard } from "@/components/layout/PageControlsCard";
-import SainsburysShoppingMode from "@/components/shopping-list/SainsburysShoppingMode";
+import SainsburysShoppingMode from "@/components/shopping-list/OcadoShoppingMode";
 
 export default function ShoppingList() {
   useDocumentTitle("Shopping List | RealiMeali");
