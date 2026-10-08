@@ -146,14 +146,14 @@ export default function MealPlannerContainer() {
     clearWeek,
     reorderMealPlans,
     setAddMealModal,
-    setIsLoading,
     toast,
-    setQuantitiesDialog,
     setServingsDialog,
     setPendingMealType,
     setClearAllDialog,
     refreshMealPlans: fetchMealPlans,
   });
+
+  const handleRandomizeClick = useCallback(() => setQuantitiesDialog(true), [setQuantitiesDialog]);
 
   const handleAddMeal = useCallback((mealType: MealType) => {
     console.log("🍽️ handleAddMeal called with mealType:", mealType);
@@ -448,8 +448,8 @@ export default function MealPlannerContainer() {
         onAddFreetypeMeal={handleAddFreetypeMeal}
         onLunchLeftoverConfirm={handleLunchLeftoverConfirm}
         onCreateLeftover={handleCreateLeftoverWithServings}
-        onWarningReplace={handleWarningReplace}
-        onWarningAdd={handleWarningAdd}
+        onWarningReplace={() => {}}
+        onWarningAdd={() => {}}
         onClearAllConfirm={handleClearAllConfirm}
         onServingsConfirm={handleServingsConfirm}
       />
