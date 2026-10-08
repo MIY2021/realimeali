@@ -1,7 +1,7 @@
 
 import { ShoppingListItem } from "./ShoppingListItem";
 import { ShoppingListItem as ShoppingListItemType } from "@/types/shoppingList";
-import { SortOption, GroupedShoppingListItem } from "@/utils/shoppingListSorting";
+import { GroupedShoppingListItem } from "@/utils/shoppingListSorting";
 import { Apple, Beef, Cookie, Droplets, Globe2, Milk, Package, Snowflake, Wheat, Wine } from "lucide-react";
 
 interface ShoppingListItemsProps {
@@ -9,7 +9,6 @@ interface ShoppingListItemsProps {
   copiedItemId: string | null;
   onToggleItem: (itemId: string) => void;
   onCopyItem: (itemId: string) => void;
-  sortOption: SortOption;
   onOcado: (itemId: string) => void;
 }
 
@@ -32,13 +31,9 @@ export default function ShoppingListItems({
   copiedItemId,
   onToggleItem,
   onCopyItem,
-  sortOption,
   onOcado
 }: ShoppingListItemsProps) {
-  const isGrouped =
-    sortOption !== "none" &&
-    shoppingList.length > 0 &&
-    "groupKey" in shoppingList[0];
+  const isGrouped = shoppingList.length > 0 && "groupKey" in shoppingList[0];
 
   if (isGrouped) {
     const groupedItems = shoppingList as GroupedShoppingListItem[];
