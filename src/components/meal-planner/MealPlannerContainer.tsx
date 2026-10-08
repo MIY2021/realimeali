@@ -393,7 +393,6 @@ export default function MealPlannerContainer() {
         onAddCustomMeal={handleAddCustomMeal}
         onRemoveMeal={handleRemoveMeal}
         onCreateLeftover={handleCreateLeftoverWithDialog}
-        onReorderMeals={handleReorderMeals}
         copyWeek={copyWeek}
       />
 
