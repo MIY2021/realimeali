@@ -14,7 +14,7 @@ import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Send, Plus, Search, X } from "lucide-react";
+import { Share2, Plus, Search, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import { getCurrentWeekKey } from "@/utils/weekUtils";
 import { groupByCategory } from "@/utils/shoppingListSorting";
@@ -194,7 +194,7 @@ export default function ShoppingList() {
                   title="Share shopping list"
                   aria-label="Share shopping list"
                 >
-                  <Send className="h-4 w-4" />
+                  <Share2 className="h-4 w-4" />
                 </Button>
               </div>
             </div>
