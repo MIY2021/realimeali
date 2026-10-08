@@ -50,7 +50,8 @@ export default function OcadoShoppingMode({
         />
       </div>
 
-      <div className="shrink-0 border-t border-border bg-card shadow-[0_-8px_24px_rgba(0,0,0,0.10)]">
+      <div className="relative z-10 shrink-0 border-t border-border bg-card shadow-[0_-8px_24px_rgba(0,0,0,0.15)]">
+
         <div className="mx-auto flex max-w-3xl items-center gap-2 px-3 py-2">
           <Button
             variant="ghost"
