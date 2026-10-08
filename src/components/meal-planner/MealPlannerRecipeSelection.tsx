@@ -15,7 +15,7 @@ interface MealPlannerRecipeSelectionProps {
   recipes: Recipe[];
   onSelectRecipe: (recipeId: string) => void;
   onAddFreetypeMeal: (mealName: string, servings: number) => void;
-  onGenerateMeal: () => Promise<void>;
+  onGenerateMeal?: () => Promise<void>;
 }
 
 const MEAL_TYPE_LABELS: Record<MealType, string> = {
@@ -37,7 +37,7 @@ export function MealPlannerRecipeSelection({
   recipes,
   onSelectRecipe,
   onAddFreetypeMeal,
-  onGenerateMeal,
+  onGenerateMeal = async () => {},
 }: MealPlannerRecipeSelectionProps) {
   const isMobile = useIsMobile();
   const [activeTab, setActiveTab] = useState("recipes");
