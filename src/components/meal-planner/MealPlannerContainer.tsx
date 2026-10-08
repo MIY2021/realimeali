@@ -6,7 +6,7 @@ import { useMealPlan } from "@/contexts/MealPlanContext";
 
 import { MealPlannerHeader } from "@/components/meal-planner/MealPlannerHeader";
 import { MealPlannerContent } from "@/components/meal-planner/MealPlannerContent";
-import { MealPlannerModalsContainer, MealPlanGenerationMode } from "@/components/meal-planner/MealPlannerModalsContainer";
+import { MealPlannerModalsContainer } from "@/components/meal-planner/MealPlannerModalsContainer";
 import { MealPlannerActions } from "@/components/meal-planner/MealPlannerActions";
 import { RecipeSwipeDialog } from "@/components/dashboard/RecipeSwipeDialog";
 import { CustomMealDialog } from "@/components/meal-planner/CustomMealDialog";
@@ -14,11 +14,11 @@ import { MealPlanInfoDialog } from "@/components/meal-planner/MealPlanInfoDialog
 import MealPlannerSkeleton from "@/components/meal-planner/MealPlannerSkeleton";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useMealPlanModals } from "@/hooks/useMealPlanModals";
-import { useRandomMealSelection } from "@/hooks/useRandomMealSelection";
 import { useMealPlannerOperations } from "@/hooks/useMealPlannerOperations";
 import { useMealPlannerState } from "@/hooks/useMealPlannerState";
 import { useMealPlannerLayout } from "@/hooks/useMealPlannerLayout";
 import { MealType, Recipe, MealPlan } from "@/types";
+import { GeneratedMeal, MealPlanGenerationMode } from "@/components/meal-planner/MealPlanQuantitiesDialog";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -51,9 +51,7 @@ export default function MealPlannerContainer() {
     currentWeek,
     setCurrentWeek,
     isLoading,
-    setIsLoading,
     quantitiesDialog,
-    setQuantitiesDialog,
     servingsDialog,
     setServingsDialog,
     simpleMealDialog,
@@ -86,7 +84,6 @@ export default function MealPlannerContainer() {
   
   // Info dialog state
   const [infoDialog, setInfoDialog] = useState(false);
-  const [generationMode, setGenerationMode] = useState<MealPlanGenerationMode>("replace");
   const [swipeDialog, setSwipeDialog] = useState(false);
 
   // Optional handoff from the recipe creator. Kept isolated from planner loading/render state.
@@ -98,8 +95,6 @@ export default function MealPlannerContainer() {
     servings: number;
   } | null>(null);
   const [isReplacingCustomMeal, setIsReplacingCustomMeal] = useState(false);
-
-  const { generateRandomMeals } = useRandomMealSelection();
 
   const currentMealPlans = getMealPlansForWeek(currentWeek);
 
@@ -133,40 +128,11 @@ export default function MealPlannerContainer() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Create a wrapper function that matches the expected signature
-  const generateRandomMealPlan = useCallback(async (quantities: { 
-    dinner: number; 
-    lunch: number; 
-    breakfast: number; 
-    snacks: number;
-    sides: number;
-    desserts: number;
-    drinks: number;
-  }, weekKey: string) => {
-    let totalAdded = 0;
-    
-    // Generate meals for each meal type based on quantities
-    for (const [mealType, count] of Object.entries(quantities)) {
-      if (count > 0) {
-        try {
-          const added = await generateRandomMeals(weekKey, mealType as any, count);
-          totalAdded += added;
-        } catch (error) {
-          console.error(`Error generating ${mealType} meals:`, error);
-        }
-      }
-    }
-    
-    return totalAdded;
-  }, [generateRandomMeals]);
-
   const {
     handleAddRecipeToMeal,
     handleRemoveMeal,
     handleCreateLeftover,
     handleReorderMeals,
-    handleRandomize,
-    handleRandomizeWithQuantities,
     handleShare,
     handleClearAll,
     performClearAll,
@@ -179,7 +145,6 @@ export default function MealPlannerContainer() {
     removeMealPlan,
     clearWeek,
     reorderMealPlans,
-    generateRandomMealPlan,
     setAddMealModal,
     setIsLoading,
     toast,
@@ -188,29 +153,7 @@ export default function MealPlannerContainer() {
     setPendingMealType,
     setClearAllDialog,
     refreshMealPlans: fetchMealPlans,
-    currentMealPlans,
   });
-
-  const handleGenerateMeal = useCallback(async () => {
-    if (!pendingMealType) return;
-
-    try {
-      await generateRandomMeals(currentWeek, pendingMealType, 1);
-      await fetchMealPlans();
-      toast({
-        title: "Meal generated",
-        description: `A random ${pendingMealType} has been added to your meal plan.`,
-      });
-    } catch (error) {
-      console.error("Error generating meal:", error);
-      toast({
-        title: "Couldn't generate meal",
-        description: error instanceof Error ? error.message : "No suitable recipe could be generated.",
-        variant: "destructive",
-      });
-      throw error;
-    }
-  }, [pendingMealType, currentWeek, generateRandomMeals, fetchMealPlans, toast]);
 
   const handleAddMeal = useCallback((mealType: MealType) => {
     console.log("🍽️ handleAddMeal called with mealType:", mealType);
@@ -293,27 +236,37 @@ export default function MealPlannerContainer() {
     setLeftoverDialog(true);
   }, [setPendingLeftoverData, setPendingMealType, setLeftoverDialog]);
 
-  const handleRandomizeClick = useCallback(() => {
-    if (currentMealPlans.length > 0) {
-      setWarningDialog(true);
-    } else {
-      setGenerationMode("replace");
-      handleRandomize();
+  const handleConfirmGeneratedMeals = useCallback(async (meals: GeneratedMeal[], mode: MealPlanGenerationMode) => {
+    if (!user || !currentHousehold || meals.length === 0) return;
+    setIsLoading(true);
+    try {
+      if (mode === "replace") await clearWeek(currentWeek);
+      const { year, week } = parseISOWeekKey(currentWeek);
+      const date = formatLocalDateYMD(getWeekStartDate(year, week));
+      const nextSlots: Record<string, number> = {};
+      if (mode === "add") currentMealPlans.forEach(plan => {
+        nextSlots[plan.meal_type] = Math.max(nextSlots[plan.meal_type] ?? -1, plan.slot_index ?? -1) + 1;
+      });
+      for (const meal of meals) {
+        const slot = nextSlots[meal.mealType] ?? 0;
+        nextSlots[meal.mealType] = slot + 1;
+        await addMealPlan({
+          date, meal_type: meal.mealType, recipe_id: meal.recipe.id, created_by: user.id, slot_index: slot,
+          is_leftover: false, household_id: currentHousehold.id, week_key: currentWeek,
+          original_servings: meal.recipe.servings || 1, planned_servings: meal.recipe.servings || 1,
+          is_completed: false, is_freetyped: false,
+        }, currentWeek, true);
+      }
+      await fetchMealPlans();
+      setQuantitiesDialog(false);
+      toast({ title: "Meal plan ready", description: "Added " + meals.length + " " + (meals.length === 1 ? "meal" : "meals") + " to your meal plan." });
+    } catch (error) {
+      console.error("Error adding generated meals:", error);
+      toast({ title: "Couldn't add meal plan", description: error instanceof Error ? error.message : "Something went wrong.", variant: "destructive" });
+    } finally {
+      setIsLoading(false);
     }
-  }, [currentMealPlans.length, handleRandomize, setWarningDialog]);
-
-  const handleGenerationChoice = useCallback((mode: MealPlanGenerationMode) => {
-    setGenerationMode(mode);
-    handleRandomize();
-  }, [handleRandomize]);
-
-  const handleWarningReplace = useCallback(() => {
-    handleGenerationChoice("replace");
-  }, [handleGenerationChoice]);
-
-  const handleWarningAdd = useCallback(() => {
-    handleGenerationChoice("add");
-  }, [handleGenerationChoice]);
+  }, [user, currentHousehold, currentWeek, currentMealPlans, addMealPlan, clearWeek, fetchMealPlans, setIsLoading, setQuantitiesDialog, toast]);
 
   const handleClearAllConfirm = useCallback(() => {
     performClearAll();
@@ -489,18 +442,16 @@ export default function MealPlannerContainer() {
         pendingLeftoverData={pendingLeftoverData}
         recipes={recipes}
         currentWeek={currentWeek}
-        generationMode={generationMode}
-        onRandomizeWithQuantities={handleRandomizeWithQuantities}
+        currentMealCount={currentMealPlans.length}
+        onConfirmGeneratedMeals={handleConfirmGeneratedMeals}
         onSimpleMealSelect={handleSimpleMealSelect}
         onAddFreetypeMeal={handleAddFreetypeMeal}
-        onGenerateMeal={handleGenerateMeal}
         onLunchLeftoverConfirm={handleLunchLeftoverConfirm}
         onCreateLeftover={handleCreateLeftoverWithServings}
         onWarningReplace={handleWarningReplace}
         onWarningAdd={handleWarningAdd}
         onClearAllConfirm={handleClearAllConfirm}
         onServingsConfirm={handleServingsConfirm}
-        onChooseMeals={() => { setQuantitiesDialog(false); setSwipeDialog(true); }}
       />
 
       <Dialog
