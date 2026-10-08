@@ -1,5 +1,6 @@
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RecipeSelectionView } from "@/components/recipes/RecipeSelectionView";
 import { FreetypeMealDialog } from "@/components/meal-planner/FreetypeMealDialog";
 import { Recipe, MealType } from "@/types";
