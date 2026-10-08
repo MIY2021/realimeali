@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { ShoppingListItem as ShoppingListItemType } from "@/types/shoppingList";
 import { getShoppingSearchName } from "@/utils/shoppingIngredientUtils";
 
-interface Sainsbury'sShoppingModeProps {
+interface SainsburysShoppingModeProps {
   items: ShoppingListItemType[];
   selectedItemId: string;
   onSelectItem: (itemId: string) => void;
@@ -12,12 +12,12 @@ interface Sainsbury'sShoppingModeProps {
 
 const SAINSBURYS_SEARCH_URL = "https://www.sainsburys.co.uk/gol-ui/groceries/search";
 
-export default function Sainsbury'sShoppingMode({
+export default function SainsburysShoppingMode({
   items,
   selectedItemId,
   onSelectItem,
   onClose,
-}: Sainsbury'sShoppingModeProps) {
+}: SainsburysShoppingModeProps) {
   const currentIndex = Math.max(0, items.findIndex(item => item.id === selectedItemId));
   const selectedItem = items[currentIndex];
 
