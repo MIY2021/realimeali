@@ -64,11 +64,19 @@ export const useMealPlannerState = () => {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const state = location.state as { openGenerator?: boolean } | null;
-    if (params.get("generate") === "1" || state?.openGenerator) {
+    const sessionFlag = sessionStorage.getItem("realimeali_open_generator") === "1";
+
+    if (params.get("generate") === "1" || state?.openGenerator || sessionFlag) {
       setQuantitiesDialog(true);
+
+      if (sessionFlag) {
+        sessionStorage.removeItem("realimeali_open_generator");
+      }
+
       if (params.get("generate") === "1") {
         window.history.replaceState({}, "", window.location.pathname);
       }
+
       if (state?.openGenerator) {
         navigate(location.pathname, { replace: true, state: null });
       }
