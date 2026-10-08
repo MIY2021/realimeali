@@ -38,20 +38,6 @@ export const RecipesProvider: React.FC<{ children: React.ReactNode }> = ({ child
   // Performance: Track last fetched household to prevent duplicate fetches
   const lastFetchedHouseholdIdRef = useRef<string | null>(null);
 
-  // The context owns its initial fetch. This keeps loading deterministic and
-  // avoids a second global loader racing the page/context lifecycle.
-  useEffect(() => {
-    const householdId = currentHousehold?.id || null;
-    if (!householdId) {
-      lastFetchedHouseholdIdRef.current = null;
-      setRecipes([]);
-      setIsLoading(false);
-      return;
-    }
-    if (isLoadingHousehold || lastFetchedHouseholdIdRef.current === householdId) return;
-    void fetchRecipes(householdId);
-  }, [currentHousehold?.id, isLoadingHousehold, fetchRecipes]);
-
   const fetchRecipes = useCallback(async (householdId: string | null) => {
     if (!householdId) {
       console.log('RecipesContext: No household ID provided, skipping fetch');
@@ -83,6 +69,20 @@ export const RecipesProvider: React.FC<{ children: React.ReactNode }> = ({ child
       setIsLoading(false);
     }
   }, [api]);
+
+  // The context owns its initial fetch. This keeps loading deterministic and
+  // avoids a second global loader racing the page/context lifecycle.
+  useEffect(() => {
+    const householdId = currentHousehold?.id || null;
+    if (!householdId) {
+      lastFetchedHouseholdIdRef.current = null;
+      setRecipes([]);
+      setIsLoading(false);
+      return;
+    }
+    if (isLoadingHousehold || lastFetchedHouseholdIdRef.current === householdId) return;
+    void fetchRecipes(householdId);
+  }, [currentHousehold?.id, isLoadingHousehold, fetchRecipes]);
 
   const getRecipeById = useCallback((id: string) => {
     return recipes.find(recipe => recipe.id === id);
