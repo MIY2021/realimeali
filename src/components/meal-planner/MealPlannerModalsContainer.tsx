@@ -5,6 +5,7 @@ import { MealPlanWarningDialog } from "@/components/meal-planner/MealPlanWarning
 import { ClearAllMealsDialog } from "@/components/meal-planner/ClearAllMealsDialog";
 import { MealServingsDialog } from "@/components/meal-planner/MealServingsDialog";
 import { Recipe, MealType } from "@/types";
+import { GeneratedMeal, MealPlanGenerationMode } from "@/components/meal-planner/MealPlanQuantitiesDialog";
 
 interface MealPlannerModalsContainerProps {
   quantitiesDialog: boolean;
@@ -24,7 +25,7 @@ interface MealPlannerModalsContainerProps {
   pendingLeftoverData: { mealPlan: any; recipe?: any } | null;
   recipes: Recipe[];
   currentWeek: string;
-  generationMode: MealPlanGenerationMode;
+  currentMealCount: number;
   onConfirmGeneratedMeals: (meals: GeneratedMeal[], mode: MealPlanGenerationMode) => void;
   onSimpleMealSelect: (recipeId: string) => void;
   onAddFreetypeMeal: (mealName: string, servings: number) => void;
@@ -55,7 +56,7 @@ export const MealPlannerModalsContainer = ({
   pendingLeftoverData,
   recipes,
   currentWeek,
-  generationMode,
+  currentMealCount,
   onConfirmGeneratedMeals,
   onSimpleMealSelect,
   onAddFreetypeMeal,
@@ -77,7 +78,7 @@ export const MealPlannerModalsContainer = ({
         onConfirm={onConfirmGeneratedMeals}
         availableRecipes={recipes.length}
         recipes={recipes}
-        currentMealCount={generationMode === "add" ? 0 : undefined}
+        currentMealCount={currentMealCount}
       />
 
       <MealPlannerRecipeSelection
