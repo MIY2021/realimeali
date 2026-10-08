@@ -15,10 +15,12 @@ interface UseMealPlannerOperationsProps {
   reorderMealPlans: any;
   setAddMealModal: any;
   toast: any;
+  setIsLoading: (loading: boolean) => void;
   setServingsDialog: (open: boolean) => void;
   setPendingMealType: (mealType: MealType | null) => void;
   setClearAllDialog?: (open: boolean) => void;
   refreshMealPlans?: () => Promise<void>;
+  currentMealPlans?: any[];
 }
 
 export const useMealPlannerOperations = (props: UseMealPlannerOperationsProps) => {
