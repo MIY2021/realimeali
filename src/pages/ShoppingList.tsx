@@ -299,7 +299,7 @@ export default function ShoppingList() {
               copiedItemId={copiedItemId}
               onToggleItem={toggleItemChecked}
               onCopyItem={handleCopyItem}
-              onSainsburys={handleOpenSainsburys}
+              onOcado={handleOpenSainsburys}
             />
           ) : (
             <ShoppingListEmptyState hasMealPlans={hasMealPlans} />
