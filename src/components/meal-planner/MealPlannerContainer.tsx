@@ -11,7 +11,6 @@ import { MealPlannerActions } from "@/components/meal-planner/MealPlannerActions
 import { RecipeSwipeDialog } from "@/components/dashboard/RecipeSwipeDialog";
 import { CustomMealDialog } from "@/components/meal-planner/CustomMealDialog";
 import { MealPlanInfoDialog } from "@/components/meal-planner/MealPlanInfoDialog";
-import MealPlannerSkeleton from "@/components/meal-planner/MealPlannerSkeleton";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useMealPlanModals } from "@/hooks/useMealPlanModals";
 import { useMealPlannerOperations } from "@/hooks/useMealPlannerOperations";
@@ -398,34 +397,36 @@ export default function MealPlannerContainer() {
         copyWeek={copyWeek}
       />
 
-      <MealPlannerModalsContainer
-        quantitiesDialog={quantitiesDialog}
-        setQuantitiesDialog={setQuantitiesDialog}
-        simpleMealDialog={simpleMealDialog}
-        setSimpleMealDialog={setSimpleMealDialog}
-        leftoverDialog={leftoverDialog}
-        setLeftoverDialog={setLeftoverDialog}
-        warningDialog={warningDialog}
-        setWarningDialog={setWarningDialog}
-        clearAllDialog={clearAllDialog}
-        setClearAllDialog={setClearAllDialog}
-        servingsDialog={servingsDialog}
-        setServingsDialog={setServingsDialog}
-        pendingMealType={pendingMealType}
-        setPendingMealType={setPendingMealType}
-        pendingLeftoverData={pendingLeftoverData}
-        recipes={recipes}
-        currentMealCount={currentMealPlans.length}
-        onConfirmGeneratedMeals={handleConfirmGeneratedMeals}
-        onSimpleMealSelect={handleSimpleMealSelect}
-        onAddFreetypeMeal={handleAddFreetypeMeal}
-        onLunchLeftoverConfirm={handleLunchLeftoverConfirm}
-        onCreateLeftover={handleCreateLeftoverWithServings}
-        onWarningReplace={() => {}}
-        onWarningAdd={() => {}}
-        onClearAllConfirm={handleClearAllConfirm}
-        onServingsConfirm={handleServingsConfirm}
-      />
+      {(quantitiesDialog || simpleMealDialog || leftoverDialog || warningDialog || clearAllDialog || servingsDialog || pendingMealType) && (
+        <MealPlannerModalsContainer
+          quantitiesDialog={quantitiesDialog}
+          setQuantitiesDialog={setQuantitiesDialog}
+          simpleMealDialog={simpleMealDialog}
+          setSimpleMealDialog={setSimpleMealDialog}
+          leftoverDialog={leftoverDialog}
+          setLeftoverDialog={setLeftoverDialog}
+          warningDialog={warningDialog}
+          setWarningDialog={setWarningDialog}
+          clearAllDialog={clearAllDialog}
+          setClearAllDialog={setClearAllDialog}
+          servingsDialog={servingsDialog}
+          setServingsDialog={setServingsDialog}
+          pendingMealType={pendingMealType}
+          setPendingMealType={setPendingMealType}
+          pendingLeftoverData={pendingLeftoverData}
+          recipes={recipes}
+          currentMealCount={currentMealPlans.length}
+          onConfirmGeneratedMeals={handleConfirmGeneratedMeals}
+          onSimpleMealSelect={handleSimpleMealSelect}
+          onAddFreetypeMeal={handleAddFreetypeMeal}
+          onLunchLeftoverConfirm={handleLunchLeftoverConfirm}
+          onCreateLeftover={handleCreateLeftoverWithServings}
+          onWarningReplace={() => {}}
+          onWarningAdd={() => {}}
+          onClearAllConfirm={handleClearAllConfirm}
+          onServingsConfirm={handleServingsConfirm}
+        />
+      )}
 
       <Dialog
         open={Boolean(pendingCustomRecipe)}
@@ -460,24 +461,28 @@ export default function MealPlannerContainer() {
         </DialogContent>
       </Dialog>
 
-      <RecipeSwipeDialog open={swipeDialog} onOpenChange={setSwipeDialog} recipes={recipes} />
+      {swipeDialog && <RecipeSwipeDialog open={swipeDialog} onOpenChange={setSwipeDialog} recipes={recipes} />}
 
-      <CustomMealDialog
-        open={customMealDialog}
-        onClose={() => {
-          setCustomMealDialog(false);
-          setCustomMealType(null);
-        }}
-        mealType={customMealType || "dinner"}
-        onAddCustomMeal={handleCustomMealSubmit}
-      />
+      {customMealDialog && (
+        <CustomMealDialog
+          open={customMealDialog}
+          onClose={() => {
+            setCustomMealDialog(false);
+            setCustomMealType(null);
+          }}
+          mealType={customMealType || "dinner"}
+          onAddCustomMeal={handleCustomMealSubmit}
+        />
+      )}
 
-      <MealPlanInfoDialog
-        open={infoDialog}
-        onOpenChange={setInfoDialog}
-        lastGenerated={lastGenerated}
-        createdByUserId={createdByUserId}
-      />
+      {infoDialog && (
+        <MealPlanInfoDialog
+          open={infoDialog}
+          onOpenChange={setInfoDialog}
+          lastGenerated={lastGenerated}
+          createdByUserId={createdByUserId}
+        />
+      )}
     </div>
   );
 }
