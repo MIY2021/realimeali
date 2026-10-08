@@ -1,12 +1,10 @@
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RecipeSelectionView } from "@/components/recipes/RecipeSelectionView";
 import { FreetypeMealDialog } from "@/components/meal-planner/FreetypeMealDialog";
 import { Recipe, MealType } from "@/types";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useState, useEffect } from "react";
-import { Dices, Loader } from "lucide-react";
 
 interface MealPlannerRecipeSelectionProps {
   open: boolean;
@@ -15,7 +13,6 @@ interface MealPlannerRecipeSelectionProps {
   recipes: Recipe[];
   onSelectRecipe: (recipeId: string) => void;
   onAddFreetypeMeal: (mealName: string, servings: number) => void;
-  onGenerateMeal?: () => Promise<void>;
 }
 
 const MEAL_TYPE_LABELS: Record<MealType, string> = {
@@ -37,18 +34,15 @@ export function MealPlannerRecipeSelection({
   recipes,
   onSelectRecipe,
   onAddFreetypeMeal,
-  onGenerateMeal = async () => {},
 }: MealPlannerRecipeSelectionProps) {
   const isMobile = useIsMobile();
   const [activeTab, setActiveTab] = useState("recipes");
   const [showFreetypeDialog, setShowFreetypeDialog] = useState(false);
-  const [isGeneratingMeal, setIsGeneratingMeal] = useState(false);
 
   useEffect(() => {
     if (open) {
       setActiveTab("recipes");
       setShowFreetypeDialog(false);
-      setIsGeneratingMeal(false);
     }
   }, [open]);
 
@@ -61,18 +55,6 @@ export function MealPlannerRecipeSelection({
     onAddFreetypeMeal(mealName, servings);
     setShowFreetypeDialog(false);
     onClose();
-  };
-
-  const handleGenerateMeal = async () => {
-    setIsGeneratingMeal(true);
-    try {
-      await onGenerateMeal();
-      onClose();
-    } catch {
-      // Parent handles the user-facing error.
-    } finally {
-      setIsGeneratingMeal(false);
-    }
   };
 
   const handleTabChange = (value: string) => {
@@ -97,12 +79,6 @@ export function MealPlannerRecipeSelection({
                 <TabsContent value="recipes" className="h-full m-0 p-0">
                   <div className={`h-full ${isMobile ? 'overflow-y-auto scrollbar-hide' : 'overflow-y-auto'}`}>
                     <div className={`${isMobile ? 'px-4' : 'max-w-7xl mx-auto px-8'} py-4`}>
-                       <div className="mb-4 flex justify-end">
-                         <Button type="button" variant="outline" size="sm" onClick={handleGenerateMeal} disabled={isGeneratingMeal} className="rounded-full">
-                           {isGeneratingMeal ? <Loader className="h-4 w-4 animate-spin" /> : <Dices className="h-4 w-4" />}
-                           <span className="ml-1.5">{isGeneratingMeal ? "Generating…" : "Generate a meal"}</span>
-                         </Button>
-                       </div>
                        <RecipeSelectionView
                          recipes={recipes}
                          isLoading={false}
