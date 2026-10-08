@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { MealType } from "@/types";
 import { getCurrentWeekKey, getNextWeek } from "@/utils/weekUtils";
 
@@ -6,6 +7,8 @@ const WEEK_STORAGE_KEY = "meal-planner-current-week";
 const WEEK_KEY_PATTERN = /^\d{4}-W\d{1,2}$/;
 
 export const useMealPlannerState = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
   // A shared meal-plan link takes precedence over the locally remembered week.
   const [currentWeek, setCurrentWeekState] = useState<string>(() => {
     if (typeof window === 'undefined') {
@@ -60,11 +63,17 @@ export const useMealPlannerState = () => {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    if (params.get("generate") === "1") {
+    const state = location.state as { openGenerator?: boolean } | null;
+    if (params.get("generate") === "1" || state?.openGenerator) {
       setQuantitiesDialog(true);
-      window.history.replaceState({}, "", window.location.pathname);
+      if (params.get("generate") === "1") {
+        window.history.replaceState({}, "", window.location.pathname);
+      }
+      if (state?.openGenerator) {
+        navigate(location.pathname, { replace: true, state: null });
+      }
     }
-  }, []);
+  }, [location.pathname, location.search, location.state, navigate]);
 
   useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {
