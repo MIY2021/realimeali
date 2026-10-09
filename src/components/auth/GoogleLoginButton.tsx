@@ -7,7 +7,6 @@ import { useState } from "react";
 
 export function GoogleLoginButton() {
   const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
 
   const handleGoogleLogin = async () => {
     try {
