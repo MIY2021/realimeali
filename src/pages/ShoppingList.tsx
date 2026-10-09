@@ -332,6 +332,7 @@ export default function ShoppingList() {
               items={shoppingList}
               selectedItemId={ocadoItemId}
               onSelectItem={setOcadoItemId}
+              onToggleItem={toggleItemChecked}
               onClose={() => setOcadoItemId(null)}
             />
           )}
