@@ -79,6 +79,12 @@ public class OcadoWebViewPlugin extends Plugin {
         Window window = dialog.getWindow();
         if (window != null) {
           window.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT);
+          // Make the browser feel like an in-app screen, not a floating modal.
+          window.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+          WindowManager.LayoutParams attributes = window.getAttributes();
+          attributes.dimAmount = 0f;
+          window.setAttributes(attributes);
+          window.setBackgroundDrawableResource(android.R.color.transparent);
           window.setStatusBarColor(Color.WHITE);
           window.setNavigationBarColor(Color.WHITE);
           window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR | View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR);
