@@ -46,14 +46,16 @@ export default function OcadoShoppingMode({ items, selectedItemId, onSelectItem,
     if (!Capacitor.isNativePlatform() || !selectedItem || currentIndex < 0) return;
     let active = true;
     let itemListener: { remove: () => Promise<void> } | undefined;
-    let closeListener: { remove: () => Promise<void> } | undefined;\n    let checkedListener: { remove: () => Promise<void> } | undefined;
+    let closeListener: { remove: () => Promise<void> } | undefined;
+    let checkedListener: { remove: () => Promise<void> } | undefined;
     const open = async () => {
       try {
         itemListener = await OcadoWebView.addListener("itemChange", ({ index }) => {
           const item = items[index];
           if (item) onSelectItem(item.id);
         });
-        checkedListener = await OcadoWebView.addListener("itemChecked", ({ id }) => onToggleItem(id));\n        closeListener = await OcadoWebView.addListener("closed", () => {
+        checkedListener = await OcadoWebView.addListener("itemChecked", ({ id }) => onToggleItem(id));
+        closeListener = await OcadoWebView.addListener("closed", () => {
           nativeOpened.current = false;
           if (active) onClose();
         });
@@ -72,7 +74,8 @@ export default function OcadoShoppingMode({ items, selectedItemId, onSelectItem,
     return () => {
       active = false;
       void itemListener?.remove();
-      void closeListener?.remove();\n      void checkedListener?.remove();
+      void closeListener?.remove();
+      void checkedListener?.remove();
     };
   // itemsKey represents the full item payload; currentIndex changes when the native navigator advances.
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -112,7 +115,8 @@ export default function OcadoShoppingMode({ items, selectedItemId, onSelectItem,
         <div className="mx-auto flex min-h-20 max-w-3xl items-center gap-2 px-3 py-2">
           <Button type="button" variant="ghost" size="sm" onClick={goPrevious} disabled={currentIndex === 0} className="h-10 w-10 shrink-0 rounded-full p-0" aria-label="Previous shopping item"><ChevronLeft className="h-5 w-5" /></Button>
           <div className="min-w-0 flex-1 text-center"><div className="truncate text-base font-semibold text-foreground">🛒 {selectedItem.name}</div><div className="text-xs text-muted-foreground">{currentIndex + 1} of {items.length}</div></div>
-          <Button type="button" variant={selectedItem.isChecked ? "default" : "outline"} size="sm" onClick={() => onToggleItem(selectedItem.id)} className="h-10 shrink-0 rounded-xl px-3" aria-label={selectedItem.isChecked ? "Mark item as not added" : "Mark item as added to basket"}>{selectedItem.isChecked ? "✓ Added" : "✓ Add"}</Button>\n          <Button type="button" variant="ghost" size="sm" onClick={goNext} disabled={currentIndex === items.length - 1} className="h-10 w-10 shrink-0 rounded-full p-0" aria-label="Next shopping item"><ChevronRight className="h-5 w-5" /></Button>
+          <Button type="button" variant={selectedItem.isChecked ? "default" : "outline"} size="sm" onClick={() => onToggleItem(selectedItem.id)} className="h-10 shrink-0 rounded-xl px-3" aria-label={selectedItem.isChecked ? "Mark item as not added" : "Mark item as added to basket"}>{selectedItem.isChecked ? "✓ Added" : "✓ Add"}</Button>
+          <Button type="button" variant="ghost" size="sm" onClick={goNext} disabled={currentIndex === items.length - 1} className="h-10 w-10 shrink-0 rounded-full p-0" aria-label="Next shopping item"><ChevronRight className="h-5 w-5" /></Button>
           <Button type="button" variant="ghost" size="sm" onClick={onClose} className="h-10 w-10 shrink-0 rounded-full p-0" aria-label="Close Ocado shopping mode"><X className="h-5 w-5" /></Button>
         </div>
       </div>
