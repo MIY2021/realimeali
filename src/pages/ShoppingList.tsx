@@ -19,7 +19,7 @@ import { Link } from "react-router-dom";
 import { getCurrentWeekKey } from "@/utils/weekUtils";
 import { groupByCategory } from "@/utils/shoppingListSorting";
 import { PageControlsCard } from "@/components/layout/PageControlsCard";
-import SainsburysShoppingMode from "@/components/shopping-list/OcadoShoppingMode";
+import OcadoShoppingMode from "@/components/shopping-list/OcadoShoppingMode";
 
 export default function ShoppingList() {
   useDocumentTitle("Shopping List | RealiMeali");
@@ -47,7 +47,7 @@ export default function ShoppingList() {
   const [newItemName, setNewItemName] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
-  const [sainsburysItemId, setSainsburysItemId] = useState<string | null>(null);
+  const [ocadoItemId, setOcadoItemId] = useState<string | null>(null);
 
   useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {
@@ -104,8 +104,8 @@ export default function ShoppingList() {
 
   const groupedItems = groupByCategory(filteredShoppingList);
 
-  const handleOpenSainsburys = (itemId: string) => {
-    setSainsburysItemId(itemId);
+  const handleOpenOcado = (itemId: string) => {
+    setOcadoItemId(itemId);
   };
 
   const handleCopyItem = (itemId: string) => {
@@ -299,7 +299,7 @@ export default function ShoppingList() {
               copiedItemId={copiedItemId}
               onToggleItem={toggleItemChecked}
               onCopyItem={handleCopyItem}
-              onOcado={handleOpenSainsburys}
+              onOcado={handleOpenOcado}
             />
           ) : (
             <ShoppingListEmptyState hasMealPlans={hasMealPlans} />
@@ -327,12 +327,12 @@ export default function ShoppingList() {
               </Button>
           </form>
 
-          {sainsburysItemId && shoppingList.some(item => item.id === sainsburysItemId) && (
-            <SainsburysShoppingMode
+          {ocadoItemId && shoppingList.some(item => item.id === ocadoItemId) && (
+            <OcadoShoppingMode
               items={shoppingList}
-              selectedItemId={sainsburysItemId}
-              onSelectItem={setSainsburysItemId}
-              onClose={() => setSainsburysItemId(null)}
+              selectedItemId={ocadoItemId}
+              onSelectItem={setOcadoItemId}
+              onClose={() => setOcadoItemId(null)}
             />
           )}
         </>
