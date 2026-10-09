@@ -78,7 +78,7 @@ public class OcadoWebViewPlugin extends Plugin {
         dialog.show();
         Window window = dialog.getWindow();
         if (window != null) {
-          window.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT - dp(76));
+          window.setLayout(WindowManager.LayoutParams.MATCH_PARENT, availableDialogHeight());
           window.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL);
           // Keep the RealiMeali bottom navigation visible and interactive beneath the browser.
           window.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
@@ -115,7 +115,7 @@ public class OcadoWebViewPlugin extends Plugin {
           dialog.show();
           Window window = dialog.getWindow();
           if (window != null) {
-            window.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT - dp(76));
+            window.setLayout(WindowManager.LayoutParams.MATCH_PARENT, availableDialogHeight());
             window.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL);
             window.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
             WindowManager.LayoutParams attributes = window.getAttributes();
@@ -268,6 +268,13 @@ public class OcadoWebViewPlugin extends Plugin {
       throw new IllegalArgumentException("Only Ocado search URLs are allowed");
     }
     return url;
+  }
+
+  private int availableDialogHeight() {
+    android.util.DisplayMetrics metrics = new android.util.DisplayMetrics();
+    getActivity().getWindowManager().getDefaultDisplay().getRealMetrics(metrics);
+    // Reserve the bottom navigation area so RealiMeali stays visible behind the browser.
+    return Math.max(dp(300), metrics.heightPixels - dp(76));
   }
 
   private int dp(int value) {
