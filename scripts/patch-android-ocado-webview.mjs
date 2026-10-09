@@ -279,10 +279,18 @@ public class OcadoWebViewPlugin extends Plugin {
   }
 
   private int availableOverlayHeight() {
-    android.util.DisplayMetrics metrics = new android.util.DisplayMetrics();
-    getActivity().getWindowManager().getDefaultDisplay().getRealMetrics(metrics);
-    // Leave room for RealiMeali bottom navigation beneath this Activity-level overlay.
-    return Math.max(dp(300), metrics.heightPixels - dp(150));
+    // ViewGroup.LayoutParams dimensions are physical pixels. Use the actual WebView
+    // height (also pixels), then reserve a dp-converted area for the underlying
+    // RealiMeali shopping row, bottom navigation, and system gesture/navigation area.
+    View content = getBridge().getWebView();
+    int availableHeightPx = content.getHeight();
+    if (availableHeightPx <= 0) {
+      android.util.DisplayMetrics metrics = getActivity().getResources().getDisplayMetrics();
+      availableHeightPx = metrics.heightPixels;
+    }
+    int reservedBottomPx = dp(190);
+    int overlayHeightPx = availableHeightPx - reservedBottomPx;
+    return Math.max(dp(280), overlayHeightPx);
   }
 
   private int dp(int value) {
