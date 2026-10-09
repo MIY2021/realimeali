@@ -48,8 +48,11 @@ jobs:
       - name: Generate Android project
         run: npx --yes @capacitor/cli@7 add android
 
-      - name: Register native auth deep link
+      - name: Register native auth deep link and launcher icon
         run: node scripts/patch-android-deeplink.mjs
+
+      - name: Install embedded Ocado WebView
+        run: node scripts/patch-android-ocado-webview.mjs
 
       - name: Sync bundled assets to Android
         run: npx --yes @capacitor/cli@7 sync android
