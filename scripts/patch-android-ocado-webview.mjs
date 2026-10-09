@@ -20,7 +20,7 @@ if (!mainPath || !mainPath.endsWith(".java")) {
   throw new Error("Could not find generated Java MainActivity for embedded Ocado WebView plugin.");
 }
 const main = await readFile(mainPath, "utf8");
-const packageName = main.match(/^package\\s+([\\w.]+);/m)?.[1];
+const packageName = main.match(/^package\s+([\w.]+);/m)?.[1];
 if (!packageName) throw new Error("Could not determine Android package name.");
 const pluginPath = path.join(path.dirname(mainPath), "OcadoWebViewPlugin.java");
 const pluginSource = `package ${packageName};
@@ -279,8 +279,8 @@ await writeFile(pluginPath, pluginSource, "utf8");
 
 let updatedMain = main;
 if (!updatedMain.includes("OcadoWebViewPlugin.class")) {
-  updatedMain = updatedMain.replace(/(import com\\.getcapacitor\\.BridgeActivity;\\s*)/, "$1import " + packageName + ".OcadoWebViewPlugin;\\n");
-  updatedMain = updatedMain.replace(/(public class MainActivity extends BridgeActivity\\s*\\{)/, "$1\\n    @Override\\n    public void onCreate(android.os.Bundle savedInstanceState) {\\n        registerPlugin(OcadoWebViewPlugin.class);\\n        super.onCreate(savedInstanceState);\\n    }");
+  updatedMain = updatedMain.replace(/(import com\.getcapacitor\.BridgeActivity;\s*)/, "$1import " + packageName + ".OcadoWebViewPlugin;\n");
+  updatedMain = updatedMain.replace(/(public class MainActivity extends BridgeActivity\s*\{)/, "$1\n    @Override\n    public void onCreate(android.os.Bundle savedInstanceState) {\n        registerPlugin(OcadoWebViewPlugin.class);\n        super.onCreate(savedInstanceState);\n    }");
   if (!updatedMain.includes("OcadoWebViewPlugin.class")) throw new Error("Failed to register OcadoWebViewPlugin in MainActivity.");
   await writeFile(mainPath, updatedMain, "utf8");
 }
