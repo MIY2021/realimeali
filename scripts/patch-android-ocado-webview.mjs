@@ -20,77 +20,112 @@ if (!mainPath || !mainPath.endsWith(".java")) {
   throw new Error("Could not find generated Java MainActivity for embedded Ocado WebView plugin.");
 }
 const main = await readFile(mainPath, "utf8");
-const packageName = main.match(/^package\s+([\w.]+);/m)?.[1];
+const packageName = main.match(/^package\\s+([\\w.]+);/m)?.[1];
 if (!packageName) throw new Error("Could not determine Android package name.");
 const pluginPath = path.join(path.dirname(mainPath), "OcadoWebViewPlugin.java");
 const pluginSource = `package ${packageName};
 
+import android.app.Dialog;
 import android.graphics.Color;
-import android.graphics.Rect;
-import android.util.DisplayMetrics;
+import android.graphics.Typeface;
+import android.graphics.drawable.GradientDrawable;
 import android.view.Gravity;
 import android.view.View;
-import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 import android.webkit.CookieManager;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.FrameLayout;
+import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 @CapacitorPlugin(name = "OcadoWebView")
 public class OcadoWebViewPlugin extends Plugin {
-  private WebView ocadoView;
-  private FrameLayout.LayoutParams overlayParams;
+  private Dialog dialog;
+  private WebView browser;
+  private LinearLayout toolbar;
+  private TextView itemLabel;
+  private Button previousButton;
+  private Button nextButton;
+  private JSONArray items = new JSONArray();
+  private int currentIndex = 0;
 
   @PluginMethod
   public void show(PluginCall call) {
-    String url = call.getString("url");
-    if (url == null || !url.startsWith("https://www.ocado.com/")) {
-      call.reject("Only secure Ocado URLs are allowed");
+    JSONArray incoming = call.getArray("items");
+    int index = call.getInt("index", 0);
+    if (incoming == null || incoming.length() == 0) {
+      call.reject("No Ocado shopping items supplied");
       return;
     }
     getActivity().runOnUiThread(() -> {
       try {
-        ensureView();
-        resizeOverlay();
-        ocadoView.setVisibility(View.VISIBLE);
-        ocadoView.loadUrl(url);
-        JSObject result = new JSObject();
-        result.put("visible", true);
-        call.resolve(result);
+        items = incoming;
+        currentIndex = Math.max(0, Math.min(index, items.length() - 1));
+        ensureDialog();
+        updateNavigation();
+        dialog.show();
+        Window window = dialog.getWindow();
+        if (window != null) {
+          window.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT);
+          window.setStatusBarColor(Color.WHITE);
+          window.setNavigationBarColor(Color.WHITE);
+          window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR | View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR);
+        }
+        browser.loadUrl(currentUrl());
+        call.resolve();
       } catch (Exception e) {
-        call.reject("Could not open Ocado inside RealiMeali", e);
+        call.reject("Could not open Ocado embedded browser", e);
       }
     });
   }
 
   @PluginMethod
-  public void navigate(PluginCall call) {
-    String url = call.getString("url");
-    if (url == null || !url.startsWith("https://www.ocado.com/")) {
-      call.reject("Only secure Ocado URLs are allowed");
+  public void update(PluginCall call) {
+    JSONArray incoming = call.getArray("items");
+    int index = call.getInt("index", 0);
+    if (incoming == null || incoming.length() == 0) {
+      call.reject("No Ocado shopping items supplied");
       return;
     }
     getActivity().runOnUiThread(() -> {
-      if (ocadoView == null) {
-        call.reject("Ocado browser is not open");
-        return;
+      try {
+        items = incoming;
+        currentIndex = Math.max(0, Math.min(index, items.length() - 1));
+        if (dialog == null || !dialog.isShowing()) {
+          ensureDialog();
+          dialog.show();
+          Window window = dialog.getWindow();
+          if (window != null) window.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT);
+          browser.loadUrl(currentUrl());
+        } else {
+          updateNavigation();
+          String url = currentUrl();
+          if (!url.equals(browser.getUrl())) browser.loadUrl(url);
+        }
+        updateNavigation();
+        call.resolve();
+      } catch (Exception e) {
+        call.reject("Could not update Ocado search", e);
       }
-      ocadoView.loadUrl(url);
-      call.resolve();
     });
   }
 
   @PluginMethod
   public void hide(PluginCall call) {
     getActivity().runOnUiThread(() -> {
-      if (ocadoView != null) ocadoView.setVisibility(View.GONE);
+      if (dialog != null && dialog.isShowing()) dialog.dismiss();
       call.resolve();
     });
   }
@@ -98,21 +133,22 @@ public class OcadoWebViewPlugin extends Plugin {
   @PluginMethod
   public void goBack(PluginCall call) {
     getActivity().runOnUiThread(() -> {
-      if (ocadoView != null && ocadoView.canGoBack()) ocadoView.goBack();
+      if (browser != null && browser.canGoBack()) browser.goBack();
       call.resolve();
     });
   }
 
-  private void ensureView() {
-    if (ocadoView != null) return;
-    View webView = getBridge().getWebView();
-    if (!(webView.getParent() instanceof ViewGroup)) {
-      throw new IllegalStateException("Could not find the RealiMeali native content container");
-    }
-    ViewGroup container = (ViewGroup) webView.getParent();
-    ocadoView = new WebView(getContext());
-    ocadoView.setBackgroundColor(Color.WHITE);
-    WebSettings settings = ocadoView.getSettings();
+  private void ensureDialog() {
+    if (dialog != null) return;
+    dialog = new Dialog(getActivity());
+    dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+    LinearLayout root = new LinearLayout(getActivity());
+    root.setOrientation(LinearLayout.VERTICAL);
+    root.setBackgroundColor(Color.WHITE);
+
+    browser = new WebView(getActivity());
+    browser.setBackgroundColor(Color.WHITE);
+    WebSettings settings = browser.getSettings();
     settings.setJavaScriptEnabled(true);
     settings.setDomStorageEnabled(true);
     settings.setDatabaseEnabled(true);
@@ -122,35 +158,118 @@ public class OcadoWebViewPlugin extends Plugin {
     settings.setMediaPlaybackRequiresUserGesture(true);
     CookieManager cookies = CookieManager.getInstance();
     cookies.setAcceptCookie(true);
-    cookies.setAcceptThirdPartyCookies(ocadoView, true);
-    ocadoView.setWebViewClient(new WebViewClient());
-    ocadoView.setWebChromeClient(new WebChromeClient());
-    overlayParams = new FrameLayout.LayoutParams(
-      ViewGroup.LayoutParams.MATCH_PARENT, calculateHeight(), Gravity.TOP | Gravity.CENTER_HORIZONTAL
+    cookies.setAcceptThirdPartyCookies(browser, true);
+    browser.setWebViewClient(new WebViewClient());
+    browser.setWebChromeClient(new WebChromeClient());
+    root.addView(browser, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f));
+
+    toolbar = new LinearLayout(getActivity());
+    toolbar.setOrientation(LinearLayout.HORIZONTAL);
+    toolbar.setGravity(Gravity.CENTER_VERTICAL);
+    toolbar.setPadding(dp(8), dp(8), dp(8), dp(8));
+    toolbar.setBackgroundColor(Color.WHITE);
+    toolbar.setElevation(dp(8));
+    LinearLayout.LayoutParams toolbarParams = new LinearLayout.LayoutParams(
+      LinearLayout.LayoutParams.MATCH_PARENT, dp(76)
     );
-    container.addView(ocadoView, overlayParams);
-    ocadoView.setVisibility(View.GONE);
+    root.addView(toolbar, toolbarParams);
+
+    previousButton = makeButton("‹", "Previous item");
+    previousButton.setOnClickListener(v -> moveTo(currentIndex - 1));
+    toolbar.addView(previousButton, new LinearLayout.LayoutParams(dp(52), LinearLayout.LayoutParams.MATCH_PARENT));
+
+    itemLabel = new TextView(getActivity());
+    itemLabel.setTextColor(Color.rgb(35, 35, 35));
+    itemLabel.setTextSize(14);
+    itemLabel.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
+    itemLabel.setGravity(Gravity.CENTER);
+    itemLabel.setMaxLines(2);
+    toolbar.addView(itemLabel, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, 1f));
+
+    nextButton = makeButton("›", "Next item");
+    nextButton.setOnClickListener(v -> moveTo(currentIndex + 1));
+    toolbar.addView(nextButton, new LinearLayout.LayoutParams(dp(52), LinearLayout.LayoutParams.MATCH_PARENT));
+
+    Button closeButton = makeButton("✕", "Close browser");
+    closeButton.setOnClickListener(v -> {
+      if (dialog != null) dialog.dismiss();
+      JSObject event = new JSObject();
+      event.put("closed", true);
+      notifyListeners("closed", event);
+    });
+    toolbar.addView(closeButton, new LinearLayout.LayoutParams(dp(48), LinearLayout.LayoutParams.MATCH_PARENT));
+
+    dialog.setContentView(root);
+    dialog.setOnDismissListener(d -> {
+      JSObject event = new JSObject();
+      event.put("closed", true);
+      notifyListeners("closed", event);
+    });
   }
 
-  private int calculateHeight() {
-    DisplayMetrics metrics = getContext().getResources().getDisplayMetrics();
-    // Leave the RealiMeali item navigator and bottom tab bar visible below the Ocado website.
-    return Math.max(1, metrics.heightPixels - (int) (150 * metrics.density));
+  private Button makeButton(String label, String description) {
+    Button button = new Button(getActivity());
+    button.setText(label);
+    button.setTextSize(24);
+    button.setTextColor(Color.rgb(25, 25, 25));
+    button.setContentDescription(description);
+    button.setAllCaps(false);
+    button.setPadding(0, 0, 0, 0);
+    GradientDrawable bg = new GradientDrawable();
+    bg.setColor(Color.rgb(245, 184, 46));
+    bg.setCornerRadius(dp(14));
+    button.setBackground(bg);
+    return button;
   }
 
-  private void resizeOverlay() {
-    if (ocadoView == null || overlayParams == null) return;
-    overlayParams.height = calculateHeight();
-    ocadoView.setLayoutParams(overlayParams);
+  private void moveTo(int index) {
+    if (index < 0 || index >= items.length()) return;
+    currentIndex = index;
+    updateNavigation();
+    try { browser.loadUrl(currentUrl()); } catch (Exception ignored) {}
+    JSObject event = new JSObject();
+    event.put("index", currentIndex);
+    notifyListeners("itemChange", event);
+  }
+
+  private void updateNavigation() {
+    if (itemLabel == null) return;
+    try {
+      JSONObject item = items.getJSONObject(currentIndex);
+      String name = item.optString("name", "Shopping item");
+      itemLabel.setText("🛒 " + name + "\\n" + (currentIndex + 1) + " of " + items.length());
+    } catch (Exception e) {
+      itemLabel.setText("Shopping item " + (currentIndex + 1));
+    }
+    previousButton.setEnabled(currentIndex > 0);
+    previousButton.setAlpha(currentIndex > 0 ? 1f : 0.4f);
+    nextButton.setEnabled(currentIndex < items.length() - 1);
+    nextButton.setAlpha(currentIndex < items.length() - 1 ? 1f : 0.4f);
+  }
+
+  private String currentUrl() throws Exception {
+    JSONObject item = items.getJSONObject(currentIndex);
+    String url = item.optString("url", "");
+    if (!url.startsWith("https://www.ocado.com/search?q=")) {
+      throw new IllegalArgumentException("Only Ocado search URLs are allowed");
+    }
+    return url;
+  }
+
+  private int dp(int value) {
+    return (int) (value * getContext().getResources().getDisplayMetrics().density + 0.5f);
   }
 
   @Override
   protected void handleOnDestroy() {
-    if (ocadoView != null) {
-      ViewGroup parent = (ViewGroup) ocadoView.getParent();
-      if (parent != null) parent.removeView(ocadoView);
-      ocadoView.destroy();
-      ocadoView = null;
+    if (browser != null) {
+      browser.stopLoading();
+      browser.destroy();
+      browser = null;
+    }
+    if (dialog != null) {
+      dialog.dismiss();
+      dialog = null;
     }
     super.handleOnDestroy();
   }
@@ -160,9 +279,9 @@ await writeFile(pluginPath, pluginSource, "utf8");
 
 let updatedMain = main;
 if (!updatedMain.includes("OcadoWebViewPlugin.class")) {
-  updatedMain = updatedMain.replace(/(import com\.getcapacitor\.BridgeActivity;\s*)/, "$1import " + packageName + ".OcadoWebViewPlugin;\n");
-  updatedMain = updatedMain.replace(/(public class MainActivity extends BridgeActivity\s*\{)/, "$1\n    @Override\n    public void onCreate(android.os.Bundle savedInstanceState) {\n        registerPlugin(OcadoWebViewPlugin.class);\n        super.onCreate(savedInstanceState);\n    }");
+  updatedMain = updatedMain.replace(/(import com\\.getcapacitor\\.BridgeActivity;\\s*)/, "$1import " + packageName + ".OcadoWebViewPlugin;\\n");
+  updatedMain = updatedMain.replace(/(public class MainActivity extends BridgeActivity\\s*\\{)/, "$1\\n    @Override\\n    public void onCreate(android.os.Bundle savedInstanceState) {\\n        registerPlugin(OcadoWebViewPlugin.class);\\n        super.onCreate(savedInstanceState);\\n    }");
   if (!updatedMain.includes("OcadoWebViewPlugin.class")) throw new Error("Failed to register OcadoWebViewPlugin in MainActivity.");
   await writeFile(mainPath, updatedMain, "utf8");
 }
-console.log("Installed native embedded Ocado WebView plugin and registered it with Capacitor.");
+console.log("Installed dialog-based native Ocado WebView with embedded shopping navigator.");
