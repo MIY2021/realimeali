@@ -279,18 +279,18 @@ public class OcadoWebViewPlugin extends Plugin {
   }
 
   private int availableOverlayHeight() {
-    // ViewGroup.LayoutParams dimensions are physical pixels. Use the actual WebView
-    // height (also pixels), then reserve a dp-converted area for the underlying
-    // RealiMeali shopping row, bottom navigation, and system gesture/navigation area.
+    // The React layer reserves exactly 64dp for the pinned current-item row and
+    // 64dp for RealiMeali's fixed bottom navigation. Keep this native overlay
+    // above that combined 128dp strip so the row meets the navigation with no gap.
+    // Use the WebView's measured height and keep all dimensions in physical px.
     View content = getBridge().getWebView();
     int availableHeightPx = content.getHeight();
     if (availableHeightPx <= 0) {
       android.util.DisplayMetrics metrics = getActivity().getResources().getDisplayMetrics();
       availableHeightPx = metrics.heightPixels;
     }
-    int reservedBottomPx = dp(190);
-    int overlayHeightPx = availableHeightPx - reservedBottomPx;
-    return Math.max(dp(280), overlayHeightPx);
+    int reservedBottomPx = dp(128);
+    return Math.max(dp(280), availableHeightPx - reservedBottomPx);
   }
 
   private int dp(int value) {
