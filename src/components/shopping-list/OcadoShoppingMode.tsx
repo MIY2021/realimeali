@@ -1,6 +1,8 @@
 import { ChevronLeft, ChevronRight, ExternalLink, ShoppingCart, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ShoppingListItem as ShoppingListItemType } from "@/types/shoppingList";
+import { Capacitor } from "@capacitor/core";
+import { Browser } from "@capacitor/browser";
 import { getShoppingSearchName } from "@/utils/shoppingIngredientUtils";
 
 interface OcadoShoppingModeProps {
@@ -38,8 +40,13 @@ export default function OcadoShoppingMode({
     if (currentIndex < items.length - 1) onSelectItem(items[currentIndex + 1].id);
   };
 
-  const openOcado = () => {
-    // Open directly from the user's click so mobile browsers do not treat it as a popup.
+  const openOcado = async () => {
+    // Android/iOS: open Ocado in the native in-app browser (Custom Tab on Android).
+    // Web: use a regular new browser tab, since native browser APIs are unavailable.
+    if (Capacitor.isNativePlatform()) {
+      await Browser.open({ url: ocadoUrl });
+      return;
+    }
     window.open(ocadoUrl, "_blank", "noopener,noreferrer");
   };
 
@@ -72,7 +79,7 @@ export default function OcadoShoppingMode({
           Search Ocado
         </Button>
         <p className="mt-3 max-w-sm text-xs text-muted-foreground">
-          Ocado does not allow its shop pages to be embedded here, so the search opens in a new tab.
+          Ocado opens in RealiMeali’s in-app browser so you can return to your list when you’re done.
         </p>
       </div>
 
