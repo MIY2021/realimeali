@@ -199,7 +199,7 @@ public class OcadoWebViewPlugin extends Plugin {
     android.view.ViewParent parent = content.getParent();
     if (!(parent instanceof ViewGroup)) throw new IllegalStateException("Could not locate RealiMeali Activity content container");
     overlayParent = (ViewGroup) parent;
-    ViewGroup.LayoutParams params = overlayParent.generateLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, availableOverlayHeight()));
+    ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, availableOverlayHeight());
     params.width = ViewGroup.LayoutParams.MATCH_PARENT;
     params.height = availableOverlayHeight();
     overlayParent.addView(root, params);
