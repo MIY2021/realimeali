@@ -95,7 +95,42 @@ export default function OcadoShoppingMode({ items, selectedItemId, onSelectItem,
   const goPrevious = () => { if (currentIndex > 0) onSelectItem(items[currentIndex - 1].id); };
   const goNext = () => { if (currentIndex < items.length - 1) onSelectItem(items[currentIndex + 1].id); };
 
-  if (Capacitor.isNativePlatform()) return null;
+  if (Capacitor.isNativePlatform()) {
+    // Keep the active shopping item pinned directly above the app's 64dp bottom nav.
+    // The native Ocado WebView is sized to stop above this row plus the navigation.
+    return (
+      <div className="fixed inset-x-0 bottom-16 z-40 h-16 border-t border-border bg-background shadow-sm">
+        <div className="mx-auto flex h-full max-w-3xl items-center gap-3 px-4">
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={() => onToggleItem(selectedItem.id)}
+            className={`h-10 w-10 shrink-0 rounded-full p-0 touch-manipulation ${selectedItem.isChecked ? "text-green-600" : "text-muted-foreground"}`}
+            aria-label={selectedItem.isChecked ? "Mark " + selectedItem.name + " as not added" : "Mark " + selectedItem.name + " as added"}
+          >
+            {selectedItem.isChecked ? <span className="text-2xl font-bold">✓</span> : <ShoppingCart className="h-5 w-5" />}
+          </Button>
+          <div className="min-w-0 flex-1">
+            <div className={`truncate text-sm font-semibold ${selectedItem.isChecked ? "text-muted-foreground line-through" : "text-foreground"}`}>
+              {selectedItem.consolidatedQuantity ?? selectedItem.quantity ? (selectedItem.quantityDisplay || String(selectedItem.consolidatedQuantity ?? selectedItem.quantity)) + " " : ""}
+              {selectedItem.name}
+            </div>
+            <div className="text-xs text-muted-foreground">
+              {selectedItem.isChecked ? "Marked as added" : "Current Ocado item"} · {currentIndex + 1} of {items.length}
+            </div>
+          </div>
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={() => onToggleItem(selectedItem.id)}
+            className="h-10 shrink-0 rounded-xl px-3"
+          >
+            {selectedItem.isChecked ? "Added ✓" : "Mark added"}
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   const openOcado = () => {
     const url = nativeItems[currentIndex]?.url;
