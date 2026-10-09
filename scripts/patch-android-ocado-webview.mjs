@@ -78,8 +78,9 @@ public class OcadoWebViewPlugin extends Plugin {
         dialog.show();
         Window window = dialog.getWindow();
         if (window != null) {
-          window.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT);
-          // Make the browser feel like an in-app screen, not a floating modal.
+          window.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT - dp(76));
+          window.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL);
+          // Keep the RealiMeali bottom navigation visible and interactive beneath the browser.
           window.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
           WindowManager.LayoutParams attributes = window.getAttributes();
           attributes.dimAmount = 0f;
@@ -113,7 +114,14 @@ public class OcadoWebViewPlugin extends Plugin {
           ensureDialog();
           dialog.show();
           Window window = dialog.getWindow();
-          if (window != null) window.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT);
+          if (window != null) {
+            window.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT - dp(76));
+            window.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL);
+            window.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+            WindowManager.LayoutParams attributes = window.getAttributes();
+            attributes.dimAmount = 0f;
+            window.setAttributes(attributes);
+          }
           browser.loadUrl(currentUrl());
         } else {
           updateNavigation();
