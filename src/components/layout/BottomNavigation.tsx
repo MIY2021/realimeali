@@ -100,7 +100,7 @@ const BottomNavigation = () => {
         }
       `}</style>
       
-      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 md:hidden">
+      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 md:hidden" style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
         <div className="grid grid-cols-5 h-16">
           {navigationItems.map((item) => {
             const active = isActive(item.activePattern);
