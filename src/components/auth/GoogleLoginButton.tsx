@@ -1,8 +1,9 @@
 
 import { Button } from "@/components/ui/button";
+import { Capacitor } from "@capacitor/core";
+import { Browser } from "@capacitor/browser";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 export function GoogleLoginButton() {
   const [isLoading, setIsLoading] = useState(false);
@@ -11,15 +12,18 @@ export function GoogleLoginButton() {
   const handleGoogleLogin = async () => {
     try {
       setIsLoading(true);
-      const { error } = await supabase.auth.signInWithOAuth({
+      const isNative = Capacitor.isNativePlatform();
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: window.location.origin,
+          redirectTo: isNative ? "realimeali://auth/callback" : window.location.origin,
+          skipBrowserRedirect: isNative,
         },
       });
 
-      if (error) {
-        throw error;
+      if (error) throw error;
+      if (isNative && data.url) {
+        await Browser.open({ url: data.url });
       }
     } catch (error) {
       console.error("Error logging in with Google:", error);

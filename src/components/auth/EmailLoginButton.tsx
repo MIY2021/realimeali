@@ -2,6 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
+import { getAuthRedirectUrl } from "@/lib/authRedirect";
 import { useState } from "react";
 import { Mail, Loader } from "lucide-react";
 
@@ -27,7 +28,7 @@ export function EmailLoginButton({ onSuccess, className }: EmailLoginButtonProps
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
-          emailRedirectTo: window.location.origin,
+          emailRedirectTo: getAuthRedirectUrl(),
         },
       });
 

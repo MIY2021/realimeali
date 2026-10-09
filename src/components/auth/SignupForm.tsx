@@ -7,6 +7,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useSecureAuth } from "@/hooks/useSecureAuth";
+import { getAuthRedirectUrl } from "@/lib/authRedirect";
 
 export function SignupForm() {
   const [name, setName] = useState("");
@@ -53,6 +54,7 @@ export function SignupForm() {
           data: {
             full_name: name.trim(),
           },
+          emailRedirectTo: getAuthRedirectUrl(),
         },
       });
 

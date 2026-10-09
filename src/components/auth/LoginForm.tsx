@@ -11,6 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useSecureAuth } from "@/hooks/useSecureAuth";
+import { getAuthRedirectUrl } from "@/lib/authRedirect";
 
 export function LoginForm() {
   const { user, isLoading } = useAuth();
@@ -70,7 +71,7 @@ export function LoginForm() {
         email: email.trim(),
         password,
         options: {
-          emailRedirectTo: window.location.origin,
+          emailRedirectTo: getAuthRedirectUrl(),
         },
       });
 

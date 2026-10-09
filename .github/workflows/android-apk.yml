@@ -12,6 +12,7 @@ on:
       - 'capacitor.config.json'
       - 'vite.config.ts'
       - '.github/workflows/android-apk.yml'
+      - 'scripts/**'
   workflow_dispatch:
 
 permissions:
@@ -46,6 +47,9 @@ jobs:
 
       - name: Generate Android project
         run: npx --yes @capacitor/cli@7 add android
+
+      - name: Register native auth deep link
+        run: node scripts/patch-android-deeplink.mjs
 
       - name: Sync bundled assets to Android
         run: npx --yes @capacitor/cli@7 sync android
