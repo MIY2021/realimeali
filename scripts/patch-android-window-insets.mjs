@@ -73,16 +73,15 @@ const call = `
 `;
 
 
-// Insert the installer call into Capacitor's existing onCreate rather than
-// declaring a second onCreate override.
-// Capacitor's generated MainActivity may inherit onCreate without overriding it.
- // Add a new override only when no existing override is present; otherwise
- // insert the installer call into the existing method body.
+// The preceding Ocado patch creates MainActivity.onCreate() and registers the
+// native plugin there. Match that method and add the inset installer to it;
+// never create another onCreate override.
 const onCreate = /(@Override\\s+public void onCreate\\([^)]*\\)\\s*\\{[\\s\\S]*?super\\.onCreate\\([^)]*\\);)/;
-if (onCreate.test(source)) {
-  source = source.replace(onCreate, "$1" + call);
-} else {
-  const classEnd = source.lastIndexOf("}");
+if (!onCreate.test(source)) {
+  throw new Error("Could not find MainActivity.onCreate() installed by the Ocado patch; refusing to add a duplicate override.");
+}
+source = source.replace(onCreate, "$1" + call);
+const classEnd = source.lastIndexOf("}");
   if (classEnd < 0) throw new Error("Could not find end of MainActivity class.");
   const override = `
     @Override
