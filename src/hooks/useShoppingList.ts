@@ -64,9 +64,8 @@ export const useShoppingList = (weekKey: string) => {
       updateShoppingList(itemsWithPendingChecks);
     } catch (error) {
       console.error("Error loading shopping list:", error);
-      if (loadVersion === listMutationVersionRef.current) {
-        updateShoppingList([]);
-      }
+      // A failed read is not an empty list. Keep the last known items visible
+      // instead of replacing them with an empty array on transient errors.
     }
   }, [user, currentHousehold, weekKey, updateShoppingList]);
 
