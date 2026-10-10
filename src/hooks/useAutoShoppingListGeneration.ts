@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { useRecipes } from "@/contexts/RecipesContext";
@@ -35,6 +35,7 @@ const buildGenerationSignature = (mealPlans: any[], recipes: any[]) => {
     .map(recipe => ({
       id: recipe.id,
       title: recipe.title,
+      servings: recipe.servings,
       ingredients: recipe.ingredients,
     }))
     .sort((a, b) => a.id.localeCompare(b.id));
@@ -53,9 +54,13 @@ export const useAutoShoppingListGeneration = () => {
   const { mealPlans, getMealPlansForWeek, isLoading: mealPlansLoading } = useMealPlan();
   const { generateAndSaveFromMealPlans } = useShoppingListGenerator();
   
-  // Track pending generations to prevent duplicates
+  // Track pending generations to prevent duplicates.
   const pendingGenerationsRef = useRef<Set<string>>(new Set());
-  // Track previous week keys to detect when weeks are cleared
+  // If meal plans change during an in-flight generation, queue a second pass
+  // instead of silently dropping the latest serving count.
+  const rerunRequestedRef = useRef<Set<string>>(new Set());
+  const [generationRevision, setGenerationRevision] = useState(0);
+  // Track previous week keys to detect when weeks are cleared.
   const previousWeekKeysRef = useRef<Set<string>>(new Set());
   // Prevent unrelated re-renders (such as checking a shopping-list item)
   // from regenerating and reordering the entire list.
@@ -144,8 +149,10 @@ export const useAutoShoppingListGeneration = () => {
         return;
       }
 
-      // Prevent duplicate generations
+      // If servings or ingredients changed while this week was generating,
+      // remember to run again after the current write completes.
       if (pendingGenerationsRef.current.has(weekKey)) {
+        rerunRequestedRef.current.add(weekKey);
         return;
       }
 
@@ -177,11 +184,20 @@ export const useAutoShoppingListGeneration = () => {
         // Regenerate atomically. The generator replaces the list only after it
         // has successfully prepared a non-empty set of items, so a temporary
         // AI/network failure can never wipe an existing shopping list.
-        await generateAndSaveFromMealPlans(weekKey, checkedMap, existingItems.filter(item => item.isCustom));
+        const generatedItems = await generateAndSaveFromMealPlans(
+          weekKey,
+          checkedMap,
+          existingItems.filter(item => item.isCustom)
+        );
+
+        if (generatedItems.length === 0) {
+          console.error(`[Auto-Generate] Generation returned no items for ${weekKey}; keeping the existing list`);
+          return;
+        }
 
         console.log(`[Auto-Generate] Successfully regenerated shopping list for ${weekKey}`);
 
-        // Dispatch event for real-time updates
+        // Dispatch event only after the generator confirms a successful save.
         window.dispatchEvent(new CustomEvent('shopping-list-auto-generated', {
           detail: { weekKey }
         }));
@@ -189,6 +205,13 @@ export const useAutoShoppingListGeneration = () => {
         console.error(`[Auto-Generate] Error generating shopping list for ${weekKey}:`, error);
       } finally {
         pendingGenerationsRef.current.delete(weekKey);
+
+        // Never lose the latest serving change just because an earlier
+        // generation was still in flight when the user tapped + or -.
+        if (rerunRequestedRef.current.delete(weekKey)) {
+          lastGenerationSignatureRef.current = null;
+          setGenerationRevision(revision => revision + 1);
+        }
       }
     });
 
@@ -199,7 +222,7 @@ export const useAutoShoppingListGeneration = () => {
     return () => {
       cancelled = true;
     };
-  }, [mealPlans, user, currentHousehold, recipesLoading, mealPlansLoading, recipes, generateAndSaveFromMealPlans, getMealPlansForWeek]);
+  }, [mealPlans, user, currentHousehold, recipesLoading, mealPlansLoading, recipes, generateAndSaveFromMealPlans, getMealPlansForWeek, generationRevision]);
 
   // Return empty object - no UI states needed
   return {};

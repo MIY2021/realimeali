@@ -71,9 +71,10 @@ export const useShoppingListGenerator = () => {
         const recipe = recipes.find(r => r.id === mealPlan.recipe_id);
         if (!recipe) return;
 
-        // Use the serving count captured when this meal was added; the recipe may
-        // have been edited since then. Fall back to the current recipe serving count.
-        const standardServings = mealPlan.original_servings || recipe.servings || 1;
+        // Ingredient amounts belong to the recipe's current declared serving count.
+        // original_servings is historical meal-plan metadata and may be stale or
+        // have been set to the selected serving count by older flows.
+        const standardServings = recipe.servings || mealPlan.original_servings || 1;
         const plannedServings = mealPlan.planned_servings || standardServings;
         const servingScale = plannedServings / standardServings;
 
