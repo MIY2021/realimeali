@@ -249,7 +249,12 @@ public class OcadoWebViewPlugin extends Plugin {
       android.util.DisplayMetrics metrics = getActivity().getResources().getDisplayMetrics();
       availableHeightPx = metrics.heightPixels;
     }
-    int reservedBottomPx = dp(128);
+    int safeBottomPx = 0;
+    if (android.os.Build.VERSION.SDK_INT >= 23 && content.getRootWindowInsets() != null) {
+      safeBottomPx = content.getRootWindowInsets().getSystemWindowInsetBottom();
+    }
+    // Match the React row's bottom = 64dp navigation height + safe-area inset.
+    int reservedBottomPx = dp(128) + safeBottomPx;
     return Math.max(dp(280), availableHeightPx - reservedBottomPx);
   }
 
