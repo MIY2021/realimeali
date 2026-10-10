@@ -77,21 +77,31 @@ export const useShoppingList = (weekKey: string) => {
     let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
     const channel = supabase
-      .channel("shopping-list-changes-week-" + weekKey)
+      .channel("shopping-list-changes-household-" + currentHousehold.id + "-week-" + weekKey)
       .on(
         "postgres_changes",
         {
           event: "*",
           schema: "public",
           table: "household_shopping_lists",
-          filter: "household_id=eq." + currentHousehold.id + ".and.week_key=eq." + weekKey
+          // Postgres Changes supports a single filter here; filter by household
+          // and narrow to the selected week in the callback below.
+          filter: "household_id=eq." + currentHousehold.id
         },
         (payload) => {
           console.log("Shopping list changed for week", weekKey, ":", payload);
 
-          // Our checkbox updates are already applied optimistically. UPDATE events
-          // do not need a full reload; INSERT/DELETE events do.
-          if (payload.eventType === "UPDATE") return;
+          // Filter by week locally because Postgres Changes accepts only one
+          // subscription filter. Re-read UPDATE events too, so other household
+          // members' checkbox changes are reflected on this device.
+          const changedRow = payload.eventType === "DELETE" ? payload.old : payload.new;
+          if (
+            changedRow &&
+            typeof changedRow.week_key === "string" &&
+            changedRow.week_key !== weekKey
+          ) {
+            return;
+          }
 
           if (debounceTimer) clearTimeout(debounceTimer);
           debounceTimer = setTimeout(() => {
