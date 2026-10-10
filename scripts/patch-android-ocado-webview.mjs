@@ -150,46 +150,8 @@ public class OcadoWebViewPlugin extends Plugin {
     browser.setWebChromeClient(new WebChromeClient());
     root.addView(browser, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f));
 
-    toolbar = new LinearLayout(getActivity());
-    toolbar.setOrientation(LinearLayout.HORIZONTAL);
-    toolbar.setGravity(Gravity.CENTER_VERTICAL);
-    toolbar.setPadding(dp(8), dp(8), dp(8), dp(8));
-    toolbar.setBackgroundColor(Color.WHITE);
-    toolbar.setElevation(dp(8));
-    LinearLayout.LayoutParams toolbarParams = new LinearLayout.LayoutParams(
-      LinearLayout.LayoutParams.MATCH_PARENT, dp(76)
-    );
-    root.addView(toolbar, toolbarParams);
-
-    previousButton = makeButton("‹", "Previous item");
-    previousButton.setOnClickListener(v -> moveTo(currentIndex - 1));
-    toolbar.addView(previousButton, new LinearLayout.LayoutParams(dp(52), LinearLayout.LayoutParams.MATCH_PARENT));
-
-    itemLabel = new TextView(getActivity());
-    itemLabel.setTextColor(Color.rgb(35, 35, 35));
-    itemLabel.setTextSize(14);
-    itemLabel.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
-    itemLabel.setGravity(Gravity.CENTER);
-    itemLabel.setMaxLines(2);
-    toolbar.addView(itemLabel, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, 1f));
-
-    nextButton = makeButton("›", "Next item");
-    nextButton.setOnClickListener(v -> moveTo(currentIndex + 1));
-    toolbar.addView(nextButton, new LinearLayout.LayoutParams(dp(52), LinearLayout.LayoutParams.MATCH_PARENT));
-
-    Button checkedButton = makeButton("✓", "Mark item added to Ocado basket");
-    checkedButton.setTextSize(18);
-    checkedButton.setOnClickListener(v -> toggleCurrentChecked());
-    toolbar.addView(checkedButton, new LinearLayout.LayoutParams(dp(48), LinearLayout.LayoutParams.MATCH_PARENT));
-
-    Button closeButton = makeButton("✕", "Close browser");
-    closeButton.setOnClickListener(v -> {
-      detachOverlay();
-      JSObject event = new JSObject();
-      event.put("closed", true);
-      notifyListeners("closed", event);
-    });
-    toolbar.addView(closeButton, new LinearLayout.LayoutParams(dp(48), LinearLayout.LayoutParams.MATCH_PARENT));
+    // Navigation and manual tick are rendered once by the React row below the WebView.
+    // Keeping this native container browser-only prevents duplicate controls and gaps.
 
   }
 
@@ -279,10 +241,8 @@ public class OcadoWebViewPlugin extends Plugin {
   }
 
   private int availableOverlayHeight() {
-    // The React layer reserves exactly 64dp for the pinned current-item row and
-    // 64dp for RealiMeali's fixed bottom navigation. Keep this native overlay
-    // above that combined 128dp strip so the row meets the navigation with no gap.
-    // Use the WebView's measured height and keep all dimensions in physical px.
+    // The native view is browser-only. React owns the single 64dp shopping row;
+    // the app owns the 64dp bottom navigation. Reserve their combined 128dp.
     View content = getBridge().getWebView();
     int availableHeightPx = content.getHeight();
     if (availableHeightPx <= 0) {
