@@ -147,8 +147,9 @@ export const useAutoShoppingListGeneration = () => {
 
     const regenerateWeekLists = async () => {
       for (const weekKey of orderedWeekKeys) {
-        if (cancelled) return;
-
+        // React effect cleanup runs on dependency changes as well as unmounts.
+        // Do not cancel this queue mid-run: the generation signature is already
+        // recorded, so cancelling here can leave later weeks stale indefinitely.
         const weekMealPlans = getMealPlansForWeek(weekKey);
         console.log(`[Auto-Generate] Regenerating for ${weekKey}, meal plans: `, weekMealPlans.length);
 
