@@ -94,10 +94,16 @@ public class OcadoWebViewPlugin extends Plugin {
       try {
         items = incoming;
         currentIndex = Math.max(0, Math.min(index, items.length() - 1));
-        if (root == null || root.getParent() == null) {
+        if (root == null) {
           ensureOverlay();
           attachOverlay();
           browser.loadUrl(currentUrl());
+        } else if (root.getParent() == null) {
+          // The Activity may detach/recreate its content view while the app is
+          // backgrounded. Reattach the existing browser without reloading it,
+          // preserving Ocado's login, basket, and current page state.
+          attachOverlay();
+          if (browser.getUrl() == null || browser.getUrl().isEmpty()) browser.loadUrl(currentUrl());
         } else {
           updateNavigation();
           String url = currentUrl();
