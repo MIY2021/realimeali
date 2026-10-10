@@ -32,7 +32,8 @@ export const useShoppingListGenerator = () => {
 
   const generateAndSaveFromMealPlans = useCallback(async (
     weekKey: string,
-    checkedMap?: Map<string, boolean>
+    checkedMap?: Map<string, boolean>,
+    existingCustomItems: ShoppingListItem[] = []
   ): Promise<ShoppingListItem[]> => {
     console.log('=== STARTING SHOPPING LIST GENERATION ===');
 
@@ -70,7 +71,9 @@ export const useShoppingListGenerator = () => {
         const recipe = recipes.find(r => r.id === mealPlan.recipe_id);
         if (!recipe) return;
 
-        const standardServings = recipe.servings || mealPlan.original_servings || 1;
+        // Use the serving count captured when this meal was added; the recipe may
+        // have been edited since then. Fall back to the current recipe serving count.
+        const standardServings = mealPlan.original_servings || recipe.servings || 1;
         const plannedServings = mealPlan.planned_servings || standardServings;
         const servingScale = plannedServings / standardServings;
 
@@ -250,6 +253,24 @@ export const useShoppingListGenerator = () => {
         source_ingredients: item.sourceIngredients,
         category: item.category
       }));
+
+      // Preserve user-added items when refreshing the generated list.
+      itemsToInsert.push(...existingCustomItems.filter(item => item.isCustom).map(item => ({
+        household_id: currentHousehold.id,
+        created_by: user.id,
+        name: item.name,
+        week_key: weekKey,
+        is_custom: true,
+        is_checked: item.isChecked,
+        recipe_ids: item.recipeIds || [],
+        quantity: item.quantity,
+        quantity_display: item.quantityDisplay,
+        unit: item.unit || '',
+        consolidated_quantity: item.consolidatedQuantity ?? item.quantity ?? 1,
+        consolidated_unit: item.consolidatedUnit ?? item.unit ?? '',
+        source_ingredients: item.sourceIngredients || [],
+        category: item.category || DEFAULT_INGREDIENT_CATEGORY
+      })));
 
       if (itemsToInsert.length === 0) return [];
 
