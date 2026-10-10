@@ -76,7 +76,7 @@ const call = `
 // The preceding Ocado patch creates MainActivity.onCreate() and registers the
 // native plugin there. Match that method and add the inset installer to it;
 // never create another onCreate override.
-const onCreate = /(@Override\\s+public void onCreate\\([^)]*\\)\\s*\\{[\\s\\S]*?super\\.onCreate\\([^)]*\\);)/;
+const onCreate = /(@Override\s+public void onCreate\([^)]*\)\s*\{[\s\S]*?super\.onCreate\([^)]*\);)/;
 if (!onCreate.test(source)) {
   throw new Error("Could not find MainActivity.onCreate() installed by the Ocado patch; refusing to add a duplicate override.");
 }
