@@ -74,12 +74,31 @@ export const useAutoShoppingListGeneration = () => {
     }
 
     // MealPlanContext starts with an empty array before the parallel loader has
-    // fetched persisted plans. Its loading flag also starts false, so without
-    // this guard the first render can treat that temporary empty array as the
-    // real plan, clear existing shopping lists, and record an empty signature.
-    // Wait until at least one persisted plan is present before running any
-    // cleanup or generation. Empty plans must never implicitly delete a list.
+    // fetched persisted plans. Its loading flag also starts false, so do not
+    // treat the initial empty state as a real "all meal plans removed" update.
+    // Once this hook has seen plans, however, an empty plan array is meaningful:
+    // clear the saved lists for the weeks that were previously populated.
     if (mealPlans.length === 0) {
+      if (previousWeekKeysRef.current.size === 0) {
+        return;
+      }
+
+      const weeksToClear = new Set(previousWeekKeysRef.current);
+      previousWeekKeysRef.current.clear();
+      lastGenerationSignatureRef.current = JSON.stringify({ mealPlans: [], recipes: [] });
+
+      void Promise.all([...weeksToClear].map(async weekKey => {
+        const cleared = await ShoppingListService.clearAll(currentHousehold.id, weekKey);
+        if (cleared) {
+          window.dispatchEvent(new CustomEvent('shopping-list-auto-generated', {
+            detail: { weekKey }
+          }));
+        }
+      })).catch(err => {
+        // If clearing fails, allow the next relevant render to retry.
+        lastGenerationSignatureRef.current = null;
+        console.error('[Auto-Generate] Error clearing lists after all meal plans were removed:', err);
+      });
       return;
     }
 
