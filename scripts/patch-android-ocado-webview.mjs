@@ -74,7 +74,9 @@ public class OcadoWebViewPlugin extends Plugin {
         ensureOverlay();
         updateNavigation();
         attachOverlay();
-        browser.loadUrl(currentUrl());
+        // Reopening or restoring the overlay must not reset an existing Ocado
+        // page (which may contain an authenticated session or basket).
+        if (browser.getUrl() == null || browser.getUrl().isEmpty()) browser.loadUrl(currentUrl());
         call.resolve();
       } catch (Exception e) {
         call.reject("Could not open Ocado embedded browser", e);
