@@ -96,36 +96,37 @@ export default function OcadoShoppingMode({ items, selectedItemId, onSelectItem,
   const goNext = () => { if (currentIndex < items.length - 1) onSelectItem(items[currentIndex + 1].id); };
 
   if (Capacitor.isNativePlatform()) {
-    // Keep the active shopping item pinned directly above the app's 64dp bottom nav.
-    // The native Ocado WebView is sized to stop above this row plus the navigation.
+    // One compact, fixed row owned by React, immediately above BottomNavigation.
+    // The native WebView is browser-only and ends at the top of this row.
     return (
       <div className="fixed inset-x-0 bottom-16 z-40 h-16 border-t border-border bg-background shadow-sm">
-        <div className="mx-auto flex h-full max-w-3xl items-center gap-3 px-4">
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={() => onToggleItem(selectedItem.id)}
-            className={`h-10 w-10 shrink-0 rounded-full p-0 touch-manipulation ${selectedItem.isChecked ? "text-green-600" : "text-muted-foreground"}`}
-            aria-label={selectedItem.isChecked ? "Mark " + selectedItem.name + " as not added" : "Mark " + selectedItem.name + " as added"}
-          >
-            {selectedItem.isChecked ? <span className="text-2xl font-bold">✓</span> : <ShoppingCart className="h-5 w-5" />}
+        <div className="mx-auto flex h-full max-w-3xl items-center gap-1.5 px-2 sm:px-3">
+          <Button type="button" variant="ghost" onClick={goPrevious} disabled={currentIndex === 0} className="h-11 w-10 shrink-0 rounded-xl p-0 touch-manipulation" aria-label="Previous shopping item">
+            <ChevronLeft className="h-6 w-6" />
           </Button>
-          <div className="min-w-0 flex-1">
+          <div className="min-w-0 flex-1 px-1">
             <div className={`truncate text-sm font-semibold ${selectedItem.isChecked ? "text-muted-foreground line-through" : "text-foreground"}`}>
               {selectedItem.consolidatedQuantity ?? selectedItem.quantity ? (selectedItem.quantityDisplay || String(selectedItem.consolidatedQuantity ?? selectedItem.quantity)) + " " : ""}
               {selectedItem.name}
             </div>
             <div className="text-xs text-muted-foreground">
-              {selectedItem.isChecked ? "Marked as added" : "Current Ocado item"} · {currentIndex + 1} of {items.length}
+              {selectedItem.isChecked ? "Added to list" : "Ocado item"} · {currentIndex + 1} of {items.length}
             </div>
           </div>
           <Button
             type="button"
-            variant="ghost"
+            variant={selectedItem.isChecked ? "default" : "secondary"}
             onClick={() => onToggleItem(selectedItem.id)}
-            className="h-10 shrink-0 rounded-xl px-3"
+            className={`h-11 shrink-0 rounded-xl px-2.5 touch-manipulation ${selectedItem.isChecked ? "bg-green-600 text-white hover:bg-green-700" : "bg-[#F5B82E] text-black hover:bg-[#e9aa20]"}`}
+            aria-label={selectedItem.isChecked ? "Mark item as not added" : "Mark item as added"}
           >
-            {selectedItem.isChecked ? "Added ✓" : "Mark added"}
+            {selectedItem.isChecked ? "✓ Added" : "✓ Add"}
+          </Button>
+          <Button type="button" variant="ghost" onClick={goNext} disabled={currentIndex === items.length - 1} className="h-11 w-10 shrink-0 rounded-xl p-0 touch-manipulation" aria-label="Next shopping item">
+            <ChevronRight className="h-6 w-6" />
+          </Button>
+          <Button type="button" variant="ghost" onClick={onClose} className="h-11 w-10 shrink-0 rounded-xl p-0 touch-manipulation" aria-label="Close Ocado shopping mode">
+            <X className="h-5 w-5" />
           </Button>
         </div>
       </div>
