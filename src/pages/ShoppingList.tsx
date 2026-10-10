@@ -47,7 +47,30 @@ export default function ShoppingList() {
   const [newItemName, setNewItemName] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
-  const [ocadoItemId, setOcadoItemId] = useState<string | null>(null);
+  const [ocadoItemId, setOcadoItemId] = useState<string | null>(() => {
+    try {
+      return localStorage.getItem("realiMeali_activeOcadoItemId");
+    } catch {
+      return null;
+    }
+  });
+
+  useEffect(() => {
+    if (!ocadoItemId) return;
+    try {
+      localStorage.setItem("realiMeali_activeOcadoItemId", ocadoItemId);
+    } catch {
+      // Keep the in-memory session working if storage is unavailable.
+    }
+  }, [ocadoItemId]);
+
+  useEffect(() => {
+    if (!ocadoItemId || shoppingList.length === 0) return;
+    if (!shoppingList.some(item => item.id === ocadoItemId)) {
+      setOcadoItemId(null);
+      try { localStorage.removeItem("realiMeali_activeOcadoItemId"); } catch { /* Ignore storage errors. */ }
+    }
+  }, [ocadoItemId, shoppingList]);
 
   useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {
@@ -333,7 +356,10 @@ export default function ShoppingList() {
               selectedItemId={ocadoItemId}
               onSelectItem={setOcadoItemId}
               onToggleItem={toggleItemChecked}
-              onClose={() => setOcadoItemId(null)}
+              onClose={() => {
+                setOcadoItemId(null);
+                try { localStorage.removeItem("realiMeali_activeOcadoItemId"); } catch { /* Ignore storage errors. */ }
+              }}
             />
           )}
         </>
