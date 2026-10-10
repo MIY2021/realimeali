@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef } from "react";
+import { App } from "@capacitor/app";
 import { ChevronLeft, ChevronRight, ExternalLink, ShoppingCart, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ShoppingListItem as ShoppingListItemType } from "@/types/shoppingList";
@@ -80,6 +81,24 @@ export default function OcadoShoppingMode({ items, selectedItemId, onSelectItem,
   // itemsKey represents the full item payload; currentIndex changes when the native navigator advances.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [itemsKey, currentIndex, selectedItem?.id, onSelectItem, onToggleItem, onClose]);
+
+  // Bring the native overlay back to the front after returning from another app.
+  // The native plugin reattaches the existing WebView without reloading Ocado.
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform() || !selectedItem || currentIndex < 0) return;
+    let active = true;
+    const listener = App.addListener("appStateChange", ({ isActive }) => {
+      if (isActive && active && nativeOpened.current) {
+        void OcadoWebView.update({ items: nativeItems, index: currentIndex }).catch(error =>
+          console.error("Could not restore embedded Ocado browser", error)
+        );
+      }
+    });
+    return () => {
+      active = false;
+      void listener.then(handle => handle.remove());
+    };
+  }, [itemsKey, currentIndex, selectedItem?.id]);
 
   useEffect(() => {
     return () => {
