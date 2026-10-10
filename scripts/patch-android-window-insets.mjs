@@ -75,9 +75,25 @@ const call = `
 
 // Insert the installer call into Capacitor's existing onCreate rather than
 // declaring a second onCreate override.
-const onCreate = /(@Override\\s+public void onCreate\\(android\\.os\\.Bundle savedInstanceState\\)\\s*\\{[\\s\\S]*?super\\.onCreate\\(savedInstanceState\\);)/;
-if (!onCreate.test(source)) throw new Error("Could not find existing MainActivity.onCreate(Bundle).");
-source = source.replace(onCreate, "$1" + call);
+// Capacitor's generated MainActivity may inherit onCreate without overriding it.
+ // Add a new override only when no existing override is present; otherwise
+ // insert the installer call into the existing method body.
+const onCreate = /(@Override\\s+public void onCreate\\([^)]*\\)\\s*\\{[\\s\\S]*?super\\.onCreate\\([^)]*\\);)/;
+if (onCreate.test(source)) {
+  source = source.replace(onCreate, "$1" + call);
+} else {
+  const classEnd = source.lastIndexOf("}");
+  if (classEnd < 0) throw new Error("Could not find end of MainActivity class.");
+  const override = `
+    @Override
+    public void onCreate(android.os.Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        installRealiMealiWindowInsets();
+    }
+
+`;
+  source = source.slice(0, classEnd) + override + source.slice(classEnd);
+}
 const classEnd = source.lastIndexOf("}");
 if (classEnd < 0) throw new Error("Could not find end of MainActivity class.");
 source = source.slice(0, classEnd) + method + "\n" + source.slice(classEnd);
