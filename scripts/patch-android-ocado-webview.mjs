@@ -168,6 +168,7 @@ public class OcadoWebViewPlugin extends Plugin {
     // Recompute its bounds from measured layout dimensions instead of display-height guesses.
     android.widget.FrameLayout.LayoutParams params = new android.widget.FrameLayout.LayoutParams(
       ViewGroup.LayoutParams.MATCH_PARENT, availableOverlayHeight(), Gravity.TOP);
+    params.topMargin = availableTopInsetPx();
     overlayParent.addView(root, params);
     content.addOnLayoutChangeListener(overlayLayoutListener);
     overlayParent.addOnLayoutChangeListener(overlayLayoutListener);
@@ -194,6 +195,7 @@ public class OcadoWebViewPlugin extends Plugin {
       params.width = ViewGroup.LayoutParams.MATCH_PARENT;
       params.height = availableOverlayHeight();
       params.gravity = Gravity.TOP;
+      params.topMargin = availableTopInsetPx();
       params.bottomMargin = 0;
       root.setLayoutParams(params);
     } else {
@@ -295,7 +297,17 @@ public class OcadoWebViewPlugin extends Plugin {
       if (overlayParent != null && content.getBottom() >= overlayParent.getHeight()) safeBottomPx = inset;
     }
     int reservedBottomPx = dp(128) + safeBottomPx;
-    return Math.max(dp(160), availableHeightPx - reservedBottomPx);
+    // The browser starts below the status bar/display cutout. Remove that same
+    // inset from its height so the bottom controls remain anchored correctly.
+    return Math.max(dp(160), availableHeightPx - availableTopInsetPx() - reservedBottomPx);
+  }
+
+  private int availableTopInsetPx() {
+    View content = getBridge().getWebView();
+    if (android.os.Build.VERSION.SDK_INT >= 23 && content.getRootWindowInsets() != null) {
+      return Math.max(0, content.getRootWindowInsets().getSystemWindowInsetTop());
+    }
+    return 0;
   }
 
   private int dp(int value) {
