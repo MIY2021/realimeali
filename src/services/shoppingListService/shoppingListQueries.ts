@@ -38,8 +38,11 @@ export class ShoppingListQueries {
         category: item.category
       }));
     } catch (error) {
+      // Keep read failures distinct from a genuinely empty list. Automatic
+      // generation must not mistake a failed SELECT for "no existing items"
+      // and replace checked rows/custom items on the next page load.
       console.error("Error loading shopping list:", error);
-      return [];
+      throw error;
     }
   }
 
