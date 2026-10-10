@@ -137,6 +137,14 @@ public class OcadoWebViewPlugin extends Plugin {
     browser.setBackgroundColor(Color.WHITE);
     WebSettings settings = browser.getSettings();
     settings.setJavaScriptEnabled(true);
+    // Ocado is a responsive site. Honour its viewport meta tag from the first
+    // layout pass instead of letting WebView begin in its default wide layout
+    // and then reflow after the page's scripts/styles initialise.
+    settings.setUseWideViewPort(true);
+    settings.setLoadWithOverviewMode(false);
+    settings.setTextZoom(100);
+    settings.setSupportZoom(false);
+    settings.setBuiltInZoomControls(false);
     settings.setDomStorageEnabled(true);
     settings.setDatabaseEnabled(true);
     settings.setLoadsImagesAutomatically(true);
