@@ -54,6 +54,9 @@ jobs:
       - name: Install embedded Ocado WebView
         run: node scripts/patch-android-ocado-webview.mjs
 
+      - name: Apply app-wide Android system-bar insets
+        run: node scripts/patch-android-window-insets.mjs
+
       - name: Sync bundled assets to Android
         run: npx --yes @capacitor/cli@7 sync android
 
