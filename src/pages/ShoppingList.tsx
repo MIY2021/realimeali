@@ -65,14 +65,6 @@ export default function ShoppingList() {
   }, [ocadoItemId]);
 
   useEffect(() => {
-    if (!ocadoItemId || shoppingList.length === 0) return;
-    if (!shoppingList.some(item => item.id === ocadoItemId)) {
-      setOcadoItemId(null);
-      try { localStorage.removeItem("realiMeali_activeOcadoItemId"); } catch { /* Ignore storage errors. */ }
-    }
-  }, [ocadoItemId, shoppingList]);
-
-  useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === WEEK_STORAGE_KEY && e.newValue && /^\d{4}-W\d{1,2}$/.test(e.newValue)) {
         setCurrentWeek(e.newValue);
@@ -93,6 +85,14 @@ export default function ShoppingList() {
     toggleItemChecked,
     addCustomItem,
   } = useShoppingList(currentWeek);
+
+  useEffect(() => {
+    if (!ocadoItemId || shoppingList.length === 0) return;
+    if (!shoppingList.some(item => item.id === ocadoItemId)) {
+      setOcadoItemId(null);
+      try { localStorage.removeItem("realiMeali_activeOcadoItemId"); } catch { /* Ignore storage errors. */ }
+    }
+  }, [ocadoItemId, shoppingList]);
 
   useEffect(() => {
     const saved = localStorage.getItem("realiMeali_showOnlyUnchecked");
