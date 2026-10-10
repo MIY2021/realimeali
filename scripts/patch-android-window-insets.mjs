@@ -35,7 +35,7 @@ const packageEnd = source.indexOf(";", source.indexOf("package "));
 if (packageEnd < 0) throw new Error("Could not find package declaration in MainActivity.java.");
 source = source.slice(0, packageEnd + 1) + "\n" + imports + source.slice(packageEnd + 1);
 
-const onCreate = /(@Override\\s+public void onCreate\\([^)]*\\)\\s*\\{[\\s\\S]*?super\\.onCreate\\([^)]*\\);)/;
+const onCreate = /(@Override\s+public void onCreate\([^)]*\)\s*\{[\s\S]*?super\.onCreate\([^)]*\);)/;
 if (!onCreate.test(source)) {
   throw new Error("Could not find MainActivity.onCreate() installed by the Ocado patch.");
 }
