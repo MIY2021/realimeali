@@ -47,22 +47,9 @@ export default function ShoppingList() {
   const [newItemName, setNewItemName] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
-  const [ocadoItemId, setOcadoItemId] = useState<string | null>(() => {
-    try {
-      return localStorage.getItem("realiMeali_activeOcadoItemId");
-    } catch {
-      return null;
-    }
-  });
-
-  useEffect(() => {
-    if (!ocadoItemId) return;
-    try {
-      localStorage.setItem("realiMeali_activeOcadoItemId", ocadoItemId);
-    } catch {
-      // Keep the in-memory session working if storage is unavailable.
-    }
-  }, [ocadoItemId]);
+  // Do not auto-open the native Ocado overlay when this page mounts.
+  // It can cover the whole Shopping List after an Android activity/WebView restore.
+  const [ocadoItemId, setOcadoItemId] = useState<string | null>(null);
 
   useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {
@@ -85,14 +72,6 @@ export default function ShoppingList() {
     toggleItemChecked,
     addCustomItem,
   } = useShoppingList(currentWeek);
-
-  useEffect(() => {
-    if (!ocadoItemId || shoppingList.length === 0) return;
-    if (!shoppingList.some(item => item.id === ocadoItemId)) {
-      setOcadoItemId(null);
-      try { localStorage.removeItem("realiMeali_activeOcadoItemId"); } catch { /* Ignore storage errors. */ }
-    }
-  }, [ocadoItemId, shoppingList]);
 
   useEffect(() => {
     const saved = localStorage.getItem("realiMeali_showOnlyUnchecked");
@@ -356,10 +335,7 @@ export default function ShoppingList() {
               selectedItemId={ocadoItemId}
               onSelectItem={setOcadoItemId}
               onToggleItem={toggleItemChecked}
-              onClose={() => {
-                setOcadoItemId(null);
-                try { localStorage.removeItem("realiMeali_activeOcadoItemId"); } catch { /* Ignore storage errors. */ }
-              }}
+              onClose={() => setOcadoItemId(null)}
             />
           )}
         </>
