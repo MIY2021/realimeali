@@ -88,6 +88,11 @@ export const useAutoShoppingListGeneration = () => {
       lastGenerationSignatureRef.current = JSON.stringify({ mealPlans: [], recipes: [] });
 
       void Promise.all([...weeksToClear].map(async weekKey => {
+        // A meal plan may be added again while the deletes are in flight.
+        // Only clear while the empty-plan signature is still the latest state.
+        if (lastGenerationSignatureRef.current !== JSON.stringify({ mealPlans: [], recipes: [] })) {
+          return;
+        }
         const cleared = await ShoppingListService.clearAll(currentHousehold.id, weekKey);
         if (cleared) {
           window.dispatchEvent(new CustomEvent('shopping-list-auto-generated', {
