@@ -132,7 +132,7 @@ export default function OcadoShoppingMode({ items, selectedItemId, onSelectItem,
               {selectedItem.name}
             </div>
             <div className="text-xs text-muted-foreground">
-              {selectedItem.isChecked ? "Added to list" : "Ocado item"} · {currentIndex + 1} of {items.length}
+              {selectedItem.isChecked ? "Marked as added" : "Tap after adding to Ocado"} · {currentIndex + 1} of {items.length}
             </div>
           </div>
           <Button
@@ -140,9 +140,9 @@ export default function OcadoShoppingMode({ items, selectedItemId, onSelectItem,
             variant={selectedItem.isChecked ? "default" : "secondary"}
             onClick={() => onToggleItem(selectedItem.id)}
             className={`h-11 shrink-0 rounded-xl px-2.5 touch-manipulation ${selectedItem.isChecked ? "bg-green-600 text-white hover:bg-green-700" : "bg-[#F5B82E] text-black hover:bg-[#e9aa20]"}`}
-            aria-label={selectedItem.isChecked ? "Mark item as not added" : "Mark item as added"}
+            aria-label={selectedItem.isChecked ? "Unmark item as added" : "Mark item as added to your Ocado basket"}
           >
-            {selectedItem.isChecked ? "✓ Added" : "✓ Add"}
+            {selectedItem.isChecked ? "✓ Added" : "Mark added"}
           </Button>
           <Button type="button" variant="ghost" onClick={goNext} disabled={currentIndex === items.length - 1} className="h-11 w-10 shrink-0 rounded-xl p-0 touch-manipulation" aria-label="Next shopping item">
             <ChevronRight className="h-6 w-6" />
@@ -173,7 +173,7 @@ export default function OcadoShoppingMode({ items, selectedItemId, onSelectItem,
         <div className="mx-auto flex min-h-20 max-w-3xl items-center gap-2 px-3 py-2">
           <Button type="button" variant="ghost" size="sm" onClick={goPrevious} disabled={currentIndex === 0} className="h-10 w-10 shrink-0 rounded-full p-0" aria-label="Previous shopping item"><ChevronLeft className="h-5 w-5" /></Button>
           <div className="min-w-0 flex-1 text-center"><div className="truncate text-base font-semibold text-foreground">🛒 {selectedItem.name}</div><div className="text-xs text-muted-foreground">{currentIndex + 1} of {items.length}</div></div>
-          <Button type="button" variant={selectedItem.isChecked ? "default" : "outline"} size="sm" onClick={() => onToggleItem(selectedItem.id)} className="h-10 shrink-0 rounded-xl px-3" aria-label={selectedItem.isChecked ? "Mark item as not added" : "Mark item as added to basket"}>{selectedItem.isChecked ? "✓ Added" : "✓ Add"}</Button>
+          <Button type="button" variant={selectedItem.isChecked ? "default" : "outline"} size="sm" onClick={() => onToggleItem(selectedItem.id)} className="h-10 shrink-0 rounded-xl px-3" aria-label={selectedItem.isChecked ? "Unmark item as added" : "Mark item as added to your Ocado basket"}>{selectedItem.isChecked ? "✓ Added" : "Mark added"}</Button>
           <Button type="button" variant="ghost" size="sm" onClick={goNext} disabled={currentIndex === items.length - 1} className="h-10 w-10 shrink-0 rounded-full p-0" aria-label="Next shopping item"><ChevronRight className="h-5 w-5" /></Button>
           <Button type="button" variant="ghost" size="sm" onClick={onClose} className="h-10 w-10 shrink-0 rounded-full p-0" aria-label="Close Ocado shopping mode"><X className="h-5 w-5" /></Button>
         </div>
