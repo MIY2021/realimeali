@@ -15,6 +15,11 @@ const isHeader = (ingredient: string) => {
   return ingredient.trim().endsWith(':') && !ingredient.match(/\d+.*:/);
 };
 
+const formatScaledQuantity = (value: number): string => {
+  const rounded = Math.round(value * 100) / 100;
+  return String(rounded);
+};
+
 const buildCheckedKey = (name: string, recipeId: string) => {
   return `${name.toLowerCase().trim()}::${recipeId}`;
 };
@@ -46,6 +51,7 @@ export const useShoppingListGenerator = () => {
         rawName: string;
         recipeId: string;
         recipeTitle: string;
+        servingScale: number;
       }> = [];
 
       mealPlans.forEach(mealPlan => {
@@ -55,13 +61,18 @@ export const useShoppingListGenerator = () => {
           ingredientItems.push({
             rawName: `Everything for ${mealPlan.meal_name}`,
             recipeId: mealPlan.id,
-            recipeTitle: mealPlan.meal_name
+            recipeTitle: mealPlan.meal_name,
+            servingScale: 1
           });
           return;
         }
 
         const recipe = recipes.find(r => r.id === mealPlan.recipe_id);
         if (!recipe) return;
+
+        const standardServings = recipe.servings || mealPlan.original_servings || 1;
+        const plannedServings = mealPlan.planned_servings || standardServings;
+        const servingScale = plannedServings / standardServings;
 
         recipe.ingredients.forEach(ingredient => {
           const trimmed = ingredient?.trim();
@@ -86,7 +97,8 @@ export const useShoppingListGenerator = () => {
           ingredientItems.push({
             rawName: trimmed,
             recipeId: recipe.id,
-            recipeTitle: recipe.title
+            recipeTitle: recipe.title,
+            servingScale
           });
         });
       });
@@ -132,12 +144,24 @@ export const useShoppingListGenerator = () => {
             return null;
           }
 
+          const scale = item.servingScale;
+          const quantity = parsed.quantity === undefined ? undefined : parsed.quantity * scale;
+          const quantityMin = parsed.quantityMin === undefined ? undefined : parsed.quantityMin * scale;
+          const quantityMax = parsed.quantityMax === undefined ? undefined : parsed.quantityMax * scale;
+          const quantityDisplay = quantityMin !== undefined && quantityMax !== undefined
+            ? (quantityMin === quantityMax
+              ? formatScaledQuantity(quantityMin)
+              : `${formatScaledQuantity(quantityMin)}–${formatScaledQuantity(quantityMax)}`)
+            : quantity === undefined
+              ? parsed.quantityDisplay
+              : formatScaledQuantity(quantity);
+
           return {
             name,
-            quantity: parsed.quantity,
-            quantityMin: parsed.quantityMin,
-            quantityMax: parsed.quantityMax,
-            quantityDisplay: parsed.quantityDisplay,
+            quantity,
+            quantityMin,
+            quantityMax,
+            quantityDisplay,
             unit: parsed.unit,
             recipeId: item.recipeId,
             rawName: item.rawName,
