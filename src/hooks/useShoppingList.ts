@@ -22,6 +22,7 @@ export const useShoppingList = (weekKey: string) => {
   const pendingCheckedValuesRef = useRef<Map<string, boolean>>(new Map());
   const persistedCheckedValuesRef = useRef<Map<string, boolean>>(new Map());
   const toggleSaveQueuesRef = useRef<Map<string, Promise<void>>>(new Map());
+  const toggleRequestSequenceRef = useRef<Map<string, number>>(new Map());
   // Prevent a list read started before a checkbox mutation from overwriting
   // that newer optimistic state when the read eventually resolves.
   const listMutationVersionRef = useRef(0);
@@ -131,6 +132,8 @@ export const useShoppingList = (weekKey: string) => {
     if (!currentItem) return;
 
     const newCheckedState = !currentItem.isChecked;
+    const requestSequence = (toggleRequestSequenceRef.current.get(itemId) ?? 0) + 1;
+    toggleRequestSequenceRef.current.set(itemId, requestSequence);
     if (!persistedCheckedValuesRef.current.has(itemId)) {
       persistedCheckedValuesRef.current.set(itemId, currentItem.isChecked);
     }
@@ -155,7 +158,10 @@ export const useShoppingList = (weekKey: string) => {
 
       if (success) {
         persistedCheckedValuesRef.current.set(itemId, newCheckedState);
-        if (pendingCheckedValuesRef.current.get(itemId) === newCheckedState) {
+        if (
+          toggleRequestSequenceRef.current.get(itemId) === requestSequence &&
+          pendingCheckedValuesRef.current.get(itemId) === newCheckedState
+        ) {
           pendingCheckedValuesRef.current.delete(itemId);
         }
         return;
@@ -163,7 +169,10 @@ export const useShoppingList = (weekKey: string) => {
 
       // Only roll back if this failed write still represents the user's latest
       // requested value. A newer tap should win over an older request's failure.
-      if (pendingCheckedValuesRef.current.get(itemId) === newCheckedState) {
+      if (
+        toggleRequestSequenceRef.current.get(itemId) === requestSequence &&
+        pendingCheckedValuesRef.current.get(itemId) === newCheckedState
+      ) {
         pendingCheckedValuesRef.current.delete(itemId);
         const persistedValue = persistedCheckedValuesRef.current.get(itemId) ?? currentItem.isChecked;
         updateShoppingList(previous =>
