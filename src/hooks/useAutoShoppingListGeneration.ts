@@ -5,6 +5,7 @@ import { useRecipes } from "@/contexts/RecipesContext";
 import { useMealPlan } from "@/contexts/MealPlanContext";
 import { useShoppingListGenerator } from "@/hooks/useShoppingListGenerator";
 import { ShoppingListService } from "@/services/shoppingListService";
+import { getCurrentWeekKey } from "@/utils/weekUtils";
 
 const buildCheckedKey = (name: string, recipeId: string) => {
   return `${name.toLowerCase().trim()}::${recipeId}`;
@@ -134,86 +135,107 @@ export const useAutoShoppingListGeneration = () => {
       }
     });
 
-    // Generate shopping list for each week that has meal plans (immediate)
-    weekKeys.forEach(async (weekKey) => {
-      const weekMealPlans = getMealPlansForWeek(weekKey);
+    // Regenerate current/upcoming weeks first, then historical weeks. The old
+    // implementation fired every week at once; large households could overwhelm
+    // PostgREST/AI normalization, leaving some weeks stale without a retry.
+    const currentWeekKey = getCurrentWeekKey();
+    const orderedWeekKeys = [...weekKeys].sort((a, b) => {
+      const aPriority = a >= currentWeekKey ? 0 : 1;
+      const bPriority = b >= currentWeekKey ? 0 : 1;
+      return aPriority - bPriority || a.localeCompare(b);
+    });
 
-      console.log(`[Auto-Generate] Regenerating for ${weekKey}, meal plans:`, weekMealPlans.length);
+    const regenerateWeekLists = async () => {
+      for (const weekKey of orderedWeekKeys) {
+        if (cancelled) return;
 
-      if (weekMealPlans.length === 0) {
-        // No meal plans - clear list
-        await ShoppingListService.clearAll(currentHousehold.id, weekKey);
-        window.dispatchEvent(new CustomEvent('shopping-list-auto-generated', {
-          detail: { weekKey }
-        }));
-        return;
-      }
+        const weekMealPlans = getMealPlansForWeek(weekKey);
+        console.log(`[Auto-Generate] Regenerating for ${weekKey}, meal plans: `, weekMealPlans.length);
 
-      // If servings or ingredients changed while this week was generating,
-      // remember to run again after the current write completes.
-      if (pendingGenerationsRef.current.has(weekKey)) {
-        rerunRequestedRef.current.add(weekKey);
-        return;
-      }
+        if (weekMealPlans.length === 0) {
+          await ShoppingListService.clearAll(currentHousehold.id, weekKey);
+          window.dispatchEvent(new CustomEvent('shopping-list-auto-generated', {
+            detail: { weekKey }
+          }));
+          continue;
+        }
 
-      pendingGenerationsRef.current.add(weekKey);
+        // If servings or ingredients changed while this week was generating,
+        // queue a fresh pass after the current write completes.
+        if (pendingGenerationsRef.current.has(weekKey)) {
+          rerunRequestedRef.current.add(weekKey);
+          continue;
+        }
 
-      try {
-        const existingItems = await ShoppingListService.loadExistingShoppingList(currentHousehold.id, weekKey);
+        pendingGenerationsRef.current.add(weekKey);
 
-        // Refresh the list on initial load too, so saved quantities stay in sync
-        // with the current planned servings. The generator receives checked states
-        // and custom items to preserve both while recalculating recipe quantities.
+        try {
+          let succeeded = false;
 
-        const checkedMap = new Map<string, boolean>();
+          // Retry once after a short pause. The generator intentionally returns
+          // [] on failure to protect the existing list, so empty output is not
+          // success and must not silently leave a stale list indefinitely.
+          for (let attempt = 1; attempt <= 2 && !succeeded; attempt++) {
+            try {
+              const existingItems = await ShoppingListService.loadExistingShoppingList(
+                currentHousehold.id,
+                weekKey
+              );
 
-        existingItems.forEach(item => {
-          if (!item.isChecked) {
-            return;
+              const checkedMap = new Map<string, boolean>();
+              existingItems.forEach(item => {
+                if (!item.isChecked) return;
+
+                const recipeIds = item.recipeIds.length > 0 ? item.recipeIds : ["custom"];
+                recipeIds.forEach(recipeId => {
+                  checkedMap.set(buildCheckedKey(item.name, recipeId), true);
+                  (item.sourceIngredients || []).forEach(sourceIngredient => {
+                    checkedMap.set(buildCheckedKey(sourceIngredient, recipeId), true);
+                  });
+                });
+              });
+
+              const generatedItems = await generateAndSaveFromMealPlans(
+                weekKey,
+                checkedMap,
+                existingItems.filter(item => item.isCustom)
+              );
+
+              if (generatedItems.length > 0) {
+                succeeded = true;
+                console.log(`[Auto-Generate] Successfully regenerated shopping list for ${weekKey} on attempt ${attempt}`);
+                window.dispatchEvent(new CustomEvent('shopping-list-auto-generated', {
+                  detail: { weekKey }
+                }));
+              } else {
+                console.error(`[Auto-Generate] Attempt ${attempt} returned no items for ${weekKey}`);
+              }
+            } catch (error) {
+              console.error(`[Auto-Generate] Attempt ${attempt} failed for ${weekKey}:`, error);
+            }
+
+            if (!succeeded && attempt < 2) {
+              await new Promise(resolve => window.setTimeout(resolve, 1500));
+            }
           }
 
-          const recipeIds = item.recipeIds.length > 0 ? item.recipeIds : ["custom"];
-          recipeIds.forEach(recipeId => {
-            checkedMap.set(buildCheckedKey(item.name, recipeId), true);
-            (item.sourceIngredients || []).forEach(sourceIngredient => {
-              checkedMap.set(buildCheckedKey(sourceIngredient, recipeId), true);
-            });
-          });
-        });
+          if (!succeeded) {
+            console.error(`[Auto-Generate] Giving up after retry for ${weekKey}; existing list was preserved`);
+          }
+        } finally {
+          pendingGenerationsRef.current.delete(weekKey);
 
-        // Regenerate atomically. The generator replaces the list only after it
-        // has successfully prepared a non-empty set of items, so a temporary
-        // AI/network failure can never wipe an existing shopping list.
-        const generatedItems = await generateAndSaveFromMealPlans(
-          weekKey,
-          checkedMap,
-          existingItems.filter(item => item.isCustom)
-        );
-
-        if (generatedItems.length === 0) {
-          console.error(`[Auto-Generate] Generation returned no items for ${weekKey}; keeping the existing list`);
-          return;
-        }
-
-        console.log(`[Auto-Generate] Successfully regenerated shopping list for ${weekKey}`);
-
-        // Dispatch event only after the generator confirms a successful save.
-        window.dispatchEvent(new CustomEvent('shopping-list-auto-generated', {
-          detail: { weekKey }
-        }));
-      } catch (error) {
-        console.error(`[Auto-Generate] Error generating shopping list for ${weekKey}:`, error);
-      } finally {
-        pendingGenerationsRef.current.delete(weekKey);
-
-        // Never lose the latest serving change just because an earlier
-        // generation was still in flight when the user tapped + or -.
-        if (rerunRequestedRef.current.delete(weekKey)) {
-          lastGenerationSignatureRef.current = null;
-          setGenerationRevision(revision => revision + 1);
+          // Never lose the latest serving change just because an earlier
+          // generation was still in flight when the user tapped + or -.
+          if (rerunRequestedRef.current.delete(weekKey)) {
+            lastGenerationSignatureRef.current = null;
+            setGenerationRevision(revision => revision + 1);
+          }
         }
       }
-    });
+    };
+
+    void regenerateWeekLists();
 
     // Update previous week keys after scheduling
     previousWeekKeysRef.current = new Set(weekKeys);
