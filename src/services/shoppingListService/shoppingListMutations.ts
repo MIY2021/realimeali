@@ -7,16 +7,27 @@ export class ShoppingListMutations {
     try {
       console.log('Toggling item checked:', { itemId, newCheckedState });
       
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('household_shopping_lists')
         .update({ is_checked: newCheckedState })
         .eq('id', itemId)
-        .eq('household_id', householdId);
+        .eq('household_id', householdId)
+        .select('id, is_checked')
+        .maybeSingle();
 
       if (error) {
         console.error('Database error toggling item:', error);
         throw error;
       }
+
+      // PostgREST can return no error when RLS filters the UPDATE to zero rows.
+      // Treat a missing row or a mismatched persisted value as a failed save so
+      // the UI reverts instead of pretending a tick was stored successfully.
+      if (!data || data.is_checked !== newCheckedState) {
+        console.error('Shopping-list checkbox update affected no matching row:', { itemId, householdId, newCheckedState });
+        return false;
+      }
+
       return true;
     } catch (error) {
       console.error("Error updating item:", error);
