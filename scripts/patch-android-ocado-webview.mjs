@@ -171,10 +171,10 @@ public class OcadoWebViewPlugin extends Plugin {
     overlayParent.addView(root, params);
     content.addOnLayoutChangeListener(overlayLayoutListener);
     overlayParent.addOnLayoutChangeListener(overlayLayoutListener);
-    if (android.os.Build.VERSION.SDK_INT >= 20) {
+    if (android.os.Build.VERSION.SDK_INT >= 21) {
       content.setOnApplyWindowInsetsListener((view, insets) -> {
         updateOverlayBounds();
-        return view.onApplyWindowInsets(insets);
+        return insets;
       });
       content.requestApplyInsets();
     }
@@ -309,7 +309,6 @@ public class OcadoWebViewPlugin extends Plugin {
       browser.destroy();
       browser = null;
     }
-    if (browser != null) browser.removeOnLayoutChangeListener(overlayLayoutListener);
     View content = getBridge() != null ? getBridge().getWebView() : null;
     if (content != null) content.removeOnLayoutChangeListener(overlayLayoutListener);
     if (overlayParent != null) overlayParent.removeOnLayoutChangeListener(overlayLayoutListener);
