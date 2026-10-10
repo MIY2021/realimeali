@@ -155,17 +155,52 @@ public class OcadoWebViewPlugin extends Plugin {
 
   }
 
+  private final View.OnLayoutChangeListener overlayLayoutListener = (v, l, t, r, b, ol, ot, or, ob) -> updateOverlayBounds();
+
   private void attachOverlay() {
     if (root == null || root.getParent() != null) return;
     View content = getBridge().getWebView();
     android.view.ViewParent parent = content.getParent();
     if (!(parent instanceof ViewGroup)) throw new IllegalStateException("Could not locate RealiMeali Activity content container");
     overlayParent = (ViewGroup) parent;
-    ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, availableOverlayHeight());
-    params.width = ViewGroup.LayoutParams.MATCH_PARENT;
-    params.height = availableOverlayHeight();
+
+    // Keep the browser in the same native coordinate space as the app WebView.
+    // Recompute its bounds from measured layout dimensions instead of display-height guesses.
+    android.widget.FrameLayout.LayoutParams params = new android.widget.FrameLayout.LayoutParams(
+      ViewGroup.LayoutParams.MATCH_PARENT, availableOverlayHeight(), Gravity.TOP);
     overlayParent.addView(root, params);
+    content.addOnLayoutChangeListener(overlayLayoutListener);
+    overlayParent.addOnLayoutChangeListener(overlayLayoutListener);
+    if (android.os.Build.VERSION.SDK_INT >= 20) {
+      content.setOnApplyWindowInsetsListener((view, insets) -> {
+        updateOverlayBounds();
+        return view.onApplyWindowInsets(insets);
+      });
+      content.requestApplyInsets();
+    }
     root.bringToFront();
+    updateOverlayBounds();
+  }
+
+  private void updateOverlayBounds() {
+    if (root == null || overlayParent == null || root.getParent() == null) return;
+    View content = getBridge().getWebView();
+    int measuredHeight = content.getHeight();
+    if (measuredHeight <= 0) measuredHeight = overlayParent.getHeight();
+    if (measuredHeight <= 0) return;
+    ViewGroup.LayoutParams raw = root.getLayoutParams();
+    if (raw instanceof android.widget.FrameLayout.LayoutParams) {
+      android.widget.FrameLayout.LayoutParams params = (android.widget.FrameLayout.LayoutParams) raw;
+      params.width = ViewGroup.LayoutParams.MATCH_PARENT;
+      params.height = availableOverlayHeight();
+      params.gravity = Gravity.TOP;
+      params.bottomMargin = 0;
+      root.setLayoutParams(params);
+    } else {
+      raw.width = ViewGroup.LayoutParams.MATCH_PARENT;
+      raw.height = availableOverlayHeight();
+      root.setLayoutParams(raw);
+    }
   }
 
   private void detachOverlay() {
@@ -241,21 +276,26 @@ public class OcadoWebViewPlugin extends Plugin {
   }
 
   private int availableOverlayHeight() {
-    // The native view is browser-only. React owns the single 64dp shopping row;
-    // the app owns the 64dp bottom navigation. Reserve their combined 128dp.
+    // Use the actual measured WebView viewport, not the physical display height.
+    // The React shopping row is 64dp and the bottom navigation is 64dp. The
+    // bottom safe inset is reserved only when this native content view extends
+    // into the system navigation area (edge-to-edge); otherwise its height has
+    // already been excluded by Android's window layout.
     View content = getBridge().getWebView();
     int availableHeightPx = content.getHeight();
-    if (availableHeightPx <= 0) {
-      android.util.DisplayMetrics metrics = getActivity().getResources().getDisplayMetrics();
-      availableHeightPx = metrics.heightPixels;
-    }
+    if (availableHeightPx <= 0 && overlayParent != null) availableHeightPx = overlayParent.getHeight();
+    if (availableHeightPx <= 0) return dp(280);
+
     int safeBottomPx = 0;
     if (android.os.Build.VERSION.SDK_INT >= 23 && content.getRootWindowInsets() != null) {
-      safeBottomPx = content.getRootWindowInsets().getSystemWindowInsetBottom();
+      android.view.WindowInsets insets = content.getRootWindowInsets();
+      int inset = insets.getSystemWindowInsetBottom();
+      // If the app content reaches the bottom of its parent, it is edge-to-edge;
+      // in that case the browser must leave room for the gesture/navigation inset.
+      if (overlayParent != null && content.getBottom() >= overlayParent.getHeight()) safeBottomPx = inset;
     }
-    // Match the React row's bottom = 64dp navigation height + safe-area inset.
     int reservedBottomPx = dp(128) + safeBottomPx;
-    return Math.max(dp(280), availableHeightPx - reservedBottomPx);
+    return Math.max(dp(160), availableHeightPx - reservedBottomPx);
   }
 
   private int dp(int value) {
@@ -269,6 +309,10 @@ public class OcadoWebViewPlugin extends Plugin {
       browser.destroy();
       browser = null;
     }
+    if (browser != null) browser.removeOnLayoutChangeListener(overlayLayoutListener);
+    View content = getBridge() != null ? getBridge().getWebView() : null;
+    if (content != null) content.removeOnLayoutChangeListener(overlayLayoutListener);
+    if (overlayParent != null) overlayParent.removeOnLayoutChangeListener(overlayLayoutListener);
     detachOverlay();
     root = null;
     overlayParent = null;
