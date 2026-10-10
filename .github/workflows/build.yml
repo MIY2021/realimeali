@@ -3,6 +3,9 @@ name: Build RealiMeali
 # Validate the frontend before deployment
 
 on:
+  pull_request:
+    branches:
+      - main
   push:
     branches:
       - main
