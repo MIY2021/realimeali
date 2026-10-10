@@ -78,8 +78,6 @@ export const useAutoShoppingListGeneration = () => {
     }
 
     const generationSignature = buildGenerationSignature(mealPlans, recipes);
-    const isInitialGenerationCheck = lastGenerationSignatureRef.current === null;
-
     if (lastGenerationSignatureRef.current === generationSignature) {
       return;
     }
@@ -156,15 +154,9 @@ export const useAutoShoppingListGeneration = () => {
       try {
         const existingItems = await ShoppingListService.loadExistingShoppingList(currentHousehold.id, weekKey);
 
-        // The generation signature is in-memory, so it is always "new" after a
-        // full page refresh. Do not replace an existing persisted list on that
-        // first check: doing so can lose checked states (and custom items) when
-        // ingredient normalisation or recipe IDs no longer match exactly.
-        // Subsequent signature changes in this session still regenerate lists.
-        if (isInitialGenerationCheck && existingItems.length > 0) {
-          console.log(`[Auto-Generate] Keeping existing shopping list for ${weekKey} on initial load`);
-          return;
-        }
+        // Refresh the list on initial load too, so saved quantities stay in sync
+        // with the current planned servings. The generator receives checked states
+        // and custom items to preserve both while recalculating recipe quantities.
 
         const checkedMap = new Map<string, boolean>();
 
@@ -185,7 +177,7 @@ export const useAutoShoppingListGeneration = () => {
         // Regenerate atomically. The generator replaces the list only after it
         // has successfully prepared a non-empty set of items, so a temporary
         // AI/network failure can never wipe an existing shopping list.
-        await generateAndSaveFromMealPlans(weekKey, checkedMap);
+        await generateAndSaveFromMealPlans(weekKey, checkedMap, existingItems.filter(item => item.isCustom));
 
         console.log(`[Auto-Generate] Successfully regenerated shopping list for ${weekKey}`);
 
