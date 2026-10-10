@@ -68,6 +68,7 @@ export const useAutoShoppingListGeneration = () => {
     }
 
     const generationSignature = buildGenerationSignature(mealPlans, recipes);
+    const isInitialGenerationCheck = lastGenerationSignatureRef.current === null;
 
     if (lastGenerationSignatureRef.current === generationSignature) {
       return;
@@ -144,6 +145,17 @@ export const useAutoShoppingListGeneration = () => {
 
       try {
         const existingItems = await ShoppingListService.loadExistingShoppingList(currentHousehold.id, weekKey);
+
+        // The generation signature is in-memory, so it is always "new" after a
+        // full page refresh. Do not replace an existing persisted list on that
+        // first check: doing so can lose checked states (and custom items) when
+        // ingredient normalisation or recipe IDs no longer match exactly.
+        // Subsequent signature changes in this session still regenerate lists.
+        if (isInitialGenerationCheck && existingItems.length > 0) {
+          console.log(`[Auto-Generate] Keeping existing shopping list for ${weekKey} on initial load`);
+          return;
+        }
+
         const checkedMap = new Map<string, boolean>();
 
         existingItems.forEach(item => {
