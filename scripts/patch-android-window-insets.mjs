@@ -32,15 +32,23 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 `;
 const packageEnd = source.indexOf(";", source.indexOf("package "));
+if (packageEnd < 0) throw new Error("Could not find package declaration in MainActivity.java.");
 source = source.slice(0, packageEnd + 1) + "\n" + imports + source.slice(packageEnd + 1);
+
+const onCreate = /(@Override\\s+public void onCreate\\([^)]*\\)\\s*\\{[\\s\\S]*?super\\.onCreate\\([^)]*\\);)/;
+if (!onCreate.test(source)) {
+  throw new Error("Could not find MainActivity.onCreate() installed by the Ocado patch.");
+}
+source = source.replace(onCreate, "$1\n        installRealiMealiWindowInsets();");
 
 const method = `
     /**
-     * Apply system-bar/cutout insets to the shared native content root.
-     * This keeps the main WebView and the embedded Ocado overlay below the
-     * real status-bar/camera-cutout area without a CSS pixel guess.
+     * Apply Android's actual status-bar and display-cutout insets once at the
+     * shared Activity content root. Both the app WebView and native Ocado
+     * overlay are children of this root, so both stay clear of the camera area.
      */
     private void installRealiMealiWindowInsets() {
+        // RealiMealiWindowInsets
         final View content = findViewById(android.R.id.content);
         if (content == null) return;
 
@@ -65,36 +73,10 @@ const method = `
         ViewCompat.requestApplyInsets(content);
     }
 
-    private static final String RealiMealiWindowInsets = "webview-top-inset-once";
 `;
-
-const call = `
-        installRealiMealiWindowInsets();
-`;
-
-
-// The preceding Ocado patch creates MainActivity.onCreate() and registers the
-// native plugin there. Match that method and add the inset installer to it;
-// never create another onCreate override.
-const onCreate = /(@Override\s+public void onCreate\([^)]*\)\s*\{[\s\S]*?super\.onCreate\([^)]*\);)/;
-if (!onCreate.test(source)) {
-  throw new Error("Could not find MainActivity.onCreate() installed by the Ocado patch; refusing to add a duplicate override.");
-}
-source = source.replace(onCreate, "$1" + call);
-const classEnd = source.lastIndexOf("}");
-  if (classEnd < 0) throw new Error("Could not find end of MainActivity class.");
-  const override = `
-    @Override
-    public void onCreate(android.os.Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        installRealiMealiWindowInsets();
-    }
-
-`;
-  source = source.slice(0, classEnd) + override + source.slice(classEnd);
-}
 const classEnd = source.lastIndexOf("}");
 if (classEnd < 0) throw new Error("Could not find end of MainActivity class.");
-source = source.slice(0, classEnd) + method + "\n" + source.slice(classEnd);
+source = source.slice(0, classEnd) + method + source.slice(classEnd);
+
 await writeFile(mainPath, source, "utf8");
 console.log("Installed app-wide native top/side system-bar inset handling.");
