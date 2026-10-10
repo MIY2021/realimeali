@@ -78,8 +78,6 @@ export const useAutoShoppingListGeneration = () => {
     }
 
     const generationSignature = buildGenerationSignature(mealPlans, recipes);
-    const isInitialGenerationCheck = lastGenerationSignatureRef.current === null;
-
     if (lastGenerationSignatureRef.current === generationSignature) {
       return;
     }
