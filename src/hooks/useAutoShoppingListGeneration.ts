@@ -67,6 +67,16 @@ export const useAutoShoppingListGeneration = () => {
       return;
     }
 
+    // MealPlanContext starts with an empty array before the parallel loader has
+    // fetched persisted plans. Its loading flag also starts false, so without
+    // this guard the first render can treat that temporary empty array as the
+    // real plan, clear existing shopping lists, and record an empty signature.
+    // Wait until at least one persisted plan is present before running any
+    // cleanup or generation. Empty plans must never implicitly delete a list.
+    if (mealPlans.length === 0) {
+      return;
+    }
+
     const generationSignature = buildGenerationSignature(mealPlans, recipes);
     const isInitialGenerationCheck = lastGenerationSignatureRef.current === null;
 
