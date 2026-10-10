@@ -37,19 +37,21 @@ source = source.slice(0, packageEnd + 1) + "\n" + imports + source.slice(package
 const method = `
     /**
      * Apply the real top/side system-bar and display-cutout inset to the
-     * Capacitor WebView once. Keep bottom inset behavior unchanged because
-     * the app already owns bottom navigation and safe-area layout.
+     * native content root once, so both the app WebView and the embedded
+     * Ocado browser overlay share the same safe top edge. Keep bottom inset unchanged.
      */
     @Override
     public void onCreate(android.os.Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        final View webView = getBridge().getWebView();
-        final int initialLeft = webView.getPaddingLeft();
-        final int initialTop = webView.getPaddingTop();
-        final int initialRight = webView.getPaddingRight();
-        final int initialBottom = webView.getPaddingBottom();
+        final View content = findViewById(android.R.id.content);
+        if (content == null) return;
 
-        ViewCompat.setOnApplyWindowInsetsListener(webView, (view, windowInsets) -> {
+        final int initialLeft = content.getPaddingLeft();
+        final int initialTop = content.getPaddingTop();
+        final int initialRight = content.getPaddingRight();
+        final int initialBottom = content.getPaddingBottom();
+
+        ViewCompat.setOnApplyWindowInsetsListener(content, (view, windowInsets) -> {
             Insets safe = windowInsets.getInsets(
                 WindowInsetsCompat.Type.statusBars()
                     | WindowInsetsCompat.Type.displayCutout()
@@ -62,7 +64,7 @@ const method = `
             );
             return windowInsets;
         });
-        ViewCompat.requestApplyInsets(webView);
+        ViewCompat.requestApplyInsets(content);
     }
 
     private static final String RealiMealiWindowInsets = "webview-top-inset-once";
