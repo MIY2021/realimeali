@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { useToast } from "@/hooks/use-toast";
@@ -6,136 +6,203 @@ import { ShoppingListItem } from "@/types/shoppingList";
 import { ShoppingListService } from "@/services/shoppingListService";
 import { supabase } from "@/integrations/supabase/client";
 
+type ShoppingListUpdater =
+  | ShoppingListItem[]
+  | ((previous: ShoppingListItem[]) => ShoppingListItem[]);
+
 export const useShoppingList = (weekKey: string) => {
   const { user } = useAuth();
   const { currentHousehold } = useHousehold();
   const { toast } = useToast();
-  
+
   const [shoppingList, setShoppingList] = useState<ShoppingListItem[]>([]);
-  // Remove isLoading - never expose it, load happens silently
-  
+  // Keep a synchronous copy for event handlers. React state updater callbacks
+  // are not guaranteed to execute before the caller continues.
+  const shoppingListRef = useRef<ShoppingListItem[]>([]);
+  const pendingCheckedValuesRef = useRef<Map<string, boolean>>(new Map());
+  const persistedCheckedValuesRef = useRef<Map<string, boolean>>(new Map());
+  const toggleSaveQueuesRef = useRef<Map<string, Promise<void>>>(new Map());
+  // Prevent a list read started before a checkbox mutation from overwriting
+  // that newer optimistic state when the read eventually resolves.
+  const listMutationVersionRef = useRef(0);
+
+  const updateShoppingList = useCallback((nextOrUpdater: ShoppingListUpdater) => {
+    const next =
+      typeof nextOrUpdater === "function"
+        ? nextOrUpdater(shoppingListRef.current)
+        : nextOrUpdater;
+    shoppingListRef.current = next;
+    setShoppingList(next);
+  }, []);
+
   const loadShoppingList = useCallback(async () => {
     if (!user || !currentHousehold) return;
 
-    // Load silently - no loading state, just update when data arrives
+    const loadVersion = listMutationVersionRef.current;
     try {
       const items = await ShoppingListService.loadExistingShoppingList(currentHousehold.id, weekKey);
-      console.log('Loaded shopping list items:', items);
-      setShoppingList(items);
+
+      // A checkbox was changed while this read was in flight. Its response may
+      // contain an older is_checked value, so leave the newer state untouched.
+      if (loadVersion !== listMutationVersionRef.current) return;
+
+      items.forEach(item => {
+        if (!pendingCheckedValuesRef.current.has(item.id)) {
+          persistedCheckedValuesRef.current.set(item.id, item.isChecked);
+        }
+      });
+
+      // Reads that begin during a pending write should not flash the old checked
+      // value back into the UI while the save is in progress.
+      const itemsWithPendingChecks = items.map(item => {
+        const pendingValue = pendingCheckedValuesRef.current.get(item.id);
+        return pendingValue === undefined ? item : { ...item, isChecked: pendingValue };
+      });
+
+      console.log("Loaded shopping list items:", itemsWithPendingChecks);
+      updateShoppingList(itemsWithPendingChecks);
     } catch (error) {
       console.error("Error loading shopping list:", error);
-      setShoppingList([]);
+      if (loadVersion === listMutationVersionRef.current) {
+        updateShoppingList([]);
+      }
     }
-  }, [user, currentHousehold, weekKey]);
+  }, [user, currentHousehold, weekKey, updateShoppingList]);
 
   // Real-time subscription: refresh for external changes, but keep checkbox updates local.
   useEffect(() => {
     if (!currentHousehold) return;
 
-    let debounceTimer: NodeJS.Timeout | null = null;
+    let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
     const channel = supabase
-      .channel(`shopping-list-changes-week-${weekKey}`)
+      .channel("shopping-list-changes-week-" + weekKey)
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: '*',
-          schema: 'public',
-          table: 'household_shopping_lists',
-          filter: `household_id=eq.${currentHousehold.id}.and.week_key=eq.${weekKey}`
+          event: "*",
+          schema: "public",
+          table: "household_shopping_lists",
+          filter: "household_id=eq." + currentHousehold.id + ".and.week_key=eq." + weekKey
         },
         (payload) => {
-          console.log('Shopping list changed for week', weekKey, ':', payload);
+          console.log("Shopping list changed for week", weekKey, ":", payload);
 
-          // Our checkbox updates are already applied optimistically, so do not reload
-          // the entire list for UPDATE events. Reload INSERT/DELETE events so changes
-          // from other devices/users are reflected.
-          if (payload.eventType === 'UPDATE') {
-            return;
-          }
+          // Our checkbox updates are already applied optimistically. UPDATE events
+          // do not need a full reload; INSERT/DELETE events do.
+          if (payload.eventType === "UPDATE") return;
 
-          if (debounceTimer) {
-            clearTimeout(debounceTimer);
-          }
-
+          if (debounceTimer) clearTimeout(debounceTimer);
           debounceTimer = setTimeout(() => {
-            loadShoppingList();
+            void loadShoppingList();
           }, 150);
         }
       )
       .subscribe();
 
-    // Listen for auto-generation completion events
     const handleAutoGenerated = (event: CustomEvent) => {
       if (event.detail.weekKey === weekKey) {
-        console.log('Auto-generation completed for week', weekKey, '- refreshing list');
-        loadShoppingList();
+        console.log("Auto-generation completed for week", weekKey, "- refreshing list");
+        void loadShoppingList();
       }
     };
 
-    window.addEventListener('shopping-list-auto-generated', handleAutoGenerated as EventListener);
+    window.addEventListener("shopping-list-auto-generated", handleAutoGenerated as EventListener);
 
     return () => {
-      if (debounceTimer) {
-        clearTimeout(debounceTimer);
-      }
-      window.removeEventListener('shopping-list-auto-generated', handleAutoGenerated as EventListener);
-      supabase.removeChannel(channel);
+      if (debounceTimer) clearTimeout(debounceTimer);
+      window.removeEventListener("shopping-list-auto-generated", handleAutoGenerated as EventListener);
+      void supabase.removeChannel(channel);
     };
   }, [currentHousehold, loadShoppingList, weekKey]);
 
   useEffect(() => {
-    loadShoppingList();
+    void loadShoppingList();
   }, [loadShoppingList]);
 
   const toggleItemChecked = useCallback(async (itemId: string) => {
     if (!user || !currentHousehold) return;
 
-    // Read from the latest state inside the updater so rapid consecutive taps
-    // never rely on a stale shoppingList closure.
-    let newCheckedState: boolean | null = null;
+    // Calculate the next value outside a React state updater. Performing side
+    // effects from inside a functional updater is unsafe because React may defer
+    // or replay it; previously that could leave newCheckedState null and skip the
+    // database write entirely.
+    const currentItem = shoppingListRef.current.find(item => item.id === itemId);
+    if (!currentItem) return;
 
-    setShoppingList(prev => prev.map(i => {
-      if (i.id !== itemId) return i;
-      newCheckedState = !i.isChecked;
-      return { ...i, isChecked: newCheckedState };
-    }));
-
-    if (newCheckedState === null) return;
-
-    // Update database without reloading the list afterwards.
-    const success = await ShoppingListService.toggleItemChecked(
-      itemId,
-      newCheckedState,
-      currentHousehold.id
-    );
-    
-    if (!success) {
-      // Revert on error.
-      setShoppingList(prev => prev.map(i =>
-        i.id === itemId ? { ...i, isChecked: !newCheckedState } : i
-      ));
-      
-      toast({
-        title: "Error",
-        description: "Failed to update item",
-        variant: "destructive",
-      });
+    const newCheckedState = !currentItem.isChecked;
+    if (!persistedCheckedValuesRef.current.has(itemId)) {
+      persistedCheckedValuesRef.current.set(itemId, currentItem.isChecked);
     }
-  }, [user, currentHousehold, toast]);
+
+    listMutationVersionRef.current += 1;
+    pendingCheckedValuesRef.current.set(itemId, newCheckedState);
+    updateShoppingList(previous =>
+      previous.map(item => item.id === itemId ? { ...item, isChecked: newCheckedState } : item)
+    );
+
+    // Serialize writes per item so fast repeated taps cannot reach the database
+    // out of order and leave an older value as the final persisted state.
+    const previousSave = toggleSaveQueuesRef.current.get(itemId) ?? Promise.resolve();
+    const saveTask = previousSave.catch(() => undefined).then(async () => {
+      const success = await ShoppingListService.toggleItemChecked(
+        itemId,
+        newCheckedState,
+        currentHousehold.id
+      );
+
+      listMutationVersionRef.current += 1;
+
+      if (success) {
+        persistedCheckedValuesRef.current.set(itemId, newCheckedState);
+        if (pendingCheckedValuesRef.current.get(itemId) === newCheckedState) {
+          pendingCheckedValuesRef.current.delete(itemId);
+        }
+        return;
+      }
+
+      // Only roll back if this failed write still represents the user's latest
+      // requested value. A newer tap should win over an older request's failure.
+      if (pendingCheckedValuesRef.current.get(itemId) === newCheckedState) {
+        pendingCheckedValuesRef.current.delete(itemId);
+        const persistedValue = persistedCheckedValuesRef.current.get(itemId) ?? currentItem.isChecked;
+        updateShoppingList(previous =>
+          previous.map(item =>
+            item.id === itemId && item.isChecked === newCheckedState
+              ? { ...item, isChecked: persistedValue }
+              : item
+          )
+        );
+
+        toast({
+          title: "Error",
+          description: "Failed to update item",
+          variant: "destructive",
+        });
+      }
+    });
+
+    toggleSaveQueuesRef.current.set(itemId, saveTask);
+    try {
+      await saveTask;
+    } finally {
+      if (toggleSaveQueuesRef.current.get(itemId) === saveTask) {
+        toggleSaveQueuesRef.current.delete(itemId);
+      }
+    }
+  }, [user, currentHousehold, toast, updateShoppingList]);
 
   const addCustomItem = useCallback(async (name: string) => {
     if (!user || !currentHousehold || !name.trim()) return;
 
     const newItem = await ShoppingListService.addCustomItem(name, currentHousehold.id, user.id, weekKey);
-    
-    if (newItem) {
-      // Add new items to the top of the list
-      setShoppingList(prev => [newItem, ...prev]);
 
+    if (newItem) {
+      updateShoppingList(previous => [newItem, ...previous]);
+      persistedCheckedValuesRef.current.set(newItem.id, newItem.isChecked);
       toast({
         title: "Item added",
-        description: `${name} added to shopping list`,
+        description: name + " added to shopping list",
       });
     } else {
       toast({
@@ -144,47 +211,40 @@ export const useShoppingList = (weekKey: string) => {
         variant: "destructive",
       });
     }
-  }, [user, currentHousehold, toast, weekKey]);
+  }, [user, currentHousehold, toast, weekKey, updateShoppingList]);
 
   const updateItem = useCallback(async (itemId: string, newName: string) => {
     if (!user || !currentHousehold || !newName.trim()) return;
 
-    const oldItem = shoppingList.find(i => i.id === itemId);
+    const oldItem = shoppingListRef.current.find(item => item.id === itemId);
     if (!oldItem) return;
 
-    // Update local state immediately
-    setShoppingList(prev => prev.map(i => 
-      i.id === itemId ? { ...i, name: newName.trim() } : i
-    ));
+    updateShoppingList(previous =>
+      previous.map(item => item.id === itemId ? { ...item, name: newName.trim() } : item)
+    );
 
-    // Update database
     const success = await ShoppingListService.updateItem(itemId, newName, currentHousehold.id);
-    
+
     if (!success) {
-      // Revert on error
-      setShoppingList(prev => prev.map(i => 
-        i.id === itemId ? { ...i, name: oldItem.name } : i
-      ));
-      
+      updateShoppingList(previous =>
+        previous.map(item => item.id === itemId ? { ...item, name: oldItem.name } : item)
+      );
       toast({
         title: "Error",
         description: "Failed to update item",
         variant: "destructive",
       });
     }
-  }, [user, currentHousehold, shoppingList, toast]);
+  }, [user, currentHousehold, toast, updateShoppingList]);
 
   const clearAll = useCallback(async () => {
     if (!user || !currentHousehold) return;
 
-    // Clear UI immediately
-    setShoppingList([]);
-    
+    updateShoppingList([]);
     try {
       const success = await ShoppingListService.clearAll(currentHousehold.id, weekKey);
-      
+
       if (!success) {
-        // Reload on error to restore actual state
         await loadShoppingList();
         toast({
           title: "Error",
@@ -194,7 +254,6 @@ export const useShoppingList = (weekKey: string) => {
       }
     } catch (error) {
       console.error("Error clearing shopping list:", error);
-      // Reload on error to restore actual state
       await loadShoppingList();
       toast({
         title: "Error",
@@ -202,11 +261,10 @@ export const useShoppingList = (weekKey: string) => {
         variant: "destructive",
       });
     }
-  }, [user, currentHousehold, weekKey, loadShoppingList, toast]);
+  }, [user, currentHousehold, weekKey, loadShoppingList, toast, updateShoppingList]);
 
   return {
     shoppingList,
-    // Remove isLoading from return - never expose it
     toggleItemChecked,
     addCustomItem,
     updateItem,
