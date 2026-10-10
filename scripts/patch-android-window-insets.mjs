@@ -36,13 +36,11 @@ source = source.slice(0, packageEnd + 1) + "\n" + imports + source.slice(package
 
 const method = `
     /**
-     * Apply the real top/side system-bar and display-cutout inset to the
-     * native content root once, so both the app WebView and the embedded
-     * Ocado browser overlay share the same safe top edge. Keep bottom inset unchanged.
+     * Apply system-bar/cutout insets to the shared native content root.
+     * This keeps the main WebView and the embedded Ocado overlay below the
+     * real status-bar/camera-cutout area without a CSS pixel guess.
      */
-    @Override
-    public void onCreate(android.os.Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    private void installRealiMealiWindowInsets() {
         final View content = findViewById(android.R.id.content);
         if (content == null) return;
 
@@ -70,6 +68,16 @@ const method = `
     private static final String RealiMealiWindowInsets = "webview-top-inset-once";
 `;
 
+const call = `
+        installRealiMealiWindowInsets();
+`;
+
+
+// Insert the installer call into Capacitor's existing onCreate rather than
+// declaring a second onCreate override.
+const onCreate = /(@Override\\s+public void onCreate\\(android\\.os\\.Bundle savedInstanceState\\)\\s*\\{[\\s\\S]*?super\\.onCreate\\(savedInstanceState\\);)/;
+if (!onCreate.test(source)) throw new Error("Could not find existing MainActivity.onCreate(Bundle).");
+source = source.replace(onCreate, "$1" + call);
 const classEnd = source.lastIndexOf("}");
 if (classEnd < 0) throw new Error("Could not find end of MainActivity class.");
 source = source.slice(0, classEnd) + method + "\n" + source.slice(classEnd);
