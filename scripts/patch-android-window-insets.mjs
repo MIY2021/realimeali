@@ -26,10 +26,12 @@ if (source.includes("RealiMealiWindowInsets")) {
 }
 
 const imports = `
+import android.graphics.Color;
 import android.view.View;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 `;
 const packageEnd = source.indexOf(";", source.indexOf("package "));
 if (packageEnd < 0) throw new Error("Could not find package declaration in MainActivity.java.");
@@ -51,6 +53,12 @@ const method = `
         // RealiMealiWindowInsets
         final View content = findViewById(android.R.id.content);
         if (content == null) return;
+
+        // Warm RealiMeali cream behind the transparent Android status bar.
+        content.setBackgroundColor(Color.parseColor("#FFF7EF"));
+        WindowInsetsControllerCompat controller =
+            new WindowInsetsControllerCompat(getWindow(), content);
+        controller.setAppearanceLightStatusBars(true);
 
         final int initialLeft = content.getPaddingLeft();
         final int initialTop = content.getPaddingTop();
