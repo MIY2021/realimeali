@@ -237,7 +237,7 @@ export const useShoppingListGenerator = () => {
         existing.checked = existing.checked || recipeChecked;
       });
 
-      const itemsToInsert = Array.from(grouped.values()).map(item => ({
+      const itemsToInsert: any[] = Array.from(grouped.values()).map(item => ({
         household_id: currentHousehold.id,
         created_by: user.id,
         name: item.name,
