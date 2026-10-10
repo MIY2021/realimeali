@@ -168,7 +168,7 @@ public class OcadoWebViewPlugin extends Plugin {
     // Recompute its bounds from measured layout dimensions instead of display-height guesses.
     android.widget.FrameLayout.LayoutParams params = new android.widget.FrameLayout.LayoutParams(
       ViewGroup.LayoutParams.MATCH_PARENT, availableOverlayHeight(), Gravity.TOP);
-    params.topMargin = 0;
+    params.topMargin = content.getTop();
     overlayParent.addView(root, params);
     content.addOnLayoutChangeListener(overlayLayoutListener);
     overlayParent.addOnLayoutChangeListener(overlayLayoutListener);
@@ -195,7 +195,7 @@ public class OcadoWebViewPlugin extends Plugin {
       params.width = ViewGroup.LayoutParams.MATCH_PARENT;
       params.height = availableOverlayHeight();
       params.gravity = Gravity.TOP;
-      params.topMargin = 0;
+      params.topMargin = content.getTop();
       params.bottomMargin = 0;
       root.setLayoutParams(params);
     } else {
@@ -286,7 +286,7 @@ public class OcadoWebViewPlugin extends Plugin {
     View content = getBridge().getWebView();
     int availableHeightPx = content.getHeight();
     if (availableHeightPx <= 0 && overlayParent != null) availableHeightPx = overlayParent.getHeight();
-    if (availableHeightPx <= 0) return dp(280);
+    if (availableHeightPx <= 0) return 0;
 
     int safeBottomPx = 0;
     if (android.os.Build.VERSION.SDK_INT >= 23 && content.getRootWindowInsets() != null) {
@@ -300,7 +300,7 @@ public class OcadoWebViewPlugin extends Plugin {
     // Ocado intentionally covers the shopping page from the very top, including
     // the otherwise-visible week selector. Keep only the bottom app controls
     // and any required bottom system inset outside the browser.
-    return Math.max(dp(160), availableHeightPx - reservedBottomPx);
+    return Math.max(0, availableHeightPx - reservedBottomPx);
   }
 
   private int availableTopInsetPx() {
