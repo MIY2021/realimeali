@@ -101,7 +101,7 @@ public class OcadoWebViewPlugin extends Plugin {
         } else {
           updateNavigation();
           String url = currentUrl();
-          if (!url.equals(browser.getUrl())) browser.loadUrl(url);
+          if (!url.equals(browser.getUrl())) searchWithoutReload(url);
         }
         updateNavigation();
         call.resolve();
@@ -274,6 +274,31 @@ public class OcadoWebViewPlugin extends Plugin {
     previousButton.setAlpha(currentIndex > 0 ? 1f : 0.4f);
     nextButton.setEnabled(currentIndex < items.length() - 1);
     nextButton.setAlpha(currentIndex < items.length() - 1 ? 1f : 0.4f);
+  }
+
+  // Reuse Ocado's already-loaded page for ingredient changes. Updating the existing
+  // search control lets Ocado's own client-side handlers refresh results without
+  // tearing down and rebuilding its responsive layout on every item.
+  private void searchWithoutReload(String url) {
+    if (browser == null) return;
+    String query = android.net.Uri.parse(url).getQueryParameter("q");
+    if (query == null) query = "";
+    String quotedQuery = JSONObject.quote(query);
+    String script = "(function(q) {" +
+      "var selectors=['input[type=search]','input[name=q]','input[placeholder*=Search i]','input[aria-label*=Search i]'];" +
+      "var input=null; for(var i=0;i<selectors.length&&!input;i++){try{input=document.querySelector(selectors[i]);}catch(e){}}" +
+      "if(!input){window.location.href=" + JSONObject.quote(url) + ";return;}" +
+      "input.focus();" +
+      "var setter=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value');" +
+      "if(setter&&setter.set)setter.set.call(input,q);else input.value=q;" +
+      "input.dispatchEvent(new Event('input',{bubbles:true}));" +
+      "input.dispatchEvent(new Event('change',{bubbles:true}));" +
+      "input.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',code:'Enter',keyCode:13,which:13,bubbles:true}));" +
+      "input.dispatchEvent(new KeyboardEvent('keyup',{key:'Enter',code:'Enter',keyCode:13,which:13,bubbles:true}));" +
+      "var form=input.form; if(form){if(form.requestSubmit){form.requestSubmit();}else{form.dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));}}" +
+      "else {var button=input.closest('form')&&input.closest('form').querySelector('button[type=submit],button:not([type])');if(button)button.click();}" +
+    "})(" + quotedQuery + ");";
+    browser.evaluateJavascript(script, null);
   }
 
   private String currentUrl() throws Exception {
