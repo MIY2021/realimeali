@@ -99,7 +99,10 @@ export default function OcadoShoppingMode({ items, selectedItemId, onSelectItem,
     // One compact, fixed row owned by React, immediately above BottomNavigation.
     // The native WebView is browser-only and ends at the top of this row.
     return (
-      <div className="fixed inset-x-0 bottom-16 z-40 h-16 border-t border-border bg-background shadow-sm">
+      <div
+        className="fixed inset-x-0 z-40 h-16 border-t border-border bg-background shadow-sm"
+        style={{ bottom: "calc(4rem + env(safe-area-inset-bottom, 0px))" }}
+      >
         <div className="mx-auto flex h-full max-w-3xl items-center gap-1.5 px-2 sm:px-3">
           <Button type="button" variant="ghost" onClick={goPrevious} disabled={currentIndex === 0} className="h-11 w-10 shrink-0 rounded-xl p-0 touch-manipulation" aria-label="Previous shopping item">
             <ChevronLeft className="h-6 w-6" />
