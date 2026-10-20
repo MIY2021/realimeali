@@ -49,7 +49,7 @@ serve(async (req) => {
     if (contentLength > 10000) return new Response(JSON.stringify({ error: "Request is too large" }), { status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     const { recipeTitle, originalDescription, sourceUrl } = await req.json();
     if (typeof recipeTitle !== "string" || !recipeTitle.trim()) return new Response(JSON.stringify({ error: "Recipe title is required" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-    if (recipeTitle.length > 200 || (originalDescription !== undefined && (typeof originalDescription !== "string" || originalDescription.length > 3000)) || (sourceUrl !== undefined && (typeof sourceUrl !== "string" || sourceUrl.length > 2048))) {
+    if (recipeTitle.length > 200 || (originalDescription != null && (typeof originalDescription !== "string" || originalDescription.length > 3000)) || (sourceUrl != null && (typeof sourceUrl !== "string" || sourceUrl.length > 2048))) {
       return new Response(JSON.stringify({ error: "One or more fields are too long or invalid" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
@@ -63,11 +63,13 @@ serve(async (req) => {
       );
     }
 
-    console.log('Generating AI description for recipe:', recipeTitle);
+    const safeRecipeTitle = recipeTitle.trim();
+    const safeOriginalDescription = typeof originalDescription === 'string' ? originalDescription.trim().slice(0, 2000) : '';
+    console.log('Generating AI recipe description', { titleLength: safeRecipeTitle.length });
 
     // Create a prompt that generates an original description based on the recipe title
-    const prompt = `Write a compelling, original 2-3 sentence description for a recipe called "${recipeTitle}". 
-    ${originalDescription ? `Reference context: ${originalDescription.substring(0, 200)}...` : ''}
+    const prompt = `Write a compelling, original 2-3 sentence description for a recipe called "${safeRecipeTitle}". 
+    ${safeOriginalDescription ? `Reference context: ${safeOriginalDescription.substring(0, 200)}...` : ''}
     
     The description should be:
     - Completely original and copyright-safe
@@ -100,7 +102,7 @@ serve(async (req) => {
 
     if (!response.ok) {
       const errorData = await response.text();
-      console.error('OpenAI API error:', errorData);
+      console.error('OpenAI description generation failed', { status: response.status });
       throw new Error(`OpenAI API error: ${response.status}`);
     }
 
@@ -124,10 +126,10 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('Error in generate-community-description function:', error);
+    console.error('Description generation failed', { errorType: error instanceof Error ? error.name : 'UnknownError' });
     return new Response(
       JSON.stringify({ 
-        error: error.message || 'Failed to generate description',
+        error: 'Failed to generate description. Please try again later.',
         details: 'Please try again later'
       }),
       {
