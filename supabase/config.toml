@@ -1,29 +1,75 @@
 project_id = "bdjzefekuahfofwzxqxd"
 
-# AI Functions - JWT enabled to prevent API abuse and unbounded OpenAI costs
-# Users must be authenticated to use these features
-
-# No verify_jwt = false means JWT is required (secure by default)
-
-[functions.generate-missing-thumbnails]
-verify_jwt = false
-# Maintenance function - temporarily public for backfill
-
-[functions.backfill-drink-pairings]
-verify_jwt = false
-# Maintenance function - temporarily public for backfill
-
+# Default-deny posture for Edge Functions: all functions require a valid JWT.
+# Sensitive functions additionally validate the caller in their handler.
+[functions.parse-recipe-ai]
+verify_jwt = true
+[functions.generate-recipe-image]
+verify_jwt = true
 [functions.recipe-meta]
-verify_jwt = false
-# Public recipe sharing - must remain accessible without auth
-
+verify_jwt = true
+[functions.categorize-ingredient]
+verify_jwt = true
+[functions.consolidate-ingredients]
+verify_jwt = true
 [functions.send-magic-link]
+verify_jwt = true
+[functions.send-auth-email]
+verify_jwt = true
+[functions.spoonacular-api]
+verify_jwt = true
+[functions.mealdb-api]
+verify_jwt = true
+[functions.generate-community-description]
+verify_jwt = true
+[functions.search-recipe-images]
+verify_jwt = true
+[functions.send-contact-email]
+# Public contact form: strict input validation and server-side IP/email rate limits.
 verify_jwt = false
-# Authentication flow - must remain public for login to work
-
+[functions.extract-ingredient-name]
+verify_jwt = true
+[functions.realichef-chat]
+verify_jwt = true
 [functions.unsplash-search]
-verify_jwt = false
-# Image browsing - kept public for better UX
-
+verify_jwt = true
+[functions.categorize-shopping-item]
+verify_jwt = true
+[functions.estimate-fruit-veg-portions]
+verify_jwt = true
+[functions.discover-recipes]
+verify_jwt = true
+[functions.cleanup-deleted-recipes]
+verify_jwt = true
 [functions.migrate-base64-images]
-# Maintenance function - requires authentication
+verify_jwt = true
+[functions.generate-missing-thumbnails]
+verify_jwt = true
+[functions.backfill-drink-pairings]
+verify_jwt = true
+[functions.backfill-ingredient-categories]
+verify_jwt = true
+[functions.run-ingredient-migrations]
+verify_jwt = true
+[functions.backfill-cleaned-names]
+verify_jwt = true
+[functions.daily-dinner-reminder-test]
+verify_jwt = true
+[functions.daily-dinner-reminder]
+verify_jwt = true
+[functions.household-activity-notifier-test]
+verify_jwt = true
+[functions.household-activity-notifier]
+verify_jwt = true
+[functions.log-notification-event]
+verify_jwt = true
+[functions.weekly-meal-plan-kickoff-test]
+verify_jwt = true
+[functions.weekly-meal-plan-kickoff]
+verify_jwt = true
+[functions.bulk-regenerate-recipe-images]
+verify_jwt = true
+[functions.parse-recipe-text]
+verify_jwt = true
+[functions.normalize-shopping-ingredients]
+verify_jwt = true
