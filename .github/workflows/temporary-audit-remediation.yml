@@ -1,10 +1,10 @@
 name: Temporary npm audit remediation
 
 on:
-  push:
+  pull_request:
     branches: [main]
     paths:
-      - '.github/workflows/temporary-audit-remediation.yml'
+      - 'SECURITY-AUDIT-TRIGGER.md'
 
 permissions:
   contents: write
@@ -16,18 +16,23 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.head_ref }}
           fetch-depth: 0
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 22
           cache: npm
-      - run: npm ci
-      - name: Apply compatible fixes from the npm advisory database
-        run: npm audit fix || true
-      - name: Commit only dependency manifest and lockfile changes
+      - name: Regenerate compatible dependency lock updates
         shell: bash
         run: |
           set -euo pipefail
+          if [[ "$(git log -1 --pretty=%s)" == "fix: remediate npm audit vulnerabilities" ]]; then
+            echo "Dependency remediation already committed."
+            exit 0
+          fi
+          npm ci
+          npm audit fix || true
           if git diff --quiet -- package.json package-lock.json; then
             echo "npm audit fix found no compatible changes."
             npm audit --omit=dev --audit-level=high || true
@@ -37,5 +42,4 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add package.json package-lock.json
           git commit -m "fix: remediate npm audit vulnerabilities"
-          git push
-          npm audit --omit=dev --audit-level=high || true
+          git push origin "HEAD:${GITHUB_HEAD_REF}"
