@@ -39,9 +39,15 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - name: Audit production dependencies
-        run: npm audit --omit=dev --audit-level=high
       - name: Lint
         run: npm run lint
       - name: Build
         run: npm run build
+      - name: Block vulnerable production dependencies
+        run: npm audit --omit=dev --audit-level=moderate
+      - name: Report full dependency audit (including build tooling)
+        shell: bash
+        run: |
+          if ! npm audit --audit-level=high; then
+            echo "::warning::Development/build-tool dependencies still have high-severity advisories. Review the report and keep the affected toolchain out of the production dependency graph."
+          fi
