@@ -88,7 +88,7 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         model: IMAGE_MODEL,
-        prompt,
+        prompt: safePrompt,
         size: '1024x1024',
         output_format: 'webp',
       }),
@@ -98,7 +98,7 @@ serve(async (req) => {
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       const errorMessage = errorData.error?.message || response.statusText;
-      console.error('OpenAI image error:', response.status, errorData);
+      console.error('OpenAI image generation failed', { status: response.status });
 
       if (response.status === 429) {
         throw new Error('Rate limit exceeded. Please try again in a moment.');
@@ -107,7 +107,7 @@ serve(async (req) => {
         throw new Error('OpenAI API key is invalid. Please update OPENAI_API_KEY.');
       }
 
-      throw new Error(`OpenAI image error: ${response.status} ${errorMessage}`);
+      throw new Error(`OpenAI image error: ${response.status}`);
     }
 
     const data = await response.json();
@@ -174,10 +174,10 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('Error in generate-recipe-image function:', error);
+    console.error('Image generation failed', { errorType: error instanceof Error ? error.name : 'UnknownError' });
     return new Response(
       JSON.stringify({
-        error: error.message || 'Failed to generate image',
+        error: 'Failed to generate image. Please try again later.',
         details: 'Please try again later',
       }),
       {
