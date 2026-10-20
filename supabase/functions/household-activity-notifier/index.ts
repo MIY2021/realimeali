@@ -1,6 +1,15 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.8";
 
+function requireServiceRole(req: Request): Response | null {
+  const key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (!key || req.headers.get("Authorization") !== `Bearer ${key}`) {
+    return new Response(JSON.stringify({ error: "Forbidden" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  }
+  return null;
+}
+
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -18,6 +27,9 @@ const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
+
+  const serviceFailure = requireServiceRole(req);
+  if (serviceFailure) return serviceFailure;
 
   try {
     const supabase = createClient(
