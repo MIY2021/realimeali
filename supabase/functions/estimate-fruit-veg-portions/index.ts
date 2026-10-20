@@ -48,13 +48,39 @@ serve(async (req) => {
 
     // Create Supabase client
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return new Response(JSON.stringify({ error: 'Authentication required' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+    const { data: authData, error: authError } = await supabase.auth.getUser(authHeader.slice(7));
+    if (authError || !authData.user) {
+      return new Response(JSON.stringify({ error: 'Authentication required' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
 
     // Check if we already have an estimation for this recipe
     const { data: existingRecipe } = await supabase
       .from('recipes')
-      .select('fruit_veg_portions, fruit_veg_breakdown, fruit_veg_ingredient_breakdown, fruit_veg_recommendations, fruit_veg_total_grams')
+      .select('id, user_id, household_id, fruit_veg_portions, fruit_veg_breakdown, fruit_veg_ingredient_breakdown, fruit_veg_recommendations, fruit_veg_total_grams')
       .eq('id', recipeId)
       .single();
+
+    if (!existingRecipe) {
+      return new Response(JSON.stringify({ error: 'Recipe not found' }), { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+    if (existingRecipe.user_id !== authData.user.id) {
+      if (!existingRecipe.household_id) {
+        return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+      }
+      const { data: membership, error: membershipError } = await supabase
+        .from('household_members')
+        .select('user_id')
+        .eq('household_id', existingRecipe.household_id)
+        .eq('user_id', authData.user.id)
+        .maybeSingle();
+      if (membershipError || !membership) {
+        return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+      }
+    }
 
     if (existingRecipe?.fruit_veg_portions !== null) {
       return new Response(JSON.stringify({ 
