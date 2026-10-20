@@ -1,3 +1,19 @@
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.8";
+
+async function requireUser(req: Request, functionName: string, limit = 20): Promise<Response | null> {
+  const authHeader = req.headers.get("Authorization");
+  if (!authHeader || !authHeader.startsWith("Bearer ")) return new Response(JSON.stringify({ error: "Authentication required" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  const serviceUrl = Deno.env.get("SUPABASE_URL"); const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (!serviceUrl || !serviceKey) return new Response(JSON.stringify({ error: "Server configuration error" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  const client = createClient(serviceUrl, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
+  const { data: userData, error: userError } = await client.auth.getUser(authHeader.slice(7));
+  if (userError || !userData.user) return new Response(JSON.stringify({ error: "Authentication required" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  const { data: allowed, error: rateError } = await client.rpc("consume_edge_function_rate_limit", { p_user_id: userData.user.id, p_function_name: functionName, p_limit: limit, p_window_seconds: 60 });
+  if (rateError) { console.error("Rate limit check failed", { functionName, code: rateError.code }); return new Response(JSON.stringify({ error: "Temporarily unavailable" }), { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } }); }
+  if (allowed !== true) return new Response(JSON.stringify({ error: "Rate limit exceeded. Try again shortly." }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  return null;
+}
+
 
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
@@ -525,9 +541,6 @@ function parseRecipeTextSource(source: string) {
       if (isStepStart) {
         if (current) instructions.push(current.trim());
         current = cleanSourceLine(line);
-        if (current && current.split(/\s+/).length <= 8 && !/[.!?:;]$/.test(current)) {
-          current += '.';
-        }
       } else {
         const cleaned = cleanSourceLine(line);
         if (cleaned) current = current ? current + ' ' + cleaned : cleaned;
@@ -804,6 +817,10 @@ function cleanJsonResponse(content: string): string {
 }
 
 serve(async (req) => {
+  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  const authFailure = await requireUser(req, "parse-recipe-ai", 10);
+  if (authFailure) return authFailure;
+
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -832,14 +849,6 @@ serve(async (req) => {
       systemPrompt = `You are a recipe parsing assistant. Extract recipe information from website content and classify it across 6 dimensions. 
 
 CRITICAL: You MUST carefully examine ingredients for meat content. If ANY meat (beef, pork, lamb, chicken, turkey, fish, seafood, etc.) is present, the recipe CANNOT be classified as "vegetarian" or "vegan". Be extremely careful about this classification.
-
-INGREDIENT SOURCE FIDELITY:
-- Ingredients are source data, not shopping-list search terms.
-- Preserve each genuine ingredient as written, including quantities, units, preparation form and meaningful qualifiers.
-- Do NOT simplify an ingredient because it sounds more convenient for shopping. For example, "lemon wedges" may remain "lemon wedges" in the recipe, and "ground cumin" may remain "ground cumin".
-- Do NOT remove quantities such as "1/2 tsp", "2 tbsp" or "1 tin" from recipe ingredients.
-- Do NOT convert packaging words, preparation words or quantities into a different ingredient.
-- Shopping-list normalisation happens later in a separate step; your job here is faithful recipe extraction.
 
 CRITICAL: When parsing ingredients, distinguish between ingredient group headers (sections that contain multiple ingredients) and individual ingredients. Group headers can appear in various formats:
 - ALL CAPS: "MARINADE", "FLATBREADS", "SAUCE", "GARNISH", "TOPPING"
@@ -979,14 +988,6 @@ ${sourceRecipe.source}`
       systemPrompt = `You are a recipe parsing assistant with vision capabilities. Read and extract recipe information from the provided image and classify it across 6 dimensions.
 
 CRITICAL: You MUST carefully examine ingredients for meat content. If ANY meat (beef, pork, lamb, chicken, turkey, fish, seafood, etc.) is present, the recipe CANNOT be classified as "vegetarian" or "vegan". Be extremely careful about this classification.
-
-INGREDIENT SOURCE FIDELITY:
-- Ingredients are source data, not shopping-list search terms.
-- Preserve each genuine ingredient as written, including quantities, units, preparation form and meaningful qualifiers.
-- Do NOT simplify an ingredient because it sounds more convenient for shopping. For example, "lemon wedges" may remain "lemon wedges" in the recipe, and "ground cumin" may remain "ground cumin".
-- Do NOT remove quantities such as "1/2 tsp", "2 tbsp" or "1 tin" from recipe ingredients.
-- Do NOT convert packaging words, preparation words or quantities into a different ingredient.
-- Shopping-list normalisation happens later in a separate step; your job here is faithful recipe extraction.
 
 CRITICAL: When parsing ingredients, distinguish between ingredient group headers (sections that contain multiple ingredients) and individual ingredients. Group headers can appear in various formats:
 - ALL CAPS: "MARINADE", "FLATBREADS", "SAUCE", "GARNISH", "TOPPING"
