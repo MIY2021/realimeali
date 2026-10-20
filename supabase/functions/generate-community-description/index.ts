@@ -45,7 +45,13 @@ serve(async (req) => {
       throw new Error('Supabase configuration is missing');
     }
 
+    const contentLength = Number(req.headers.get("content-length") || "0");
+    if (contentLength > 10000) return new Response(JSON.stringify({ error: "Request is too large" }), { status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     const { recipeTitle, originalDescription, sourceUrl } = await req.json();
+    if (typeof recipeTitle !== "string" || !recipeTitle.trim()) return new Response(JSON.stringify({ error: "Recipe title is required" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    if (recipeTitle.length > 200 || (originalDescription !== undefined && (typeof originalDescription !== "string" || originalDescription.length > 3000)) || (sourceUrl !== undefined && (typeof sourceUrl !== "string" || sourceUrl.length > 2048))) {
+      return new Response(JSON.stringify({ error: "One or more fields are too long or invalid" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
 
     if (!recipeTitle) {
       return new Response(
