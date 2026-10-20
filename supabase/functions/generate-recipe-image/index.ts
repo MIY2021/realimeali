@@ -60,7 +60,13 @@ serve(async (req) => {
       throw new Error('Supabase configuration is missing');
     }
 
+    const contentLength = Number(req.headers.get("content-length") || "0");
+    if (contentLength > 20000) return new Response(JSON.stringify({ error: "Request is too large" }), { status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     const { prompt, isCommunityRecipe = false } = await req.json();
+    if (typeof prompt !== "string" || !prompt.trim()) return new Response(JSON.stringify({ error: "Prompt is required" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    if (prompt.length > 10000) return new Response(JSON.stringify({ error: "Prompt is too long" }), { status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    if (typeof isCommunityRecipe !== "boolean") return new Response(JSON.stringify({ error: "Invalid request" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    const safePrompt = prompt.trim();
 
     if (!prompt) {
       return new Response(
@@ -155,7 +161,7 @@ serve(async (req) => {
       JSON.stringify({
         imageUrl: urlData.publicUrl,
         fileName: fileName,
-        prompt: prompt,
+        prompt: safePrompt,
         fileSize: imageSizeBytes,
         fileSizeMB: imageSizeMB,
         model: IMAGE_MODEL,
