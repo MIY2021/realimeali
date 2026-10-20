@@ -101,6 +101,8 @@ serve(async (req) => {
   try {
     if (!openAIApiKey) throw new Error("OpenAI API key not configured");
 
+    const contentLength = Number(req.headers.get("content-length") || "0");
+    if (contentLength > 50000) return new Response(JSON.stringify({ error: "Request is too large" }), { status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     const body = await req.json();
     const ingredients = Array.isArray(body?.ingredients) ? body.ingredients : [];
 
@@ -108,7 +110,7 @@ serve(async (req) => {
       throw new Error("At least one ingredient is required");
     }
 
-    if (ingredients.length > 100) {
+    if (ingredients.length > 100 || ingredients.some((item: any) => typeof item?.text !== 'string' || item.text.length > 500)) {
       throw new Error("Too many ingredients in one request");
     }
 
@@ -164,10 +166,10 @@ serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" }
     });
   } catch (error) {
-    console.error("Shopping ingredient normalisation failed:", error);
+    console.error("Shopping ingredient normalisation failed", { errorType: error instanceof Error ? error.name : "UnknownError" });
 
     return new Response(JSON.stringify({
-      error: error instanceof Error ? error.message : "Shopping ingredient normalisation failed"
+      error: "Shopping ingredient normalisation failed. Please try again later."
     }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" }
