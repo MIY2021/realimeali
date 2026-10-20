@@ -1,7 +1,26 @@
-// Deployment test for GitHub Actions auto-deploy
+
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
+
+async function requireUser(req: Request, functionName: string, limit = 20): Promise<Response | null> {
+  const authHeader = req.headers.get("Authorization");
+  if (!authHeader || !authHeader.startsWith("Bearer ")) return new Response(JSON.stringify({ error: "Authentication required" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  const serviceUrl = Deno.env.get("SUPABASE_URL");
+  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (!serviceUrl || !serviceKey) return new Response(JSON.stringify({ error: "Server configuration error" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  const client = createClient(serviceUrl, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
+  const { data: userData, error: userError } = await client.auth.getUser(authHeader.slice(7));
+  if (userError || !userData.user) return new Response(JSON.stringify({ error: "Authentication required" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  const { data: allowed, error: rateError } = await client.rpc("consume_edge_function_rate_limit", { p_user_id: userData.user.id, p_function_name: functionName, p_limit: limit, p_window_seconds: 60 });
+  if (rateError) {
+    console.error("Rate limit check failed", { functionName, code: rateError.code });
+    return new Response(JSON.stringify({ error: "Temporarily unavailable" }), { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  }
+  if (allowed !== true) return new Response(JSON.stringify({ error: "Rate limit exceeded. Try again shortly." }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  return null;
+}
+
 
 const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
 const supabaseUrl = Deno.env.get('SUPABASE_URL');
@@ -12,14 +31,29 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+const IMAGE_MODEL = 'gpt-image-2.5-flare';
+
+function decodeBase64(base64: string): Uint8Array {
+  const binaryString = atob(base64);
+  const imageBuffer = new Uint8Array(binaryString.length);
+  for (let i = 0; i < binaryString.length; i++) {
+    imageBuffer[i] = binaryString.charCodeAt(i);
+  }
+  return imageBuffer;
+}
+
 serve(async (req) => {
+  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  const authFailure = await requireUser(req, "generate-recipe-image", 5);
+  if (authFailure) return authFailure;
+
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
     if (!openAIApiKey) {
-      throw new Error('OPENAI_API_KEY is not configured');
+      throw new Error('OpenAI API key not configured');
     }
 
     if (!supabaseUrl || !supabaseServiceKey) {
@@ -33,12 +67,12 @@ serve(async (req) => {
         JSON.stringify({ error: 'Prompt is required' }),
         {
           status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         }
       );
     }
 
-    console.log('Generating recipe image with OpenAI GPT Image 1 Mini:', prompt);
+    console.log('Generating image with OpenAI:', IMAGE_MODEL);
 
     const response = await fetch('https://api.openai.com/v1/images/generations', {
       method: 'POST',
@@ -47,46 +81,46 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-image-1-mini',
+        model: IMAGE_MODEL,
         prompt,
-        n: 1,
         size: '1024x1024',
-        quality: 'low',
         output_format: 'webp',
-        output_compression: 80,
       }),
+      signal: AbortSignal.timeout(90000),
     });
 
     if (!response.ok) {
-      const errorData = await response.text();
-      console.error('OpenAI image API error:', response.status, errorData);
+      const errorData = await response.json().catch(() => ({}));
+      const errorMessage = errorData.error?.message || response.statusText;
+      console.error('OpenAI image error:', response.status, errorData);
 
       if (response.status === 429) {
-        throw new Error('OpenAI image generation is temporarily rate limited. Please try again shortly.');
+        throw new Error('Rate limit exceeded. Please try again in a moment.');
+      }
+      if (response.status === 401) {
+        throw new Error('OpenAI API key is invalid. Please update OPENAI_API_KEY.');
       }
 
-      if (response.status === 402) {
-        throw new Error('OpenAI API billing is unavailable. Please check your API balance.');
-      }
-
-      throw new Error(`OpenAI image API error: ${response.status}`);
+      throw new Error(`OpenAI image error: ${response.status} ${errorMessage}`);
     }
 
     const data = await response.json();
+    const b64Json = data.data?.[0]?.b64_json;
+    const imageUrlFromApi = data.data?.[0]?.url;
 
-    const base64Image = data.data?.[0]?.b64_json;
+    let imageBuffer: Uint8Array;
 
-    if (!base64Image) {
+    if (b64Json) {
+      const base64Data = b64Json.includes(',') ? b64Json.split(',')[1] : b64Json;
+      imageBuffer = decodeBase64(base64Data);
+    } else if (imageUrlFromApi) {
+      const imageResponse = await fetch(imageUrlFromApi);
+      if (!imageResponse.ok) {
+        throw new Error(`Failed to download generated image: ${imageResponse.status}`);
+      }
+      imageBuffer = new Uint8Array(await imageResponse.arrayBuffer());
+    } else {
       throw new Error('No image data returned from OpenAI');
-    }
-
-    console.log('Image generated, now decoding and uploading to Supabase storage...');
-
-    const binaryString = atob(base64Image);
-    const imageBuffer = new Uint8Array(binaryString.length);
-
-    for (let i = 0; i < binaryString.length; i++) {
-      imageBuffer[i] = binaryString.charCodeAt(i);
     }
 
     const imageSizeBytes = imageBuffer.length;
@@ -120,15 +154,13 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         imageUrl: urlData.publicUrl,
-        fileName,
-        prompt,
+        fileName: fileName,
+        prompt: prompt,
         fileSize: imageSizeBytes,
         fileSizeMB: imageSizeMB,
-        model: 'gpt-image-1-mini',
-        quality: 'low',
-        size: '1024x1024',
+        model: IMAGE_MODEL,
         format: 'webp',
-        provider: 'openai'
+        provider: 'openai',
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -137,11 +169,10 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Error in generate-recipe-image function:', error);
-
     return new Response(
       JSON.stringify({
-        error: error instanceof Error ? error.message : 'Failed to generate image',
-        details: 'Please try again later'
+        error: error.message || 'Failed to generate image',
+        details: 'Please try again later',
       }),
       {
         status: 500,
