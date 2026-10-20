@@ -9,7 +9,7 @@ permissions:
 
 jobs:
   remediate:
-    if: ${{ !startsWith(github.event.head_commit.message, 'fix: remediate npm audit vulnerabilities') }}
+    if: ${{ ! startsWith(github.event.head_commit.message, 'fix: remediate npm audit vulnerabilities') }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
