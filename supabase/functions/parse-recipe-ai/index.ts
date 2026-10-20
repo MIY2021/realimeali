@@ -193,47 +193,148 @@ function extractRecipeFromStructuredData(jsonLdData: any): string | null {
 }
 
 // Enhanced website content extraction with better redirect handling
+function isBlockedIpAddress(ip: string): boolean {
+  if (ip.includes(":")) {
+    const value = ip.toLowerCase();
+    return value === "::" || value === "::1" || value.startsWith("::ffff:") ||
+      value.startsWith("fc") || value.startsWith("fd") || /^fe[89ab]/.test(value) ||
+      value.startsWith("ff") || value.startsWith("2001:db8:");
+  }
+  const parts = ip.split(".").map((part) => Number(part));
+  if (parts.length !== 4 || parts.some((part) => !Number.isInteger(part) || part < 0 || part > 255)) return true;
+  const [a, b, c] = parts;
+  return a === 0 || a === 10 || a === 127 || a >= 224 ||
+    (a === 100 && b >= 64 && b <= 127) ||
+    (a === 169 && b === 254) ||
+    (a === 172 && b >= 16 && b <= 31) ||
+    (a === 192 && b === 0 && c === 0) ||
+    (a === 192 && b === 0 && c === 2) ||
+    (a === 192 && b === 88 && c === 99) ||
+    (a === 192 && b === 168) ||
+    (a === 198 && (b === 18 || b === 19)) ||
+    (a === 198 && b === 51 && c === 100) ||
+    (a === 203 && b === 0 && c === 113);
+}
+
+async function assertPublicDns(hostname: string): Promise<void> {
+  const answers: string[] = [];
+  for (const type of ["A", "AAAA"]) {
+    const dnsUrl = "https://dns.google/resolve?name=" + encodeURIComponent(hostname) + "&type=" + type;
+    const dnsResponse = await fetch(dnsUrl, {
+      headers: { Accept: "application/dns-json" },
+      redirect: "error",
+      signal: AbortSignal.timeout(3000),
+    });
+    if (!dnsResponse.ok) throw new Error("Unable to validate website host");
+    const result = await dnsResponse.json();
+    if (result.Status !== 0 && result.Status !== 3) throw new Error("Unable to validate website host");
+    if (Array.isArray(result.Answer)) {
+      for (const answer of result.Answer) {
+        if ((answer.type === 1 || answer.type === 28) && typeof answer.data === "string") answers.push(answer.data);
+      }
+    }
+  }
+  if (answers.length === 0 || answers.some(isBlockedIpAddress)) {
+    throw new Error("Website host does not resolve exclusively to public addresses");
+  }
+}
+
+async function validatePublicHttpsUrl(rawUrl: string): Promise<URL> {
+  if (typeof rawUrl !== "string" || rawUrl.length > 2048) throw new Error("Invalid website URL");
+  let parsed: URL;
+  try { parsed = new URL(rawUrl); } catch { throw new Error("Invalid website URL"); }
+  const hostname = parsed.hostname.toLowerCase().replace(/\.$/, "");
+  if (
+    parsed.protocol !== "https:" ||
+    parsed.username !== "" ||
+    parsed.password !== "" ||
+    (parsed.port !== "" && parsed.port !== "443") ||
+    !hostname.includes(".") ||
+    hostname === "localhost" ||
+    hostname.endsWith(".localhost") ||
+    hostname.endsWith(".local") ||
+    hostname.endsWith(".internal") ||
+    hostname.endsWith(".test") ||
+    hostname.endsWith(".invalid") ||
+    hostname.endsWith(".example") ||
+    hostname.endsWith(".onion") ||
+    hostname.endsWith(".arpa") ||
+    hostname.startsWith("[") ||
+    /^\d{1,3}(?:\.\d{1,3}){3}$/.test(hostname)
+  ) {
+    throw new Error("Only public HTTPS websites are supported");
+  }
+  parsed.hostname = hostname;
+  return parsed;
+}
+
+// Fetch only public HTTPS websites; validate DNS and every redirect, and cap the response body.
 async function extractWebsiteContent(url: string, extractImages: boolean = false) {
   try {
-    console.log('Fetching website content from:', url);
-    
-    // Enhanced fetch with better redirect handling and headers
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
-        'Accept-Language': 'en-US,en;q=0.9',
-        'Accept-Encoding': 'gzip, deflate, br',
-        'Cache-Control': 'no-cache',
-        'Pragma': 'no-cache',
-        'Sec-Fetch-Dest': 'document',
-        'Sec-Fetch-Mode': 'navigate',
-        'Sec-Fetch-Site': 'none',
-        'Upgrade-Insecure-Requests': '1',
-      },
-      redirect: 'follow', // Explicitly allow redirects
-      // Increase timeout for slow websites
-      signal: AbortSignal.timeout(30000),
-    });
+    let currentUrl = await validatePublicHttpsUrl(url);
+    console.log("Fetching recipe website", { hostname: currentUrl.hostname });
+    let response: Response | null = null;
 
-    if (!response.ok) {
-      console.error(`HTTP ${response.status}: ${response.statusText}`);
-      
-      // Check for paywall/access issues
-      if (response.status === 403 || response.status === 402) {
-        throw new Error('This website requires authentication or a subscription. We cannot extract recipes from paywalled content.');
-      } else if (response.status === 401) {
-        throw new Error('This website requires authentication. We cannot extract recipes from protected content.');
+    for (let redirectCount = 0; redirectCount <= 5; redirectCount++) {
+      await assertPublicDns(currentUrl.hostname);
+      response = await fetch(currentUrl.toString(), {
+        method: "GET",
+        headers: {
+          "User-Agent": "RealiMealiRecipeImporter/1.0",
+          "Accept": "text/html,application/xhtml+xml",
+          "Accept-Language": "en-GB,en;q=0.9",
+        },
+        redirect: "manual",
+        signal: AbortSignal.timeout(15000),
+      });
+
+      if ([301, 302, 303, 307, 308].includes(response.status)) {
+        const location = response.headers.get("location");
+        if (!location || redirectCount === 5) throw new Error("Too many redirects");
+        currentUrl = await validatePublicHttpsUrl(new URL(location, currentUrl).toString());
+        continue;
       }
-      
-      throw new Error(`Failed to fetch website: ${response.status} ${response.statusText}`);
+      break;
     }
 
-    const html = await response.text();
-    console.log(`Successfully fetched ${html.length} characters from ${response.url}`);
-    
+    if (!response) throw new Error("No website response");
+    if (!response.ok) {
+      if ([401, 402, 403].includes(response.status)) throw new Error("This website requires authentication or a subscription.");
+      throw new Error("Unable to fetch the recipe website");
+    }
+
+    const contentType = (response.headers.get("content-type") || "").toLowerCase();
+    if (!contentType.includes("text/html") && !contentType.includes("application/xhtml+xml")) {
+      throw new Error("The URL did not return an HTML page");
+    }
+    const declaredLength = Number(response.headers.get("content-length") || "0");
+    if (declaredLength > 2_000_000) throw new Error("Website response is too large");
+
+    const reader = response.body?.getReader();
+    if (!reader) throw new Error("Website response is empty");
+    const chunks: Uint8Array[] = [];
+    let totalBytes = 0;
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      totalBytes += value.length;
+      if (totalBytes > 2_000_000) {
+        await reader.cancel();
+        throw new Error("Website response is too large");
+      }
+      chunks.push(value);
+    }
+    const bytes = new Uint8Array(totalBytes);
+    let offset = 0;
+    for (const chunk of chunks) {
+      bytes.set(chunk, offset);
+      offset += chunk.length;
+    }
+    const html = new TextDecoder().decode(bytes);
+    console.log("Fetched recipe website", { hostname: currentUrl.hostname, htmlLength: html.length });
+
     let extractedImages: string[] = [];
+
     let structuredRecipeContent: string | null = null;
     
     // First, try to extract recipe content from JSON-LD structured data (always do this)
@@ -260,7 +361,7 @@ async function extractWebsiteContent(url: string, extractImages: boolean = false
       console.log('Extracting images from website with enhanced patterns...');
       
       const imageUrls = new Set<string>();
-      const finalUrl = response.url; // Use the final URL after redirects
+      const finalUrl = currentUrl.toString(); // Use the final URL after redirects
       
       // Extract from JSON-LD structured data for images (if not already parsed)
       if (jsonLdMatches) {
@@ -442,7 +543,7 @@ async function extractWebsiteContent(url: string, extractImages: boolean = false
     throw new Error('This recipe website does not provide structured recipe data in a format we can reliably extract. We only extract recipes from sites that provide complete structured data (JSON-LD Schema.org Recipe format) to ensure accuracy.');
     
   } catch (error) {
-    console.error('Error extracting website content:', error);
+    console.error('Error extracting website content', { errorType: error instanceof Error ? error.name : 'UnknownError' });
     
     // Provide more specific error messages
     if (error.name === 'TimeoutError') {
@@ -452,7 +553,7 @@ async function extractWebsiteContent(url: string, extractImages: boolean = false
     } else if (error.message?.includes('fetch')) {
       throw new Error(`Network error: Could not connect to the website. This might be due to network issues or the website blocking automated requests.`);
     } else {
-      throw new Error(`Could not extract content from website: ${error.message}`);
+      throw new Error('Could not extract content from this website.');
     }
   }
 }
@@ -826,8 +927,14 @@ serve(async (req) => {
   }
 
   try {
+    const contentLength = Number(req.headers.get("content-length") || "0");
+    if (contentLength > 8_000_000) return fail("Request is too large.");
     const body = await req.json();
-    console.log('Parse recipe request:', Object.keys(body));
+    if (!body || typeof body !== "object" || Array.isArray(body)) return fail("Invalid request body.");
+    if (body.websiteUrl && (typeof body.websiteUrl !== "string" || body.websiteUrl.length > 2048)) return fail("Invalid website URL.");
+    if (body.recipeText && (typeof body.recipeText !== "string" || body.recipeText.length > 50000)) return fail("Recipe text is too long.");
+    if (body.image?.base64 && (typeof body.image.base64 !== "string" || body.image.base64.length > 7_000_000)) return fail("Image is too large.");
+    console.log("Parse recipe request", { keys: Object.keys(body) });
 
     if (!openAIApiKey) {
       throw new Error('OpenAI API key not configured');
@@ -840,7 +947,7 @@ serve(async (req) => {
     // Handle different request types
     if (body.websiteUrl) {
       // Website URL import
-      console.log('Processing website URL:', body.websiteUrl);
+      console.log('Processing website import');
       
       const extractResult = await extractWebsiteContent(body.websiteUrl, body.extractImages);
       const websiteContent = extractResult.content;
