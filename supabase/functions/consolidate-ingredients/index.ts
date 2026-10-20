@@ -48,15 +48,27 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  let parsedIngredients: IngredientInput[] = [];
   try {
-    const { ingredients } = await req.json() as { ingredients: IngredientInput[] };
+    const contentLength = Number(req.headers.get("content-length") || "0");
+    if (contentLength > 50000) return new Response(JSON.stringify({ error: "Request is too large" }), { status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    const body = await req.json();
+    const ingredients = Array.isArray(body?.ingredients) ? body.ingredients : [];
+    if (!ingredients.length || ingredients.length > 100 || ingredients.some((item: any) =>
+      !item || typeof item.name !== "string" || !item.name.trim() || item.name.length > 300 ||
+      typeof item.recipeId !== "string" || item.recipeId.length > 64 ||
+      typeof item.recipeTitle !== "string" || item.recipeTitle.length > 200
+    )) {
+      return new Response(JSON.stringify({ error: "Invalid ingredient list" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    parsedIngredients = ingredients;
 
     if (!openAIApiKey) {
       console.error('OpenAI API key not configured, falling back to basic consolidation');
       return basicConsolidation(ingredients);
     }
 
-    console.log('Consolidating ingredients with enhanced OpenAI:', ingredients.length);
+    console.log('Consolidating ingredient list', { count: ingredients.length });
 
     const prompt = `
 You are an expert at consolidating cooking ingredients with enhanced fraction handling. Parse this list and consolidate similar ingredients into single entries.
@@ -165,13 +177,13 @@ Important:
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    console.error('Error in enhanced consolidate-ingredients function:', error);
+    console.error('Ingredient consolidation failed', { errorType: error instanceof Error ? error.name : 'UnknownError' });
     
     try {
-      const { ingredients } = await req.json() as { ingredients: IngredientInput[] };
-      return basicConsolidation(ingredients);
+      if (parsedIngredients.length) return basicConsolidation(parsedIngredients);
+      throw new Error("No validated ingredients available for fallback");
     } catch (fallbackError) {
-      console.error('Fallback consolidation failed:', fallbackError);
+      console.error('Fallback consolidation failed', { errorType: fallbackError instanceof Error ? fallbackError.name : 'UnknownError' });
       return new Response(JSON.stringify({ error: 'Consolidation failed' }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
