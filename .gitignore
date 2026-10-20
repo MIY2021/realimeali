@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Environment files can contain secrets; keep only the documented template tracked.
+.env
+.env.*
+!.env.example
