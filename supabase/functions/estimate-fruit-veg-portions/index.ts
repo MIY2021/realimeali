@@ -37,9 +37,11 @@ serve(async (req) => {
   }
 
   try {
+    const contentLength = Number(req.headers.get("content-length") || "0");
+    if (contentLength > 40000) return new Response(JSON.stringify({ error: "Request is too large" }), { status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     const { recipeId, ingredients, servings = 1 } = await req.json();
 
-    if (!recipeId || !ingredients || !Array.isArray(ingredients)) {
+    if (typeof recipeId !== "string" || !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(recipeId) || !Array.isArray(ingredients) || ingredients.length === 0 || ingredients.length > 100 || !Number.isFinite(servings) || servings < 1 || servings > 100 || ingredients.some((item: unknown) => typeof item === "string" ? item.length > 500 : JSON.stringify(item).length > 1000)) {
       return new Response(JSON.stringify({ error: 'Recipe ID and ingredients array are required' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
