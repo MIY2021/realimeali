@@ -175,35 +175,41 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
       throw new Error('User must be logged in and have a household');
     }
 
+    const completedMeal = mealPlans.find(meal => meal.id === mealPlanId);
+    const previousCompletion = completedMeal?.is_completed ?? false;
+
+    // Update the UI immediately so completing a meal feels instant. If the save
+    // fails, restore the previous value instead of leaving a false success state.
+    setMealPlans(prev => prev.map(plan =>
+      plan.id === mealPlanId
+        ? { ...plan, is_completed: isCompleted }
+        : plan
+    ));
+
     try {
       await mealPlanService.updateMealPlanCompletion(mealPlanId, isCompleted, currentHousehold.id);
-      
-      // Update local state
-      setMealPlans(prev => prev.map(plan => 
-        plan.id === mealPlanId 
-          ? { ...plan, is_completed: isCompleted }
-          : plan
-      ));
 
-      // Check achievements when marking as complete
-      if (isCompleted) {
-        const completedMeal = mealPlans.find(m => m.id === mealPlanId);
-        if (completedMeal) {
-          // Check Perfect Planner achievement
-          window.dispatchEvent(new CustomEvent('checkPerfectPlanner', {
-            detail: { weekKey: completedMeal.week_key }
+      // Check achievements after the database confirms the completion change.
+      if (isCompleted && completedMeal) {
+        window.dispatchEvent(new CustomEvent('checkPerfectPlanner', {
+          detail: { weekKey: completedMeal.week_key }
+        }));
+
+        if (completedMeal.recipe_id) {
+          window.dispatchEvent(new CustomEvent('checkCookingAchievements', {
+            detail: { recipeId: completedMeal.recipe_id }
           }));
-          
-          // Check cooking achievements if meal has a recipe
-          if (completedMeal.recipe_id) {
-            window.dispatchEvent(new CustomEvent('checkCookingAchievements', { 
-              detail: { recipeId: completedMeal.recipe_id }
-            }));
-          }
         }
       }
     } catch (error) {
       console.error('Error updating meal plan completion:', error);
+
+      // Roll back only this meal; keep other planner updates intact.
+      setMealPlans(prev => prev.map(plan =>
+        plan.id === mealPlanId
+          ? { ...plan, is_completed: previousCompletion }
+          : plan
+      ));
       throw error;
     }
   }, [user?.id, currentHousehold?.id, mealPlans]);
