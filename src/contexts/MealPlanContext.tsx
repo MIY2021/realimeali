@@ -5,7 +5,7 @@ import { useRecipes } from "@/contexts/RecipesContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { useToast } from "@/hooks/use-toast";
 import { mealPlanService } from "@/services/mealPlanService";
-import { MealPlanContextType } from "./MealPlanContext/types";
+import { HouseholdMealPlan, MealPlanContextType } from "./MealPlanContext/types";
 import { useMealPlanOperations } from "./MealPlanContext/useMealPlanOperations";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -104,7 +104,21 @@ export const MealPlanProvider = ({ children }: { children: ReactNode }) => {
           table: 'household_meal_plans',
           filter: `household_id=eq.${stableHouseholdId}`,
         },
-        () => {
+        (payload) => {
+          // UPDATE events (including completion toggles) can be applied directly
+          // to local state. Refetching here sets isLoading and replaces the
+          // planner with skeletons, making a simple checkbox feel like a page reload.
+          if (payload.eventType === 'UPDATE' && payload.new) {
+            const updatedPlan = mealPlanService.transformDbToMealPlan(
+              payload.new as HouseholdMealPlan
+            );
+            setMealPlans(prev =>
+              prev.map(plan => plan.id === updatedPlan.id ? updatedPlan : plan)
+            );
+            return;
+          }
+
+          // Inserts/deletes can change the list shape, so reload for those events.
           void fetchMealPlans();
         }
       )
