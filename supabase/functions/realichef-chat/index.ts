@@ -203,6 +203,7 @@ serve(async (req) => {
       .map((item: any) => ({ role: item.role, content: item.content }));
 
     const safeText = (value: unknown, maxLength: number): string =>
+      // eslint-disable-next-line no-control-regex -- strip ASCII control characters from untrusted context text.
       typeof value === 'string' ? value.replace(/[\u0000-\u001f]/g, ' ').slice(0, maxLength) : '';
     const rawData = rawPageContext && typeof rawPageContext === 'object' ? (rawPageContext as any).data : {};
     const safePage = ['my-recipes', 'meal-planner', 'shopping-list', 'recipe-detail', 'find-recipes'].includes((rawPageContext as any)?.page)
