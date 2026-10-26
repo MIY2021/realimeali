@@ -145,9 +145,10 @@ The user is editing this recipe and wants your help. You can suggest specific ch
     case 'shopping-list':
       return `${basePersonality} You're currently helping on the Shopping List page. Focus on ingredient substitutions, budget-friendly alternatives, seasonal suggestions, and helping identify or categorize items. You can also suggest ways to optimize shopping trips.`;
     
-    case 'recipe-detail':
+    case 'recipe-detail': {
       const recipeTitle = pageContext.data?.recipeTitle || 'this recipe';
       return `${basePersonality} You're currently helping on a recipe detail page for "${recipeTitle}". Focus on ingredient substitutions, cooking techniques, serving suggestions, pairing ideas, and troubleshooting cooking issues specific to this recipe.`;
+    }
     
     case 'find-recipes':
       return `${basePersonality} You're currently helping on the Find Recipes page. Focus on helping users discover new recipes, suggesting search strategies, and providing recommendations based on their preferences, dietary needs, or available ingredients.`;
