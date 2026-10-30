@@ -111,7 +111,7 @@ serve(async (req: Request): Promise<Response> => {
     const { data: sendData, error: sendError } = await resend.emails.send({
       from: "RealiMeali <notifications@realimeali.com>",
       to: [email],
-      subject: "Test: what’s for dinner tonight?",
+      subject: `🧪 RealiMeali test – ${new Date().toLocaleString("en-GB", { timeZone: "Europe/London", day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false })}`,
       html,
     });
 
