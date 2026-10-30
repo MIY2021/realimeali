@@ -139,7 +139,7 @@ serve(async (req: Request): Promise<Response> => {
     }
 
     const { data: sendData, error: sendError } = await resend.emails.send({
-      from: "RealiMeali <notifications@reali-meali.app>",
+      from: "RealiMeali <notifications@realimeali.com>",
       to: [email],
       subject: "Test: what’s for dinner tonight?",
       html,
