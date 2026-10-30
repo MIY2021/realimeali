@@ -80,19 +80,19 @@ export const DeletedRecipesSection = () => {
 
   if (isLoading) {
     return (
-      <section className="rounded-2xl border border-[#EAE5DE] bg-white p-5 shadow-[0_8px_28px_rgba(35,45,63,0.04)] sm:p-7">
+      <section className="rounded-xl border border-[#EAE5DE] bg-white p-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#F8EEE9] text-[#B96C56]">
-            <Trash2 className="h-5 w-5" />
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#F8EEE9] text-[#B96C56]">
+            <Trash2 className="h-4 w-4" />
           </div>
           <div>
-            <h3 className="text-base font-semibold text-[#232D3F]">Your deleted recipes</h3>
+            <h3 className="text-sm font-semibold text-[#232D3F]">Recently deleted</h3>
             <p className="text-sm text-[#77766F]">Loading your recently deleted recipes…</p>
           </div>
         </div>
-        <div className="mt-6 space-y-3" aria-hidden="true">
-          <div className="h-16 animate-pulse rounded-xl bg-[#F7F5F1]" />
-          <div className="h-16 animate-pulse rounded-xl bg-[#F7F5F1]" />
+        <div className="mt-4 space-y-2" aria-hidden="true">
+          <div className="h-12 animate-pulse rounded-lg bg-[#F7F5F1]" />
+          <div className="h-12 animate-pulse rounded-lg bg-[#F7F5F1]" />
         </div>
       </section>
     );
@@ -100,33 +100,28 @@ export const DeletedRecipesSection = () => {
 
   return (
     <>
-      <section className="overflow-hidden rounded-2xl border border-[#EAE5DE] bg-white shadow-[0_8px_28px_rgba(35,45,63,0.04)]">
-        <div className="flex items-center gap-3 border-b border-[#F0ECE6] px-5 py-5 sm:px-7">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#F8EEE9] text-[#B96C56]">
+      <section className="overflow-hidden rounded-xl border border-[#EAE5DE] bg-white">
+        <div className="flex items-center gap-2.5 border-b border-[#F0ECE6] px-4 py-3">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#F8EEE9] text-[#B96C56]">
             <Trash2 className="h-5 w-5" />
           </div>
           <div className="min-w-0">
-            <h3 className="text-base font-semibold text-[#232D3F]">Your deleted recipes</h3>
-            <p className="text-sm leading-5 text-[#77766F]">
-              Recipes are kept here for 30 days before they are permanently removed.
+            <h3 className="text-sm font-semibold text-[#232D3F]">Recently deleted</h3>
+            <p className="text-xs leading-5 text-[#77766F]">
+              Restore deleted recipes for up to 30 days.
             </p>
           </div>
         </div>
 
-        <div className="p-5 sm:p-7">
+        <div className="p-4">
           {deletedRecipes.length === 0 ? (
-            <div className="flex flex-col items-center px-4 py-10 text-center">
-              <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#F7F5F1] text-[#96928B]">
-                <Trash2 className="h-6 w-6" />
-              </div>
-              <p className="font-medium text-[#343944]">Your bin is empty</p>
-              <p className="mt-1 max-w-sm text-sm leading-6 text-[#77766F]">
-                Recipes you delete will appear here, where you can restore them for up to 30 days.
-              </p>
+            <div className="px-1 py-6">
+              <p className="text-sm font-medium text-[#343944]">No deleted recipes</p>
+              <p className="mt-0.5 text-xs text-[#85827B]">Anything you delete will appear here for 30 days.</p>
             </div>
           ) : (
             <div>
-              <div className="mb-4 flex items-start gap-2.5 rounded-xl bg-[#FBF8F2] px-3.5 py-3 text-sm text-[#76664B]">
+              <div className="mb-3 flex items-start gap-2 rounded-lg bg-[#FBF8F2] px-3 py-2 text-xs text-[#76664B]">
                 <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-[#A88A55]" />
                 <p>Recipes are permanently removed 30 days after deletion. Restore anything you want to keep.</p>
               </div>
@@ -142,7 +137,7 @@ export const DeletedRecipesSection = () => {
                       key={recipe.id}
                       className={index < deletedRecipes.length - 1 ? "border-b border-[#F0ECE6]" : ""}
                     >
-                      <div className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="flex flex-col gap-2 py-3 sm:flex-row sm:items-center sm:justify-between">
                         <div className="min-w-0 space-y-1">
                           <h4 className="truncate font-medium text-[#343944]">{recipe.title}</h4>
                           <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-[#85827B]">
@@ -165,22 +160,22 @@ export const DeletedRecipesSection = () => {
                               setSelectedRecipe(recipe);
                               setShowRestoreDialog(true);
                             }}
-                            className="rounded-lg px-3"
+                            className="h-8 rounded-md px-2.5 text-xs"
                           >
                             <RotateCcw className="h-4 w-4" />
                             Restore
                           </Button>
                           <Button
-                            variant="destructive"
+                            variant="ghost"
                             size="sm"
                             onClick={() => {
                               setSelectedRecipe(recipe);
                               setShowPermanentDeleteDialog(true);
                             }}
-                            className="rounded-lg px-3"
+                            className="h-8 rounded-md px-2.5 text-xs text-destructive hover:text-destructive"
                           >
                             <Trash2 className="h-4 w-4" />
-                            Delete forever
+                            Delete permanently
                           </Button>
                         </div>
                       </div>
