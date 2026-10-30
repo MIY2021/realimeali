@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Trash2, RotateCcw, Calendar, AlertCircle } from "lucide-react";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
@@ -76,7 +75,7 @@ export const DeletedRecipesSection = () => {
   };
 
   const formatDeletedDate = (deletedAt: string) => {
-    return new Date(deletedAt).toLocaleDateString();
+    return new Date(deletedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
   };
 
   if (isLoading) {
