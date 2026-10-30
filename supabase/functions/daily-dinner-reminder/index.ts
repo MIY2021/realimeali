@@ -201,7 +201,7 @@ const handler = async (req: Request): Promise<Response> => {
 
         const html = createDinnerReminderTemplate(full_name, appUrl);
         const emailResponse = await resend.emails.send({
-          from: "RealiMeali <notifications@reali-meali.app>",
+          from: "RealiMeali <notifications@realimeali.com>",
           to: [email],
           subject: "What’s for dinner tonight?",
           html,
