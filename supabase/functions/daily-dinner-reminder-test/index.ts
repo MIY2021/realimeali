@@ -21,7 +21,8 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+const resendApiKey = Deno.env.get("RESEND_API_KEY");
+const resend = resendApiKey ? new Resend(resendApiKey) : null;
 
 interface ProfileRow {
   email: string | null;
@@ -129,14 +130,33 @@ serve(async (req: Request): Promise<Response> => {
     const appUrl = Deno.env.get("APP_URL") ?? "http://localhost:3000";
     const html = createDinnerReminderTestTemplate(full_name, appUrl);
 
-    await resend.emails.send({
+    if (!resend) {
+      console.error("daily-dinner-reminder-test: RESEND_API_KEY is not configured");
+      return new Response(JSON.stringify({ error: "Email service is not configured (missing RESEND_API_KEY)." }), {
+        status: 500,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
+    const { data: sendData, error: sendError } = await resend.emails.send({
       from: "RealiMeali <notifications@reali-meali.app>",
       to: [email],
       subject: "Test: what’s for dinner tonight?",
       html,
     });
 
-    return new Response(JSON.stringify({ ok: true }), {
+    if (sendError || !sendData?.id) {
+      console.error("daily-dinner-reminder-test: Resend rejected email", sendError);
+      return new Response(JSON.stringify({
+        error: sendError?.message ?? "Email provider did not confirm acceptance.",
+      }), {
+        status: 502,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
+    console.log("daily-dinner-reminder-test: email accepted by Resend", sendData.id);
+    return new Response(JSON.stringify({ ok: true, emailId: sendData.id }), {
       status: 200,
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
