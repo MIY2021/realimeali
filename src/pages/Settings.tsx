@@ -13,7 +13,6 @@ import {
   Settings as SettingsIcon,
   User,
   Bell,
-  Trash2,
   Upload,
   Shuffle,
   Shield,
@@ -69,6 +68,9 @@ export default function Settings() {
   const [isRestoringGooglePhoto, setIsRestoringGooglePhoto] = useState(false);
   const [isApplyingPreset, setIsApplyingPreset] = useState(false);
   const [profilePicDialogOpen, setProfilePicDialogOpen] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
 
   const {
     settings: notificationSettings,
@@ -77,7 +79,7 @@ export default function Settings() {
     updateSettings: updateNotificationSettings,
   } = useNotificationSettings();
 
-  type SettingsSectionId = "profile" | "notifications" | "privacySecurity" | "recipesData" | "account";
+  type SettingsSectionId = "profile" | "notifications" | "privacySecurity" | "recipesData";
 
   interface SettingsSection {
     id: SettingsSectionId;
@@ -190,6 +192,46 @@ export default function Settings() {
       });
     } finally {
       setIsUpdatingProfile(false);
+    }
+  };
+
+  const handleUpdatePassword = async () => {
+    if (newPassword.length < 8) {
+      toast({
+        title: "Password too short",
+        description: "Your new password must be at least 8 characters long.",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast({
+        title: "Passwords do not match",
+        description: "Please check both password fields and try again.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsUpdatingPassword(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) throw error;
+      setNewPassword("");
+      setConfirmPassword("");
+      toast({
+        title: "Password updated",
+        description: "Your password has been changed successfully.",
+      });
+    } catch (error) {
+      console.error("Error updating password:", error);
+      toast({
+        title: "Could not update password",
+        description: error instanceof Error ? error.message : "Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUpdatingPassword(false);
     }
   };
 
@@ -347,12 +389,6 @@ export default function Settings() {
       label: "Recipes & Data",
       description: "Restore recipes and manage your data.",
       icon: Database,
-    },
-    {
-      id: "account",
-      label: "Account",
-      description: "Handle account-level actions and deletion.",
-      icon: Trash2,
     },
   ];
 
@@ -944,41 +980,40 @@ export default function Settings() {
                 Privacy & Security
               </CardTitle>
               <CardDescription>
-                Manage your privacy settings and account security.
+                Change your account password.
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label htmlFor="profileVisibility">Public Profile</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Allow others to find and view your profile
-                  </p>
-                </div>
-                <Switch id="profileVisibility" />
-              </div>
-              <Separator />
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label htmlFor="recipeSharing">Recipe Sharing</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Allow sharing of your recipes with the community
-                  </p>
-                </div>
-                <Switch id="recipeSharing" />
-              </div>
-              <Separator />
+            <CardContent className="max-w-xl space-y-4">
               <div className="space-y-2">
-                <Label>Change Password</Label>
-                <div className="grid gap-2">
-                  <Input type="password" placeholder="Current password" />
-                  <Input type="password" placeholder="New password" />
-                  <Input type="password" placeholder="Confirm new password" />
-                </div>
-                <Button variant="outline" className="w-full sm:w-auto">
-                  Update Password
-                </Button>
+                <Label htmlFor="newPassword">New password</Label>
+                <Input
+                  id="newPassword"
+                  type="password"
+                  autoComplete="new-password"
+                  value={newPassword}
+                  onChange={(event) => setNewPassword(event.target.value)}
+                  placeholder="At least 8 characters"
+                />
               </div>
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">Confirm new password</Label>
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  autoComplete="new-password"
+                  value={confirmPassword}
+                  onChange={(event) => setConfirmPassword(event.target.value)}
+                  placeholder="Enter your new password again"
+                />
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleUpdatePassword}
+                disabled={isUpdatingPassword || !newPassword || !confirmPassword}
+              >
+                {isUpdatingPassword ? "Updating..." : "Update Password"}
+              </Button>
             </CardContent>
           </Card>
         );
@@ -997,39 +1032,12 @@ export default function Settings() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-sm text-muted-foreground">
-                  View and restore recipes you&apos;ve recently deleted, or export a copy of your data.
+                  View and restore recipes you&apos;ve recently deleted.
                 </p>
-                <Button variant="outline" className="w-full sm:w-auto">
-                  Export My Data
-                </Button>
               </CardContent>
             </Card>
             <DeletedRecipesSection />
           </div>
-        );
-      case "account":
-        return (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Trash2 className="h-5 w-5" />
-                Account Management
-              </CardTitle>
-              <CardDescription>
-                Manage your account deletion options.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-3 sm:grid-cols-2">
-                <Button variant="outline">Export My Data</Button>
-                <Button variant="destructive">Delete Account</Button>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Deleting your account will permanently remove all your data, including recipes,
-                meal plans, and shopping lists. This action cannot be undone.
-              </p>
-            </CardContent>
-          </Card>
         );
       default:
         return null;
