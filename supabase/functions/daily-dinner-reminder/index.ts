@@ -32,56 +32,26 @@ interface ProfileRow {
   full_name: string | null;
 }
 
-const createDinnerReminderTemplate = (fullName: string | null, appUrl: string) => `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>What&apos;s for dinner tonight?</title>
-</head>
-<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8f9fa;">
-  <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff;">
-    <div style="background: linear-gradient(135deg, #fdc8a4 0%, #f4a775 100%); padding: 32px 20px; text-align: center;">
-      <div style="display: inline-flex; align-items: center; gap: 10px; color: #1e3a8a; font-size: 24px; font-weight: 700;">
-        <span>🍽️</span>
-        <span>RealiMeali</span>
-      </div>
-      <p style="color: #1e3a8a; margin: 8px 0 0 0; font-size: 15px;">A gentle nudge for tonight&apos;s dinner</p>
-    </div>
-
-    <div style="padding: 32px 20px 28px;">
-      <p style="color: #111827; font-size: 16px; line-height: 1.6; margin: 0 0 16px 0;">
-        Hi${fullName ? ` ${fullName}` : ""},
-      </p>
-      <p style="color: #4b5563; font-size: 15px; line-height: 1.7; margin: 0 0 18px 0;">
-        It&apos;s a good time to decide what you&apos;d like for <strong>dinner tonight</strong>.
-      </p>
-      <p style="color: #4b5563; font-size: 15px; line-height: 1.7; margin: 0 0 18px 0;">
-        Open RealiMeali to look over your meals for this week, choose what you fancy for tonight, or add something last‑minute if plans have changed.
-      </p>
-
-      <div style="text-align: center; margin: 28px 0 8px;">
-        <a href="${appUrl}"
-           style="display: inline-block; background: linear-gradient(135deg, #d97706 0%, #ea580c 100%); color: #ffffff; text-decoration: none; padding: 14px 28px; border-radius: 999px; font-weight: 600; font-size: 15px; box-shadow: 0 4px 10px rgba(217, 119, 6, 0.35);">
-          Decide tonight&apos;s dinner
-        </a>
-      </div>
-
-      <p style="color: #9ca3af; font-size: 12px; line-height: 1.5; margin: 18px 0 0 0; text-align: center;">
-        You can change when we remind you in <strong>Settings → Notifications</strong>.
-      </p>
-    </div>
-
-    <div style="background-color: #f9fafb; padding: 20px; text-align: center; border-top: 1px solid #e5e7eb;">
-      <p style="color: #9ca3af; font-size: 12px; margin: 0;">
-        © ${new Date().getFullYear()} RealiMeali.
-      </p>
-    </div>
-  </div>
-</body>
-</html>
-`;
+const createDinnerReminderTemplate = (fullName: string | null, appUrl: string) => {
+  const mealPlannerUrl = `${appUrl.replace(/\/$/, "")}/meal-planner`;
+  const greeting = fullName ? ` ${fullName}` : "";
+  return `<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="light"><title>What's for dinner tonight?</title></head>
+<body style="margin:0;padding:0;background:#f5f3ef;font-family:Arial,Helvetica,sans-serif;color:#243746;">
+<div style="display:none;max-height:0;overflow:hidden;opacity:0;">A little nudge to make tonight's dinner easier.</div>
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#f5f3ef;"><tr><td align="center" style="padding:30px 14px;">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:600px;background:#fff;border-radius:16px;overflow:hidden;">
+<tr><td align="center" style="padding:30px 24px;background:#243746;color:#fff;"><div style="font-size:28px;">🍽️</div><div style="padding-top:8px;font-size:24px;font-weight:700;">RealiMeali</div><div style="padding-top:7px;font-size:12px;letter-spacing:1.4px;text-transform:uppercase;color:#f4b183;">Good food. Less faff.</div></td></tr>
+<tr><td style="padding:34px 32px 28px;"><h1 style="margin:0 0 14px;font-size:29px;line-height:1.2;color:#243746;">What's cooking tonight?</h1>
+<p style="margin:0 0 16px;font-size:16px;line-height:1.65;color:#485563;">Hi${greeting},</p>
+<p style="margin:0 0 14px;font-size:15px;line-height:1.75;color:#485563;">It's a good time to get tonight's dinner sorted. Take a quick look at your meal plan and see what's on the menu.</p>
+<p style="margin:0 0 24px;font-size:15px;line-height:1.75;color:#485563;">Fancy a change? Pick another favourite, find a new recipe or update your plan. However tonight looks, RealiMeali can help keep things simple.</p>
+<table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center" style="margin:0 auto 24px;"><tr><td align="center" bgcolor="#e8753d" style="border-radius:28px;"><a href="${mealPlannerUrl}" style="display:inline-block;padding:15px 30px;color:#fff;text-decoration:none;font-size:15px;font-weight:700;">Open meal planner&nbsp; →</a></td></tr></table>
+<p style="margin:0;text-align:center;font-size:12px;line-height:1.6;color:#87919a;">Change your reminder time or days in <strong>Settings → Notifications</strong>.</p></td></tr>
+<tr><td align="center" style="padding:22px 28px;background:#f8f7f4;border-top:1px solid #eeeae3;"><p style="margin:0 0 6px;font-size:12px;color:#697681;">Making mealtimes that bit easier.</p><p style="margin:0;font-size:11px;color:#9aa2a9;">You're receiving this because dinner reminders are enabled in your RealiMeali settings.</p><p style="margin:12px 0 0;font-size:11px;color:#9aa2a9;">© ${new Date().getFullYear()} RealiMeali</p></td></tr>
+</table></td></tr></table></body></html>`;
+};
 
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
