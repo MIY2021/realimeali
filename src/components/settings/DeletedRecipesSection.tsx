@@ -1,8 +1,6 @@
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { Trash2, RotateCcw, Calendar, AlertCircle } from "lucide-react";
 import { useRecipes } from "@/contexts/RecipesContext";
 import { useHousehold } from "@/contexts/HouseholdContext";
@@ -83,86 +81,95 @@ export const DeletedRecipesSection = () => {
 
   if (isLoading) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+      <section className="rounded-2xl border border-[#EAE5DE] bg-white p-5 shadow-[0_8px_28px_rgba(35,45,63,0.04)] sm:p-7">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#F8EEE9] text-[#B96C56]">
             <Trash2 className="h-5 w-5" />
-            Deleted Recipes
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground">Loading deleted recipes...</p>
-        </CardContent>
-      </Card>
+          </div>
+          <div>
+            <h3 className="text-base font-semibold text-[#232D3F]">Your deleted recipes</h3>
+            <p className="text-sm text-[#77766F]">Loading your recently deleted recipes…</p>
+          </div>
+        </div>
+        <div className="mt-6 space-y-3" aria-hidden="true">
+          <div className="h-16 animate-pulse rounded-xl bg-[#F7F5F1]" />
+          <div className="h-16 animate-pulse rounded-xl bg-[#F7F5F1]" />
+        </div>
+      </section>
     );
   }
 
   return (
     <>
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+      <section className="overflow-hidden rounded-2xl border border-[#EAE5DE] bg-white shadow-[0_8px_28px_rgba(35,45,63,0.04)]">
+        <div className="flex items-center gap-3 border-b border-[#F0ECE6] px-5 py-5 sm:px-7">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#F8EEE9] text-[#B96C56]">
             <Trash2 className="h-5 w-5" />
-            Deleted Recipes
-          </CardTitle>
-          <CardDescription>
-            Manage recipes you've deleted. Recipes are automatically removed after 30 days.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
+          </div>
+          <div className="min-w-0">
+            <h3 className="text-base font-semibold text-[#232D3F]">Your deleted recipes</h3>
+            <p className="text-sm leading-5 text-[#77766F]">
+              Recipes are kept here for 30 days before they are permanently removed.
+            </p>
+          </div>
+        </div>
+
+        <div className="p-5 sm:p-7">
           {deletedRecipes.length === 0 ? (
-            <div className="text-center py-8 px-4">
-              <Trash2 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <p className="text-muted-foreground mb-2">No deleted recipes found.</p>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                Deleted recipes will appear here and can be restored within 30 days.
+            <div className="flex flex-col items-center px-4 py-10 text-center">
+              <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#F7F5F1] text-[#96928B]">
+                <Trash2 className="h-6 w-6" />
+              </div>
+              <p className="font-medium text-[#343944]">Your bin is empty</p>
+              <p className="mt-1 max-w-sm text-sm leading-6 text-[#77766F]">
+                Recipes you delete will appear here, where you can restore them for up to 30 days.
               </p>
             </div>
           ) : (
-            <>
-              <div className="flex items-start gap-3 p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
-                <AlertCircle className="h-4 w-4 text-amber-600 flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-amber-800 dark:text-amber-200 leading-relaxed">
-                  Recipes are automatically permanently deleted after 30 days.
-                </p>
+            <div>
+              <div className="mb-4 flex items-start gap-2.5 rounded-xl bg-[#FBF8F2] px-3.5 py-3 text-sm text-[#76664B]">
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-[#A88A55]" />
+                <p>Recipes are permanently removed 30 days after deletion. Restore anything you want to keep.</p>
               </div>
-              
-              <div className="space-y-3">
+
+              <div>
                 {deletedRecipes.map((recipe, index) => {
-                  const daysRemaining = getDaysRemaining((recipe as any).deleted_at);
+                  const deletedAt = (recipe as any).deleted_at as string;
+                  const daysRemaining = getDaysRemaining(deletedAt);
                   const isExpiringSoon = daysRemaining <= 7;
-                  
+
                   return (
-                    <div key={recipe.id}>
-                      <div className="p-4 rounded-lg border bg-card space-y-3">
-                        <div className="space-y-2">
-                          <h4 className="font-medium text-base leading-tight">{recipe.title}</h4>
-                          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 text-sm text-muted-foreground">
-                            <div className="flex items-center gap-1">
-                              <Calendar className="h-3 w-3 flex-shrink-0" />
-                              <span>Deleted {formatDeletedDate((recipe as any).deleted_at)}</span>
-                            </div>
-                            <Badge 
-                              variant={isExpiringSoon ? "destructive" : "secondary"}
-                              className="text-xs w-fit"
-                            >
-                              {daysRemaining} days left
-                            </Badge>
+                    <div
+                      key={recipe.id}
+                      className={index < deletedRecipes.length - 1 ? "border-b border-[#F0ECE6]" : ""}
+                    >
+                      <div className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="min-w-0 space-y-1">
+                          <h4 className="truncate font-medium text-[#343944]">{recipe.title}</h4>
+                          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-[#85827B]">
+                            <span className="inline-flex items-center gap-1.5">
+                              <Calendar className="h-3.5 w-3.5" />
+                              Deleted {formatDeletedDate(deletedAt)}
+                            </span>
+                            <span aria-hidden="true">·</span>
+                            <span className={isExpiringSoon ? "font-medium text-[#B45F4D]" : ""}>
+                              {daysRemaining} {daysRemaining === 1 ? "day" : "days"} remaining
+                            </span>
                           </div>
                         </div>
-                        
-                        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+
+                        <div className="flex shrink-0 flex-wrap items-center gap-2">
                           <Button
-                            variant="outline"
+                            variant="secondary"
                             size="sm"
                             onClick={() => {
                               setSelectedRecipe(recipe);
                               setShowRestoreDialog(true);
                             }}
-                            className="flex items-center justify-center gap-2 flex-1 sm:flex-none"
+                            className="rounded-lg px-3"
                           >
                             <RotateCcw className="h-4 w-4" />
-                            <span>Restore</span>
+                            Restore
                           </Button>
                           <Button
                             variant="destructive"
@@ -171,22 +178,21 @@ export const DeletedRecipesSection = () => {
                               setSelectedRecipe(recipe);
                               setShowPermanentDeleteDialog(true);
                             }}
-                            className="flex items-center justify-center gap-2 flex-1 sm:flex-none"
+                            className="rounded-lg px-3"
                           >
                             <Trash2 className="h-4 w-4" />
-                            <span>Delete Forever</span>
+                            Delete forever
                           </Button>
                         </div>
                       </div>
-                      {index < deletedRecipes.length - 1 && <Separator className="my-3" />}
                     </div>
                   );
                 })}
               </div>
-            </>
+            </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </section>
 
       <RestoreRecipeDialog
         open={showRestoreDialog}
