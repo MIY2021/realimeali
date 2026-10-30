@@ -8,6 +8,7 @@ export type NotificationSettings = {
   daily_dinner_time: string;
   daily_dinner_days_of_week: number[];
   timezone: string;
+  timezone: string;
   weekly_kickoff_push_enabled: boolean;
   weekly_kickoff_email_enabled: boolean;
   weekly_kickoff_day: number;
@@ -26,11 +27,20 @@ const getBrowserTimezone = () => {
   }
 };
 
+const getBrowserTimezone = () => {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || "Europe/London";
+  } catch {
+    return "Europe/London";
+  }
+};
+
 const DEFAULT_SETTINGS: NotificationSettings = {
   daily_dinner_push_enabled: true,
   daily_dinner_email_enabled: false,
   daily_dinner_time: "17:00",
   daily_dinner_days_of_week: [1, 2, 3, 4, 5],
+  timezone: getBrowserTimezone(),
   timezone: getBrowserTimezone(),
   weekly_kickoff_push_enabled: false,
   weekly_kickoff_email_enabled: true,
@@ -81,6 +91,7 @@ export function useNotificationSettings() {
             ? (row.daily_dinner_days_of_week as number[])
             : DEFAULT_SETTINGS.daily_dinner_days_of_week,
           timezone: String(row.timezone ?? getBrowserTimezone()),
+          timezone: String(row.timezone ?? getBrowserTimezone()),
           weekly_kickoff_push_enabled: Boolean(row.weekly_kickoff_push_enabled),
           weekly_kickoff_email_enabled: Boolean(row.weekly_kickoff_email_enabled),
           weekly_kickoff_day: Number(row.weekly_kickoff_day ?? DEFAULT_SETTINGS.weekly_kickoff_day),
@@ -119,6 +130,7 @@ export function useNotificationSettings() {
       daily_dinner_email_enabled: next.daily_dinner_email_enabled,
       daily_dinner_time: next.daily_dinner_time,
       daily_dinner_days_of_week: next.daily_dinner_days_of_week,
+      timezone: next.timezone,
       timezone: next.timezone,
       weekly_kickoff_push_enabled: next.weekly_kickoff_push_enabled,
       weekly_kickoff_email_enabled: next.weekly_kickoff_email_enabled,
