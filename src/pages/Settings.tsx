@@ -10,10 +10,8 @@ import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { EnhancedAvatar } from "@/components/ui/enhanced-avatar";
 import {
-  Settings as SettingsIcon,
   User,
   Bell,
-  Trash2,
   Upload,
   Shuffle,
   Shield,
@@ -69,6 +67,9 @@ export default function Settings() {
   const [isRestoringGooglePhoto, setIsRestoringGooglePhoto] = useState(false);
   const [isApplyingPreset, setIsApplyingPreset] = useState(false);
   const [profilePicDialogOpen, setProfilePicDialogOpen] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
 
   const {
     settings: notificationSettings,
@@ -77,7 +78,7 @@ export default function Settings() {
     updateSettings: updateNotificationSettings,
   } = useNotificationSettings();
 
-  type SettingsSectionId = "profile" | "notifications" | "privacySecurity" | "recipesData" | "account";
+  type SettingsSectionId = "profile" | "notifications" | "privacySecurity" | "recipesData";
 
   interface SettingsSection {
     id: SettingsSectionId;
@@ -190,6 +191,46 @@ export default function Settings() {
       });
     } finally {
       setIsUpdatingProfile(false);
+    }
+  };
+
+  const handleUpdatePassword = async () => {
+    if (newPassword.length < 8) {
+      toast({
+        title: "Password too short",
+        description: "Your new password must be at least 8 characters long.",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast({
+        title: "Passwords do not match",
+        description: "Please check both password fields and try again.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsUpdatingPassword(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) throw error;
+      setNewPassword("");
+      setConfirmPassword("");
+      toast({
+        title: "Password updated",
+        description: "Your password has been changed successfully.",
+      });
+    } catch (error) {
+      console.error("Error updating password:", error);
+      toast({
+        title: "Could not update password",
+        description: error instanceof Error ? error.message : "Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUpdatingPassword(false);
     }
   };
 
@@ -345,14 +386,8 @@ export default function Settings() {
     {
       id: "recipesData",
       label: "Recipes & Data",
-      description: "Restore recipes and manage your data.",
+      description: "Restore recently deleted recipes.",
       icon: Database,
-    },
-    {
-      id: "account",
-      label: "Account",
-      description: "Handle account-level actions and deletion.",
-      icon: Trash2,
     },
   ];
 
@@ -420,17 +455,17 @@ export default function Settings() {
           isRestoringGooglePhoto;
 
         return (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <User className="h-5 w-5" />
+          <Card className="overflow-hidden rounded-2xl border border-[#EAE5DE] bg-white shadow-[0_8px_28px_rgba(35,45,63,0.045)]">
+            <CardHeader className="border-b border-[#F0ECE6] px-5 py-5 sm:px-7 sm:py-6">
+              <CardTitle className="flex items-center gap-2 text-xl font-semibold tracking-tight text-[#232D3F] sm:text-[22px]">
+                <User className="h-4 w-4 text-[#B96C56]" />
                 Profile Settings
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="mt-1 text-sm leading-6 text-[#77766F]">
                 Update your personal information and profile picture.
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-7 p-5 sm:p-7">
               {isProfileLoading && !profileData ? (
                 <p className="text-sm text-muted-foreground">Loading profile…</p>
               ) : null}
@@ -440,12 +475,12 @@ export default function Settings() {
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
                   {/* self-start: column flex defaults to stretch — without this, rounded-full becomes a full-width pill */}
                   <div
-                    className="shrink-0 self-start rounded-full bg-gradient-to-br from-secondary/30 via-[#F3EDE4] to-terracotta/15 p-1 shadow-md ring-2 ring-[#C9BFB0]/45"
+                    className="shrink-0 self-start rounded-full bg-[#F7F1E9] p-1 ring-1 ring-[#EAE2D8]"
                     aria-hidden
                   >
                     <EnhancedAvatar
                       size="lg"
-                      className="h-20 w-20 ring-[3px] ring-white"
+                      className="h-20 w-20 ring-2 ring-white"
                       src={displayUrl ?? undefined}
                       avatarType={avatarTypeUi}
                       avatarData={selectedFruit}
@@ -478,7 +513,7 @@ export default function Settings() {
                         type="button"
                         variant="outline"
                         size="sm"
-                        className="flex w-full max-w-xs items-center justify-center gap-2 rounded-[12px] border-[#E3E3E3] bg-[#FAF9F6] font-medium hover:bg-muted/80 sm:w-auto"
+                        className="flex w-full max-w-xs items-center justify-center gap-2 rounded-xl border-[#E5DFD7] bg-white font-medium text-[#343944] hover:bg-[#FAF8F5] sm:w-auto"
                         disabled={!user || isProfileLoading}
                         onClick={() => setProfilePicDialogOpen(true)}
                       >
@@ -598,6 +633,7 @@ export default function Settings() {
                 <div className="space-y-2">
                   <Label htmlFor="firstName">First Name</Label>
                   <Input
+                    className="h-11 rounded-xl border-[#E5DFD7] bg-[#FCFBF9] px-3.5 focus-visible:bg-white"
                     id="firstName"
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
@@ -607,6 +643,7 @@ export default function Settings() {
                 <div className="space-y-2">
                   <Label htmlFor="lastName">Last Name</Label>
                   <Input
+                    className="h-11 rounded-xl border-[#E5DFD7] bg-[#FCFBF9] px-3.5 focus-visible:bg-white"
                     id="lastName"
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
@@ -618,6 +655,7 @@ export default function Settings() {
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
+                  className="h-11 rounded-xl border-[#E5DFD7] bg-[#FCFBF9] px-3.5 focus-visible:bg-white"
                   id="email"
                   type="email"
                   value={email}
@@ -629,9 +667,9 @@ export default function Settings() {
               <Button
                 onClick={handleUpdateProfile}
                 disabled={isUpdatingProfile || (isProfileLoading && !profileData)}
-                className="w-full sm:w-auto"
+                className="w-full rounded-xl px-5 shadow-sm sm:w-auto"
               >
-                {isUpdatingProfile ? "Saving..." : "Save Changes"}
+                {isUpdatingProfile ? "Saving..." : "Save changes"}
               </Button>
             </CardContent>
           </Card>
@@ -639,22 +677,17 @@ export default function Settings() {
       }
       case "notifications":
         return (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Bell className="h-5 w-5" />
-                Notification Settings
+          <Card className="overflow-hidden rounded-2xl border border-[#EAE5DE] bg-white shadow-[0_8px_28px_rgba(35,45,63,0.045)]">
+            <CardHeader className="border-b border-[#F0ECE6] px-5 py-5 sm:px-7 sm:py-6">
+              <CardTitle className="flex items-center gap-2 text-xl font-semibold tracking-tight text-[#232D3F] sm:text-[22px]">
+                <Bell className="h-4 w-4 text-[#B96C56]" />
+                Notifications
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="mt-1 text-sm leading-6 text-[#77766F]">
                 Choose what notifications you'd like to receive.
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-8">
-              <p className="text-sm text-muted-foreground">
-                Control how and when RealiMeali keeps you in the loop. Adjust push and email
-                notifications for dinner reminders, weekly planning, and household activity.
-              </p>
-
+            <CardContent className="space-y-6 p-5 sm:p-7">
               {notificationSettingsError ? (
                 <p className="text-sm text-destructive" role="alert">
                   {notificationSettingsError}
@@ -663,7 +696,7 @@ export default function Settings() {
 
               <div className="space-y-8">
                 {/* Daily dinner reminder */}
-                <div className="md:grid md:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] md:items-center gap-6">
+                <div className="grid gap-4 rounded-xl border border-[#EEE9E2] bg-[#FCFBF9] p-4 sm:p-5 md:grid-cols-[minmax(0,1fr)_minmax(280px,0.95fr)] md:items-center">
                   <div className="space-y-1.5">
                     <div className="flex items-center gap-2">
                       <Label className="text-sm font-medium">Daily dinner reminder</Label>
@@ -677,7 +710,7 @@ export default function Settings() {
                   </div>
 
                   <div className="flex flex-col items-stretch gap-3 md:items-end">
-                    <div className="flex flex-wrap items-center justify-end gap-4">
+                    <div className="flex flex-wrap items-center gap-x-5 gap-y-3 md:justify-end">
                       <div className="flex items-center gap-2">
                         <span className="text-xs text-muted-foreground">Push</span>
                         <Switch
@@ -703,12 +736,12 @@ export default function Settings() {
                         />
                       </div>
                     </div>
-                    <div className="flex flex-wrap justify-end gap-3 text-xs text-muted-foreground md:text-[11px]">
+                    <div className="flex flex-wrap items-center gap-3 text-xs text-[#77766F] md:justify-end">
                       <div className="flex items-center gap-2">
                         <span>Time</span>
                         <Input
                           type="time"
-                          className="h-8 w-28"
+                          className="h-10 w-32 rounded-lg border-[#E5DFD7] bg-white text-sm"
                           disabled={isLoadingNotificationSettings || !notificationSettings}
                           value={notificationSettings?.daily_dinner_time ?? "17:00"}
                           onChange={(e) =>
@@ -736,10 +769,8 @@ export default function Settings() {
                   </div>
                 </div>
 
-                <Separator />
-
                 {/* Weekly meal plan kick-off */}
-                <div className="md:grid md:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] md:items-center gap-6">
+                <div className="grid gap-4 rounded-xl border border-[#EEE9E2] bg-[#FCFBF9] p-4 sm:p-5 md:grid-cols-[minmax(0,1fr)_minmax(280px,0.95fr)] md:items-center">
                   <div className="space-y-1.5">
                     <div className="flex items-center gap-2">
                       <Label className="text-sm font-medium">Weekly meal plan kick-off</Label>
@@ -753,7 +784,7 @@ export default function Settings() {
                   </div>
 
                   <div className="flex flex-col items-stretch gap-3 md:items-end">
-                    <div className="flex flex-wrap items-center justify-end gap-4">
+                    <div className="flex flex-wrap items-center gap-x-5 gap-y-3 md:justify-end">
                       <div className="flex items-center gap-2">
                         <span className="text-xs text-muted-foreground">Push</span>
                         <Switch
@@ -779,11 +810,11 @@ export default function Settings() {
                         />
                       </div>
                     </div>
-                    <div className="flex flex-wrap justify-end gap-3 text-xs text-muted-foreground md:text-[11px]">
+                    <div className="flex flex-wrap items-center gap-3 text-xs text-[#77766F] md:justify-end">
                       <div className="flex items-center gap-2">
                         <span>Day</span>
                         <select
-                          className="h-8 rounded-md border bg-background px-2 text-xs"
+                          className="h-10 rounded-lg border border-[#E5DFD7] bg-white px-3 text-sm text-[#373B45]"
                           disabled={isLoadingNotificationSettings || !notificationSettings}
                           value={notificationSettings?.weekly_kickoff_day ?? 0}
                           onChange={(e) =>
@@ -805,7 +836,7 @@ export default function Settings() {
                         <span>Time</span>
                         <Input
                           type="time"
-                          className="h-8 w-28"
+                          className="h-10 w-32 rounded-lg border-[#E5DFD7] bg-white text-sm"
                           disabled={isLoadingNotificationSettings || !notificationSettings}
                           value={notificationSettings?.weekly_kickoff_time ?? "15:00"}
                           onChange={(e) =>
@@ -835,10 +866,8 @@ export default function Settings() {
                   </div>
                 </div>
 
-                <Separator />
-
                 {/* Household activity */}
-                <div className="md:grid md:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] md:items-center gap-6">
+                <div className="grid gap-4 rounded-xl border border-[#EEE9E2] bg-[#FCFBF9] p-4 sm:p-5 md:grid-cols-[minmax(0,1fr)_minmax(280px,0.95fr)] md:items-center">
                   <div className="space-y-1.5">
                     <div className="flex items-center gap-2">
                       <Label className="text-sm font-medium">Household activity</Label>
@@ -852,7 +881,7 @@ export default function Settings() {
                   </div>
 
                   <div className="flex flex-col items-stretch gap-3 md:items-end">
-                    <div className="flex flex-wrap items-center justify-end gap-4">
+                    <div className="flex flex-wrap items-center gap-x-5 gap-y-3 md:justify-end">
                       <div className="flex items-center gap-2">
                         <span className="text-xs text-muted-foreground">Push</span>
                         <Switch
@@ -866,11 +895,11 @@ export default function Settings() {
                         />
                       </div>
                     </div>
-                    <div className="flex flex-wrap justify-end gap-3 text-[11px] text-muted-foreground">
+                    <div className="flex flex-wrap items-center gap-3 text-xs text-[#77766F] md:justify-end">
                       <div className="flex items-center gap-2">
                         <span>Push level</span>
                         <select
-                          className="h-8 rounded-md border bg-background px-2 text-xs"
+                          className="h-10 rounded-lg border border-[#E5DFD7] bg-white px-3 text-sm text-[#373B45]"
                           disabled={
                             isLoadingNotificationSettings ||
                             !notificationSettings ||
@@ -892,7 +921,7 @@ export default function Settings() {
                       <div className="flex items-center gap-2">
                         <span>Email digest</span>
                         <select
-                          className="h-8 rounded-md border bg-background px-2 text-xs"
+                          className="h-10 rounded-lg border border-[#E5DFD7] bg-white px-3 text-sm text-[#373B45]"
                           disabled={isLoadingNotificationSettings || !notificationSettings}
                           value={notificationSettings?.household_activity_email_frequency ?? "none"}
                           onChange={(e) =>
@@ -937,99 +966,64 @@ export default function Settings() {
         );
       case "privacySecurity":
         return (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Shield className="h-5 w-5" />
+          <Card className="overflow-hidden rounded-2xl border border-[#EAE5DE] bg-white shadow-[0_8px_28px_rgba(35,45,63,0.045)]">
+            <CardHeader className="border-b border-[#F0ECE6] px-5 py-5 sm:px-7 sm:py-6">
+              <CardTitle className="flex items-center gap-2 text-xl font-semibold tracking-tight text-[#232D3F] sm:text-[22px]">
+                <Shield className="h-4 w-4 text-[#B96C56]" />
                 Privacy & Security
               </CardTitle>
-              <CardDescription>
-                Manage your privacy settings and account security.
+              <CardDescription className="mt-1 text-sm leading-6 text-[#77766F]">
+                Change your account password.
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label htmlFor="profileVisibility">Public Profile</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Allow others to find and view your profile
-                  </p>
-                </div>
-                <Switch id="profileVisibility" />
-              </div>
-              <Separator />
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label htmlFor="recipeSharing">Recipe Sharing</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Allow sharing of your recipes with the community
-                  </p>
-                </div>
-                <Switch id="recipeSharing" />
-              </div>
-              <Separator />
+            <CardContent className="max-w-xl space-y-5 p-5 sm:p-7">
               <div className="space-y-2">
-                <Label>Change Password</Label>
-                <div className="grid gap-2">
-                  <Input type="password" placeholder="Current password" />
-                  <Input type="password" placeholder="New password" />
-                  <Input type="password" placeholder="Confirm new password" />
-                </div>
-                <Button variant="outline" className="w-full sm:w-auto">
-                  Update Password
-                </Button>
+                <Label htmlFor="newPassword">New password</Label>
+                <Input
+                  className="h-11 rounded-xl border-[#E5DFD7] bg-[#FCFBF9] px-3.5 focus-visible:bg-white"
+                  id="newPassword"
+                  type="password"
+                  autoComplete="new-password"
+                  value={newPassword}
+                  onChange={(event) => setNewPassword(event.target.value)}
+                  placeholder="At least 8 characters"
+                />
               </div>
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">Confirm new password</Label>
+                <Input
+                  className="h-11 rounded-xl border-[#E5DFD7] bg-[#FCFBF9] px-3.5 focus-visible:bg-white"
+                  id="confirmPassword"
+                  type="password"
+                  autoComplete="new-password"
+                  value={confirmPassword}
+                  onChange={(event) => setConfirmPassword(event.target.value)}
+                  placeholder="Enter your new password again"
+                />
+              </div>
+              <Button
+                type="button"
+                variant="default"
+                className="rounded-xl px-5"
+                onClick={handleUpdatePassword}
+                disabled={isUpdatingPassword || !newPassword || !confirmPassword}
+              >
+                {isUpdatingPassword ? "Updating..." : "Update Password"}
+              </Button>
             </CardContent>
           </Card>
         );
       case "recipesData":
         return (
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Database className="h-5 w-5" />
-                  Recipes & Data
-                </CardTitle>
-                <CardDescription>
-                  Restore deleted recipes and manage your data.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-sm text-muted-foreground">
-                  View and restore recipes you&apos;ve recently deleted, or export a copy of your data.
-                </p>
-                <Button variant="outline" className="w-full sm:w-auto">
-                  Export My Data
-                </Button>
-              </CardContent>
-            </Card>
+          <div className="space-y-5">
+            <div className="px-1">
+              <h2 className="text-xl font-semibold tracking-tight text-[#232D3F]">Recipes &amp; Data</h2>
+              <p className="mt-1 text-sm leading-6 text-[#77766F]">
+                Restore a recipe within 30 days of deleting it.
+              </p>
+            </div>
             <DeletedRecipesSection />
           </div>
-        );
-      case "account":
-        return (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Trash2 className="h-5 w-5" />
-                Account Management
-              </CardTitle>
-              <CardDescription>
-                Manage your account deletion options.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-3 sm:grid-cols-2">
-                <Button variant="outline">Export My Data</Button>
-                <Button variant="destructive">Delete Account</Button>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Deleting your account will permanently remove all your data, including recipes,
-                meal plans, and shopping lists. This action cannot be undone.
-              </p>
-            </CardContent>
-          </Card>
         );
       default:
         return null;
@@ -1037,20 +1031,24 @@ export default function Settings() {
   };
 
   return (
-    <div className="container max-w-5xl py-8 px-4">
-      <div className="mb-8">
-        <div className="flex items-center gap-2 mb-2">
-          <SettingsIcon className="h-8 w-8 text-terracotta" />
-          <h1 className="text-3xl sm:text-4xl font-bold text-navy">Settings</h1>
-        </div>
-        <p className="text-muted-foreground max-w-2xl">
-          Manage your account preferences and application settings.
+    <div className="container max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
+      <header className="mb-7 sm:mb-9">
+        <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#B96C56]">
+          Your account
         </p>
-      </div>
+        <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+          <h1 className="text-[30px] font-semibold tracking-tight text-[#232D3F] sm:text-[34px]">
+            Settings
+          </h1>
+          <p className="text-sm text-[#77766F]">
+            Manage your profile and preferences.
+          </p>
+        </div>
+      </header>
 
-      <div className="grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)]">
-        <Card className="h-fit">
-          <CardContent className="space-y-1 p-3 sm:p-4">
+      <div className="grid gap-5 lg:grid-cols-[216px_minmax(0,1fr)] lg:gap-8">
+        <aside aria-label="Settings sections" className="lg:sticky lg:top-24 lg:h-fit">
+          <nav className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:flex lg:flex-col lg:gap-1.5">
             {SECTIONS.map((section) => {
               const Icon = section.icon;
               const isActive = section.id === activeSection;
@@ -1059,22 +1057,23 @@ export default function Settings() {
                   key={section.id}
                   type="button"
                   onClick={() => setActiveSection(section.id)}
-                  className={`flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors ${
+                  className={cn(
+                    "flex min-h-12 items-center gap-2.5 rounded-xl border px-3 py-2.5 text-left text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D9856D] focus-visible:ring-offset-2 lg:border-transparent lg:px-3.5",
                     isActive
-                      ? "bg-navy text-background"
-                      : "hover:bg-muted text-muted-foreground"
-                  }`}
+                      ? "border-[#F0D7CE] bg-[#F9EAE5] text-[#854C3D] lg:border-[#F0D7CE]"
+                      : "border-transparent bg-white/65 text-[#686A70] hover:border-[#EEE8E0] hover:bg-white"
+                  )}
                   aria-current={isActive ? "page" : undefined}
                 >
-                  <Icon className="h-4 w-4" />
-                  <span className="font-medium">{section.label}</span>
+                  <Icon className={cn("h-4 w-4 shrink-0", isActive ? "text-[#B96C56]" : "text-[#92918C]")} />
+                  <span className="leading-tight">{section.label}</span>
                 </button>
               );
             })}
-          </CardContent>
-        </Card>
+          </nav>
+        </aside>
 
-        <main className="space-y-4">
+        <main className="min-w-0">
           {renderSectionContent(activeSection)}
         </main>
       </div>
