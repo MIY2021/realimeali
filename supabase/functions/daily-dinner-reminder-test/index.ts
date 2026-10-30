@@ -29,23 +29,62 @@ interface ProfileRow {
   full_name: string | null;
 }
 
-const createDinnerReminderTestTemplate = (fullName: string | null, appUrl: string) => `
+const createDinnerReminderTestTemplate = (fullName: string | null, appUrl: string) => \`
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Test: What's for dinner tonight?</title>
+  <meta name="color-scheme" content="light">
+  <title>Your RealiMeali dinner reminder is ready</title>
 </head>
-<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8f9fa;">
-  <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff;">
-    <div style="background: linear-gradient(135deg, #fdc8a4 0%, #f4a775 100%); padding: 32px 20px; text-align: center;">
-      <div style="display: inline-flex; align-items: center; gap: 10px; color: #1e3a8a; font-size: 24px; font-weight: 700;">
-        <span>🍽️</span>
-        <span>RealiMeali</span>
-      </div>
-      <p style="color: #1e3a8a; margin: 8px 0 0 0; font-size: 15px;">Test daily dinner reminder</p>
-    </div>
+<body style="margin:0;padding:0;background:#f5f3ef;font-family:Arial,Helvetica,sans-serif;color:#202b36;">
+  <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">A little nudge to make tonight's dinner easier.</div>
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#f5f3ef;">
+    <tr><td align="center" style="padding:32px 14px;">
+      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:600px;background:#ffffff;border-radius:18px;overflow:hidden;">
+        <tr><td align="center" style="padding:30px 24px 26px;background:#243746;">
+          <div style="font-size:30px;line-height:1;">🍽️</div>
+          <div style="padding-top:9px;font-size:23px;line-height:1.2;font-weight:700;letter-spacing:-.4px;color:#ffffff;">RealiMeali</div>
+          <div style="padding-top:7px;font-size:12px;letter-spacing:1.8px;text-transform:uppercase;color:#f4b183;">A little less dinner-time stress</div>
+        </td></tr>
+        <tr><td style="padding:34px 34px 12px;">
+          <div style="display:inline-block;padding:6px 10px;border-radius:20px;background:#fff2e8;color:#a94d19;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">Your test reminder</div>
+          <h1 style="margin:18px 0 12px;font-size:29px;line-height:1.2;letter-spacing:-.7px;color:#243746;">Dinner plans, sorted?</h1>
+          <p style="margin:0 0 16px;font-size:16px;line-height:1.65;color:#485563;">Hi\${fullName ? \` \${fullName}\` : ""},</p>
+          <p style="margin:0 0 14px;font-size:15px;line-height:1.75;color:#485563;">This is what your RealiMeali dinner reminder will look like. A friendly nudge at your chosen time to help you decide what's for dinner, without the 5pm fridge stare.</p>
+          <p style="margin:0 0 24px;font-size:15px;line-height:1.75;color:#485563;">Check your meal plan, pick something you're in the mood for, or find a new idea. However tonight looks, you've got a head start.</p>
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:0 0 26px;background:#f8f7f4;border-radius:12px;">
+            <tr>
+              <td width="33%" align="center" style="padding:17px 7px;border-right:1px solid #e8e4dd;">
+                <div style="font-size:21px;">📅</div><div style="padding-top:7px;font-size:12px;font-weight:700;color:#344554;">Plan ahead</div>
+              </td>
+              <td width="34%" align="center" style="padding:17px 7px;border-right:1px solid #e8e4dd;">
+                <div style="font-size:21px;">🥘</div><div style="padding-top:7px;font-size:12px;font-weight:700;color:#344554;">Find inspiration</div>
+              </td>
+              <td width="33%" align="center" style="padding:17px 7px;">
+                <div style="font-size:21px;">🛒</div><div style="padding-top:7px;font-size:12px;font-weight:700;color:#344554;">Stay organised</div>
+              </td>
+            </tr>
+          </table>
+          <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center" style="margin:0 auto 25px;">
+            <tr><td align="center" bgcolor="#e8753d" style="border-radius:28px;">
+              <a href="\${appUrl}" style="display:inline-block;padding:15px 30px;color:#ffffff;text-decoration:none;font-size:15px;font-weight:700;">Open RealiMeali&nbsp; →</a>
+            </td></tr>
+          </table>
+          <p style="margin:0 0 8px;text-align:center;font-size:12px;line-height:1.6;color:#87919a;">You can change your reminder time or days in <strong>Settings → Notifications</strong>.</p>
+        </td></tr>
+        <tr><td align="center" style="padding:22px 28px;background:#f8f7f4;border-top:1px solid #eeeae3;">
+          <p style="margin:0 0 6px;font-size:12px;color:#697681;">Good food. Less faff.</p>
+          <p style="margin:0;font-size:11px;color:#9aa2a9;">You received this because you requested a test reminder in RealiMeali.</p>
+          <p style="margin:12px 0 0;font-size:11px;color:#9aa2a9;">© \${new Date().getFullYear()} RealiMeali</p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>
+\`;
 
     <div style="padding: 32px 20px 28px;">
       <p style="color: #111827; font-size: 16px; line-height: 1.6; margin: 0 0 16px 0;">
