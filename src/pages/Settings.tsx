@@ -677,13 +677,13 @@ export default function Settings() {
       }
       case "notifications":
         return (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+          <Card className="overflow-hidden rounded-2xl border border-[#EAE5DE] bg-white shadow-[0_8px_28px_rgba(35,45,63,0.045)]">
+            <CardHeader className="border-b border-[#F0ECE6] px-5 py-5 sm:px-7 sm:py-6">
+              <CardTitle className="flex items-center gap-2 text-xl font-semibold tracking-tight text-[#232D3F] sm:text-[22px]">
                 <Bell className="h-4 w-4 text-[#B96C56]" />
                 Notification Settings
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="mt-1 text-sm leading-6 text-[#77766F]">
                 Choose what notifications you'd like to receive.
               </CardDescription>
             </CardHeader>
@@ -769,10 +769,8 @@ export default function Settings() {
                   </div>
                 </div>
 
-                <Separator />
-
                 {/* Weekly meal plan kick-off */}
-                <div className="md:grid md:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] md:items-center gap-6">
+                <div className="grid gap-4 rounded-xl border border-[#EEE9E2] bg-[#FCFBF9] p-4 sm:p-5 md:grid-cols-[minmax(0,1fr)_minmax(280px,0.95fr)] md:items-center">
                   <div className="space-y-1.5">
                     <div className="flex items-center gap-2">
                       <Label className="text-sm font-medium">Weekly meal plan kick-off</Label>
@@ -786,7 +784,7 @@ export default function Settings() {
                   </div>
 
                   <div className="flex flex-col items-stretch gap-3 md:items-end">
-                    <div className="flex flex-wrap items-center justify-end gap-4">
+                    <div className="flex flex-wrap items-center gap-x-5 gap-y-3 md:justify-end">
                       <div className="flex items-center gap-2">
                         <span className="text-xs text-muted-foreground">Push</span>
                         <Switch
@@ -812,7 +810,7 @@ export default function Settings() {
                         />
                       </div>
                     </div>
-                    <div className="flex flex-wrap justify-end gap-3 text-xs text-muted-foreground md:text-[11px]">
+                    <div className="flex flex-wrap items-center gap-3 text-xs text-[#77766F] md:justify-end">
                       <div className="flex items-center gap-2">
                         <span>Day</span>
                         <select
@@ -838,7 +836,7 @@ export default function Settings() {
                         <span>Time</span>
                         <Input
                           type="time"
-                          className="h-8 w-28"
+                          className="h-10 w-32 rounded-lg border-[#E5DFD7] bg-white text-sm"
                           disabled={isLoadingNotificationSettings || !notificationSettings}
                           value={notificationSettings?.weekly_kickoff_time ?? "15:00"}
                           onChange={(e) =>
@@ -868,10 +866,8 @@ export default function Settings() {
                   </div>
                 </div>
 
-                <Separator />
-
                 {/* Household activity */}
-                <div className="md:grid md:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] md:items-center gap-6">
+                <div className="grid gap-4 rounded-xl border border-[#EEE9E2] bg-[#FCFBF9] p-4 sm:p-5 md:grid-cols-[minmax(0,1fr)_minmax(280px,0.95fr)] md:items-center">
                   <div className="space-y-1.5">
                     <div className="flex items-center gap-2">
                       <Label className="text-sm font-medium">Household activity</Label>
@@ -885,7 +881,7 @@ export default function Settings() {
                   </div>
 
                   <div className="flex flex-col items-stretch gap-3 md:items-end">
-                    <div className="flex flex-wrap items-center justify-end gap-4">
+                    <div className="flex flex-wrap items-center gap-x-5 gap-y-3 md:justify-end">
                       <div className="flex items-center gap-2">
                         <span className="text-xs text-muted-foreground">Push</span>
                         <Switch
@@ -903,7 +899,7 @@ export default function Settings() {
                       <div className="flex items-center gap-2">
                         <span>Push level</span>
                         <select
-                          className="h-8 rounded-md border bg-background px-2 text-xs"
+                          className="h-10 rounded-lg border border-[#E5DFD7] bg-white px-3 text-sm text-[#373B45]"
                           disabled={
                             isLoadingNotificationSettings ||
                             !notificationSettings ||
@@ -925,7 +921,7 @@ export default function Settings() {
                       <div className="flex items-center gap-2">
                         <span>Email digest</span>
                         <select
-                          className="h-8 rounded-md border bg-background px-2 text-xs"
+                          className="h-10 rounded-lg border border-[#E5DFD7] bg-white px-3 text-sm text-[#373B45]"
                           disabled={isLoadingNotificationSettings || !notificationSettings}
                           value={notificationSettings?.household_activity_email_frequency ?? "none"}
                           onChange={(e) =>
@@ -970,13 +966,13 @@ export default function Settings() {
         );
       case "privacySecurity":
         return (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+          <Card className="overflow-hidden rounded-2xl border border-[#EAE5DE] bg-white shadow-[0_8px_28px_rgba(35,45,63,0.045)]">
+            <CardHeader className="border-b border-[#F0ECE6] px-5 py-5 sm:px-7 sm:py-6">
+              <CardTitle className="flex items-center gap-2 text-xl font-semibold tracking-tight text-[#232D3F] sm:text-[22px]">
                 <Shield className="h-4 w-4 text-[#B96C56]" />
                 Privacy & Security
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="mt-1 text-sm leading-6 text-[#77766F]">
                 Change your account password.
               </CardDescription>
             </CardHeader>
