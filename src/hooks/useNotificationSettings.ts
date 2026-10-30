@@ -8,7 +8,6 @@ export type NotificationSettings = {
   daily_dinner_time: string;
   daily_dinner_days_of_week: number[];
   timezone: string;
-  timezone: string;
   weekly_kickoff_push_enabled: boolean;
   weekly_kickoff_email_enabled: boolean;
   weekly_kickoff_day: number;
@@ -91,7 +90,6 @@ export function useNotificationSettings() {
             ? (row.daily_dinner_days_of_week as number[])
             : DEFAULT_SETTINGS.daily_dinner_days_of_week,
           timezone: String(row.timezone ?? getBrowserTimezone()),
-          timezone: String(row.timezone ?? getBrowserTimezone()),
           weekly_kickoff_push_enabled: Boolean(row.weekly_kickoff_push_enabled),
           weekly_kickoff_email_enabled: Boolean(row.weekly_kickoff_email_enabled),
           weekly_kickoff_day: Number(row.weekly_kickoff_day ?? DEFAULT_SETTINGS.weekly_kickoff_day),
@@ -130,7 +128,6 @@ export function useNotificationSettings() {
       daily_dinner_email_enabled: next.daily_dinner_email_enabled,
       daily_dinner_time: next.daily_dinner_time,
       daily_dinner_days_of_week: next.daily_dinner_days_of_week,
-      timezone: next.timezone,
       timezone: next.timezone,
       weekly_kickoff_push_enabled: next.weekly_kickoff_push_enabled,
       weekly_kickoff_email_enabled: next.weekly_kickoff_email_enabled,
