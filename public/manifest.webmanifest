@@ -1,0 +1,17 @@
+{
+  "id": "/",
+  "name": "RealiMeali",
+  "short_name": "RealiMeali",
+  "description": "Plan meals, manage recipes and create shopping lists.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#faf9f7",
+  "theme_color": "#e38165",
+  "icons": [
+    {
+      "src": "/realimeali-logo.png",
+      "type": "image/png"
+    }
+  ]
+}
