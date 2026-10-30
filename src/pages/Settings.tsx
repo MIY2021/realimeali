@@ -10,7 +10,6 @@ import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { EnhancedAvatar } from "@/components/ui/enhanced-avatar";
 import {
-  Settings as SettingsIcon,
   User,
   Bell,
   Upload,
@@ -456,17 +455,17 @@ export default function Settings() {
           isRestoringGooglePhoto;
 
         return (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <User className="h-5 w-5" />
+          <Card className="overflow-hidden rounded-2xl border border-[#EAE5DE] bg-white shadow-[0_8px_28px_rgba(35,45,63,0.045)]">
+            <CardHeader className="border-b border-[#F0ECE6] px-5 py-5 sm:px-7 sm:py-6">
+              <CardTitle className="flex items-center gap-2 text-xl font-semibold tracking-tight text-[#232D3F] sm:text-[22px]">
+                <User className="h-4 w-4 text-[#B96C56]" />
                 Profile Settings
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="mt-1 text-sm leading-6 text-[#77766F]">
                 Update your personal information and profile picture.
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-7 p-5 sm:p-7">
               {isProfileLoading && !profileData ? (
                 <p className="text-sm text-muted-foreground">Loading profile…</p>
               ) : null}
@@ -476,12 +475,12 @@ export default function Settings() {
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
                   {/* self-start: column flex defaults to stretch — without this, rounded-full becomes a full-width pill */}
                   <div
-                    className="shrink-0 self-start rounded-full bg-gradient-to-br from-secondary/30 via-[#F3EDE4] to-terracotta/15 p-1 shadow-md ring-2 ring-[#C9BFB0]/45"
+                    className="shrink-0 self-start rounded-full bg-[#F7F1E9] p-1 ring-1 ring-[#EAE2D8]"
                     aria-hidden
                   >
                     <EnhancedAvatar
                       size="lg"
-                      className="h-20 w-20 ring-[3px] ring-white"
+                      className="h-20 w-20 ring-2 ring-white"
                       src={displayUrl ?? undefined}
                       avatarType={avatarTypeUi}
                       avatarData={selectedFruit}
@@ -514,7 +513,7 @@ export default function Settings() {
                         type="button"
                         variant="outline"
                         size="sm"
-                        className="flex w-full max-w-xs items-center justify-center gap-2 rounded-[12px] border-[#E3E3E3] bg-[#FAF9F6] font-medium hover:bg-muted/80 sm:w-auto"
+                        className="flex w-full max-w-xs items-center justify-center gap-2 rounded-xl border-[#E5DFD7] bg-white font-medium text-[#343944] hover:bg-[#FAF8F5] sm:w-auto"
                         disabled={!user || isProfileLoading}
                         onClick={() => setProfilePicDialogOpen(true)}
                       >
@@ -634,6 +633,7 @@ export default function Settings() {
                 <div className="space-y-2">
                   <Label htmlFor="firstName">First Name</Label>
                   <Input
+                    className="h-11 rounded-xl border-[#E5DFD7] bg-[#FCFBF9] px-3.5 focus-visible:bg-white"
                     id="firstName"
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
@@ -643,6 +643,7 @@ export default function Settings() {
                 <div className="space-y-2">
                   <Label htmlFor="lastName">Last Name</Label>
                   <Input
+                    className="h-11 rounded-xl border-[#E5DFD7] bg-[#FCFBF9] px-3.5 focus-visible:bg-white"
                     id="lastName"
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
@@ -654,6 +655,7 @@ export default function Settings() {
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
+                  className="h-11 rounded-xl border-[#E5DFD7] bg-[#FCFBF9] px-3.5 focus-visible:bg-white"
                   id="email"
                   type="email"
                   value={email}
@@ -665,9 +667,9 @@ export default function Settings() {
               <Button
                 onClick={handleUpdateProfile}
                 disabled={isUpdatingProfile || (isProfileLoading && !profileData)}
-                className="w-full sm:w-auto"
+                className="w-full rounded-xl px-5 shadow-sm sm:w-auto"
               >
-                {isUpdatingProfile ? "Saving..." : "Save Changes"}
+                {isUpdatingProfile ? "Saving..." : "Save changes"}
               </Button>
             </CardContent>
           </Card>
@@ -678,19 +680,14 @@ export default function Settings() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Bell className="h-5 w-5" />
+                <Bell className="h-4 w-4 text-[#B96C56]" />
                 Notification Settings
               </CardTitle>
               <CardDescription>
                 Choose what notifications you'd like to receive.
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-8">
-              <p className="text-sm text-muted-foreground">
-                Control how and when RealiMeali keeps you in the loop. Adjust push and email
-                notifications for dinner reminders, weekly planning, and household activity.
-              </p>
-
+            <CardContent className="space-y-6 p-5 sm:p-7">
               {notificationSettingsError ? (
                 <p className="text-sm text-destructive" role="alert">
                   {notificationSettingsError}
@@ -699,7 +696,7 @@ export default function Settings() {
 
               <div className="space-y-8">
                 {/* Daily dinner reminder */}
-                <div className="md:grid md:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] md:items-center gap-6">
+                <div className="grid gap-4 rounded-xl border border-[#EEE9E2] bg-[#FCFBF9] p-4 sm:p-5 md:grid-cols-[minmax(0,1fr)_minmax(280px,0.95fr)] md:items-center">
                   <div className="space-y-1.5">
                     <div className="flex items-center gap-2">
                       <Label className="text-sm font-medium">Daily dinner reminder</Label>
@@ -713,7 +710,7 @@ export default function Settings() {
                   </div>
 
                   <div className="flex flex-col items-stretch gap-3 md:items-end">
-                    <div className="flex flex-wrap items-center justify-end gap-4">
+                    <div className="flex flex-wrap items-center gap-x-5 gap-y-3 md:justify-end">
                       <div className="flex items-center gap-2">
                         <span className="text-xs text-muted-foreground">Push</span>
                         <Switch
@@ -739,12 +736,12 @@ export default function Settings() {
                         />
                       </div>
                     </div>
-                    <div className="flex flex-wrap justify-end gap-3 text-xs text-muted-foreground md:text-[11px]">
+                    <div className="flex flex-wrap items-center gap-3 text-xs text-[#77766F] md:justify-end">
                       <div className="flex items-center gap-2">
                         <span>Time</span>
                         <Input
                           type="time"
-                          className="h-8 w-28"
+                          className="h-10 w-32 rounded-lg border-[#E5DFD7] bg-white text-sm"
                           disabled={isLoadingNotificationSettings || !notificationSettings}
                           value={notificationSettings?.daily_dinner_time ?? "17:00"}
                           onChange={(e) =>
@@ -819,7 +816,7 @@ export default function Settings() {
                       <div className="flex items-center gap-2">
                         <span>Day</span>
                         <select
-                          className="h-8 rounded-md border bg-background px-2 text-xs"
+                          className="h-10 rounded-lg border border-[#E5DFD7] bg-white px-3 text-sm text-[#373B45]"
                           disabled={isLoadingNotificationSettings || !notificationSettings}
                           value={notificationSettings?.weekly_kickoff_day ?? 0}
                           onChange={(e) =>
@@ -902,7 +899,7 @@ export default function Settings() {
                         />
                       </div>
                     </div>
-                    <div className="flex flex-wrap justify-end gap-3 text-[11px] text-muted-foreground">
+                    <div className="flex flex-wrap items-center gap-3 text-xs text-[#77766F] md:justify-end">
                       <div className="flex items-center gap-2">
                         <span>Push level</span>
                         <select
@@ -976,17 +973,18 @@ export default function Settings() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Shield className="h-5 w-5" />
+                <Shield className="h-4 w-4 text-[#B96C56]" />
                 Privacy & Security
               </CardTitle>
               <CardDescription>
                 Change your account password.
               </CardDescription>
             </CardHeader>
-            <CardContent className="max-w-xl space-y-4">
+            <CardContent className="max-w-xl space-y-5 p-5 sm:p-7">
               <div className="space-y-2">
                 <Label htmlFor="newPassword">New password</Label>
                 <Input
+                  className="h-11 rounded-xl border-[#E5DFD7] bg-[#FCFBF9] px-3.5 focus-visible:bg-white"
                   id="newPassword"
                   type="password"
                   autoComplete="new-password"
@@ -998,6 +996,7 @@ export default function Settings() {
               <div className="space-y-2">
                 <Label htmlFor="confirmPassword">Confirm new password</Label>
                 <Input
+                  className="h-11 rounded-xl border-[#E5DFD7] bg-[#FCFBF9] px-3.5 focus-visible:bg-white"
                   id="confirmPassword"
                   type="password"
                   autoComplete="new-password"
@@ -1008,7 +1007,8 @@ export default function Settings() {
               </div>
               <Button
                 type="button"
-                variant="outline"
+                variant="default"
+                className="rounded-xl px-5"
                 onClick={handleUpdatePassword}
                 disabled={isUpdatingPassword || !newPassword || !confirmPassword}
               >
@@ -1019,23 +1019,13 @@ export default function Settings() {
         );
       case "recipesData":
         return (
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Database className="h-5 w-5" />
-                  Recipes & Data
-                </CardTitle>
-                <CardDescription>
-                  Restore deleted recipes and manage your data.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-sm text-muted-foreground">
-                  View and restore recipes you&apos;ve recently deleted.
-                </p>
-              </CardContent>
-            </Card>
+          <div className="space-y-5">
+            <div className="px-1">
+              <h2 className="text-xl font-semibold tracking-tight text-[#232D3F]">Recently deleted</h2>
+              <p className="mt-1 text-sm leading-6 text-[#77766F]">
+                Restore a recipe within 30 days of deleting it.
+              </p>
+            </div>
             <DeletedRecipesSection />
           </div>
         );
@@ -1045,20 +1035,24 @@ export default function Settings() {
   };
 
   return (
-    <div className="container max-w-5xl py-8 px-4">
-      <div className="mb-8">
-        <div className="flex items-center gap-2 mb-2">
-          <SettingsIcon className="h-8 w-8 text-terracotta" />
-          <h1 className="text-3xl sm:text-4xl font-bold text-navy">Settings</h1>
-        </div>
-        <p className="text-muted-foreground max-w-2xl">
-          Manage your account preferences and application settings.
+    <div className="container max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
+      <header className="mb-7 sm:mb-9">
+        <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#B96C56]">
+          Your account
         </p>
-      </div>
+        <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+          <h1 className="text-[30px] font-semibold tracking-tight text-[#232D3F] sm:text-[34px]">
+            Settings
+          </h1>
+          <p className="text-sm text-[#77766F]">
+            Manage your profile and preferences.
+          </p>
+        </div>
+      </header>
 
-      <div className="grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)]">
-        <Card className="h-fit">
-          <CardContent className="space-y-1 p-3 sm:p-4">
+      <div className="grid gap-5 lg:grid-cols-[216px_minmax(0,1fr)] lg:gap-8">
+        <aside aria-label="Settings sections" className="lg:sticky lg:top-24 lg:h-fit">
+          <nav className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:flex lg:flex-col lg:gap-1.5">
             {SECTIONS.map((section) => {
               const Icon = section.icon;
               const isActive = section.id === activeSection;
@@ -1067,22 +1061,23 @@ export default function Settings() {
                   key={section.id}
                   type="button"
                   onClick={() => setActiveSection(section.id)}
-                  className={`flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors ${
+                  className={cn(
+                    "flex min-h-12 items-center gap-2.5 rounded-xl border px-3 py-2.5 text-left text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D9856D] focus-visible:ring-offset-2 lg:border-transparent lg:px-3.5",
                     isActive
-                      ? "bg-navy text-background"
-                      : "hover:bg-muted text-muted-foreground"
-                  }`}
+                      ? "border-[#F0D7CE] bg-[#F9EAE5] text-[#854C3D] lg:border-[#F0D7CE]"
+                      : "border-transparent bg-white/65 text-[#686A70] hover:border-[#EEE8E0] hover:bg-white"
+                  )}
                   aria-current={isActive ? "page" : undefined}
                 >
-                  <Icon className="h-4 w-4" />
-                  <span className="font-medium">{section.label}</span>
+                  <Icon className={cn("h-4 w-4 shrink-0", isActive ? "text-[#B96C56]" : "text-[#92918C]")} />
+                  <span className="leading-tight">{section.label}</span>
                 </button>
               );
             })}
-          </CardContent>
-        </Card>
+          </nav>
+        </aside>
 
-        <main className="space-y-4">
+        <main className="min-w-0">
           {renderSectionContent(activeSection)}
         </main>
       </div>
