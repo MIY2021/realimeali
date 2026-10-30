@@ -24,6 +24,7 @@ interface NotificationSettingsRow {
   daily_dinner_email_enabled: boolean;
   daily_dinner_time: string;
   daily_dinner_days_of_week: number[];
+  timezone: string;
 }
 
 interface ProfileRow {
@@ -97,72 +98,145 @@ const handler = async (req: Request): Promise<Response> => {
     );
 
     const now = new Date();
-    const currentDay = now.getUTCDay();
-    const currentTime = now.toISOString().slice(11, 16);
 
     const { data: settings, error } = await supabase
       .from("notification_settings")
-      .select(
-        "user_id, daily_dinner_push_enabled, daily_dinner_email_enabled, daily_dinner_time, daily_dinner_days_of_week"
-      )
-      .eq("daily_dinner_time", currentTime)
-      .eq("daily_dinner_email_enabled", true)
-      .filter("daily_dinner_days_of_week", "cs", `{${currentDay}}`);
+      .select("user_id, daily_dinner_email_enabled, daily_dinner_time, daily_dinner_days_of_week, timezone")
+      .eq("daily_dinner_email_enabled", true);
 
     if (error) {
       console.error("Error loading notification settings:", error);
       throw error;
     }
 
-    console.log(`Daily dinner reminder eligible users at ${currentTime}:`, settings?.length ?? 0);
-
     const rows = (settings as NotificationSettingsRow[] | null) ?? [];
-
     const appUrl = Deno.env.get("APP_URL") ?? "http://localhost:3000";
+    let processed = 0;
+    let sent = 0;
+    let skipped = 0;
+
+    const getLocalSchedule = (date: Date, timezone: string) => {
+      const parts = new Intl.DateTimeFormat("en-GB", {
+        timeZone: timezone || "Europe/London",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        weekday: "short",
+        hour: "2-digit",
+        minute: "2-digit",
+        hourCycle: "h23",
+      }).formatToParts(date);
+      const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+      const dayMap: Record<string, number> = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+      return {
+        date: `${values.year}-${values.month}-${values.day}`,
+        time: `${values.hour}:${values.minute}`,
+        day: dayMap[values.weekday],
+      };
+    };
 
     for (const row of rows) {
+      const timezone = row.timezone || "Europe/London";
+      let local;
+      try {
+        local = getLocalSchedule(now, timezone);
+      } catch (timezoneError) {
+        console.error("Invalid timezone for reminder user; falling back to Europe/London", row.user_id, timezone, timezoneError);
+        local = getLocalSchedule(now, "Europe/London");
+      }
+
+      if (row.daily_dinner_time !== local.time || !(row.daily_dinner_days_of_week || []).includes(local.day)) {
+        skipped++;
+        continue;
+      }
+
+      processed++;
+      const claim = {
+        user_id: row.user_id,
+        local_date: local.date,
+        status: "pending",
+        attempted_at: now.toISOString(),
+        error_message: null,
+      };
+
+      let claimed = false;
+      const { error: claimError } = await supabase
+        .from("daily_dinner_reminder_sends")
+        .insert(claim);
+
+      if (!claimError) {
+        claimed = true;
+      } else if (claimError.code === "23505") {
+        const retryAfter = new Date(now.getTime() - 10 * 60 * 1000).toISOString();
+        const { data: retry, error: retryError } = await supabase
+          .from("daily_dinner_reminder_sends")
+          .update({ status: "pending", attempted_at: now.toISOString(), error_message: null })
+          .eq("user_id", row.user_id)
+          .eq("local_date", local.date)
+          .eq("status", "failed")
+          .lt("attempted_at", retryAfter)
+          .select("user_id")
+          .maybeSingle();
+        if (retryError) throw retryError;
+        claimed = Boolean(retry);
+      } else {
+        console.error("Could not claim daily reminder send", row.user_id, claimError);
+      }
+
+      if (!claimed) {
+        skipped++;
+        continue;
+      }
+
       try {
         const { data: profile, error: profileError } = await supabase
           .from("profiles")
           .select("email, full_name")
           .eq("id", row.user_id)
           .maybeSingle();
-
-        if (profileError) {
-          console.error("Error loading profile for user", row.user_id, profileError);
-          continue;
-        }
+        if (profileError) throw profileError;
 
         const { email, full_name } = (profile || {}) as ProfileRow;
-
-        if (!email) {
-          console.warn("Skipping daily dinner reminder; no email for user", row.user_id);
-          continue;
-        }
+        if (!email) throw new Error("No email address is available for this user");
 
         const html = createDinnerReminderTemplate(full_name, appUrl);
-
         const emailResponse = await resend.emails.send({
           from: "RealiMeali <notifications@reali-meali.app>",
           to: [email],
           subject: "What’s for dinner tonight?",
           html,
         });
+        if ((emailResponse as any)?.error) {
+          throw new Error((emailResponse as any).error.message || "Resend failed to send the reminder");
+        }
 
-        console.log("Daily dinner reminder sent", {
-          user_id: row.user_id,
-          email,
-          responseId: (emailResponse as any)?.id ?? null,
-        });
+        await supabase
+          .from("daily_dinner_reminder_sends")
+          .update({ status: "sent", sent_at: new Date().toISOString(), error_message: null })
+          .eq("user_id", row.user_id)
+          .eq("local_date", local.date);
+        sent++;
+        console.log("Daily dinner reminder sent", { user_id: row.user_id, local_date: local.date, responseId: (emailResponse as any)?.id ?? null });
       } catch (sendError) {
+        const message = sendError instanceof Error ? sendError.message : String(sendError);
+        await supabase
+          .from("daily_dinner_reminder_sends")
+          .update({ status: "failed", error_message: message })
+          .eq("user_id", row.user_id)
+          .eq("local_date", local.date);
         console.error("Error sending daily dinner reminder for user", row.user_id, sendError);
       }
     }
 
+    console.log("Daily dinner reminder run", { checked: rows.length, matched: processed, sent, skipped });
+
     return new Response(
       JSON.stringify({
         ok: true,
-        processed: rows.length,
+        checked: rows.length,
+        matched: processed,
+        sent,
+        skipped,
       }),
       {
         status: 200,
