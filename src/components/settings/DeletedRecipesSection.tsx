@@ -133,7 +133,7 @@ export const DeletedRecipesSection = () => {
 
               <div>
                 {deletedRecipes.map((recipe, index) => {
-                  const deletedAt = (recipe as any).deleted_at as string;
+                  const deletedAt = (recipe as Recipe & { deleted_at: string }).deleted_at;
                   const daysRemaining = getDaysRemaining(deletedAt);
                   const isExpiringSoon = daysRemaining <= 7;
 
