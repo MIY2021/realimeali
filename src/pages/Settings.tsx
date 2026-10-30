@@ -386,7 +386,7 @@ export default function Settings() {
     {
       id: "recipesData",
       label: "Recipes & Data",
-      description: "Restore recipes and manage your data.",
+      description: "Restore recently deleted recipes.",
       icon: Database,
     },
   ];
@@ -681,7 +681,7 @@ export default function Settings() {
             <CardHeader className="border-b border-[#F0ECE6] px-5 py-5 sm:px-7 sm:py-6">
               <CardTitle className="flex items-center gap-2 text-xl font-semibold tracking-tight text-[#232D3F] sm:text-[22px]">
                 <Bell className="h-4 w-4 text-[#B96C56]" />
-                Notification Settings
+                Notifications
               </CardTitle>
               <CardDescription className="mt-1 text-sm leading-6 text-[#77766F]">
                 Choose what notifications you'd like to receive.
@@ -1017,7 +1017,7 @@ export default function Settings() {
         return (
           <div className="space-y-5">
             <div className="px-1">
-              <h2 className="text-xl font-semibold tracking-tight text-[#232D3F]">Recently deleted</h2>
+              <h2 className="text-xl font-semibold tracking-tight text-[#232D3F]">Recipes &amp; Data</h2>
               <p className="mt-1 text-sm leading-6 text-[#77766F]">
                 Restore a recipe within 30 days of deleting it.
               </p>
