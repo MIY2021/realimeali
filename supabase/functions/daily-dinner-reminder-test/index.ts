@@ -31,7 +31,8 @@ interface ProfileRow {
 
 const createDinnerReminderTestTemplate = (fullName: string | null, _appUrl: string) => {
   const mealPlannerUrl = "https://realimeali.com/meal-planner";
-  const greeting = fullName ? ` ${fullName}` : "";
+  const firstName = fullName?.trim().split(/\s+/)[0] || "";
+  const greeting = firstName ? ` ${firstName}` : "";
   return `<!DOCTYPE html>
 <html lang="en">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="light"><title>Your RealiMeali dinner reminder</title></head>
@@ -39,7 +40,7 @@ const createDinnerReminderTestTemplate = (fullName: string | null, _appUrl: stri
 <div style="display:none;max-height:0;overflow:hidden;opacity:0;">A quick nudge to get tonight's dinner sorted.</div>
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#f5f3ef;"><tr><td align="center" style="padding:24px 12px;">
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:560px;background:#fff;border-radius:14px;overflow:hidden;">
-<tr><td align="center" style="padding:23px;background:#243746;color:#fff;"><div style="font-size:25px;">🍽️</div><div style="padding-top:6px;font-size:22px;font-weight:700;">RealiMeali</div></td></tr>
+<tr><td align="center" style="padding:20px 24px;background:#243746;"><img src="https://realimeali.com/realimeali-logo.png" alt="RealiMeali" width="190" style="display:block;width:190px;max-width:100%;height:auto;border:0;"></td></tr>
 <tr><td style="padding:28px 26px 24px;"><h1 style="margin:0 0 14px;font-size:25px;line-height:1.2;color:#243746;">Dinner plans, sorted?</h1>
 <p style="margin:0 0 12px;font-size:15px;line-height:1.6;color:#485563;">Hi${greeting},</p>
 <p style="margin:0 0 20px;font-size:15px;line-height:1.65;color:#485563;">This is your RealiMeali reminder: a friendly nudge to check your meal plan and decide what's for dinner. No more 5pm fridge stare!</p>
