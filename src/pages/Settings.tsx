@@ -456,16 +456,13 @@ export default function Settings() {
 
         return (
           <Card className="overflow-hidden rounded-2xl border border-[#EAE5DE] bg-white shadow-[0_8px_28px_rgba(35,45,63,0.045)]">
-            <CardHeader className="border-b border-[#F0ECE6] px-5 py-5 sm:px-7 sm:py-6">
-              <CardTitle className="flex items-center gap-2 text-xl font-semibold tracking-tight text-[#232D3F] sm:text-[22px]">
+            <CardHeader className="border-b border-[#F0ECE6] px-4 py-3.5">
+              <CardTitle className="flex items-center gap-2 text-base font-semibold text-[#232D3F]">
                 <User className="h-4 w-4 text-[#B96C56]" />
-                Profile Settings
+                Profile
               </CardTitle>
-              <CardDescription className="mt-1 text-sm leading-6 text-[#77766F]">
-                Update your personal information and profile picture.
-              </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-7 p-5 sm:p-7">
+            <CardContent className="space-y-5 p-4 sm:p-5">
               {isProfileLoading && !profileData ? (
                 <p className="text-sm text-muted-foreground">Loading profile…</p>
               ) : null}
@@ -480,7 +477,7 @@ export default function Settings() {
                   >
                     <EnhancedAvatar
                       size="lg"
-                      className="h-20 w-20 ring-2 ring-white"
+                      className="h-16 w-16 ring-2 ring-white"
                       src={displayUrl ?? undefined}
                       avatarType={avatarTypeUi}
                       avatarData={selectedFruit}
@@ -633,7 +630,7 @@ export default function Settings() {
                 <div className="space-y-2">
                   <Label htmlFor="firstName">First Name</Label>
                   <Input
-                    className="h-11 rounded-xl border-[#E5DFD7] bg-[#FCFBF9] px-3.5 focus-visible:bg-white"
+                    className="h-10 rounded-lg border-[#E5DFD7] bg-[#FCFBF9] px-3 focus-visible:bg-white"
                     id="firstName"
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
@@ -643,7 +640,7 @@ export default function Settings() {
                 <div className="space-y-2">
                   <Label htmlFor="lastName">Last Name</Label>
                   <Input
-                    className="h-11 rounded-xl border-[#E5DFD7] bg-[#FCFBF9] px-3.5 focus-visible:bg-white"
+                    className="h-10 rounded-lg border-[#E5DFD7] bg-[#FCFBF9] px-3 focus-visible:bg-white"
                     id="lastName"
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
@@ -655,7 +652,7 @@ export default function Settings() {
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
-                  className="h-11 rounded-xl border-[#E5DFD7] bg-[#FCFBF9] px-3.5 focus-visible:bg-white"
+                  className="h-10 rounded-lg border-[#E5DFD7] bg-[#FCFBF9] px-3 focus-visible:bg-white"
                   id="email"
                   type="email"
                   value={email}
@@ -677,373 +674,67 @@ export default function Settings() {
       }
       case "notifications":
         return (
-          <Card className="overflow-hidden rounded-2xl border border-[#EAE5DE] bg-white shadow-[0_8px_28px_rgba(35,45,63,0.045)]">
-            <CardHeader className="border-b border-[#F0ECE6] px-5 py-5 sm:px-7 sm:py-6">
-              <CardTitle className="flex items-center gap-2 text-xl font-semibold tracking-tight text-[#232D3F] sm:text-[22px]">
-                <Bell className="h-4 w-4 text-[#B96C56]" />
-                Notifications
-              </CardTitle>
-              <CardDescription className="mt-1 text-sm leading-6 text-[#77766F]">
-                Choose what notifications you'd like to receive.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6 p-5 sm:p-7">
-              {notificationSettingsError ? (
-                <p className="text-sm text-destructive" role="alert">
-                  {notificationSettingsError}
-                </p>
-              ) : null}
-
-              <div className="space-y-8">
-                {/* Daily dinner reminder */}
-                <div className="grid gap-4 rounded-xl border border-[#EEE9E2] bg-[#FCFBF9] p-4 sm:p-5 md:grid-cols-[minmax(0,1fr)_minmax(280px,0.95fr)] md:items-center">
-                  <div className="space-y-1.5">
-                    <div className="flex items-center gap-2">
-                      <Label className="text-sm font-medium">Daily dinner reminder</Label>
-                      <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
-                        Daily
-                      </span>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      Gentle nudge to decide what&apos;s for dinner around your chosen time.
-                    </p>
-                  </div>
-
-                  <div className="flex flex-col items-stretch gap-3 md:items-end">
-                    <div className="flex flex-wrap items-center gap-x-5 gap-y-3 md:justify-end">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-muted-foreground">Push</span>
-                        <Switch
-                          disabled={isLoadingNotificationSettings || !notificationSettings}
-                          checked={!!notificationSettings?.daily_dinner_push_enabled}
-                          onCheckedChange={(checked) =>
-                            updateNotificationSettings({
-                              daily_dinner_push_enabled: checked,
-                            })
-                          }
-                        />
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-muted-foreground">Email</span>
-                        <Switch
-                          disabled={isLoadingNotificationSettings || !notificationSettings}
-                          checked={!!notificationSettings?.daily_dinner_email_enabled}
-                          onCheckedChange={(checked) =>
-                            updateNotificationSettings({
-                              daily_dinner_email_enabled: checked,
-                            })
-                          }
-                        />
-                      </div>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-3 text-xs text-[#77766F] md:justify-end">
-                      <div className="flex items-center gap-2">
-                        <span>Time</span>
-                        <Input
-                          type="time"
-                          className="h-10 w-32 rounded-lg border-[#E5DFD7] bg-white text-sm"
-                          disabled={isLoadingNotificationSettings || !notificationSettings}
-                          value={notificationSettings?.daily_dinner_time ?? "17:00"}
-                          onChange={(e) =>
-                            updateNotificationSettings({
-                              daily_dinner_time: e.target.value,
-                            })
-                          }
-                        />
-                      </div>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="xs"
-                        disabled={
-                          !user ||
-                          isLoadingNotificationSettings ||
-                          !notificationSettings?.daily_dinner_email_enabled ||
-                          sendingTest === "daily"
-                        }
-                        onClick={() => sendNotificationTest("daily-dinner-reminder-test", "daily")}
-                      >
-                        {sendingTest === "daily" ? "Sending..." : "Send test"}
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Weekly meal plan kick-off */}
-                <div className="grid gap-4 rounded-xl border border-[#EEE9E2] bg-[#FCFBF9] p-4 sm:p-5 md:grid-cols-[minmax(0,1fr)_minmax(280px,0.95fr)] md:items-center">
-                  <div className="space-y-1.5">
-                    <div className="flex items-center gap-2">
-                      <Label className="text-sm font-medium">Weekly meal plan kick-off</Label>
-                      <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
-                        Weekly
-                      </span>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      Reminder to plan your meals for the week ahead.
-                    </p>
-                  </div>
-
-                  <div className="flex flex-col items-stretch gap-3 md:items-end">
-                    <div className="flex flex-wrap items-center gap-x-5 gap-y-3 md:justify-end">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-muted-foreground">Push</span>
-                        <Switch
-                          disabled={isLoadingNotificationSettings || !notificationSettings}
-                          checked={!!notificationSettings?.weekly_kickoff_push_enabled}
-                          onCheckedChange={(checked) =>
-                            updateNotificationSettings({
-                              weekly_kickoff_push_enabled: checked,
-                            })
-                          }
-                        />
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-muted-foreground">Email</span>
-                        <Switch
-                          disabled={isLoadingNotificationSettings || !notificationSettings}
-                          checked={!!notificationSettings?.weekly_kickoff_email_enabled}
-                          onCheckedChange={(checked) =>
-                            updateNotificationSettings({
-                              weekly_kickoff_email_enabled: checked,
-                            })
-                          }
-                        />
-                      </div>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-3 text-xs text-[#77766F] md:justify-end">
-                      <div className="flex items-center gap-2">
-                        <span>Day</span>
-                        <select
-                          className="h-10 rounded-lg border border-[#E5DFD7] bg-white px-3 text-sm text-[#373B45]"
-                          disabled={isLoadingNotificationSettings || !notificationSettings}
-                          value={notificationSettings?.weekly_kickoff_day ?? 0}
-                          onChange={(e) =>
-                            updateNotificationSettings({
-                              weekly_kickoff_day: Number(e.target.value),
-                            })
-                          }
-                        >
-                          <option value={0}>Sunday</option>
-                          <option value={1}>Monday</option>
-                          <option value={2}>Tuesday</option>
-                          <option value={3}>Wednesday</option>
-                          <option value={4}>Thursday</option>
-                          <option value={5}>Friday</option>
-                          <option value={6}>Saturday</option>
-                        </select>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span>Time</span>
-                        <Input
-                          type="time"
-                          className="h-10 w-32 rounded-lg border-[#E5DFD7] bg-white text-sm"
-                          disabled={isLoadingNotificationSettings || !notificationSettings}
-                          value={notificationSettings?.weekly_kickoff_time ?? "15:00"}
-                          onChange={(e) =>
-                            updateNotificationSettings({
-                              weekly_kickoff_time: e.target.value,
-                            })
-                          }
-                        />
-                      </div>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="xs"
-                        disabled={
-                          !user ||
-                          isLoadingNotificationSettings ||
-                          !notificationSettings?.weekly_kickoff_email_enabled ||
-                          sendingTest === "weekly"
-                        }
-                        onClick={() =>
-                          sendNotificationTest("weekly-meal-plan-kickoff-test", "weekly")
-                        }
-                      >
-                        {sendingTest === "weekly" ? "Sending..." : "Send test"}
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Household activity */}
-                <div className="grid gap-4 rounded-xl border border-[#EEE9E2] bg-[#FCFBF9] p-4 sm:p-5 md:grid-cols-[minmax(0,1fr)_minmax(280px,0.95fr)] md:items-center">
-                  <div className="space-y-1.5">
-                    <div className="flex items-center gap-2">
-                      <Label className="text-sm font-medium">Household activity</Label>
-                      <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
-                        Activity
-                      </span>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      Updates when your household adds recipes or changes the plan.
-                    </p>
-                  </div>
-
-                  <div className="flex flex-col items-stretch gap-3 md:items-end">
-                    <div className="flex flex-wrap items-center gap-x-5 gap-y-3 md:justify-end">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-muted-foreground">Push</span>
-                        <Switch
-                          disabled={isLoadingNotificationSettings || !notificationSettings}
-                          checked={!!notificationSettings?.household_activity_push_enabled}
-                          onCheckedChange={(checked) =>
-                            updateNotificationSettings({
-                              household_activity_push_enabled: checked,
-                            })
-                          }
-                        />
-                      </div>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-3 text-xs text-[#77766F] md:justify-end">
-                      <div className="flex items-center gap-2">
-                        <span>Push level</span>
-                        <select
-                          className="h-10 rounded-lg border border-[#E5DFD7] bg-white px-3 text-sm text-[#373B45]"
-                          disabled={
-                            isLoadingNotificationSettings ||
-                            !notificationSettings ||
-                            !notificationSettings.household_activity_push_enabled
-                          }
-                          value={notificationSettings?.household_activity_push_level ?? "important"}
-                          onChange={(e) =>
-                            updateNotificationSettings({
-                              household_activity_push_level: e.target.value as
-                                | "important"
-                                | "all",
-                            })
-                          }
-                        >
-                          <option value="important">Important updates only</option>
-                          <option value="all">Every update</option>
-                        </select>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span>Email digest</span>
-                        <select
-                          className="h-10 rounded-lg border border-[#E5DFD7] bg-white px-3 text-sm text-[#373B45]"
-                          disabled={isLoadingNotificationSettings || !notificationSettings}
-                          value={notificationSettings?.household_activity_email_frequency ?? "none"}
-                          onChange={(e) =>
-                            updateNotificationSettings({
-                              household_activity_email_frequency: e.target.value as
-                                | "none"
-                                | "daily"
-                                | "weekly",
-                              household_activity_email_enabled:
-                                e.target.value === "none" ? false : true,
-                            })
-                          }
-                        >
-                          <option value="none">Off</option>
-                          <option value="daily">Daily roundup</option>
-                          <option value="weekly">Weekly roundup</option>
-                        </select>
-                      </div>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="xs"
-                        disabled={
-                          !user ||
-                          isLoadingNotificationSettings ||
-                          (!notificationSettings?.household_activity_push_enabled &&
-                            !notificationSettings?.household_activity_email_enabled) ||
-                          sendingTest === "household"
-                        }
-                        onClick={() =>
-                          sendNotificationTest("household-activity-notifier-test", "household")
-                        }
-                      >
-                        {sendingTest === "household" ? "Sending..." : "Send test"}
-                      </Button>
-                    </div>
-                  </div>
+          <section className="overflow-hidden rounded-xl border border-[#EAE5DE] bg-white">
+            <div className="border-b border-[#F0ECE6] px-4 py-3.5">
+              <h2 className="text-base font-semibold text-[#232D3F]">Notifications</h2>
+              <p className="mt-0.5 text-xs text-[#77766F]">Choose what RealiMeali sends you.</p>
+            </div>
+            {notificationSettingsError ? <p className="border-b border-[#F0ECE6] px-4 py-3 text-sm text-destructive" role="alert">{notificationSettingsError}</p> : null}
+            <div className="divide-y divide-[#F0ECE6]">
+              <div className="grid gap-3 px-4 py-4 md:grid-cols-[minmax(150px,0.8fr)_minmax(0,1.8fr)] md:items-center">
+                <div><p className="text-sm font-medium text-[#343944]">Dinner reminder</p><p className="text-xs text-[#85827B]">A nudge at your chosen time.</p></div>
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                  <label className="flex items-center gap-2 text-xs text-[#686A70]">Push<Switch disabled={isLoadingNotificationSettings || !notificationSettings} checked={!!notificationSettings?.daily_dinner_push_enabled} onCheckedChange={(checked) => updateNotificationSettings({ daily_dinner_push_enabled: checked })} /></label>
+                  <label className="flex items-center gap-2 text-xs text-[#686A70]">Email<Switch disabled={isLoadingNotificationSettings || !notificationSettings} checked={!!notificationSettings?.daily_dinner_email_enabled} onCheckedChange={(checked) => updateNotificationSettings({ daily_dinner_email_enabled: checked })} /></label>
+                  <label className="flex items-center gap-2 text-xs text-[#686A70]">Time<Input type="time" className="h-9 w-28 rounded-lg border-[#E5DFD7] bg-white text-sm" disabled={isLoadingNotificationSettings || !notificationSettings} value={notificationSettings?.daily_dinner_time ?? "17:00"} onChange={(e) => updateNotificationSettings({ daily_dinner_time: e.target.value })} /></label>
+                  <Button type="button" variant="outline" size="xs" disabled={!user || isLoadingNotificationSettings || !notificationSettings?.daily_dinner_email_enabled || sendingTest === "daily"} onClick={() => sendNotificationTest("daily-dinner-reminder-test", "daily")}>{sendingTest === "daily" ? "Sending…" : "Send test"}</Button>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+              <div className="grid gap-3 px-4 py-4 md:grid-cols-[minmax(150px,0.8fr)_minmax(0,1.8fr)] md:items-center">
+                <div><p className="text-sm font-medium text-[#343944]">Weekly meal plan</p><p className="text-xs text-[#85827B]">A reminder to plan the week ahead.</p></div>
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                  <label className="flex items-center gap-2 text-xs text-[#686A70]">Push<Switch disabled={isLoadingNotificationSettings || !notificationSettings} checked={!!notificationSettings?.weekly_kickoff_push_enabled} onCheckedChange={(checked) => updateNotificationSettings({ weekly_kickoff_push_enabled: checked })} /></label>
+                  <label className="flex items-center gap-2 text-xs text-[#686A70]">Email<Switch disabled={isLoadingNotificationSettings || !notificationSettings} checked={!!notificationSettings?.weekly_kickoff_email_enabled} onCheckedChange={(checked) => updateNotificationSettings({ weekly_kickoff_email_enabled: checked })} /></label>
+                  <label className="flex items-center gap-2 text-xs text-[#686A70]">Day<select className="h-9 rounded-lg border border-[#E5DFD7] bg-white px-2.5 text-sm text-[#373B45]" disabled={isLoadingNotificationSettings || !notificationSettings} value={notificationSettings?.weekly_kickoff_day ?? 0} onChange={(e) => updateNotificationSettings({ weekly_kickoff_day: Number(e.target.value) })}><option value={0}>Sunday</option><option value={1}>Monday</option><option value={2}>Tuesday</option><option value={3}>Wednesday</option><option value={4}>Thursday</option><option value={5}>Friday</option><option value={6}>Saturday</option></select></label>
+                  <label className="flex items-center gap-2 text-xs text-[#686A70]">Time<Input type="time" className="h-9 w-28 rounded-lg border-[#E5DFD7] bg-white text-sm" disabled={isLoadingNotificationSettings || !notificationSettings} value={notificationSettings?.weekly_kickoff_time ?? "15:00"} onChange={(e) => updateNotificationSettings({ weekly_kickoff_time: e.target.value })} /></label>
+                  <Button type="button" variant="outline" size="xs" disabled={!user || isLoadingNotificationSettings || !notificationSettings?.weekly_kickoff_email_enabled || sendingTest === "weekly"} onClick={() => sendNotificationTest("weekly-meal-plan-kickoff-test", "weekly")}>{sendingTest === "weekly" ? "Sending…" : "Send test"}</Button>
+                </div>
+              </div>
+              <div className="grid gap-3 px-4 py-4 md:grid-cols-[minmax(150px,0.8fr)_minmax(0,1.8fr)] md:items-center">
+                <div><p className="text-sm font-medium text-[#343944]">Household activity</p><p className="text-xs text-[#85827B]">Updates to recipes and meal plans.</p></div>
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                  <label className="flex items-center gap-2 text-xs text-[#686A70]">Push<Switch disabled={isLoadingNotificationSettings || !notificationSettings} checked={!!notificationSettings?.household_activity_push_enabled} onCheckedChange={(checked) => updateNotificationSettings({ household_activity_push_enabled: checked })} /></label>
+                  <label className="flex items-center gap-2 text-xs text-[#686A70]">Push level<select className="h-9 rounded-lg border border-[#E5DFD7] bg-white px-2.5 text-sm text-[#373B45]" disabled={isLoadingNotificationSettings || !notificationSettings || !notificationSettings.household_activity_push_enabled} value={notificationSettings?.household_activity_push_level ?? "important"} onChange={(e) => updateNotificationSettings({ household_activity_push_level: e.target.value as "important" | "all" })}><option value="important">Important only</option><option value="all">Every update</option></select></label>
+                  <label className="flex items-center gap-2 text-xs text-[#686A70]">Email digest<select className="h-9 rounded-lg border border-[#E5DFD7] bg-white px-2.5 text-sm text-[#373B45]" disabled={isLoadingNotificationSettings || !notificationSettings} value={notificationSettings?.household_activity_email_frequency ?? "none"} onChange={(e) => updateNotificationSettings({ household_activity_email_frequency: e.target.value as "none" | "daily" | "weekly", household_activity_email_enabled: e.target.value !== "none" })}><option value="none">Off</option><option value="daily">Daily</option><option value="weekly">Weekly</option></select></label>
+                  <Button type="button" variant="outline" size="xs" disabled={!user || isLoadingNotificationSettings || (!notificationSettings?.household_activity_push_enabled && !notificationSettings?.household_activity_email_enabled) || sendingTest === "household"} onClick={() => sendNotificationTest("household-activity-notifier-test", "household")}>{sendingTest === "household" ? "Sending…" : "Send test"}</Button>
+                </div>
+              </div>
+            </div>
+          </section>
         );
       case "privacySecurity":
         return (
-          <Card className="overflow-hidden rounded-2xl border border-[#EAE5DE] bg-white shadow-[0_8px_28px_rgba(35,45,63,0.045)]">
-            <CardHeader className="border-b border-[#F0ECE6] px-5 py-5 sm:px-7 sm:py-6">
-              <CardTitle className="flex items-center gap-2 text-xl font-semibold tracking-tight text-[#232D3F] sm:text-[22px]">
-                <Shield className="h-4 w-4 text-[#B96C56]" />
-                Privacy & Security
-              </CardTitle>
-              <CardDescription className="mt-1 text-sm leading-6 text-[#77766F]">
-                Change your account password.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="max-w-xl space-y-5 p-5 sm:p-7">
-              <div className="space-y-2">
-                <Label htmlFor="newPassword">New password</Label>
-                <Input
-                  className="h-11 rounded-xl border-[#E5DFD7] bg-[#FCFBF9] px-3.5 focus-visible:bg-white"
-                  id="newPassword"
-                  type="password"
-                  autoComplete="new-password"
-                  value={newPassword}
-                  onChange={(event) => setNewPassword(event.target.value)}
-                  placeholder="At least 8 characters"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirm new password</Label>
-                <Input
-                  className="h-11 rounded-xl border-[#E5DFD7] bg-[#FCFBF9] px-3.5 focus-visible:bg-white"
-                  id="confirmPassword"
-                  type="password"
-                  autoComplete="new-password"
-                  value={confirmPassword}
-                  onChange={(event) => setConfirmPassword(event.target.value)}
-                  placeholder="Enter your new password again"
-                />
-              </div>
-              <Button
-                type="button"
-                variant="default"
-                className="rounded-xl px-5"
-                onClick={handleUpdatePassword}
-                disabled={isUpdatingPassword || !newPassword || !confirmPassword}
-              >
-                {isUpdatingPassword ? "Updating..." : "Update Password"}
-              </Button>
-            </CardContent>
-          </Card>
+          <section className="rounded-xl border border-[#EAE5DE] bg-white p-4 sm:p-5">
+            <div className="mb-4"><h2 className="text-base font-semibold text-[#232D3F]">Change password</h2><p className="mt-0.5 text-xs text-[#77766F]">Use at least 8 characters.</p></div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="space-y-1.5"><Label htmlFor="newPassword" className="text-xs">New password</Label><Input className="h-10 rounded-lg border-[#E5DFD7] bg-[#FCFBF9] px-3 focus-visible:bg-white" id="newPassword" type="password" autoComplete="new-password" value={newPassword} onChange={(event) => setNewPassword(event.target.value)} placeholder="New password" /></div>
+              <div className="space-y-1.5"><Label htmlFor="confirmPassword" className="text-xs">Confirm password</Label><Input className="h-10 rounded-lg border-[#E5DFD7] bg-[#FCFBF9] px-3 focus-visible:bg-white" id="confirmPassword" type="password" autoComplete="new-password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} placeholder="Repeat password" /></div>
+            </div>
+            <Button type="button" size="sm" className="mt-4 rounded-lg px-4" onClick={handleUpdatePassword} disabled={isUpdatingPassword || !newPassword || !confirmPassword}>{isUpdatingPassword ? "Updating…" : "Update password"}</Button>
+          </section>
         );
       case "recipesData":
-        return (
-          <div className="space-y-5">
-            <div className="px-1">
-              <h2 className="text-xl font-semibold tracking-tight text-[#232D3F]">Recipes &amp; Data</h2>
-              <p className="mt-1 text-sm leading-6 text-[#77766F]">
-                Restore a recipe within 30 days of deleting it.
-              </p>
-            </div>
-            <DeletedRecipesSection />
-          </div>
-        );
+        return <DeletedRecipesSection />;
       default:
         return null;
     }
   };
 
   return (
-    <div className="container max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
-      <header className="mb-7 sm:mb-9">
-        <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#B96C56]">
-          Your account
-        </p>
-        <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
-          <h1 className="text-[30px] font-semibold tracking-tight text-[#232D3F] sm:text-[34px]">
-            Settings
-          </h1>
-          <p className="text-sm text-[#77766F]">
-            Manage your profile and preferences.
-          </p>
-        </div>
+    <div className="container max-w-6xl px-4 py-5 sm:px-6 sm:py-7">
+      <header className="mb-5 flex items-baseline justify-between gap-3">
+        <h1 className="text-2xl font-semibold tracking-tight text-[#232D3F] sm:text-[28px]">Settings</h1>
+        <p className="text-xs text-[#77766F]">Your profile and preferences</p>
       </header>
 
       <div className="grid gap-5 lg:grid-cols-[216px_minmax(0,1fr)] lg:gap-8">
@@ -1058,7 +749,7 @@ export default function Settings() {
                   type="button"
                   onClick={() => setActiveSection(section.id)}
                   className={cn(
-                    "flex min-h-12 items-center gap-2.5 rounded-xl border px-3 py-2.5 text-left text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D9856D] focus-visible:ring-offset-2 lg:border-transparent lg:px-3.5",
+                    "flex min-h-10 items-center gap-2 rounded-lg border px-3 py-2 text-left text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D9856D] focus-visible:ring-offset-2 lg:border-transparent lg:px-3.5",
                     isActive
                       ? "border-[#F0D7CE] bg-[#F9EAE5] text-[#854C3D] lg:border-[#F0D7CE]"
                       : "border-transparent bg-white/65 text-[#686A70] hover:border-[#EEE8E0] hover:bg-white"
