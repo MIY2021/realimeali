@@ -173,7 +173,7 @@ const handler = async (req: Request): Promise<Response> => {
         const emailResponse = await resend.emails.send({
           from: "RealiMeali <notifications@realimeali.com>",
           to: [email],
-          subject: "What’s for dinner tonight?",
+          subject: `🍽️ What’s for dinner tonight? – ${new Date(`${local.date}T12:00:00Z`).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" })}`,
           html,
         });
         if ((emailResponse as any)?.error) {
