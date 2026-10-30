@@ -40,7 +40,7 @@ const createDinnerReminderTestTemplate = (fullName: string | null, _appUrl: stri
 <div style="display:none;max-height:0;overflow:hidden;opacity:0;">A quick nudge to get tonight's dinner sorted.</div>
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#f5f3ef;"><tr><td align="center" style="padding:24px 12px;">
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:560px;background:#fff;border-radius:14px;overflow:hidden;">
-<tr><td align="center" style="padding:20px 24px;background:#243746;"><span style="font-size:30px;line-height:1;">🍽️</span><span style="display:inline-block;margin-left:10px;color:#ffffff;font-size:23px;font-weight:700;vertical-align:middle;">RealiMeali</span></td></tr>
+<tr><td align="center" style="padding:20px 24px;background:#243746;"><span style="display:block;font-size:34px;line-height:1.2;margin-bottom:8px;">🍽️</span><span style="display:block;color:#ffffff;font-size:23px;font-weight:700;line-height:1.2;">RealiMeali</span></td></tr>
 <tr><td style="padding:28px 26px 24px;"><h1 style="margin:0 0 14px;font-size:25px;line-height:1.2;color:#243746;">Dinner plans, sorted?</h1>
 <p style="margin:0 0 12px;font-size:15px;line-height:1.6;color:#485563;">Hi${greeting},</p>
 <p style="margin:0 0 20px;font-size:15px;line-height:1.65;color:#485563;">This is your RealiMeali reminder: a friendly nudge to check your meal plan and decide what's for dinner. No more 5pm fridge stare!</p>
