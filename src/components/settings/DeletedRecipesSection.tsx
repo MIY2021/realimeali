@@ -83,7 +83,7 @@ export const DeletedRecipesSection = () => {
       <section className="rounded-xl border border-[#EAE5DE] bg-white p-4">
         <div className="flex items-center gap-3">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#F8EEE9] text-[#B96C56]">
-            <Trash2 className="h-5 w-5" />
+            <Trash2 className="h-4 w-4" />
           </div>
           <div>
             <h3 className="text-sm font-semibold text-[#232D3F]">Recently deleted</h3>
@@ -107,7 +107,7 @@ export const DeletedRecipesSection = () => {
           </div>
           <div className="min-w-0">
             <h3 className="text-sm font-semibold text-[#232D3F]">Recently deleted</h3>
-            <p className="text-sm leading-5 text-[#77766F]">
+            <p className="text-xs leading-5 text-[#77766F]">
               Restore deleted recipes for up to 30 days.
             </p>
           </div>
@@ -115,7 +115,7 @@ export const DeletedRecipesSection = () => {
 
         <div className="p-4">
           {deletedRecipes.length === 0 ? (
-            <div <div className="px-1 py-6">
+            <div className="px-1 py-6">
               <p className="text-sm font-medium text-[#343944]">No deleted recipes</p>
               <p className="mt-0.5 text-xs text-[#85827B]">Anything you delete will appear here for 30 days.</p>
             </div>
@@ -172,7 +172,7 @@ export const DeletedRecipesSection = () => {
                               setSelectedRecipe(recipe);
                               setShowPermanentDeleteDialog(true);
                             }}
-                            className="h-8 rounded-md px-2.5 text-xs"
+                            className="h-8 rounded-md px-2.5 text-xs text-destructive hover:text-destructive"
                           >
                             <Trash2 className="h-4 w-4" />
                             Delete permanently
