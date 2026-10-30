@@ -691,7 +691,7 @@ export default function Settings() {
                 </div>
               </div>
               <div className="grid gap-3 px-4 py-4 md:grid-cols-[minmax(150px,0.8fr)_minmax(0,1.8fr)] md:items-center">
-                <div><p className="text-sm font-medium text-[#343944]">Weekly meal plan</p><p className="text-xs text-[#85827B]">A reminder to plan the week ahead.</p></div>
+                <div><p className="text-sm font-medium text-[#343944]">Weekly meal plan</p><p className="text-xs text-[#85827B]">A reminder to plan the week ahead. Choose your day and time; times use your local timezone.</p></div>
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
                   <div className="flex items-center gap-2 text-xs text-[#686A70]">Push<Switch disabled={isLoadingNotificationSettings || !notificationSettings} checked={!!notificationSettings?.weekly_kickoff_push_enabled} onCheckedChange={(checked) => updateNotificationSettings({ weekly_kickoff_push_enabled: checked })} /></div>
                   <div className="flex items-center gap-2 text-xs text-[#686A70]">Email<Switch disabled={isLoadingNotificationSettings || !notificationSettings} checked={!!notificationSettings?.weekly_kickoff_email_enabled} onCheckedChange={(checked) => updateNotificationSettings({ weekly_kickoff_email_enabled: checked })} /></div>
